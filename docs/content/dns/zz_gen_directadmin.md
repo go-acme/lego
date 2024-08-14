@@ -44,7 +44,7 @@ lego --email you@example.com --dns directadmin --domains my.example.org run
 | `DIRECTADMIN_USERNAME` | API username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -58,7 +58,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `DIRECTADMIN_ZONE_NAME` | Zone name used to add the TXT record |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 

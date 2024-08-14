@@ -45,7 +45,7 @@ If you're looking for a `cert.pem` and `privkey.pem`, you can just use `example.
 ## Using a DNS provider
 
 If you can't or don't want to start a web server, you need to use a DNS provider.
-lego comes with [support for many]({{< ref "dns#dns-providers" >}}) providers,
+lego comes with [support for many]({{% ref "dns#dns-providers" %}}) providers,
 and you need to pick the one where your domain's DNS settings are set up.
 Typically, this is the registrar where you bought the domain, but in some cases this can be another third-party provider.
 

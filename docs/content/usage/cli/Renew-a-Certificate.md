@@ -12,7 +12,7 @@ This guide describes how to renew existing certificates.
 Certificates issues by Let's Encrypt are valid for a period of 90 days.
 To avoid certificate errors, you need to ensure that you renew your certificate *before* it expires.
 
-In order to renew a certificate, follow the general instructions laid out under [Obtain a Certificate]({{< ref "usage/cli/Obtain-a-Certificate" >}}), and replace `lego ... run` with `lego ... renew`.
+In order to renew a certificate, follow the general instructions laid out under [Obtain a Certificate]({{% ref "usage/cli/Obtain-a-Certificate" %}}), and replace `lego ... run` with `lego ... renew`.
 Note that the `renew` sub-command supports a slightly different set of some command line flags.
 
 ## Using the built-in web server
@@ -32,7 +32,7 @@ lego --email="you@example.com" --domains="example.com" --http renew --days 45
 ## Using a DNS provider
 
 If you can't or don't want to start a web server, you need to use a DNS provider.
-lego comes with [support for many]({{< ref "dns#dns-providers" >}}) providers,
+lego comes with [support for many]({{% ref "dns#dns-providers" %}}) providers,
 and you need to pick the one where your domain's DNS settings are set up.
 Typically, this is the registrar where you bought the domain, but in some cases this can be another third-party provider.
 
@@ -64,7 +64,7 @@ Some information is provided through environment variables:
 - `LEGO_CERT_PEM_PATH`: (only with `--pem`) the path to the PEM certificate.
 - `LEGO_CERT_PFX_PATH`: (only with `--pfx`) the path to the PFX certificate.
 
-See [Obtain a Certificate → Use case]({{< ref "usage/cli/Obtain-a-Certificate#use-case" >}}) for an example script.
+See [Obtain a Certificate → Use case]({{% ref "usage/cli/Obtain-a-Certificate#use-case" %}}) for an example script.
 
 ## Automatic renewal
 

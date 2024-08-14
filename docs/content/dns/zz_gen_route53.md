@@ -51,7 +51,7 @@ lego --domains example.com --email your_example@email.com --dns route53 --accept
 | `AWS_WAIT_FOR_RECORD_SETS_CHANGED` | Wait for changes to be INSYNC (it can be unstable) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -65,7 +65,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `AWS_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## Description
 

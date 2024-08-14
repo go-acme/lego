@@ -73,7 +73,7 @@ lego --domains example.com --email your_example@email.com --dns azuredns run
 | `AZURE_TENANT_ID` | Tenant ID |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -93,7 +93,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `AZURE_ZONE_NAME` | Zone name to use inside Azure DNS service to add the TXT record in |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## Description
 

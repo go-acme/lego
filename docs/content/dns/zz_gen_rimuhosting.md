@@ -40,7 +40,7 @@ lego --email you@example.com --dns rimuhosting --domains my.example.org run
 | `RIMUHOSTING_API_KEY` | User API key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -53,7 +53,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `RIMUHOSTING_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 

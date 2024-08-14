@@ -42,7 +42,7 @@ lego --email you@example.com --dns mythicbeasts --domains my.example.org run
 | `MYTHICBEASTS_USERNAME` | User name |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -57,7 +57,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `MYTHICBEASTS_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 If you are using specific API keys, then the username is the API ID for your API key, and the password is the API secret.
 

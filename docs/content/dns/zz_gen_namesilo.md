@@ -40,7 +40,7 @@ lego --email you@example.com --dns namesilo --domains my.example.org run
 | `NAMESILO_API_KEY` | Client ID |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -52,7 +52,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `NAMESILO_TTL` | The TTL of the TXT record used for the DNS challenge, should be in [3600, 2592000] |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 

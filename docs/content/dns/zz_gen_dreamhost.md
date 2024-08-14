@@ -40,7 +40,7 @@ lego --email you@example.com --dns dreamhost --domains my.example.org run
 | `DREAMHOST_API_KEY` | The API key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -53,7 +53,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `DREAMHOST_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 

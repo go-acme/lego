@@ -18,8 +18,6 @@ pygmentsUseClasses = true
   # Useful to give opportunity to people to create merge request for your doc.
   # See the config.toml file from this documentation site to have an example.
 #  editURL = ""
-  # Author of the site, will be used in meta information
-  author = "Lego Team"
   # Description of the site, will be used in meta information
 #  description = ""
   # Shows a checkmark for visited pages on the menu
@@ -46,6 +44,10 @@ pygmentsUseClasses = true
   custom_css = ["css/theme-custom.css"]
   disableLandingPageButton = true
 
+  # Author of the site, will be used in meta information
+  [params.author]
+    name = "Lego Team"
+
 [Languages]
 [Languages.en]
   title = "Let’s Encrypt client and ACME library written in Go."
@@ -69,8 +71,8 @@ pygmentsUseClasses = true
   weight = 12
 
 [outputs]
-  home = [ "HTML", "RSS", "JSON"]
+  home = [ "html", "rss", "search", "searchpage"]
 
 [module]
 [[module.imports]]
-  path = "github.com/matcornic/hugo-theme-learn"
+  path = "github.com/McShelby/hugo-theme-relearn"

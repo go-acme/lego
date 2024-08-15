@@ -43,7 +43,7 @@ func (c Client) RemoveTXTRecord(ctx context.Context, domain string) error {
 // UpdateTxtRecord Update the domains TXT record
 // To update the TXT record we just need to make one simple get request.
 // In DuckDNS you only have one TXT record shared with the domain and all subdomains.
-func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear bool) error {
+func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clearRecord bool) error {
 	endpoint, _ := url.Parse(defaultBaseURL)
 
 	mainDomain := getMainDomain(domain)
@@ -54,7 +54,7 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 	query := endpoint.Query()
 	query.Set("domains", mainDomain)
 	query.Set("token", c.token)
-	query.Set("clear", strconv.FormatBool(clear))
+	query.Set("clear", strconv.FormatBool(clearRecord))
 	query.Set("txt", txt)
 	endpoint.RawQuery = query.Encode()
 

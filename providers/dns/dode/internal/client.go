@@ -36,7 +36,7 @@ func NewClient(token string) *Client {
 
 // UpdateTxtRecord Update the domains TXT record
 // To update the TXT record we just need to make one simple get request.
-func (c Client) UpdateTxtRecord(ctx context.Context, fqdn, txt string, clear bool) error {
+func (c Client) UpdateTxtRecord(ctx context.Context, fqdn, txt string, clearRecord bool) error {
 	endpoint := c.baseURL.JoinPath("letsencrypt")
 
 	query := endpoint.Query()
@@ -44,7 +44,7 @@ func (c Client) UpdateTxtRecord(ctx context.Context, fqdn, txt string, clear boo
 	query.Set("domain", dns01.UnFqdn(fqdn))
 
 	// api call differs per set/delete
-	if clear {
+	if clearRecord {
 		query.Set("action", "delete")
 	} else {
 		query.Set("value", txt)

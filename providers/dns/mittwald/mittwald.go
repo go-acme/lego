@@ -78,8 +78,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	return &DNSProvider{
-		config: config,
-		client: internal.NewClient(config.Token),
+		config:  config,
+		client:  internal.NewClient(config.Token),
+		zoneIDs: map[string]string{},
 	}, nil
 }
 

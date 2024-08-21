@@ -41,9 +41,11 @@ func (r *RenewalInfoResponse) ShouldRenewAt(now time.Time, willingToSleep time.D
 	end := r.SuggestedWindow.End.UTC()
 
 	// Select a uniform random time within the suggested window.
-	window := end.Sub(start)
-	randomDuration := time.Duration(rand.Int63n(int64(window)))
-	rt := start.Add(randomDuration)
+	rt := start
+	if window := end.Sub(start); window > 0 {
+		randomDuration := time.Duration(rand.Int63n(int64(window)))
+		rt = rt.Add(randomDuration)
+	}
 
 	// If the selected time is in the past, attempt renewal immediately.
 	if rt.Before(now) {

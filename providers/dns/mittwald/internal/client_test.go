@@ -33,7 +33,6 @@ func setupTest(t *testing.T, pattern string, handler http.HandlerFunc) *Client {
 
 func testHandler(method string, statusCode int, filename string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
-		// fmt.Println(req) // FIXME
 		if req.Method != method {
 			http.Error(rw, fmt.Sprintf(`{"message":"unsupported method: %s"}`, req.Method), http.StatusMethodNotAllowed)
 			return
@@ -108,6 +107,23 @@ func TestClient_ListDNSZones(t *testing.T) {
 	}}
 
 	assert.Equal(t, expected, zones)
+}
+
+func TestClient_GetDNSZone(t *testing.T) {
+	client := setupTest(t, "/dns-zones/my-zone-id", testHandler(http.MethodGet, http.StatusOK, "dns-get-dns-zone.json"))
+
+	zone, err := client.GetDNSZone(context.Background(), "my-zone-id")
+	require.NoError(t, err)
+
+	expected := &DNSZone{
+		ID:     "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+		Domain: "string",
+		RecordSet: &RecordSet{
+			TXT: &TXTRecord{},
+		},
+	}
+
+	assert.Equal(t, expected, zone)
 }
 
 func TestClient_CreateDNSZone(t *testing.T) {

@@ -55,6 +55,25 @@ func (c Client) ListDomains(ctx context.Context) ([]Domain, error) {
 	return result, nil
 }
 
+// GetDNSZone Get a DNSZone.
+// https://api.mittwald.de/v2/docs/#/Domain/dns-get-dns-zone
+func (c Client) GetDNSZone(ctx context.Context, zoneID string) (*DNSZone, error) {
+	endpoint := c.baseURL.JoinPath("dns-zones", zoneID)
+
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &DNSZone{}
+	err = c.do(req, result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // ListDNSZones List DNSZones belonging to a Project.
 // https://api.mittwald.de/v2/docs/#/Domain/dns-list-dns-zones
 func (c Client) ListDNSZones(ctx context.Context, projectID string) ([]DNSZone, error) {

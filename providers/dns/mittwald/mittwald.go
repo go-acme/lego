@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/mittwald/internal"
+	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -22,6 +23,7 @@ const (
 
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
@@ -30,14 +32,16 @@ type Config struct {
 	Token              string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
+	SequenceInterval   time.Duration
 	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -90,67 +94,20 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
+// Sequential All DNS challenges for this provider will be resolved sequentially.
+// Returns the interval between each iteration.
+func (d *DNSProvider) Sequential() time.Duration {
+	return d.config.SequenceInterval
+}
+
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	domains, err := d.client.ListDomains(ctx)
+	zone, err := d.getOrCreateZone(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("mittwald: list domains: %w", err)
-	}
-
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("mittwald: could not find zone for domain %q: %w", domain, err)
-	}
-
-	var projectID string
-	for _, dom := range domains {
-		// FIXME authZone or full domain? (ex: foo.bar.example.com)
-		if dom.Domain == dns01.UnFqdn(authZone) {
-			projectID = dom.ProjectID
-			break
-		}
-	}
-
-	if projectID == "" {
-		return fmt.Errorf("mittwald: could not find project ID for domain %q (zone: %s)", domain, authZone)
-	}
-
-	zones, err := d.client.ListDNSZones(ctx, projectID)
-	if err != nil {
-		return fmt.Errorf("mittwald: list DNS zones: %w", err)
-	}
-
-	var parentZoneID string
-	for _, zon := range zones {
-		if zon.Domain == dns01.UnFqdn(authZone) {
-			parentZoneID = zon.ID
-			break
-		}
-	}
-
-	if parentZoneID == "" {
-		return fmt.Errorf("mittwald: could not find parent zone ID for domain %q (zone: %s)", domain, authZone)
-	}
-
-	// FIXME: if zone already exist? required to create multiple TXT records.
-
-	// FIXME how to handle sub domain? (ex: foo.bar.example.com)
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
-	if err != nil {
-		return fmt.Errorf("mittwald: %w", err)
-	}
-
-	request := internal.CreateDNSZoneRequest{
-		Name:         subDomain,
-		ParentZoneID: parentZoneID,
-	}
-
-	zoneNew, err := d.client.CreateDNSZone(ctx, request)
-	if err != nil {
-		return fmt.Errorf("mittwald: create DNS zone: %w", err)
+		return fmt.Errorf("mittwald: get effective zone: %w", err)
 	}
 
 	record := internal.TXTRecord{
@@ -160,13 +117,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Entries: []string{info.Value},
 	}
 
-	err = d.client.UpdateTXTRecord(ctx, zoneNew.ID, record)
+	err = d.client.UpdateTXTRecord(ctx, zone.ID, record)
 	if err != nil {
-		return fmt.Errorf("mittwald: update TXT record: %w", err)
+		return fmt.Errorf("mittwald: update/add TXT record: %w", err)
 	}
 
 	d.zoneIDsMu.Lock()
-	d.zoneIDs[token] = zoneNew.ID
+	d.zoneIDs[token] = zone.ID
 	d.zoneIDsMu.Unlock()
 
 	return nil
@@ -185,12 +142,94 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("mittwald: unknown zone ID for '%s'", info.EffectiveFQDN)
 	}
 
-	// FIXME update if zone has several TXT records.
+	record := internal.TXTRecord{
+		Entries: make([]string, 0),
+	}
 
-	err := d.client.DeleteDNSZone(ctx, zoneID)
+	err := d.client.UpdateTXTRecord(ctx, zoneID, record)
 	if err != nil {
-		return fmt.Errorf("mittwald: update delete DNS zone: %w", err)
+		return fmt.Errorf("mittwald: update/delete TXT record: %w", err)
 	}
 
 	return nil
+}
+
+func (d *DNSProvider) getOrCreateZone(ctx context.Context, fqdn string) (*internal.DNSZone, error) {
+	domains, err := d.client.ListDomains(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list domains: %w", err)
+	}
+
+	dom, err := findDomain(domains, fqdn)
+	if err != nil {
+		return nil, fmt.Errorf("find domain: %w", err)
+	}
+
+	zones, err := d.client.ListDNSZones(ctx, dom.ProjectID)
+	if err != nil {
+		return nil, fmt.Errorf("list DNS zones: %w", err)
+	}
+
+	for _, zon := range zones {
+		if zon.Domain == dns01.UnFqdn(fqdn) {
+			return &zon, nil
+		}
+	}
+
+	// Looking for parent zone to create a new zone for the subdomain
+
+	parentZone, err := findZone(zones, fqdn)
+	if err != nil {
+		return nil, fmt.Errorf("find zone: %w", err)
+	}
+
+	subDomain, err := dns01.ExtractSubDomain(fqdn, parentZone.Domain)
+	if err != nil {
+		return nil, err
+	}
+
+	request := internal.CreateDNSZoneRequest{
+		Name:         subDomain,
+		ParentZoneID: parentZone.ID,
+	}
+
+	zoneNew, err := d.client.CreateDNSZone(ctx, request)
+	if err != nil {
+		return nil, fmt.Errorf("create DNS zone: %w", err)
+	}
+
+	return zoneNew, nil
+}
+
+func findDomain(domains []internal.Domain, fqdn string) (internal.Domain, error) {
+	labelIndexes := dns.Split(fqdn)
+
+	for _, index := range labelIndexes {
+		domain := dns01.UnFqdn(fqdn[index:])
+
+		for _, dom := range domains {
+			fmt.Println(domain, dom.Domain)
+			if dom.Domain == domain {
+				return dom, nil
+			}
+		}
+	}
+
+	return internal.Domain{}, fmt.Errorf("domain %s not found", fqdn)
+}
+
+func findZone(zones []internal.DNSZone, fqdn string) (internal.DNSZone, error) {
+	labelIndexes := dns.Split(fqdn)
+
+	for _, index := range labelIndexes {
+		domain := dns01.UnFqdn(fqdn[index:])
+
+		for _, zon := range zones {
+			if zon.Domain == domain {
+				return zon, nil
+			}
+		}
+	}
+
+	return internal.DNSZone{}, fmt.Errorf("zone %s not found", fqdn)
 }

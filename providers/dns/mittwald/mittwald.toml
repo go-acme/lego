@@ -15,7 +15,6 @@ lego --email you@example.com --dns mittwald --domains my.example.org run
   [Configuration.Additional]
     MITTWALD_POLLING_INTERVAL = "Time between DNS propagation check"
     MITTWALD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
-    MITTWALD_SEQUENCE_INTERVAL = "Time between sequential requests"
     MITTWALD_TTL = "The TTL of the TXT record used for the DNS challenge"
     MITTWALD_HTTP_TIMEOUT = "API request timeout"
 

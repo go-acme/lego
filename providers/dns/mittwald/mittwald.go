@@ -133,9 +133,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("mittwald: unknown zone ID for '%s'", info.EffectiveFQDN)
 	}
 
-	record := internal.TXTRecord{
-		Entries: make([]string, 0),
-	}
+	record := internal.TXTRecord{Entries: make([]string, 0)}
 
 	err := d.client.UpdateTXTRecord(ctx, zoneID, record)
 	if err != nil {
@@ -161,13 +159,13 @@ func (d *DNSProvider) getOrCreateZone(ctx context.Context, fqdn string) (*intern
 		return nil, fmt.Errorf("list DNS zones: %w", err)
 	}
 
-	for _, zon := range zones {
-		if zon.Domain == dns01.UnFqdn(fqdn) {
-			return &zon, nil
+	for _, zone := range zones {
+		if zone.Domain == dns01.UnFqdn(fqdn) {
+			return &zone, nil
 		}
 	}
 
-	// Looking for parent zone to create a new zone for the subdomain
+	// Looking for parent zone to create a new zone for the subdomain.
 
 	parentZone, err := findZone(zones, fqdn)
 	if err != nil {
@@ -184,12 +182,12 @@ func (d *DNSProvider) getOrCreateZone(ctx context.Context, fqdn string) (*intern
 		ParentZoneID: parentZone.ID,
 	}
 
-	zoneNew, err := d.client.CreateDNSZone(ctx, request)
+	zone, err := d.client.CreateDNSZone(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("create DNS zone: %w", err)
 	}
 
-	return zoneNew, nil
+	return zone, nil
 }
 
 func findDomain(domains []internal.Domain, fqdn string) (internal.Domain, error) {

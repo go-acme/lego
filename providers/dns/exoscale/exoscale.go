@@ -5,28 +5,25 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
-	egoscale "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v3"
+	"github.com/exoscale/egoscale/v3/credentials"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
 
 // Default Exoscale API endpoint.
-const defaultBaseURL = "https://api.exoscale.com/v2"
-
-// Default Exosacle API zone.
-// Each data center location hosts the API and API zone determines which one to connect to.
-const defaultAPIZone = "ch-gva-2"
+const defaultBaseURL = egoscale.CHGva2
 
 // Environment variables names.
 const (
 	envNamespace = "EXOSCALE_"
 
-	EnvAPISecret = envNamespace + "API_SECRET"
-	EnvAPIKey    = envNamespace + "API_KEY"
-	EnvEndpoint  = envNamespace + "ENDPOINT"
-	EnvAPIZone   = envNamespace + "API_ZONE"
+	EnvAPISecret   = envNamespace + "API_SECRET"
+	EnvAPIKey      = envNamespace + "API_KEY"
+	EnvEndpoint    = envNamespace + "ENDPOINT"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -57,9 +54,8 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config  *Config
-	client  *egoscale.Client
-	apiZone string
+	config *Config
+	client *egoscale.Client
 }
 
 // NewDNSProvider Credentials must be passed in the environment variables:
@@ -73,7 +69,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.APIKey = values[EnvAPIKey]
 	config.APISecret = values[EnvAPISecret]
-	config.Endpoint = env.GetOrFile(EnvEndpoint)
+	config.Endpoint = env.GetOrDefaultString(EnvEndpoint, string(defaultBaseURL))
 
 	return NewDNSProviderConfig(config)
 }
@@ -88,24 +84,22 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("exoscale: credentials missing")
 	}
 
-	if config.Endpoint == "" {
-		config.Endpoint = defaultBaseURL
-	}
+	creds := credentials.NewStaticCredentials(config.APIKey, config.APISecret)
 
 	client, err := egoscale.NewClient(
-		config.APIKey,
-		config.APISecret,
-		egoscale.ClientOptWithAPIEndpoint(config.Endpoint),
-		egoscale.ClientOptWithTimeout(config.HTTPTimeout),
+		creds,
+		egoscale.ClientOptWithEndpoint(egoscale.Endpoint(config.Endpoint)),
+		egoscale.ClientOptWithHTTPClient(&http.Client{
+			Timeout: config.HTTPTimeout,
+		}),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("exoscale: initializing client: %w", err)
 	}
 
 	return &DNSProvider{
-		client:  client,
-		config:  config,
-		apiZone: env.GetOrDefaultString(EnvAPIZone, defaultAPIZone),
+		client: client,
+		config: config,
 	}, nil
 }
 
@@ -119,7 +113,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("exoscale: %w", err)
 	}
 
-	zone, err := d.findExistingZone(zoneName)
+	zone, err := d.findExistingDNSZone(zoneName)
 	if err != nil {
 		return fmt.Errorf("exoscale: %w", err)
 	}
@@ -127,14 +121,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("exoscale: zone %q not found", zoneName)
 	}
 
-	record := egoscale.DNSDomainRecord{
-		Name:    pointer(recordName),
-		TTL:     pointer(d.config.TTL),
-		Content: pointer(info.Value),
-		Type:    pointer("TXT"),
+	createRecordRequest := egoscale.CreateDNSDomainRecordRequest{
+		Name:    recordName,
+		Ttl:     d.config.TTL,
+		Content: info.Value,
+		Type:    egoscale.CreateDNSDomainRecordRequestTypeTXT,
 	}
 
-	_, err = d.client.CreateDNSDomainRecord(ctx, d.apiZone, deref(zone.ID), &record)
+	_, err = d.client.CreateDNSDomainRecord(ctx, zone.ID, createRecordRequest)
 	if err != nil {
 		return fmt.Errorf("exoscale: error while creating DNS record: %w", err)
 	}
@@ -152,7 +146,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("exoscale: %w", err)
 	}
 
-	zone, err := d.findExistingZone(zoneName)
+	zone, err := d.findExistingDNSZone(zoneName)
 	if err != nil {
 		return fmt.Errorf("exoscale: %w", err)
 	}
@@ -160,13 +154,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("exoscale: zone %q not found", zoneName)
 	}
 
-	recordID, err := d.findExistingRecordID(deref(zone.ID), recordName, info.Value)
+	recordID, err := d.findExistingRecordID(zone.ID, recordName, info.Value)
 	if err != nil {
 		return err
 	}
 
-	if recordID != "" {
-		err = d.client.DeleteDNSDomainRecord(ctx, d.apiZone, deref(zone.ID), &egoscale.DNSDomainRecord{ID: &recordID})
+	if recordID != nil {
+	    // TODO Operation
+		_, err = d.client.DeleteDNSDomainRecord(ctx, zone.ID, *recordID)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while deleting DNS record: %w", err)
 		}
@@ -181,18 +176,18 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// findExistingZone Query Exoscale to find an existing zone for this name.
+// findExistingDNSZone Query Exoscale to find an existing dns zone for this name.
 // Returns nil result if no zone could be found.
-func (d *DNSProvider) findExistingZone(zoneName string) (*egoscale.DNSDomain, error) {
+func (d *DNSProvider) findExistingDNSZone(zoneName string) (*egoscale.DNSDomain, error) {
 	ctx := context.Background()
 
-	zones, err := d.client.ListDNSDomains(ctx, d.apiZone)
+	zonesResponse, err := d.client.ListDNSDomains(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error while retrieving DNS zones: %w", err)
 	}
 
-	for _, zone := range zones {
-		if zone.UnicodeName != nil && deref(zone.UnicodeName) == zoneName {
+	for _, zone := range zonesResponse.DNSDomains {
+		if zone.UnicodeName != "" && zone.UnicodeName == zoneName {
 			return &zone, nil
 		}
 	}
@@ -202,21 +197,21 @@ func (d *DNSProvider) findExistingZone(zoneName string) (*egoscale.DNSDomain, er
 
 // findExistingRecordID Query Exoscale to find an existing record for this name.
 // Returns empty result if no record could be found.
-func (d *DNSProvider) findExistingRecordID(zoneID, recordName, value string) (string, error) {
+func (d *DNSProvider) findExistingRecordID(zoneID egoscale.UUID, recordName string, value string) (*egoscale.UUID, error) {
 	ctx := context.Background()
 
-	records, err := d.client.ListDNSDomainRecords(ctx, d.apiZone, zoneID)
+	recordsResponse, err := d.client.ListDNSDomainRecords(ctx, zoneID)
 	if err != nil {
-		return "", fmt.Errorf("error while retrieving DNS records: %w", err)
+		return nil, fmt.Errorf("error while retrieving DNS records: %w", err)
 	}
 
-	for _, record := range records {
-		if deref(record.Name) == recordName && deref(record.Type) == "TXT" && deref(record.Content) == value {
-			return deref(record.ID), nil
+	for _, record := range recordsResponse.DNSDomainRecords {
+		if record.Name == recordName && record.Type == egoscale.DNSDomainRecordTypeTXT && record.Content == value {
+			return &record.ID, nil
 		}
 	}
 
-	return "", nil
+	return nil, nil
 }
 
 // findZoneAndRecordName Extract DNS zone and DNS entry name.

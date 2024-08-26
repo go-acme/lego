@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"fmt"
+	stdlog "log"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/lego"
+	"github.com/go-acme/lego/v4/log"
 	"github.com/urfave/cli/v2"
 	"software.sslmate.com/src/go-pkcs12"
 )
@@ -164,7 +168,46 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Name:  "user-agent",
 			Usage: "Add to the user-agent sent to the CA to identify an application embedding lego-cli",
 		},
+		&cli.StringFlag{
+			Name:        "log-format",
+			Usage:       "Set log format, as a list of comma separated options. Available options: none(No additional information besides the logged message, must be the only one present), date, time, microtime(Time with microsecond precisison), utc(Show date and time in UTC if present).",
+			DefaultText: "\"date,time\"",
+			Action:      setLogFormat,
+		},
 	}
+}
+
+func setLogFormat(ctx *cli.Context, s string) error {
+	logger, ok := log.Logger.(interface{ SetFlags(int) })
+	if !ok {
+		return fmt.Errorf("current logger doesn't support flag modification")
+	}
+
+	input := strings.ToLower(s)
+	if input == "none" {
+		logger.SetFlags(0)
+		return nil
+	}
+
+	flag := 0
+	for _, opt := range strings.Split(input, ",") {
+		switch opt {
+		case "date":
+			flag |= stdlog.Ldate
+		case "time":
+			flag |= stdlog.Ltime
+		case "microtime":
+			flag |= stdlog.Lmicroseconds
+		case "utc":
+			flag |= stdlog.LUTC
+		case "none":
+			return fmt.Errorf("log option none cannot be used alongside any other log option")
+		default:
+			return fmt.Errorf("log format %s contains invalid option %s", s, opt)
+		}
+	}
+	logger.SetFlags(flag)
+	return nil
 }
 
 func getTime(ctx *cli.Context, name string) time.Time {

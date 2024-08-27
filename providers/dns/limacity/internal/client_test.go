@@ -106,7 +106,7 @@ func TestClient_GetRecords(t *testing.T) {
 		},
 		{
 			ID:      5678,
-			Content: "foobar",
+			Content: `"foobar"`,
 			Name:    "_acme-challenge.example.com",
 			TTL:     36000,
 			Type:    "TXT",

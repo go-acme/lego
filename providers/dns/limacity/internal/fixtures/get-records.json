@@ -10,7 +10,7 @@
     },
     {
       "id": 5678,
-      "content": "foobar",
+      "content": "\"foobar\"",
       "name": "_acme-challenge.example.com",
       "subdomain": "_acme-challenge",
       "ttl": 36000,

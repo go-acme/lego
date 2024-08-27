@@ -96,13 +96,23 @@ func TestClient_GetRecords(t *testing.T) {
 	records, err := client.GetRecords(context.Background(), 123)
 	require.NoError(t, err)
 
-	expected := []Record{{
-		ID:      1234,
-		Content: "ns1.lima-city.de",
-		Name:    "example.com",
-		TTL:     36000,
-		Type:    "NS",
-	}}
+	expected := []Record{
+		{
+			ID:      1234,
+			Content: "ns1.lima-city.de",
+			Name:    "example.com",
+			TTL:     36000,
+			Type:    "NS",
+		},
+		{
+			ID:        5678,
+			Content:   "foobar",
+			Name:      "_acme-challenge.example.com",
+			Subdomain: "_acme-challenge",
+			TTL:       36000,
+			Type:      "TXT",
+		},
+	}
 	assert.Equal(t, expected, records)
 }
 

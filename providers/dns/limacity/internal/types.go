@@ -35,7 +35,7 @@ type Record struct {
 	ID        int    `json:"id,omitempty"`
 	Content   string `json:"content,omitempty"`
 	Name      string `json:"name,omitempty"`
-	Subdomain bool   `json:"subdomain,omitempty"`
+	Subdomain string `json:"subdomain,omitempty"`
 	TTL       int    `json:"ttl,omitempty"`
 	Type      string `json:"type,omitempty"`
 }

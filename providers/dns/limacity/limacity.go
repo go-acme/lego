@@ -116,11 +116,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	record := internal.Record{
-		Name:      subDomain,
-		Content:   info.Value,
-		Subdomain: true,
-		TTL:       d.config.TTL,
-		Type:      "TXT",
+		Name:    subDomain,
+		Content: info.Value,
+		TTL:     d.config.TTL,
+		Type:    "TXT",
 	}
 
 	err = d.client.AddRecord(context.Background(), dom.ID, record)

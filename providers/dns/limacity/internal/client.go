@@ -15,8 +15,6 @@ import (
 
 const defaultBaseURL = "https://www.lima-city.de/usercp"
 
-const success = "ok"
-
 type Client struct {
 	apiKey     string
 	baseURL    *url.URL
@@ -70,7 +68,7 @@ func (c Client) GetRecords(ctx context.Context, domainID string) ([]Record, erro
 func (c Client) AddRecord(ctx context.Context, domainID string, record Record) error {
 	endpoint := c.baseURL.JoinPath("domains", domainID, "records.json")
 
-	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, NameserverRecordPayload{Data: record})
 	if err != nil {
 		return err
 	}
@@ -79,10 +77,6 @@ func (c Client) AddRecord(ctx context.Context, domainID string, record Record) e
 	err = c.do(req, &results)
 	if err != nil {
 		return err
-	}
-
-	if results.Status != success {
-		return results
 	}
 
 	return nil
@@ -91,7 +85,7 @@ func (c Client) AddRecord(ctx context.Context, domainID string, record Record) e
 func (c Client) UpdateRecord(ctx context.Context, domainID, recordID string, record Record) error {
 	endpoint := c.baseURL.JoinPath("domains", domainID, "records", recordID)
 
-	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, record)
+	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, NameserverRecordPayload{Data: record})
 	if err != nil {
 		return err
 	}
@@ -100,10 +94,6 @@ func (c Client) UpdateRecord(ctx context.Context, domainID, recordID string, rec
 	err = c.do(req, &results)
 	if err != nil {
 		return err
-	}
-
-	if results.Status != success {
-		return results
 	}
 
 	return nil
@@ -122,10 +112,6 @@ func (c Client) DeleteRecord(ctx context.Context, domainID, recordID string) err
 	err = c.do(req, &results)
 	if err != nil {
 		return err
-	}
-
-	if results.Status != success {
-		return results
 	}
 
 	return nil

@@ -166,7 +166,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.client.DeleteRecord(context.Background(), domainID, recordID)
 	if err != nil {
-		return fmt.Errorf("limacity: delete record (domain ID=%s, record ID=%s): %w", domainID, recordID, err)
+		return fmt.Errorf("limacity: delete record (domain ID=%d, record ID=%d): %w", domainID, recordID, err)
 	}
 
 	return nil

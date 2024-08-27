@@ -197,7 +197,6 @@ func findDomain(domains []internal.Domain, fqdn string) (internal.Domain, error)
 		domain := dns01.UnFqdn(fqdn[index:])
 
 		for _, dom := range domains {
-			fmt.Println(domain, dom.Domain)
 			if dom.Domain == domain {
 				return dom, nil
 			}

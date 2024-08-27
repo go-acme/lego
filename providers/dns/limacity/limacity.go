@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 
@@ -54,7 +53,7 @@ type DNSProvider struct {
 	config *Config
 	client *internal.Client
 
-	domainIDs   map[string]string
+	domainIDs   map[string]int
 	domainIDsMu sync.Mutex
 }
 
@@ -87,7 +86,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{
 		config:    config,
 		client:    client,
-		domainIDs: make(map[string]string),
+		domainIDs: make(map[string]int),
 	}, nil
 }
 
@@ -124,15 +123,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Type:      "TXT",
 	}
 
-	domainID := strconv.Itoa(dom.ID)
-
-	err = d.client.AddRecord(context.Background(), domainID, record)
+	err = d.client.AddRecord(context.Background(), dom.ID, record)
 	if err != nil {
 		return fmt.Errorf("limacity: add record: %w", err)
 	}
 
 	d.domainIDsMu.Lock()
-	d.domainIDs[token] = domainID
+	d.domainIDs[token] = dom.ID
 	d.domainIDsMu.Unlock()
 
 	return nil
@@ -155,7 +152,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("limacity: get records: %w", err)
 	}
 
-	var recordID string
+	var recordID int
 	for _, record := range records {
 		if record.Type == "TXT" && record.Content == info.Value {
 			recordID = record.ID
@@ -163,7 +160,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 	}
 
-	if recordID == "" {
+	if recordID == 0 {
 		return errors.New("limacity: TXT record not found")
 	}
 

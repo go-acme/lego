@@ -1,8 +1,8 @@
 {
   "records": [
     {
+      "id": 1234,
       "content": "ns1.lima-city.de",
-      "id": "1234",
       "name": "example.com",
       "subdomain": "",
       "ttl": 36000,

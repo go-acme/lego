@@ -93,12 +93,12 @@ func TestClient_GetRecords(t *testing.T) {
 
 	mux.HandleFunc("/domains/123/records.json", testHandler("get-records.json", http.MethodGet, http.StatusOK))
 
-	records, err := client.GetRecords(context.Background(), "123")
+	records, err := client.GetRecords(context.Background(), 123)
 	require.NoError(t, err)
 
 	expected := []Record{{
+		ID:        1234,
 		Content:   "ns1.lima-city.de",
-		ID:        "1234",
 		Name:      "example.com",
 		Subdomain: "",
 		TTL:       36000,
@@ -112,7 +112,7 @@ func TestClient_GetRecords_error(t *testing.T) {
 
 	mux.HandleFunc("/domains/123/records.json", testHandler("error.json", http.MethodGet, http.StatusBadRequest))
 
-	_, err := client.GetRecords(context.Background(), "123")
+	_, err := client.GetRecords(context.Background(), 123)
 	require.EqualError(t, err, "[status code: 400] status: invalid_resource, details: name: [muss ausgefüllt werden]")
 }
 
@@ -124,7 +124,7 @@ func TestClient_AddRecord(t *testing.T) {
 	})
 	mux.HandleFunc("/domains/123/records.json", testHandler("ok.json", http.MethodPost, http.StatusOK))
 
-	err := client.AddRecord(context.Background(), "123", Record{})
+	err := client.AddRecord(context.Background(), 123, Record{})
 	require.NoError(t, err)
 }
 
@@ -136,7 +136,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 	})
 	mux.HandleFunc("/domains/123/records.json", testHandler("error.json", http.MethodPost, http.StatusBadRequest))
 
-	err := client.AddRecord(context.Background(), "123", Record{})
+	err := client.AddRecord(context.Background(), 123, Record{})
 	require.EqualError(t, err, "[status code: 400] status: invalid_resource, details: name: [muss ausgefüllt werden]")
 }
 
@@ -148,7 +148,7 @@ func TestClient_UpdateRecord(t *testing.T) {
 	})
 	mux.HandleFunc("/domains/123/records/456", testHandler("ok.json", http.MethodPut, http.StatusOK))
 
-	err := client.UpdateRecord(context.Background(), "123", "456", Record{})
+	err := client.UpdateRecord(context.Background(), 123, 456, Record{})
 	require.NoError(t, err)
 }
 
@@ -160,7 +160,7 @@ func TestClient_UpdateRecord_error(t *testing.T) {
 	})
 	mux.HandleFunc("/domains/123/records/456", testHandler("error.json", http.MethodPut, http.StatusBadRequest))
 
-	err := client.UpdateRecord(context.Background(), "123", "456", Record{})
+	err := client.UpdateRecord(context.Background(), 123, 456, Record{})
 	require.EqualError(t, err, "[status code: 400] status: invalid_resource, details: name: [muss ausgefüllt werden]")
 }
 
@@ -172,7 +172,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 	})
 	mux.HandleFunc("/domains/123/records/456", testHandler("ok.json", http.MethodDelete, http.StatusOK))
 
-	err := client.DeleteRecord(context.Background(), "123", "456")
+	err := client.DeleteRecord(context.Background(), 123, 456)
 	require.NoError(t, err)
 }
 
@@ -184,6 +184,6 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 	})
 	mux.HandleFunc("/domains/123/records/456", testHandler("error.json", http.MethodDelete, http.StatusBadRequest))
 
-	err := client.DeleteRecord(context.Background(), "123", "456")
+	err := client.DeleteRecord(context.Background(), 123, 456)
 	require.EqualError(t, err, "[status code: 400] status: invalid_resource, details: name: [muss ausgefüllt werden]")
 }

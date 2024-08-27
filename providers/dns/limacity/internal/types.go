@@ -32,7 +32,7 @@ func (a APIResponse) Error() string {
 }
 
 type Record struct {
-	ID        string `json:"id,omitempty"`
+	ID        int    `json:"id,omitempty"`
 	Content   string `json:"content,omitempty"`
 	Name      string `json:"name,omitempty"`
 	Subdomain string `json:"subdomain,omitempty"`

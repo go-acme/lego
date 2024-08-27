@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
@@ -48,8 +49,8 @@ func (c Client) GetDomains(ctx context.Context) ([]Domain, error) {
 	return results.Data, nil
 }
 
-func (c Client) GetRecords(ctx context.Context, domainID string) ([]Record, error) {
-	endpoint := c.baseURL.JoinPath("domains", domainID, "records.json")
+func (c Client) GetRecords(ctx context.Context, domainID int) ([]Record, error) {
+	endpoint := c.baseURL.JoinPath("domains", strconv.Itoa(domainID), "records.json")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -65,8 +66,8 @@ func (c Client) GetRecords(ctx context.Context, domainID string) ([]Record, erro
 	return results.Data, nil
 }
 
-func (c Client) AddRecord(ctx context.Context, domainID string, record Record) error {
-	endpoint := c.baseURL.JoinPath("domains", domainID, "records.json")
+func (c Client) AddRecord(ctx context.Context, domainID int, record Record) error {
+	endpoint := c.baseURL.JoinPath("domains", strconv.Itoa(domainID), "records.json")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, NameserverRecordPayload{Data: record})
 	if err != nil {
@@ -82,8 +83,8 @@ func (c Client) AddRecord(ctx context.Context, domainID string, record Record) e
 	return nil
 }
 
-func (c Client) UpdateRecord(ctx context.Context, domainID, recordID string, record Record) error {
-	endpoint := c.baseURL.JoinPath("domains", domainID, "records", recordID)
+func (c Client) UpdateRecord(ctx context.Context, domainID, recordID int, record Record) error {
+	endpoint := c.baseURL.JoinPath("domains", strconv.Itoa(domainID), "records", strconv.Itoa(recordID))
 
 	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, NameserverRecordPayload{Data: record})
 	if err != nil {
@@ -99,9 +100,9 @@ func (c Client) UpdateRecord(ctx context.Context, domainID, recordID string, rec
 	return nil
 }
 
-func (c Client) DeleteRecord(ctx context.Context, domainID, recordID string) error {
+func (c Client) DeleteRecord(ctx context.Context, domainID, recordID int) error {
 	// /domains/{domainId}/records/{recordId} DELETE
-	endpoint := c.baseURL.JoinPath("domains", domainID, "records", recordID)
+	endpoint := c.baseURL.JoinPath("domains", strconv.Itoa(domainID), "records", strconv.Itoa(recordID))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

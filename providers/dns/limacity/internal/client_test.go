@@ -70,7 +70,7 @@ func TestClient_GetDomains(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := []Domain{{
-		ID:          "123",
+		ID:          123,
 		UnicodeFqdn: "example.com",
 		Domain:      "example",
 		TLD:         "com",

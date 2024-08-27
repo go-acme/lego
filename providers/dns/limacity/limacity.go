@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -123,13 +124,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Type:      "TXT",
 	}
 
-	err = d.client.AddRecord(context.Background(), dom.ID, record)
+	domainID := strconv.Itoa(dom.ID)
+
+	err = d.client.AddRecord(context.Background(), domainID, record)
 	if err != nil {
 		return fmt.Errorf("limacity: add record: %w", err)
 	}
 
 	d.domainIDsMu.Lock()
-	d.domainIDs[token] = dom.ID
+	d.domainIDs[token] = domainID
 	d.domainIDsMu.Unlock()
 
 	return nil

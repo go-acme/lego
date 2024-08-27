@@ -1,7 +1,7 @@
 {
   "domains": [
     {
-      "id": "123",
+      "id": 123,
       "mode": "CREATE",
       "tld": "com",
       "domain": "example",

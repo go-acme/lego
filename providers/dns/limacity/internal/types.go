@@ -41,7 +41,7 @@ type Record struct {
 }
 
 type Domain struct {
-	ID          string `json:"id,omitempty"`
+	ID          int    `json:"id,omitempty"`
 	UnicodeFqdn string `json:"unicode_fqdn,omitempty"`
 	Domain      string `json:"domain,omitempty"`
 	TLD         string `json:"tld,omitempty"`

@@ -4,7 +4,7 @@
       "id": 1234,
       "content": "ns1.lima-city.de",
       "name": "example.com",
-      "subdomain": "",
+      "subdomain": false,
       "ttl": 36000,
       "type": "NS"
     }

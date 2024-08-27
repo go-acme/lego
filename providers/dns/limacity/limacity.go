@@ -116,9 +116,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	record := internal.Record{
+		Name:      subDomain,
 		Content:   info.Value,
-		Name:      dns01.UnFqdn(dom.UnicodeFqdn),
-		Subdomain: subDomain,
+		Subdomain: true,
 		TTL:       d.config.TTL,
 		Type:      "TXT",
 	}

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -153,7 +154,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var recordID int
 	for _, record := range records {
-		if record.Type == "TXT" && record.Content == info.Value {
+		if record.Type == "TXT" && record.Content == strconv.Quote(info.Value) {
 			recordID = record.ID
 			break
 		}

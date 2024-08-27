@@ -127,33 +127,38 @@ func TestClient_GetRecords_error(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		fmt.Println(req)
-	})
 	mux.HandleFunc("/domains/123/records.json", testHandler("ok.json", http.MethodPost, http.StatusOK))
 
-	err := client.AddRecord(context.Background(), 123, Record{})
+	record := Record{
+		Name:    "foo",
+		Content: "bar",
+		TTL:     12,
+		Type:    "TXT",
+	}
+
+	err := client.AddRecord(context.Background(), 123, record)
 	require.NoError(t, err)
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		fmt.Println(req)
-	})
 	mux.HandleFunc("/domains/123/records.json", testHandler("error.json", http.MethodPost, http.StatusBadRequest))
 
-	err := client.AddRecord(context.Background(), 123, Record{})
+	record := Record{
+		Name:    "foo",
+		Content: "bar",
+		TTL:     12,
+		Type:    "TXT",
+	}
+
+	err := client.AddRecord(context.Background(), 123, record)
 	require.EqualError(t, err, "[status code: 400] status: invalid_resource, details: name: [muss ausgefüllt werden]")
 }
 
 func TestClient_UpdateRecord(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		fmt.Println(req)
-	})
 	mux.HandleFunc("/domains/123/records/456", testHandler("ok.json", http.MethodPut, http.StatusOK))
 
 	err := client.UpdateRecord(context.Background(), 123, 456, Record{})
@@ -163,9 +168,6 @@ func TestClient_UpdateRecord(t *testing.T) {
 func TestClient_UpdateRecord_error(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		fmt.Println(req)
-	})
 	mux.HandleFunc("/domains/123/records/456", testHandler("error.json", http.MethodPut, http.StatusBadRequest))
 
 	err := client.UpdateRecord(context.Background(), 123, 456, Record{})
@@ -175,9 +177,6 @@ func TestClient_UpdateRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		fmt.Println(req)
-	})
 	mux.HandleFunc("/domains/123/records/456", testHandler("ok.json", http.MethodDelete, http.StatusOK))
 
 	err := client.DeleteRecord(context.Background(), 123, 456)
@@ -187,9 +186,6 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		fmt.Println(req)
-	})
 	mux.HandleFunc("/domains/123/records/456", testHandler("error.json", http.MethodDelete, http.StatusBadRequest))
 
 	err := client.DeleteRecord(context.Background(), 123, 456)

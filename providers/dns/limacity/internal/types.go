@@ -32,12 +32,11 @@ func (a APIResponse) Error() string {
 }
 
 type Record struct {
-	ID        int    `json:"id,omitempty"`
-	Content   string `json:"content,omitempty"`
-	Name      string `json:"name,omitempty"`
-	Subdomain string `json:"subdomain,omitempty"`
-	TTL       int    `json:"ttl,omitempty"`
-	Type      string `json:"type,omitempty"`
+	ID      int    `json:"id,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Content string `json:"content,omitempty"`
+	TTL     int    `json:"ttl,omitempty"`
+	Type    string `json:"type,omitempty"`
 }
 
 type Domain struct {

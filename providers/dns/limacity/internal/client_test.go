@@ -105,12 +105,11 @@ func TestClient_GetRecords(t *testing.T) {
 			Type:    "NS",
 		},
 		{
-			ID:        5678,
-			Content:   "foobar",
-			Name:      "_acme-challenge.example.com",
-			Subdomain: "_acme-challenge",
-			TTL:       36000,
-			Type:      "TXT",
+			ID:      5678,
+			Content: "foobar",
+			Name:    "_acme-challenge.example.com",
+			TTL:     36000,
+			Type:    "TXT",
 		},
 	}
 	assert.Equal(t, expected, records)

@@ -86,7 +86,7 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
 | [VinylDNS](https://go-acme.github.io/lego/dns/vinyldns/)                     | [VK Cloud](https://go-acme.github.io/lego/dns/vkcloud/)                 | [Vscale](https://go-acme.github.io/lego/dns/vscale/)                            | [Vultr](https://go-acme.github.io/lego/dns/vultr/)                    |
 | [Webnames](https://go-acme.github.io/lego/dns/webnames/)                     | [Websupport](https://go-acme.github.io/lego/dns/websupport/)            | [WEDOS](https://go-acme.github.io/lego/dns/wedos/)                              | [Yandex 360](https://go-acme.github.io/lego/dns/yandex360/)           |
 | [Yandex Cloud](https://go-acme.github.io/lego/dns/yandexcloud/)              | [Yandex PDD](https://go-acme.github.io/lego/dns/yandex/)                | [Zone.ee](https://go-acme.github.io/lego/dns/zoneee/)                           | [Zonomi](https://go-acme.github.io/lego/dns/zonomi/)                  |
-| [Mijn Host](https://go-acme.github.io/lego/dns/mijn-host/)                   |                                                                         |                                                                                 |                                                                       |
+| [mijn.host](https://go-acme.github.io/lego/dns/mijn-host/)                   |                                                                         |                                                                                 |                                                                       |
 
 <!-- END DNS PROVIDERS LIST -->
 

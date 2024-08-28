@@ -50,6 +50,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | `MIJNHOST_HTTP_TIMEOUT` | API request timeout |
 | `MIJNHOST_POLLING_INTERVAL` | Time between DNS propagation check |
 | `MIJNHOST_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `MIJNHOST_SEQUENCE_INTERVAL` | Time between sequential requests |
 | `MIJNHOST_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

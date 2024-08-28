@@ -1,0 +1,18 @@
+{
+  "status": 200,
+  "status_description": "Request successful",
+  "data": {
+    "domains": [
+      {
+        "id": 1000,
+        "domain": "example.com",
+        "renewal_date": "2030-01-01",
+        "status": "Active",
+        "status_id": 1,
+        "tags": [
+          "my-tag"
+        ]
+      }
+    ]
+  }
+}

@@ -72,8 +72,7 @@ func (p preCheck) checkDNSPropagation(fqdn, value string) (bool, error) {
 		return false, err
 	}
 
-	// TODO only for debug
-	return atLeastOneAuthoritativeNss(fqdn, value, authoritativeNss)
+	return checkAuthoritativeNss(fqdn, value, authoritativeNss)
 }
 
 // checkAuthoritativeNss queries each of the given nameservers for the expected TXT record.
@@ -105,55 +104,6 @@ func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, erro
 		if !found {
 			return false, fmt.Errorf("NS %s did not return the expected TXT record [fqdn: %s, value: %s]: %s", ns, fqdn, value, strings.Join(records, " ,"))
 		}
-	}
-
-	return true, nil
-}
-
-// TODO only for debug
-func atLeastOneAuthoritativeNss(fqdn, value string, nameservers []string) (bool, error) {
-	var lastErr error
-
-	for _, ns := range nameservers {
-		found, err := hasTXTEntry(fqdn, value, ns)
-		if err != nil {
-			lastErr = err
-			continue
-		}
-
-		return found, nil
-	}
-
-	return false, lastErr
-}
-
-// TODO only for debug
-func hasTXTEntry(fqdn, value, ns string) (bool, error) {
-	r, err := dnsQuery(fqdn, dns.TypeTXT, []string{net.JoinHostPort(ns, "53")}, false)
-	if err != nil {
-		return false, err
-	}
-
-	if r.Rcode != dns.RcodeSuccess {
-		return false, fmt.Errorf("NS %s returned %s for %s", ns, dns.RcodeToString[r.Rcode], fqdn)
-	}
-
-	var records []string
-
-	var found bool
-	for _, rr := range r.Answer {
-		if txt, ok := rr.(*dns.TXT); ok {
-			record := strings.Join(txt.Txt, "")
-			records = append(records, record)
-			if record == value {
-				found = true
-				break
-			}
-		}
-	}
-
-	if !found {
-		return false, fmt.Errorf("NS %s did not return the expected TXT record [fqdn: %s, value: %s]: %s", ns, fqdn, value, strings.Join(records, " ,"))
 	}
 
 	return true, nil

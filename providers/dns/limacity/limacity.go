@@ -42,8 +42,8 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 3*time.Minute),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{

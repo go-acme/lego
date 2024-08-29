@@ -1,0 +1,21 @@
+{
+  "records": [
+    {
+      "id": 1234,
+      "content": "ns1.lima-city.de",
+      "name": "example.com",
+      "ttl": 36000,
+      "type": "NS",
+      "priority": null
+    },
+    {
+      "id": 5678,
+      "content": "\"foobar\"",
+      "name": "_acme-challenge.example.com",
+      "subdomain": "_acme-challenge",
+      "ttl": 36000,
+      "type": "TXT",
+      "priority": null
+    }
+  ]
+}

@@ -43,7 +43,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 4*time.Minute),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 8*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 80*time.Second),
 		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, 90*time.Second),
 		HTTPClient: &http.Client{

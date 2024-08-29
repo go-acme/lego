@@ -131,9 +131,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:   d.config.TTL,
 	}
 
-	records = append(records, record)
+	// mijn.host doesn't support multiple values for a domain,
+	// so we removed existing record for the subdomain.
+	cleanedRecords := filterRecords(records, func(record internal.Record) bool {
+		// TODO(ldez) I don't known if the records returned by the endpoint have the same content as name:
+		// - I use subdomain to create the records
+		// - In the API example the name is the full domain
+		return record.Name == subDomain
+	})
 
-	err = d.client.UpdateRecords(context.Background(), dom.Domain, records)
+	cleanedRecords = append(cleanedRecords, record)
+
+	err = d.client.UpdateRecords(context.Background(), dom.Domain, cleanedRecords)
 	if err != nil {
 		return fmt.Errorf("mijnhost: update records: %w", err)
 	}
@@ -160,16 +169,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("mijnhost: get records: %w", err)
 	}
 
-	var newRecords []internal.Record
-	for _, record := range records {
-		if record.Type == "TXT" && record.Value == info.Value {
-			continue
-		}
+	cleanedRecords := filterRecords(records, func(record internal.Record) bool {
+		return record.Value == info.Value
+	})
 
-		newRecords = append(newRecords, record)
-	}
-
-	err = d.client.UpdateRecords(context.Background(), dom.Domain, newRecords)
+	err = d.client.UpdateRecords(context.Background(), dom.Domain, cleanedRecords)
 	if err != nil {
 		return fmt.Errorf("mijnhost: update records: %w", err)
 	}
@@ -191,4 +195,18 @@ func findDomain(domains []internal.Domain, fqdn string) (internal.Domain, error)
 	}
 
 	return internal.Domain{}, fmt.Errorf("domain %s not found", fqdn)
+}
+
+func filterRecords(records []internal.Record, fn func(record internal.Record) bool) []internal.Record {
+	var newRecords []internal.Record
+
+	for _, record := range records {
+		if record.Type == "TXT" && fn(record) {
+			continue
+		}
+
+		newRecords = append(newRecords, record)
+	}
+
+	return newRecords
 }

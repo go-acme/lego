@@ -58,6 +58,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		token    string
+		ttl      int
 		expected string
 	}{
 		{
@@ -68,12 +69,22 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:     "missing credentials",
 			expected: "mittwald: some credentials information are missing",
 		},
+		{
+			desc:     "invalid TTL",
+			token:    "secret",
+			ttl:      10,
+			expected: "mittwald: invalid TTL, TTL (10) must be greater than 300",
+		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
 			config.Token = test.token
+
+			if test.ttl > 0 {
+				config.TTL = test.ttl
+			}
 
 			p, err := NewDNSProviderConfig(config)
 

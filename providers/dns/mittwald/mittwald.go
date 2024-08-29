@@ -21,14 +21,18 @@ const (
 
 	EnvToken = envNamespace + "TOKEN"
 
+	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+const minTTL = 300
+
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Token              string
+	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HTTPClient         *http.Client
@@ -37,6 +41,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
@@ -78,6 +83,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("mittwald: some credentials information are missing")
 	}
 
+	if config.TTL < minTTL {
+		return nil, fmt.Errorf("mittwald: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
+	}
+
 	return &DNSProvider{
 		config:  config,
 		client:  internal.NewClient(config.Token),
@@ -103,7 +112,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	record := internal.TXTRecord{
 		Settings: internal.Settings{
-			TTL: internal.TTL{Auto: true},
+			TTL: internal.TTL{Seconds: d.config.TTL},
 		},
 		Entries: []string{info.Value},
 	}

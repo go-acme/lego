@@ -1,0 +1,33 @@
+{
+  "status": 200,
+  "status_description": "Request successful",
+  "data": {
+    "domain": "example.com",
+    "records": [
+      {
+        "type": "A",
+        "name": "example.com.",
+        "value": "135.226.123.12",
+        "ttl": 900
+      },
+      {
+        "type": "AAAA",
+        "name": "example.com.",
+        "value": "2009:21d0:322:6100::5:c92b",
+        "ttl": 900
+      },
+      {
+        "type": "MX",
+        "name": "example.com.",
+        "value": "10 mail.example.com.",
+        "ttl": 900
+      },
+      {
+        "type": "TXT",
+        "name": "example.com.",
+        "value": "v=spf1 include:spf.mijn.host ~all",
+        "ttl": 900
+      }
+    ]
+  }
+}

@@ -91,6 +91,7 @@ func allDNSCodes() string {
 		"luadns",
 		"mailinabox",
 		"metaname",
+		"mijnhost",
 		"mydnsjp",
 		"mythicbeasts",
 		"namecheap",
@@ -1790,6 +1791,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/metaname`)
+
+	case "mijnhost":
+		// generated from: providers/dns/mijnhost/mijnhost.toml
+		ew.writeln(`Configuration for mijn.host.`)
+		ew.writeln(`Code:	'mijnhost'`)
+		ew.writeln(`Since:	'v4.18.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "MIJNHOST_API_KEY":	The API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "MIJNHOST_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "MIJNHOST_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "MIJNHOST_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "MIJNHOST_SEQUENCE_INTERVAL":	Time between sequential requests`)
+		ew.writeln(`	- "MIJNHOST_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/mijnhost`)
 
 	case "mydnsjp":
 		// generated from: providers/dns/mydnsjp/mydnsjp.toml

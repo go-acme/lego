@@ -1,0 +1,4 @@
+{
+  "status": 400,
+  "status_description": "Wrong request method"
+}

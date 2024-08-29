@@ -57,7 +57,7 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for mijn.host DNS.
-// MIJN_API_KEY must be passed in the environment variables.
+// MIJNHOST_API_KEY must be passed in the environment variables.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAPIKey)
 	if err != nil {
@@ -134,10 +134,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// mijn.host doesn't support multiple values for a domain,
 	// so we removed existing record for the subdomain.
 	cleanedRecords := filterRecords(records, func(record internal.Record) bool {
-		// TODO(ldez) I don't known if the records returned by the endpoint have the same content as name:
-		// - I use subdomain to create the records
-		// - In the API example the name is the full domain
-		return record.Name == subDomain
+		return record.Name == subDomain || record.Name == dns01.UnFqdn(info.EffectiveFQDN)
 	})
 
 	cleanedRecords = append(cleanedRecords, record)

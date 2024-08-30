@@ -17,6 +17,7 @@ lego --email you@example.com --dns mittwald --domains my.example.org run
     MITTWALD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     MITTWALD_TTL = "The TTL of the TXT record used for the DNS challenge"
     MITTWALD_HTTP_TIMEOUT = "API request timeout"
+    MITTWALD_SEQUENCE_INTERVAL = "Time between sequential requests"
 
 [Links]
   API = "https://api.mittwald.de/v2/docs/"

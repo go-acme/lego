@@ -24,6 +24,7 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
@@ -35,6 +36,7 @@ type Config struct {
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
+	SequenceInterval   time.Duration
 	HTTPClient         *http.Client
 }
 
@@ -43,7 +45,8 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
+		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, 2*time.Minute),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -98,6 +101,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// Sequential All DNS challenges for this provider will be resolved sequentially.
+// Returns the interval between each iteration.
+func (d *DNSProvider) Sequential() time.Duration {
+	return d.config.SequenceInterval
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.

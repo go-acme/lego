@@ -1851,6 +1851,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "MITTWALD_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "MITTWALD_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "MITTWALD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "MITTWALD_SEQUENCE_INTERVAL":	Time between sequential requests`)
 		ew.writeln(`	- "MITTWALD_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

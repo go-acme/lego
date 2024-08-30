@@ -1,5 +1,27 @@
 # Changelog
 
+## [v4.18.0] - 2024-08-30
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for mijn.host
+- **[dnsprovider]** Add DNS provider for Lima-City
+- **[dnsprovider]** Add DNS provider for DirectAdmin
+- **[dnsprovider]** Add DNS provider for Mittwald
+- **[lib,cli]** feat: add option to handle the overall request limit
+- **[lib]** feat: expose certificates pool creation
+
+### Changed
+
+- **[cli]** feat: add LEGO_ISSUER_CERT_PATH to run hook
+- **[dnsprovider]** bluecat: skip deploy
+- **[dnsprovider]** ovh: allow to use ovh.conf file
+- **[dnsprovider]** designate: allow manually overwriting DNS zone
+
+### Fixed
+
+- **[ari]** fix: avoid Int63n panic in ShouldRenewAt()
+
 ## [v4.17.4] - 2024-06-12
 
 ### Fixed

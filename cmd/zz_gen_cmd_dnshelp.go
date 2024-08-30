@@ -93,6 +93,7 @@ func allDNSCodes() string {
 		"mailinabox",
 		"metaname",
 		"mijnhost",
+		"mittwald",
 		"mydnsjp",
 		"mythicbeasts",
 		"namecheap",
@@ -1834,6 +1835,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/mijnhost`)
+
+	case "mittwald":
+		// generated from: providers/dns/mittwald/mittwald.toml
+		ew.writeln(`Configuration for Mittwald.`)
+		ew.writeln(`Code:	'mittwald'`)
+		ew.writeln(`Since:	'v1.48.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "MITTWALD_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "MITTWALD_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "MITTWALD_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "MITTWALD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "MITTWALD_SEQUENCE_INTERVAL":	Time between sequential requests`)
+		ew.writeln(`	- "MITTWALD_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/mittwald`)
 
 	case "mydnsjp":
 		// generated from: providers/dns/mydnsjp/mydnsjp.toml

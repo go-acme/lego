@@ -84,6 +84,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/mailinabox"
 	"github.com/go-acme/lego/v4/providers/dns/metaname"
 	"github.com/go-acme/lego/v4/providers/dns/mijnhost"
+	"github.com/go-acme/lego/v4/providers/dns/mittwald"
 	"github.com/go-acme/lego/v4/providers/dns/mydnsjp"
 	"github.com/go-acme/lego/v4/providers/dns/mythicbeasts"
 	"github.com/go-acme/lego/v4/providers/dns/namecheap"
@@ -303,6 +304,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return metaname.NewDNSProvider()
 	case "mijnhost":
 		return mijnhost.NewDNSProvider()
+	case "mittwald":
+		return mittwald.NewDNSProvider()
 	case "mydnsjp":
 		return mydnsjp.NewDNSProvider()
 	case "mythicbeasts":

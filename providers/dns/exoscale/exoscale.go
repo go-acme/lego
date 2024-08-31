@@ -159,16 +159,18 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return err
 	}
 
-	if recordID != "" {
-		op, err := d.client.DeleteDNSDomainRecord(ctx, zone.ID, recordID)
-		if err != nil {
-			return fmt.Errorf("exoscale: error while deleting DNS record: %w", err)
-		}
+	if recordID == "" {
+		return nil
+	}
 
-		_, err = d.client.Wait(ctx, op, egoscale.OperationStateSuccess)
-		if err != nil {
-			return fmt.Errorf("exoscale: error while creating DNS record: %w", err)
-		}
+	op, err := d.client.DeleteDNSDomainRecord(ctx, zone.ID, recordID)
+	if err != nil {
+		return fmt.Errorf("exoscale: error while deleting DNS record: %w", err)
+	}
+
+	_, err = d.client.Wait(ctx, op, egoscale.OperationStateSuccess)
+	if err != nil {
+		return fmt.Errorf("exoscale: error while creating DNS record: %w", err)
 	}
 
 	return nil

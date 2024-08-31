@@ -49,7 +49,6 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `EXOSCALE_API_ZONE` | API zone |
 | `EXOSCALE_ENDPOINT` | API endpoint URL |
 | `EXOSCALE_HTTP_TIMEOUT` | API request timeout |
 | `EXOSCALE_POLLING_INTERVAL` | Time between DNS propagation check |

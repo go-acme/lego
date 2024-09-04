@@ -63,7 +63,7 @@ docker run goacme/lego -h
   pkg install lego
   ```
 
-- [OpenBSD (Ports)](https://openports.pl/path/security/lego) (official):
+- [OpenBSD (Ports)](https://openports.pl/path/security/lego) (unofficial):
 
   ```bash
   pkg_add lego

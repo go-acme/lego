@@ -46,6 +46,17 @@ The environment variable names can be suffixed by `_FILE` to reference a file in
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
+## Additional Configuration
+
+| Environment Variable Name | Description |
+|--------------------------------|-------------|
+| `HURRICANE_HTTP_TIMEOUT` | API request timeout |
+| `HURRICANE_POLLING_INTERVAL` | Time between DNS propagation checks |
+| `HURRICANE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation; defaults to 300s (5 minutes) |
+| `HURRICANE_SEQUENCE_INTERVAL` | Time between sequential requests |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 Before using lego to request a certificate for a given domain or wildcard (such as `my.example.org` or `*.my.example.org`),
 create a TXT record named `_acme-challenge.my.example.org`, and enable dynamic updates on it.

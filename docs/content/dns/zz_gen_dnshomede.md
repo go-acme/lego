@@ -46,6 +46,17 @@ The environment variable names can be suffixed by `_FILE` to reference a file in
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
+## Additional Configuration
+
+| Environment Variable Name | Description |
+|--------------------------------|-------------|
+| `DNSHOMEDE_HTTP_TIMEOUT` | API request timeout |
+| `DNSHOMEDE_POLLING_INTERVAL` | Time between DNS propagation checks |
+| `DNSHOMEDE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation; defaults to 300s (5 minutes) |
+| `DNSHOMEDE_SEQUENCE_INTERVAL` | Time between sequential requests |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 

@@ -771,6 +771,12 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "DNSHOMEDE_CREDENTIALS":	Comma-separated list of domain:password credential pairs`)
 		ew.writeln()
 
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DNSHOMEDE_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "DNSHOMEDE_POLLING_INTERVAL":	Time between DNS propagation checks`)
+		ew.writeln(`	- "DNSHOMEDE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation; defaults to 300s (5 minutes)`)
+		ew.writeln(`	- "DNSHOMEDE_SEQUENCE_INTERVAL":	Time between sequential requests`)
+
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dnshomede`)
 
@@ -1367,6 +1373,12 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "HURRICANE_TOKENS":	TXT record names and tokens`)
 		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "HURRICANE_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "HURRICANE_POLLING_INTERVAL":	Time between DNS propagation checks`)
+		ew.writeln(`	- "HURRICANE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation; defaults to 300s (5 minutes)`)
+		ew.writeln(`	- "HURRICANE_SEQUENCE_INTERVAL":	Time between sequential requests`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hurricane`)

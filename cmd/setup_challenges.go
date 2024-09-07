@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"net"
 	"strings"
 	"time"
@@ -38,7 +39,10 @@ func setupChallenges(ctx *cli.Context, client *lego.Client) {
 	}
 
 	if ctx.IsSet("dns") {
-		setupDNS(ctx, client)
+		err := setupDNS(ctx, client)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -113,22 +117,40 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 	}
 }
 
-func setupDNS(ctx *cli.Context, client *lego.Client) {
+func setupDNS(ctx *cli.Context, client *lego.Client) error {
+	if ctx.IsSet("dns.disable-cp") && ctx.Bool("dns.disable-cp") && ctx.IsSet("dns.propagation-wait") {
+		return errors.New("'dns.disable-cp' and 'dns.propagation-wait' are mutually exclusive")
+	}
+
+	wait := ctx.Duration("dns.propagation-wait")
+	if wait < 0 {
+		return errors.New("'dns.propagation-wait' cannot be negative")
+	}
+
 	provider, err := dns.NewDNSChallengeProviderByName(ctx.String("dns"))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	servers := ctx.StringSlice("dns.resolvers")
+
 	err = client.Challenge.SetDNS01Provider(provider,
 		dns01.CondOption(len(servers) > 0,
 			dns01.AddRecursiveNameservers(dns01.ParseNameservers(ctx.StringSlice("dns.resolvers")))),
+
 		dns01.CondOption(ctx.Bool("dns.disable-cp"),
 			dns01.DisableCompletePropagationRequirement()),
+
+		dns01.CondOption(ctx.IsSet("dns.propagation-wait"), dns01.WrapPreCheck(
+			func(domain, fqdn, value string, check dns01.PreCheckFunc) (bool, error) {
+				time.Sleep(wait)
+				return true, nil
+			},
+		)),
+
 		dns01.CondOption(ctx.IsSet("dns-timeout"),
 			dns01.AddDNSTimeout(time.Duration(ctx.Int("dns-timeout"))*time.Second)),
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
+
+	return err
 }

@@ -113,6 +113,10 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Name:  "dns.disable-cp",
 			Usage: "By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.",
 		},
+		&cli.DurationFlag{
+			Name:  "dns.propagation-wait",
+			Usage: "By setting this flag, disables all the propagation checks and uses a wait duration instead.",
+		},
 		&cli.StringSliceFlag{
 			Name: "dns.resolvers",
 			Usage: "Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination." +

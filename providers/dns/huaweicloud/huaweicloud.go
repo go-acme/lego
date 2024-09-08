@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/platform/wait"
 	hwauthbasic "github.com/huaweicloud/huaweicloud-sdk-go-v3/core/auth/basic"
 	hwconfig "github.com/huaweicloud/huaweicloud-sdk-go-v3/core/config"
 	hwdns "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/dns/v2"
@@ -132,27 +134,83 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("huaweicloud: %w", err)
 	}
 
-	request := &hwmodel.CreateRecordSetRequest{
+	records, err := d.client.ListRecordSetsByZone(&hwmodel.ListRecordSetsByZoneRequest{
 		ZoneId: zoneID,
-		Body: &hwmodel.CreateRecordSetRequestBody{
-			Name:        info.EffectiveFQDN,
-			Description: pointer("Added TXT record for ACME dns-01 challenge using lego client"),
-			Type:        "TXT",
-			Ttl:         pointer(d.config.TTL),
-			Records:     []string{strconv.Quote(info.Value)},
-		},
+		Name:   pointer(info.EffectiveFQDN),
+	})
+	if err != nil {
+		return fmt.Errorf("huaweicloud: record list: unable to get record %s for zone %s: %w", info.EffectiveFQDN, domain, err)
 	}
 
-	resp, err := d.client.CreateRecordSet(request)
-	if err != nil {
-		return fmt.Errorf("huaweicloud: create record: %w", err)
+	var existingRecordSet *hwmodel.ListRecordSets
+
+	var recordID string
+	for _, record := range deref(records.Recordsets) {
+		if deref(record.Type) == "TXT" && deref(record.Name) == info.EffectiveFQDN {
+			existingRecordSet = &record
+		}
+	}
+
+	value := strconv.Quote(info.Value)
+
+	var recordSetID string
+
+	if existingRecordSet == nil {
+		request := &hwmodel.CreateRecordSetRequest{
+			ZoneId: zoneID,
+			Body: &hwmodel.CreateRecordSetRequestBody{
+				Name:        info.EffectiveFQDN,
+				Description: pointer("Added TXT record for ACME dns-01 challenge using lego client"),
+				Type:        "TXT",
+				Ttl:         pointer(d.config.TTL),
+				Records:     []string{value},
+			},
+		}
+
+		resp, err := d.client.CreateRecordSet(request)
+		if err != nil {
+			return fmt.Errorf("huaweicloud: create record set: %w", err)
+		}
+
+		recordSetID = deref(resp.Id)
+	} else {
+		newRecords := append(deref(existingRecordSet.Records), value)
+
+		updateRequest := &hwmodel.UpdateRecordSetRequest{
+			ZoneId:      zoneID,
+			RecordsetId: recordID,
+			Body: &hwmodel.UpdateRecordSetReq{
+				Name:        existingRecordSet.Name,
+				Description: existingRecordSet.Description,
+				Type:        existingRecordSet.Type,
+				Ttl:         existingRecordSet.Ttl,
+				Records:     &newRecords,
+			},
+		}
+
+		resp, err := d.client.UpdateRecordSet(updateRequest)
+		if err != nil {
+			return fmt.Errorf("huaweicloud: update record set: %w", err)
+		}
+
+		recordSetID = deref(resp.Id)
 	}
 
 	d.recordIDsMu.Lock()
-	d.recordIDs[token] = deref(resp.Id)
+	d.recordIDs[token] = recordSetID
 	d.recordIDsMu.Unlock()
 
-	return nil
+	return wait.For("record set sync on "+domain, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
+		rs, err := d.client.ShowRecordSet(&hwmodel.ShowRecordSetRequest{
+			ZoneId:      zoneID,
+			RecordsetId: recordSetID,
+		})
+		if err != nil {
+			return false, err
+		}
+
+		return !strings.HasSuffix(deref(rs.Status), "PENDING_"), nil
+	})
 }
 
 // CleanUp removes the TXT record matching the specified parameters.

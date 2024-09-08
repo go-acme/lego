@@ -4,8 +4,8 @@ package huaweicloud
 import (
 	"errors"
 	"fmt"
-	"slices"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -57,6 +57,9 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config *Config
 	client *hwdns.DnsClient
+
+	recordIDs   map[string]string
+	recordIDsMu sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Huawei Cloud.
@@ -140,10 +143,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		},
 	}
 
-	_, err = d.client.CreateRecordSet(request)
+	resp, err := d.client.CreateRecordSet(request)
 	if err != nil {
 		return fmt.Errorf("huaweicloud: create record: %w", err)
 	}
+
+	d.recordIDsMu.Lock()
+	d.recordIDs[token] = deref(resp.Id)
+	d.recordIDsMu.Unlock()
 
 	return nil
 }
@@ -151,6 +158,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	// gets the record's unique ID from when we created it
+	d.recordIDsMu.Lock()
+	recordID, ok := d.recordIDs[token]
+	d.recordIDsMu.Unlock()
+	if !ok {
+		return fmt.Errorf("huaweicloud: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
+	}
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
@@ -160,29 +175,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	zoneID, err := d.getZoneID(authZone)
 	if err != nil {
 		return fmt.Errorf("huaweicloud: %w", err)
-	}
-
-	records, err := d.client.ListRecordSetsByZone(&hwmodel.ListRecordSetsByZoneRequest{
-		ZoneId: zoneID,
-		Name:   pointer(info.EffectiveFQDN),
-	})
-	if err != nil {
-		return fmt.Errorf("huaweicloud: record list: unable to get record %s for zone %s: %w", info.EffectiveFQDN, domain, err)
-	}
-
-	recordSets := deref(records.Recordsets)
-
-	var recordID string
-	for _, record := range recordSets {
-		if deref(record.Type) == "TXT" &&
-			deref(record.Name) == info.EffectiveFQDN &&
-			slices.Contains(deref(record.Records), strconv.Quote(info.Value)) {
-			recordID = deref(recordSets[0].Id)
-		}
-	}
-
-	if recordID == "" {
-		return errors.New("huaweicloud: missing record ID")
 	}
 
 	request := &hwmodel.DeleteRecordSetRequest{

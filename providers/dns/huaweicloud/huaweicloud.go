@@ -134,83 +134,31 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("huaweicloud: %w", err)
 	}
 
-	records, err := d.client.ListRecordSetsByZone(&hwmodel.ListRecordSetsByZoneRequest{
-		ZoneId: zoneID,
-		Name:   pointer(info.EffectiveFQDN),
-	})
+	recordSetID, err := d.getOrCreateRecordSetID(domain, zoneID, info)
 	if err != nil {
-		return fmt.Errorf("huaweicloud: record list: unable to get record %s for zone %s: %w", info.EffectiveFQDN, domain, err)
-	}
-
-	var existingRecordSet *hwmodel.ListRecordSets
-
-	var recordID string
-	for _, record := range deref(records.Recordsets) {
-		if deref(record.Type) == "TXT" && deref(record.Name) == info.EffectiveFQDN {
-			existingRecordSet = &record
-		}
-	}
-
-	value := strconv.Quote(info.Value)
-
-	var recordSetID string
-
-	if existingRecordSet == nil {
-		request := &hwmodel.CreateRecordSetRequest{
-			ZoneId: zoneID,
-			Body: &hwmodel.CreateRecordSetRequestBody{
-				Name:        info.EffectiveFQDN,
-				Description: pointer("Added TXT record for ACME dns-01 challenge using lego client"),
-				Type:        "TXT",
-				Ttl:         pointer(d.config.TTL),
-				Records:     []string{value},
-			},
-		}
-
-		resp, err := d.client.CreateRecordSet(request)
-		if err != nil {
-			return fmt.Errorf("huaweicloud: create record set: %w", err)
-		}
-
-		recordSetID = deref(resp.Id)
-	} else {
-		newRecords := append(deref(existingRecordSet.Records), value)
-
-		updateRequest := &hwmodel.UpdateRecordSetRequest{
-			ZoneId:      zoneID,
-			RecordsetId: recordID,
-			Body: &hwmodel.UpdateRecordSetReq{
-				Name:        existingRecordSet.Name,
-				Description: existingRecordSet.Description,
-				Type:        existingRecordSet.Type,
-				Ttl:         existingRecordSet.Ttl,
-				Records:     &newRecords,
-			},
-		}
-
-		resp, err := d.client.UpdateRecordSet(updateRequest)
-		if err != nil {
-			return fmt.Errorf("huaweicloud: update record set: %w", err)
-		}
-
-		recordSetID = deref(resp.Id)
+		return fmt.Errorf("huaweicloud: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
 	d.recordIDs[token] = recordSetID
 	d.recordIDsMu.Unlock()
 
-	return wait.For("record set sync on "+domain, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
-		rs, err := d.client.ShowRecordSet(&hwmodel.ShowRecordSetRequest{
+	err = wait.For("record set sync on "+domain, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
+		rs, errShow := d.client.ShowRecordSet(&hwmodel.ShowRecordSetRequest{
 			ZoneId:      zoneID,
 			RecordsetId: recordSetID,
 		})
-		if err != nil {
-			return false, err
+		if errShow != nil {
+			return false, fmt.Errorf("show record set: %w", errShow)
 		}
 
 		return !strings.HasSuffix(deref(rs.Status), "PENDING_"), nil
 	})
+	if err != nil {
+		return fmt.Errorf("huaweicloud: %w", err)
+	}
+
+	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
@@ -252,6 +200,68 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dns01.ChallengeInfo) (string, error) {
+	records, err := d.client.ListRecordSetsByZone(&hwmodel.ListRecordSetsByZoneRequest{
+		ZoneId: zoneID,
+		Name:   pointer(info.EffectiveFQDN),
+	})
+	if err != nil {
+		return "", fmt.Errorf("record list: unable to get record %s for zone %s: %w", info.EffectiveFQDN, domain, err)
+	}
+
+	var existingRecordSet *hwmodel.ListRecordSets
+
+	var recordID string
+	for _, record := range deref(records.Recordsets) {
+		if deref(record.Type) == "TXT" && deref(record.Name) == info.EffectiveFQDN {
+			existingRecordSet = &record
+		}
+	}
+
+	value := strconv.Quote(info.Value)
+
+	if existingRecordSet == nil {
+		request := &hwmodel.CreateRecordSetRequest{
+			ZoneId: zoneID,
+			Body: &hwmodel.CreateRecordSetRequestBody{
+				Name:        info.EffectiveFQDN,
+				Description: pointer("Added TXT record for ACME dns-01 challenge using lego client"),
+				Type:        "TXT",
+				Ttl:         pointer(d.config.TTL),
+				Records:     []string{value},
+			},
+		}
+
+		resp, errCreate := d.client.CreateRecordSet(request)
+		if errCreate != nil {
+			return "", fmt.Errorf("create record set: %w", errCreate)
+		}
+
+		return deref(resp.Id), nil
+	}
+
+	newRecords := append(deref(existingRecordSet.Records), value)
+
+	updateRequest := &hwmodel.UpdateRecordSetRequest{
+		ZoneId:      zoneID,
+		RecordsetId: recordID,
+		Body: &hwmodel.UpdateRecordSetReq{
+			Name:        existingRecordSet.Name,
+			Description: existingRecordSet.Description,
+			Type:        existingRecordSet.Type,
+			Ttl:         existingRecordSet.Ttl,
+			Records:     &newRecords,
+		},
+	}
+
+	resp, err := d.client.UpdateRecordSet(updateRequest)
+	if err != nil {
+		return "", fmt.Errorf("update record set: %w", err)
+	}
+
+	return deref(resp.Id), nil
 }
 
 func (d *DNSProvider) getZoneID(authZone string) (string, error) {

@@ -2,6 +2,7 @@ package dns
 
 import (
 	"fmt"
+	"github.com/go-acme/lego/v4/providers/dns/huaweicloud"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -256,6 +257,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return httpnet.NewDNSProvider()
 	case "httpreq":
 		return httpreq.NewDNSProvider()
+	case "huaweicloud":
+		return huaweicloud.NewDNSProvider()
 	case "hurricane":
 		return hurricane.NewDNSProvider()
 	case "hyperone":

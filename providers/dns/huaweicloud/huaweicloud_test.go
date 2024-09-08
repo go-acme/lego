@@ -5,12 +5,13 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	hwregion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/dns/v2/region"
 	"github.com/stretchr/testify/require"
 )
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvAccessKeyId, EnvSecretAccessKey, EnvRegion).
+var envTest = tester.NewEnvTest(EnvAccessKeyID, EnvSecretAccessKey, EnvRegion).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -22,42 +23,46 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAccessKeyId:     "123",
+				EnvAccessKeyID:     "123",
 				EnvSecretAccessKey: "456",
-				EnvRegion:          "cn-beijing",
+				EnvRegion:          hwregion.CN_EAST_2.Id,
 			},
+			// The "success" cannot be tested because there is an API call that require a valid authentication.
+			// Also, there is a bug during the error message creation:
+			// https://github.com/huaweicloud/huaweicloud-sdk-go-v3/pull/81
+			expected: "huaweicloud: client build: runtime error: invalid memory address or nil pointer dereference",
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				EnvAccessKeyId:     "",
+				EnvAccessKeyID:     "",
 				EnvSecretAccessKey: "",
 				EnvRegion:          "",
 			},
-			expected: "huaweicloud: some credentials information are missing: HUAWEICLOUD_ACCESS_KEY_ID, HUAWEICLOUD_SECRET_ACCESS_KEY, HUAWEICLOUD_REGION",
+			expected: "huaweicloud: some credentials information are missing: HUAWEICLOUD_ACCESS_KEY_ID,HUAWEICLOUD_SECRET_ACCESS_KEY,HUAWEICLOUD_REGION",
 		},
 		{
 			desc: "missing access id",
 			envVars: map[string]string{
-				EnvAccessKeyId:     "",
+				EnvAccessKeyID:     "",
 				EnvSecretAccessKey: "456",
-				EnvRegion:          "cn-beijing",
+				EnvRegion:          hwregion.CN_EAST_2.Id,
 			},
 			expected: "huaweicloud: some credentials information are missing: HUAWEICLOUD_ACCESS_KEY_ID",
 		},
 		{
 			desc: "missing secret key",
 			envVars: map[string]string{
-				EnvAccessKeyId:     "123",
+				EnvAccessKeyID:     "123",
 				EnvSecretAccessKey: "",
-				EnvRegion:          "cn-beijing",
+				EnvRegion:          hwregion.CN_EAST_2.Id,
 			},
 			expected: "huaweicloud: some credentials information are missing: HUAWEICLOUD_SECRET_ACCESS_KEY",
 		},
 		{
 			desc: "missing secret key",
 			envVars: map[string]string{
-				EnvAccessKeyId:     "123",
+				EnvAccessKeyID:     "123",
 				EnvSecretAccessKey: "456",
 				EnvRegion:          "",
 			},
@@ -98,7 +103,11 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:            "success",
 			accessKeyID:     "123",
 			secretAccessKey: "456",
-			region:          "cn-beijing",
+			region:          hwregion.CN_EAST_2.Id,
+			// The "success" cannot be tested because there is an API call that require a valid authentication.
+			// Also, there is a bug during the error message creation:
+			// https://github.com/huaweicloud/huaweicloud-sdk-go-v3/pull/81
+			expected: "huaweicloud: client build: runtime error: invalid memory address or nil pointer dereference",
 		},
 		{
 			desc:     "missing credentials",
@@ -107,13 +116,13 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc:            "missing secret id",
 			secretAccessKey: "456",
-			region:          "cn-beijing",
+			region:          hwregion.CN_EAST_2.Id,
 			expected:        "huaweicloud: credentials missing",
 		},
 		{
 			desc:        "missing secret key",
 			accessKeyID: "123",
-			region:      "cn-beijing",
+			region:      hwregion.CN_EAST_2.Id,
 			expected:    "huaweicloud: credentials missing",
 		},
 		{
@@ -127,7 +136,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.AccessKeyId = test.accessKeyID
+			config.AccessKeyID = test.accessKeyID
 			config.SecretAccessKey = test.secretAccessKey
 			config.Region = test.region
 

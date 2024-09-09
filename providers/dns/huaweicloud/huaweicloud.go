@@ -117,7 +117,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("huaweicloud: client build: %w", err)
 	}
 
-	return &DNSProvider{config: config, client: hwdns.NewDnsClient(client)}, nil
+	return &DNSProvider{config: config, client: hwdns.NewDnsClient(client), recordIDs: map[string]string{}}, nil
 }
 
 // Present creates a TXT record using the specified parameters.

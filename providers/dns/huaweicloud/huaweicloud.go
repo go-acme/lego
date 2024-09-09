@@ -216,6 +216,7 @@ func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dns01.C
 	var recordID string
 	for _, record := range deref(records.Recordsets) {
 		if deref(record.Type) == "TXT" && deref(record.Name) == info.EffectiveFQDN {
+			recordID = *record.Id
 			existingRecordSet = &record
 		}
 	}

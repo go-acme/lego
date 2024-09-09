@@ -64,7 +64,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://support.huaweicloud.com/api-dns/zh-cn_topic_0132421999.html)
+- [API documentation](https://console-intl.huaweicloud.com/apiexplorer/#/openapi/DNS/doc?locale=en-us)
 - [Go client](https://github.com/huaweicloud/huaweicloud-sdk-go-v3)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

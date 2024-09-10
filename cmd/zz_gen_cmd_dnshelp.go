@@ -70,6 +70,7 @@ func allDNSCodes() string {
 		"hosttech",
 		"httpnet",
 		"httpreq",
+		"huaweicloud",
 		"hurricane",
 		"hyperone",
 		"ibmcloud",
@@ -1361,6 +1362,28 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/httpreq`)
+
+	case "huaweicloud":
+		// generated from: providers/dns/huaweicloud/huaweicloud.toml
+		ew.writeln(`Configuration for Huawei Cloud.`)
+		ew.writeln(`Code:	'huaweicloud'`)
+		ew.writeln(`Since:	'v4.19'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "HUAWEICLOUD_ACCESS_KEY_ID":	Access key ID`)
+		ew.writeln(`	- "HUAWEICLOUD_REGION":	Region`)
+		ew.writeln(`	- "HUAWEICLOUD_SECRET_ACCESS_KEY":	Access Key secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "HUAWEICLOUD_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "HUAWEICLOUD_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "HUAWEICLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "HUAWEICLOUD_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/huaweicloud`)
 
 	case "hurricane":
 		// generated from: providers/dns/hurricane/hurricane.toml

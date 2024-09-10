@@ -107,6 +107,24 @@ func TestClient_UpdateTxtRecords_errors(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestClient_DeleteTxtRecords(t *testing.T) {
+	client, mux := setupTest(t)
+
+	mux.HandleFunc("/v1/domains/example.com/records/TXT/foo", testHandler(http.MethodDelete, http.StatusNoContent, ""))
+
+	err := client.DeleteTxtRecords(context.Background(), "example.com", "foo")
+	require.NoError(t, err)
+}
+
+func TestClient_DeleteTxtRecords_errors(t *testing.T) {
+	client, mux := setupTest(t)
+
+	mux.HandleFunc("/v1/domains/example.com/records/TXT/foo", testHandler(http.MethodDelete, http.StatusConflict, "errors.json"))
+
+	err := client.DeleteTxtRecords(context.Background(), "example.com", "foo")
+	require.Error(t, err)
+}
+
 func testHandler(method string, statusCode int, filename string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != method {

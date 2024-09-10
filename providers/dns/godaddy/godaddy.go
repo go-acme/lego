@@ -165,15 +165,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	ctx := context.Background()
 
-	records, err := d.client.GetRecords(ctx, authZone, "TXT", subDomain)
-	if err != nil {
-		return fmt.Errorf("godaddy: failed to get TXT records: %w", err)
-	}
-
-	if len(records) == 0 {
-		return nil
-	}
-
 	existingRecords, err := d.client.GetRecords(ctx, authZone, "TXT", subDomain)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get all TXT records: %w", err)

@@ -104,10 +104,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("huaweicloud: safe region: %w", err)
 	}
 
-	if region == nil {
-		return nil, fmt.Errorf("huaweicloud: region not found: %s", config.Region)
-	}
-
 	client, err := hwdns.DnsClientBuilder().
 		WithHttpConfig(hwconfig.DefaultHttpConfig().WithTimeout(config.HTTPTimeout)).
 		WithRegion(region).
@@ -117,7 +113,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("huaweicloud: client build: %w", err)
 	}
 
-	return &DNSProvider{config: config, client: hwdns.NewDnsClient(client), recordIDs: map[string]string{}}, nil
+	return &DNSProvider{
+		config:    config,
+		client:    hwdns.NewDnsClient(client),
+		recordIDs: map[string]string{},
+	}, nil
 }
 
 // Present creates a TXT record using the specified parameters.
@@ -213,10 +213,8 @@ func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dns01.C
 
 	var existingRecordSet *hwmodel.ListRecordSets
 
-	var recordID string
 	for _, record := range deref(records.Recordsets) {
 		if deref(record.Type) == "TXT" && deref(record.Name) == info.EffectiveFQDN {
-			recordID = *record.Id
 			existingRecordSet = &record
 		}
 	}
@@ -243,17 +241,15 @@ func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dns01.C
 		return deref(resp.Id), nil
 	}
 
-	newRecords := append(deref(existingRecordSet.Records), value)
-
 	updateRequest := &hwmodel.UpdateRecordSetRequest{
 		ZoneId:      zoneID,
-		RecordsetId: recordID,
+		RecordsetId: deref(existingRecordSet.Id),
 		Body: &hwmodel.UpdateRecordSetReq{
 			Name:        existingRecordSet.Name,
 			Description: existingRecordSet.Description,
 			Type:        existingRecordSet.Type,
 			Ttl:         existingRecordSet.Ttl,
-			Records:     &newRecords,
+			Records:     pointer(append(deref(existingRecordSet.Records), value)),
 		},
 	}
 
@@ -280,7 +276,7 @@ func (d *DNSProvider) getZoneID(authZone string) (string, error) {
 	return "", fmt.Errorf("zone %q not found", authZone)
 }
 
-func pointer[T string | int | int32 | int64](v T) *T { return &v }
+func pointer[T any](v T) *T { return &v }
 
 func deref[T any](v *T) T {
 	if v == nil {

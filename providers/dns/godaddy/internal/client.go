@@ -37,6 +37,8 @@ func NewClient(apiKey string, apiSecret string) *Client {
 	}
 }
 
+// GetRecords retrieves DNS Records for the specified Domain.
+// https://developer.godaddy.com/doc/endpoint/domains#/v1/recordGet
 func (c *Client) GetRecords(ctx context.Context, domainZone, rType, recordName string) ([]DNSRecord, error) {
 	endpoint := c.baseURL.JoinPath("v1", "domains", domainZone, "records", rType, recordName)
 
@@ -54,10 +56,25 @@ func (c *Client) GetRecords(ctx context.Context, domainZone, rType, recordName s
 	return records, nil
 }
 
+// UpdateTxtRecords replaces all DNS Records for the specified Domain with the specified Type.
+// https://developer.godaddy.com/doc/endpoint/domains#/v1/recordReplaceType
 func (c *Client) UpdateTxtRecords(ctx context.Context, records []DNSRecord, domainZone, recordName string) error {
 	endpoint := c.baseURL.JoinPath("v1", "domains", domainZone, "records", "TXT", recordName)
 
 	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, records)
+	if err != nil {
+		return err
+	}
+
+	return c.do(req, nil)
+}
+
+// DeleteTxtRecords deletes all DNS Records for the specified Domain with the specified Type and Name.
+// https://developer.godaddy.com/doc/endpoint/domains#/v1/recordDeleteTypeName
+func (c *Client) DeleteTxtRecords(ctx context.Context, domainZone, recordName string) error {
+	endpoint := c.baseURL.JoinPath("v1", "domains", domainZone, "records", "TXT", recordName)
+
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -75,8 +92,8 @@ func (c *Client) do(req *http.Request, result any) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode != http.StatusOK {
-		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	if resp.StatusCode/100 != 2 {
+		return parseError(req, resp)
 	}
 
 	if result == nil {
@@ -118,4 +135,16 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 	}
 
 	return req, nil
+}
+
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	var errAPI APIError
+	err := json.Unmarshal(raw, &errAPI)
+	if err != nil {
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
+	}
+
+	return fmt.Errorf("[status code: %d] %w", resp.StatusCode, &errAPI)
 }

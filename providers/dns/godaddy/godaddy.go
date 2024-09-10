@@ -119,13 +119,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	ctx := context.Background()
 
-	records, err := d.client.GetRecords(ctx, authZone, "TXT", subDomain)
+	existingRecords, err := d.client.GetRecords(ctx, authZone, "TXT", subDomain)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get TXT records: %w", err)
 	}
 
 	var newRecords []internal.DNSRecord
-	for _, record := range records {
+	for _, record := range existingRecords {
 		if record.Data != "" {
 			newRecords = append(newRecords, record)
 		}
@@ -165,34 +165,28 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	ctx := context.Background()
 
-	records, err := d.client.GetRecords(ctx, authZone, "TXT", subDomain)
-	if err != nil {
-		return fmt.Errorf("godaddy: failed to get TXT records: %w", err)
-	}
-
-	if len(records) == 0 {
-		return nil
-	}
-
-	allTxtRecords, err := d.client.GetRecords(ctx, authZone, "TXT", "")
+	existingRecords, err := d.client.GetRecords(ctx, authZone, "TXT", subDomain)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get all TXT records: %w", err)
 	}
 
-	var recordsKeep []internal.DNSRecord
-	for _, record := range allTxtRecords {
+	var recordsToKeep []internal.DNSRecord
+	for _, record := range existingRecords {
 		if record.Data != info.Value && record.Data != "" {
-			recordsKeep = append(recordsKeep, record)
+			recordsToKeep = append(recordsToKeep, record)
 		}
 	}
 
-	// GoDaddy API don't provide a way to delete a record, an "empty" record must be added.
-	if len(recordsKeep) == 0 {
-		emptyRecord := internal.DNSRecord{Name: "empty", Data: ""}
-		recordsKeep = append(recordsKeep, emptyRecord)
+	if len(recordsToKeep) == 0 {
+		err = d.client.DeleteTxtRecords(ctx, authZone, subDomain)
+		if err != nil {
+			return fmt.Errorf("godaddy: failed to delete TXT record: %w", err)
+		}
+
+		return nil
 	}
 
-	err = d.client.UpdateTxtRecords(ctx, recordsKeep, authZone, "")
+	err = d.client.UpdateTxtRecords(ctx, recordsToKeep, authZone, subDomain)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to remove TXT record: %w", err)
 	}

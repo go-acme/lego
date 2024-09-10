@@ -1,0 +1,12 @@
+{
+  "code": "ACCESS_DENIED",
+  "fields": [
+    {
+      "code": "test",
+      "message": "content",
+      "path": "/foo",
+      "pathRelated": "/bar"
+    }
+  ],
+  "message": "Authenticated user is not allowed access"
+}

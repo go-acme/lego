@@ -37,6 +37,8 @@ func NewClient(apiKey string, apiSecret string) *Client {
 	}
 }
 
+// GetRecords retrieves DNS Records for the specified Domain.
+// https://developer.godaddy.com/doc/endpoint/domains#/v1/recordGet
 func (c *Client) GetRecords(ctx context.Context, domainZone, rType, recordName string) ([]DNSRecord, error) {
 	endpoint := c.baseURL.JoinPath("v1", "domains", domainZone, "records", rType, recordName)
 
@@ -54,10 +56,25 @@ func (c *Client) GetRecords(ctx context.Context, domainZone, rType, recordName s
 	return records, nil
 }
 
+// UpdateTxtRecords replaces all DNS Records for the specified Domain with the specified Type.
+// https://developer.godaddy.com/doc/endpoint/domains#/v1/recordReplaceType
 func (c *Client) UpdateTxtRecords(ctx context.Context, records []DNSRecord, domainZone, recordName string) error {
 	endpoint := c.baseURL.JoinPath("v1", "domains", domainZone, "records", "TXT", recordName)
 
 	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, records)
+	if err != nil {
+		return err
+	}
+
+	return c.do(req, nil)
+}
+
+// DeleteTxtRecords deletes all DNS Records for the specified Domain with the specified Type and Name.
+// https://developer.godaddy.com/doc/endpoint/domains#/v1/recordDeleteTypeName
+func (c *Client) DeleteTxtRecords(ctx context.Context, domainZone, recordName string) error {
+	endpoint := c.baseURL.JoinPath("v1", "domains", domainZone, "records", "TXT", recordName)
+
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}

@@ -186,10 +186,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 	}
 
-	// GoDaddy API don't provide a way to delete a record, an "empty" record must be added.
 	if len(recordsToKeep) == 0 {
-		emptyRecord := internal.DNSRecord{Name: "empty", Data: ""}
-		recordsToKeep = append(recordsToKeep, emptyRecord)
+		err = d.client.DeleteTxtRecords(ctx, authZone, subDomain)
+		if err != nil {
+			return fmt.Errorf("godaddy: failed to delete TXT record: %w", err)
+		}
+
+		return nil
 	}
 
 	err = d.client.UpdateTxtRecords(ctx, recordsToKeep, authZone, subDomain)

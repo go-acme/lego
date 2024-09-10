@@ -174,7 +174,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	allTxtRecords, err := d.client.GetRecords(ctx, authZone, "TXT", "")
+	allTxtRecords, err := d.client.GetRecords(ctx, authZone, "TXT", subDomain)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get all TXT records: %w", err)
 	}
@@ -192,7 +192,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		recordsKeep = append(recordsKeep, emptyRecord)
 	}
 
-	err = d.client.UpdateTxtRecords(ctx, recordsKeep, authZone, "")
+	err = d.client.UpdateTxtRecords(ctx, recordsKeep, authZone, subDomain)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to remove TXT record: %w", err)
 	}

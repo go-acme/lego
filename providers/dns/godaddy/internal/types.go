@@ -40,13 +40,17 @@ type Field struct {
 }
 
 func (f Field) String() string {
-	msg := fmt.Sprintf("%s: %s", f.Code, f.Message)
+	msg := fmt.Sprintf("[%s: %s", f.Code, f.Message)
+
 	if f.Path != "" {
 		msg += fmt.Sprintf(" (path=%s)", f.Path)
 	}
+
 	if f.PathRelated != "" {
 		msg += fmt.Sprintf(" (pathRelated=%s)", f.PathRelated)
 	}
+
+	msg += "]"
 
 	return msg
 }

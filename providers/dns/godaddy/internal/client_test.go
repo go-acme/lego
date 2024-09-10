@@ -122,7 +122,7 @@ func TestClient_DeleteTxtRecords_errors(t *testing.T) {
 	mux.HandleFunc("/v1/domains/example.com/records/TXT/foo", testHandler(http.MethodDelete, http.StatusConflict, "error-extended.json"))
 
 	err := client.DeleteTxtRecords(context.Background(), "example.com", "foo")
-	require.EqualError(t, err, "[status code: 409] ACCESS_DENIED: Authenticated user is not allowed access test: content (path=/foo) (pathRelated=/bar)")
+	require.EqualError(t, err, "[status code: 409] ACCESS_DENIED: Authenticated user is not allowed access [test: content (path=/foo) (pathRelated=/bar)]")
 }
 
 func testHandler(method string, statusCode int, filename string) http.HandlerFunc {

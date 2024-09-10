@@ -92,7 +92,7 @@ func (c *Client) do(req *http.Request, result any) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode/100 != 2 {
 		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 

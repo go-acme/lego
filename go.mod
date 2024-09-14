@@ -84,7 +84,7 @@ require (
 	google.golang.org/api v0.172.0
 	gopkg.in/ns1/ns1-go.v2 v2.7.13
 	gopkg.in/yaml.v2 v2.4.0
-	software.sslmate.com/src/go-pkcs12 v0.4.0
+	software.sslmate.com/src/go-pkcs12 v0.5.0
 )
 
 require (

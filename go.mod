@@ -72,7 +72,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.898
 	github.com/transip/gotransip/v6 v6.23.0
 	github.com/ultradns/ultradns-go-sdk v1.6.1-20231103022937-8589b6a
-	github.com/urfave/cli/v2 v2.27.2
+	github.com/urfave/cli/v2 v2.27.4
 	github.com/vinyldns/go-vinyldns v0.9.16
 	github.com/vultr/govultr/v3 v3.9.0
 	github.com/yandex-cloud/go-genproto v0.0.0-20240318083951-4fe6125f286e
@@ -180,7 +180,7 @@ require (
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
-	github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913 // indirect
+	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	go.mongodb.org/mongo-driver v1.12.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0 // indirect

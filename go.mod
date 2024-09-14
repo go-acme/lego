@@ -63,7 +63,7 @@ require (
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/api-client-go v0.2.10
 	github.com/sacloud/iaas-api-go v1.12.0
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.27
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.30
 	github.com/selectel/domains-go v1.1.0
 	github.com/selectel/go-selvpcclient/v3 v3.1.1
 	github.com/softlayer/softlayer-go v1.1.5

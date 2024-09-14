@@ -232,6 +232,12 @@ issues:
     - path: providers/dns/cpanel/cpanel.go
       text: 'cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high'
 
+    # Those elements have been replaced by non-exposed structures.
+    - path: providers/dns/linode/linode_test.go
+      linters:
+        - staticcheck
+      text: "SA1019: linodego\\.(DomainsPagedResponse|DomainRecordsPagedResponse) is deprecated"
+
 output:
   sort-results: true
   sort-order:

@@ -34,6 +34,12 @@ OVH_CONSUMER_KEY=256vfsd347245sdfg \
 OVH_ENDPOINT=ovh-eu \
 lego --email you@example.com --dns ovh --domains my.example.org run
 
+# Or Access Token:
+
+OVH_ACCESS_TOKEN=xxx \
+OVH_ENDPOINT=ovh-eu \
+lego --email you@example.com --dns ovh --domains my.example.org run
+
 # Or OAuth2:
 
 OVH_CLIENT_ID=yyy \
@@ -49,6 +55,7 @@ lego --email you@example.com --dns ovh --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
+| `OVH_ACCESS_TOKEN` | Access token |
 | `OVH_APPLICATION_KEY` | Application key (Application Key authentication) |
 | `OVH_APPLICATION_SECRET` | Application secret (Application Key authentication) |
 | `OVH_CLIENT_ID` | Client ID (OAuth2) |

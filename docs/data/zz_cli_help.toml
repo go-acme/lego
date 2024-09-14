@@ -8,7 +8,7 @@ NAME:
    lego - Let's Encrypt client written in Go
 
 USAGE:
-   lego [global options] command [command options] 
+   lego [global options] command [command options]
 
 COMMANDS:
    run      Register an account, then create and install a certificate

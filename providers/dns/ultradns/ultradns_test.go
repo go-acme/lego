@@ -134,24 +134,26 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "ultradns: config validation failure: username is missing",
+			expected: "ultradns: Missing required parameters: [ username, password ]",
 		},
 		{
 			desc:     "missing username",
 			username: "",
 			password: "api_password",
-			expected: "ultradns: config validation failure: username is missing",
+			expected: "ultradns: Missing required parameters: [ username ]",
 		},
 		{
 			desc:     "missing password",
 			username: "api_username",
 			password: "",
-			expected: "ultradns: config validation failure: password is missing",
+			expected: "ultradns: Missing required parameters: [ password ]",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			envTest.ClearEnv()
+
 			config := NewDefaultConfig()
 			config.Username = test.username
 			config.Password = test.password

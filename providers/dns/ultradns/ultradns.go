@@ -27,7 +27,7 @@ const (
 
 	// Default variables names.
 	defaultEndpoint  = "https://api.ultradns.com/"
-	defaultUserAgent = "lego-provider-ultradns"
+	defaultUserAgent = "go-acme/lego"
 )
 
 // DNSProvider implements the challenge.Provider interface.

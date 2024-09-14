@@ -83,7 +83,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	// Use default credentials.
-	project := env.GetOrDefaultString(EnvProject, autodetectProjectID())
+	project := env.GetOrDefaultString(EnvProject, autodetectProjectID(context.Background()))
 	return NewDNSProviderCredentials(project)
 }
 
@@ -391,8 +391,8 @@ func mustUnquote(raw string) string {
 	return clean
 }
 
-func autodetectProjectID() string {
-	if pid, err := metadata.ProjectID(); err == nil {
+func autodetectProjectID(ctx context.Context) string {
+	if pid, err := metadata.ProjectIDWithContext(ctx); err == nil {
 		return pid
 	}
 

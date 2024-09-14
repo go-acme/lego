@@ -84,9 +84,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client, err := egoscale.NewClient(
 		credentials.NewStaticCredentials(config.APIKey, config.APISecret),
 		egoscale.ClientOptWithEndpoint(egoscale.Endpoint(config.Endpoint)),
-		egoscale.ClientOptWithHTTPClient(&http.Client{
-			Timeout: config.HTTPTimeout,
-		}),
+		egoscale.ClientOptWithHTTPClient(&http.Client{Timeout: config.HTTPTimeout}),
+		egoscale.ClientOptWithUserAgent("go-acme/lego"),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("exoscale: initializing client: %w", err)

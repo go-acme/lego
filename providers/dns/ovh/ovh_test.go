@@ -16,7 +16,8 @@ var envTest = tester.NewEnvTest(
 	EnvApplicationSecret,
 	EnvConsumerKey,
 	EnvClientID,
-	EnvClientSecret).
+	EnvClientSecret,
+	EnvAccessToken).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -73,6 +74,13 @@ func TestNewDNSProvider(t *testing.T) {
 			},
 		},
 		{
+			desc: "access token: success",
+			envVars: map[string]string{
+				EnvEndpoint:    "ovh-eu",
+				EnvAccessToken: "G",
+			},
+		},
+		{
 			desc: "oauth2: missing client secret",
 			envVars: map[string]string{
 				EnvEndpoint:     "ovh-eu",
@@ -99,11 +107,25 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvConsumerKey:       "",
 				EnvClientID:          "",
 				EnvClientSecret:      "",
+				EnvAccessToken:       "",
 			},
-			expected: "ovh: new client: missing authentication information, you need to provide at least an application_key/application_secret or a client_id/client_secret",
+			expected: "ovh: new client: missing authentication information, you need to provide one of the following: application_key/application_secret, client_id/client_secret, or access_token",
 		},
 		{
-			desc: "mixed auth",
+			desc: "mixed auth (all)",
+			envVars: map[string]string{
+				EnvEndpoint:          "ovh-eu",
+				EnvApplicationKey:    "B",
+				EnvApplicationSecret: "C",
+				EnvConsumerKey:       "D",
+				EnvClientID:          "E",
+				EnvClientSecret:      "F",
+				EnvAccessToken:       "G",
+			},
+			expected: "ovh: can't use multiple authentication systems (ApplicationKey, OAuth2, Access Token)",
+		},
+		{
+			desc: "mixed auth (ApplicationKey, OAuth2)",
 			envVars: map[string]string{
 				EnvEndpoint:          "ovh-eu",
 				EnvApplicationKey:    "B",
@@ -112,7 +134,28 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvClientID:          "E",
 				EnvClientSecret:      "F",
 			},
-			expected: "ovh: can't use both authentication systems (ApplicationKey and OAuth2)",
+			expected: "ovh: can't use multiple authentication systems (ApplicationKey, OAuth2)",
+		},
+		{
+			desc: "mixed auth (ApplicationKey, Access Token)",
+			envVars: map[string]string{
+				EnvEndpoint:          "ovh-eu",
+				EnvApplicationKey:    "B",
+				EnvApplicationSecret: "C",
+				EnvConsumerKey:       "D",
+				EnvAccessToken:       "G",
+			},
+			expected: "ovh: can't use multiple authentication systems (ApplicationKey, Access Token)",
+		},
+		{
+			desc: "mixed auth (OAuth2, Access Token)",
+			envVars: map[string]string{
+				EnvEndpoint:     "ovh-eu",
+				EnvClientID:     "E",
+				EnvClientSecret: "F",
+				EnvAccessToken:  "G",
+			},
+			expected: "ovh: can't use multiple authentication systems (OAuth2, Access Token)",
 		},
 	}
 
@@ -147,6 +190,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		consumerKey       string
 		clientID          string
 		clientSecret      string
+		accessToken       string
 		expected          string
 	}{
 		{
@@ -223,18 +267,51 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected:     "ovh: new client: invalid oauth2 config, both client_id and client_secret must be given",
 		},
 		{
-			desc:     "missing credentials",
-			expected: "ovh: new client: missing authentication information, you need to provide at least an application_key/application_secret or a client_id/client_secret",
+			desc:        "access token: success",
+			apiEndpoint: "ovh-eu",
+			accessToken: "G",
 		},
 		{
-			desc:              "mixed auth",
+			desc:     "missing credentials",
+			expected: "ovh: new client: missing authentication information, you need to provide one of the following: application_key/application_secret, client_id/client_secret, or access_token",
+		},
+		{
+			desc:              "mixed auth (all)",
 			apiEndpoint:       "ovh-eu",
 			applicationKey:    "B",
 			applicationSecret: "C",
 			consumerKey:       "D",
 			clientID:          "B",
 			clientSecret:      "C",
-			expected:          "ovh: can't use both authentication systems (ApplicationKey and OAuth2)",
+			accessToken:       "G",
+			expected:          "ovh: can't use multiple authentication systems (ApplicationKey, OAuth2, Access Token)",
+		},
+		{
+			desc:              "mixed auth (ApplicationKey, OAuth2)",
+			apiEndpoint:       "ovh-eu",
+			applicationKey:    "B",
+			applicationSecret: "C",
+			consumerKey:       "D",
+			clientID:          "B",
+			clientSecret:      "C",
+			expected:          "ovh: can't use multiple authentication systems (ApplicationKey, OAuth2)",
+		},
+		{
+			desc:              "mixed auth (ApplicationKey, Access Token)",
+			apiEndpoint:       "ovh-eu",
+			applicationKey:    "B",
+			applicationSecret: "C",
+			consumerKey:       "D",
+			accessToken:       "G",
+			expected:          "ovh: can't use multiple authentication systems (ApplicationKey, Access Token)",
+		},
+		{
+			desc:         "mixed auth (OAuth2, Access Token)",
+			apiEndpoint:  "ovh-eu",
+			clientID:     "B",
+			clientSecret: "C",
+			accessToken:  "G",
+			expected:     "ovh: can't use multiple authentication systems (OAuth2, Access Token)",
 		},
 	}
 
@@ -249,6 +326,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config.ApplicationKey = test.applicationKey
 			config.ApplicationSecret = test.applicationSecret
 			config.ConsumerKey = test.consumerKey
+			config.AccessToken = test.accessToken
 
 			if test.clientID != "" || test.clientSecret != "" {
 				config.OAuth2Config = &OAuth2Config{

@@ -55,7 +55,7 @@ require (
 	github.com/nrdcg/mailinabox v0.2.0
 	github.com/nrdcg/namesilo v0.2.1
 	github.com/nrdcg/nodion v0.1.0
-	github.com/nrdcg/porkbun v0.3.0
+	github.com/nrdcg/porkbun v0.4.0
 	github.com/nzdjb/go-metaname v1.0.0
 	github.com/oracle/oci-go-sdk/v65 v65.63.1
 	github.com/ovh/go-ovh v1.5.1

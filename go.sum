@@ -647,8 +647,8 @@ github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.898/go.mod 
 github.com/tjfoc/gmsm v1.4.1 h1:aMe1GlZb+0bLjn+cKTPEvvn9oUEBlJitaZiiBwsbgho=
 github.com/tjfoc/gmsm v1.4.1/go.mod h1:j4INPkHWMrhJb38G+J6W4Tw0AbuN8Thu3PbdVYhVcTE=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
-github.com/transip/gotransip/v6 v6.23.0 h1:PsTdjortrEZ8IFFifEryzjVjOy9SgK4ahlnhKBBIQgA=
-github.com/transip/gotransip/v6 v6.23.0/go.mod h1:nzv9eN2tdsUrm5nG5ZX6AugYIU4qgsMwIn2c0EZLk8c=
+github.com/transip/gotransip/v6 v6.26.0 h1:Aejfvh8rSp8Mj2GX/RpdBjMCv+Iy/DmgfNgczPDP550=
+github.com/transip/gotransip/v6 v6.26.0/go.mod h1:x0/RWGRK/zob817O3tfO2xhFoP1vu8YOHORx6Jpk80s=
 github.com/uber/jaeger-client-go v2.30.0+incompatible h1:D6wyKGCecFaSRUpo8lCVbaOOb6ThwMmTEbhRwtKR97o=
 github.com/uber/jaeger-client-go v2.30.0+incompatible/go.mod h1:WVhlPFC8FDjOFMMWRy2pZqQJSXxYSwNYOkTr/Z6d3Kk=
 github.com/uber/jaeger-lib v2.4.1+incompatible h1:td4jdvLcExb4cBISKIpHuGoVXh+dVKhn2Um6rjCsSsg=

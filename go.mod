@@ -82,7 +82,7 @@ require (
 	golang.org/x/oauth2 v0.23.0
 	golang.org/x/time v0.6.0
 	google.golang.org/api v0.172.0
-	gopkg.in/ns1/ns1-go.v2 v2.7.13
+	gopkg.in/ns1/ns1-go.v2 v2.12.0
 	gopkg.in/yaml.v2 v2.4.0
 	software.sslmate.com/src/go-pkcs12 v0.5.0
 )

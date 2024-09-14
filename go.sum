@@ -653,8 +653,8 @@ github.com/uber/jaeger-client-go v2.30.0+incompatible h1:D6wyKGCecFaSRUpo8lCVbaO
 github.com/uber/jaeger-client-go v2.30.0+incompatible/go.mod h1:WVhlPFC8FDjOFMMWRy2pZqQJSXxYSwNYOkTr/Z6d3Kk=
 github.com/uber/jaeger-lib v2.4.1+incompatible h1:td4jdvLcExb4cBISKIpHuGoVXh+dVKhn2Um6rjCsSsg=
 github.com/uber/jaeger-lib v2.4.1+incompatible/go.mod h1:ComeNDZlWwrWnDv8aPp0Ba6+uUTzImX/AauajbLI56U=
-github.com/ultradns/ultradns-go-sdk v1.6.1-20231103022937-8589b6a h1:w4PK5/N9kq8PfNxBv8a5t1bqlYRrVT7XzT7iTPTtiPk=
-github.com/ultradns/ultradns-go-sdk v1.6.1-20231103022937-8589b6a/go.mod h1:Xwz7o+ExFtxR/i0aJDnTXuiccQJlOxDgNe6FsZC4TzQ=
+github.com/ultradns/ultradns-go-sdk v1.7.0-20240913052650-970ca9a h1:R6IR+Vj/RnGZLnX8PpPQsbbQthctO7Ah2q4tj5eoe2o=
+github.com/ultradns/ultradns-go-sdk v1.7.0-20240913052650-970ca9a/go.mod h1:BZr7Qs3ku1ckpqed8tCRSqTlp8NAeZfAVpfx4OzXMss=
 github.com/urfave/cli/v2 v2.27.4 h1:o1owoI+02Eb+K107p27wEX9Bb8eqIoZCfLXloLUSWJ8=
 github.com/urfave/cli/v2 v2.27.4/go.mod h1:m4QzxcD2qpra4z7WhzEGn74WZLViBnMpb1ToCAKdGRQ=
 github.com/vinyldns/go-vinyldns v0.9.16 h1:GZJStDkcCk1F1AcRc64LuuMh+ENL8pHA0CVd4ulRMcQ=

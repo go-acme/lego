@@ -150,12 +150,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domainName string, recordID i
 func (c *Client) do(req *http.Request, result any) error {
 	req.Header.Set("Accept-Language", "en_us")
 
-	location, err := time.LoadLocation("GMT")
-	if err != nil {
-		return fmt.Errorf("time location: %w", err)
-	}
-
-	err = c.sign(req, time.Now().In(location))
+	err := c.sign(req, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("signature: %w", err)
 	}

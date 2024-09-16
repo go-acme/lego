@@ -121,12 +121,7 @@ func (c *Client) do(req *http.Request, result any) error {
 
 func (c *Client) sign(req *http.Request) error {
 	if req.Header.Get("Date") == "" {
-		location, err := time.LoadLocation("GMT")
-		if err != nil {
-			return err
-		}
-
-		req.Header.Set("Date", time.Now().In(location).Format(time.RFC1123))
+		req.Header.Set("Date", time.Now().UTC().Format(http.TimeFormat))
 	}
 
 	if req.URL.Path == "" {

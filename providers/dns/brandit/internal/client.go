@@ -178,17 +178,12 @@ func (c *Client) do(ctx context.Context, query url.Values, result any) error {
 }
 
 func sign(apiUsername, apiKey string, query url.Values) (url.Values, error) {
-	location, err := time.LoadLocation("GMT")
-	if err != nil {
-		return nil, fmt.Errorf("time location: %w", err)
-	}
-
-	timestamp := time.Now().In(location).Format("2006-01-02T15:04:05Z")
+	timestamp := time.Now().UTC().Format("2006-01-02T15:04:05Z")
 
 	canonicalRequest := fmt.Sprintf("%s%s%s", apiUsername, timestamp, defaultBaseURL)
 
 	mac := hmac.New(sha256.New, []byte(apiKey))
-	_, err = mac.Write([]byte(canonicalRequest))
+	_, err := mac.Write([]byte(canonicalRequest))
 	if err != nil {
 		return nil, err
 	}

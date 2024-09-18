@@ -55,6 +55,24 @@ func NewDefaultConfig() *Config {
 	}
 }
 
+func (c *Config) getSeqNext(domain string) (string, error) {
+	effectiveDomain := strings.TrimPrefix(domain, "_acme-challenge.")
+
+	c.recordsMappingMu.Lock()
+	defer c.recordsMappingMu.Unlock()
+
+	seq, ok := c.RecordsMapping[effectiveDomain]
+	if !ok {
+		// fallback
+		seq, ok = c.RecordsMapping[domain]
+		if !ok {
+			return "", fmt.Errorf("record mapping not found for %s", effectiveDomain)
+		}
+	}
+
+	return seq.Next(), nil
+}
+
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
@@ -128,25 +146,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	effectiveDomain := strings.TrimPrefix(dns01.UnFqdn(info.EffectiveFQDN), "_acme-challenge.")
-
-	d.config.recordsMappingMu.Lock()
-
-	seq, ok := d.config.RecordsMapping[effectiveDomain]
-	if !ok {
-		// fallback
-		seq, ok = d.config.RecordsMapping[dns01.UnFqdn(info.EffectiveFQDN)]
-		if !ok {
-			d.config.recordsMappingMu.Unlock()
-			return fmt.Errorf("selfhostde: record mapping not found for %s", effectiveDomain)
-		}
+	recordID, err := d.config.getSeqNext(dns01.UnFqdn(info.EffectiveFQDN))
+	if err != nil {
+		return fmt.Errorf("selfhostde: %w", err)
 	}
 
-	recordID := seq.Next()
-
-	d.config.recordsMappingMu.Unlock()
-
-	err := d.client.UpdateTXTRecord(context.Background(), recordID, info.Value)
+	err = d.client.UpdateTXTRecord(context.Background(), recordID, info.Value)
 	if err != nil {
 		return fmt.Errorf("selfhostde: update DNS TXT record (id=%s): %w", recordID, err)
 	}

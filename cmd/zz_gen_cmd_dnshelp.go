@@ -125,6 +125,7 @@ func allDNSCodes() string {
 		"scaleway",
 		"selectel",
 		"selectelv2",
+		"selfhostde",
 		"servercow",
 		"shellrent",
 		"simply",
@@ -2552,6 +2553,28 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/selectelv2`)
+
+	case "selfhostde":
+		// generated from: providers/dns/selfhostde/selfhostde.toml
+		ew.writeln(`Configuration for SelfHost.(de|eu).`)
+		ew.writeln(`Code:	'selfhostde'`)
+		ew.writeln(`Since:	'v4.19.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SELFHOSTDE_PASSWORD":	Password`)
+		ew.writeln(`	- "SELFHOSTDE_RECORDS_MAPPING":	Record IDs mapping with domains (ex: example.com:123:456,example.org:789,foo.example.com:147)`)
+		ew.writeln(`	- "SELFHOSTDE_USERNAME":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SELFHOSTDE_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "SELFHOSTDE_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "SELFHOSTDE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "SELFHOSTDE_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/selfhostde`)
 
 	case "servercow":
 		// generated from: providers/dns/servercow/servercow.toml

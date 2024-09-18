@@ -128,13 +128,17 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	effectiveDomain := strings.TrimPrefix(info.EffectiveFQDN, "_acme-challenge.")
+	effectiveDomain := strings.TrimPrefix(dns01.UnFqdn(info.EffectiveFQDN), "_acme-challenge.")
 
 	d.config.recordsMappingMu.Lock()
 
 	seq, ok := d.config.RecordsMapping[effectiveDomain]
 	if !ok {
-		return fmt.Errorf("selfhostde: record mapping not found for %s", effectiveDomain)
+		// fallback
+		seq, ok = d.config.RecordsMapping[dns01.UnFqdn(info.EffectiveFQDN)]
+		if !ok {
+			return fmt.Errorf("selfhostde: record mapping not found for %s", effectiveDomain)
+		}
 	}
 
 	recordID := seq.Next()

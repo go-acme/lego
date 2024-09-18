@@ -137,6 +137,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		// fallback
 		seq, ok = d.config.RecordsMapping[dns01.UnFqdn(info.EffectiveFQDN)]
 		if !ok {
+			d.config.recordsMappingMu.Unlock()
 			return fmt.Errorf("selfhostde: record mapping not found for %s", effectiveDomain)
 		}
 	}

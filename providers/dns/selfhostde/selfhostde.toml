@@ -14,7 +14,7 @@ lego --email you@example.com --dns selfhostde --domains my.example.org run
 Additional = """
 SelfHost.de doesn't have an API to create or delete TXT records, there is only an "unofficial" and undocumented endpoint to update an existing TXT record.
 
-So,bBefore using lego to request a certificate for a given domain or wildcard (such as `my.example.org` or `*.my.example.org`),
+So, before using lego to request a certificate for a given domain or wildcard (such as `my.example.org` or `*.my.example.org`),
 you should create:
 - one TXT record named `_acme-challenge.my.example.org` if you are **not** using wildcard for this domain.
 - two TXT records named `_acme-challenge.my.example.org` if you are using wildcard for this domain.

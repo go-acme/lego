@@ -66,7 +66,7 @@ func (c *Config) getSeqNext(domain string) (string, error) {
 		// fallback
 		seq, ok = c.RecordsMapping[domain]
 		if !ok {
-			return "", fmt.Errorf("record mapping not found for %s", effectiveDomain)
+			return "", fmt.Errorf("record mapping not found for %q", effectiveDomain)
 		}
 	}
 
@@ -119,7 +119,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	for domain, seq := range config.RecordsMapping {
 		if seq == nil || len(seq.ids) == 0 {
-			return nil, fmt.Errorf("selfhostde: missing record ID for %s", domain)
+			return nil, fmt.Errorf("selfhostde: missing record ID for %q", domain)
 		}
 	}
 
@@ -167,13 +167,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	effectiveDomain := strings.TrimPrefix(info.EffectiveFQDN, "_acme-challenge.")
-
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("selfhostde: unknown record ID for '%s'", effectiveDomain)
+		return fmt.Errorf("selfhostde: unknown record ID for %q", dns01.UnFqdn(info.EffectiveFQDN))
 	}
 
 	err := d.client.UpdateTXTRecord(context.Background(), recordID, "empty")

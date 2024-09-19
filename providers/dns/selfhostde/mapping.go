@@ -36,35 +36,36 @@ func (s *Seq) Next() string {
 	return v
 }
 
-func parseRecordsMapping(v string) (map[string]*Seq, error) {
-	v = strings.ReplaceAll(v, " ", "")
+func parseRecordsMapping(raw string) (map[string]*Seq, error) {
+	raw = strings.ReplaceAll(raw, " ", "")
 
-	if v == "" {
+	if raw == "" {
 		return nil, errors.New("empty mapping")
 	}
 
 	acc := map[string]*Seq{}
 
 	for {
-		index, err := safeIndex(v, lineSep)
+		index, err := safeIndex(raw, lineSep)
 		if err != nil {
 			return nil, err
 		}
 
 		if index != -1 {
-			name, seq, err := parseLine(v[:index])
+			name, seq, err := parseLine(raw[:index])
 			if err != nil {
 				return nil, err
 			}
 
 			acc[name] = seq
 
-			v = v[index+1:]
+			// Data for the next iteration.
+			raw = raw[index+1:]
 
 			continue
 		}
 
-		name, seq, errP := parseLine(v)
+		name, seq, errP := parseLine(raw)
 		if errP != nil {
 			return nil, errP
 		}
@@ -85,8 +86,7 @@ func parseLine(line string) (string, *Seq, error) {
 		return "", nil, fmt.Errorf("missing %q: %s", recordSep, line)
 	}
 
-	name := line[:idx]
-	rawIDs := line[idx+1:]
+	name, rawIDs := line[:idx], line[idx+1:]
 
 	var ids []string
 	var count int
@@ -101,19 +101,20 @@ func parseLine(line string) (string, *Seq, error) {
 			return "", nil, fmt.Errorf("too many record IDs for one domain: %s", line)
 		}
 
-		if idx == -1 {
-			ids = append(ids, rawIDs)
-			break
+		if idx != -1 {
+			ids = append(ids, rawIDs[:idx])
+			count++
+
+			// Data for the next iteration.
+			rawIDs = rawIDs[idx+1:]
+
+			continue
 		}
 
-		ids = append(ids, rawIDs[:idx])
-		count++
+		ids = append(ids, rawIDs)
 
-		// Data for the next iteration.
-		rawIDs = rawIDs[idx+1:]
+		return name, NewSeq(ids...), nil
 	}
-
-	return name, NewSeq(ids...), nil
 }
 
 func safeIndex(v, sep string) (int, error) {

@@ -128,7 +128,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			recordMapping: map[string]*Seq{
 				"example.com": nil,
 			},
-			expected: "selfhostde: missing record ID for example.com",
+			expected: `selfhostde: missing record ID for "example.com"`,
 		},
 		{
 			desc:     "empty sequence",
@@ -137,7 +137,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			recordMapping: map[string]*Seq{
 				"example.com": NewSeq(),
 			},
-			expected: "selfhostde: missing record ID for example.com",
+			expected: `selfhostde: missing record ID for "example.com"`,
 		},
 		{
 			desc:     "missing records mapping",

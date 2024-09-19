@@ -1,8 +1,13 @@
 package registration
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/acme/api"
@@ -67,6 +72,54 @@ func (r *Registrar) Register(options RegisterOptions) (*Resource, error) {
 	}
 
 	return &Resource{URI: account.Location, Body: account.Account}, nil
+}
+
+func createZeroSSLAccount(email string) (string, string, error) {
+	newAccountURL := "https://api.zerossl.com/acme/eab-credentials-email"
+	data := struct {
+		Success bool   `json:"success"`
+		KID     string `json:"eab_kid"`
+		HMAC    string `json:"eab_hmac_key"`
+	}{}
+
+	resp, err := http.PostForm(newAccountURL, url.Values{"email": {email}})
+	if err != nil {
+		return "", "", fmt.Errorf("sending request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// ZeroSSL might return errors as plain-text messages instead of JSON,
+	// so we buffer the response to be able to return it as error.
+	var rawResp bytes.Buffer
+	r := io.TeeReader(io.LimitReader(resp.Body, 10*1024), &rawResp) // Limit response to 10KB
+	if err := json.NewDecoder(r).Decode(&data); err != nil {
+		// It is likely not a JSON but a plain-text error message
+		_, _ = io.ReadAll(r) // read the rest of the body
+		return "", "", fmt.Errorf("parsing response: %w. Original response:\n%s", err, rawResp.String())
+	}
+
+	if !data.Success {
+		return "", "", errors.New("received success=false")
+	}
+	return data.KID, data.HMAC, nil
+}
+
+// RegisterWithZeroSSL Register the current account to the ZeroSSL server.
+func (r *Registrar) RegisterWithZeroSSL(options RegisterOptions) (*Resource, error) {
+	if r.user.GetEmail() == "" {
+		return nil, errors.New("acme: cannot register ZeroSSL account without email address")
+	}
+
+	kid, hmac, err := createZeroSSLAccount(r.user.GetEmail())
+	if err != nil {
+		return nil, fmt.Errorf("acme: error registering new ZeroSSL account: %w", err)
+	}
+
+	return r.RegisterWithExternalAccountBinding(RegisterEABOptions{
+		TermsOfServiceAgreed: options.TermsOfServiceAgreed,
+		Kid:                  kid,
+		HmacEncoded:          hmac,
+	})
 }
 
 // RegisterWithExternalAccountBinding Register the current account to the ACME server.

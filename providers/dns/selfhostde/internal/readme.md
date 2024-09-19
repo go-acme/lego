@@ -4,4 +4,4 @@ SelfHost doesn't provide an official API documentation and there are no endpoint
 
 ## More
 
-This link (https://kirk.selfhost.de/cgi-bin/selfhost?p=document&name=api) content a PDF that doesn't describe the endpoint used by the client.
+The documentation found at https://kirk.selfhost.de/cgi-bin/selfhost?p=document&name=api (PDF) describes the DynDNS/ddns API endpoint and is not used by our client.

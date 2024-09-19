@@ -113,7 +113,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("ionos: failed to get zones: %w", err)
 	}
 
-	zone := findZone(zones, info.EffectiveFQDN)
+	zone := findZone(zones, dns01.UnFqdn(info.EffectiveFQDN))
 	if zone == nil {
 		return errors.New("ionos: no matching zone found for domain")
 	}
@@ -154,7 +154,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("ionos: failed to get zones: %w", err)
 	}
 
-	zone := findZone(zones, info.EffectiveFQDN)
+	zone := findZone(zones, dns01.UnFqdn(info.EffectiveFQDN))
 	if zone == nil {
 		return errors.New("ionos: no matching zone found for domain")
 	}

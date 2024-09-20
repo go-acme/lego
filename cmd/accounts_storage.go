@@ -71,12 +71,12 @@ func NewAccountsStorage(ctx *cli.Context) *AccountsStorage {
 	// TODO: move to account struct? Currently MUST pass email.
 	email := getEmail(ctx)
 
-	serverURL, err := url.Parse(ctx.String("server"))
+	serverURL, err := url.Parse(ctx.String(flgServer))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	rootPath := filepath.Join(ctx.String("path"), baseAccountsRootFolderName)
+	rootPath := filepath.Join(ctx.String(flgPath), baseAccountsRootFolderName)
 	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(serverURL.Host)
 	accountsPath := filepath.Join(rootPath, serverPath)
 	rootUserPath := filepath.Join(accountsPath, email)
@@ -224,7 +224,7 @@ func loadPrivateKey(file string) (crypto.PrivateKey, error) {
 func tryRecoverRegistration(ctx *cli.Context, privateKey crypto.PrivateKey) (*registration.Resource, error) {
 	// couldn't load account but got a key. Try to look the account up.
 	config := lego.NewConfig(&Account{key: privateKey})
-	config.CADirURL = ctx.String("server")
+	config.CADirURL = ctx.String(flgServer)
 	config.UserAgent = getUserAgent(ctx)
 
 	client, err := lego.NewClient(config)

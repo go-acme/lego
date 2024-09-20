@@ -35,17 +35,17 @@ func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *lego.
 
 func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyType) *lego.Client {
 	config := lego.NewConfig(acc)
-	config.CADirURL = ctx.String("server")
+	config.CADirURL = ctx.String(flgServer)
 
 	config.Certificate = lego.CertificateConfig{
 		KeyType:             keyType,
-		Timeout:             time.Duration(ctx.Int("cert.timeout")) * time.Second,
-		OverallRequestLimit: ctx.Int("overall-request-limit"),
+		Timeout:             time.Duration(ctx.Int(flgCertTimeout)) * time.Second,
+		OverallRequestLimit: ctx.Int(flgOverallRequestLimit),
 	}
 	config.UserAgent = getUserAgent(ctx)
 
-	if ctx.IsSet("http-timeout") {
-		config.HTTPClient.Timeout = time.Duration(ctx.Int("http-timeout")) * time.Second
+	if ctx.IsSet(flgHTTPTimeout) {
+		config.HTTPClient.Timeout = time.Duration(ctx.Int(flgHTTPTimeout)) * time.Second
 	}
 
 	client, err := lego.NewClient(config)
@@ -53,8 +53,8 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 		log.Fatalf("Could not create client: %v", err)
 	}
 
-	if client.GetExternalAccountRequired() && !ctx.IsSet("eab") {
-		log.Fatal("Server requires External Account Binding. Use --eab with --kid and --hmac.")
+	if client.GetExternalAccountRequired() && !ctx.IsSet(flgEAB) {
+		log.Fatalf("Server requires External Account Binding. Use --%s with --%s and --%s.", flgEAB, flgKID, flgHMAC)
 	}
 
 	return client
@@ -62,7 +62,7 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 
 // getKeyType the type from which private keys should be generated.
 func getKeyType(ctx *cli.Context) certcrypto.KeyType {
-	keyType := ctx.String("key-type")
+	keyType := ctx.String(flgKeyType)
 	switch strings.ToUpper(keyType) {
 	case "RSA2048":
 		return certcrypto.RSA2048
@@ -83,15 +83,15 @@ func getKeyType(ctx *cli.Context) certcrypto.KeyType {
 }
 
 func getEmail(ctx *cli.Context) string {
-	email := ctx.String("email")
+	email := ctx.String(flgEmail)
 	if email == "" {
-		log.Fatal("You have to pass an account (email address) to the program using --email or -m")
+		log.Fatalf("You have to pass an account (email address) to the program using --%s or -m", flgEmail)
 	}
 	return email
 }
 
 func getUserAgent(ctx *cli.Context) string {
-	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", ctx.String("user-agent"), ctx.App.Version))
+	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", ctx.String(flgUserAgent), ctx.App.Version))
 }
 
 func createNonExistingFolder(path string) error {

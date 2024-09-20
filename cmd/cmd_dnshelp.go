@@ -9,6 +9,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+const flgCode = "code"
+
 func createDNSHelp() *cli.Command {
 	return &cli.Command{
 		Name:   "dnshelp",
@@ -16,7 +18,7 @@ func createDNSHelp() *cli.Command {
 		Action: dnsHelp,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "code",
+				Name:    flgCode,
 				Aliases: []string{"c"},
 				Usage:   fmt.Sprintf("DNS code: %s", allDNSCodes()),
 			},
@@ -25,7 +27,7 @@ func createDNSHelp() *cli.Command {
 }
 
 func dnsHelp(ctx *cli.Context) error {
-	code := ctx.String("code")
+	code := ctx.String(flgCode)
 	if code == "" {
 		w := tabwriter.NewWriter(ctx.App.Writer, 0, 0, 2, ' ', 0)
 		ew := &errWriter{w: w}

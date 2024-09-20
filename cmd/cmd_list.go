@@ -12,6 +12,11 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+const (
+	flgAccounts = "accounts"
+	flgNames    = "names"
+)
+
 func createList() *cli.Command {
 	return &cli.Command{
 		Name:   "list",
@@ -19,18 +24,18 @@ func createList() *cli.Command {
 		Action: list,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name:    "accounts",
+				Name:    flgAccounts,
 				Aliases: []string{"a"},
 				Usage:   "Display accounts.",
 			},
 			&cli.BoolFlag{
-				Name:    "names",
+				Name:    flgNames,
 				Aliases: []string{"n"},
 				Usage:   "Display certificate common names only.",
 			},
 			// fake email, needed by NewAccountsStorage
 			&cli.StringFlag{
-				Name:   "email",
+				Name:   flgEmail,
 				Value:  "unknown",
 				Hidden: true,
 			},
@@ -39,7 +44,7 @@ func createList() *cli.Command {
 }
 
 func list(ctx *cli.Context) error {
-	if ctx.Bool("accounts") && !ctx.Bool("names") {
+	if ctx.Bool(flgAccounts) && !ctx.Bool(flgNames) {
 		if err := listAccount(ctx); err != nil {
 			return err
 		}
@@ -56,7 +61,7 @@ func listCertificates(ctx *cli.Context) error {
 		return err
 	}
 
-	names := ctx.Bool("names")
+	names := ctx.Bool(flgNames)
 
 	if len(matches) == 0 {
 		if !names {
@@ -70,7 +75,7 @@ func listCertificates(ctx *cli.Context) error {
 	}
 
 	for _, filename := range matches {
-		if strings.HasSuffix(filename, ".issuer.crt") {
+		if strings.HasSuffix(filename, issuerExt) {
 			continue
 		}
 

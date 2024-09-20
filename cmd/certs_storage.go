@@ -61,7 +61,7 @@ type CertificatesStorage struct {
 
 // NewCertificatesStorage create a new certificates storage.
 func NewCertificatesStorage(ctx *cli.Context) *CertificatesStorage {
-	pfxFormat := ctx.String("pfx.format")
+	pfxFormat := ctx.String(flgPFXFormat)
 
 	switch pfxFormat {
 	case "DES", "RC2", "SHA256":
@@ -70,13 +70,13 @@ func NewCertificatesStorage(ctx *cli.Context) *CertificatesStorage {
 	}
 
 	return &CertificatesStorage{
-		rootPath:    filepath.Join(ctx.String("path"), baseCertificatesFolderName),
-		archivePath: filepath.Join(ctx.String("path"), baseArchivesFolderName),
-		pem:         ctx.Bool("pem"),
-		pfx:         ctx.Bool("pfx"),
-		pfxPassword: ctx.String("pfx.pass"),
+		rootPath:    filepath.Join(ctx.String(flgPath), baseCertificatesFolderName),
+		archivePath: filepath.Join(ctx.String(flgPath), baseArchivesFolderName),
+		pem:         ctx.Bool(flgPEM),
+		pfx:         ctx.Bool(flgPFX),
+		pfxPassword: ctx.String(flgPFXPass),
 		pfxFormat:   pfxFormat,
-		filename:    ctx.String("filename"),
+		filename:    ctx.String(flgFilename),
 	}
 }
 

@@ -24,9 +24,15 @@ func WrapPreCheck(wrap WrapPreCheckFunc) ChallengeOption {
 	}
 }
 
+// DisableCompletePropagationRequirement obsolete.
+// Deprecated: use DisableAuthoritativeNssPropagationRequirement instead.
 func DisableCompletePropagationRequirement() ChallengeOption {
+	return DisableAuthoritativeNssPropagationRequirement()
+}
+
+func DisableAuthoritativeNssPropagationRequirement() ChallengeOption {
 	return func(chlg *Challenge) error {
-		chlg.preCheck.requireCompletePropagation = false
+		chlg.preCheck.requireAuthoritativeNssPropagation = false
 		return nil
 	}
 }
@@ -41,13 +47,14 @@ func PropagationWaitOnly(wait time.Duration) ChallengeOption {
 type preCheck struct {
 	// checks DNS propagation before notifying ACME that the DNS challenge is ready.
 	checkFunc WrapPreCheckFunc
+
 	// require the TXT record to be propagated to all authoritative name servers
-	requireCompletePropagation bool
+	requireAuthoritativeNssPropagation bool
 }
 
 func newPreCheck() preCheck {
 	return preCheck{
-		requireCompletePropagation: true,
+		requireAuthoritativeNssPropagation: true,
 	}
 }
 
@@ -67,7 +74,7 @@ func (p preCheck) checkDNSPropagation(fqdn, value string) (bool, error) {
 		return false, err
 	}
 
-	if !p.requireCompletePropagation {
+	if !p.requireAuthoritativeNssPropagation {
 		return true, nil
 	}
 

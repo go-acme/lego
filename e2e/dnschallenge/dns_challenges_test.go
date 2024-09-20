@@ -94,7 +94,7 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 
 	err = client.Challenge.SetDNS01Provider(provider,
 		dns01.AddRecursiveNameservers([]string{":8053"}),
-		dns01.DisableCompletePropagationRequirement())
+		dns01.DisableAuthoritativeNssPropagationRequirement())
 	require.NoError(t, err)
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})

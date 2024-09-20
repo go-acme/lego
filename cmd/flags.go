@@ -35,6 +35,7 @@ const (
 	flgDNSDisableCP             = "dns.disable-cp"
 	flgDNSPropagationWait       = "dns.propagation-wait"
 	flgDNSPropagationDisableANS = "dns.propagation-disable-ans"
+	flgDNSPropagationRNS        = "dns.propagation-rns"
 	flgDNSResolvers             = "dns.resolvers"
 	flgHTTPTimeout              = "http-timeout"
 	flgDNSTimeout               = "dns-timeout"
@@ -154,6 +155,10 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		&cli.BoolFlag{
 			Name:  flgDNSPropagationDisableANS,
 			Usage: "By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.",
+		},
+		&cli.BoolFlag{
+			Name:  flgDNSPropagationRNS,
+			Usage: "By setting this flag, use all the recursive nameservers to check the propagation of the TXT record.",
 		},
 		&cli.DurationFlag{
 			Name:  flgDNSPropagationWait,

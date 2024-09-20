@@ -145,6 +145,9 @@ func setupDNS(ctx *cli.Context, client *lego.Client) error {
 		dns01.CondOption(ctx.Duration(flgDNSPropagationWait) > 0,
 			dns01.PropagationWaitOnly(wait)),
 
+		dns01.CondOption(ctx.Bool(flgDNSPropagationRNS),
+			dns01.RecursiveNSsPropagationRequirement()),
+
 		dns01.CondOption(ctx.IsSet(flgDNSTimeout),
 			dns01.AddDNSTimeout(time.Duration(ctx.Int(flgDNSTimeout))*time.Second)),
 	)
@@ -159,6 +162,10 @@ func checkPropagationExclusiveOptions(ctx *cli.Context) error {
 
 	if (isSetBool(ctx, flgDNSDisableCP) || isSetBool(ctx, flgDNSPropagationDisableANS)) && ctx.IsSet(flgDNSPropagationWait) {
 		return fmt.Errorf("'%s' and '%s' are mutually exclusive", flgDNSPropagationDisableANS, flgDNSPropagationWait)
+	}
+
+	if isSetBool(ctx, flgDNSPropagationRNS) && ctx.IsSet(flgDNSPropagationWait) {
+		return fmt.Errorf("'%s' and '%s' are mutually exclusive", flgDNSPropagationRNS, flgDNSPropagationWait)
 	}
 
 	return nil

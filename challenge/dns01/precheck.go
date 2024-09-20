@@ -37,6 +37,13 @@ func DisableAuthoritativeNssPropagationRequirement() ChallengeOption {
 	}
 }
 
+func RecursiveNSsPropagationRequirement() ChallengeOption {
+	return func(chlg *Challenge) error {
+		chlg.preCheck.requireAuthoritativeNssPropagation = true
+		return nil
+	}
+}
+
 func PropagationWaitOnly(wait time.Duration) ChallengeOption {
 	return WrapPreCheck(func(domain, fqdn, value string, check PreCheckFunc) (bool, error) {
 		time.Sleep(wait)
@@ -50,6 +57,9 @@ type preCheck struct {
 
 	// require the TXT record to be propagated to all authoritative name servers
 	requireAuthoritativeNssPropagation bool
+
+	// require the TXT record to be propagated to all recursive name servers
+	requireRecursiveNssPropagation bool
 }
 
 func newPreCheck() preCheck {
@@ -68,18 +78,25 @@ func (p preCheck) call(domain, fqdn, value string) (bool, error) {
 
 // checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
 func (p preCheck) checkDNSPropagation(fqdn, value string) (bool, error) {
-	// Initial attempt to resolve at the recursive NS
+	// Initial attempt to resolve at the recursive NS (require to get CNAME)
 	r, err := dnsQuery(fqdn, dns.TypeTXT, recursiveNameservers, true)
 	if err != nil {
 		return false, err
 	}
 
-	if !p.requireAuthoritativeNssPropagation {
-		return true, nil
-	}
-
 	if r.Rcode == dns.RcodeSuccess {
 		fqdn = updateDomainWithCName(r, fqdn)
+	}
+
+	if p.requireRecursiveNssPropagation {
+		_, err = checkAuthoritativeNss(fqdn, value, recursiveNameservers, false)
+		if err != nil {
+			return false, err
+		}
+	}
+
+	if !p.requireAuthoritativeNssPropagation {
+		return true, nil
 	}
 
 	authoritativeNss, err := lookupNameservers(fqdn)
@@ -87,13 +104,17 @@ func (p preCheck) checkDNSPropagation(fqdn, value string) (bool, error) {
 		return false, err
 	}
 
-	return checkAuthoritativeNss(fqdn, value, authoritativeNss)
+	return checkAuthoritativeNss(fqdn, value, authoritativeNss, true)
 }
 
 // checkAuthoritativeNss queries each of the given nameservers for the expected TXT record.
-func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, error) {
+func checkAuthoritativeNss(fqdn, value string, nameservers []string, addPort bool) (bool, error) {
 	for _, ns := range nameservers {
-		r, err := dnsQuery(fqdn, dns.TypeTXT, []string{net.JoinHostPort(ns, "53")}, false)
+		if addPort {
+			ns = net.JoinHostPort(ns, "53")
+		}
+
+		r, err := dnsQuery(fqdn, dns.TypeTXT, []string{ns}, false)
 		if err != nil {
 			return false, err
 		}

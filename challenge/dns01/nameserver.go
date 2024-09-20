@@ -265,7 +265,8 @@ func createDNSMsg(fqdn string, rtype uint16, recursive bool) *dns.Msg {
 
 func sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {
 	if ok, _ := strconv.ParseBool(os.Getenv("LEGO_EXPERIMENTAL_DNS_TCP_ONLY")); ok {
-		tcp := &dns.Client{Net: "tcp", Timeout: dnsTimeout}
+		network := currentNetworkStack.Network("tcp")
+		tcp := &dns.Client{Net: network, Timeout: dnsTimeout}
 		r, _, err := tcp.Exchange(m, ns)
 		if err != nil {
 			return r, &DNSError{Message: "DNS call error", MsgIn: m, NS: ns, Err: err}
@@ -274,11 +275,16 @@ func sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {
 		return r, nil
 	}
 
-	udp := &dns.Client{Net: "udp", Timeout: dnsTimeout}
+	udpNetwork := currentNetworkStack.Network("udp")
+	udp := &dns.Client{Net: udpNetwork, Timeout: dnsTimeout}
 	r, _, err := udp.Exchange(m, ns)
 
-	if r != nil && r.Truncated {
-		tcp := &dns.Client{Net: "tcp", Timeout: dnsTimeout}
+	// We can encounter a net.OpError if the nameserver is not listening
+	// on UDP at all, i.e. net.Dial could not make a connection.
+	var opErr *net.OpError
+	if (r != nil && r.Truncated) || errors.As(err, &opErr) {
+		tcpNetwork := currentNetworkStack.Network("tcp")
+		tcp := &dns.Client{Net: tcpNetwork, Timeout: dnsTimeout}
 		// If the TCP request succeeds, the "err" will reset to nil
 		r, _, err = tcp.Exchange(m, ns)
 	}

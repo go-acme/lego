@@ -1,13 +1,13 @@
-<!--
-
 PULL REQUEST TEMPLATE FOR MAINTAINERS ONLY.
 
-https://github.com/go-acme/lego/master...branch?quick_pull=1&title=Add+DNS+provider+for+&labels=enhancement,area/dnsprovider&template=mnp.md
+https://github.com/go-acme/lego/compare/master...ldez:branch?quick_pull=1&title=Add+DNS+provider+for+&labels=enhancement,area/dnsprovider,state/need-user-tests&template=mnp.md
 
---!>
+?quick_pull=1&title=Add+DNS+provider+for+&labels=enhancement,area/dnsprovider,state/need-user-tests&template=mnp.md
 
-- [ ] adds a description to your PR
-- [ ] have a homogeneous design with the other providers
+---
+
+- [x] adds a description to your PR
+- [x] have a homogeneous design with the other providers
 - [ ] add tests (units)
 - [ ] add tests ("live")
 - [ ] add a provider descriptor

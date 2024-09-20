@@ -151,7 +151,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		&cli.DurationFlag{
 			Name:  flgDNSPropagationWait,
-			Usage: "By setting this flag, disables all the propagation checks and uses a wait duration instead.",
+			Usage: "By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead.",
 		},
 		&cli.StringSliceFlag{
 			Name: flgDNSResolvers,

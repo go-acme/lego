@@ -141,12 +141,8 @@ func setupDNS(ctx *cli.Context, client *lego.Client) error {
 		dns01.CondOption(ctx.Bool(flgDNSDisableCP),
 			dns01.DisableCompletePropagationRequirement()),
 
-		dns01.CondOption(ctx.IsSet(flgDNSPropagationWait), dns01.WrapPreCheck(
-			func(domain, fqdn, value string, check dns01.PreCheckFunc) (bool, error) {
-				time.Sleep(wait)
-				return true, nil
-			},
-		)),
+		dns01.CondOption(ctx.Duration(flgDNSPropagationWait) > 0,
+			dns01.PropagationWaitOnly(wait)),
 
 		dns01.CondOption(ctx.IsSet(flgDNSTimeout),
 			dns01.AddDNSTimeout(time.Duration(ctx.Int(flgDNSTimeout))*time.Second)),

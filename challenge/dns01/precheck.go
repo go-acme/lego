@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/miekg/dns"
 )
@@ -28,6 +29,13 @@ func DisableCompletePropagationRequirement() ChallengeOption {
 		chlg.preCheck.requireCompletePropagation = false
 		return nil
 	}
+}
+
+func PropagationWaitOnly(wait time.Duration) ChallengeOption {
+	return WrapPreCheck(func(domain, fqdn, value string, check PreCheckFunc) (bool, error) {
+		time.Sleep(wait)
+		return true, nil
+	})
 }
 
 type preCheck struct {

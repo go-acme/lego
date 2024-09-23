@@ -89,7 +89,7 @@ func (p preCheck) checkDNSPropagation(fqdn, value string) (bool, error) {
 	}
 
 	if p.requireRecursiveNssPropagation {
-		_, err = checkAuthoritativeNss(fqdn, value, recursiveNameservers, false)
+		_, err = checkNameserversPropagation(fqdn, value, recursiveNameservers, false)
 		if err != nil {
 			return false, err
 		}
@@ -104,11 +104,11 @@ func (p preCheck) checkDNSPropagation(fqdn, value string) (bool, error) {
 		return false, err
 	}
 
-	return checkAuthoritativeNss(fqdn, value, authoritativeNss, true)
+	return checkNameserversPropagation(fqdn, value, authoritativeNss, true)
 }
 
-// checkAuthoritativeNss queries each of the given nameservers for the expected TXT record.
-func checkAuthoritativeNss(fqdn, value string, nameservers []string, addPort bool) (bool, error) {
+// checkNameserversPropagation queries each of the given nameservers for the expected TXT record.
+func checkNameserversPropagation(fqdn, value string, nameservers []string, addPort bool) (bool, error) {
 	for _, ns := range nameservers {
 		if addPort {
 			ns = net.JoinHostPort(ns, "53")

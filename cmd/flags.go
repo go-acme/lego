@@ -158,7 +158,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		&cli.BoolFlag{
 			Name:  flgDNSPropagationRNS,
-			Usage: "By setting this flag, use all the recursive nameservers to check the propagation of the TXT record.",
+			Usage: "By setting this flag to true, use all the recursive nameservers to check the propagation of the TXT record.",
 		},
 		&cli.DurationFlag{
 			Name:  flgDNSPropagationWait,

@@ -72,7 +72,7 @@ func TestCheckAuthoritativeNss(t *testing.T) {
 			t.Parallel()
 			ClearFqdnCache()
 
-			ok, _ := checkAuthoritativeNss(test.fqdn, test.value, test.ns)
+			ok, _ := checkNameserversPropagation(test.fqdn, test.value, test.ns, true)
 			assert.Equal(t, test.expected, ok, test.fqdn)
 		})
 	}
@@ -106,7 +106,7 @@ func TestCheckAuthoritativeNssErr(t *testing.T) {
 			t.Parallel()
 			ClearFqdnCache()
 
-			_, err := checkAuthoritativeNss(test.fqdn, test.value, test.ns)
+			_, err := checkNameserversPropagation(test.fqdn, test.value, test.ns, true)
 			require.Error(t, err)
 			assert.Contains(t, err.Error(), test.error)
 		})

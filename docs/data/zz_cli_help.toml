@@ -39,8 +39,10 @@ GLOBAL OPTIONS:
    --tls                                                        Use the TLS-ALPN-01 challenge to solve challenges. Can be mixed with other types of challenges. (default: false)
    --tls.port value                                             Set the port and interface to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port. (default: ":443")
    --dns value                                                  Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage.
-   --dns.disable-cp                                             By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers. (default: false)
-   --dns.propagation-wait value                                 By setting this flag, disables all the propagation checks and uses a wait duration instead. (default: 0s)
+   --dns.disable-cp                                             (deprecated) use dns.propagation-disable-ans instead. (default: false)
+   --dns.propagation-disable-ans                                By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers. (default: false)
+   --dns.propagation-rns                                        By setting this flag, use all the recursive nameservers to check the propagation of the TXT record. (default: false)
+   --dns.propagation-wait value                                 By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. (default: 0s)
    --dns.resolvers value [ --dns.resolvers value ]              Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination. For DNS-01 challenge verification, the authoritative DNS server is queried directly. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.
    --http-timeout value                                         Set the HTTP timeout value to a specific value in seconds. (default: 0)
    --dns-timeout value                                          Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries. (default: 10)

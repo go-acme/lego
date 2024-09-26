@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-acme/lego/v4/certificate"
@@ -11,38 +12,40 @@ import (
 
 // Flag names.
 const (
-	flgDomains             = "domains"
-	flgServer              = "server"
-	flgAcceptTOS           = "accept-tos"
-	flgEmail               = "email"
-	flgCSR                 = "csr"
-	flgEAB                 = "eab"
-	flgKID                 = "kid"
-	flgHMAC                = "hmac"
-	flgKeyType             = "key-type"
-	flgFilename            = "filename"
-	flgPath                = "path"
-	flgHTTP                = "http"
-	flgHTTPPort            = "http.port"
-	flgHTTPProxyHeader     = "http.proxy-header"
-	flgHTTPWebroot         = "http.webroot"
-	flgHTTPMemcachedHost   = "http.memcached-host"
-	flgHTTPS3Bucket        = "http.s3-bucket"
-	flgTLS                 = "tls"
-	flgTLSPort             = "tls.port"
-	flgDNS                 = "dns"
-	flgDNSDisableCP        = "dns.disable-cp"
-	flgDNSPropagationWait  = "dns.propagation-wait"
-	flgDNSResolvers        = "dns.resolvers"
-	flgHTTPTimeout         = "http-timeout"
-	flgDNSTimeout          = "dns-timeout"
-	flgPEM                 = "pem"
-	flgPFX                 = "pfx"
-	flgPFXPass             = "pfx.pass"
-	flgPFXFormat           = "pfx.format"
-	flgCertTimeout         = "cert.timeout"
-	flgOverallRequestLimit = "overall-request-limit"
-	flgUserAgent           = "user-agent"
+	flgDomains                  = "domains"
+	flgServer                   = "server"
+	flgAcceptTOS                = "accept-tos"
+	flgEmail                    = "email"
+	flgCSR                      = "csr"
+	flgEAB                      = "eab"
+	flgKID                      = "kid"
+	flgHMAC                     = "hmac"
+	flgKeyType                  = "key-type"
+	flgFilename                 = "filename"
+	flgPath                     = "path"
+	flgHTTP                     = "http"
+	flgHTTPPort                 = "http.port"
+	flgHTTPProxyHeader          = "http.proxy-header"
+	flgHTTPWebroot              = "http.webroot"
+	flgHTTPMemcachedHost        = "http.memcached-host"
+	flgHTTPS3Bucket             = "http.s3-bucket"
+	flgTLS                      = "tls"
+	flgTLSPort                  = "tls.port"
+	flgDNS                      = "dns"
+	flgDNSDisableCP             = "dns.disable-cp"
+	flgDNSPropagationWait       = "dns.propagation-wait"
+	flgDNSPropagationDisableANS = "dns.propagation-disable-ans"
+	flgDNSPropagationRNS        = "dns.propagation-rns"
+	flgDNSResolvers             = "dns.resolvers"
+	flgHTTPTimeout              = "http-timeout"
+	flgDNSTimeout               = "dns-timeout"
+	flgPEM                      = "pem"
+	flgPFX                      = "pfx"
+	flgPFXPass                  = "pfx.pass"
+	flgPFXFormat                = "pfx.format"
+	flgCertTimeout              = "cert.timeout"
+	flgOverallRequestLimit      = "overall-request-limit"
+	flgUserAgent                = "user-agent"
 )
 
 func CreateFlags(defaultPath string) []cli.Flag {
@@ -147,11 +150,19 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		&cli.BoolFlag{
 			Name:  flgDNSDisableCP,
+			Usage: fmt.Sprintf("(deprecated) use %s instead.", flgDNSPropagationDisableANS),
+		},
+		&cli.BoolFlag{
+			Name:  flgDNSPropagationDisableANS,
 			Usage: "By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.",
+		},
+		&cli.BoolFlag{
+			Name:  flgDNSPropagationRNS,
+			Usage: "By setting this flag to true, use all the recursive nameservers to check the propagation of the TXT record.",
 		},
 		&cli.DurationFlag{
 			Name:  flgDNSPropagationWait,
-			Usage: "By setting this flag, disables all the propagation checks and uses a wait duration instead.",
+			Usage: "By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead.",
 		},
 		&cli.StringSliceFlag{
 			Name: flgDNSResolvers,

@@ -118,8 +118,9 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 }
 
 func setupDNS(ctx *cli.Context, client *lego.Client) error {
-	if ctx.IsSet(flgDNSDisableCP) && ctx.Bool(flgDNSDisableCP) && ctx.IsSet(flgDNSPropagationWait) {
-		return fmt.Errorf("'%s' and '%s' are mutually exclusive", flgDNSDisableCP, flgDNSPropagationWait)
+	err := checkPropagationExclusiveOptions(ctx)
+	if err != nil {
+		return err
 	}
 
 	wait := ctx.Duration(flgDNSPropagationWait)
@@ -138,19 +139,38 @@ func setupDNS(ctx *cli.Context, client *lego.Client) error {
 		dns01.CondOption(len(servers) > 0,
 			dns01.AddRecursiveNameservers(dns01.ParseNameservers(ctx.StringSlice(flgDNSResolvers)))),
 
-		dns01.CondOption(ctx.Bool(flgDNSDisableCP),
-			dns01.DisableCompletePropagationRequirement()),
+		dns01.CondOption(ctx.Bool(flgDNSDisableCP) || ctx.Bool(flgDNSPropagationDisableANS),
+			dns01.DisableAuthoritativeNssPropagationRequirement()),
 
-		dns01.CondOption(ctx.IsSet(flgDNSPropagationWait), dns01.WrapPreCheck(
-			func(domain, fqdn, value string, check dns01.PreCheckFunc) (bool, error) {
-				time.Sleep(wait)
-				return true, nil
-			},
-		)),
+		dns01.CondOption(ctx.Duration(flgDNSPropagationWait) > 0,
+			dns01.PropagationWaitOnly(wait)),
+
+		dns01.CondOption(ctx.Bool(flgDNSPropagationRNS),
+			dns01.RecursiveNSsPropagationRequirement()),
 
 		dns01.CondOption(ctx.IsSet(flgDNSTimeout),
 			dns01.AddDNSTimeout(time.Duration(ctx.Int(flgDNSTimeout))*time.Second)),
 	)
 
 	return err
+}
+
+func checkPropagationExclusiveOptions(ctx *cli.Context) error {
+	if ctx.IsSet(flgDNSDisableCP) {
+		log.Println("The flag '%s' is deprecated use '%s' instead.", flgDNSDisableCP, flgDNSPropagationDisableANS)
+	}
+
+	if (isSetBool(ctx, flgDNSDisableCP) || isSetBool(ctx, flgDNSPropagationDisableANS)) && ctx.IsSet(flgDNSPropagationWait) {
+		return fmt.Errorf("'%s' and '%s' are mutually exclusive", flgDNSPropagationDisableANS, flgDNSPropagationWait)
+	}
+
+	if isSetBool(ctx, flgDNSPropagationRNS) && ctx.IsSet(flgDNSPropagationWait) {
+		return fmt.Errorf("'%s' and '%s' are mutually exclusive", flgDNSPropagationRNS, flgDNSPropagationWait)
+	}
+
+	return nil
+}
+
+func isSetBool(ctx *cli.Context, name string) bool {
+	return ctx.IsSet(name) && ctx.Bool(name)
 }

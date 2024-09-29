@@ -100,11 +100,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("namesilo: %w", err)
 	}
 
-	err = d.CleanUp(domain, token, keyAuth)
-	if err != nil {
-		return err
-	}
-
 	_, err = d.client.DnsAddRecord(&namesilo.DnsAddRecordParams{
 		Domain: zoneName,
 		Type:   "TXT",

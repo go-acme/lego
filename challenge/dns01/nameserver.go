@@ -12,16 +12,12 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"golang.org/x/sync/singleflight"
 )
 
 const defaultResolvConf = "/etc/resolv.conf"
 
 var (
-	fqdnSoaCache sync.Map
-
-	// fqdnSoaGroup is a singleflight group to ensure that concurrent DNS lookups for SOA records are only executed once.
-	fqdnSoaGroup singleflight.Group
+	fqdnSoaCache = &sync.Map{}
 )
 
 var defaultNameservers = []string{
@@ -54,7 +50,7 @@ func (cache *soaCacheEntry) isExpired() bool {
 
 // ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
 func ClearFqdnCache() {
-	fqdnSoaCache = sync.Map{}
+	fqdnSoaCache = &sync.Map{}
 }
 
 func AddDNSTimeout(timeout time.Duration) ChallengeOption {
@@ -154,31 +150,23 @@ func FindZoneByFqdnCustom(fqdn string, nameservers []string) (string, error) {
 }
 
 func lookupSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) {
-	result, err, _ := fqdnSoaGroup.Do(fqdn, func() (interface{}, error) {
-		// Do we have it cached and is it still fresh?
-		entAny, ok := fqdnSoaCache.Load(fqdn)
-		if ok && entAny != nil {
-			ent, ok1 := entAny.(*soaCacheEntry)
-			if ok1 && !ent.isExpired() {
-				return ent, nil
-			}
+	// Do we have it cached and is it still fresh?
+	entAny, ok := fqdnSoaCache.Load(fqdn)
+	if ok && entAny != nil {
+		ent, ok1 := entAny.(*soaCacheEntry)
+		if ok1 && !ent.isExpired() {
+			return ent, nil
 		}
+	}
 
-		ent, err := fetchSoaByFqdn(fqdn, nameservers)
-		if err != nil {
-			return nil, err
-		}
-
-		fqdnSoaCache.Store(fqdn, ent)
-
-		return ent, nil
-	})
-
+	ent, err := fetchSoaByFqdn(fqdn, nameservers)
 	if err != nil {
 		return nil, err
 	}
 
-	return result.(*soaCacheEntry), nil
+	fqdnSoaCache.Store(fqdn, ent)
+
+	return ent, nil
 }
 
 func fetchSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) {

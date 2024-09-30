@@ -16,9 +16,7 @@ import (
 
 const defaultResolvConf = "/etc/resolv.conf"
 
-var (
-	fqdnSoaCache = &sync.Map{}
-)
+var fqdnSoaCache = &sync.Map{}
 
 var defaultNameservers = []string{
 	"google-public-dns-a.google.com:53",
@@ -50,7 +48,7 @@ func (cache *soaCacheEntry) isExpired() bool {
 
 // ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
 func ClearFqdnCache() {
-	fqdnSoaCache = &sync.Map{}
+	fqdnSoaCache.Clear()
 }
 
 func AddDNSTimeout(timeout time.Duration) ChallengeOption {

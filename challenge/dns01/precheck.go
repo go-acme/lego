@@ -44,11 +44,11 @@ func RecursiveNSsPropagationRequirement() ChallengeOption {
 	}
 }
 
-func PropagationWait(wait time.Duration, only bool) ChallengeOption {
+func PropagationWait(wait time.Duration, skipCheck bool) ChallengeOption {
 	return WrapPreCheck(func(domain, fqdn, value string, check PreCheckFunc) (bool, error) {
 		time.Sleep(wait)
 
-		if only {
+		if skipCheck {
 			return true, nil
 		}
 

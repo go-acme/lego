@@ -143,7 +143,9 @@ func setupDNS(ctx *cli.Context, client *lego.Client) error {
 			dns01.DisableAuthoritativeNssPropagationRequirement()),
 
 		dns01.CondOption(ctx.Duration(flgDNSPropagationWait) > 0,
-			dns01.PropagationWaitOnly(wait)),
+			// TODO(ldez): inside the next major version we will use flgDNSDisableCP here.
+			// This will change the meaning of this flag to really disable all propagation checks.
+			dns01.PropagationWait(wait, true)),
 
 		dns01.CondOption(ctx.Bool(flgDNSPropagationRNS),
 			dns01.RecursiveNSsPropagationRequirement()),

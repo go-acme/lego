@@ -1,5 +1,27 @@
 # Changelog
 
+## [v4.19.0] - 2024-10-03
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for HuaweiCloud
+- **[dnsprovider]** Add DNS provider for SelfHost.(de|eu)
+- **[lib,cli,dnsprovider]** Add `dns.propagation-rns` option
+- **[cli,dnsprovider]** Add `dns.propagation-wait` flag
+- **[lib,dnsprovider]** Add `PropagationWait` function
+
+### Changed
+
+- **[dnsprovider]** ionos: follow CNAME
+- **[lib,dnsprovider]** Reducing the lock strength of the soa cache entry
+- **[lib,cli,dnsprovider]** Deprecation of `dns.disable-cp`, replaced by `dns.propagation-disable-ans`.
+
+### Fixed
+
+- **[dnsprovider]** Use UTC instead of GMT when possible
+- **[dnsprovider]** namesilo: restrict CleanUp
+- **[dnsprovider]** godaddy: fix cleanup
+
 ## [v4.18.0] - 2024-08-30
 
 ### Added

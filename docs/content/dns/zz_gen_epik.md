@@ -60,7 +60,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://docs.userapi.epik.com/v2/#/)
+- [API documentation](https://docs-userapi.epik.com/v2/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/epik/epik.toml -->

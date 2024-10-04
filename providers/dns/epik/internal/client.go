@@ -15,6 +15,8 @@ import (
 
 const defaultBaseURL = "https://usersapiv2.epik.com/v2"
 
+const defaultUserAgent = "go-acme/lego"
+
 // Client the Epik API client.
 type Client struct {
 	signature string
@@ -97,6 +99,8 @@ func (c Client) RemoveHostRecord(ctx context.Context, domain string, recordID st
 }
 
 func (c Client) do(req *http.Request, result any) error {
+	req.Header.Set("User-Agent", defaultUserAgent)
+
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)

@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 	client "github.com/sacloud/api-client-go"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/api"
@@ -95,7 +96,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 			AccessToken:       config.Token,
 			AccessTokenSecret: config.Secret,
 			HttpClient:        config.HTTPClient,
-			UserAgent:         fmt.Sprintf("go-acme/lego %s", iaas.DefaultUserAgent),
+			UserAgent:         fmt.Sprintf("%s %s", iaas.DefaultUserAgent, useragent.Get()),
 		},
 	}
 

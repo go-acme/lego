@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 	infoblox "github.com/infobloxopen/infoblox-go-client"
 )
 
@@ -31,10 +32,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-const (
-	defaultPoolConnections = 10
-	defaultUserAgent       = "go-acme/lego"
-)
+const defaultPoolConnections = 10
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
@@ -151,7 +149,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	defer func() { _ = connector.Logout() }()
 
-	objectManager := infoblox.NewObjectManager(connector, defaultUserAgent, "")
+	objectManager := infoblox.NewObjectManager(connector, useragent.Get(), "")
 
 	record, err := objectManager.CreateTXTRecord(dns01.UnFqdn(info.EffectiveFQDN), info.Value, uint(d.config.TTL), d.config.DNSView)
 	if err != nil {
@@ -176,7 +174,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	defer func() { _ = connector.Logout() }()
 
-	objectManager := infoblox.NewObjectManager(connector, defaultUserAgent, "")
+	objectManager := infoblox.NewObjectManager(connector, useragent.Get(), "")
 
 	// gets the record's unique ref from when we created it
 	d.recordRefsMu.Lock()

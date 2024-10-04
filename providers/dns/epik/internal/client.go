@@ -11,13 +11,10 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 )
 
 const defaultBaseURL = "https://usersapiv2.epik.com/v2"
-
-// The API server don't support User-Agent starting with `go-`, then this User-Agent is different from the other implementation.
-// https://github.com/go-acme/lego/issues/2268#issuecomment-2394007004
-const defaultUserAgent = "goacme/lego"
 
 // Client the Epik API client.
 type Client struct {
@@ -101,7 +98,7 @@ func (c Client) RemoveHostRecord(ctx context.Context, domain string, recordID st
 }
 
 func (c Client) do(req *http.Request, result any) error {
-	req.Header.Set("User-Agent", defaultUserAgent)
+	useragent.SetHeader(req.Header)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

@@ -15,6 +15,8 @@ import (
 
 const defaultBaseURL = "https://usersapiv2.epik.com/v2"
 
+// The API server don't support User-Agent starting with `go-`, then this User-Agent is different from the other implementation.
+// https://github.com/go-acme/lego/issues/2268#issuecomment-2394007004
 const defaultUserAgent = "goacme/lego"
 
 // Client the Epik API client.

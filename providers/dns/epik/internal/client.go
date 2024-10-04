@@ -15,7 +15,7 @@ import (
 
 const defaultBaseURL = "https://usersapiv2.epik.com/v2"
 
-const defaultUserAgent = "go-acme/lego"
+const defaultUserAgent = "goacme/lego"
 
 // Client the Epik API client.
 type Client struct {

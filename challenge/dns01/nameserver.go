@@ -48,7 +48,11 @@ func (cache *soaCacheEntry) isExpired() bool {
 
 // ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
 func ClearFqdnCache() {
-	fqdnSoaCache.Clear()
+	// TODO(ldez): use `fqdnSoaCache.Clear()` when updating to go1.23
+	fqdnSoaCache.Range(func(k, v any) bool {
+		fqdnSoaCache.Delete(k)
+		return true
+	})
 }
 
 func AddDNSTimeout(timeout time.Duration) ChallengeOption {

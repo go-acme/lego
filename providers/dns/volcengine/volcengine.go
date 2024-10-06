@@ -111,17 +111,22 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneID, err := d.getZoneID(ctx, info.EffectiveFQDN)
+	zone, err := d.getZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("volcengine: get zone ID: %w", err)
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, deref(zone.ZoneName))
+	if err != nil {
+		return fmt.Errorf("volcengine: %w", err)
+	}
+
 	crr := &volc.CreateRecordRequest{
-		Host:  pointer(dns01.UnFqdn(info.EffectiveFQDN)),
+		Host:  pointer(subDomain),
 		TTL:   pointer(int64(d.config.TTL)),
 		Type:  pointer("TXT"),
 		Value: pointer(info.Value),
-		ZID:   zoneID,
+		ZID:   zone.ZID,
 	}
 
 	record, err := d.client.CreateRecord(ctx, crr)
@@ -158,7 +163,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) getZoneID(ctx context.Context, fqdn string) (*int64, error) {
+func (d *DNSProvider) getZone(ctx context.Context, fqdn string) (volc.TopZoneResponse, error) {
 	for _, index := range dns.Split(fqdn) {
 		domain := fqdn[index:]
 
@@ -169,7 +174,7 @@ func (d *DNSProvider) getZoneID(ctx context.Context, fqdn string) (*int64, error
 
 		zones, err := d.client.ListZones(ctx, lzr)
 		if err != nil {
-			return nil, fmt.Errorf("list zones: %w", err)
+			return volc.TopZoneResponse{}, fmt.Errorf("list zones: %w", err)
 		}
 
 		total := deref(zones.Total)
@@ -179,13 +184,13 @@ func (d *DNSProvider) getZoneID(ctx context.Context, fqdn string) (*int64, error
 		}
 
 		if total > 1 {
-			return nil, fmt.Errorf("too many zone for %s", domain)
+			return volc.TopZoneResponse{}, fmt.Errorf("too many zone for %s", domain)
 		}
 
-		return zones.Zones[0].ZID, nil
+		return zones.Zones[0], nil
 	}
 
-	return nil, fmt.Errorf("zone no found for fqdn: %s", fqdn)
+	return volc.TopZoneResponse{}, fmt.Errorf("zone no found for fqdn: %s", fqdn)
 }
 
 // https://github.com/volcengine/volc-sdk-golang/tree/main/service/dns

@@ -1,5 +1,11 @@
 # Changelog
 
+## [v4.19.2] - 2024-10-06
+
+### Fixed
+
+- **[lib]** go1.22 compatibility
+
 ## [v4.19.1] - 2024-10-06
 
 ### Fixed

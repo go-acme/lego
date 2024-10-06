@@ -1,5 +1,12 @@
 # Changelog
 
+## [v4.19.1] - 2024-10-06
+
+### Fixed
+
+- **[dnsprovider]** selectelv2: use baseURL from configuration
+- **[dnsprovider]** epik: add User-Agent
+
 ## [v4.19.0] - 2024-10-03
 
 ### Added

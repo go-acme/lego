@@ -55,8 +55,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 240*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
 		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, volc.Timeout*time.Second),
 	}
 }

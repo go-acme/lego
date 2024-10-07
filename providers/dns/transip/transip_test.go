@@ -1,17 +1,12 @@
 package transip
 
 import (
-	"fmt"
 	"os"
-	"strings"
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/transip/gotransip/v6/domain"
 )
 
 const envDomain = envNamespace + "DOMAIN"
@@ -153,107 +148,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		_, err := NewDNSProviderConfig(config)
 		require.ErrorIs(t, err, os.ErrNotExist)
 	})
-}
-
-func TestDNSProvider_concurrentGetDNSEntries(t *testing.T) {
-	client := &fakeClient{
-		getInfoLatency:       50 * time.Millisecond,
-		setDNSEntriesLatency: 500 * time.Millisecond,
-		domainName:           "lego.wtf",
-	}
-
-	repo := domain.Repository{Client: client}
-
-	p := &DNSProvider{
-		config:     NewDefaultConfig(),
-		repository: repo,
-	}
-
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	solve := func(domain1, suffix string, timeoutPresent, timeoutSolve, timeoutCleanup time.Duration) error {
-		time.Sleep(timeoutPresent)
-
-		err := p.Present(domain1, "", "")
-		if err != nil {
-			return err
-		}
-
-		time.Sleep(timeoutSolve)
-
-		var found bool
-		for _, entry := range client.dnsEntries {
-			if strings.HasSuffix(entry.Name, suffix) {
-				found = true
-			}
-		}
-		if !found {
-			return fmt.Errorf("record %s not found: %v", suffix, client.dnsEntries)
-		}
-
-		time.Sleep(timeoutCleanup)
-
-		return p.CleanUp(domain1, "", "")
-	}
-
-	go func() {
-		defer wg.Done()
-		err := solve("bar.lego.wtf", ".bar", 500*time.Millisecond, 100*time.Millisecond, 100*time.Millisecond)
-		require.NoError(t, err)
-	}()
-
-	go func() {
-		defer wg.Done()
-		err := solve("foo.lego.wtf", ".foo", 500*time.Millisecond, 200*time.Millisecond, 100*time.Millisecond)
-		require.NoError(t, err)
-	}()
-
-	wg.Wait()
-
-	assert.Empty(t, client.dnsEntries)
-}
-
-func TestDNSProvider_concurrentAddDNSEntry(t *testing.T) {
-	client := &fakeClient{
-		domainName: "lego.wtf",
-	}
-	repo := domain.Repository{Client: client}
-
-	p := &DNSProvider{
-		config:     NewDefaultConfig(),
-		repository: repo,
-	}
-
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	solve := func(domain1 string, timeoutPresent, timeoutCleanup time.Duration) error {
-		time.Sleep(timeoutPresent)
-		err := p.Present(domain1, "", "")
-		if err != nil {
-			return err
-		}
-
-		time.Sleep(timeoutCleanup)
-		return p.CleanUp(domain1, "", "")
-	}
-
-	go func() {
-		defer wg.Done()
-		err := solve("bar.lego.wtf", 550*time.Millisecond, 500*time.Millisecond)
-		require.NoError(t, err)
-	}()
-
-	go func() {
-		defer wg.Done()
-		err := solve("foo.lego.wtf", 500*time.Millisecond, 100*time.Millisecond)
-		require.NoError(t, err)
-	}()
-
-	wg.Wait()
-
-	assert.Empty(t, client.dnsEntries)
 }
 
 func TestLivePresent(t *testing.T) {

@@ -139,6 +139,7 @@ func allDNSCodes() string {
 		"versio",
 		"vinyldns",
 		"vkcloud",
+		"volcengine",
 		"vscale",
 		"vultr",
 		"webnames",
@@ -2875,6 +2876,30 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/vkcloud`)
+
+	case "volcengine":
+		// generated from: providers/dns/volcengine/volcengine.toml
+		ew.writeln(`Configuration for Volcano Engine/火山引擎.`)
+		ew.writeln(`Code:	'volcengine'`)
+		ew.writeln(`Since:	'v4.19.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "VOLC_ACCESSKEY":	Access Key ID (AK)`)
+		ew.writeln(`	- "VOLC_SECRETKEY":	Secret Access Key (SK)`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "VOLC_HOST":	API host`)
+		ew.writeln(`	- "VOLC_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "VOLC_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "VOLC_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "VOLC_REGION":	Region`)
+		ew.writeln(`	- "VOLC_SCHEME":	API scheme`)
+		ew.writeln(`	- "VOLC_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/volcengine`)
 
 	case "vscale":
 		// generated from: providers/dns/vscale/vscale.toml

@@ -12,6 +12,7 @@ import (
 	"github.com/exoscale/egoscale/v3/credentials"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 )
 
 // Environment variables names.
@@ -85,7 +86,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		credentials.NewStaticCredentials(config.APIKey, config.APISecret),
 		egoscale.ClientOptWithEndpoint(egoscale.Endpoint(config.Endpoint)),
 		egoscale.ClientOptWithHTTPClient(&http.Client{Timeout: config.HTTPTimeout}),
-		egoscale.ClientOptWithUserAgent("go-acme/lego"),
+		egoscale.ClientOptWithUserAgent(useragent.Get()),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("exoscale: initializing client: %w", err)

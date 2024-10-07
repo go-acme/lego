@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 	selectelapi "github.com/selectel/domains-go/pkg/v2"
 	"github.com/selectel/go-selvpcclient/v3/selvpcclient"
 )
@@ -24,8 +25,6 @@ const (
 	defaultPollingInterval    = 5 * time.Second
 	defaultHTTPTimeout        = 30 * time.Second
 )
-
-const defaultUserAgent = "go-acme/lego"
 
 const (
 	envNamespace = "SELECTELV2_"
@@ -114,7 +113,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	headers := http.Header{}
-	headers.Set("User-Agent", defaultUserAgent)
+	useragent.SetHeader(headers)
 
 	return &DNSProvider{
 		baseClient: selectelapi.NewClient(config.BaseURL, config.HTTPClient, headers),

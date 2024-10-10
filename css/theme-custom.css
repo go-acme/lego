@@ -1,0 +1,6 @@
+#top-bar-sticky-wrapper,
+#top-bar,
+#body-inner {
+  max-width: 72em;
+  margin: 0 auto;
+}

@@ -20,7 +20,7 @@ import (
 // Flag names.
 const (
 	flgDays                   = "days"
-	flgARIEnable              = "ari-enable"
+	flgARIDisable             = "ari-disable"
 	flgARIWaitToRenewDuration = "ari-wait-to-renew-duration"
 	flgReuseKey               = "reuse-key"
 	flgRenewHook              = "renew-hook"
@@ -61,8 +61,8 @@ func createRenew() *cli.Command {
 				Usage: "The number of days left on a certificate to renew it.",
 			},
 			&cli.BoolFlag{
-				Name:  flgARIEnable,
-				Usage: "Use the renewalInfo endpoint (draft-ietf-acme-ari) to check if a certificate should be renewed.",
+				Name:  flgARIDisable,
+				Usage: "Do not use the renewalInfo endpoint (draft-ietf-acme-ari) to check if a certificate should be renewed.",
 			},
 			&cli.DurationFlag{
 				Name:  flgARIWaitToRenewDuration,
@@ -151,7 +151,7 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 	cert := certificates[0]
 
 	var ariRenewalTime *time.Time
-	if ctx.Bool(flgARIEnable) {
+	if !ctx.Bool(flgARIDisable) {
 		ariRenewalTime = getARIRenewalTime(ctx, cert, domain, client)
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
@@ -209,7 +209,7 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		AlwaysDeactivateAuthorizations: ctx.Bool(flgAlwaysDeactivateAuthorizations),
 	}
 
-	if ctx.Bool(flgARIEnable) {
+	if !ctx.Bool(flgARIDisable) {
 		request.ReplacesCertID, err = certificate.MakeARICertID(cert)
 		if err != nil {
 			log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)
@@ -250,7 +250,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	cert := certificates[0]
 
 	var ariRenewalTime *time.Time
-	if ctx.Bool(flgARIEnable) {
+	if !ctx.Bool(flgARIDisable) {
 		ariRenewalTime = getARIRenewalTime(ctx, cert, domain, client)
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
@@ -279,7 +279,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 		AlwaysDeactivateAuthorizations: ctx.Bool(flgAlwaysDeactivateAuthorizations),
 	}
 
-	if ctx.Bool(flgARIEnable) {
+	if !ctx.Bool(flgARIDisable) {
 		request.ReplacesCertID, err = certificate.MakeARICertID(cert)
 		if err != nil {
 			log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)

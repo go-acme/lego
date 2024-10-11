@@ -1,6 +1,6 @@
 Name = "Porkbun"
 Description = ''''''
-URL = "https://porkbun.com/"
+URL = "https://api.porkbun.com/"
 Code = "porkbun"
 Since = "v4.4.0"
 

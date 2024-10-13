@@ -156,14 +156,14 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return allinkl.NewDNSProvider()
 	case "arvancloud":
 		return arvancloud.NewDNSProvider()
-	case "azure":
-		return azure.NewDNSProvider()
-	case "azuredns":
-		return azuredns.NewDNSProvider()
 	case "auroradns":
 		return auroradns.NewDNSProvider()
 	case "autodns":
 		return autodns.NewDNSProvider()
+	case "azure":
+		return azure.NewDNSProvider()
+	case "azuredns":
+		return azuredns.NewDNSProvider()
 	case "bindman":
 		return bindman.NewDNSProvider()
 	case "bluecat":

@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,50 +29,61 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	return client, mux
 }
 
+func checkAuthorizationHeader(req *http.Request) error {
+	val := req.Header.Get("Authorization")
+	if val != "Bearer secret" {
+		return fmt.Errorf("invalid header value, got: %s want %s", val, "Bearer secret")
+	}
+	return nil
+}
+
+func writeResponse(rw http.ResponseWriter, statusCode int, filename string) error {
+	file, err := os.Open(filepath.Join("fixtures", filename))
+	if err != nil {
+		return err
+	}
+
+	defer func() { _ = file.Close() }()
+
+	rw.WriteHeader(statusCode)
+
+	_, err = io.Copy(rw, file)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func TestClient_CreateRecord(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/v1/domains/example.com/dns-records", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
+	mux.HandleFunc("POST /v1/domains/example.com/dns-records", func(rw http.ResponseWriter, req *http.Request) {
+		err := checkAuthorizationHeader(req)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
-		auth := req.Header.Get("Authorization")
-		if auth != "Bearer secret" {
-			http.Error(rw, fmt.Sprintf("invalid authentication token: %s", auth), http.StatusUnauthorized)
-			return
-		}
-
-		reqBody, err := io.ReadAll(req.Body)
+		content, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		expectedReqBody := `{"type":"TXT","value":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","subdomain":"_acme-challenge"}`
-		assert.Equal(t, expectedReqBody, string(bytes.TrimSpace(reqBody)))
+		if string(bytes.TrimSpace(content)) != `{"type":"TXT","value":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","subdomain":"_acme-challenge"}` {
+			http.Error(rw, "invalid request body: "+string(content), http.StatusBadRequest)
+			return
+		}
 
-		rw.WriteHeader(http.StatusOK)
-		_, err = fmt.Fprintf(rw, `{
-		  "dns_record": {
-			"type": "TXT",
-			"id": 123,
-			"data": {
-				"priority": 0,
-				"subdomain": "example.com",
-				"value": "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"
-			}
-		  },
-		  "response_id": "15095f25-aac3-4d60-a788-96cb5136f186"
-		}`)
+		err = writeResponse(rw, http.StatusOK, "createDomainDNSRecord.json")
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	})
 
-	payload := CreateRecordPayload{
+	payload := DNSRecord{
 		Type:      "TXT",
 		Value:     "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI",
 		SubDomain: "_acme-challenge",
@@ -79,27 +92,38 @@ func TestClient_CreateRecord(t *testing.T) {
 	response, err := client.CreateRecord(context.Background(), "example.com.", payload)
 	require.NoError(t, err)
 
-	expectedResponse := &CreateRecordResponse{
-		DNSRecord: DNSRecord{
-			Type: "TXT",
-			ID:   123,
-		},
+	expected := &DNSRecord{
+		Type: "TXT",
+		ID:   123,
 	}
-	assert.Equal(t, expectedResponse, response)
+
+	assert.Equal(t, expected, response)
+}
+
+func TestClient_CreateRecord_error(t *testing.T) {
+	client, mux := setupTest(t)
+
+	mux.HandleFunc("POST /v1/domains/example.com/dns-records", func(rw http.ResponseWriter, _ *http.Request) {
+		err := writeResponse(rw, http.StatusBadRequest, "error_bad_request.json")
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+
+	_, err := client.CreateRecord(context.Background(), "example.com.", DNSRecord{})
+	require.Error(t, err)
+
+	assert.EqualError(t, err, "400: Value must be a number conforming to the specified constraints (bad_request) [15095f25-aac3-4d60-a788-96cb5136f186]")
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/v1/domains/example.com/dns-records/123", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodDelete {
-			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
-			return
-		}
-
-		auth := req.Header.Get("Authorization")
-		if auth != "Bearer secret" {
-			http.Error(rw, fmt.Sprintf("invalid authentication token: %s", auth), http.StatusUnauthorized)
+	mux.HandleFunc("DELETE /v1/domains/example.com/dns-records/123", func(rw http.ResponseWriter, req *http.Request) {
+		err := checkAuthorizationHeader(req)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -108,4 +132,21 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 	err := client.DeleteRecord(context.Background(), "example.com.", 123)
 	require.NoError(t, err)
+}
+
+func TestClient_DeleteRecord_error(t *testing.T) {
+	client, mux := setupTest(t)
+
+	mux.HandleFunc("DELETE /v1/domains/example.com/dns-records/123", func(rw http.ResponseWriter, _ *http.Request) {
+		err := writeResponse(rw, http.StatusBadRequest, "error_unauthorized.json")
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+
+	err := client.DeleteRecord(context.Background(), "example.com.", 123)
+	require.Error(t, err)
+
+	assert.EqualError(t, err, "401: Unauthorized (unauthorized) [15095f25-aac3-4d60-a788-96cb5136f186]")
 }

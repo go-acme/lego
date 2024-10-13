@@ -20,9 +20,9 @@ const (
 
 	EnvAuthToken = envNamespace + "AUTH_TOKEN"
 
-	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -37,11 +37,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 		},
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
 	}
 }
 
@@ -107,19 +107,19 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("timewebcloud: %w", err)
 	}
 
-	payload := internal.CreateRecordPayload{
+	record := internal.DNSRecord{
 		Type:      "TXT",
 		Value:     info.Value,
 		SubDomain: subDomain,
 	}
 
-	response, err := d.client.CreateRecord(context.Background(), authZone, payload)
+	response, err := d.client.CreateRecord(context.Background(), authZone, record)
 	if err != nil {
 		return fmt.Errorf("timewebcloud: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
-	d.recordIDs[token] = response.DNSRecord.ID
+	d.recordIDs[token] = response.ID
 	d.recordIDsMu.Unlock()
 
 	return nil

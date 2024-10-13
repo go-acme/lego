@@ -40,10 +40,10 @@ func NewClient(hc *http.Client) *Client {
 
 // CreateRecord creates a DNS record.
 // https://timeweb.cloud/api-docs#tag/Domeny/operation/createDomainDNSRecord
-func (c *Client) CreateRecord(ctx context.Context, zone string, payload CreateRecordPayload) (*CreateRecordResponse, error) {
+func (c *Client) CreateRecord(ctx context.Context, zone string, record DNSRecord) (*DNSRecord, error) {
 	endpoint := c.baseURL.JoinPath("v1", "domains", dns01.UnFqdn(zone), "dns-records")
 
-	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, payload)
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (c *Client) CreateRecord(ctx context.Context, zone string, payload CreateRe
 		return nil, err
 	}
 
-	return respData, nil
+	return respData.DNSRecord, nil
 }
 
 // DeleteRecord deletes a DNS record.
@@ -76,7 +76,7 @@ func (c *Client) do(req *http.Request, result any) error {
 		return errutils.NewHTTPDoError(req, err)
 	}
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode/100 != 2 {
 		return parseError(req, resp)

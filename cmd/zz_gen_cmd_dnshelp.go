@@ -131,6 +131,7 @@ func allDNSCodes() string {
 		"sonic",
 		"stackpath",
 		"tencentcloud",
+		"timewebcloud",
 		"transip",
 		"ultradns",
 		"variomedia",
@@ -2704,6 +2705,25 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/tencentcloud`)
+
+	case "timewebcloud":
+		// generated from: providers/dns/timewebcloud/timewebcloud.toml
+		ew.writeln(`Configuration for Timeweb Cloud.`)
+		ew.writeln(`Code:	'timewebcloud'`)
+		ew.writeln(`Since:	'v4.20.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "TIMEWEBCLOUD_AUTH_TOKEN":	Authentication token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "TIMEWEBCLOUD_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "TIMEWEBCLOUD_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "TIMEWEBCLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/timewebcloud`)
 
 	case "transip":
 		// generated from: providers/dns/transip/transip.toml

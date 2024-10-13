@@ -1,0 +1,8 @@
+{
+
+  "status_code": 400,
+  "message": "Value must be a number conforming to the specified constraints",
+  "error_code": "bad_request",
+  "response_id": "15095f25-aac3-4d60-a788-96cb5136f186"
+
+}

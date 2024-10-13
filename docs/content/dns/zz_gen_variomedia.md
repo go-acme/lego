@@ -47,10 +47,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `DODE_SEQUENCE_INTERVAL` | Time between sequential requests |
 | `VARIOMEDIA_HTTP_TIMEOUT` | API request timeout |
 | `VARIOMEDIA_POLLING_INTERVAL` | Time between DNS propagation check |
 | `VARIOMEDIA_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `VARIOMEDIA_SEQUENCE_INTERVAL` | Time between sequential requests |
 | `VARIOMEDIA_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

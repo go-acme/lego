@@ -20,10 +20,10 @@ import (
 )
 
 const (
-	root = "../../"
+	root = "../../../"
 
-	mdTemplate  = root + "internal/dnsdocs/dns.md.tmpl"
-	cliTemplate = root + "internal/dnsdocs/dns.go.tmpl"
+	mdTemplate  = root + "internal/dns/docs/dns.md.tmpl"
+	cliTemplate = root + "internal/dns/docs/dns.go.tmpl"
 	cliOutput   = root + "cmd/zz_gen_cmd_dnshelp.go"
 	docOutput   = root + "docs/content/dns"
 	readmePath  = root + "README.md"
@@ -35,7 +35,6 @@ const (
 )
 
 func main() {
-
 	models, err := descriptors.GetProviderInformation(root)
 	if err != nil {
 		log.Fatal(err)
@@ -43,7 +42,7 @@ func main() {
 
 	for _, m := range models.Providers {
 		// generate documentation
-		err := generateDocumentation(m)
+		err = generateDocumentation(m)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -72,6 +71,8 @@ func generateDocumentation(m descriptors.Provider) error {
 		return err
 	}
 
+	defer func() { _ = file.Close() }()
+
 	return template.Must(template.ParseFiles(mdTemplate)).Execute(file, m)
 }
 
@@ -82,6 +83,8 @@ func generateCLIHelp(models *descriptors.Providers) error {
 	if err != nil {
 		return err
 	}
+
+	defer func() { _ = file.Close() }()
 
 	tlt := template.New(filepath.Base(cliTemplate)).Funcs(map[string]interface{}{
 		"safe": func(src string) string {

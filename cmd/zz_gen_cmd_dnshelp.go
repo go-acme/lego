@@ -2778,10 +2778,10 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "DODE_SEQUENCE_INTERVAL":	Time between sequential requests`)
 		ew.writeln(`	- "VARIOMEDIA_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "VARIOMEDIA_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "VARIOMEDIA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "VARIOMEDIA_SEQUENCE_INTERVAL":	Time between sequential requests`)
 		ew.writeln(`	- "VARIOMEDIA_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

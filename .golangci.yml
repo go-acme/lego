@@ -1,5 +1,45 @@
-run:
-  timeout: 10m
+linters:
+  enable-all: true
+  disable:
+    - gomnd # deprecated
+    - cyclop # duplicate of gocyclo
+    - sqlclosecheck # not relevant (SQL)
+    - rowserrcheck # not relevant (SQL)
+    - execinquery # not relevant (SQL)
+    - lll
+    - gosec
+    - dupl # not relevant
+    - prealloc # too many false-positive
+    - bodyclose # too many false-positive
+    - mnd
+    - testpackage # not relevant
+    - tparallel # not relevant
+    - paralleltest # not relevant
+    - nestif # too many false-positive
+    - wrapcheck
+    - err113 # not relevant
+    - nlreturn # not relevant
+    - wsl # not relevant
+    - exhaustive # not relevant
+    - exhaustruct # not relevant
+    - makezero # not relevant
+    - forbidigo
+    - varnamelen # not relevant
+    - nilnil # not relevant
+    - ireturn # not relevant
+    - contextcheck # too many false-positive
+    - tenv # we already have a test "framework" to handle env vars
+    - noctx
+    - forcetypeassert
+    - tagliatelle
+    - errname
+    - errchkjson
+    - nonamedreturns
+    - musttag # false-positive https://github.com/junk1tm/musttag/issues/17
+    - gosmopolitan  # not relevant
+    - exportloopref # Useless with go1.22
+    - canonicalheader # Can create side effects in the context of API clients
+    - usestdlibvars # false-positive https://github.com/sashamelentyev/usestdlibvars/issues/96
 
 linters-settings:
   govet:
@@ -96,50 +136,18 @@ linters-settings:
     sprintf1: true
     strconcat: false
 
-linters:
-  enable-all: true
-  disable:
-    - gomnd # deprecated
-    - cyclop # duplicate of gocyclo
-    - sqlclosecheck # not relevant (SQL)
-    - rowserrcheck # not relevant (SQL)
-    - execinquery # not relevant (SQL)
-    - lll
-    - gosec
-    - dupl # not relevant
-    - prealloc # too many false-positive
-    - bodyclose # too many false-positive
-    - mnd
-    - testpackage # not relevant
-    - tparallel # not relevant
-    - paralleltest # not relevant
-    - nestif # too many false-positive
-    - wrapcheck
-    - err113 # not relevant
-    - nlreturn # not relevant
-    - wsl # not relevant
-    - exhaustive # not relevant
-    - exhaustruct # not relevant
-    - makezero # not relevant
-    - forbidigo
-    - varnamelen # not relevant
-    - nilnil # not relevant
-    - ireturn # not relevant
-    - contextcheck # too many false-positive
-    - tenv # we already have a test "framework" to handle env vars
-    - noctx
-    - forcetypeassert
-    - tagliatelle
-    - errname
-    - errchkjson
-    - nonamedreturns
-    - musttag # false-positive https://github.com/junk1tm/musttag/issues/17
-    - gosmopolitan  # not relevant
-    - exportloopref # Useless with go1.22
-    - canonicalheader # Can create side effects in the context of API clients
-    - usestdlibvars # false-positive https://github.com/sashamelentyev/usestdlibvars/issues/96
+run:
+  timeout: 10m
+
+output:
+  show-stats: true
+  sort-results: true
+  sort-order:
+    - linter
+    - file
 
 issues:
+  exclude-generated: strict
   exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
@@ -160,86 +168,96 @@ issues:
     - path: providers/dns/dns_providers.go
       linters:
         - gocyclo
-    - path: providers/dns/gcloud/googlecloud_test.go
-      text: 'string `(lego\.wtf|manhattan)` has (\d+) occurrences, make it a constant'
-    - path: providers/dns/zoneee/zoneee_test.go
-      text: 'string `(bar|foo)` has (\d+) occurrences, make it a constant'
     - path: certcrypto/crypto.go
       text: '(tlsFeatureExtensionOID|ocspMustStapleFeature) is a global variable'
+      linters:
+        - gochecknoglobals
     - path: challenge/dns01/nameserver.go
       text: '(defaultNameservers|recursiveNameservers|fqdnSoaCache|muFqdnSoaCache) is a global variable'
+      linters:
+        - gochecknoglobals
     - path: challenge/dns01/nameserver_.+.go
       text: 'dnsTimeout is a global variable'
+      linters:
+        - gochecknoglobals
     - path: challenge/dns01/nameserver_test.go
       text: 'findXByFqdnTestCases is a global variable'
+      linters:
+        - gochecknoglobals
     - path: challenge/http01/domain_matcher.go
       text: 'string `Host` has \d occurrences, make it a constant'
+      linters:
+        - goconst
     - path: challenge/http01/domain_matcher.go
       text: 'cyclomatic complexity \d+ of func `parseForwardedHeader` is high'
+      linters:
+        - gocyclo
     - path: challenge/http01/domain_matcher.go
       text: "Function 'parseForwardedHeader' has too many statements"
+      linters:
+        - funlen
     - path: challenge/tlsalpn01/tls_alpn_challenge.go
       text: 'idPeAcmeIdentifierV1 is a global variable'
+      linters:
+        - gochecknoglobals
     - path: log/logger.go
       text: 'Logger is a global variable'
+      linters:
+        - gochecknoglobals
     - path: 'e2e/(dnschallenge/)?[\d\w]+_test.go'
       text: load is a global variable
+      linters:
+        - gochecknoglobals
     - path: 'providers/dns/([\d\w]+/)*[\d\w]+_test.go'
       text: 'envTest is a global variable'
+      linters:
+        - gochecknoglobals
     - path: 'providers/http/([\d\w]+/)*[\d\w]+_test.go'
       text: 'envTest is a global variable'
+      linters:
+        - gochecknoglobals
     - path: providers/dns/namecheap/namecheap_test.go
       text: 'testCases is a global variable'
+      linters:
+        - gochecknoglobals
     - path: providers/dns/acmedns/acmedns_test.go
       text: 'egTestAccount is a global variable'
+      linters:
+        - gochecknoglobals
     - path: providers/http/memcached/memcached_test.go
       text: 'memcachedHosts is a global variable'
-    - path: providers/dns/sakuracloud/client_test.go
-      text: 'cyclomatic complexity 13 of func `(TestDNSProvider_cleanupTXTRecord_concurrent|TestDNSProvider_addTXTRecord_concurrent)` is high'
-    - path: providers/dns/dns_providers.go
-      text: "Function 'NewDNSChallengeProviderByName' has too many statements"
-    - path: cmd/flags.go
-      text: "Function 'CreateFlags' is too long"
-    - path: certificate/certificates.go
-      text: "Function 'GetOCSP' is too long"
-    - path: providers/dns/otc/client.go
-      text: "Function 'loginRequest' is too long"
-    - path: providers/dns/gandi/gandi.go
-      text: "Function 'Present' is too long"
+      linters:
+        - gochecknoglobals
     - path: cmd/zz_gen_cmd_dnshelp.go
       linters:
         - gocyclo
         - funlen
     - path: providers/dns/checkdomain/internal/types.go
       text: '`payed` is a misspelling of `paid`'
-    - path: providers/dns/namecheap/namecheap_test.go
-      text: 'cognitive complexity (\d+) of func `TestDNSProvider_getHosts` is high'
+      linters:
+        - misspell
     - path: platform/tester/env_test.go
       linters:
         - thelper
     - path: providers/dns/oraclecloud/oraclecloud_test.go
       text: 'SA1019: x509.EncryptPEMBlock has been deprecated since Go 1.16'
-    - path: challenge/http01/domain_matcher.go
-      text: 'yodaStyleExpr'
-    - path: providers/dns/dns_providers.go
-      text: 'Function name: NewDNSChallengeProviderByName,'
+      linters:
+        - staticcheck
     - path: providers/dns/sakuracloud/wrapper.go
       text: 'mu is a global variable'
-    - path: providers/dns/hosttech/internal/client_test.go
-      text: 'Duplicate words \(0\) found'
+      linters:
+        - gochecknoglobals
     - path: cmd/cmd_renew.go
       text: 'cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high'
+      linters:
+        - gocyclo
     - path: providers/dns/cpanel/cpanel.go
       text: 'cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high'
+      linters:
+        - gocyclo
 
     # Those elements have been replaced by non-exposed structures.
     - path: providers/dns/linode/linode_test.go
       linters:
         - staticcheck
       text: "SA1019: linodego\\.(DomainsPagedResponse|DomainRecordsPagedResponse) is deprecated"
-
-output:
-  sort-results: true
-  sort-order:
-    - linter
-    - file

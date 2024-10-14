@@ -16,12 +16,12 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/BurntSushi/toml"
+	"github.com/go-acme/lego/v4/internal/dns/descriptors"
 )
 
 const (
-	root        = "../../"
-	dnsPackage  = root + "providers/dns"
+	root = "../../"
+
 	mdTemplate  = root + "internal/dnsdocs/dns.md.tmpl"
 	cliTemplate = root + "internal/dnsdocs/dns.go.tmpl"
 	cliOutput   = root + "cmd/zz_gen_cmd_dnshelp.go"
@@ -34,39 +34,19 @@ const (
 	endLine   = "<!-- END DNS PROVIDERS LIST -->"
 )
 
-type Model struct {
-	Name          string         // Real name of the DNS provider
-	Code          string         // DNS code
-	Since         string         // First lego version
-	URL           string         // DNS provider URL
-	Description   string         // Provider summary
-	Example       string         // CLI example
-	Configuration *Configuration // Environment variables
-	Links         *Links         // Links
-	Additional    string         // Extra documentation
-	GeneratedFrom string         // Source file
-}
-
-type Configuration struct {
-	Credentials map[string]string
-	Additional  map[string]string
-}
-
-type Links struct {
-	API      string
-	GoClient string
-}
-
-type Providers struct {
-	Providers []Model
-}
-
 func main() {
-	models := &Providers{}
 
-	err := filepath.Walk(dnsPackage, walker(models))
+	models, err := descriptors.GetProviderInformation(root)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	for _, m := range models.Providers {
+		// generate documentation
+		err := generateDocumentation(m)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	// generate CLI help
@@ -84,36 +64,7 @@ func main() {
 	fmt.Printf("Documentation for %d DNS providers has been generated.\n", len(models.Providers)+1)
 }
 
-func walker(prs *Providers) func(string, os.FileInfo, error) error {
-	return func(path string, _ os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if filepath.Ext(path) == ".toml" {
-			m := Model{}
-
-			m.GeneratedFrom, err = filepath.Rel(root, path)
-			if err != nil {
-				return err
-			}
-
-			_, err := toml.DecodeFile(path, &m)
-			if err != nil {
-				return err
-			}
-
-			prs.Providers = append(prs.Providers, m)
-
-			// generate documentation
-			return generateDocumentation(m)
-		}
-
-		return nil
-	}
-}
-
-func generateDocumentation(m Model) error {
+func generateDocumentation(m descriptors.Provider) error {
 	filename := filepath.Join(docOutput, "zz_gen_"+m.Code+".md")
 
 	file, err := os.Create(filename)
@@ -124,7 +75,7 @@ func generateDocumentation(m Model) error {
 	return template.Must(template.ParseFiles(mdTemplate)).Execute(file, m)
 }
 
-func generateCLIHelp(models *Providers) error {
+func generateCLIHelp(models *descriptors.Providers) error {
 	filename := filepath.Clean(cliOutput)
 
 	file, err := os.Create(filename)
@@ -154,7 +105,7 @@ func generateCLIHelp(models *Providers) error {
 	return err
 }
 
-func generateReadMe(models *Providers) error {
+func generateReadMe(models *descriptors.Providers) error {
 	maximum, lines := extractTableData(models)
 
 	file, err := os.Open(readmePath)
@@ -203,7 +154,7 @@ func generateReadMe(models *Providers) error {
 	return os.WriteFile(readmePath, buffer.Bytes(), 0o666)
 }
 
-func extractTableData(models *Providers) (int, [][]string) {
+func extractTableData(models *descriptors.Providers) (int, [][]string) {
 	readmePattern := "[%s](https://go-acme.github.io/lego/dns/%s/)"
 
 	items := []string{fmt.Sprintf(readmePattern, "Manual", "manual")}

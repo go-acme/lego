@@ -1,0 +1,22 @@
+Name = "Abion"
+Description = ''''''
+URL = "https://abion.com"
+Code = "abion"
+Since = "v4.20.0"
+
+Example = '''
+ABION_API_KEY="xxxxxxxxxxxx" \
+lego --email you@example.com --dns abion --domains my.example.org run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    ABION_API_KEY = "API key"
+  [Configuration.Additional]
+    ABION_POLLING_INTERVAL = "Time between DNS propagation check"
+    ABION_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    ABION_TTL = "The TTL of the TXT record used for the DNS challenge"
+    ABION_HTTP_TIMEOUT = "API request timeout"
+
+[Links]
+  API = "https://demo.abion.com/pmapi-doc/openapi-ui/index.html"

@@ -86,7 +86,7 @@ func (p preCheck) checkDNSPropagation(fqdn, value string) (bool, error) {
 	// Initial attempt to resolve at the recursive NS (require to get CNAME)
 	r, err := dnsQuery(fqdn, dns.TypeTXT, recursiveNameservers, true)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("initial recursive nameserver: %w", err)
 	}
 
 	if r.Rcode == dns.RcodeSuccess {
@@ -96,7 +96,7 @@ func (p preCheck) checkDNSPropagation(fqdn, value string) (bool, error) {
 	if p.requireRecursiveNssPropagation {
 		_, err = checkNameserversPropagation(fqdn, value, recursiveNameservers, false)
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("recursive nameservers: %w", err)
 		}
 	}
 
@@ -109,7 +109,12 @@ func (p preCheck) checkDNSPropagation(fqdn, value string) (bool, error) {
 		return false, err
 	}
 
-	return checkNameserversPropagation(fqdn, value, authoritativeNss, true)
+	found, err := checkNameserversPropagation(fqdn, value, authoritativeNss, true)
+	if err != nil {
+		return found, fmt.Errorf("authoritative nameservers: %w", err)
+	}
+
+	return found, nil
 }
 
 // checkNameserversPropagation queries each of the given nameservers for the expected TXT record.

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<response>
+    <status>fail</status>
+    <errors>
+        <error code="4097">Access token expired or not found</error>
+    </errors>
+</response>

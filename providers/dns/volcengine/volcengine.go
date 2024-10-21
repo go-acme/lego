@@ -81,9 +81,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.AccessKey = values[EnvAccessKey]
 	config.SecretKey = values[EnvSecretKey]
-	config.Scheme = env.GetOrDefaultString(EnvScheme, "https")
-	config.Host = env.GetOrDefaultString(EnvHost, "open.volcengineapi.com")
-	config.Region = env.GetOrDefaultString(EnvRegion, volc.DefaultRegion)
 
 	return NewDNSProviderConfig(config)
 }
@@ -93,6 +90,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("volcengine: the configuration of the DNS provider is nil")
 	}
+	config.Scheme = env.GetOrDefaultString(EnvScheme, "https")
+	config.Host = env.GetOrDefaultString(EnvHost, "open.volcengineapi.com")
+	config.Region = env.GetOrDefaultString(EnvRegion, volc.DefaultRegion)
 
 	if config.AccessKey == "" || config.SecretKey == "" {
 		return nil, errors.New("volcengine: missing credentials")

@@ -54,6 +54,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
+		Scheme: env.GetOrDefaultString(EnvScheme, "https"),
+		Host:   env.GetOrDefaultString(EnvHost, "open.volcengineapi.com"),
+		Region: env.GetOrDefaultString(EnvRegion, volc.DefaultRegion),
+
 		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 240*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
@@ -90,9 +94,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("volcengine: the configuration of the DNS provider is nil")
 	}
-	config.Scheme = env.GetOrDefaultString(EnvScheme, "https")
-	config.Host = env.GetOrDefaultString(EnvHost, "open.volcengineapi.com")
-	config.Region = env.GetOrDefaultString(EnvRegion, volc.DefaultRegion)
 
 	if config.AccessKey == "" || config.SecretKey == "" {
 		return nil, errors.New("volcengine: missing credentials")

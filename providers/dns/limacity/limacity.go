@@ -153,7 +153,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	domainID, ok := d.domainIDs[token]
 	d.domainIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("liara: unknown domain ID for '%s' '%s'", info.EffectiveFQDN, token)
+		return fmt.Errorf("limacity: unknown domain ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
 	records, err := d.client.GetRecords(context.Background(), domainID)

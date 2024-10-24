@@ -179,7 +179,7 @@ func TestClient_ListRecords(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/dnszones/example.com/records/", testHandler(http.MethodGet, http.StatusNoContent, ""))
+	mux.HandleFunc("/dnszones/example.com/records/", testHandler(http.MethodPost, http.StatusNoContent, ""))
 
 	ctx := context.Background()
 

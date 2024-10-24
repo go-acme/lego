@@ -96,7 +96,11 @@ func (c Client) ListRecords(ctx context.Context, zone string) ([]Record, error) 
 // AddRecord adds a record.
 // https://beta.api.core-networks.de/doc/#functon_dnszones_records_add
 func (c Client) AddRecord(ctx context.Context, zone string, record Record) error {
-	endpoint := c.baseURL.JoinPath("dnszones", zone, "records")
+	endpoint := c.baseURL.JoinPath("dnszones", zone, "records", "/")
+
+	if record.Name == "" {
+		record.Name = "@"
+	}
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
@@ -115,6 +119,10 @@ func (c Client) AddRecord(ctx context.Context, zone string, record Record) error
 // https://beta.api.core-networks.de/doc/#functon_dnszones_records_delete
 func (c Client) DeleteRecords(ctx context.Context, zone string, record Record) error {
 	endpoint := c.baseURL.JoinPath("dnszones", zone, "records", "delete")
+
+	if record.Name == "" {
+		record.Name = "@"
+	}
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {

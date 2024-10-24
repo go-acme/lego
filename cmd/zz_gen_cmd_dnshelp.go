@@ -34,6 +34,7 @@ func allDNSCodes() string {
 		"cloudxns",
 		"conoha",
 		"constellix",
+		"corenetworks",
 		"cpanel",
 		"derak",
 		"desec",
@@ -623,6 +624,28 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/constellix`)
+
+	case "corenetworks":
+		// generated from: providers/dns/corenetworks/corenetworks.toml
+		ew.writeln(`Configuration for Core-Networks.`)
+		ew.writeln(`Code:	'corenetworks'`)
+		ew.writeln(`Since:	'v4.20.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "CORENETWORKS_LOGIN":	The username of the API account`)
+		ew.writeln(`	- "CORENETWORKS_PASSWORD":	The password`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CORENETWORKS_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "CORENETWORKS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "CORENETWORKS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "CORENETWORKS_SEQUENCE_INTERVAL":	Time between sequential requests`)
+		ew.writeln(`	- "CORENETWORKS_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/corenetworks`)
 
 	case "cpanel":
 		// generated from: providers/dns/cpanel/cpanel.toml

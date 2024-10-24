@@ -19,6 +19,7 @@ lego --email myemail@example.com --dns corenetworks --domains my.example.org run
     CORENETWORKS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     CORENETWORKS_TTL = "The TTL of the TXT record used for the DNS challenge"
     CORENETWORKS_HTTP_TIMEOUT = "API request timeout"
+    CORENETWORKS_SEQUENCE_INTERVAL = "Time between sequential requests"
 
 [Links]
   API = "https://beta.api.core-networks.de/doc/"

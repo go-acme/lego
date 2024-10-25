@@ -128,12 +128,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Data: info.Value,
 	}
 
-	err = d.client.AddRecord(ctx, zone, record)
+	err = d.client.AddRecord(ctx, dns01.UnFqdn(zone), record)
 	if err != nil {
 		return fmt.Errorf("corenetworks: add record: %w", err)
 	}
 
-	err = d.client.CommitRecords(ctx, zone)
+	err = d.client.CommitRecords(ctx, dns01.UnFqdn(zone))
 	if err != nil {
 		return fmt.Errorf("corenetworks: commit records: %w", err)
 	}
@@ -167,12 +167,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Data: info.Value,
 	}
 
-	err = d.client.DeleteRecords(ctx, zone, record)
+	err = d.client.DeleteRecords(ctx, dns01.UnFqdn(zone), record)
 	if err != nil {
 		return fmt.Errorf("corenetworks: delete records: %w", err)
 	}
 
-	err = d.client.CommitRecords(ctx, zone)
+	err = d.client.CommitRecords(ctx, dns01.UnFqdn(zone))
 	if err != nil {
 		return fmt.Errorf("corenetworks: commit records: %w", err)
 	}

@@ -1,0 +1,10 @@
+[
+  {
+    "name": "example.com",
+    "type": "master"
+  },
+  {
+    "name": "example.net",
+    "type": "slave"
+  }
+]

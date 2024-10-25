@@ -1,0 +1,11 @@
+
+<table>
+  {{- range . }}
+  <tr>
+   {{- range . }}
+   <td><a href="https://go-acme.github.io/lego/dns/{{ .Code }}/">{{ .Name }}</a></td>
+   {{- end }}
+  </tr>
+  {{- end }}
+</table>
+

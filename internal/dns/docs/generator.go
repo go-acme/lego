@@ -12,7 +12,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -166,8 +166,8 @@ func orderProviders(models *descriptors.Providers) [][]descriptors.Provider {
 
 	const nbCol = 4
 
-	sort.Slice(providers, func(i, j int) bool {
-		return strings.ToLower(providers[i].Name) < strings.ToLower(providers[j].Name)
+	slices.SortFunc(providers, func(a, b descriptors.Provider) int {
+		return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
 	})
 
 	var matrix [][]descriptors.Provider

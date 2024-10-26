@@ -1,0 +1,53 @@
+{
+  "code": 0,
+  "data": {
+    "results": [
+      {
+        "active": true,
+        "creation_date": "2012-02-05 7:37:28",
+        "dnskey": "",
+        "history": [
+          {
+            "date": "2019-06-19 17:40:09",
+            "is": true,
+            "source": "",
+            "was": ""
+          }
+        ],
+        "id": 12345,
+        "ip": "127.0.0.1",
+        "is_deleted": false,
+        "is_shadow": false,
+        "is_spamexperts_enabled": false,
+        "modification_date": "2018-11-28 6:57:05",
+        "name": "example.com",
+        "premium_dns": {
+          "sectigo": {
+            "autorenew": false,
+            "order_date": "2021-08-05 7:37:28",
+            "renewal_date": "2022-11-28 6:57:05",
+            "secured": false,
+            "website_id": 123456
+          }
+        },
+        "provider": "sectigo",
+        "records": [
+          {
+            "creation_date": "",
+            "ip": "127.0.0.1",
+            "modification_date": "",
+            "name": "example.com",
+            "prio": 1,
+            "ttl": 900,
+            "type": "CNAME",
+            "value": "abcd.example.com"
+          }
+        ],
+        "reseller_id": 123456,
+        "type": "master"
+      }
+    ],
+    "total": 1888
+  },
+  "desc": ""
+}

@@ -3,7 +3,7 @@
 {{- range . -}}
 <tr>
   {{- range . }}
-  <td><a href="https://go-acme.github.io/lego/dns/{{ .Code }}/">{{ .Name }}</a></td>
+  <td>{{if .Code }}<a href="https://go-acme.github.io/lego/dns/{{ .Code }}/">{{ .Name }}</a>{{end}}</td>
   {{- end }}
 </tr>
 {{- end -}}

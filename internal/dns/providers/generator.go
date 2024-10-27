@@ -4,6 +4,7 @@ package main
 
 import (
 	"bytes"
+	_ "embed"
 	"fmt"
 	"go/format"
 	"log"
@@ -18,9 +19,11 @@ import (
 const (
 	root = "../../../"
 
-	srcTemplate = "internal/dns/providers/dns_providers.go.tmpl"
-	outputPath  = "providers/dns/zz_gen_dns_providers.go"
+	outputPath = "providers/dns/zz_gen_dns_providers.go"
 )
+
+//go:embed dns_providers.go.tmpl
+var srcTemplate string
 
 func main() {
 	err := generate()
@@ -42,16 +45,14 @@ func generate() error {
 
 	defer func() { _ = file.Close() }()
 
-	tmplFile := filepath.Join(root, srcTemplate)
-
-	tlt := template.New(filepath.Base(tmplFile)).Funcs(map[string]interface{}{
-		"cleanName": func(src string) string {
-			return strings.ReplaceAll(src, "-", "")
-		},
-	})
-
 	b := &bytes.Buffer{}
-	err = template.Must(tlt.ParseFiles(tmplFile)).Execute(b, info)
+	err = template.Must(
+		template.New("").Funcs(map[string]interface{}{
+			"cleanName": func(src string) string {
+				return strings.ReplaceAll(src, "-", "")
+			},
+		}).Parse(srcTemplate),
+	).Execute(b, info)
 	if err != nil {
 		return err
 	}

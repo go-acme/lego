@@ -5,6 +5,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"embed"
 	"errors"
 	"fmt"
 	"go/format"
@@ -19,15 +20,21 @@ import (
 	"github.com/go-acme/lego/v4/internal/dns/descriptors"
 )
 
+//go:embed templates
+var templateFS embed.FS
+
 const (
 	root = "../../../"
 
-	mdTemplate     = root + "internal/dns/docs/dns.md.tmpl"
-	cliTemplate    = root + "internal/dns/docs/dns.go.tmpl"
-	cliOutput      = root + "cmd/zz_gen_cmd_dnshelp.go"
-	docOutput      = root + "docs/content/dns"
-	readmeTemplate = root + "internal/dns/docs/readme.md.tmpl"
-	readmePath     = root + "README.md"
+	cliOutput  = root + "cmd/zz_gen_cmd_dnshelp.go"
+	docOutput  = root + "docs/content/dns"
+	readmePath = root + "README.md"
+)
+
+const (
+	mdTemplate     = "templates/dns.md.tmpl"
+	cliTemplate    = "templates/dns.go.tmpl"
+	readmeTemplate = "templates/readme.md.tmpl"
 )
 
 const (
@@ -74,7 +81,7 @@ func generateDocumentation(m descriptors.Provider) error {
 
 	defer func() { _ = file.Close() }()
 
-	return template.Must(template.ParseFiles(mdTemplate)).Execute(file, m)
+	return template.Must(template.ParseFS(templateFS, mdTemplate)).Execute(file, m)
 }
 
 func generateCLIHelp(models *descriptors.Providers) error {
@@ -87,14 +94,14 @@ func generateCLIHelp(models *descriptors.Providers) error {
 
 	defer func() { _ = file.Close() }()
 
-	tlt := template.New(filepath.Base(cliTemplate)).Funcs(map[string]interface{}{
-		"safe": func(src string) string {
-			return strings.ReplaceAll(src, "`", "'")
-		},
-	})
-
 	b := &bytes.Buffer{}
-	err = template.Must(tlt.ParseFiles(cliTemplate)).Execute(b, models)
+	err = template.Must(
+		template.New(filepath.Base(cliTemplate)).Funcs(map[string]interface{}{
+			"safe": func(src string) string {
+				return strings.ReplaceAll(src, "`", "'")
+			},
+		}).ParseFS(templateFS, cliTemplate),
+	).Execute(b, models)
 	if err != nil {
 		return err
 	}
@@ -110,7 +117,7 @@ func generateCLIHelp(models *descriptors.Providers) error {
 }
 
 func generateReadMe(models *descriptors.Providers) error {
-	tpl := html.Must(html.New(filepath.Base(readmeTemplate)).ParseFiles(readmeTemplate))
+	tpl := html.Must(html.New(filepath.Base(readmeTemplate)).ParseFS(templateFS, readmeTemplate))
 	providers := orderProviders(models)
 
 	file, err := os.Open(readmePath)

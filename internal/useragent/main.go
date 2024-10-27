@@ -8,6 +8,18 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+const (
+	dnsBaseUserAgent = "goacme-lego/"
+	dnsSourceFile    = "./providers/dns/internal/useragent/useragent.go"
+	dnsTemplate      = "templates/dns.go.tmpl"
+)
+
+const (
+	senderBaseUserAgent = "xenolf-acme/"
+	senderSourceFile    = "./acme/api/internal/sender/useragent.go"
+	senderTemplate      = "templates/sender.go.tmpl"
+)
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "lego-releaser"

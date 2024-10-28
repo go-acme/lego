@@ -13,8 +13,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var version = "dev"
-
 func main() {
 	app := cli.NewApp()
 	app.Name = "lego"
@@ -22,7 +20,7 @@ func main() {
 	app.Usage = "Let's Encrypt client written in Go"
 	app.EnableBashCompletion = true
 
-	app.Version = version
+	app.Version = getVersion()
 	cli.VersionPrinter = func(c *cli.Context) {
 		fmt.Printf("lego version %s %s/%s\n", c.App.Version, runtime.GOOS, runtime.GOARCH)
 	}

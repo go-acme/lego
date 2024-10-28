@@ -2,26 +2,31 @@ package main
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"go/ast"
 	"go/format"
 	"go/parser"
 	"go/token"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
 )
 
+//go:embed templates
+var templateFS embed.FS
+
 type Generator struct {
 	baseUserAgent string
-	template      string
+	templatePath  string
 	sourcePath    string
 }
 
-func NewGenerator(baseUserAgent string, tmpl string, sourcePath string) *Generator {
-	return &Generator{baseUserAgent: baseUserAgent, template: tmpl, sourcePath: sourcePath}
+func NewGenerator(baseUserAgent string, templatePath string, sourcePath string) *Generator {
+	return &Generator{baseUserAgent: baseUserAgent, templatePath: templatePath, sourcePath: sourcePath}
 }
 
 func (g *Generator) Release(mode string) error {
@@ -58,7 +63,7 @@ func (g *Generator) Detach() error {
 }
 
 func (g *Generator) writeUserAgentFile(filename, version, comment string) error {
-	tmpl, err := template.New("ua").Parse(g.template)
+	tmpl, err := template.New(filepath.Base(g.templatePath)).ParseFS(templateFS, g.templatePath)
 	if err != nil {
 		return err
 	}

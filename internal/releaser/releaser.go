@@ -84,7 +84,7 @@ func release(ctx *cli.Context) error {
 
 	err = generate(nextVersion, commentRelease)
 	if err != nil {
-		return fmt.Errorf("generate file(s): %w", err)
+		return err
 	}
 
 	return nil
@@ -100,7 +100,7 @@ func detach(_ *cli.Context) error {
 
 	err = generate(v, commentDetach)
 	if err != nil {
-		return fmt.Errorf("generate file(s): %w", err)
+		return err
 	}
 
 	return nil

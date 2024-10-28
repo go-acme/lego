@@ -40,7 +40,7 @@ func NewGenerator(templatePath string, targetFile string) *Generator {
 func (g *Generator) Generate(version, comment string) error {
 	tmpl, err := template.New(filepath.Base(g.templatePath)).ParseFS(templateFS, g.templatePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("parsing template (%s): %w", g.templatePath, err)
 	}
 
 	b := &bytes.Buffer{}
@@ -50,15 +50,20 @@ func (g *Generator) Generate(version, comment string) error {
 		"comment": comment,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("execute template (%s): %w", g.templatePath, err)
 	}
 
 	source, err := format.Source(b.Bytes())
 	if err != nil {
-		return err
+		return fmt.Errorf("format generated content (%s): %w", g.targetFile, err)
 	}
 
-	return os.WriteFile(g.targetFile, source, 0o644)
+	err = os.WriteFile(g.targetFile, source, 0o644)
+	if err != nil {
+		return fmt.Errorf("write file (%s): %w", g.targetFile, err)
+	}
+
+	return nil
 }
 
 func generate(targetVersion, comment string) error {

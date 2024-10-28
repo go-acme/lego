@@ -14,9 +14,9 @@ builds:
       - -s -w -X main.version={{.Version}}
 
     goos:
-      - windows
-      - darwin
       - linux
+      - darwin
+      - windows
       - freebsd
       - openbsd
       - solaris

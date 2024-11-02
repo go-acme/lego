@@ -1,0 +1,7 @@
+{
+  "code": 0,
+  "details": [
+    "UPDATE Record A example.com. TTL(hh:mm) 08:00  IP   1.1.1.10"
+  ],
+  "message": "Success"
+}

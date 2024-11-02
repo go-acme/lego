@@ -1,0 +1,11 @@
+{
+  "domain": "example.com",
+  "add": [
+    {
+      "type": "TXT",
+      "name": "_acme-challenge",
+      "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "ttl": 2
+    }
+  ]
+}

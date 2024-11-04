@@ -68,6 +68,7 @@ func allDNSCodes() string {
 		"hetzner",
 		"hostingde",
 		"hosttech",
+		"hover",
 		"httpnet",
 		"httpreq",
 		"huaweicloud",
@@ -1344,6 +1345,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hosttech`)
+
+	case "hover":
+		// generated from: providers/dns/hover/hover.toml
+		ew.writeln(`Configuration for Hover (tucows).`)
+		ew.writeln(`Code:	'hover'`)
+		ew.writeln(`Since:	'v4.20.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "HOVER_PASSWORD":	Password (plaintext)`)
+		ew.writeln(`	- "HOVER_USERNAME":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "HOVER_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "HOVER_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "HOVER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hover`)
 
 	case "httpnet":
 		// generated from: providers/dns/httpnet/httpnet.toml

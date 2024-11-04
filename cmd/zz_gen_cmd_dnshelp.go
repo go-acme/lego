@@ -116,6 +116,7 @@ func allDNSCodes() string {
 		"porkbun",
 		"rackspace",
 		"rcodezero",
+		"regfish",
 		"regru",
 		"rfc2136",
 		"rimuhosting",
@@ -2374,6 +2375,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rcodezero`)
+
+	case "regfish":
+		// generated from: providers/dns/regfish/regfish.toml
+		ew.writeln(`Configuration for Regfish.`)
+		ew.writeln(`Code:	'regfish'`)
+		ew.writeln(`Since:	'v4.20.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "REGFISH_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "REGFISH_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "REGFISH_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "REGFISH_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "REGFISH_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/regfish`)
 
 	case "regru":
 		// generated from: providers/dns/regru/regru.toml

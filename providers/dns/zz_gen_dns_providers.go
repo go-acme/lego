@@ -110,6 +110,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/porkbun"
 	"github.com/go-acme/lego/v4/providers/dns/rackspace"
 	"github.com/go-acme/lego/v4/providers/dns/rcodezero"
+	"github.com/go-acme/lego/v4/providers/dns/regfish"
 	"github.com/go-acme/lego/v4/providers/dns/regru"
 	"github.com/go-acme/lego/v4/providers/dns/rfc2136"
 	"github.com/go-acme/lego/v4/providers/dns/rimuhosting"
@@ -359,6 +360,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return rackspace.NewDNSProvider()
 	case "rcodezero":
 		return rcodezero.NewDNSProvider()
+	case "regfish":
+		return regfish.NewDNSProvider()
 	case "regru":
 		return regru.NewDNSProvider()
 	case "rfc2136":

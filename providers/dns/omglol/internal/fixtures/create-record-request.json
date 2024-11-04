@@ -1,0 +1,6 @@
+{
+  "name": "foobar",
+  "content": "txt",
+  "ttl": 60,
+  "type": "TXT"
+}

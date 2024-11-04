@@ -1,0 +1,9 @@
+{
+  "request": {
+    "status_code": 200,
+    "success": true
+  },
+  "response": {
+    "message": "OK, your DNS record has been deleted."
+  }
+}

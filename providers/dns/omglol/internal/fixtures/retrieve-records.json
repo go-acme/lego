@@ -1,0 +1,31 @@
+{
+  "request": {
+    "status_code": 200,
+    "success": true
+  },
+  "response": {
+    "message": "Here are the DNS records for foobar.",
+    "dns": [
+      {
+        "id": "2857074",
+        "type": "A",
+        "name": "foobar",
+        "data": "192.167.0.1",
+        "priority": null,
+        "ttl": 3600,
+        "created_at": "2022-11-26T04:30:13Z",
+        "updated_at": "2022-11-26T04:31:33Z"
+      },
+      {
+        "id": "2857075",
+        "type": "CNAME",
+        "name": "cname.foobar",
+        "data": "elsewhere.tld",
+        "priority": null,
+        "ttl": 3600,
+        "created_at": "2022-11-26T04:34:24Z",
+        "updated_at": "2022-11-26T04:34:24Z"
+      }
+    ]
+  }
+}

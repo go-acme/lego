@@ -4,13 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v3/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/stretchr/testify/require"
 )
 
 const envDomain = envNamespace + "DOMAIN"
-const actualUsername = "UseAnActualUsernameHere"
-const actualPassword = "UseAnActualPasswordHere"
 
 var envTest = tester.NewEnvTest(EnvUsername, EnvPassword).WithDomain(envDomain)
 
@@ -23,25 +21,30 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvUsername: actualUsername,
-				EnvPassword: actualPassword,
+				EnvUsername: "user",
+				EnvPassword: "secret",
 			},
 		},
 		{
 			desc: "missing username",
 			envVars: map[string]string{
 				EnvUsername: "",
-				EnvPassword: actualPassword,
+				EnvPassword: "secret",
 			},
 			expected: "some credentials information are missing: HOVER_USERNAME",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				EnvUsername: actualUsername,
+				EnvUsername: "user",
 				EnvPassword: "",
 			},
 			expected: "some credentials information are missing: HOVER_PASSWORD",
+		},
+		{
+			desc:     "missing credentials",
+			envVars:  map[string]string{},
+			expected: "some credentials information are missing: HOVER_USERNAME,HOVER_PASSWORD",
 		},
 	}
 
@@ -54,7 +57,7 @@ func TestNewDNSProvider(t *testing.T) {
 
 			p, err := NewDNSProvider()
 
-			if len(test.expected) == 0 {
+			if test.expected == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
@@ -74,30 +77,36 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}{
 		{
 			desc:     "success",
-			username: actualUsername,
-			password: actualPassword,
+			username: "user",
+			password: "secret",
 		},
 		{
 			desc:     "missing username",
 			username: "",
-			password: actualPassword,
-			expected: "hover: incomplete credentials, missing Hover Username",
+			password: "secret",
+			expected: "hover: new client: incomplete credentials, missing username",
 		},
 		{
 			desc:     "missing password",
-			username: actualUsername,
+			username: "user",
 			password: "",
-			expected: "hover: incomplete credentials, missing Hover Password",
+			expected: "hover: new client: incomplete credentials, missing password",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "hover: new client: incomplete credentials, missing username",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig(test.username, test.password)
+			config := NewDefaultConfig()
+			config.Username = test.username
+			config.Password = test.password
 
 			p, err := NewDNSProviderConfig(config)
 
-			if len(test.expected) == 0 {
+			if test.expected == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)

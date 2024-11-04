@@ -1,0 +1,65 @@
+{
+  "succeeded": true,
+  "domains": [
+    {
+      "id": "b04df6be-0151-48e5-b07a-09f706514070",
+      "domain_name": "example.com",
+      "entries": [
+        {
+          "id": "39ea9822-2aac-41df-b862-90131a0b1bf9",
+          "is_default": true,
+          "name": "Pear",
+          "ttl": 60,
+          "type": "A",
+          "content": "qHRcY"
+        },
+        {
+          "id": "9f996fa7-b156-44fe-b3f7-c809fb1d627e",
+          "is_default": false,
+          "name": "Eggplant",
+          "ttl": 120,
+          "type": "A",
+          "content": "XtoGQzK"
+        },
+        {
+          "id": "8eb26180-2602-4e37-bdef-aed6927d771e",
+          "is_default": false,
+          "name": "Apple",
+          "ttl": 360,
+          "type": "TXT",
+          "content": "ZfYFjfqBc"
+        }
+      ]
+    },
+    {
+      "id": "1c833aa3-bd63-413f-aee2-ea73ab9fa8f1",
+      "domain_name": "example.org",
+      "entries": [
+        {
+          "id": "d7780f93-05e6-463e-975a-e0505ce1bad7",
+          "is_default": true,
+          "name": "kiwi",
+          "ttl": 120,
+          "type": "A",
+          "content": "nrETyjAo"
+        },
+        {
+          "id": "59b0e847-9c6c-4746-b9c6-5046dd52421d",
+          "is_default": false,
+          "name": "lemon",
+          "ttl": 360,
+          "type": "A",
+          "content": "gpbVYfOaqA"
+        },
+        {
+          "id": "6aa6a9db-d24f-4baa-bfbc-2f4dd80d975f",
+          "is_default": true,
+          "name": "kumquat",
+          "ttl": 60,
+          "type": "TXT",
+          "content": "nFaesMnen"
+        }
+      ]
+    }
+  ]
+}

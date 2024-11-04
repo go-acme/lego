@@ -1,0 +1,13 @@
+{
+  "succeeded": true,
+  "domains": [
+    {
+      "id": "b04df6be-0151-48e5-b07a-09f706514070",
+      "domain_name": "example.com"
+    },
+    {
+      "id": "1c833aa3-bd63-413f-aee2-ea73ab9fa8f1",
+      "domain_name": "example.org"
+    }
+  ]
+}

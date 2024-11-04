@@ -1,0 +1,5 @@
+{
+  "succeeded": false,
+  "error_code": "bad_login",
+  "error": "Unknown username or password"
+}

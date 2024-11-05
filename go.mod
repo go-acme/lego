@@ -58,7 +58,7 @@ require (
 	github.com/nrdcg/nodion v0.1.0
 	github.com/nrdcg/porkbun v0.4.0
 	github.com/nzdjb/go-metaname v1.0.0
-	github.com/oracle/oci-go-sdk/v65 v65.73.0
+	github.com/oracle/oci-go-sdk/v65 v65.77.1
 	github.com/ovh/go-ovh v1.6.0
 	github.com/pquerna/otp v1.4.0
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2

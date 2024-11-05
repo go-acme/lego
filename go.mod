@@ -70,7 +70,7 @@ require (
 	github.com/selectel/go-selvpcclient/v3 v3.1.1
 	github.com/softlayer/softlayer-go v1.1.7
 	github.com/stretchr/testify v1.9.0
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1002
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1034
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.1002
 	github.com/transip/gotransip/v6 v6.26.0
 	github.com/ultradns/ultradns-go-sdk v1.7.0-20240913052650-970ca9a

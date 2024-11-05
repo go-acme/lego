@@ -29,7 +29,7 @@ require (
 	github.com/cloudflare/cloudflare-go v0.108.0
 	github.com/cpu/goacmedns v0.1.1
 	github.com/dnsimple/dnsimple-go v1.7.0
-	github.com/exoscale/egoscale/v3 v3.1.5
+	github.com/exoscale/egoscale/v3 v3.1.7
 	github.com/go-jose/go-jose/v4 v4.0.4
 	github.com/go-viper/mapstructure/v2 v2.2.1
 	github.com/google/go-querystring v1.1.0

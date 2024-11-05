@@ -73,7 +73,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1034
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.1034
 	github.com/transip/gotransip/v6 v6.26.0
-	github.com/ultradns/ultradns-go-sdk v1.7.0-20240913052650-970ca9a
+	github.com/ultradns/ultradns-go-sdk v1.8.0-20241010134910-243eeec
 	github.com/urfave/cli/v2 v2.27.5
 	github.com/vinyldns/go-vinyldns v0.9.16
 	github.com/volcengine/volc-sdk-golang v1.0.177

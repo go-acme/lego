@@ -26,10 +26,10 @@ Configuration for [Selectel v2](https://selectel.ru).
 Here is an example bash command using the Selectel v2 provider:
 
 ```bash
-SELECTEL_USERNAME=trex \
-SELECTEL_PASSWORD=xxxxx \
-SELECTEL_ACCOUNT_ID=1234567 \
-SELECTEL_PROJECT_ID=111a11111aaa11aa1a11aaa11111aa1a \
+SELECTELV2_USERNAME=trex \
+SELECTELV2_PASSWORD=xxxxx \
+SELECTELV2_ACCOUNT_ID=1234567 \
+SELECTELV2_PROJECT_ID=111a11111aaa11aa1a11aaa11111aa1a \
 lego --email you@example.com --dns selectelv2 --domains my.example.org run
 ```
 

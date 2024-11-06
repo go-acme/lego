@@ -563,7 +563,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "cloudxns":
 		// generated from: providers/dns/cloudxns/cloudxns.toml
-		ew.writeln(`Configuration for CloudXNS.`)
+		ew.writeln(`Configuration for CloudXNS (Deprecated).`)
 		ew.writeln(`Code:	'cloudxns'`)
 		ew.writeln(`Since:	'v0.5.0'`)
 		ew.writeln()

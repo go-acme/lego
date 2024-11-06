@@ -9,6 +9,19 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "CLOUDXNS_"
+
+	EnvAPIKey    = envNamespace + "API_KEY"
+	EnvSecretKey = envNamespace + "SECRET_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	APIKey             string

@@ -253,18 +253,20 @@ type clientWrapper struct {
 }
 
 func (w *clientWrapper) getZone(ctx context.Context, name string) (*selectelapi.Zone, error) {
-	params := &map[string]string{"filter": name}
+	unicodeName, err := idna.ToUnicode(name)
+	if err != nil {
+		return nil, fmt.Errorf("to unicode: %w", err)
+	}
+
+	params := &map[string]string{"filter": unicodeName}
 
 	zones, err := w.ListZones(ctx, params)
 	if err != nil {
 		return nil, fmt.Errorf("list zone: %w", err)
 	}
+
 	for _, zone := range zones.GetItems() {
-		punny, err := idna.ToASCII(zone.Name)
-		if err != nil {
-			return nil, fmt.Errorf("to ascii: %w", err)
-		}
-		if punny == dns01.ToFqdn(name) {
+		if zone.Name == dns01.ToFqdn(unicodeName) {
 			return zone, nil
 		}
 	}
@@ -280,11 +282,12 @@ func (w *clientWrapper) getZone(ctx context.Context, name string) (*selectelapi.
 }
 
 func (w *clientWrapper) getRRset(ctx context.Context, name, zoneID string) (*selectelapi.RRSet, error) {
-	filterName, e := idna.ToUnicode(name)
-	if e != nil {
-		return nil, fmt.Errorf("to unicode: %w", e)
+	unicodeName, err := idna.ToUnicode(name)
+	if err != nil {
+		return nil, fmt.Errorf("to unicode: %w", err)
 	}
-	params := &map[string]string{"name": filterName, "rrset_types": string(selectelapi.TXT)}
+
+	params := &map[string]string{"name": unicodeName, "rrset_types": string(selectelapi.TXT)}
 
 	resp, err := w.ListRRSets(ctx, zoneID, params)
 	if err != nil {
@@ -292,11 +295,7 @@ func (w *clientWrapper) getRRset(ctx context.Context, name, zoneID string) (*sel
 	}
 
 	for _, rrset := range resp.GetItems() {
-		punny, err := idna.ToASCII(rrset.Name)
-		if err != nil {
-			return nil, fmt.Errorf("to ascii: %w", err)
-		}
-		if punny == dns01.ToFqdn(name) {
+		if rrset.Name == dns01.ToFqdn(unicodeName) {
 			return rrset, nil
 		}
 	}

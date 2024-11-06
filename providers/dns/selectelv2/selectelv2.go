@@ -14,6 +14,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 	selectelapi "github.com/selectel/domains-go/pkg/v2"
 	"github.com/selectel/go-selvpcclient/v3/selvpcclient"
+	"golang.org/x/net/idna"
 )
 
 const tokenHeader = "X-Auth-Token"
@@ -258,15 +259,18 @@ func (w *clientWrapper) getZone(ctx context.Context, name string) (*selectelapi.
 	if err != nil {
 		return nil, fmt.Errorf("list zone: %w", err)
 	}
-
 	for _, zone := range zones.GetItems() {
-		if zone.Name == dns01.ToFqdn(name) {
+		punny, err := idna.ToASCII(zone.Name)
+		if err != nil {
+			return nil, fmt.Errorf("to ascii: %w", err)
+		}
+		if punny == dns01.ToFqdn(name) {
 			return zone, nil
 		}
 	}
 
 	if len(strings.Split(dns01.UnFqdn(name), ".")) == 1 {
-		return nil, errors.New("zone for challenge has not been found")
+		return nil, fmt.Errorf("zone '%s' for challenge has not been found", name)
 	}
 
 	// -1 can not be returned since if no dots present we exit above
@@ -276,7 +280,11 @@ func (w *clientWrapper) getZone(ctx context.Context, name string) (*selectelapi.
 }
 
 func (w *clientWrapper) getRRset(ctx context.Context, name, zoneID string) (*selectelapi.RRSet, error) {
-	params := &map[string]string{"name": name, "rrset_types": string(selectelapi.TXT)}
+	filterName, e := idna.ToUnicode(name)
+	if e != nil {
+		return nil, fmt.Errorf("to unicode: %w", e)
+	}
+	params := &map[string]string{"name": filterName, "rrset_types": string(selectelapi.TXT)}
 
 	resp, err := w.ListRRSets(ctx, zoneID, params)
 	if err != nil {
@@ -284,7 +292,11 @@ func (w *clientWrapper) getRRset(ctx context.Context, name, zoneID string) (*sel
 	}
 
 	for _, rrset := range resp.GetItems() {
-		if rrset.Name == dns01.ToFqdn(name) {
+		punny, err := idna.ToASCII(rrset.Name)
+		if err != nil {
+			return nil, fmt.Errorf("to ascii: %w", err)
+		}
+		if punny == dns01.ToFqdn(name) {
 			return rrset, nil
 		}
 	}

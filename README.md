@@ -67,7 +67,7 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
   <td><a href="https://go-acme.github.io/lego/dns/bindman/">Bindman</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/bluecat/">Bluecat</a></td>
 </tr><tr>
-  <td><a href="https://go-acme.github.io/lego/dns/brandit/">Brandit</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/brandit/">Brandit (deprecated)</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/bunny/">Bunny</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/checkdomain/">Checkdomain</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/civo/">Civo</a></td>

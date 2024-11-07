@@ -7,7 +7,7 @@ Since = "v4.20.0"
 Example = '''
 CORENETWORKS_LOGIN="xxxx" \
 CORENETWORKS_PASSWORD="yyyy" \
-lego --email myemail@example.com --dns corenetworks --domains my.example.org run
+lego --email you@example.com --dns corenetworks -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

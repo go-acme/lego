@@ -76,17 +76,14 @@ func (c Client) AddTXTRecord(ctx context.Context, domain, subDomain, content str
 func (c Client) doRequest(ctx context.Context, request any, fragments ...string) (*APIResponse, error) {
 	endpoint := c.baseURL.JoinPath(fragments...)
 
-	query := endpoint.Query()
-	query.Set("username", c.username)
-	query.Set("password", c.password)
-	endpoint.RawQuery = query.Encode()
-
 	inputData, err := json.Marshal(request)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create input data: %w", err)
 	}
 
 	data := url.Values{}
+	data.Set("username", c.username)
+	data.Set("password", c.password)
 	data.Set("input_data", string(inputData))
 	data.Set("input_format", "json")
 

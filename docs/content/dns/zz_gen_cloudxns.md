@@ -28,7 +28,7 @@ Here is an example bash command using the CloudXNS (Deprecated) provider:
 ```bash
 CLOUDXNS_API_KEY=xxxx \
 CLOUDXNS_SECRET_KEY=yyyy \
-lego --email you@example.com --dns cloudxns --domains my.example.org run
+lego --email you@example.com --dns cloudxns -d '*.example.com' -d example.com run
 ```
 
 

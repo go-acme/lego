@@ -28,7 +28,7 @@ Here is an example bash command using the IBM Cloud (SoftLayer) provider:
 ```bash
 SOFTLAYER_USERNAME=xxxxx \
 SOFTLAYER_API_KEY=yyyyy \
-lego --email you@example.com --dns ibmcloud --domains my.example.org run
+lego --email you@example.com --dns ibmcloud -d '*.example.com' -d example.com run
 ```
 
 

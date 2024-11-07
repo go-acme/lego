@@ -28,7 +28,7 @@ Here is an example bash command using the Volcano Engine/火山引擎 provider:
 ```bash
 VOLC_ACCESSKEY=xxx \
 VOLC_SECRETKEY=yyy \
-lego --email you@example.com --dns volcengine --domains "example.org" --domains "*.example.org" run
+lego --email you@example.com --dns volcengine -d '*.example.com' -d example.com run
 ```
 
 

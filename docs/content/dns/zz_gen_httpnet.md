@@ -27,7 +27,7 @@ Here is an example bash command using the http.net provider:
 
 ```bash
 HTTPNET_API_KEY=xxxxxxxx \
-lego --email you@example.com --dns httpnet --domains my.example.org run
+lego --email you@example.com --dns httpnet -d '*.example.com' -d example.com run
 ```
 
 

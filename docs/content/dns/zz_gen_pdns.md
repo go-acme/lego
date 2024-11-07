@@ -28,7 +28,7 @@ Here is an example bash command using the PowerDNS provider:
 ```bash
 PDNS_API_URL=http://pdns-server:80/ \
 PDNS_API_KEY=xxxx \
-lego --email you@example.com --dns pdns --domains my.example.org run
+lego --email you@example.com --dns pdns -d '*.example.com' -d example.com run
 ```
 
 

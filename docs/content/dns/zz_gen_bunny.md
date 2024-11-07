@@ -27,7 +27,7 @@ Here is an example bash command using the Bunny provider:
 
 ```bash
 BUNNY_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
-lego --email you@example.com --dns bunny --domains my.example.org run
+lego --email you@example.com --dns bunny -d '*.example.com' -d example.com run
 ```
 
 

@@ -29,7 +29,7 @@ Here is an example bash command using the DirectAdmin provider:
 DIRECTADMIN_API_URL="http://example.com:2222" \
 DIRECTADMIN_USERNAME=xxxx \
 DIRECTADMIN_PASSWORD=yyy \
-lego --email you@example.com --dns directadmin --domains my.example.org run
+lego --email you@example.com --dns directadmin -d '*.example.com' -d example.com run
 ```
 
 

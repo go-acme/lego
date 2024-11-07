@@ -27,7 +27,7 @@ Here is an example bash command using the Netlify provider:
 
 ```bash
 NETLIFY_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --email you@example.com --dns netlify --domains my.example.org run
+lego --email you@example.com --dns netlify -d '*.example.com' -d example.com run
 ```
 
 

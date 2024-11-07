@@ -31,7 +31,7 @@ Here is an example bash command using the Brandit (deprecated) provider:
 ```bash
 BRANDIT_API_KEY=xxxxxxxxxxxxxxxxxxxxx \
 BRANDIT_API_USERNAME=yyyyyyyyyyyyyyyyyyyy \
-lego --email myemail@example.com --dns brandit --domains my.example.org run
+lego --email you@example.com --dns brandit -d '*.example.com' -d example.com run
 ```
 
 

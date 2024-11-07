@@ -27,7 +27,7 @@ Here is an example bash command using the Vercel provider:
 
 ```bash
 VERCEL_API_TOKEN=xxxxxx \
-lego --email you@example.com --dns vercel --domains my.example.org run
+lego --email you@example.com --dns vercel -d '*.example.com' -d example.com run
 ```
 
 

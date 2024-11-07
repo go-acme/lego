@@ -27,7 +27,7 @@ Here is an example bash command using the Vscale provider:
 
 ```bash
 VSCALE_API_TOKEN=xxxxx \
-lego --email you@example.com --dns vscale --domains my.example.org run
+lego --email you@example.com --dns vscale -d '*.example.com' -d example.com run
 ```
 
 

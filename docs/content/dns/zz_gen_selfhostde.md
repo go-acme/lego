@@ -29,7 +29,7 @@ Here is an example bash command using the SelfHost.(de|eu) provider:
 SELFHOSTDE_USERNAME=xxx \
 SELFHOSTDE_PASSWORD=yyy \
 SELFHOSTDE_RECORDS_MAPPING=my.example.com:123 \
-lego --email you@example.com --dns selfhostde --domains my.example.org run
+lego --email you@example.com --dns selfhostde -d '*.example.com' -d example.com run
 ```
 
 

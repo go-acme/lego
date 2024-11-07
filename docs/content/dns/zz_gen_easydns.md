@@ -26,9 +26,9 @@ Configuration for [EasyDNS](https://easydns.com/).
 Here is an example bash command using the EasyDNS provider:
 
 ```bash
-EASYDNS_TOKEN=<your token> \
-EASYDNS_KEY=<your key> \
-lego --email you@example.com --dns easydns --domains my.example.org run
+EASYDNS_TOKEN=xxx \
+EASYDNS_KEY=yyy \
+lego --email you@example.com --dns easydns -d '*.example.com' -d example.com run
 ```
 
 

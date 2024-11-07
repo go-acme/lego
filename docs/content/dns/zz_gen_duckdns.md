@@ -27,7 +27,7 @@ Here is an example bash command using the Duck DNS provider:
 
 ```bash
 DUCKDNS_TOKEN=xxxxxx \
-lego --email you@example.com --dns duckdns --domains my.example.org run
+lego --email you@example.com --dns duckdns -d '*.example.com' -d example.com run
 ```
 
 

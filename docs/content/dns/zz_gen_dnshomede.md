@@ -26,11 +26,11 @@ Configuration for [dnsHome.de](https://www.dnshome.de).
 Here is an example bash command using the dnsHome.de provider:
 
 ```bash
-DNSHOMEDE_CREDENTIALS=sub.example.org:password \
-lego --email you@example.com --dns dnshomede --domains example.org --domains '*.example.org' run
+DNSHOMEDE_CREDENTIALS=example.org:password \
+lego --email you@example.com --dns dnshomede -d '*.example.com' -d example.com run
 
 DNSHOMEDE_CREDENTIALS=my.example.org:password1,demo.example.org:password2 \
-lego --email you@example.com --dns dnshomede --domains my.example.org --domains demo.example.org
+lego --email you@example.com --dns dnshomede -d my.example.org -d demo.example.org
 ```
 
 

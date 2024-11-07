@@ -29,7 +29,7 @@ Here is an example bash command using the Mail-in-a-Box provider:
 MAILINABOX_EMAIL=user@example.com \
 MAILINABOX_PASSWORD=yyyy \
 MAILINABOX_BASE_URL=https://box.example.com \
-lego --email you@example.com --dns mailinabox --domains my.example.org run
+lego --email you@example.com --dns mailinabox -d '*.example.com' -d example.com run
 ```
 
 

@@ -27,7 +27,7 @@ Here is an example bash command using the DNSPod (deprecated) provider:
 
 ```bash
 DNSPOD_API_KEY=xxxxxx \
-lego --email you@example.com --dns dnspod --domains my.example.org run
+lego --email you@example.com --dns dnspod -d '*.example.com' -d example.com run
 ```
 
 

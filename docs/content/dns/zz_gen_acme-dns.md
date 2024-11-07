@@ -28,7 +28,7 @@ Here is an example bash command using the Joohoi's ACME-DNS provider:
 ```bash
 ACME_DNS_API_BASE=http://10.0.0.8:4443 \
 ACME_DNS_STORAGE_PATH=/root/.lego-acme-dns-accounts.json \
-lego --email you@example.com --dns acme-dns --domains my.example.org run
+lego --email you@example.com --dns "acme-dns" -d '*.example.com' -d example.com run
 ```
 
 

@@ -27,7 +27,7 @@ Here is an example bash command using the Checkdomain provider:
 
 ```bash
 CHECKDOMAIN_TOKEN=yoursecrettoken \
-lego --email you@example.com --dns checkdomain --domains my.example.org run
+lego --email you@example.com --dns checkdomain -d '*.example.com' -d example.com run
 ```
 
 

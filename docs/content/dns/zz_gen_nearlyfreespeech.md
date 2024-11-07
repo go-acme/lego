@@ -28,7 +28,7 @@ Here is an example bash command using the NearlyFreeSpeech.NET provider:
 ```bash
 NEARLYFREESPEECH_API_KEY=xxxxxx \
 NEARLYFREESPEECH_LOGIN=xxxx \
-lego --email you@example.com --dns nearlyfreespeech --domains my.example.org run
+lego --email you@example.com --dns nearlyfreespeech -d '*.example.com' -d example.com run
 ```
 
 

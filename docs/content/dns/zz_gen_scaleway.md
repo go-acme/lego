@@ -27,7 +27,7 @@ Here is an example bash command using the Scaleway provider:
 
 ```bash
 SCW_SECRET_KEY=xxxxxxx-xxxxx-xxxx-xxx-xxxxxx \
-lego --email you@example.com --dns scaleway --domains my.example.org run
+lego --email you@example.com --dns scaleway -d '*.example.com' -d example.com run
 ```
 
 

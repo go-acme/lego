@@ -27,7 +27,7 @@ Here is an example bash command using the NS1 provider:
 
 ```bash
 NS1_API_KEY=xxxx \
-lego --email you@example.com --dns ns1 --domains my.example.org run
+lego --email you@example.com --dns ns1 -d '*.example.com' -d example.com run
 ```
 
 

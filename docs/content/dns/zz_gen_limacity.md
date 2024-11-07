@@ -27,7 +27,7 @@ Here is an example bash command using the Lima-City provider:
 
 ```bash
 LIMACITY_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email myemail@example.com --dns limacity --domains my.example.org run
+lego --email you@example.com --dns limacity -d '*.example.com' -d example.com run
 ```
 
 

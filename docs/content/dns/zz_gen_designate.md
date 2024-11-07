@@ -28,7 +28,7 @@ Here is an example bash command using the Designate DNSaaS for Openstack provide
 ```bash
 # With a `clouds.yaml`
 OS_CLOUD=my_openstack \
-lego --email you@example.com --dns designate --domains my.example.org run
+lego --email you@example.com --dns designate -d '*.example.com' -d example.com run
 
 # or
 
@@ -37,7 +37,7 @@ OS_REGION_NAME=RegionOne \
 OS_PROJECT_ID=23d4522a987d4ab529f722a007c27846
 OS_USERNAME=myuser \
 OS_PASSWORD=passw0rd \
-lego --email you@example.com --dns designate --domains my.example.org run
+lego --email you@example.com --dns designate -d '*.example.com' -d example.com run
 
 # or
 
@@ -46,7 +46,7 @@ OS_REGION_NAME=RegionOne \
 OS_AUTH_TYPE=v3applicationcredential \
 OS_APPLICATION_CREDENTIAL_ID=imn74uq0or7dyzz20dwo1ytls4me8dry \
 OS_APPLICATION_CREDENTIAL_SECRET=68FuSPSdQqkFQYH5X1OoriEIJOwyLtQ8QSqXZOc9XxFK1A9tzZT6He2PfPw0OMja \
-lego --email you@example.com --dns designate --domains my.example.org run
+lego --email you@example.com --dns designate -d '*.example.com' -d example.com run
 ```
 
 

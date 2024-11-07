@@ -27,7 +27,7 @@ Here is an example bash command using the RcodeZero provider:
 
 ```bash
 RCODEZERO_API_TOKEN=<mytoken> \
-lego --email you@example.com --dns rcodezero --domains my.example.org run
+lego --email you@example.com --dns rcodezero -d '*.example.com' -d example.com run
 ```
 
 

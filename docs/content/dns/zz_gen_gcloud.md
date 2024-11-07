@@ -26,12 +26,9 @@ Configuration for [Google Cloud](https://cloud.google.com).
 Here is an example bash command using the Google Cloud provider:
 
 ```bash
-GCE_PROJECT="gc-project-id" GCE_SERVICE_ACCOUNT_FILE="/path/to/svc/account/file.json" lego \
-    --email="abc@email.com" \
-    --domains="example.com" \
-    --dns="gcloud" \
-    --path="${HOME}/.lego" \
-    run
+GCE_PROJECT="gc-project-id" \
+GCE_SERVICE_ACCOUNT_FILE="/path/to/svc/account/file.json" \
+lego --email you@email.com --dns gcloud -d '*.example.com' -d example.com run
 ```
 
 

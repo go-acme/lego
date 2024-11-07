@@ -33,7 +33,7 @@ Here is an example bash command using the Namecheap provider:
 ```bash
 NAMECHEAP_API_USER=user \
 NAMECHEAP_API_KEY=key \
-lego --email you@example.com --dns namecheap --domains my.example.org run
+lego --email you@example.com --dns namecheap -d '*.example.com' -d example.com run
 ```
 
 

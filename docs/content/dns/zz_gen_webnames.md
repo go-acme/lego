@@ -27,7 +27,7 @@ Here is an example bash command using the Webnames provider:
 
 ```bash
 WEBNAMES_API_KEY=xxxxxx \
-lego --email you@example.com --dns webnames --domains my.example.org run
+lego --email you@example.com --dns webnames -d '*.example.com' -d example.com run
 ```
 
 

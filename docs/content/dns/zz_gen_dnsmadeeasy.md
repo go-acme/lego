@@ -28,7 +28,7 @@ Here is an example bash command using the DNS Made Easy provider:
 ```bash
 DNSMADEEASY_API_KEY=xxxxxx \
 DNSMADEEASY_API_SECRET=yyyyy \
-lego --email you@example.com --dns dnsmadeeasy --domains my.example.org run
+lego --email you@example.com --dns dnsmadeeasy -d '*.example.com' -d example.com run
 ```
 
 

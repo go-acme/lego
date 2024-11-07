@@ -27,7 +27,7 @@ Here is an example bash command using the Google Domains provider:
 
 ```bash
 GOOGLE_DOMAINS_ACCESS_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --email you@example.com --dns googledomains --domains my.example.org run
+lego --email you@example.com --dns googledomains -d '*.example.com' -d example.com run
 ```
 
 

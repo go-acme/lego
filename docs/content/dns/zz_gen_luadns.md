@@ -28,7 +28,7 @@ Here is an example bash command using the LuaDNS provider:
 ```bash
 LUADNS_API_USERNAME=youremail \
 LUADNS_API_TOKEN=xxxxxxxx \
-lego --email you@example.com --dns luadns --domains my.example.org run
+lego --email you@example.com --dns luadns -d '*.example.com' -d example.com run
 ```
 
 

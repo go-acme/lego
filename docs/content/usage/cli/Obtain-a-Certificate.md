@@ -49,14 +49,13 @@ lego comes with [support for many]({{% ref "dns#dns-providers" %}}) providers,
 and you need to pick the one where your domain's DNS settings are set up.
 Typically, this is the registrar where you bought the domain, but in some cases this can be another third-party provider.
 
-For this example, let's assume you have set up CloudFlare for your domain.
+For this example, let's assume you have set up Gandi for your domain.
 
 Execute this command:
 
 ```bash
-CLOUDFLARE_EMAIL="you@example.com" \
-CLOUDFLARE_API_KEY="yourprivatecloudflareapikey" \
-lego --email "you@example.com" --dns cloudflare --domains "example.org" run
+GANDI_API_KEY=xxx \
+lego --email "you@example.com" --dns gandi --domains "example.org" --domains "*.example.org" run
 ```
 
 

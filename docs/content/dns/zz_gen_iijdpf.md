@@ -28,7 +28,7 @@ Here is an example bash command using the IIJ DNS Platform Service provider:
 ```bash
 IIJ_DPF_API_TOKEN=xxxxxxxx \
 IIJ_DPF_DPM_SERVICE_CODE=yyyyyy \
-lego --email you@example.com --dns iijdpf --domains my.example.org run
+lego --email you@example.com --dns iijdpf -d '*.example.com' -d example.com run
 ```
 
 

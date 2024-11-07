@@ -28,7 +28,7 @@ Here is an example bash command using the Simply.com provider:
 ```bash
 SIMPLY_ACCOUNT_NAME=xxxxxx \
 SIMPLY_API_KEY=yyyyyy \
-lego --email you@example.com --dns simply --domains my.example.org run
+lego --email you@example.com --dns simply -d '*.example.com' -d example.com run
 ```
 
 

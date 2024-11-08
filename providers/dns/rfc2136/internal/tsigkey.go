@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	"github.com/go-viper/mapstructure/v2"
 )
 
 type Key struct {
-	Name      string `mapstructure:"name"`
-	Algorithm string `mapstructure:"algorithm"`
-	Secret    string `mapstructure:"secret"`
+	Name      string
+	Algorithm string
+	Secret    string
 }
 
 // ReadTSIGFile reads TSIG key file generated with `tsig-keygen`.
@@ -24,7 +22,7 @@ func ReadTSIGFile(filename string) (*Key, error) {
 
 	defer func() { _ = file.Close() }()
 
-	data := make(map[string]string)
+	key := &Key{}
 
 	var read bool
 
@@ -50,7 +48,7 @@ func ReadTSIGFile(filename string) (*Key, error) {
 				return nil, fmt.Errorf("invalid key line: %s", line)
 			}
 
-			data["name"] = safeUnquote(fields[1])
+			key.Name = safeUnquote(fields[1])
 
 		case !read:
 			continue
@@ -60,14 +58,17 @@ func ReadTSIGFile(filename string) (*Key, error) {
 				continue
 			}
 
-			data[safeUnquote(fields[0])] = safeUnquote(fields[1])
-		}
-	}
+			v := safeUnquote(fields[1])
 
-	key := &Key{}
-	err = mapstructure.Decode(data, key)
-	if err != nil {
-		return nil, fmt.Errorf("decode key: %w", err)
+			switch strings.ToLower(safeUnquote(fields[0])) {
+			case "algorithm":
+				key.Algorithm = v
+			case "secret":
+				key.Secret = v
+			default:
+				continue
+			}
+		}
 	}
 
 	return key, nil

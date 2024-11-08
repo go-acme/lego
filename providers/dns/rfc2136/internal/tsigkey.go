@@ -75,11 +75,13 @@ func ReadTSIGFile(filename string) (*Key, error) {
 }
 
 func safeUnquote(v string) string {
-	if v == "" {
+	if len(v) < 2 {
+		// empty or single character string
 		return v
 	}
-
-	if len(v)-1 != 0 && v[0] == '"' && v[len(v)-1] == '"' {
+	
+	if v[0] == '"' && v[len(v)-1] == '"' {
+		// string wrapped in quotes
 		return v[1 : len(v)-1]
 	}
 

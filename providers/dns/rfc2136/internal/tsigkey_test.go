@@ -17,22 +17,22 @@ func TestReadTSIGFile(t *testing.T) {
 		{
 			desc:     "basic",
 			filename: "sample.conf",
-			expected: &Key{Name: "lego", Algorithm: "hmac-sha256.", Secret: "TCG5A6/lOHUGbW0e/9RYYbzWDFMlj1pIxCvybLBayBg="},
+			expected: &Key{Name: "lego", Algorithm: "hmac-sha256", Secret: "TCG5A6/lOHUGbW0e/9RYYbzWDFMlj1pIxCvybLBayBg="},
 		},
 		{
 			desc:     "data before the key",
 			filename: "text_before.conf",
-			expected: &Key{Name: "lego", Algorithm: "hmac-sha256.", Secret: "TCG5A6/lOHUGbW0e/9RYYbzWDFMlj1pIxCvybLBayBg="},
+			expected: &Key{Name: "lego", Algorithm: "hmac-sha256", Secret: "TCG5A6/lOHUGbW0e/9RYYbzWDFMlj1pIxCvybLBayBg="},
 		},
 		{
 			desc:     "data after the key",
 			filename: "text_after.conf",
-			expected: &Key{Name: "lego", Algorithm: "hmac-sha256.", Secret: "TCG5A6/lOHUGbW0e/9RYYbzWDFMlj1pIxCvybLBayBg="},
+			expected: &Key{Name: "lego", Algorithm: "hmac-sha256", Secret: "TCG5A6/lOHUGbW0e/9RYYbzWDFMlj1pIxCvybLBayBg="},
 		},
 		{
 			desc:     "ignore missing secret",
 			filename: "missing_secret.conf",
-			expected: &Key{Name: "lego", Algorithm: "hmac-sha256."},
+			expected: &Key{Name: "lego", Algorithm: "hmac-sha256"},
 		},
 		{
 			desc:     "ignore missing algorithm",

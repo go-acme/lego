@@ -65,7 +65,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvTSIGSecret:    "",
 				EnvTSIGAlgorithm: "foo",
 			},
-			expected: "rfc2136: unsupported TSIG algorithm: foo",
+			expected: "rfc2136: unsupported TSIG algorithm: foo.",
 		},
 		{
 			desc: "valid TSIG file",
@@ -126,7 +126,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:          "invalid algorithm",
 			nameserver:    "example.com",
 			tsigAlgorithm: "foo",
-			expected:      "rfc2136: unsupported TSIG algorithm: foo",
+			expected:      "rfc2136: unsupported TSIG algorithm: foo.",
 		},
 		{
 			desc:       "valid TSIG file",

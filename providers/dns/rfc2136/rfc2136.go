@@ -114,17 +114,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config.TSIGSecret = key.Secret
 	}
 
-	if config.TSIGAlgorithm == "" {
-		config.TSIGAlgorithm = dns.HmacSHA1
-	}
-
-	switch config.TSIGAlgorithm {
-	case dns.HmacSHA1, dns.HmacSHA224, dns.HmacSHA256, dns.HmacSHA384, dns.HmacSHA512:
-		// valid algorithm
-	default:
-		return nil, fmt.Errorf("rfc2136: unsupported TSIG algorithm: %s", config.TSIGAlgorithm)
-	}
-
 	// Append the default DNS port if none is specified.
 	if _, _, err := net.SplitHostPort(config.Nameserver); err != nil {
 		if strings.Contains(err.Error(), "missing port") {
@@ -137,6 +126,23 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.TSIGKey == "" || config.TSIGSecret == "" {
 		config.TSIGKey = ""
 		config.TSIGSecret = ""
+	} else {
+		// zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2)
+		config.TSIGKey = strings.ToLower(dns.Fqdn(config.TSIGKey))
+	}
+
+	if config.TSIGAlgorithm == "" {
+		config.TSIGAlgorithm = dns.HmacSHA1
+	} else {
+		// To be compatible with https://github.com/miekg/dns/blob/master/tsig.go
+		config.TSIGAlgorithm = dns.Fqdn(config.TSIGAlgorithm)
+	}
+
+	switch config.TSIGAlgorithm {
+	case dns.HmacSHA1, dns.HmacSHA224, dns.HmacSHA256, dns.HmacSHA384, dns.HmacSHA512:
+		// valid algorithm
+	default:
+		return nil, fmt.Errorf("rfc2136: unsupported TSIG algorithm: %s", config.TSIGAlgorithm)
 	}
 
 	return &DNSProvider{config: config}, nil
@@ -208,13 +214,10 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 	// TSIG authentication / msg signing
 	if d.config.TSIGKey != "" && d.config.TSIGSecret != "" {
-		key := strings.ToLower(dns.Fqdn(d.config.TSIGKey))
-		alg := dns.Fqdn(d.config.TSIGAlgorithm)
-		m.SetTsig(key, alg, 300, time.Now().Unix())
+		m.SetTsig(d.config.TSIGKey, d.config.TSIGAlgorithm, 300, time.Now().Unix())
 
-		// secret(s) for Tsig map[<zonename>]<base64 secret>,
-		// zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2)
-		c.TsigSecret = map[string]string{key: d.config.TSIGSecret}
+		// Secret(s) for TSIG map[<zonename>]<base64 secret>.
+		c.TsigSecret = map[string]string{d.config.TSIGKey: d.config.TSIGSecret}
 	}
 
 	// Send the query

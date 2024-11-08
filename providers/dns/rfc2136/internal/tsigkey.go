@@ -70,11 +70,6 @@ func ReadTSIGFile(filename string) (*Key, error) {
 		return nil, fmt.Errorf("decode key: %w", err)
 	}
 
-	if key.Algorithm != "" {
-		// to be compatible with https://github.com/miekg/dns/blob/master/tsig.go
-		key.Algorithm += "."
-	}
-
 	return key, nil
 }
 

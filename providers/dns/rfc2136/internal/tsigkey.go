@@ -2,7 +2,6 @@ package internal
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -18,16 +17,18 @@ type Key struct {
 
 // ReadTSIGFile reads TSIG key file generated with `tsig-keygen`.
 func ReadTSIGFile(filename string) (*Key, error) {
-	raw, err := os.ReadFile(filename)
+	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
+
+	defer func() { _ = file.Close() }()
 
 	data := make(map[string]string)
 
 	var read bool
 
-	scanner := bufio.NewScanner(bytes.NewReader(raw))
+	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.TrimSuffix(scanner.Text(), ";")
 

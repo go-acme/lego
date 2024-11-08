@@ -30,13 +30,18 @@ func TestReadTSIGFile(t *testing.T) {
 			expected: &Key{Name: "lego", Algorithm: "hmac-sha256.", Secret: "TCG5A6/lOHUGbW0e/9RYYbzWDFMlj1pIxCvybLBayBg="},
 		},
 		{
-			desc:     "missing secret",
+			desc:     "ignore missing secret",
 			filename: "missing_secret.conf",
 			expected: &Key{Name: "lego", Algorithm: "hmac-sha256."},
 		},
 		{
-			desc:     "missing algorithm",
+			desc:     "ignore missing algorithm",
 			filename: "mising_algo.conf",
+			expected: &Key{Name: "lego", Secret: "TCG5A6/lOHUGbW0e/9RYYbzWDFMlj1pIxCvybLBayBg="},
+		},
+		{
+			desc:     "ignore invalid field format",
+			filename: "invalid_field.conf",
 			expected: &Key{Name: "lego", Secret: "TCG5A6/lOHUGbW0e/9RYYbzWDFMlj1pIxCvybLBayBg="},
 		},
 	}
@@ -54,6 +59,31 @@ func TestReadTSIGFile(t *testing.T) {
 }
 
 func TestReadTSIGFile_error(t *testing.T) {
-	_, err := ReadTSIGFile(filepath.Join("fixtures", "invalid_key.conf"))
-	require.Error(t, err)
+	testCases := []struct {
+		desc     string
+		filename string
+		expected string
+	}{
+		{
+			desc:     "missing file",
+			filename: "missing.conf",
+			expected: "open file: open fixtures/missing.conf: no such file or directory",
+		},
+		{
+			desc:     "invalid key format",
+			filename: "invalid_key.conf",
+			expected: "invalid key line: key {",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := ReadTSIGFile(filepath.Join("fixtures", test.filename))
+			require.Error(t, err)
+
+			require.EqualError(t, err, test.expected)
+		})
+	}
 }

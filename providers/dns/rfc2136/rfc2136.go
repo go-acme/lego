@@ -106,7 +106,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.TSIGFile != "" {
 		key, err := internal.ReadTSIGFile(config.TSIGFile)
 		if err != nil {
-			return nil, fmt.Errorf("rfc2136: read TSIG file: %w", err)
+			return nil, fmt.Errorf("rfc2136: read TSIG file %s: %w", config.TSIGFile, err)
 		}
 
 		config.TSIGAlgorithm = key.Algorithm

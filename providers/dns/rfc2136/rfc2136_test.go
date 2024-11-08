@@ -80,7 +80,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvNameserver: "example.com",
 				EnvTSIGFile:   "./internal/fixtures/invalid_key.conf",
 			},
-			expected: "rfc2136: read TSIG file: invalid key line: key {",
+			expected: "rfc2136: read TSIG file ./internal/fixtures/invalid_key.conf: invalid key line: key {",
 		},
 	}
 
@@ -137,7 +137,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:       "invalid TSIG file",
 			nameserver: "example.com",
 			tsigFile:   "./internal/fixtures/invalid_key.conf",
-			expected:   "rfc2136: read TSIG file: invalid key line: key {",
+			expected:   "rfc2136: read TSIG file ./internal/fixtures/invalid_key.conf: invalid key line: key {",
 		},
 	}
 

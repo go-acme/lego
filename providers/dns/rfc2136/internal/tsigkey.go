@@ -19,7 +19,7 @@ type Key struct {
 func ReadTSIGFile(filename string) (*Key, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("open file: %w", err)
 	}
 
 	defer func() { _ = file.Close() }()
@@ -30,16 +30,21 @@ func ReadTSIGFile(filename string) (*Key, error) {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		line := strings.TrimSuffix(scanner.Text(), ";")
+		line := strings.TrimSpace(strings.TrimSuffix(scanner.Text(), ";"))
+
+		if line == "" {
+			continue
+		}
 
 		if read && line == "}" {
 			break
 		}
 
+		fields := strings.Fields(line)
+
 		switch {
-		case strings.HasPrefix(line, "key "):
+		case fields[0] == "key":
 			read = true
-			fields := strings.Fields(line)
 
 			if len(fields) != 3 {
 				return nil, fmt.Errorf("invalid key line: %s", line)
@@ -51,8 +56,6 @@ func ReadTSIGFile(filename string) (*Key, error) {
 			continue
 
 		default:
-			fields := strings.Fields(line)
-
 			if len(fields) != 2 {
 				continue
 			}
@@ -64,7 +67,7 @@ func ReadTSIGFile(filename string) (*Key, error) {
 	key := &Key{}
 	err = mapstructure.Decode(data, key)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("decode key: %w", err)
 	}
 
 	if key.Algorithm != "" {

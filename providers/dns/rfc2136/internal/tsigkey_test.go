@@ -2,6 +2,7 @@ package internal
 
 import (
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -59,6 +60,11 @@ func TestReadTSIGFile(t *testing.T) {
 }
 
 func TestReadTSIGFile_error(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		// Because error messages are different on Windows.
+		t.Skip("only for UNIX systems")
+	}
+
 	testCases := []struct {
 		desc     string
 		filename string

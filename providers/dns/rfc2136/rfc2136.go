@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/rfc2136/internal"
 	"github.com/miekg/dns"
 )
 
@@ -17,11 +18,14 @@ import (
 const (
 	envNamespace = "RFC2136_"
 
+	EnvTSIGFile = envNamespace + "TSIG_FILE"
+
 	EnvTSIGKey       = envNamespace + "TSIG_KEY"
 	EnvTSIGSecret    = envNamespace + "TSIG_SECRET"
 	EnvTSIGAlgorithm = envNamespace + "TSIG_ALGORITHM"
-	EnvNameserver    = envNamespace + "NAMESERVER"
-	EnvDNSTimeout    = envNamespace + "DNS_TIMEOUT"
+
+	EnvNameserver = envNamespace + "NAMESERVER"
+	EnvDNSTimeout = envNamespace + "DNS_TIMEOUT"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -31,10 +35,14 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Nameserver         string
-	TSIGAlgorithm      string
-	TSIGKey            string
-	TSIGSecret         string
+	Nameserver string
+
+	TSIGFile string
+
+	TSIGAlgorithm string
+	TSIGKey       string
+	TSIGSecret    string
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -76,6 +84,9 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config := NewDefaultConfig()
 	config.Nameserver = values[EnvNameserver]
+
+	config.TSIGFile = env.GetOrDefaultString(EnvTSIGFile, "")
+
 	config.TSIGKey = env.GetOrFile(EnvTSIGKey)
 	config.TSIGSecret = env.GetOrFile(EnvTSIGSecret)
 
@@ -92,8 +103,26 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("rfc2136: nameserver missing")
 	}
 
+	if config.TSIGFile != "" {
+		key, err := internal.ReadTSIGFile(config.TSIGFile)
+		if err != nil {
+			return nil, fmt.Errorf("rfc2136: read TSIG file: %w", err)
+		}
+
+		config.TSIGAlgorithm = key.Algorithm
+		config.TSIGKey = key.Name
+		config.TSIGSecret = key.Secret
+	}
+
 	if config.TSIGAlgorithm == "" {
 		config.TSIGAlgorithm = dns.HmacSHA1
+	}
+
+	switch config.TSIGAlgorithm {
+	case dns.HmacSHA1, dns.HmacSHA224, dns.HmacSHA256, dns.HmacSHA384, dns.HmacSHA512:
+		// valid algorithm
+	default:
+		return nil, fmt.Errorf("rfc2136: unsupported TSIG algorithm: %s", config.TSIGAlgorithm)
 	}
 
 	// Append the default DNS port if none is specified.

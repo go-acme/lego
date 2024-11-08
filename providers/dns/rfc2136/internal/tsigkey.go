@@ -32,7 +32,7 @@ func ReadTSIGFile(filename string) (*Key, error) {
 	for scanner.Scan() {
 		line := strings.TrimSuffix(scanner.Text(), ";")
 
-		if line == "}" {
+		if read && line == "}" {
 			break
 		}
 

@@ -60,7 +60,7 @@ func ReadTSIGFile(filename string) (*Key, error) {
 
 			v := safeUnquote(fields[1])
 
-			switch strings.ToLower(safeUnquote(fields[0])) {
+			switch safeUnquote(fields[0]) {
 			case "algorithm":
 				key.Algorithm = v
 			case "secret":
@@ -79,7 +79,7 @@ func safeUnquote(v string) string {
 		// empty or single character string
 		return v
 	}
-	
+
 	if v[0] == '"' && v[len(v)-1] == '"' {
 		// string wrapped in quotes
 		return v[1 : len(v)-1]

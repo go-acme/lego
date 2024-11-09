@@ -1,0 +1,6 @@
+{
+  "status": "error",
+  "errorMessage": "error message",
+  "stackTrace": "application stack trace",
+  "innerErrorMessage": "inner exception message"
+}

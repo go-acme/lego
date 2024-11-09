@@ -1,0 +1,23 @@
+{
+  "response": {
+    "zone": {
+      "name": "example.com",
+      "type": "Primary",
+      "internal": false,
+      "dnssecStatus": "SignedWithNSEC",
+      "disabled": false
+    },
+    "addedRecord": {
+      "disabled": false,
+      "name": "example.com",
+      "type": "A",
+      "ttl": 3600,
+      "rData": {
+        "ipAddress": "3.3.3.3"
+      },
+      "dnssecStatus": "Unknown",
+      "lastUsedOn": "0001-01-01T00:00:00"
+    }
+  },
+  "status": "ok"
+}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/rfc2136/internal"
 	"github.com/miekg/dns"
 )
 
@@ -17,11 +18,14 @@ import (
 const (
 	envNamespace = "RFC2136_"
 
+	EnvTSIGFile = envNamespace + "TSIG_FILE"
+
 	EnvTSIGKey       = envNamespace + "TSIG_KEY"
 	EnvTSIGSecret    = envNamespace + "TSIG_SECRET"
 	EnvTSIGAlgorithm = envNamespace + "TSIG_ALGORITHM"
-	EnvNameserver    = envNamespace + "NAMESERVER"
-	EnvDNSTimeout    = envNamespace + "DNS_TIMEOUT"
+
+	EnvNameserver = envNamespace + "NAMESERVER"
+	EnvDNSTimeout = envNamespace + "DNS_TIMEOUT"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -31,10 +35,14 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Nameserver         string
-	TSIGAlgorithm      string
-	TSIGKey            string
-	TSIGSecret         string
+	Nameserver string
+
+	TSIGFile string
+
+	TSIGAlgorithm string
+	TSIGKey       string
+	TSIGSecret    string
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -76,6 +84,9 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config := NewDefaultConfig()
 	config.Nameserver = values[EnvNameserver]
+
+	config.TSIGFile = env.GetOrDefaultString(EnvTSIGFile, "")
+
 	config.TSIGKey = env.GetOrFile(EnvTSIGKey)
 	config.TSIGSecret = env.GetOrFile(EnvTSIGSecret)
 
@@ -92,8 +103,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("rfc2136: nameserver missing")
 	}
 
-	if config.TSIGAlgorithm == "" {
-		config.TSIGAlgorithm = dns.HmacSHA1
+	if config.TSIGFile != "" {
+		key, err := internal.ReadTSIGFile(config.TSIGFile)
+		if err != nil {
+			return nil, fmt.Errorf("rfc2136: read TSIG file %s: %w", config.TSIGFile, err)
+		}
+
+		config.TSIGAlgorithm = key.Algorithm
+		config.TSIGKey = key.Name
+		config.TSIGSecret = key.Secret
 	}
 
 	// Append the default DNS port if none is specified.
@@ -108,6 +126,23 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.TSIGKey == "" || config.TSIGSecret == "" {
 		config.TSIGKey = ""
 		config.TSIGSecret = ""
+	} else {
+		// zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2)
+		config.TSIGKey = strings.ToLower(dns.Fqdn(config.TSIGKey))
+	}
+
+	if config.TSIGAlgorithm == "" {
+		config.TSIGAlgorithm = dns.HmacSHA1
+	} else {
+		// To be compatible with https://github.com/miekg/dns/blob/master/tsig.go
+		config.TSIGAlgorithm = dns.Fqdn(config.TSIGAlgorithm)
+	}
+
+	switch config.TSIGAlgorithm {
+	case dns.HmacSHA1, dns.HmacSHA224, dns.HmacSHA256, dns.HmacSHA384, dns.HmacSHA512:
+		// valid algorithm
+	default:
+		return nil, fmt.Errorf("rfc2136: unsupported TSIG algorithm: %s", config.TSIGAlgorithm)
 	}
 
 	return &DNSProvider{config: config}, nil
@@ -179,13 +214,10 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 	// TSIG authentication / msg signing
 	if d.config.TSIGKey != "" && d.config.TSIGSecret != "" {
-		key := strings.ToLower(dns.Fqdn(d.config.TSIGKey))
-		alg := dns.Fqdn(d.config.TSIGAlgorithm)
-		m.SetTsig(key, alg, 300, time.Now().Unix())
+		m.SetTsig(d.config.TSIGKey, d.config.TSIGAlgorithm, 300, time.Now().Unix())
 
-		// secret(s) for Tsig map[<zonename>]<base64 secret>,
-		// zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2)
-		c.TsigSecret = map[string]string{key: d.config.TSIGSecret}
+		// Secret(s) for TSIG map[<zonename>]<base64 secret>.
+		c.TsigSecret = map[string]string{d.config.TSIGKey: d.config.TSIGSecret}
 	}
 
 	// Send the query

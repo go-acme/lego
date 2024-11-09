@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,6 +26,142 @@ const (
 	fakeTsigKey    = "example.com."
 	fakeTsigSecret = "IwBTJx9wrDp4Y1RyC3H0gA=="
 )
+
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(
+	EnvTSIGFile,
+	EnvTSIGKey,
+	EnvTSIGSecret,
+	EnvTSIGAlgorithm,
+	EnvNameserver,
+	EnvDNSTimeout,
+).WithDomain(envDomain)
+
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				EnvNameserver: "example.com",
+			},
+		},
+		{
+			desc: "missing nameserver",
+			envVars: map[string]string{
+				EnvNameserver: "",
+			},
+			expected: "rfc2136: some credentials information are missing: RFC2136_NAMESERVER",
+		},
+		{
+			desc: "invalid algorithm",
+			envVars: map[string]string{
+				EnvNameserver:    "example.com",
+				EnvTSIGKey:       "",
+				EnvTSIGSecret:    "",
+				EnvTSIGAlgorithm: "foo",
+			},
+			expected: "rfc2136: unsupported TSIG algorithm: foo.",
+		},
+		{
+			desc: "valid TSIG file",
+			envVars: map[string]string{
+				EnvNameserver: "example.com",
+				EnvTSIGFile:   "./internal/fixtures/sample.conf",
+			},
+		},
+		{
+			desc: "invalid TSIG file",
+			envVars: map[string]string{
+				EnvNameserver: "example.com",
+				EnvTSIGFile:   "./internal/fixtures/invalid_key.conf",
+			},
+			expected: "rfc2136: read TSIG file ./internal/fixtures/invalid_key.conf: invalid key line: key {",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc          string
+		expected      string
+		nameserver    string
+		tsigFile      string
+		tsigAlgorithm string
+		tsigKey       string
+		tsigSecret    string
+	}{
+		{
+			desc:       "success",
+			nameserver: "example.com",
+		},
+		{
+			desc:     "missing nameserver",
+			expected: "rfc2136: nameserver missing",
+		},
+		{
+			desc:          "invalid algorithm",
+			nameserver:    "example.com",
+			tsigAlgorithm: "foo",
+			expected:      "rfc2136: unsupported TSIG algorithm: foo.",
+		},
+		{
+			desc:       "valid TSIG file",
+			nameserver: "example.com",
+			tsigFile:   "./internal/fixtures/sample.conf",
+		},
+		{
+			desc:       "invalid TSIG file",
+			nameserver: "example.com",
+			tsigFile:   "./internal/fixtures/invalid_key.conf",
+			expected:   "rfc2136: read TSIG file ./internal/fixtures/invalid_key.conf: invalid key line: key {",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.Nameserver = test.nameserver
+			config.TSIGFile = test.tsigFile
+			config.TSIGAlgorithm = test.tsigAlgorithm
+			config.TSIGKey = test.tsigKey
+			config.TSIGSecret = test.tsigSecret
+
+			p, err := NewDNSProviderConfig(config)
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
 
 func TestCanaryLocalTestServer(t *testing.T) {
 	dns01.ClearFqdnCache()

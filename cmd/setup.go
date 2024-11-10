@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -46,6 +48,12 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 
 	if ctx.IsSet(flgHTTPTimeout) {
 		config.HTTPClient.Timeout = time.Duration(ctx.Int(flgHTTPTimeout)) * time.Second
+	}
+
+	if ctx.Bool(flgTLSSkipVerify) {
+		config.HTTPClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
 	}
 
 	client, err := lego.NewClient(config)

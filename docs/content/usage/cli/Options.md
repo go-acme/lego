@@ -90,7 +90,7 @@ You should prefer one on the public internet, otherwise you might be susceptible
 
 ### LEGO_CA_CERTIFICATES
 
-The environment variable `LEGO_CA_CERTIFICATES` allows to specify the path to PEM encoded CA Certificates
+The environment variable `LEGO_CA_CERTIFICATES` allows to specify the path to PEM-encoded CA certificates
 that can be used to authenticate an ACME server with an HTTPS certificate not issued by a CA in the system-wide trusted root list.
 
 Multiple file paths can be added by using `:` (unix) or `;` (Windows) as a separator.
@@ -135,7 +135,7 @@ LEGO_DISABLE_CNAME_SUPPORT=false
 
 ### LEGO_DEBUG_CLIENT_VERBOSE_ERROR
 
-The environment variable `LEGO_DEBUG_CLIENT_VERBOSE_ERROR` allows to enrich error from some of the DNS clients.
+The environment variable `LEGO_DEBUG_CLIENT_VERBOSE_ERROR` allows to enrich error messages from some of the DNS clients.
 
 Example:
 

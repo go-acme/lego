@@ -60,6 +60,9 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 Technitium DNS Server supports Dynamic Updates (RFC2136) for primary zones,
 so you can also use the [RFC2136 provider](https://go-acme.github.io/lego/dns/rfc2136/index.html).
 
+[RFC2136 provider](https://go-acme.github.io/lego/dns/rfc2136/index.html) is much better compared to the HTTP API option from security perspective.
+Technitium recommends to use it in production over the HTTP API.
+
 
 
 ## More information

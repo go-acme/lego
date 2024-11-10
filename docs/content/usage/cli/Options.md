@@ -85,3 +85,60 @@ In these cases, you can instruct Lego to use a different DNS resolver, using the
 You should prefer one on the public internet, otherwise you might be susceptible to the same problem.
 
 [^apex]: The apex domain is the domain you have registered with your domain registrar. For gTLDs (`.com`, `.fyi`) this is the 2nd level domain, but for ccTLDs, this can either be the 2nd level (`.de`) or 3rd level domain (`.co.uk`).
+
+## Other options
+
+### LEGO_CA_CERTIFICATES
+
+The environment variable `LEGO_CA_CERTIFICATES` allows to specify the path to PEM-encoded CA certificates
+that can be used to authenticate an ACME server with an HTTPS certificate not issued by a CA in the system-wide trusted root list.
+
+Multiple file paths can be added by using `:` (unix) or `;` (Windows) as a separator.
+
+Example:
+
+```bash
+# On Unix system
+LEGO_CA_CERTIFICATES=/foo/cert1.pem:/foo/cert2.pem
+```
+
+### LEGO_CA_SYSTEM_CERT_POOL
+
+The environment variable `LEGO_CA_SYSTEM_CERT_POOL` can be used to define if the certificates pool must use a copy of the system cert pool.
+
+Example:
+
+```bash
+LEGO_CA_SYSTEM_CERT_POOL=true
+```
+
+### LEGO_CA_SERVER_NAME
+
+The environment variable `LEGO_CA_SERVER_NAME` allows to specify the CA server name used to authenticate an ACME server
+with an HTTPS certificate not issued by a CA in the system-wide trusted root list.
+
+Example:
+
+```bash
+LEGO_CA_SERVER_NAME=foo
+```
+
+### LEGO_DISABLE_CNAME_SUPPORT
+
+By default, lego follows CNAME, the environment variable `LEGO_DISABLE_CNAME_SUPPORT` allows to disable this support.
+
+Example:
+
+```bash
+LEGO_DISABLE_CNAME_SUPPORT=false
+```
+
+### LEGO_DEBUG_CLIENT_VERBOSE_ERROR
+
+The environment variable `LEGO_DEBUG_CLIENT_VERBOSE_ERROR` allows to enrich error messages from some of the DNS clients.
+
+Example:
+
+```bash
+LEGO_DEBUG_CLIENT_VERBOSE_ERROR=true
+```

@@ -45,6 +45,7 @@ GLOBAL OPTIONS:
    --dns.propagation-wait value                                 By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. (default: 0s)
    --dns.resolvers value [ --dns.resolvers value ]              Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination. For DNS-01 challenge verification, the authoritative DNS server is queried directly. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.
    --http-timeout value                                         Set the HTTP timeout value to a specific value in seconds. (default: 0)
+   --tls-skip-verify                                            Skip the TLS verification of the ACME server. (default: false)
    --dns-timeout value                                          Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries. (default: 10)
    --pem                                                        Generate an additional .pem (base64) file by concatenating the .key and .crt files together. (default: false)
    --pfx                                                        Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together. (default: false) [$LEGO_PFX]

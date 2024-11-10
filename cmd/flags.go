@@ -38,7 +38,7 @@ const (
 	flgDNSPropagationRNS        = "dns.propagation-rns"
 	flgDNSResolvers             = "dns.resolvers"
 	flgHTTPTimeout              = "http-timeout"
-	flgHTTPSkipVerify           = "http-skip-verify"
+	flgTLSSkipVerify            = "tls-skip-verify"
 	flgDNSTimeout               = "dns-timeout"
 	flgPEM                      = "pem"
 	flgPFX                      = "pfx"
@@ -177,7 +177,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage: "Set the HTTP timeout value to a specific value in seconds.",
 		},
 		&cli.BoolFlag{
-			Name:  flgHTTPSkipVerify,
+			Name:  flgTLSSkipVerify,
 			Usage: "Skip the TLS verification of the ACME server.",
 		},
 		&cli.IntFlag{

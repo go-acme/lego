@@ -50,7 +50,7 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 		config.HTTPClient.Timeout = time.Duration(ctx.Int(flgHTTPTimeout)) * time.Second
 	}
 
-	if ctx.Bool(flgHTTPSkipVerify) {
+	if ctx.Bool(flgTLSSkipVerify) {
 		config.HTTPClient.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}

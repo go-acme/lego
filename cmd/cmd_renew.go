@@ -151,15 +151,23 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 	cert := certificates[0]
 
 	var ariRenewalTime *time.Time
+	var replacesCertID string
+
 	if !ctx.Bool(flgARIDisable) {
 		ariRenewalTime = getARIRenewalTime(ctx, cert, domain, client)
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
+
 			// Figure out if we need to sleep before renewing.
 			if ariRenewalTime.After(now) {
 				log.Infof("[%s] Sleeping %s until renewal time %s", domain, ariRenewalTime.Sub(now), ariRenewalTime)
 				time.Sleep(ariRenewalTime.Sub(now))
 			}
+		}
+
+		replacesCertID, err = certificate.MakeARICertID(cert)
+		if err != nil {
+			log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)
 		}
 	}
 
@@ -209,11 +217,8 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		AlwaysDeactivateAuthorizations: ctx.Bool(flgAlwaysDeactivateAuthorizations),
 	}
 
-	if !ctx.Bool(flgARIDisable) {
-		request.ReplacesCertID, err = certificate.MakeARICertID(cert)
-		if err != nil {
-			log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)
-		}
+	if replacesCertID != "" {
+		request.ReplacesCertID = replacesCertID
 	}
 
 	certRes, err := client.Certificate.Obtain(request)
@@ -250,15 +255,23 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	cert := certificates[0]
 
 	var ariRenewalTime *time.Time
+	var replacesCertID string
+
 	if !ctx.Bool(flgARIDisable) {
 		ariRenewalTime = getARIRenewalTime(ctx, cert, domain, client)
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
+
 			// Figure out if we need to sleep before renewing.
 			if ariRenewalTime.After(now) {
 				log.Infof("[%s] Sleeping %s until renewal time %s", domain, ariRenewalTime.Sub(now), ariRenewalTime)
 				time.Sleep(ariRenewalTime.Sub(now))
 			}
+		}
+
+		replacesCertID, err = certificate.MakeARICertID(cert)
+		if err != nil {
+			log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)
 		}
 	}
 
@@ -279,11 +292,8 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 		AlwaysDeactivateAuthorizations: ctx.Bool(flgAlwaysDeactivateAuthorizations),
 	}
 
-	if !ctx.Bool(flgARIDisable) {
-		request.ReplacesCertID, err = certificate.MakeARICertID(cert)
-		if err != nil {
-			log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)
-		}
+	if replacesCertID != "" {
+		request.ReplacesCertID = replacesCertID
 	}
 
 	certRes, err := client.Certificate.ObtainForCSR(request)

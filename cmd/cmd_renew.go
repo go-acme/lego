@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math/rand"
 	"os"
+	"slices"
 	"time"
 
 	"github.com/go-acme/lego/v4/acme/api"
@@ -377,16 +378,12 @@ func addPathToMetadata(meta map[string]string, domain string, certRes *certifica
 
 func merge(prevDomains, nextDomains []string) []string {
 	for _, next := range nextDomains {
-		var found bool
-		for _, prev := range prevDomains {
-			if prev == next {
-				found = true
-				break
-			}
+		if slices.Contains(prevDomains, next) {
+			continue
 		}
-		if !found {
-			prevDomains = append(prevDomains, next)
-		}
+
+		prevDomains = append(prevDomains, next)
 	}
+
 	return prevDomains
 }

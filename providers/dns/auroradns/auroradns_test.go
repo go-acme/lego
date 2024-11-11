@@ -163,7 +163,7 @@ func TestDNSProvider_Present(t *testing.T) {
 
 		reqBody, err := io.ReadAll(r.Body)
 		require.NoError(t, err)
-		assert.Equal(t, `{"type":"TXT","name":"_acme-challenge","content":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":300}`, string(reqBody))
+		assert.JSONEq(t, `{"type":"TXT","name":"_acme-challenge","content":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":300}`, string(reqBody))
 
 		w.WriteHeader(http.StatusCreated)
 		fmt.Fprintf(w, `{

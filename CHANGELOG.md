@@ -1173,9 +1173,9 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 
 ## [0.4.0](https://github.com/go-acme/lego/releases/tag/0.4.0) (2017-07-13)
 
-### Added~~
+### Added
 
-~~- CLI: The `--http-timeout` switch. This allows for an override of the default client HTTP timeout.
+- CLI: The `--http-timeout` switch. This allows for an override of the default client HTTP timeout.
 - lib: The `HTTPClient` field. This allows for an override of the default HTTP timeout for library HTTP requests.
 - CLI: The `--dns-timeout` switch. This allows for an override of the default DNS timeout for library DNS requests.
 - lib: The `DNSTimeout` switch. This allows for an override of the default client DNS timeout.

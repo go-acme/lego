@@ -1,6 +1,6 @@
 # Changelog
 
-## [v4.20.0] - 2024-11-11
+## [v4.20.1] - 2024-11-11
 
 ### Added
 
@@ -27,6 +27,10 @@
 - **[dnsprovider]** limacity: fix error message
 - **[dnsprovider]** volcengine: set API information within the default configuration
 - **[log]** Parse printf verbs in log line output
+
+## [v4.20.0] - 2024-11-11
+
+Cancelled due to CI failure.
 
 ## [v4.19.2] - 2024-10-06
 

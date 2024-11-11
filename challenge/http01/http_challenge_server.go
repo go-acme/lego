@@ -56,7 +56,9 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	}
 
 	s.done = make(chan bool)
+
 	go s.serve(domain, token, keyAuth)
+
 	return nil
 }
 
@@ -69,8 +71,11 @@ func (s *ProviderServer) CleanUp(domain, token, keyAuth string) error {
 	if s.listener == nil {
 		return nil
 	}
+
 	s.listener.Close()
+
 	<-s.done
+
 	return nil
 }
 
@@ -107,19 +112,23 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 	mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet && s.matcher.matches(r, domain) {
 			w.Header().Set("Content-Type", "text/plain")
+
 			_, err := w.Write([]byte(keyAuth))
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+
 			log.Infof("[%s] Served key authentication", domain)
-		} else {
-			log.Warnf("Received request for domain %s with method %s but the domain did not match any challenge. Please ensure you are passing the %s header properly.", r.Host, r.Method, s.matcher.name())
-			_, err := w.Write([]byte("TEST"))
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			return
+		}
+
+		log.Warnf("Received request for domain %s with method %s but the domain did not match any challenge. Please ensure you are passing the %s header properly.", r.Host, r.Method, s.matcher.name())
+
+		_, err := w.Write([]byte("TEST"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -133,5 +142,6 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 	if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
 		log.Println(err)
 	}
+
 	s.done <- true
 }

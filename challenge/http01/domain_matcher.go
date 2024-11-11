@@ -3,6 +3,7 @@ package http01
 import (
 	"fmt"
 	"net/http"
+	"net/netip"
 	"strings"
 )
 
@@ -54,7 +55,7 @@ func (m *hostMatcher) name() string {
 }
 
 func (m *hostMatcher) matches(r *http.Request, domain string) bool {
-	return strings.HasPrefix(r.Host, domain)
+	return matchDomain(r.Host, domain)
 }
 
 // arbitraryMatcher checks whether the specified (*net/http.Request).Header value starts with a domain name.
@@ -65,7 +66,7 @@ func (m arbitraryMatcher) name() string {
 }
 
 func (m arbitraryMatcher) matches(r *http.Request, domain string) bool {
-	return strings.HasPrefix(r.Header.Get(m.name()), domain)
+	return matchDomain(r.Header.Get(m.name()), domain)
 }
 
 // forwardedMatcher checks whether the Forwarded header contains a "host" element starting with a domain name.
@@ -87,7 +88,7 @@ func (m *forwardedMatcher) matches(r *http.Request, domain string) bool {
 	}
 
 	host := fwds[0]["host"]
-	return strings.HasPrefix(host, domain)
+	return matchDomain(host, domain)
 }
 
 // parsing requires some form of state machine.
@@ -133,9 +134,7 @@ func parseForwardedHeader(s string) (elements []map[string]string, err error) {
 
 		case r == ',': // end of forwarded-element
 			if key != "" {
-				if val == "" {
-					val = s[pos:i]
-				}
+				val = s[pos:i]
 				cur[key] = val
 			}
 			elements = append(elements, cur)
@@ -184,4 +183,13 @@ func skipWS(s string, i int) int {
 
 func isWS(r rune) bool {
 	return strings.ContainsRune(" \t\v\r\n", r)
+}
+
+func matchDomain(src, domain string) bool {
+	addr, err := netip.ParseAddr(domain)
+	if err == nil && addr.Is6() {
+		domain = "[" + domain + "]"
+	}
+
+	return strings.HasPrefix(src, domain)
 }

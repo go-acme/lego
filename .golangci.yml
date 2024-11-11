@@ -1,11 +1,9 @@
 linters:
   enable-all: true
   disable:
-    - gomnd # deprecated
     - cyclop # duplicate of gocyclo
     - sqlclosecheck # not relevant (SQL)
     - rowserrcheck # not relevant (SQL)
-    - execinquery # not relevant (SQL)
     - lll
     - gosec
     - dupl # not relevant
@@ -255,6 +253,10 @@ issues:
       text: 'cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high'
       linters:
         - gocyclo
+    - path: providers/dns/servercow/internal/types.go
+      text: 'the methods of "Value" use pointer receiver and non-pointer receiver.'
+      linters:
+        - recvcheck
 
     # Those elements have been replaced by non-exposed structures.
     - path: providers/dns/linode/linode_test.go

@@ -1,5 +1,33 @@
 # Changelog
 
+## [v4.20.0] - 2024-11-11
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Technitium
+- **[dnsprovider]** Add DNS provider for Regfish
+- **[dnsprovider]** Add DNS provider for Timeweb Cloud
+- **[dnsprovider]** Add DNS provider for Volcano Engine
+- **[dnsprovider]** Add DNS provider for Core-Networks
+- **[dnsprovider]** rfc2136: add support for tsig-keygen generated file
+- **[cli]** Add option to skip the TLS verification of the ACME server
+- Add documentation for env var only options
+
+### Changed
+
+- **[cli,ari]** Attempt to check ARI unless explicitly disabled
+- **[dnsprovider]** Improve propagation check error messages
+- **[dnsprovider]** cloudxns: provider deprecation
+- **[dnsprovider]** brandit: provider deprecation
+
+### Fixed
+
+- **[dnsprovider]** regru: update authentication method
+- **[dnsprovider]** selectelv2: fix non-ASCII domain
+- **[dnsprovider]** limacity: fix error message
+- **[dnsprovider]** volcengine: set API information within the default configuration
+- **[log]** Parse printf verbs in log line output
+
 ## [v4.19.2] - 2024-10-06
 
 ### Fixed
@@ -1221,9 +1249,3 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 
 ## [0.1.0] - 2015-12-03
 - Initial release
-
-[0.3.1]: https://github.com/go-acme/lego/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/go-acme/lego/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/go-acme/lego/compare/v0.1.1...v0.2.0
-[0.1.1]: https://github.com/go-acme/lego/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/go-acme/lego/tree/v0.1.0

@@ -88,7 +88,7 @@ USAGE:
 
 OPTIONS:
    --days value                              The number of days left on a certificate to renew it. (default: 30)
-   --ari-enable                              Use the renewalInfo endpoint (draft-ietf-acme-ari) to check if a certificate should be renewed. (default: false)
+   --ari-disable                             Do not use the renewalInfo endpoint (draft-ietf-acme-ari) to check if a certificate should be renewed. (default: false)
    --ari-wait-to-renew-duration value        The maximum duration you're willing to sleep for a renewal time returned by the renewalInfo endpoint. (default: 0s)
    --reuse-key                               Used to indicate you want to reuse your current private key for the new certificate. (default: false)
    --no-bundle                               Do not create a certificate bundle by adding the issuers certificate to the new certificate. (default: false)

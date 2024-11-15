@@ -18,8 +18,6 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-const defaultMetadataEndpoint = "http://169.254.169.254"
-
 // Environment variables names.
 const (
 	envNamespace = "AZURE_"
@@ -38,6 +36,10 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
+
+const defaultMetadataEndpoint = "http://169.254.169.254"
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

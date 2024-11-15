@@ -7,14 +7,9 @@ import (
 	"time"
 
 	"github.com/civo/civogo"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-)
-
-const (
-	minTTL                    = 600
-	defaultPollingInterval    = 30 * time.Second
-	defaultPropagationTimeout = 300 * time.Second
 )
 
 // Environment variables names.
@@ -27,6 +22,14 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
+
+const (
+	minTTL                    = 600
+	defaultPollingInterval    = 30 * time.Second
+	defaultPropagationTimeout = 300 * time.Second
+)
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

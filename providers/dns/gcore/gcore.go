@@ -8,14 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/gcore/internal"
-)
-
-const (
-	defaultPropagationTimeout = 360 * time.Second
-	defaultPollingInterval    = 20 * time.Second
 )
 
 // Environment variables names.
@@ -29,6 +25,13 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+const (
+	defaultPropagationTimeout = 360 * time.Second
+	defaultPollingInterval    = 20 * time.Second
+)
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config for DNSProvider.
 type Config struct {

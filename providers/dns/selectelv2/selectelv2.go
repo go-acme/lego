@@ -17,16 +17,6 @@ import (
 	"golang.org/x/net/idna"
 )
 
-const tokenHeader = "X-Auth-Token"
-
-const (
-	defaultBaseURL            = "https://api.selectel.ru/domains/v2"
-	defaultTTL                = 60
-	defaultPropagationTimeout = 120 * time.Second
-	defaultPollingInterval    = 5 * time.Second
-	defaultHTTPTimeout        = 30 * time.Second
-)
-
 const (
 	envNamespace = "SELECTELV2_"
 
@@ -41,6 +31,16 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+const (
+	defaultBaseURL            = "https://api.selectel.ru/domains/v2"
+	defaultTTL                = 60
+	defaultPropagationTimeout = 120 * time.Second
+	defaultPollingInterval    = 5 * time.Second
+	defaultHTTPTimeout        = 30 * time.Second
+)
+
+const tokenHeader = "X-Auth-Token"
 
 var errNotFound = errors.New("rrset not found")
 

@@ -7,13 +7,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/namedotcom/go/namecom"
 )
-
-// according to https://www.name.com/api-docs/DNS#CreateRecord
-const minTTL = 300
 
 // Environment variables names.
 const (
@@ -28,6 +26,11 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+// according to https://www.name.com/api-docs/DNS#CreateRecord
+const minTTL = 300
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

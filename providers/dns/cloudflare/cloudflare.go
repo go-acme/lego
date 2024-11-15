@@ -6,18 +6,44 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/cloudflare/cloudflare-go"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "CLOUDFLARE_"
+
+	EnvEmail        = envNamespace + "EMAIL"
+	EnvAPIKey       = envNamespace + "API_KEY"
+	EnvDNSAPIToken  = envNamespace + "DNS_API_TOKEN"
+	EnvZoneAPIToken = envNamespace + "ZONE_API_TOKEN"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
+const (
+	altEnvNamespace = "CF_"
+
+	altEnvEmail = altEnvNamespace + "API_EMAIL"
+)
+
 const (
 	minTTL = 120
 )
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
@@ -36,11 +62,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("CLOUDFLARE_TTL", minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("CLOUDFLARE_PROPAGATION_TIMEOUT", 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("CLOUDFLARE_POLLING_INTERVAL", 2*time.Second),
+		TTL:                env.GetOneWithFallback(EnvTTL, minTTL, strconv.Atoi, altEnvName(EnvTTL)),
+		PropagationTimeout: env.GetOneWithFallback(EnvPropagationTimeout, 2*time.Minute, env.ParseSecond, altEnvName(EnvPropagationTimeout)),
+		PollingInterval:    env.GetOneWithFallback(EnvPollingInterval, 2*time.Second, env.ParseSecond, altEnvName(EnvPollingInterval)),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("CLOUDFLARE_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOneWithFallback(EnvHTTPTimeout, 30*time.Second, env.ParseSecond, altEnvName(EnvHTTPTimeout)),
 		},
 	}
 }
@@ -68,14 +94,14 @@ type DNSProvider struct {
 // in this case pass both CLOUDFLARE_ZONE_API_TOKEN and CLOUDFLARE_DNS_API_TOKEN accordingly.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.GetWithFallback(
-		[]string{"CLOUDFLARE_EMAIL", "CF_API_EMAIL"},
-		[]string{"CLOUDFLARE_API_KEY", "CF_API_KEY"},
+		[]string{EnvEmail, altEnvEmail},
+		[]string{EnvAPIKey, altEnvName(EnvAPIKey)},
 	)
 	if err != nil {
 		var errT error
 		values, errT = env.GetWithFallback(
-			[]string{"CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN"},
-			[]string{"CLOUDFLARE_ZONE_API_TOKEN", "CF_ZONE_API_TOKEN", "CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN"},
+			[]string{EnvDNSAPIToken, altEnvName(EnvDNSAPIToken)},
+			[]string{EnvZoneAPIToken, altEnvName(EnvZoneAPIToken), EnvDNSAPIToken, altEnvName(EnvDNSAPIToken)},
 		)
 		if errT != nil {
 			//nolint:errorlint
@@ -84,10 +110,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	config := NewDefaultConfig()
-	config.AuthEmail = values["CLOUDFLARE_EMAIL"]
-	config.AuthKey = values["CLOUDFLARE_API_KEY"]
-	config.AuthToken = values["CLOUDFLARE_DNS_API_TOKEN"]
-	config.ZoneToken = values["CLOUDFLARE_ZONE_API_TOKEN"]
+	config.AuthEmail = values[EnvEmail]
+	config.AuthKey = values[EnvAPIKey]
+	config.AuthToken = values[EnvDNSAPIToken]
+	config.ZoneToken = values[EnvZoneAPIToken]
 
 	return NewDNSProviderConfig(config)
 }
@@ -188,4 +214,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Unlock()
 
 	return nil
+}
+
+func altEnvName(v string) string {
+	return strings.ReplaceAll(v, envNamespace, altEnvNamespace)
 }

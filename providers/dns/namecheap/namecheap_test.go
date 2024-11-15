@@ -127,7 +127,7 @@ func mockDNSProvider(t *testing.T, baseURL string) *DNSProvider {
 func assertHdr(t *testing.T, tc *testCase, values *url.Values) {
 	t.Helper()
 
-	ch, _ := newChallenge(tc.domain, "")
+	ch, _ := newPseudoRecord(tc.domain, "")
 	assert.Equal(t, envTestUser, values.Get("ApiUser"), "ApiUser")
 	assert.Equal(t, envTestKey, values.Get("ApiKey"), "ApiKey")
 	assert.Equal(t, envTestUser, values.Get("UserName"), "UserName")
@@ -177,7 +177,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	}
 }
 
-func TestDomainSplit(t *testing.T) {
+func Test_newPseudoRecord_domainSplit(t *testing.T) {
 	tests := []struct {
 		domain string
 		valid  bool
@@ -205,7 +205,7 @@ func TestDomainSplit(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.domain, func(t *testing.T) {
 			valid := true
-			ch, err := newChallenge(test.domain, "")
+			ch, err := newPseudoRecord(test.domain, "")
 			if err != nil {
 				valid = false
 			}

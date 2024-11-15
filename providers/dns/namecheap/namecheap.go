@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -45,47 +46,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// A challenge represents all the data needed to specify a dns-01 challenge to lets-encrypt.
-type challenge struct {
-	domain   string
-	key      string
-	keyFqdn  string
-	keyValue string
-	tld      string
-	sld      string
-	host     string
-}
-
-// newChallenge builds a challenge record from a domain name and a challenge authentication key.
-func newChallenge(domain, keyAuth string) (*challenge, error) {
-	domain = dns01.UnFqdn(domain)
-
-	tld, _ := publicsuffix.PublicSuffix(domain)
-	if tld == domain {
-		return nil, fmt.Errorf("invalid domain name %q", domain)
-	}
-
-	parts := strings.Split(domain, ".")
-	longest := len(parts) - strings.Count(tld, ".") - 1
-	sld := parts[longest-1]
-
-	var host string
-	if longest >= 1 {
-		host = strings.Join(parts[:longest-1], ".")
-	}
-
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	return &challenge{
-		domain:   domain,
-		key:      "_acme-challenge." + host,
-		keyFqdn:  info.EffectiveFQDN,
-		keyValue: info.Value,
-		tld:      tld,
-		sld:      sld,
-		host:     host,
-	}, nil
-}
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
@@ -178,22 +139,22 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Present installs a TXT record for the DNS challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	ch, err := newChallenge(domain, keyAuth)
+	pr, err := newPseudoRecord(domain, keyAuth)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)
 	}
 
 	ctx := context.Background()
 
-	records, err := d.client.GetHosts(ctx, ch.sld, ch.tld)
+	records, err := d.client.GetHosts(ctx, pr.sld, pr.tld)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)
 	}
 
 	record := internal.Record{
-		Name:    ch.key,
+		Name:    pr.key,
 		Type:    "TXT",
-		Address: ch.keyValue,
+		Address: pr.keyValue,
 		MXPref:  "10",
 		TTL:     strconv.Itoa(d.config.TTL),
 	}
@@ -206,7 +167,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}
 	}
 
-	err = d.client.SetHosts(ctx, ch.sld, ch.tld, records)
+	err = d.client.SetHosts(ctx, pr.sld, pr.tld, records)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)
 	}
@@ -216,14 +177,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes a TXT record used for a previous DNS challenge.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	ch, err := newChallenge(domain, keyAuth)
+	pr, err := newPseudoRecord(domain, keyAuth)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)
 	}
 
 	ctx := context.Background()
 
-	records, err := d.client.GetHosts(ctx, ch.sld, ch.tld)
+	records, err := d.client.GetHosts(ctx, pr.sld, pr.tld)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)
 	}
@@ -232,7 +193,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	var found bool
 	var newRecords []internal.Record
 	for _, h := range records {
-		if h.Name == ch.key && h.Type == "TXT" {
+		if h.Name == pr.key && h.Type == "TXT" {
 			found = true
 		} else {
 			newRecords = append(newRecords, h)
@@ -243,9 +204,51 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	err = d.client.SetHosts(ctx, ch.sld, ch.tld, newRecords)
+	err = d.client.SetHosts(ctx, pr.sld, pr.tld, newRecords)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)
 	}
 	return nil
+}
+
+// A pseudoRecord represents all the data needed to specify a dns-01 challenge to lets-encrypt.
+type pseudoRecord struct {
+	domain   string
+	key      string
+	keyFqdn  string
+	keyValue string
+	tld      string
+	sld      string
+	host     string
+}
+
+// newPseudoRecord builds a challenge record from a domain name and a challenge authentication key.
+func newPseudoRecord(domain, keyAuth string) (*pseudoRecord, error) {
+	domain = dns01.UnFqdn(domain)
+
+	tld, _ := publicsuffix.PublicSuffix(domain)
+	if tld == domain {
+		return nil, fmt.Errorf("invalid domain name %q", domain)
+	}
+
+	parts := strings.Split(domain, ".")
+	longest := len(parts) - strings.Count(tld, ".") - 1
+	sld := parts[longest-1]
+
+	var host string
+	if longest >= 1 {
+		host = strings.Join(parts[:longest-1], ".")
+	}
+
+	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	return &pseudoRecord{
+		domain:   domain,
+		key:      "_acme-challenge." + host,
+		keyFqdn:  info.EffectiveFQDN,
+		keyValue: info.Value,
+		tld:      tld,
+		sld:      sld,
+		host:     host,
+	}, nil
 }

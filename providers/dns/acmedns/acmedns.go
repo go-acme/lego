@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/cpu/goacmedns"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
@@ -22,6 +23,8 @@ const (
 	// A per-domain account will be registered/persisted to this file and used for TXT updates.
 	EnvStoragePath = envNamespace + "STORAGE_PATH"
 )
+
+var _ challenge.Provider = (*DNSProvider)(nil)
 
 // acmeDNSClient is an interface describing the goacmedns.Client functions the DNSProvider uses.
 // It makes it easier for tests to shim a mock Client into the DNSProvider.

@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/miekg/dns"
@@ -35,6 +36,8 @@ const (
 
 // https://www.volcengine.com/docs/6758/170354
 const defaultTTL = 600
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

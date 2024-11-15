@@ -9,12 +9,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"CLOUDFLARE_EMAIL",
-	"CLOUDFLARE_API_KEY",
-	"CLOUDFLARE_DNS_API_TOKEN",
-	"CLOUDFLARE_ZONE_API_TOKEN").
-	WithDomain("CLOUDFLARE_DOMAIN")
+	EnvEmail,
+	EnvAPIKey,
+	EnvDNSAPIToken,
+	EnvZoneAPIToken,
+	altEnvEmail,
+	altEnvName(EnvAPIKey),
+	altEnvName(EnvDNSAPIToken),
+	altEnvName(EnvZoneAPIToken)).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -25,45 +31,45 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success email, API key",
 			envVars: map[string]string{
-				"CLOUDFLARE_EMAIL":   "test@example.com",
-				"CLOUDFLARE_API_KEY": "123",
+				EnvEmail:  "test@example.com",
+				EnvAPIKey: "123",
 			},
 		},
 		{
 			desc: "success API token",
 			envVars: map[string]string{
-				"CLOUDFLARE_DNS_API_TOKEN": "012345abcdef",
+				EnvDNSAPIToken: "012345abcdef",
 			},
 		},
 		{
 			desc: "success separate API tokens",
 			envVars: map[string]string{
-				"CLOUDFLARE_DNS_API_TOKEN":  "012345abcdef",
-				"CLOUDFLARE_ZONE_API_TOKEN": "abcdef012345",
+				EnvDNSAPIToken:  "012345abcdef",
+				EnvZoneAPIToken: "abcdef012345",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"CLOUDFLARE_EMAIL":         "",
-				"CLOUDFLARE_API_KEY":       "",
-				"CLOUDFLARE_DNS_API_TOKEN": "",
+				EnvEmail:       "",
+				EnvAPIKey:      "",
+				EnvDNSAPIToken: "",
 			},
 			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN,CLOUDFLARE_ZONE_API_TOKEN",
 		},
 		{
 			desc: "missing email",
 			envVars: map[string]string{
-				"CLOUDFLARE_EMAIL":   "",
-				"CLOUDFLARE_API_KEY": "key",
+				EnvEmail:  "",
+				EnvAPIKey: "key",
 			},
 			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN,CLOUDFLARE_ZONE_API_TOKEN",
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				"CLOUDFLARE_EMAIL":   "awesome@possum.com",
-				"CLOUDFLARE_API_KEY": "",
+				EnvEmail:  "awesome@possum.com",
+				EnvAPIKey: "",
 			},
 			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN,CLOUDFLARE_ZONE_API_TOKEN",
 		},
@@ -110,7 +116,7 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 		{
 			desc: "same client when zone token is missing",
 			envVars: map[string]string{
-				"CLOUDFLARE_DNS_API_TOKEN": "123",
+				EnvDNSAPIToken: "123",
 			},
 			expected: expected{
 				dnsToken:   "123",
@@ -121,8 +127,8 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 		{
 			desc: "same client when zone token equals dns token",
 			envVars: map[string]string{
-				"CLOUDFLARE_DNS_API_TOKEN":  "123",
-				"CLOUDFLARE_ZONE_API_TOKEN": "123",
+				EnvDNSAPIToken:  "123",
+				EnvZoneAPIToken: "123",
 			},
 			expected: expected{
 				dnsToken:   "123",
@@ -133,7 +139,7 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 		{
 			desc: "failure when only zone api given",
 			envVars: map[string]string{
-				"CLOUDFLARE_ZONE_API_TOKEN": "123",
+				EnvZoneAPIToken: "123",
 			},
 			expected: expected{
 				error: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN",
@@ -142,8 +148,8 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 		{
 			desc: "different clients when zone and dns token differ",
 			envVars: map[string]string{
-				"CLOUDFLARE_DNS_API_TOKEN":  "123",
-				"CLOUDFLARE_ZONE_API_TOKEN": "abc",
+				EnvDNSAPIToken:  "123",
+				EnvZoneAPIToken: "abc",
 			},
 			expected: expected{
 				dnsToken:   "123",
@@ -154,10 +160,10 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 		{
 			desc: "aliases work as expected", // CLOUDFLARE_* takes precedence over CF_*
 			envVars: map[string]string{
-				"CLOUDFLARE_DNS_API_TOKEN":  "123",
-				"CF_DNS_API_TOKEN":          "456",
-				"CLOUDFLARE_ZONE_API_TOKEN": "abc",
-				"CF_ZONE_API_TOKEN":         "def",
+				EnvDNSAPIToken:              "123",
+				altEnvName(EnvDNSAPIToken):  "456",
+				EnvZoneAPIToken:             "abc",
+				altEnvName(EnvZoneAPIToken): "def",
 			},
 			expected: expected{
 				dnsToken:   "123",
@@ -169,9 +175,9 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 
 	defer envTest.RestoreEnv()
 	localEnvTest := tester.NewEnvTest(
-		"CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN",
-		"CLOUDFLARE_ZONE_API_TOKEN", "CF_ZONE_API_TOKEN",
-	).WithDomain("CLOUDFLARE_DOMAIN")
+		EnvDNSAPIToken, altEnvName(EnvDNSAPIToken),
+		EnvZoneAPIToken, altEnvName(EnvZoneAPIToken),
+	).WithDomain(envDomain)
 	envTest.ClearEnv()
 
 	for _, test := range testCases {

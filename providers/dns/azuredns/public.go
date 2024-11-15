@@ -12,8 +12,11 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 )
+
+var _ challenge.ProviderTimeout = (*DNSProviderPublic)(nil)
 
 // DNSProviderPublic implements the challenge.Provider interface for Azure Public Zone DNS.
 type DNSProviderPublic struct {

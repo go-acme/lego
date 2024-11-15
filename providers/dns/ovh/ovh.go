@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
@@ -45,6 +46,8 @@ const (
 
 // EnvAccessToken Authenticate using Access Token client.
 const EnvAccessToken = envNamespace + "ACCESS_TOKEN"
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Record a DNS record.
 type Record struct {

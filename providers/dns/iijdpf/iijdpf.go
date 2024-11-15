@@ -28,6 +28,8 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
 
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
+
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Token       string
@@ -48,8 +50,6 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
 	}
 }
-
-var _ challenge.Provider = &DNSProvider{}
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {

@@ -10,15 +10,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/gandiv5/internal"
 )
-
-// Gandi API reference:       http://doc.livedns.gandi.net/
-
-const minTTL = 300
 
 // Environment variables names.
 const (
@@ -32,6 +29,10 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+const minTTL = 300
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // inProgressInfo contains information about an in-progress challenge.
 type inProgressInfo struct {

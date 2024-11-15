@@ -11,12 +11,11 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"golang.org/x/net/idna"
 )
-
-const defaultRegionID = "cn-hangzhou"
 
 // Environment variables names.
 const (
@@ -33,6 +32,10 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+const defaultRegionID = "cn-hangzhou"
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/cpanel"
@@ -32,6 +33,8 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 type apiClient interface {
 	FetchZoneInformation(ctx context.Context, domain string) ([]shared.ZoneRecord, error)

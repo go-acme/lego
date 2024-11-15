@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	awstypes "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/platform/wait"
@@ -40,6 +41,8 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

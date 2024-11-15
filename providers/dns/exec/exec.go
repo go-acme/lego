@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -26,6 +27,8 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
 )
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config Provider configuration.
 type Config struct {

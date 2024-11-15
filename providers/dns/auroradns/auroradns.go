@@ -7,12 +7,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/nrdcg/auroradns"
 )
-
-const defaultBaseURL = "https://api.auroradns.eu"
 
 // Environment variables names.
 const (
@@ -26,6 +25,10 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
+
+const defaultBaseURL = "https://api.auroradns.eu"
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

@@ -9,12 +9,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/loopia/internal"
 )
-
-const minTTL = 300
 
 // Environment variables names.
 const (
@@ -29,6 +28,10 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+const minTTL = 300
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 type dnsClient interface {
 	AddTXTRecord(ctx context.Context, domain string, subdomain string, ttl int, value string) error

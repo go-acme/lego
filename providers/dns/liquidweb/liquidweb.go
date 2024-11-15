@@ -10,13 +10,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	lw "github.com/liquidweb/liquidweb-go/client"
 	"github.com/liquidweb/liquidweb-go/network"
 )
-
-const defaultBaseURL = "https://api.liquidweb.com"
 
 // Environment variables names.
 const (
@@ -33,6 +32,10 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+const defaultBaseURL = "https://api.liquidweb.com"
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

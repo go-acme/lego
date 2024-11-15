@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/nrdcg/desec"
@@ -29,6 +30,8 @@ const (
 // https://github.com/desec-io/desec-stack/issues/216
 // https://desec.readthedocs.io/_/downloads/en/latest/pdf/
 const defaultTTL int = 3600
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

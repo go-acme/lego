@@ -9,15 +9,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/otc/internal"
 )
-
-const defaultIdentityEndpoint = "https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens"
-
-// minTTL 300 is otc minimum value for TTL.
-const minTTL = 300
 
 // Environment variables names.
 const (
@@ -35,6 +31,13 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
 )
+
+const defaultIdentityEndpoint = "https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens"
+
+// minTTL 300 is otc minimum value for TTL.
+const minTTL = 300
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

@@ -59,11 +59,7 @@ func (c *Client) AddRecord(ctx context.Context, domainID int, record Record) err
 func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int) error {
 	endpoint := c.baseURL.JoinPath("domain", strconv.Itoa(domainID), "dns")
 
-	query := endpoint.Query()
-	query.Set("record_id", strconv.Itoa(recordID))
-	endpoint.RawQuery = query.Encode()
-
-	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, Record{ID: recordID})
 	if err != nil {
 		return err
 	}

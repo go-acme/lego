@@ -182,7 +182,7 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
   <td><a href="https://go-acme.github.io/lego/dns/pdns/">PowerDNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/rackspace/">Rackspace</a></td>
 </tr><tr>
-  <td><a href="https://go-acme.github.io/lego/dns/raindns/">RainCloud</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/rainyun/">Rain Yun/雨云</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/rcodezero/">RcodeZero</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/regru/">reg.ru</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/regfish/">Regfish</a></td>

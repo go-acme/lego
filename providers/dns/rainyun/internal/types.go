@@ -31,7 +31,9 @@ type APIResponse[T any] struct {
 	Data *Data[T] `json:"data"`
 }
 
+// TODO(ldez) based on the API style, this structure is probably wrong.
+
 type Data[T any] struct {
-	TotalRecords int `json:"TotalRecords"`
-	Records      []T `json:"Records"`
+	TotalRecords int `json:"TotalRecords"` // TODO(ldez) based on the API style, the JSON name is probably wrong.
+	Records      []T `json:"Records"`      // TODO(ldez) based on the API style, the JSON name is probably wrong.
 }

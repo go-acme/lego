@@ -101,12 +101,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("rainyun: find domain ID: %w", err)
 	}
 
-	record := internal.Record{
-		Host:  dns01.UnFqdn(info.EffectiveFQDN),
-		Line:  "DEFAULT",
-		TTL:   d.config.TTL,
-		Type:  "TXT",
-		Value: info.Value,
+	record := internal.AddRecord{
+		Host:     dns01.UnFqdn(info.EffectiveFQDN),
+		Priority: 10,
+		Line:     "DEFAULT",
+		TTL:      d.config.TTL,
+		Type:     "TXT",
+		Value:    info.Value,
 	}
 
 	err = d.client.AddRecord(ctx, domainID, record)

@@ -9,11 +9,11 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"reflect"
 	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	querystring "github.com/google/go-querystring/query"
 )
 
 const defaultBaseURL = "https://api.v2.rainyun.com/product/"
@@ -41,7 +41,7 @@ func NewClient(apiKey string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) AddRecord(ctx context.Context, domainID int, record AddRecord) error {
+func (c *Client) AddRecord(ctx context.Context, domainID int, record Record) error {
 	endpoint := c.baseURL.JoinPath("domain", strconv.Itoa(domainID), "dns")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
@@ -59,7 +59,14 @@ func (c *Client) AddRecord(ctx context.Context, domainID int, record AddRecord) 
 func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int) error {
 	endpoint := c.baseURL.JoinPath("domain", strconv.Itoa(domainID), "dns")
 
-	req, err := newQueryRequest(ctx, http.MethodDelete, endpoint, DelRecord{ID: recordID})
+	values, err := querystring.Values(Record{ID: recordID})
+	if err != nil {
+		return err
+	}
+
+	endpoint.RawQuery = values.Encode()
+
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -158,43 +165,6 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 	}
 
 	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create request: %w", err)
-	}
-
-	req.Header.Set("Accept", "application/json")
-
-	if payload != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-
-	return req, nil
-}
-
-func newQueryRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
-	v := url.Values{}
-	if payload != nil {
-		sv := reflect.ValueOf(payload)
-		for i := 0; i < sv.Type().NumField(); i++ {
-			field := sv.Type().Field(i)
-			tag := field.Tag.Get("form")
-			if tag == "" {
-				continue
-			}
-			value := sv.Field(i).Interface()
-			switch vt := value.(type) {
-			case int:
-				v.Add(tag, strconv.Itoa(vt))
-			case string:
-				v.Add(tag, vt)
-			// 可以根据需要支持更多类型
-			default:
-				return nil, fmt.Errorf("unsupported type %T", vt)
-			}
-		}
-	}
-
-	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s?%s", endpoint.String(), v.Encode()), nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}

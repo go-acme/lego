@@ -11,27 +11,14 @@ func (a *APIError) Error() string {
 	return fmt.Sprintf("%d: %s", a.Code, a.Message)
 }
 
-type AddRecord struct {
-	Host     string `json:"host,omitempty"`
-	Priority int    `json:"level,omitempty"`
-	Line     string `json:"line,omitempty"`
-	TTL      int    `json:"ttl,omitempty"`
-	Type     string `json:"type,omitempty"`
-	Value    string `json:"value,omitempty"`
-}
-
-type DelRecord struct {
-	ID int `form:"record_id"`
-}
-
 type Record struct {
-	ID       int    `json:"record_id,omitempty"`
-	Host     string `json:"host,omitempty"`
-	Priority int    `json:"level,omitempty"`
-	Line     string `json:"line,omitempty"`
-	TTL      int    `json:"ttl,omitempty"`
-	Type     string `json:"type,omitempty"`
-	Value    string `json:"value,omitempty"`
+	ID       int    `json:"record_id,omitempty" url:"record_id,omitempty"`
+	Host     string `json:"host,omitempty" url:"host,omitempty"`
+	Priority int    `json:"level,omitempty" url:"level,omitempty"`
+	Line     string `json:"line,omitempty" url:"line,omitempty"`
+	TTL      int    `json:"ttl,omitempty" url:"ttl,omitempty"`
+	Type     string `json:"type,omitempty" url:"type,omitempty"`
+	Value    string `json:"value,omitempty" url:"value,omitempty"`
 }
 
 type Domain struct {

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -110,6 +111,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Value:    info.Value,
 	}
 
+	// 需要对Host进行处理，它仅需要域名之前的部分
+	record.Host = record.Host[:len(record.Host)-len(domain)-1]
+
 	err = d.client.AddRecord(ctx, domainID, record)
 	if err != nil {
 		return fmt.Errorf("rainyun: add record: %w", err)
@@ -170,7 +174,7 @@ func (d *DNSProvider) findRecordID(ctx context.Context, domainID int, info dns01
 	}
 
 	for _, record := range records {
-		if record.Host == dns01.UnFqdn(info.EffectiveFQDN) && record.Value == info.Value {
+		if strings.HasPrefix(dns01.UnFqdn(info.EffectiveFQDN), record.Host) && record.Value == info.Value {
 			return record.ID, nil
 		}
 	}

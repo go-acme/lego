@@ -102,7 +102,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("epik: could not find zone for domain %q: %w", domain, err)
 	}
 
-	domainID, err := d.findDomainID(ctx, authZone)
+	domainID, err := d.findDomainID(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("rainyun: find domain ID: %w", err)
 	}
@@ -140,7 +140,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("epik: could not find zone for domain %q: %w", domain, err)
 	}
 
-	domainID, err := d.findDomainID(ctx, authZone)
+	domainID, err := d.findDomainID(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("rainyun: find domain ID: %w", err)
 	}

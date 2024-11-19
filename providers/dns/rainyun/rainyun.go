@@ -102,17 +102,19 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("rainyun: find domain ID: %w", err)
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, domain)
+	if err != nil {
+		return fmt.Errorf("rainyun: %w", err)
+	}
+
 	record := internal.Record{
-		Host:     dns01.UnFqdn(info.EffectiveFQDN),
+		Host:     subDomain,
 		Priority: 10,
 		Line:     "DEFAULT",
 		TTL:      d.config.TTL,
 		Type:     "TXT",
 		Value:    info.Value,
 	}
-
-	// 需要对Host进行处理，它仅需要域名之前的部分
-	record.Host = record.Host[:len(record.Host)-len(domain)-1]
 
 	err = d.client.AddRecord(ctx, domainID, record)
 	if err != nil {

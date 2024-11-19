@@ -185,8 +185,10 @@ func (d *DNSProvider) findRecordID(ctx context.Context, domainID int, info dns01
 		return 0, fmt.Errorf("list records: %w", err)
 	}
 
+	zone := dns01.UnFqdn(info.EffectiveFQDN)
+
 	for _, record := range records {
-		if strings.HasPrefix(dns01.UnFqdn(info.EffectiveFQDN), record.Host) && record.Value == info.Value {
+		if strings.HasPrefix(zone, record.Host) && record.Value == info.Value {
 			return record.ID, nil
 		}
 	}

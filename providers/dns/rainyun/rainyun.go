@@ -102,7 +102,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("rainyun: find domain ID: %w", err)
 	}
 
-	record := internal.AddRecord{
+	record := internal.Record{
 		Host:     dns01.UnFqdn(info.EffectiveFQDN),
 		Priority: 10,
 		Line:     "DEFAULT",

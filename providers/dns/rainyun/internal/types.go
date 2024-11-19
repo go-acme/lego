@@ -21,7 +21,7 @@ type AddRecord struct {
 }
 
 type DelRecord struct {
-	ID int `form:"record_id,omitempty"`
+	ID int `form:"record_id"`
 }
 
 type Record struct {

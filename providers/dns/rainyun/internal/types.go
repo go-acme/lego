@@ -22,7 +22,7 @@ type Record struct {
 }
 
 type Domain struct {
-	ID     int    `json:"id,record_id,omitempty"`
+	ID     int    `json:"id,omitempty"`
 	Domain string `json:"domain,omitempty"`
 }
 

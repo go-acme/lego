@@ -4,11 +4,11 @@
     "TotalRecords": 2,
     "Records": [
       {
-        "record_id": 1,
+        "id": 1,
         "domain": "example.com"
       },
       {
-        "record_id": 2,
+        "id": 2,
         "domain": "example.org"
       }
     ]

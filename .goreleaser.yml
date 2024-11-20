@@ -163,7 +163,6 @@ snapcrafts:
       * `sudo lego --email="you@example.com" --domains="example.com" --server=https://acme-staging-v02.api.letsencrypt.org/directory --http --http.port :8080 run
     channel_templates:
       - edge
-
     apps:
       lego:
         command: lego
@@ -171,3 +170,25 @@ snapcrafts:
           LEGO_PATH: /var/snap/lego/common/.lego
         plugs:
           - network-bind
+
+aurs:
+  - description: "Let's Encrypt client and ACME library written in Go"
+    skip_upload: false
+    homepage: https://go-acme.github.io/lego/
+    name: 'lego-bin'
+    provides:
+      - lego
+    maintainers:
+      - "Fernandez Ludovic <lfernandez dot dev at gmail dot com>"
+    license: APACHE
+    private_key: "{{ .Env.AUR_KEY }}"
+    git_url: "ssh://aur@aur.archlinux.org/lego-bin.git"
+    commit_author:
+      name: ldez
+      email: ldez@users.noreply.github.com
+    package: |-
+      # Bin
+      install -Dm755 "./prm" "${pkgdir}/usr/bin/lego"
+
+      # License
+      install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/lego/LICENSE"

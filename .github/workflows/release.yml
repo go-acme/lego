@@ -71,3 +71,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_REPO }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+          AUR_KEY: ${{ secrets.AUR_KEY }}

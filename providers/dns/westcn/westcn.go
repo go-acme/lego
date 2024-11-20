@@ -149,7 +149,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("westcn: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err = d.client.DeleteRecord(context.Background(), authZone, recordID)
+	err = d.client.DeleteRecord(context.Background(), dns01.UnFqdn(authZone), recordID)
 	if err != nil {
 		return fmt.Errorf("westcn: delete record: %w", err)
 	}

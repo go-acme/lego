@@ -161,8 +161,6 @@ snapcrafts:
       Usage:
       * `sudo snap install lego`
       * `sudo lego --email="you@example.com" --domains="example.com" --server=https://acme-staging-v02.api.letsencrypt.org/directory --http --http.port :8080 run
-    channel_templates:
-      - edge
     apps:
       lego:
         command: lego

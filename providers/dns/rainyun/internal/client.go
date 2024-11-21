@@ -124,7 +124,7 @@ func (c *Client) do(req *http.Request, result any) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode > http.StatusBadRequest {
+	if resp.StatusCode/100 != 2 {
 		return parseError(req, resp)
 	}
 

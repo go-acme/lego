@@ -1,5 +1,9 @@
 # Changelog
 
+## [v4.20.4](https://github.com/go-acme/lego/releases/tag/v4.20.4) (2024-11-21)
+
+Publish the Snap to the Snapcraft stable channel.
+
 ## [v4.20.3](https://github.com/go-acme/lego/releases/tag/v4.20.3) (2024-11-21)
 
 ### Fixed

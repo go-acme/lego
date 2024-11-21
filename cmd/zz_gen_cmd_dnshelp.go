@@ -115,6 +115,7 @@ func allDNSCodes() string {
 		"plesk",
 		"porkbun",
 		"rackspace",
+		"rainyun",
 		"rcodezero",
 		"regfish",
 		"regru",
@@ -2356,6 +2357,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rackspace`)
+
+	case "rainyun":
+		// generated from: providers/dns/rainyun/rainyun.toml
+		ew.writeln(`Configuration for Rain Yun/雨云.`)
+		ew.writeln(`Code:	'rainyun'`)
+		ew.writeln(`Since:	'v4.21.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "RAINYUN_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "RAINYUN_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "RAINYUN_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "RAINYUN_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "RAINYUN_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rainyun`)
 
 	case "rcodezero":
 		// generated from: providers/dns/rcodezero/rcodezero.toml

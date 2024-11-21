@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "data": {
+    "TotalRecords": 2,
+    "Records": [
+      {
+        "id": 1,
+        "domain": "example.com"
+      },
+      {
+        "id": 2,
+        "domain": "example.org"
+      }
+    ]
+  }
+}

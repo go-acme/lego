@@ -1,0 +1,24 @@
+{
+  "code": 0,
+  "data": {
+    "TotalRecords": 2,
+    "Records": [
+      {
+        "record_id": 1,
+        "host": "_acme-challenge.foo.example.com",
+        "type": "TXT",
+        "TTL": 120,
+        "value": "foo",
+        "line": "DEFAULT"
+      },
+      {
+        "record_id": 2,
+        "host": "_acme-challenge.bar.example.com",
+        "type": "TXT",
+        "TTL": 300,
+        "value": "bar",
+        "line": "DEFAULT"
+      }
+    ]
+  }
+}

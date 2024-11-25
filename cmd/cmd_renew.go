@@ -26,6 +26,7 @@ const (
 	flgReuseKey               = "reuse-key"
 	flgRenewHook              = "renew-hook"
 	flgNoRandomSleep          = "no-random-sleep"
+	flgForceCertDomains       = "force-cert-domains"
 )
 
 const (
@@ -52,6 +53,9 @@ func createRenew() *cli.Command {
 			}
 			if !hasDomains && !hasCsr {
 				log.Fatal("Please specify --%s/-d (or --%s/-c if you already have a CSR)", flgDomains, flgCSR)
+			}
+			if ctx.Bool(flgForceCertDomains) && hasCsr {
+				log.Fatal("--%s only works with --%s/-d, --%s/-c doesn't support this option.", flgForceCertDomains, flgDomains, flgCSR)
 			}
 			return nil
 		},
@@ -109,6 +113,10 @@ func createRenew() *cli.Command {
 				Name: flgNoRandomSleep,
 				Usage: "Do not add a random sleep before the renewal." +
 					" We do not recommend using this flag if you are doing your renewals in an automated way.",
+			},
+			&cli.BoolFlag{
+				Name:  flgForceCertDomains,
+				Usage: "Check and ensure that the cert's domain list matches those passed in the domains argument.",
 			},
 		},
 	}
@@ -172,15 +180,18 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		}
 	}
 
-	if ariRenewalTime == nil && !needRenewal(cert, domain, ctx.Int(flgDays)) {
+	forceDomains := ctx.Bool(flgForceCertDomains)
+
+	certDomains := certcrypto.ExtractDomains(cert)
+
+	if ariRenewalTime == nil && !needRenewal(cert, domain, ctx.Int(flgDays)) &&
+		(!forceDomains || slices.Equal(certDomains, domains)) {
 		return nil
 	}
 
 	// This is just meant to be informal for the user.
 	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
 	log.Infof("[%s] acme: Trying renewal with %d hours remaining", domain, int(timeLeft.Hours()))
-
-	certDomains := certcrypto.ExtractDomains(cert)
 
 	var privateKey crypto.PrivateKey
 	if ctx.Bool(flgReuseKey) {
@@ -207,8 +218,13 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		time.Sleep(sleepTime)
 	}
 
+	renewalDomains := domains
+	if !forceDomains {
+		renewalDomains = merge(certDomains, domains)
+	}
+
 	request := certificate.ObtainRequest{
-		Domains:                        merge(certDomains, domains),
+		Domains:                        renewalDomains,
 		PrivateKey:                     privateKey,
 		MustStaple:                     ctx.Bool(flgMustStaple),
 		NotBefore:                      getTime(ctx, flgNotBefore),

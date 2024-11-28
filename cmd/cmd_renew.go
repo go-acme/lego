@@ -124,7 +124,9 @@ func createRenew() *cli.Command {
 
 func renew(ctx *cli.Context) error {
 	account, client := setup(ctx, NewAccountsStorage(ctx))
-	setupChallenges(ctx, client)
+	if client != nil {
+		setupChallenges(ctx, client)
+	}
 
 	if account.Registration == nil {
 		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", account.Email)
@@ -162,7 +164,7 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 	var ariRenewalTime *time.Time
 	var replacesCertID string
 
-	if !ctx.Bool(flgARIDisable) {
+	if !ctx.Bool(flgARIDisable) && client != nil {
 		ariRenewalTime = getARIRenewalTime(ctx, cert, domain, client)
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
@@ -186,7 +188,21 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 
 	if ariRenewalTime == nil && !needRenewal(cert, domain, ctx.Int(flgDays)) &&
 		(!forceDomains || slices.Equal(certDomains, domains)) {
+		// Warn the user that renewal check occurred offline, but the cert is not expired yet.
+		if client == nil {
+			log.Warnf(
+				"[%s] Failed to check ARI as there is no client."+
+					" Check previous error messages for possible initialization issues.",
+				domain,
+			)
+			os.Exit(2)
+		}
 		return nil
+	}
+
+	if client == nil {
+		// Abort renewal if we don't have a lego client
+		os.Exit(1)
 	}
 
 	// This is just meant to be informal for the user.
@@ -274,7 +290,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	var ariRenewalTime *time.Time
 	var replacesCertID string
 
-	if !ctx.Bool(flgARIDisable) {
+	if !ctx.Bool(flgARIDisable) && client != nil {
 		ariRenewalTime = getARIRenewalTime(ctx, cert, domain, client)
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
@@ -293,7 +309,21 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	}
 
 	if ariRenewalTime == nil && !needRenewal(cert, domain, ctx.Int(flgDays)) {
+		// Warn the user that renewal check occurred offline, but the cert is not expired yet.
+		if client == nil {
+			log.Warnf(
+				"[%s] Failed to check ARI as there is no client."+
+					" Check previous error messages for an indicator of initialization issues.",
+				domain,
+			)
+			os.Exit(2)
+		}
 		return nil
+	}
+
+	if client == nil {
+		// Abort renewal if we don't have a lego client
+		os.Exit(1)
 	}
 
 	// This is just meant to be informal for the user.

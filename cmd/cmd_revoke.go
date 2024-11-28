@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/urfave/cli/v2"
@@ -39,6 +41,9 @@ func createRevoke() *cli.Command {
 
 func revoke(ctx *cli.Context) error {
 	acc, client := setup(ctx, NewAccountsStorage(ctx))
+	if client == nil {
+		os.Exit(1)
+	}
 
 	if acc.Registration == nil {
 		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)

@@ -94,6 +94,9 @@ func run(ctx *cli.Context) error {
 	accountsStorage := NewAccountsStorage(ctx)
 
 	account, client := setup(ctx, accountsStorage)
+	if client == nil {
+		os.Exit(1)
+	}
 	setupChallenges(ctx, client)
 
 	if account.Registration == nil {

@@ -58,7 +58,8 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 
 	client, err := lego.NewClient(config)
 	if err != nil {
-		log.Fatalf("Could not create client: %v", err)
+		log.Warnf("Could not create client: %v", err)
+		return nil
 	}
 
 	if client.GetExternalAccountRequired() && !ctx.IsSet(flgEAB) {

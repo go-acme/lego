@@ -99,6 +99,7 @@ OPTIONS:
    --always-deactivate-authorizations value  Force the authorizations to be relinquished even if the certificate request was successful.
    --renew-hook value                        Define a hook. The hook is executed only when the certificates are effectively renewed.
    --no-random-sleep                         Do not add a random sleep before the renewal. We do not recommend using this flag if you are doing your renewals in an automated way. (default: false)
+   --force-cert-domains                      Check and ensure that the cert's domain list matches those passed in the domains argument. (default: false)
    --help, -h                                show help
 """
 

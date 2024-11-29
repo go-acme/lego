@@ -1,0 +1,146 @@
+[
+  {
+    "zone_id": 1,
+    "zone_name": "test.com.",
+    "zone_ttl": 500,
+    "zone_type": 0,
+    "zone_targeting": true,
+    "zone_logging": "{}",
+    "zone_contact": "mathes.zoho.com",
+    "refresh": 43200,
+    "retry": 3600,
+    "expiry": 1209600,
+    "minimum": 180,
+    "org": 2,
+    "any_query": false,
+    "dnssec": true,
+    "vanity": false,
+    "ns_id": 1,
+    "serial": 2022042206,
+    "ns": [
+      "ns11.zns-53.com.",
+      "ns21.zns-53.net.",
+      "ns31.zns-53.com.",
+      "ns41.zns-53.net."
+    ],
+    "contact_group": [
+      "test_contact1",
+      "test_contact2"
+    ],
+    "ds": [
+      {
+        "record_id": 59,
+        "keyTag": 36938,
+        "algorithm": 13,
+        "digestType": 1,
+        "digest": "e9f03d176455d5d16f826b69f9ecb11f59be35e7",
+        "domain_id": 30
+      },
+      {
+        "record_id": 60,
+        "keyTag": 36938,
+        "algorithm": 13,
+        "digestType": 2,
+        "digest": "7ea640a8668eafd9d89a9b2e9994f5fcfb1dee0668d1e93ba556aa57ac047f96",
+        "domain_id": 30
+      }
+    ]
+  },
+  {
+    "zone_id": 2,
+    "zone_name": "yourdomain.com.",
+    "zone_ttl": 1000,
+    "zone_type": 0,
+    "zone_targeting": false,
+    "zone_logging": "{}",
+    "zone_contact": "contact.yourdomain.com",
+    "refresh": 43200,
+    "retry": 3600,
+    "expiry": 1209600,
+    "minimum": 180,
+    "org": 2,
+    "any_query": false,
+    "dnssec": false,
+    "vanity": true,
+    "vanity_grp": "yourdomain",
+    "ns_id": 1,
+    "serial": 2022040608,
+    "ns": [
+      "ns11.yourdomain.com.",
+      "ns21.yourdomain.net.",
+      "ns31.yourdomain.com.",
+      "ns41.yourdomain.net."
+    ]
+  },
+  {
+    "zone_id": 20,
+    "zone_name": "hello45.com.",
+    "zone_ttl": 3000,
+    "zone_targeting": false,
+    "zone_logging": "{}",
+    "zone_contact": "mathes.zoho.com",
+    "refresh": 43200,
+    "retry": 3600,
+    "expiry": 1209600,
+    "minimum": 180,
+    "org": 2,
+    "any_query": false,
+    "dnssec": false,
+    "ns_id": 1,
+    "serial": 2022040711,
+    "ns": [
+      "ns11.zns-53.com.",
+      "ns21.zns-53.net.",
+      "ns31.zns-53.com.",
+      "ns41.zns-53.net."
+    ]
+  },
+  {
+    "zone_id": 22,
+    "zone_name": "zohoaccl.com.",
+    "zone_ttl": 300,
+    "zone_type": 0,
+    "zone_targeting": true,
+    "zone_logging": "{}",
+    "zone_contact": "networkone.zohocorp.com",
+    "refresh": 43200,
+    "retry": 3600,
+    "expiry": 1209600,
+    "minimum": 180,
+    "org": 2,
+    "any_query": false,
+    "dnssec": false,
+    "ns_id": 1,
+    "serial": 2022042206,
+    "ns": [
+      "ns11.zns-53.com.",
+      "ns21.zns-53.net.",
+      "ns31.zns-53.com.",
+      "ns41.zns-53.net."
+    ]
+  },
+  {
+    "zone_id": 23,
+    "zone_name": "zohocal.com.",
+    "zone_ttl": 300,
+    "zone_type": 0,
+    "zone_targeting": true,
+    "zone_logging": "{}",
+    "zone_contact": "mathes.zoho.com",
+    "refresh": 43200,
+    "retry": 3600,
+    "expiry": 1209600,
+    "minimum": 180,
+    "org": 2,
+    "any_query": false,
+    "dnssec": false,
+    "ns_id": 1,
+    "serial": 2022041310,
+    "ns": [
+      "ns11.zns-53.com.",
+      "ns21.zns-53.net.",
+      "ns31.zns-53.com.",
+      "ns41.zns-53.net."
+    ]
+  }
+]

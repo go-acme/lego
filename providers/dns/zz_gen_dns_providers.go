@@ -86,6 +86,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/loopia"
 	"github.com/go-acme/lego/v4/providers/dns/luadns"
 	"github.com/go-acme/lego/v4/providers/dns/mailinabox"
+	"github.com/go-acme/lego/v4/providers/dns/manageengine"
 	"github.com/go-acme/lego/v4/providers/dns/metaname"
 	"github.com/go-acme/lego/v4/providers/dns/mijnhost"
 	"github.com/go-acme/lego/v4/providers/dns/mittwald"
@@ -315,6 +316,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return luadns.NewDNSProvider()
 	case "mailinabox":
 		return mailinabox.NewDNSProvider()
+	case "manageengine":
+		return manageengine.NewDNSProvider()
 	case "metaname":
 		return metaname.NewDNSProvider()
 	case "mijnhost":

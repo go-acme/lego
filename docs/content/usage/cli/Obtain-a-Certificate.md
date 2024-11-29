@@ -58,6 +58,19 @@ GANDI_API_KEY=xxx \
 lego --email "you@example.com" --dns gandi --domains "example.org" --domains "*.example.org" run
 ```
 
+### Note: For a zone that has multiple SOAs
+
+This can often be found where Gandi has an zone entry for an internal network (i.e. a corp network, or home lan) as well as the public internet. In this case, 
+point lego at an external authorative server for the zone using the additional parameter `--dns.resolver`.
+
+An updated example for domain Gandi for your domain: 
+
+```bash
+GANDI_API_KEY=xxx \
+lego --email "you@example.com" --dns gandi --dns.resolver 9.9.9.9:53 --domains "example.org" --domains "*.example.org" run
+
+```
+
 
 ## Using a custom certificate signing request (CSR)
 

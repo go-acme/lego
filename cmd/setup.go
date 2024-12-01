@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
@@ -51,8 +50,11 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 	}
 
 	if ctx.Bool(flgTLSSkipVerify) {
-		config.HTTPClient.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		defaultTransport, ok := config.HTTPClient.Transport.(*http.Transport)
+		if ok { // This is always true because the default client used by the CLI defined the transport.
+			tr := defaultTransport.Clone()
+			tr.TLSClientConfig.InsecureSkipVerify = true
+			config.HTTPClient.Transport = tr
 		}
 	}
 

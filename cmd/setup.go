@@ -18,7 +18,16 @@ import (
 
 const filePerm os.FileMode = 0o600
 
-func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *lego.Client) {
+// setupClient creates a new client with challenge settings.
+func setupClient(ctx *cli.Context, account *Account, keyType certcrypto.KeyType) *lego.Client {
+	client := newClient(ctx, account, keyType)
+
+	setupChallenges(ctx, client)
+
+	return client
+}
+
+func setupAccount(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, certcrypto.KeyType) {
 	keyType := getKeyType(ctx)
 	privateKey := accountsStorage.GetPrivateKey(keyType)
 
@@ -29,9 +38,7 @@ func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *lego.
 		account = &Account{Email: accountsStorage.GetUserID(), key: privateKey}
 	}
 
-	client := newClient(ctx, account, keyType)
-
-	return account, client
+	return account, keyType
 }
 
 func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyType) *lego.Client {

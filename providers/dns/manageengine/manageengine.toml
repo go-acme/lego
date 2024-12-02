@@ -1,0 +1,24 @@
+Name = "ManageEngine CloudDNS"
+Description = ''''''
+URL = "https://clouddns.manageengine.com"
+Code = "manageengine"
+Since = "v4.21.0"
+
+Example = '''
+MANAGEENGINE_CLIENT_ID="xxx" \
+MANAGEENGINE_CLIENT_SECRET="yyy" \
+lego --email you@example.com --dns manageengine -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    MANAGEENGINE_CLIENT_ID = "Client ID"
+    MANAGEENGINE_CLIENT_SECRET = "Client Secret"
+  [Configuration.Additional]
+    MANAGEENGINE_POLLING_INTERVAL = "Time between DNS propagation check"
+    MANAGEENGINE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    MANAGEENGINE_TTL = "The TTL of the TXT record used for the DNS challenge"
+    MANAGEENGINE_HTTP_TIMEOUT = "API request timeout"
+
+[Links]
+  API = "https://pitstop.manageengine.com/portal/en/kb/articles/manageengine-clouddns-rest-api-documentation"

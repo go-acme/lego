@@ -1,0 +1,40 @@
+[
+  {
+    "spf_txt_domain_id": 6,
+    "zone_id": 4,
+    "domain_name": "spftest.example.com.",
+    "domain_ttl": 300,
+    "domain_location_id": 1,
+    "record_type": "SPF",
+    "records": [
+      {
+        "record_id": 1,
+        "value": [
+          "necwcltpwxbz-noelget3jush-vop2xxvapot3eyq_0"
+        ],
+        "disabled": false,
+        "domain_id": 6
+      }
+    ]
+  },
+  {
+    "spf_txt_domain_id": 13,
+    "zone_id": 4,
+    "domain_name": "txt.example.com.",
+    "domain_ttl": 300,
+    "domain_maxhost": 1,
+    "domain_location_id": 1,
+    "record_type": "TXT",
+    "records": [
+      {
+        "record_id": 1,
+        "value": [
+          "v=spf1include:transmail.netinclude:example.com~all",
+          "c-68e3oc4trm8w7piplscg7vgojmtkjrnrabr4king8"
+        ],
+        "disabled": false,
+        "domain_id": 13
+      }
+    ]
+  }
+]

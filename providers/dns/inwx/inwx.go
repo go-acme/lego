@@ -180,15 +180,26 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("inwx: %w", err)
 	}
 
-	var lastErr error
+	var recordID int
 	for _, record := range response.Records {
-		err = d.client.Nameservers.DeleteRecord(record.ID)
-		if err != nil {
-			lastErr = fmt.Errorf("inwx: %w", err)
+		if record.Content != challengeInfo.Value {
+			continue
 		}
+
+		recordID = record.ID
+		break
 	}
 
-	return lastErr
+	if recordID == 0 {
+		return errors.New("inwx: TXT record not found")
+	}
+
+	err = d.client.Nameservers.DeleteRecord(recordID)
+	if err != nil {
+		return fmt.Errorf("inwx: %w", err)
+	}
+
+	return nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

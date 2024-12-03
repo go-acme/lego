@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"time"
-	"strconv"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -183,7 +182,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var lastErr error
 	for _, record := range response.Records {
-		if record.Content == strconv.Quote(challengeInfo.Value) {
+		if record.Content == challengeInfo.Value {
 			err = d.client.Nameservers.DeleteRecord(record.ID)
 			if err != nil {
 				lastErr = fmt.Errorf("inwx: %w", err)

@@ -249,6 +249,10 @@ issues:
       text: 'cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high'
       linters:
         - gocyclo
+    - path: cmd/cmd_renew.go
+      text: "Function 'renewForDomains' has too many statements"
+      linters:
+        - funlen
     - path: providers/dns/cpanel/cpanel.go
       text: 'cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high'
       linters:

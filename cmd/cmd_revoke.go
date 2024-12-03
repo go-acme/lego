@@ -38,11 +38,13 @@ func createRevoke() *cli.Command {
 }
 
 func revoke(ctx *cli.Context) error {
-	acc, client := setup(ctx, NewAccountsStorage(ctx))
+	account, keyType := setupAccount(ctx, NewAccountsStorage(ctx))
 
-	if acc.Registration == nil {
-		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
+	if account.Registration == nil {
+		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", account.Email)
 	}
+
+	client := newClient(ctx, account, keyType)
 
 	certsStorage := NewCertificatesStorage(ctx)
 	certsStorage.CreateRootFolder()

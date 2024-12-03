@@ -93,8 +93,9 @@ backups of this folder is ideal.
 func run(ctx *cli.Context) error {
 	accountsStorage := NewAccountsStorage(ctx)
 
-	account, client := setup(ctx, accountsStorage)
-	setupChallenges(ctx, client)
+	account, keyType := setupAccount(ctx, accountsStorage)
+
+	client := setupClient(ctx, account, keyType)
 
 	if account.Registration == nil {
 		reg, err := register(ctx, client)

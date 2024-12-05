@@ -164,25 +164,7 @@ func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*bunny.DNS
 		return nil, err
 	}
 
-	domains := possibleDomains(authZone)
-
-	var domainLength int
-
-	var zone *bunny.DNSZone
-	for _, item := range zones.Items {
-		if item == nil {
-			continue
-		}
-
-		curr := deref(item.Domain)
-
-		if slices.Contains(domains, curr) && domainLength < len(curr) {
-			domainLength = len(curr)
-
-			zone = item
-		}
-	}
-
+	zone := findZone(zones, authZone)
 	if zone == nil {
 		return nil, fmt.Errorf("could not find DNSZone zone=%s", authZone)
 	}

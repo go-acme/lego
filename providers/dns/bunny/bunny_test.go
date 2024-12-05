@@ -149,6 +149,22 @@ func Test_findZone(t *testing.T) {
 			},
 		},
 		{
+			desc:   "found the longest subdomain",
+			domain: "_acme-challenge.foo.bar.example.com",
+			items: []*bunny.DNSZone{
+				{ID: pointer[int64](7), Domain: pointer("foo.bar.example.com")},
+				{ID: pointer[int64](1), Domain: pointer("example.com")},
+				{ID: pointer[int64](2), Domain: pointer("example.org")},
+				{ID: pointer[int64](4), Domain: pointer("bar.example.org")},
+				{ID: pointer[int64](5), Domain: pointer("bar.example.com")},
+				{ID: pointer[int64](6), Domain: pointer("foo.example.com")},
+			},
+			expected: &bunny.DNSZone{
+				ID:     pointer[int64](7),
+				Domain: pointer("foo.bar.example.com"),
+			},
+		},
+		{
 			desc:   "found apex",
 			domain: "_acme-challenge.foo.bar.example.com",
 			items: []*bunny.DNSZone{
@@ -182,6 +198,39 @@ func Test_findZone(t *testing.T) {
 			zone := findZone(zones, test.domain)
 
 			assert.Equal(t, test.expected, zone)
+		})
+	}
+}
+
+func Test_possibleDomains(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		domain   string
+		expected []string
+	}{
+		{
+			desc:     "apex",
+			domain:   "example.com",
+			expected: []string{"example.com"},
+		},
+		{
+			desc:     "long domain",
+			domain:   "_acme-challenge.foo.bar.example.com",
+			expected: []string{"_acme-challenge.foo.bar.example.com", "foo.bar.example.com", "bar.example.com", "example.com"},
+		},
+		{
+			desc:   "empty",
+			domain: "",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			domains := possibleDomains(test.domain)
+
+			assert.Equal(t, test.expected, domains)
 		})
 	}
 }

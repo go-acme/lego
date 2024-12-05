@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
+	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,7 +53,7 @@ func TestLiveTTL(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, v := range resp.ResourceRecordSets {
-		if deref(v.Name) == fqdn && v.Type == "TXT" && deref(v.TTL) == 10 {
+		if ptr.Deref(v.Name) == fqdn && v.Type == "TXT" && ptr.Deref(v.TTL) == 10 {
 			return
 		}
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/lightsail"
+	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,19 +53,10 @@ func TestLiveTTL(t *testing.T) {
 
 	entries := resp.Domain.DomainEntries
 	for _, entry := range entries {
-		if deref(entry.Type) == "TXT" && deref(entry.Name) == fqdn {
+		if ptr.Deref(entry.Type) == "TXT" && ptr.Deref(entry.Name) == fqdn {
 			return
 		}
 	}
 
 	t.Fatalf("Could not find a TXT record for _acme-challenge.%s", domain)
-}
-
-func deref[T string | int | int32 | int64 | bool](v *T) T {
-	if v == nil {
-		var zero T
-		return zero
-	}
-
-	return *v
 }

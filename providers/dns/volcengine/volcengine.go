@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
 	"github.com/miekg/dns"
 	"github.com/volcengine/volc-sdk-golang/base"
 	volc "github.com/volcengine/volc-sdk-golang/service/dns"
@@ -126,16 +127,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("volcengine: get zone ID: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, deref(zone.ZoneName))
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, ptr.Deref(zone.ZoneName))
 	if err != nil {
 		return fmt.Errorf("volcengine: %w", err)
 	}
 
 	crr := &volc.CreateRecordRequest{
-		Host:  pointer(subDomain),
-		TTL:   pointer(int64(d.config.TTL)),
-		Type:  pointer("TXT"),
-		Value: pointer(info.Value),
+		Host:  ptr.Pointer(subDomain),
+		TTL:   ptr.Pointer(int64(d.config.TTL)),
+		Type:  ptr.Pointer("TXT"),
+		Value: ptr.Pointer(info.Value),
 		ZID:   zone.ZID,
 	}
 
@@ -178,8 +179,8 @@ func (d *DNSProvider) getZone(ctx context.Context, fqdn string) (volc.TopZoneRes
 		domain := fqdn[index:]
 
 		lzr := &volc.ListZonesRequest{
-			Key:        pointer(dns01.UnFqdn(domain)),
-			SearchMode: pointer("exact"),
+			Key:        ptr.Pointer(dns01.UnFqdn(domain)),
+			SearchMode: ptr.Pointer("exact"),
 		}
 
 		zones, err := d.client.ListZones(ctx, lzr)
@@ -187,7 +188,7 @@ func (d *DNSProvider) getZone(ctx context.Context, fqdn string) (volc.TopZoneRes
 			return volc.TopZoneResponse{}, fmt.Errorf("list zones: %w", err)
 		}
 
-		total := deref(zones.Total)
+		total := ptr.Deref(zones.Total)
 
 		if total == 0 || len(zones.Zones) == 0 {
 			continue
@@ -232,15 +233,4 @@ func newClient(config *Config) *volc.Client {
 	caller.Volc.SetTimeout(serviceInfo.Timeout)
 
 	return volc.NewClient(caller)
-}
-
-func pointer[T any](v T) *T { return &v }
-
-func deref[T any](v *T) T {
-	if v == nil {
-		var zero T
-		return zero
-	}
-
-	return *v
 }

@@ -278,12 +278,3 @@ func getZoneName(config *Config, fqdn string) (string, error) {
 
 	return authZone, nil
 }
-
-func deref[T any](v *T) T {
-	if v == nil {
-		var zero T
-		return zero
-	}
-
-	return *v
-}

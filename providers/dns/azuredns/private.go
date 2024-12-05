@@ -14,6 +14,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
 )
 
 var _ challenge.ProviderTimeout = (*DNSProviderPrivate)(nil)
@@ -184,7 +185,7 @@ func privateUniqueRecords(recordSet armprivatedns.RecordSet, value string) map[s
 		for _, txtRecord := range recordSet.Properties.TxtRecords {
 			// Assume Value doesn't contain multiple strings
 			if len(txtRecord.Value) > 0 {
-				uniqRecords[deref(txtRecord.Value[0])] = struct{}{}
+				uniqRecords[ptr.Deref(txtRecord.Value[0])] = struct{}{}
 			}
 		}
 	}

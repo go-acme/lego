@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/platform/wait"
+	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
 	hwauthbasic "github.com/huaweicloud/huaweicloud-sdk-go-v3/core/auth/basic"
 	hwconfig "github.com/huaweicloud/huaweicloud-sdk-go-v3/core/config"
 	hwdns "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/dns/v2"
@@ -155,7 +156,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			return false, fmt.Errorf("show record set: %w", errShow)
 		}
 
-		return !strings.HasSuffix(deref(rs.Status), "PENDING_"), nil
+		return !strings.HasSuffix(ptr.Deref(rs.Status), "PENDING_"), nil
 	})
 	if err != nil {
 		return fmt.Errorf("huaweicloud: %w", err)
@@ -208,7 +209,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dns01.ChallengeInfo) (string, error) {
 	records, err := d.client.ListRecordSetsByZone(&hwmodel.ListRecordSetsByZoneRequest{
 		ZoneId: zoneID,
-		Name:   pointer(info.EffectiveFQDN),
+		Name:   ptr.Pointer(info.EffectiveFQDN),
 	})
 	if err != nil {
 		return "", fmt.Errorf("record list: unable to get record %s for zone %s: %w", info.EffectiveFQDN, domain, err)
@@ -216,8 +217,8 @@ func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dns01.C
 
 	var existingRecordSet *hwmodel.ListRecordSets
 
-	for _, record := range deref(records.Recordsets) {
-		if deref(record.Type) == "TXT" && deref(record.Name) == info.EffectiveFQDN {
+	for _, record := range ptr.Deref(records.Recordsets) {
+		if ptr.Deref(record.Type) == "TXT" && ptr.Deref(record.Name) == info.EffectiveFQDN {
 			existingRecordSet = &record
 		}
 	}
@@ -229,9 +230,9 @@ func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dns01.C
 			ZoneId: zoneID,
 			Body: &hwmodel.CreateRecordSetRequestBody{
 				Name:        info.EffectiveFQDN,
-				Description: pointer("Added TXT record for ACME dns-01 challenge using lego client"),
+				Description: ptr.Pointer("Added TXT record for ACME dns-01 challenge using lego client"),
 				Type:        "TXT",
-				Ttl:         pointer(d.config.TTL),
+				Ttl:         ptr.Pointer(d.config.TTL),
 				Records:     []string{value},
 			},
 		}
@@ -241,18 +242,18 @@ func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dns01.C
 			return "", fmt.Errorf("create record set: %w", errCreate)
 		}
 
-		return deref(resp.Id), nil
+		return ptr.Deref(resp.Id), nil
 	}
 
 	updateRequest := &hwmodel.UpdateRecordSetRequest{
 		ZoneId:      zoneID,
-		RecordsetId: deref(existingRecordSet.Id),
+		RecordsetId: ptr.Deref(existingRecordSet.Id),
 		Body: &hwmodel.UpdateRecordSetReq{
 			Name:        existingRecordSet.Name,
 			Description: existingRecordSet.Description,
 			Type:        existingRecordSet.Type,
 			Ttl:         existingRecordSet.Ttl,
-			Records:     pointer(append(deref(existingRecordSet.Records), value)),
+			Records:     ptr.Pointer(append(ptr.Deref(existingRecordSet.Records), value)),
 		},
 	}
 
@@ -261,7 +262,7 @@ func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dns01.C
 		return "", fmt.Errorf("update record set: %w", err)
 	}
 
-	return deref(resp.Id), nil
+	return ptr.Deref(resp.Id), nil
 }
 
 func (d *DNSProvider) getZoneID(authZone string) (string, error) {
@@ -270,22 +271,11 @@ func (d *DNSProvider) getZoneID(authZone string) (string, error) {
 		return "", fmt.Errorf("unable to get zone: %w", err)
 	}
 
-	for _, zone := range deref(zones.Zones) {
-		if deref(zone.Name) == authZone {
-			return deref(zone.Id), nil
+	for _, zone := range ptr.Deref(zones.Zones) {
+		if ptr.Deref(zone.Name) == authZone {
+			return ptr.Deref(zone.Id), nil
 		}
 	}
 
 	return "", fmt.Errorf("zone %q not found", authZone)
-}
-
-func pointer[T any](v T) *T { return &v }
-
-func deref[T any](v *T) T {
-	if v == nil {
-		var zero T
-		return zero
-	}
-
-	return *v
 }

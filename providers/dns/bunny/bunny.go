@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/miekg/dns"
 	"github.com/nrdcg/bunny-go"
+	"golang.org/x/net/publicsuffix"
 )
 
 // Environment variables names.
@@ -200,10 +201,11 @@ func possibleDomains(domain string) []string {
 
 	labelIndexes := dns.Split(domain)
 
-	for i, index := range labelIndexes {
-		if i == len(labelIndexes)-1 {
+	for _, index := range labelIndexes {
+		tld, _ := publicsuffix.PublicSuffix(domain)
+		if tld == domain[index:] {
 			// skip the TLD
-			continue
+			break
 		}
 
 		domains = append(domains, dns01.UnFqdn(domain[index:]))

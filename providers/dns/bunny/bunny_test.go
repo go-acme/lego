@@ -214,6 +214,11 @@ func Test_possibleDomains(t *testing.T) {
 			expected: []string{"example.com"},
 		},
 		{
+			desc:     "CCTLD",
+			domain:   "example.co.uk",
+			expected: []string{"example.co.uk"},
+		},
+		{
 			desc:     "long domain",
 			domain:   "_acme-challenge.foo.bar.example.com",
 			expected: []string{"_acme-challenge.foo.bar.example.com", "foo.bar.example.com", "bar.example.com", "example.com"},

@@ -166,14 +166,14 @@ func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*bunny.DNS
 
 	zone := findZone(zones, authZone)
 	if zone == nil {
-		return nil, fmt.Errorf("could not find DNSZone zone=%s", authZone)
+		return nil, fmt.Errorf("could not find DNSZone domain=%s", authZone)
 	}
 
 	return zone, nil
 }
 
-func findZone(zones *bunny.DNSZones, authZone string) *bunny.DNSZone {
-	domains := possibleDomains(authZone)
+func findZone(zones *bunny.DNSZones, domain string) *bunny.DNSZone {
+	domains := possibleDomains(domain)
 
 	var domainLength int
 
@@ -195,20 +195,21 @@ func findZone(zones *bunny.DNSZones, authZone string) *bunny.DNSZone {
 	return zone
 }
 
-func possibleDomains(fqdn string) []string {
-	var d []string
+func possibleDomains(domain string) []string {
+	var domains []string
 
-	labelIndexes := dns.Split(fqdn)
+	labelIndexes := dns.Split(domain)
 
 	for i, index := range labelIndexes {
 		if i == len(labelIndexes)-1 {
+			// skip the TLD
 			continue
 		}
 
-		d = append(d, dns01.UnFqdn(fqdn[index:]))
+		domains = append(domains, dns01.UnFqdn(domain[index:]))
 	}
 
-	return d
+	return domains
 }
 
 func pointer[T string | int | int32 | int64](v T) *T { return &v }

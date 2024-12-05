@@ -177,9 +177,7 @@ func Test_findZone(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			zones := &bunny.DNSZones{
-				Items: test.items,
-			}
+			zones := &bunny.DNSZones{Items: test.items}
 
 			zone := findZone(zones, test.domain)
 

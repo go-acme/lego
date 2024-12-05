@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Lego :: Let’s Encrypt client and ACME library written in Go.</title>
+    <link>https://go-acme.github.io/lego/index.html</link>
+    <description>Let’s Encrypt client and ACME library written in Go.&#xA;Features ACME v2 RFC 8555 Support RFC 8737: TLS Application‑Layer Protocol Negotiation (ALPN) Challenge Extension Support RFC 8738: issues certificates for IP addresses Support draft-ietf-acme-ari-01: Renewal Information (ARI) Extension Register with CA Obtain certificates, both from scratch or with an existing CSR Renew certificates Revoke certificates Robust implementation of all ACME challenges HTTP (http-01) DNS (dns-01) TLS (tls-alpn-01) SAN certificate support CNAME support by default Comes with multiple optional DNS providers Custom challenge solvers Certificate bundling OCSP helper function </description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 04 Sep 2024 12:54:29 +0000</lastBuildDate>
+    <atom:link href="https://go-acme.github.io/lego/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Installation</title>
+      <link>https://go-acme.github.io/lego/installation/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/installation/index.html</guid>
+      <description>Binaries To get the binary just download the latest release for your OS/Arch from the release page and put the binary somewhere convenient. lego does not assume anything about the location you run it from.&#xA;From Docker docker run goacme/lego -hFrom package managers ArchLinux (official):&#xA;pacman -S lego ArchLinux (AUR) (official):&#xA;yay -S lego-bin Snap (official):&#xA;sudo snap install legoNote: The snap can only write to the /var/snap/lego/common/.lego directory.&#xA;FreeBSD (Ports) (unofficial):</description>
+    </item>
+    <item>
+      <title>Usage</title>
+      <link>https://go-acme.github.io/lego/usage/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/usage/index.html</guid>
+      <description>CLILego can be use as a CLI.&#xA;LibraryLego can be used as a Go Library.</description>
+    </item>
+    <item>
+      <title>DNS Providers</title>
+      <link>https://go-acme.github.io/lego/dns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/index.html</guid>
+      <description>Configuration and Credentials Credentials and DNS configuration for DNS providers must be passed through environment variables.&#xA;Environment Variables: Value The environment variables can reference a value.&#xA;Here is an example bash command using the Cloudflare DNS provider:&#xA;$ CLOUDFLARE_EMAIL=you@example.com \ CLOUDFLARE_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \ lego --dns cloudflare --domains www.example.com --email you@example.com runEnvironment Variables: File The environment variables can reference a path to file.&#xA;In this case the name of environment variable must be suffixed by _FILE.</description>
+    </item>
+  </channel>
+</rss>

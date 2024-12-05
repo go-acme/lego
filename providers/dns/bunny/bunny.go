@@ -164,8 +164,6 @@ func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*bunny.DNS
 		return nil, err
 	}
 
-	findZone(zones, authZone)
-
 	domains := possibleDomains(authZone)
 
 	var domainLength int

@@ -97,14 +97,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	challengeInfo := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(challengeInfo.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("inwx: could not find zone for domain %q (%s): %w", domain, challengeInfo.EffectiveFQDN, err)
+		return fmt.Errorf("inwx: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	info, err := d.client.Account.Login()
+	login, err := d.client.Account.Login()
 	if err != nil {
 		return fmt.Errorf("inwx: %w", err)
 	}
@@ -116,27 +116,24 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}
 	}()
 
-	err = d.twoFactorAuth(info)
+	err = d.twoFactorAuth(login)
 	if err != nil {
 		return fmt.Errorf("inwx: %w", err)
 	}
 
 	request := &goinwx.NameserverRecordRequest{
 		Domain:  dns01.UnFqdn(authZone),
-		Name:    dns01.UnFqdn(challengeInfo.EffectiveFQDN),
+		Name:    dns01.UnFqdn(info.EffectiveFQDN),
 		Type:    "TXT",
-		Content: challengeInfo.Value,
+		Content: info.Value,
 		TTL:     d.config.TTL,
 	}
 
 	_, err = d.client.Nameservers.CreateRecord(request)
 	if err != nil {
 		var er *goinwx.ErrorResponse
-		if errors.As(err, &er) {
-			if er.Message == "Object exists" {
-				return nil
-			}
-			return fmt.Errorf("inwx: %w", err)
+		if errors.As(err, &er) && er.Message == "Object exists" {
+			return nil
 		}
 
 		return fmt.Errorf("inwx: %w", err)
@@ -147,14 +144,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	challengeInfo := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(challengeInfo.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("inwx: could not find zone for domain %q (%s): %w", domain, challengeInfo.EffectiveFQDN, err)
+		return fmt.Errorf("inwx: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	info, err := d.client.Account.Login()
+	login, err := d.client.Account.Login()
 	if err != nil {
 		return fmt.Errorf("inwx: %w", err)
 	}
@@ -166,14 +163,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 	}()
 
-	err = d.twoFactorAuth(info)
+	err = d.twoFactorAuth(login)
 	if err != nil {
 		return fmt.Errorf("inwx: %w", err)
 	}
 
 	response, err := d.client.Nameservers.Info(&goinwx.NameserverInfoRequest{
 		Domain: dns01.UnFqdn(authZone),
-		Name:   dns01.UnFqdn(challengeInfo.EffectiveFQDN),
+		Name:   dns01.UnFqdn(info.EffectiveFQDN),
 		Type:   "TXT",
 	})
 	if err != nil {
@@ -182,7 +179,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var recordID int
 	for _, record := range response.Records {
-		if record.Content != challengeInfo.Value {
+		if record.Content != info.Value {
 			continue
 		}
 

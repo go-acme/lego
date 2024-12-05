@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/nrdcg/bunny-go"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -122,4 +124,66 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+}
+
+func Test_findZone(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		domain   string
+		items    []*bunny.DNSZone
+		expected *bunny.DNSZone
+	}{
+		{
+			desc:   "found subdomain",
+			domain: "_acme-challenge.foo.bar.example.com",
+			items: []*bunny.DNSZone{
+				{ID: pointer[int64](1), Domain: pointer("example.com")},
+				{ID: pointer[int64](2), Domain: pointer("example.org")},
+				{ID: pointer[int64](4), Domain: pointer("bar.example.org")},
+				{ID: pointer[int64](5), Domain: pointer("bar.example.com")},
+				{ID: pointer[int64](6), Domain: pointer("foo.example.com")},
+			},
+			expected: &bunny.DNSZone{
+				ID:     pointer[int64](5),
+				Domain: pointer("bar.example.com"),
+			},
+		},
+		{
+			desc:   "found apex",
+			domain: "_acme-challenge.foo.bar.example.com",
+			items: []*bunny.DNSZone{
+				{ID: pointer[int64](1), Domain: pointer("example.com")},
+				{ID: pointer[int64](2), Domain: pointer("example.org")},
+				{ID: pointer[int64](4), Domain: pointer("bar.example.org")},
+				{ID: pointer[int64](6), Domain: pointer("foo.example.com")},
+			},
+			expected: &bunny.DNSZone{
+				ID:     pointer[int64](1),
+				Domain: pointer("example.com"),
+			},
+		},
+		{
+			desc:   "not found",
+			domain: "_acme-challenge.foo.bar.example.com",
+			items: []*bunny.DNSZone{
+				{ID: pointer[int64](2), Domain: pointer("example.org")},
+				{ID: pointer[int64](4), Domain: pointer("bar.example.org")},
+				{ID: pointer[int64](6), Domain: pointer("foo.example.com")},
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			zones := &bunny.DNSZones{
+				Items: test.items,
+			}
+
+			zone := findZone(zones, test.domain)
+
+			assert.Equal(t, test.expected, zone)
+		})
+	}
 }

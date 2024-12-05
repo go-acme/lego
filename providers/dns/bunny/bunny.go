@@ -5,11 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/miekg/dns"
 	"github.com/nrdcg/bunny-go"
 )
 
@@ -94,19 +96,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := getZoneName(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("bunny: could not find zone for domain %q: %w", domain, err)
-	}
-
 	ctx := context.Background()
 
-	zone, err := d.findZone(ctx, authZone)
+	zone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, deref(zone.Domain))
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}
@@ -129,19 +126,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := getZoneName(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("bunny: could not find zone for domain %q: %w", domain, err)
-	}
-
 	ctx := context.Background()
 
-	zone, err := d.findZone(ctx, authZone)
+	zone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, deref(zone.Domain))
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}
@@ -172,11 +164,24 @@ func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*bunny.DNS
 		return nil, err
 	}
 
+	findZone(zones, authZone)
+
+	domains := possibleDomains(authZone)
+
+	var domainLength int
+
 	var zone *bunny.DNSZone
 	for _, item := range zones.Items {
-		if item != nil && deref(item.Domain) == authZone {
+		if item == nil {
+			continue
+		}
+
+		curr := deref(item.Domain)
+
+		if slices.Contains(domains, curr) && domainLength < len(curr) {
+			domainLength = len(curr)
+
 			zone = item
-			break
 		}
 	}
 
@@ -187,13 +192,43 @@ func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*bunny.DNS
 	return zone, nil
 }
 
-func getZoneName(fqdn string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return "", err
+func findZone(zones *bunny.DNSZones, authZone string) *bunny.DNSZone {
+	domains := possibleDomains(authZone)
+
+	var domainLength int
+
+	var zone *bunny.DNSZone
+	for _, item := range zones.Items {
+		if item == nil {
+			continue
+		}
+
+		curr := deref(item.Domain)
+
+		if slices.Contains(domains, curr) && domainLength < len(curr) {
+			domainLength = len(curr)
+
+			zone = item
+		}
 	}
 
-	return dns01.UnFqdn(authZone), nil
+	return zone
+}
+
+func possibleDomains(fqdn string) []string {
+	var d []string
+
+	labelIndexes := dns.Split(fqdn)
+
+	for i, index := range labelIndexes {
+		if i == len(labelIndexes)-1 {
+			continue
+		}
+
+		d = append(d, dns01.UnFqdn(fqdn[index:]))
+	}
+
+	return d
 }
 
 func pointer[T string | int | int32 | int64](v T) *T { return &v }

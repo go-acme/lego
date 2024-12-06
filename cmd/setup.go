@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/registration"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/urfave/cli/v2"
 )
 
@@ -64,6 +65,12 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 			config.HTTPClient.Transport = tr
 		}
 	}
+
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 5
+	retryClient.HTTPClient = config.HTTPClient
+
+	config.HTTPClient = retryClient.StandardClient()
 
 	client, err := lego.NewClient(config)
 	if err != nil {

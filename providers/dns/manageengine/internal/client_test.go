@@ -209,8 +209,35 @@ func TestClient_CreateZoneRecord(t *testing.T) {
 
 	record := ZoneRecord{}
 
-	err := client.CreateZoneRecord(context.Background(), 4, record)
+	zrs, err := client.CreateZoneRecord(context.Background(), 4, record)
 	require.NoError(t, err)
+
+	expected := []ZoneRecord{
+		{
+			ZoneID:           948,
+			SpfTxtDomainID:   4674,
+			DomainName:       "@.example.com",
+			DomainTTL:        3600,
+			DomainLocationID: 1,
+			RecordType:       "TXT",
+			Records: []Record{
+				{ID: 8065, Value: []string{"MS=ms66512834"}, Disabled: false, DomainID: 4674},
+			},
+		},
+		{
+			ZoneID:           948,
+			SpfTxtDomainID:   2972,
+			DomainName:       "example.com",
+			DomainTTL:        3600,
+			DomainLocationID: 1,
+			RecordType:       "TXT",
+			Records: []Record{
+				{ID: 6361, Value: []string{"v=DKIM1; k=rsa; t=s; p=XXXX"}, Disabled: false, DomainID: 2972},
+			},
+		},
+	}
+
+	assert.Equal(t, expected, zrs)
 }
 
 func TestClient_CreateZoneRecord_error(t *testing.T) {
@@ -218,7 +245,7 @@ func TestClient_CreateZoneRecord_error(t *testing.T) {
 
 	record := ZoneRecord{}
 
-	err := client.CreateZoneRecord(context.Background(), 4, record)
+	_, err := client.CreateZoneRecord(context.Background(), 4, record)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "[status code: 401] Authentication credentials were not provided.")

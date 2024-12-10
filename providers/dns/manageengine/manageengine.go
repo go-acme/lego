@@ -109,7 +109,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}},
 	}
 
-	err = d.client.CreateZoneRecord(ctx, zoneID, record)
+	_, err = d.client.CreateZoneRecord(ctx, zoneID, record)
 	if err != nil {
 		return fmt.Errorf("manageengine: create zone record: %w", err)
 	}

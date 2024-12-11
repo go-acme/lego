@@ -175,10 +175,12 @@ func (d *DNSProvider) findRecordID(ctx context.Context, zoneID int, info dns01.C
 
 	for _, zoneRecord := range zoneRecords {
 		if !strings.EqualFold(zoneRecord.DomainName, info.EffectiveFQDN) {
+			fmt.Println("findRecordID DomainName", zoneRecord.DomainName, info.EffectiveFQDN) // TODO(ldez) to remove after debug.
 			continue
 		}
 
 		for _, record := range zoneRecord.Records {
+			fmt.Println("findRecordID record.Value", record.Value, info.Value) // TODO(ldez) to remove after debug.
 			if slices.Contains(record.Value, info.Value) {
 				return record.ID, nil
 			}

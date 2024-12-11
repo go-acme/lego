@@ -76,7 +76,7 @@ require (
 	github.com/ultradns/ultradns-go-sdk v1.8.0-20241010134910-243eeec
 	github.com/urfave/cli/v2 v2.27.5
 	github.com/vinyldns/go-vinyldns v0.9.16
-	github.com/volcengine/volc-sdk-golang v1.0.183
+	github.com/volcengine/volc-sdk-golang v1.0.188
 	github.com/vultr/govultr/v3 v3.9.1
 	github.com/yandex-cloud/go-genproto v0.0.0-20241101135610-76a0cfc1a773
 	github.com/yandex-cloud/go-sdk v0.0.0-20241101143304-947cf519f6bd

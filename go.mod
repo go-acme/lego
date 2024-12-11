@@ -41,7 +41,7 @@ require (
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/infobloxopen/infoblox-go-client v1.1.1
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
-	github.com/linode/linodego v1.42.0
+	github.com/linode/linodego v1.43.0
 	github.com/liquidweb/liquidweb-go v1.6.4
 	github.com/mattn/go-isatty v0.0.20
 	github.com/miekg/dns v1.1.62
@@ -132,7 +132,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.16.0 // indirect
-	github.com/go-resty/resty/v2 v2.13.1 // indirect
+	github.com/go-resty/resty/v2 v2.15.3 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/gofrs/flock v0.12.1 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect

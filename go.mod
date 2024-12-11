@@ -49,7 +49,7 @@ require (
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/auroradns v1.1.0
 	github.com/nrdcg/bunny-go v0.0.0-20240207213615-dde5bf4577a3
-	github.com/nrdcg/desec v0.8.0
+	github.com/nrdcg/desec v0.10.0
 	github.com/nrdcg/dnspod-go v0.4.0
 	github.com/nrdcg/freemyip v0.2.0
 	github.com/nrdcg/goinwx v0.10.0
@@ -163,6 +163,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
+	github.com/peterhellberg/link v1.2.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect

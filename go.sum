@@ -633,8 +633,8 @@ github.com/nrdcg/auroradns v1.1.0 h1:KekGh8kmf2MNwqZVVYo/fw/ZONt8QMEmbMFOeljteWo
 github.com/nrdcg/auroradns v1.1.0/go.mod h1:O7tViUZbAcnykVnrGkXzIJTHoQCHcgalgAe6X1mzHfk=
 github.com/nrdcg/bunny-go v0.0.0-20240207213615-dde5bf4577a3 h1:ouZ2JWDl8IW5k1qugYbmpbmW8hn85Ig6buSMBRlz3KI=
 github.com/nrdcg/bunny-go v0.0.0-20240207213615-dde5bf4577a3/go.mod h1:ZwadWt7mVhMHMbAQ1w8IhDqtWO3eWqWq72W7trnaiE8=
-github.com/nrdcg/desec v0.8.0 h1:FJbRWUAluTCUi9nHFnhqPhLSIHiNnB9elZVWYgFtIqA=
-github.com/nrdcg/desec v0.8.0/go.mod h1:BsnYPtSlBttJL3Gyzv0kDH7zkk60obwThlnqiiKzn+o=
+github.com/nrdcg/desec v0.10.0 h1:qrEDiqnsvNU9QE7lXIXi/tIHAfyaFXKxF2/8/52O8uM=
+github.com/nrdcg/desec v0.10.0/go.mod h1:5+4vyhMRTs49V9CNoODF/HwT8Mwxv9DJ6j+7NekUnBs=
 github.com/nrdcg/dnspod-go v0.4.0 h1:c/jn1mLZNKF3/osJ6mz3QPxTudvPArXTjpkmYj0uK6U=
 github.com/nrdcg/dnspod-go v0.4.0/go.mod h1:vZSoFSFeQVm2gWLMkyX61LZ8HI3BaqtHZWgPTGKr6KQ=
 github.com/nrdcg/freemyip v0.2.0 h1:/GscavT4GVqAY13HExl5UyoB4wlchv6Cg5NYDGsUoJ8=
@@ -692,6 +692,8 @@ github.com/pelletier/go-toml v1.8.1/go.mod h1:T2/BmBdy8dvIRq1a/8aqjN41wvWlN4lrap
 github.com/pelletier/go-toml/v2 v2.1.0 h1:FnwAJ4oYMvbT/34k9zzHuZNrhlz48GB3/s6at6/MHO4=
 github.com/pelletier/go-toml/v2 v2.1.0/go.mod h1:tJU2Z3ZkXwnxa4DPO899bsyIoywizdUvyaeZurnPPDc=
 github.com/performancecopilot/speed/v4 v4.0.0/go.mod h1:qxrSyuDGrTOWfV+uKRFhfxw6h/4HXRGUiZiufxo49BM=
+github.com/peterhellberg/link v1.2.0 h1:UA5pg3Gp/E0F2WdX7GERiNrPQrM1K6CVJUUWfHa4t6c=
+github.com/peterhellberg/link v1.2.0/go.mod h1:gYfAh+oJgQu2SrZHg5hROVRQe1ICoK0/HHJTcE0edxc=
 github.com/pierrec/lz4 v1.0.2-0.20190131084431-473cd7ce01a1/go.mod h1:3/3N9NVKO0jef7pBehbT1qWhCMrIgbYNnFAZCqQ5LRc=
 github.com/pierrec/lz4 v2.6.1+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
 github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c h1:+mdjkGKdHQG3305AYmdv1U2eRNDiU2ErMBj1gwrq8eQ=

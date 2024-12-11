@@ -774,8 +774,8 @@ github.com/scaleway/scaleway-sdk-go v1.0.0-beta.30/go.mod h1:sH0u6fq6x4R5M7WxkoQ
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
 github.com/selectel/domains-go v1.1.0 h1:futG50J43ALLKQAnZk9H9yOtLGnSUh7c5hSvuC5gSHo=
 github.com/selectel/domains-go v1.1.0/go.mod h1:SugRKfq4sTpnOHquslCpzda72wV8u0cMBHx0C0l+bzA=
-github.com/selectel/go-selvpcclient/v3 v3.1.1 h1:C1q2LqqosiapoLpnGITGmysg0YCSQYDo2Gh69CioevM=
-github.com/selectel/go-selvpcclient/v3 v3.1.1/go.mod h1:NM7IXhh1IzqZ88DOw1Qc5Ez3tULLViXo95l5+rKPuyQ=
+github.com/selectel/go-selvpcclient/v3 v3.2.1 h1:ny6WIAMiHzKxOgOEnwcWE79wIQij1AHHylzPA41MXCw=
+github.com/selectel/go-selvpcclient/v3 v3.2.1/go.mod h1:3EfSf8aEWyhspOGbvZ6mvnFg7JN5uckxNyBFPGWsXNQ=
 github.com/shopspring/decimal v1.3.1 h1:2Usl1nmF/WZucqkFZhnfFYxxxu8LG21F6nPQBE5gKV8=
 github.com/shopspring/decimal v1.3.1/go.mod h1:DKyhrW/HYNuLGql+MJL6WCR6knT2jwCFRcu2hWCYk4o=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=

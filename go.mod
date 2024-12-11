@@ -67,7 +67,7 @@ require (
 	github.com/sacloud/iaas-api-go v1.12.0
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.30
 	github.com/selectel/domains-go v1.1.0
-	github.com/selectel/go-selvpcclient/v3 v3.1.1
+	github.com/selectel/go-selvpcclient/v3 v3.2.1
 	github.com/softlayer/softlayer-go v1.1.7
 	github.com/stretchr/testify v1.10.0
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1034

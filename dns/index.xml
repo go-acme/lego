@@ -1,0 +1,1020 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>DNS Providers :: Let’s Encrypt client and ACME library written in Go.</title>
+    <link>https://go-acme.github.io/lego/dns/index.html</link>
+    <description>Configuration and Credentials Credentials and DNS configuration for DNS providers must be passed through environment variables.&#xA;Environment Variables: Value The environment variables can reference a value.&#xA;Here is an example bash command using the Cloudflare DNS provider:&#xA;$ CLOUDFLARE_EMAIL=you@example.com \ CLOUDFLARE_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \ lego --dns cloudflare --domains www.example.com --email you@example.com runEnvironment Variables: File The environment variables can reference a path to file.&#xA;In this case the name of environment variable must be suffixed by _FILE.</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 21 Nov 2024 17:47:07 +0100</lastBuildDate>
+    <atom:link href="https://go-acme.github.io/lego/dns/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Akamai EdgeDNS</title>
+      <link>https://go-acme.github.io/lego/dns/edgedns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/edgedns/index.html</guid>
+      <description> Akamai edgedns supersedes FastDNS; implementing a DNS provider for solving the DNS-01 challenge using Akamai EdgeDNS</description>
+    </item>
+    <item>
+      <title>Alibaba Cloud DNS</title>
+      <link>https://go-acme.github.io/lego/dns/alidns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/alidns/index.html</guid>
+      <description> Configuration for Alibaba Cloud DNS.</description>
+    </item>
+    <item>
+      <title>all-inkl</title>
+      <link>https://go-acme.github.io/lego/dns/allinkl/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/allinkl/index.html</guid>
+      <description> Configuration for all-inkl.</description>
+    </item>
+    <item>
+      <title>Amazon Lightsail</title>
+      <link>https://go-acme.github.io/lego/dns/lightsail/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/lightsail/index.html</guid>
+      <description> Configuration for Amazon Lightsail.</description>
+    </item>
+    <item>
+      <title>Amazon Route 53</title>
+      <link>https://go-acme.github.io/lego/dns/route53/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/route53/index.html</guid>
+      <description> Configuration for Amazon Route 53.</description>
+    </item>
+    <item>
+      <title>ArvanCloud</title>
+      <link>https://go-acme.github.io/lego/dns/arvancloud/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/arvancloud/index.html</guid>
+      <description> Configuration for ArvanCloud.</description>
+    </item>
+    <item>
+      <title>Aurora DNS</title>
+      <link>https://go-acme.github.io/lego/dns/auroradns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/auroradns/index.html</guid>
+      <description> Configuration for Aurora DNS.</description>
+    </item>
+    <item>
+      <title>Autodns</title>
+      <link>https://go-acme.github.io/lego/dns/autodns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/autodns/index.html</guid>
+      <description> Configuration for Autodns.</description>
+    </item>
+    <item>
+      <title>Azure (deprecated)</title>
+      <link>https://go-acme.github.io/lego/dns/azure/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/azure/index.html</guid>
+      <description> Configuration for Azure (deprecated).</description>
+    </item>
+    <item>
+      <title>Azure DNS</title>
+      <link>https://go-acme.github.io/lego/dns/azuredns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/azuredns/index.html</guid>
+      <description> Configuration for Azure DNS.</description>
+    </item>
+    <item>
+      <title>Bindman</title>
+      <link>https://go-acme.github.io/lego/dns/bindman/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/bindman/index.html</guid>
+      <description> Configuration for Bindman.</description>
+    </item>
+    <item>
+      <title>Bluecat</title>
+      <link>https://go-acme.github.io/lego/dns/bluecat/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/bluecat/index.html</guid>
+      <description> Configuration for Bluecat.</description>
+    </item>
+    <item>
+      <title>Brandit (deprecated)</title>
+      <link>https://go-acme.github.io/lego/dns/brandit/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/brandit/index.html</guid>
+      <description> Brandit has been acquired by Abion. Abion has a different API.&#xA;If you are a Brandit/Albion user, you can try the PR https://github.com/go-acme/lego/pull/2112.</description>
+    </item>
+    <item>
+      <title>Bunny</title>
+      <link>https://go-acme.github.io/lego/dns/bunny/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/bunny/index.html</guid>
+      <description> Configuration for Bunny.</description>
+    </item>
+    <item>
+      <title>Checkdomain</title>
+      <link>https://go-acme.github.io/lego/dns/checkdomain/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/checkdomain/index.html</guid>
+      <description> Configuration for Checkdomain.</description>
+    </item>
+    <item>
+      <title>Civo</title>
+      <link>https://go-acme.github.io/lego/dns/civo/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/civo/index.html</guid>
+      <description> Configuration for Civo.</description>
+    </item>
+    <item>
+      <title>Cloud.ru</title>
+      <link>https://go-acme.github.io/lego/dns/cloudru/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/cloudru/index.html</guid>
+      <description> Configuration for Cloud.ru.</description>
+    </item>
+    <item>
+      <title>CloudDNS</title>
+      <link>https://go-acme.github.io/lego/dns/clouddns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/clouddns/index.html</guid>
+      <description> Configuration for CloudDNS.</description>
+    </item>
+    <item>
+      <title>Cloudflare</title>
+      <link>https://go-acme.github.io/lego/dns/cloudflare/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/cloudflare/index.html</guid>
+      <description> Configuration for Cloudflare.</description>
+    </item>
+    <item>
+      <title>ClouDNS</title>
+      <link>https://go-acme.github.io/lego/dns/cloudns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/cloudns/index.html</guid>
+      <description> Configuration for ClouDNS.</description>
+    </item>
+    <item>
+      <title>CloudXNS (Deprecated)</title>
+      <link>https://go-acme.github.io/lego/dns/cloudxns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/cloudxns/index.html</guid>
+      <description> The CloudXNS DNS provider has shut down.</description>
+    </item>
+    <item>
+      <title>ConoHa</title>
+      <link>https://go-acme.github.io/lego/dns/conoha/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/conoha/index.html</guid>
+      <description> Configuration for ConoHa.</description>
+    </item>
+    <item>
+      <title>Constellix</title>
+      <link>https://go-acme.github.io/lego/dns/constellix/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/constellix/index.html</guid>
+      <description> Configuration for Constellix.</description>
+    </item>
+    <item>
+      <title>Core-Networks</title>
+      <link>https://go-acme.github.io/lego/dns/corenetworks/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/corenetworks/index.html</guid>
+      <description> Configuration for Core-Networks.</description>
+    </item>
+    <item>
+      <title>CPanel/WHM</title>
+      <link>https://go-acme.github.io/lego/dns/cpanel/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/cpanel/index.html</guid>
+      <description> Configuration for CPanel/WHM.</description>
+    </item>
+    <item>
+      <title>Derak Cloud</title>
+      <link>https://go-acme.github.io/lego/dns/derak/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/derak/index.html</guid>
+      <description> Configuration for Derak Cloud.</description>
+    </item>
+    <item>
+      <title>deSEC.io</title>
+      <link>https://go-acme.github.io/lego/dns/desec/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/desec/index.html</guid>
+      <description> Configuration for deSEC.io.</description>
+    </item>
+    <item>
+      <title>Designate DNSaaS for Openstack</title>
+      <link>https://go-acme.github.io/lego/dns/designate/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/designate/index.html</guid>
+      <description> Configuration for Designate DNSaaS for Openstack.</description>
+    </item>
+    <item>
+      <title>Digital Ocean</title>
+      <link>https://go-acme.github.io/lego/dns/digitalocean/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/digitalocean/index.html</guid>
+      <description> Configuration for Digital Ocean.</description>
+    </item>
+    <item>
+      <title>DirectAdmin</title>
+      <link>https://go-acme.github.io/lego/dns/directadmin/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/directadmin/index.html</guid>
+      <description> Configuration for DirectAdmin.</description>
+    </item>
+    <item>
+      <title>DNS Made Easy</title>
+      <link>https://go-acme.github.io/lego/dns/dnsmadeeasy/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/dnsmadeeasy/index.html</guid>
+      <description> Configuration for DNS Made Easy.</description>
+    </item>
+    <item>
+      <title>dnsHome.de</title>
+      <link>https://go-acme.github.io/lego/dns/dnshomede/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/dnshomede/index.html</guid>
+      <description> Configuration for dnsHome.de.</description>
+    </item>
+    <item>
+      <title>DNSimple</title>
+      <link>https://go-acme.github.io/lego/dns/dnsimple/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/dnsimple/index.html</guid>
+      <description> Configuration for DNSimple.</description>
+    </item>
+    <item>
+      <title>DNSPod (deprecated)</title>
+      <link>https://go-acme.github.io/lego/dns/dnspod/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/dnspod/index.html</guid>
+      <description> Use the Tencent Cloud provider instead.</description>
+    </item>
+    <item>
+      <title>Domain Offensive (do.de)</title>
+      <link>https://go-acme.github.io/lego/dns/dode/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/dode/index.html</guid>
+      <description> Configuration for Domain Offensive (do.de).</description>
+    </item>
+    <item>
+      <title>Domeneshop</title>
+      <link>https://go-acme.github.io/lego/dns/domeneshop/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/domeneshop/index.html</guid>
+      <description> Configuration for Domeneshop.</description>
+    </item>
+    <item>
+      <title>DreamHost</title>
+      <link>https://go-acme.github.io/lego/dns/dreamhost/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/dreamhost/index.html</guid>
+      <description> Configuration for DreamHost.</description>
+    </item>
+    <item>
+      <title>Duck DNS</title>
+      <link>https://go-acme.github.io/lego/dns/duckdns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/duckdns/index.html</guid>
+      <description> Configuration for Duck DNS.</description>
+    </item>
+    <item>
+      <title>Dyn</title>
+      <link>https://go-acme.github.io/lego/dns/dyn/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/dyn/index.html</guid>
+      <description> Configuration for Dyn.</description>
+    </item>
+    <item>
+      <title>Dynu</title>
+      <link>https://go-acme.github.io/lego/dns/dynu/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/dynu/index.html</guid>
+      <description> Configuration for Dynu.</description>
+    </item>
+    <item>
+      <title>EasyDNS</title>
+      <link>https://go-acme.github.io/lego/dns/easydns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/easydns/index.html</guid>
+      <description> Configuration for EasyDNS.</description>
+    </item>
+    <item>
+      <title>Efficient IP</title>
+      <link>https://go-acme.github.io/lego/dns/efficientip/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/efficientip/index.html</guid>
+      <description> Configuration for Efficient IP.</description>
+    </item>
+    <item>
+      <title>Epik</title>
+      <link>https://go-acme.github.io/lego/dns/epik/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/epik/index.html</guid>
+      <description> Configuration for Epik.</description>
+    </item>
+    <item>
+      <title>Exoscale</title>
+      <link>https://go-acme.github.io/lego/dns/exoscale/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/exoscale/index.html</guid>
+      <description> Configuration for Exoscale.</description>
+    </item>
+    <item>
+      <title>External program</title>
+      <link>https://go-acme.github.io/lego/dns/exec/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/exec/index.html</guid>
+      <description> Solving the DNS-01 challenge using an external program.</description>
+    </item>
+    <item>
+      <title>freemyip.com</title>
+      <link>https://go-acme.github.io/lego/dns/freemyip/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/freemyip/index.html</guid>
+      <description> Configuration for freemyip.com.</description>
+    </item>
+    <item>
+      <title>G-Core</title>
+      <link>https://go-acme.github.io/lego/dns/gcore/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/gcore/index.html</guid>
+      <description> Configuration for G-Core.</description>
+    </item>
+    <item>
+      <title>Gandi</title>
+      <link>https://go-acme.github.io/lego/dns/gandi/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/gandi/index.html</guid>
+      <description> Configuration for Gandi.</description>
+    </item>
+    <item>
+      <title>Gandi Live DNS (v5)</title>
+      <link>https://go-acme.github.io/lego/dns/gandiv5/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/gandiv5/index.html</guid>
+      <description> Configuration for Gandi Live DNS (v5).</description>
+    </item>
+    <item>
+      <title>Glesys</title>
+      <link>https://go-acme.github.io/lego/dns/glesys/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/glesys/index.html</guid>
+      <description> Configuration for Glesys.</description>
+    </item>
+    <item>
+      <title>Go Daddy</title>
+      <link>https://go-acme.github.io/lego/dns/godaddy/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/godaddy/index.html</guid>
+      <description> Configuration for Go Daddy.</description>
+    </item>
+    <item>
+      <title>Google Cloud</title>
+      <link>https://go-acme.github.io/lego/dns/gcloud/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/gcloud/index.html</guid>
+      <description> Configuration for Google Cloud.</description>
+    </item>
+    <item>
+      <title>Google Domains</title>
+      <link>https://go-acme.github.io/lego/dns/googledomains/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/googledomains/index.html</guid>
+      <description> Configuration for Google Domains.</description>
+    </item>
+    <item>
+      <title>Hetzner</title>
+      <link>https://go-acme.github.io/lego/dns/hetzner/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/hetzner/index.html</guid>
+      <description> Configuration for Hetzner.</description>
+    </item>
+    <item>
+      <title>Hosting.de</title>
+      <link>https://go-acme.github.io/lego/dns/hostingde/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/hostingde/index.html</guid>
+      <description> Configuration for Hosting.de.</description>
+    </item>
+    <item>
+      <title>Hosttech</title>
+      <link>https://go-acme.github.io/lego/dns/hosttech/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/hosttech/index.html</guid>
+      <description> Configuration for Hosttech.</description>
+    </item>
+    <item>
+      <title>HTTP request</title>
+      <link>https://go-acme.github.io/lego/dns/httpreq/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/httpreq/index.html</guid>
+      <description> Configuration for HTTP request.</description>
+    </item>
+    <item>
+      <title>http.net</title>
+      <link>https://go-acme.github.io/lego/dns/httpnet/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/httpnet/index.html</guid>
+      <description> Configuration for http.net.</description>
+    </item>
+    <item>
+      <title>Huawei Cloud</title>
+      <link>https://go-acme.github.io/lego/dns/huaweicloud/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/huaweicloud/index.html</guid>
+      <description> Configuration for Huawei Cloud.</description>
+    </item>
+    <item>
+      <title>Hurricane Electric DNS</title>
+      <link>https://go-acme.github.io/lego/dns/hurricane/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/hurricane/index.html</guid>
+      <description> Configuration for Hurricane Electric DNS.</description>
+    </item>
+    <item>
+      <title>HyperOne</title>
+      <link>https://go-acme.github.io/lego/dns/hyperone/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/hyperone/index.html</guid>
+      <description> Configuration for HyperOne.</description>
+    </item>
+    <item>
+      <title>IBM Cloud (SoftLayer)</title>
+      <link>https://go-acme.github.io/lego/dns/ibmcloud/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/ibmcloud/index.html</guid>
+      <description> Configuration for IBM Cloud (SoftLayer).</description>
+    </item>
+    <item>
+      <title>IIJ DNS Platform Service</title>
+      <link>https://go-acme.github.io/lego/dns/iijdpf/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/iijdpf/index.html</guid>
+      <description> Configuration for IIJ DNS Platform Service.</description>
+    </item>
+    <item>
+      <title>Infoblox</title>
+      <link>https://go-acme.github.io/lego/dns/infoblox/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/infoblox/index.html</guid>
+      <description> Configuration for Infoblox.</description>
+    </item>
+    <item>
+      <title>Infomaniak</title>
+      <link>https://go-acme.github.io/lego/dns/infomaniak/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/infomaniak/index.html</guid>
+      <description> Configuration for Infomaniak.</description>
+    </item>
+    <item>
+      <title>Internet Initiative Japan</title>
+      <link>https://go-acme.github.io/lego/dns/iij/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/iij/index.html</guid>
+      <description> Configuration for Internet Initiative Japan.</description>
+    </item>
+    <item>
+      <title>Internet.bs</title>
+      <link>https://go-acme.github.io/lego/dns/internetbs/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/internetbs/index.html</guid>
+      <description> Configuration for Internet.bs.</description>
+    </item>
+    <item>
+      <title>INWX</title>
+      <link>https://go-acme.github.io/lego/dns/inwx/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/inwx/index.html</guid>
+      <description> Configuration for INWX.</description>
+    </item>
+    <item>
+      <title>Ionos</title>
+      <link>https://go-acme.github.io/lego/dns/ionos/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/ionos/index.html</guid>
+      <description> Configuration for Ionos.</description>
+    </item>
+    <item>
+      <title>IPv64</title>
+      <link>https://go-acme.github.io/lego/dns/ipv64/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/ipv64/index.html</guid>
+      <description> Configuration for IPv64.</description>
+    </item>
+    <item>
+      <title>iwantmyname</title>
+      <link>https://go-acme.github.io/lego/dns/iwantmyname/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/iwantmyname/index.html</guid>
+      <description> Configuration for iwantmyname.</description>
+    </item>
+    <item>
+      <title>Joker</title>
+      <link>https://go-acme.github.io/lego/dns/joker/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/joker/index.html</guid>
+      <description> Configuration for Joker.</description>
+    </item>
+    <item>
+      <title>Joohoi&#39;s ACME-DNS</title>
+      <link>https://go-acme.github.io/lego/dns/acme-dns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/acme-dns/index.html</guid>
+      <description> Configuration for Joohoi’s ACME-DNS.</description>
+    </item>
+    <item>
+      <title>Liara</title>
+      <link>https://go-acme.github.io/lego/dns/liara/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/liara/index.html</guid>
+      <description> Configuration for Liara.</description>
+    </item>
+    <item>
+      <title>Lima-City</title>
+      <link>https://go-acme.github.io/lego/dns/limacity/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/limacity/index.html</guid>
+      <description> Configuration for Lima-City.</description>
+    </item>
+    <item>
+      <title>Linode (v4)</title>
+      <link>https://go-acme.github.io/lego/dns/linode/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/linode/index.html</guid>
+      <description> Configuration for Linode (v4).</description>
+    </item>
+    <item>
+      <title>Liquid Web</title>
+      <link>https://go-acme.github.io/lego/dns/liquidweb/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/liquidweb/index.html</guid>
+      <description> Configuration for Liquid Web.</description>
+    </item>
+    <item>
+      <title>Loopia</title>
+      <link>https://go-acme.github.io/lego/dns/loopia/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/loopia/index.html</guid>
+      <description> Configuration for Loopia.</description>
+    </item>
+    <item>
+      <title>LuaDNS</title>
+      <link>https://go-acme.github.io/lego/dns/luadns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/luadns/index.html</guid>
+      <description> Configuration for LuaDNS.</description>
+    </item>
+    <item>
+      <title>Mail-in-a-Box</title>
+      <link>https://go-acme.github.io/lego/dns/mailinabox/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/mailinabox/index.html</guid>
+      <description> Configuration for Mail-in-a-Box.</description>
+    </item>
+    <item>
+      <title>Manual</title>
+      <link>https://go-acme.github.io/lego/dns/manual/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/manual/index.html</guid>
+      <description>Solving the DNS-01 challenge using CLI prompt.</description>
+    </item>
+    <item>
+      <title>Metaname</title>
+      <link>https://go-acme.github.io/lego/dns/metaname/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/metaname/index.html</guid>
+      <description> Configuration for Metaname.</description>
+    </item>
+    <item>
+      <title>mijn.host</title>
+      <link>https://go-acme.github.io/lego/dns/mijnhost/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/mijnhost/index.html</guid>
+      <description> Configuration for mijn.host.</description>
+    </item>
+    <item>
+      <title>Mittwald</title>
+      <link>https://go-acme.github.io/lego/dns/mittwald/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/mittwald/index.html</guid>
+      <description> Configuration for Mittwald.</description>
+    </item>
+    <item>
+      <title>MyDNS.jp</title>
+      <link>https://go-acme.github.io/lego/dns/mydnsjp/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/mydnsjp/index.html</guid>
+      <description> Configuration for MyDNS.jp.</description>
+    </item>
+    <item>
+      <title>MythicBeasts</title>
+      <link>https://go-acme.github.io/lego/dns/mythicbeasts/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/mythicbeasts/index.html</guid>
+      <description> Configuration for MythicBeasts.</description>
+    </item>
+    <item>
+      <title>Name.com</title>
+      <link>https://go-acme.github.io/lego/dns/namedotcom/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/namedotcom/index.html</guid>
+      <description> Configuration for Name.com.</description>
+    </item>
+    <item>
+      <title>Namecheap</title>
+      <link>https://go-acme.github.io/lego/dns/namecheap/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/namecheap/index.html</guid>
+      <description> Configuration for Namecheap.&#xA;To enable API access on the Namecheap production environment, some opaque requirements must be met. More information in the section Enabling API Access of the Namecheap documentation. (2020-08: Account balance of $50+, 20+ domains in your account, or purchases totaling $50+ within the last 2 years.)</description>
+    </item>
+    <item>
+      <title>Namesilo</title>
+      <link>https://go-acme.github.io/lego/dns/namesilo/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/namesilo/index.html</guid>
+      <description> Configuration for Namesilo.</description>
+    </item>
+    <item>
+      <title>NearlyFreeSpeech.NET</title>
+      <link>https://go-acme.github.io/lego/dns/nearlyfreespeech/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/nearlyfreespeech/index.html</guid>
+      <description> Configuration for NearlyFreeSpeech.NET.</description>
+    </item>
+    <item>
+      <title>Netcup</title>
+      <link>https://go-acme.github.io/lego/dns/netcup/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/netcup/index.html</guid>
+      <description> Configuration for Netcup.</description>
+    </item>
+    <item>
+      <title>Netlify</title>
+      <link>https://go-acme.github.io/lego/dns/netlify/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/netlify/index.html</guid>
+      <description> Configuration for Netlify.</description>
+    </item>
+    <item>
+      <title>Nicmanager</title>
+      <link>https://go-acme.github.io/lego/dns/nicmanager/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/nicmanager/index.html</guid>
+      <description> Configuration for Nicmanager.</description>
+    </item>
+    <item>
+      <title>NIFCloud</title>
+      <link>https://go-acme.github.io/lego/dns/nifcloud/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/nifcloud/index.html</guid>
+      <description> Configuration for NIFCloud.</description>
+    </item>
+    <item>
+      <title>Njalla</title>
+      <link>https://go-acme.github.io/lego/dns/njalla/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/njalla/index.html</guid>
+      <description> Configuration for Njalla.</description>
+    </item>
+    <item>
+      <title>Nodion</title>
+      <link>https://go-acme.github.io/lego/dns/nodion/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/nodion/index.html</guid>
+      <description> Configuration for Nodion.</description>
+    </item>
+    <item>
+      <title>NS1</title>
+      <link>https://go-acme.github.io/lego/dns/ns1/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/ns1/index.html</guid>
+      <description> Configuration for NS1.</description>
+    </item>
+    <item>
+      <title>Open Telekom Cloud</title>
+      <link>https://go-acme.github.io/lego/dns/otc/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/otc/index.html</guid>
+      <description> Configuration for Open Telekom Cloud.</description>
+    </item>
+    <item>
+      <title>Oracle Cloud</title>
+      <link>https://go-acme.github.io/lego/dns/oraclecloud/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/oraclecloud/index.html</guid>
+      <description> Configuration for Oracle Cloud.</description>
+    </item>
+    <item>
+      <title>OVH</title>
+      <link>https://go-acme.github.io/lego/dns/ovh/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/ovh/index.html</guid>
+      <description> Configuration for OVH.</description>
+    </item>
+    <item>
+      <title>plesk.com</title>
+      <link>https://go-acme.github.io/lego/dns/plesk/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/plesk/index.html</guid>
+      <description> Configuration for plesk.com.</description>
+    </item>
+    <item>
+      <title>Porkbun</title>
+      <link>https://go-acme.github.io/lego/dns/porkbun/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/porkbun/index.html</guid>
+      <description> Configuration for Porkbun.</description>
+    </item>
+    <item>
+      <title>PowerDNS</title>
+      <link>https://go-acme.github.io/lego/dns/pdns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/pdns/index.html</guid>
+      <description> Configuration for PowerDNS.</description>
+    </item>
+    <item>
+      <title>Rackspace</title>
+      <link>https://go-acme.github.io/lego/dns/rackspace/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/rackspace/index.html</guid>
+      <description> Configuration for Rackspace.</description>
+    </item>
+    <item>
+      <title>Rain Yun/雨云</title>
+      <link>https://go-acme.github.io/lego/dns/rainyun/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/rainyun/index.html</guid>
+      <description> Configuration for Rain Yun/雨云.</description>
+    </item>
+    <item>
+      <title>RcodeZero</title>
+      <link>https://go-acme.github.io/lego/dns/rcodezero/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/rcodezero/index.html</guid>
+      <description> Configuration for RcodeZero.</description>
+    </item>
+    <item>
+      <title>reg.ru</title>
+      <link>https://go-acme.github.io/lego/dns/regru/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/regru/index.html</guid>
+      <description> Configuration for reg.ru.</description>
+    </item>
+    <item>
+      <title>Regfish</title>
+      <link>https://go-acme.github.io/lego/dns/regfish/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/regfish/index.html</guid>
+      <description> Configuration for Regfish.</description>
+    </item>
+    <item>
+      <title>RFC2136</title>
+      <link>https://go-acme.github.io/lego/dns/rfc2136/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/rfc2136/index.html</guid>
+      <description> Configuration for RFC2136.</description>
+    </item>
+    <item>
+      <title>RimuHosting</title>
+      <link>https://go-acme.github.io/lego/dns/rimuhosting/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/rimuhosting/index.html</guid>
+      <description> Configuration for RimuHosting.</description>
+    </item>
+    <item>
+      <title>Sakura Cloud</title>
+      <link>https://go-acme.github.io/lego/dns/sakuracloud/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/sakuracloud/index.html</guid>
+      <description> Configuration for Sakura Cloud.</description>
+    </item>
+    <item>
+      <title>Scaleway</title>
+      <link>https://go-acme.github.io/lego/dns/scaleway/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/scaleway/index.html</guid>
+      <description> Configuration for Scaleway.</description>
+    </item>
+    <item>
+      <title>Selectel</title>
+      <link>https://go-acme.github.io/lego/dns/selectel/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/selectel/index.html</guid>
+      <description> Configuration for Selectel.</description>
+    </item>
+    <item>
+      <title>Selectel v2</title>
+      <link>https://go-acme.github.io/lego/dns/selectelv2/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/selectelv2/index.html</guid>
+      <description> Configuration for Selectel v2.</description>
+    </item>
+    <item>
+      <title>SelfHost.(de|eu)</title>
+      <link>https://go-acme.github.io/lego/dns/selfhostde/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/selfhostde/index.html</guid>
+      <description> Configuration for SelfHost.(de|eu).</description>
+    </item>
+    <item>
+      <title>Servercow</title>
+      <link>https://go-acme.github.io/lego/dns/servercow/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/servercow/index.html</guid>
+      <description> Configuration for Servercow.</description>
+    </item>
+    <item>
+      <title>Shellrent</title>
+      <link>https://go-acme.github.io/lego/dns/shellrent/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/shellrent/index.html</guid>
+      <description> Configuration for Shellrent.</description>
+    </item>
+    <item>
+      <title>Simply.com</title>
+      <link>https://go-acme.github.io/lego/dns/simply/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/simply/index.html</guid>
+      <description> Configuration for Simply.com.</description>
+    </item>
+    <item>
+      <title>Sonic</title>
+      <link>https://go-acme.github.io/lego/dns/sonic/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/sonic/index.html</guid>
+      <description> Configuration for Sonic.</description>
+    </item>
+    <item>
+      <title>Stackpath</title>
+      <link>https://go-acme.github.io/lego/dns/stackpath/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/stackpath/index.html</guid>
+      <description> Configuration for Stackpath.</description>
+    </item>
+    <item>
+      <title>Technitium</title>
+      <link>https://go-acme.github.io/lego/dns/technitium/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/technitium/index.html</guid>
+      <description> Configuration for Technitium.</description>
+    </item>
+    <item>
+      <title>Tencent Cloud DNS</title>
+      <link>https://go-acme.github.io/lego/dns/tencentcloud/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/tencentcloud/index.html</guid>
+      <description> Configuration for Tencent Cloud DNS.</description>
+    </item>
+    <item>
+      <title>Timeweb Cloud</title>
+      <link>https://go-acme.github.io/lego/dns/timewebcloud/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/timewebcloud/index.html</guid>
+      <description> Configuration for Timeweb Cloud.</description>
+    </item>
+    <item>
+      <title>TransIP</title>
+      <link>https://go-acme.github.io/lego/dns/transip/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/transip/index.html</guid>
+      <description> Configuration for TransIP.</description>
+    </item>
+    <item>
+      <title>UKFast SafeDNS</title>
+      <link>https://go-acme.github.io/lego/dns/safedns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/safedns/index.html</guid>
+      <description> Configuration for UKFast SafeDNS.</description>
+    </item>
+    <item>
+      <title>Ultradns</title>
+      <link>https://go-acme.github.io/lego/dns/ultradns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/ultradns/index.html</guid>
+      <description> Configuration for Ultradns.</description>
+    </item>
+    <item>
+      <title>Variomedia</title>
+      <link>https://go-acme.github.io/lego/dns/variomedia/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/variomedia/index.html</guid>
+      <description> Configuration for Variomedia.</description>
+    </item>
+    <item>
+      <title>VegaDNS</title>
+      <link>https://go-acme.github.io/lego/dns/vegadns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/vegadns/index.html</guid>
+      <description> Configuration for VegaDNS.</description>
+    </item>
+    <item>
+      <title>Vercel</title>
+      <link>https://go-acme.github.io/lego/dns/vercel/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/vercel/index.html</guid>
+      <description> Configuration for Vercel.</description>
+    </item>
+    <item>
+      <title>Versio.[nl|eu|uk]</title>
+      <link>https://go-acme.github.io/lego/dns/versio/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/versio/index.html</guid>
+      <description> Configuration for Versio.[nl|eu|uk].</description>
+    </item>
+    <item>
+      <title>VinylDNS</title>
+      <link>https://go-acme.github.io/lego/dns/vinyldns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/vinyldns/index.html</guid>
+      <description> Configuration for VinylDNS.</description>
+    </item>
+    <item>
+      <title>VK Cloud</title>
+      <link>https://go-acme.github.io/lego/dns/vkcloud/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/vkcloud/index.html</guid>
+      <description> Configuration for VK Cloud.</description>
+    </item>
+    <item>
+      <title>Volcano Engine/火山引擎</title>
+      <link>https://go-acme.github.io/lego/dns/volcengine/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/volcengine/index.html</guid>
+      <description> Configuration for Volcano Engine/火山引擎.</description>
+    </item>
+    <item>
+      <title>Vscale</title>
+      <link>https://go-acme.github.io/lego/dns/vscale/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/vscale/index.html</guid>
+      <description> Configuration for Vscale.</description>
+    </item>
+    <item>
+      <title>Vultr</title>
+      <link>https://go-acme.github.io/lego/dns/vultr/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/vultr/index.html</guid>
+      <description> Configuration for Vultr.</description>
+    </item>
+    <item>
+      <title>Webnames</title>
+      <link>https://go-acme.github.io/lego/dns/webnames/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/webnames/index.html</guid>
+      <description> Configuration for Webnames.</description>
+    </item>
+    <item>
+      <title>Websupport</title>
+      <link>https://go-acme.github.io/lego/dns/websupport/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/websupport/index.html</guid>
+      <description> Configuration for Websupport.</description>
+    </item>
+    <item>
+      <title>WEDOS</title>
+      <link>https://go-acme.github.io/lego/dns/wedos/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/wedos/index.html</guid>
+      <description> Configuration for WEDOS.</description>
+    </item>
+    <item>
+      <title>West.cn/西部数码</title>
+      <link>https://go-acme.github.io/lego/dns/westcn/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/westcn/index.html</guid>
+      <description> Configuration for West.cn/西部数码.</description>
+    </item>
+    <item>
+      <title>Yandex 360</title>
+      <link>https://go-acme.github.io/lego/dns/yandex360/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/yandex360/index.html</guid>
+      <description> Configuration for Yandex 360.</description>
+    </item>
+    <item>
+      <title>Yandex Cloud</title>
+      <link>https://go-acme.github.io/lego/dns/yandexcloud/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/yandexcloud/index.html</guid>
+      <description> Configuration for Yandex Cloud.</description>
+    </item>
+    <item>
+      <title>Yandex PDD</title>
+      <link>https://go-acme.github.io/lego/dns/yandex/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/yandex/index.html</guid>
+      <description> Configuration for Yandex PDD.</description>
+    </item>
+    <item>
+      <title>Zone.ee</title>
+      <link>https://go-acme.github.io/lego/dns/zoneee/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/zoneee/index.html</guid>
+      <description> Configuration for Zone.ee.</description>
+    </item>
+    <item>
+      <title>Zonomi</title>
+      <link>https://go-acme.github.io/lego/dns/zonomi/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/zonomi/index.html</guid>
+      <description> Configuration for Zonomi.</description>
+    </item>
+  </channel>
+</rss>

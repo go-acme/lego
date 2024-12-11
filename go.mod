@@ -51,7 +51,7 @@ require (
 	github.com/nrdcg/bunny-go v0.0.0-20240207213615-dde5bf4577a3
 	github.com/nrdcg/desec v0.10.0
 	github.com/nrdcg/dnspod-go v0.4.0
-	github.com/nrdcg/freemyip v0.2.0
+	github.com/nrdcg/freemyip v0.3.0
 	github.com/nrdcg/goinwx v0.10.0
 	github.com/nrdcg/mailinabox v0.2.0
 	github.com/nrdcg/namesilo v0.2.1

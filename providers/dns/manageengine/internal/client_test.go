@@ -205,7 +205,7 @@ func TestClient_DeleteZoneRecord_error(t *testing.T) {
 }
 
 func TestClient_CreateZoneRecord(t *testing.T) {
-	client := setupTest(t, "POST /dns/domain/4/records/SPF_TXT", http.StatusOK, "zone_record_create.json")
+	client := setupTest(t, "POST /dns/domain/4/records/SPF_TXT/", http.StatusOK, "zone_record_create.json")
 
 	record := ZoneRecord{}
 

@@ -109,23 +109,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}},
 	}
 
-	zrs, err := d.client.CreateZoneRecord(ctx, zoneID, record)
+	err = d.client.CreateZoneRecord(ctx, zoneID, record)
 	if err != nil {
 		return fmt.Errorf("manageengine: create zone record: %w", err)
-	}
-
-	// TODO(ldez) to remove after debug.
-	for _, zr := range zrs {
-		if zr.DomainName == info.EffectiveFQDN {
-			fmt.Println("CreateZoneRecord zr.ZoneID", zr.ZoneID)
-
-			for _, r := range zr.Records {
-				fmt.Println("CreateZoneRecord record.Value", r.Value, info.Value)
-				if slices.Contains(r.Value, info.Value) {
-					fmt.Println("CreateZoneRecord r.ID", r.ID)
-				}
-			}
-		}
 	}
 
 	return nil

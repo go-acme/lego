@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
@@ -141,19 +142,26 @@ func (c *Client) do(req *http.Request, result any) error {
 }
 
 func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
-	buf := new(bytes.Buffer)
-
+	var body io.Reader = http.NoBody
 	if payload != nil {
+		buf := new(bytes.Buffer)
+
 		err := json.NewEncoder(buf).Encode(payload)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
 		}
+
+		values := url.Values{}
+		values.Set("config", buf.String())
+		body = strings.NewReader(values.Encode())
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), body)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
+
+	req.Header.Set("Accept", "application/json")
 
 	if payload != nil {
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")

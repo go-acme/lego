@@ -157,9 +157,8 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 
 	req.Header.Set("Accept", "application/json")
 
-	if payload != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
+	// the content type should not be set:
+	// [status code: 415] Unsupported media type "application/json" in request.
 
 	return req, nil
 }

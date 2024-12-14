@@ -94,7 +94,7 @@ func (c *Client) DeleteZoneRecord(ctx context.Context, zoneID int, recordID int)
 // CreateZoneRecord creates a "zone record".
 // https://pitstop.manageengine.com/portal/en/kb/articles/manageengine-clouddns-rest-api-documentation#POST_Create_10
 func (c *Client) CreateZoneRecord(ctx context.Context, zoneID int, record ZoneRecord) ([]ZoneRecord, error) {
-	endpoint := c.baseURL.JoinPath("dns", "domain", strconv.Itoa(zoneID), "records", "SPF_TXT")
+	endpoint := c.baseURL.JoinPath("dns", "domain", strconv.Itoa(zoneID), "records", "SPF_TXT", "/")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {

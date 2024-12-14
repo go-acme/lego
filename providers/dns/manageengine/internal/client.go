@@ -155,10 +155,9 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
-	req.Header.Set("Accept", "application/json")
-
-	// the content type should not be set:
-	// [status code: 415] Unsupported media type "application/json" in request.
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
 
 	return req, nil
 }

@@ -39,7 +39,7 @@ type ZoneRecord struct {
 
 type Record struct {
 	ID       int      `json:"record_id,omitempty"`
-	Value    []string `json:"value,omitempty"`
+	Values   []string `json:"value,omitempty"`
 	Disabled bool     `json:"disabled,omitempty"`
 	DomainID int      `json:"domain_id,omitempty"`
 }
@@ -59,5 +59,5 @@ type Zone struct {
 	Vanity        bool     `json:"vanity,omitempty"`
 	NsID          int      `json:"ns_id"`
 	Serial        int      `json:"serial"`
-	Ns            []string `json:"ns"`
+	Nss           []string `json:"ns"`
 }

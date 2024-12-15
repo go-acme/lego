@@ -70,7 +70,7 @@ func TestClient_GetAllZones(t *testing.T) {
 			Org:           2,
 			NsID:          1,
 			Serial:        2022042206,
-			Ns:            []string{"ns11.zns-53.com.", "ns21.zns-53.net.", "ns31.zns-53.com.", "ns41.zns-53.net."},
+			Nss:           []string{"ns11.zns-53.com.", "ns21.zns-53.net.", "ns31.zns-53.com.", "ns41.zns-53.net."},
 		},
 		{
 			ZoneID:   2,
@@ -84,7 +84,7 @@ func TestClient_GetAllZones(t *testing.T) {
 			Vanity:   true,
 			NsID:     1,
 			Serial:   2022040608,
-			Ns:       []string{"ns11.yourdomain.com.", "ns21.yourdomain.net.", "ns31.yourdomain.com.", "ns41.yourdomain.net."},
+			Nss:      []string{"ns11.yourdomain.com.", "ns21.yourdomain.net.", "ns31.yourdomain.com.", "ns41.yourdomain.net."},
 		},
 		{
 			ZoneID:   20,
@@ -97,7 +97,7 @@ func TestClient_GetAllZones(t *testing.T) {
 			Org:      2,
 			NsID:     1,
 			Serial:   2022040711,
-			Ns:       []string{"ns11.zns-53.com.", "ns21.zns-53.net.", "ns31.zns-53.com.", "ns41.zns-53.net."},
+			Nss:      []string{"ns11.zns-53.com.", "ns21.zns-53.net.", "ns31.zns-53.com.", "ns41.zns-53.net."},
 		},
 		{
 			ZoneID:        22,
@@ -111,7 +111,7 @@ func TestClient_GetAllZones(t *testing.T) {
 			Org:           2,
 			NsID:          1,
 			Serial:        2022042206,
-			Ns:            []string{"ns11.zns-53.com.", "ns21.zns-53.net.", "ns31.zns-53.com.", "ns41.zns-53.net."},
+			Nss:           []string{"ns11.zns-53.com.", "ns21.zns-53.net.", "ns31.zns-53.com.", "ns41.zns-53.net."},
 		},
 		{
 			ZoneID:        23,
@@ -125,7 +125,7 @@ func TestClient_GetAllZones(t *testing.T) {
 			Org:           2,
 			NsID:          1,
 			Serial:        2022041310,
-			Ns:            []string{"ns11.zns-53.com.", "ns21.zns-53.net.", "ns31.zns-53.com.", "ns41.zns-53.net."},
+			Nss:           []string{"ns11.zns-53.com.", "ns21.zns-53.net.", "ns31.zns-53.com.", "ns41.zns-53.net."},
 		},
 	}
 
@@ -157,7 +157,7 @@ func TestClient_GetAllZoneRecords(t *testing.T) {
 			RecordType:       "SPF",
 			Records: []Record{{
 				ID:       1,
-				Value:    []string{"necwcltpwxbz-noelget3jush-vop2xxvapot3eyq_0"},
+				Values:   []string{"necwcltpwxbz-noelget3jush-vop2xxvapot3eyq_0"},
 				DomainID: 6,
 			}},
 		},
@@ -170,7 +170,7 @@ func TestClient_GetAllZoneRecords(t *testing.T) {
 			RecordType:       "TXT",
 			Records: []Record{{
 				ID:       1,
-				Value:    []string{"v=spf1include:transmail.netinclude:example.com~all", "c-68e3oc4trm8w7piplscg7vgojmtkjrnrabr4king8"},
+				Values:   []string{"v=spf1include:transmail.netinclude:example.com~all", "c-68e3oc4trm8w7piplscg7vgojmtkjrnrabr4king8"},
 				DomainID: 13,
 			}},
 		},

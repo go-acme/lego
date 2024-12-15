@@ -37,7 +37,7 @@ func NewClient(ctx context.Context, clientID, clientSecret string) *Client {
 func (c *Client) GetAllZones(ctx context.Context) ([]Zone, error) {
 	endpoint := c.baseURL.JoinPath("dns", "domain")
 
-	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	req, err := newRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (c *Client) GetAllZones(ctx context.Context) ([]Zone, error) {
 func (c *Client) GetAllZoneRecords(ctx context.Context, zoneID int) ([]ZoneRecord, error) {
 	endpoint := c.baseURL.JoinPath("dns", "domain", strconv.Itoa(zoneID), "records", "SPF_TXT")
 
-	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	req, err := newRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (c *Client) GetAllZoneRecords(ctx context.Context, zoneID int) ([]ZoneRecor
 func (c *Client) DeleteZoneRecord(ctx context.Context, zoneID int, recordID int) error {
 	endpoint := c.baseURL.JoinPath("dns", "domain", strconv.Itoa(zoneID), "records", "SPF_TXT", strconv.Itoa(recordID))
 
-	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
+	req, err := newRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (c *Client) DeleteZoneRecord(ctx context.Context, zoneID int, recordID int)
 func (c *Client) CreateZoneRecord(ctx context.Context, zoneID int, record ZoneRecord) error {
 	endpoint := c.baseURL.JoinPath("dns", "domain", strconv.Itoa(zoneID), "records", "SPF_TXT", "/")
 
-	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
+	req, err := newRequest(ctx, http.MethodPost, endpoint, []ZoneRecord{record})
 	if err != nil {
 		return err
 	}
@@ -141,8 +141,9 @@ func (c *Client) do(req *http.Request, result any) error {
 	return nil
 }
 
-func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+func newRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
 	var body io.Reader = http.NoBody
+
 	if payload != nil {
 		buf := new(bytes.Buffer)
 

@@ -234,3 +234,23 @@ func TestClient_CreateZoneRecord_error_bad_request(t *testing.T) {
 
 	require.EqualError(t, err, "[status code: 400] Invalid record format, Record should be in list.")
 }
+
+func TestClient_UpdateZoneRecord(t *testing.T) {
+	client := setupTest(t, "PUT /dns/domain/4/records/SPF_TXT/", http.StatusOK, "zone_record_update.json")
+
+	record := ZoneRecord{}
+
+	err := client.UpdateZoneRecord(context.Background(), 4, record)
+	require.NoError(t, err)
+}
+
+func TestClient_UpdateZoneRecord_error(t *testing.T) {
+	client := setupTest(t, "PUT /dns/domain/4/records/SPF_TXT/", http.StatusUnauthorized, "error.json")
+
+	record := ZoneRecord{}
+
+	err := client.UpdateZoneRecord(context.Background(), 4, record)
+	require.Error(t, err)
+
+	require.EqualError(t, err, "[status code: 401] Authentication credentials were not provided.")
+}

@@ -112,6 +112,26 @@ func (c *Client) CreateZoneRecord(ctx context.Context, zoneID int, record ZoneRe
 	return nil
 }
 
+// UpdateZoneRecord update an existing "zone record".
+// https://pitstop.manageengine.com/portal/en/kb/articles/manageengine-clouddns-rest-api-documentation#PUT_Update_10
+func (c *Client) UpdateZoneRecord(ctx context.Context, zoneID int, record ZoneRecord) error {
+	endpoint := c.baseURL.JoinPath("dns", "domain", strconv.Itoa(zoneID), "records", "SPF_TXT", "/")
+
+	req, err := newRequest(ctx, http.MethodPut, endpoint, []ZoneRecord{record})
+	if err != nil {
+		return err
+	}
+
+	var results APIResponse
+
+	err = c.do(req, &results)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *Client) do(req *http.Request, result any) error {
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

@@ -174,7 +174,7 @@ func newRequest(ctx context.Context, method string, endpoint *url.URL, payload a
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	println(string(raw))
+	println(string(raw)) // TODO(ldez) to remove after debug.
 
 	var errAPI APIError
 	err := json.Unmarshal(raw, &errAPI)

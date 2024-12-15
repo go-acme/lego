@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -103,6 +104,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("manageengine: find zone record: %w", err)
 	}
 
+	// Create a zone record.
 	if zoneRecord == nil {
 		record := internal.ZoneRecord{
 			ZoneID:     zoneID,
@@ -110,7 +112,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			DomainTTL:  d.config.TTL,
 			RecordType: "TXT",
 			Records: []internal.Record{{
-				Value: []string{info.Value},
+				Values: []string{info.Value},
 			}},
 		}
 
@@ -122,9 +124,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return nil
 	}
 
+	// Update the zone record.
 	for i, record := range zoneRecord.Records {
 		if !record.Disabled {
-			zoneRecord.Records[i].Value = append(zoneRecord.Records[i].Value, info.Value)
+			zoneRecord.Records[i].Values = append(zoneRecord.Records[i].Values, info.Value)
 			break
 		}
 	}
@@ -153,14 +156,42 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("manageengine: find zone ID: %w", err)
 	}
 
-	recordID, err := d.findRecordID(ctx, zoneID, info)
+	zoneRecord, err := d.findZoneRecord(ctx, zoneID, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("manageengine: find record ID: %w", err)
+		return fmt.Errorf("manageengine: find zone record: %w", err)
 	}
 
-	err = d.client.DeleteZoneRecord(ctx, zoneID, recordID)
-	if err != nil {
-		return fmt.Errorf("manageengine: delete zone record: %w", err)
+	for i, record := range zoneRecord.Records {
+		if !slices.Contains(record.Values, info.Value) {
+			continue
+		}
+
+		// Delete the zone record.
+		if len(record.Values) <= 1 {
+			err = d.client.DeleteZoneRecord(ctx, zoneID, record.ID)
+			if err != nil {
+				return fmt.Errorf("manageengine: delete zone record: %w", err)
+			}
+
+			return nil
+		}
+
+		// Update the zone record.
+		var values []string
+		for _, value := range record.Values {
+			if value != info.Value {
+				values = append(values, value)
+			}
+		}
+
+		zoneRecord.Records[i].Values = values
+
+		err = d.client.UpdateZoneRecord(ctx, zoneID, *zoneRecord)
+		if err != nil {
+			return fmt.Errorf("manageengine: create zone record: %w", err)
+		}
+
+		return nil
 	}
 
 	return nil
@@ -185,25 +216,6 @@ func (d *DNSProvider) findZoneID(ctx context.Context, authZone string) (int, err
 	}
 
 	return 0, fmt.Errorf(" zone not found %s", authZone)
-}
-
-func (d *DNSProvider) findRecordID(ctx context.Context, zoneID int, info dns01.ChallengeInfo) (int, error) {
-	zoneRecord, err := d.findZoneRecord(ctx, zoneID, info.EffectiveFQDN)
-	if err != nil {
-		return 0, err
-	}
-
-	if zoneRecord == nil {
-		return 0, fmt.Errorf("record not found: zone ID: %d", zoneID)
-	}
-
-	for _, record := range zoneRecord.Records {
-		if !record.Disabled {
-			return record.ID, nil
-		}
-	}
-
-	return 0, fmt.Errorf("record not found: zone ID: %d", zoneID)
 }
 
 func (d *DNSProvider) findZoneRecord(ctx context.Context, zoneID int, fqdn string) (*internal.ZoneRecord, error) {

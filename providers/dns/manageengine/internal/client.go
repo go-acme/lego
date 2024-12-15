@@ -84,12 +84,7 @@ func (c *Client) DeleteZoneRecord(ctx context.Context, zoneID int, recordID int)
 
 	var results APIResponse
 
-	err = c.do(req, &results)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, &results)
 }
 
 // CreateZoneRecord creates a "zone record".
@@ -104,12 +99,7 @@ func (c *Client) CreateZoneRecord(ctx context.Context, zoneID int, record ZoneRe
 
 	var results APIResponse
 
-	err = c.do(req, &results)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, &results)
 }
 
 // UpdateZoneRecord update an existing "zone record".
@@ -124,12 +114,7 @@ func (c *Client) UpdateZoneRecord(ctx context.Context, zoneID int, record ZoneRe
 
 	var results APIResponse
 
-	err = c.do(req, &results)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, &results)
 }
 
 func (c *Client) do(req *http.Request, result any) error {
@@ -193,8 +178,6 @@ func newRequest(ctx context.Context, method string, endpoint *url.URL, payload a
 
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
-
-	println(string(raw)) // TODO(ldez) to remove after debug.
 
 	var errAPI APIError
 	err := json.Unmarshal(raw, &errAPI)

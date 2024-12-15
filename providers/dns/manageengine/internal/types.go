@@ -1,11 +1,26 @@
 package internal
 
+import (
+	"strings"
+)
+
 type APIError struct {
-	Detail string `json:"detail"`
+	Message string `json:"error"`
+	Detail  string `json:"detail"`
 }
 
 func (a *APIError) Error() string {
-	return a.Detail
+	var msg []string
+
+	if a.Message != "" {
+		msg = append(msg, a.Message)
+	}
+
+	if a.Detail != "" {
+		msg = append(msg, a.Detail)
+	}
+
+	return strings.Join(msg, " ")
 }
 
 type APIResponse struct {

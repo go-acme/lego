@@ -189,14 +189,14 @@ func TestClient_GetAllZoneRecords_error(t *testing.T) {
 }
 
 func TestClient_DeleteZoneRecord(t *testing.T) {
-	client := setupTest(t, "DELETE /dns/domain/4/records/SPF_TXT/6", http.StatusOK, "zone_record_delete.json")
+	client := setupTest(t, "DELETE /dns/domain/4/records/SPF_TXT/6/", http.StatusOK, "zone_record_delete.json")
 
 	err := client.DeleteZoneRecord(context.Background(), 4, 6)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteZoneRecord_error(t *testing.T) {
-	client := setupTest(t, "DELETE /dns/domain/4/records/SPF_TXT/6", http.StatusUnauthorized, "error.json")
+	client := setupTest(t, "DELETE /dns/domain/4/records/SPF_TXT/6/", http.StatusUnauthorized, "error.json")
 
 	err := client.DeleteZoneRecord(context.Background(), 4, 6)
 	require.Error(t, err)

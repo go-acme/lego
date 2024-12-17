@@ -17,6 +17,7 @@ lego --email you@example.com --dns manageengine -d '*.example.com' -d example.co
   [Configuration.Additional]
     MANAGEENGINE_POLLING_INTERVAL = "Time between DNS propagation check"
     MANAGEENGINE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    MANAGEENGINE_SEQUENCE_INTERVAL = "Time between sequential requests"
     MANAGEENGINE_TTL = "The TTL of the TXT record used for the DNS challenge"
     MANAGEENGINE_HTTP_TIMEOUT = "API request timeout"
 

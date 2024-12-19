@@ -24,7 +24,6 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -34,7 +33,6 @@ type Config struct {
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-	SequenceInterval   time.Duration
 	TTL                int
 }
 
@@ -44,7 +42,6 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, 10*time.Second),
 	}
 }
 
@@ -107,17 +104,38 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("manageengine: find zone record: %w", err)
 	}
 
+	// Update the existing zone record.
 	if zoneRecord != nil {
 		for _, record := range zoneRecord.Records {
-			// Delete the zone record.
-			err = d.client.DeleteZoneRecord(ctx, zoneID, record.ID)
-			if err != nil {
-				return fmt.Errorf("manageengine: delete zone record: %w", err)
+			if slices.Contains(record.Values, info.Value) {
+				continue
 			}
+
+			zr := internal.ZoneRecord{
+				ZoneID:         zoneID,
+				SpfTxtDomainID: zoneRecord.SpfTxtDomainID,
+				DomainName:     info.EffectiveFQDN,
+				DomainTTL:      d.config.TTL,
+				RecordType:     "TXT",
+				Records: []internal.Record{{
+					Values:   append(record.Values, info.Value),
+					DomainID: zoneRecord.SpfTxtDomainID,
+				}},
+			}
+
+			// Update the zone record.
+			err = d.client.UpdateZoneRecord(ctx, zr)
+			if err != nil {
+				return fmt.Errorf("manageengine: update zone record: %w", err)
+			}
+
+			return nil
 		}
+
+		return errors.New("manageengine: zone already contains the TXT record value")
 	}
 
-	// Create a zone record.
+	// Create a new zone record.
 	record := internal.ZoneRecord{
 		ZoneID:     zoneID,
 		DomainName: info.EffectiveFQDN,
@@ -163,9 +181,38 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 
 		// Delete the zone record.
-		err = d.client.DeleteZoneRecord(ctx, zoneID, record.ID)
+		if len(record.Values) <= 1 {
+			err = d.client.DeleteZoneRecord(ctx, zoneID, zoneRecord.SpfTxtDomainID)
+			if err != nil {
+				return fmt.Errorf("manageengine: delete zone record: %w", err)
+			}
+
+			return nil
+		}
+
+		// Update the zone record.
+		var values []string
+		for _, value := range record.Values {
+			if value != info.Value {
+				values = append(values, value)
+			}
+		}
+
+		zr := internal.ZoneRecord{
+			ZoneID:         zoneID,
+			SpfTxtDomainID: zoneRecord.SpfTxtDomainID,
+			DomainName:     info.EffectiveFQDN,
+			DomainTTL:      d.config.TTL,
+			RecordType:     "TXT",
+			Records: []internal.Record{{
+				Values:   values,
+				DomainID: zoneRecord.SpfTxtDomainID,
+			}},
+		}
+
+		err = d.client.UpdateZoneRecord(ctx, zr)
 		if err != nil {
-			return fmt.Errorf("manageengine: delete zone record: %w", err)
+			return fmt.Errorf("manageengine: create zone record: %w", err)
 		}
 
 		return nil
@@ -180,12 +227,6 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Sequential All DNS challenges for this provider will be resolved sequentially.
-// Returns the interval between each iteration.
-func (d *DNSProvider) Sequential() time.Duration {
-	return d.config.SequenceInterval
-}
-
 func (d *DNSProvider) findZoneID(ctx context.Context, authZone string) (int, error) {
 	zones, err := d.client.GetAllZones(ctx)
 	if err != nil {
@@ -198,7 +239,7 @@ func (d *DNSProvider) findZoneID(ctx context.Context, authZone string) (int, err
 		}
 	}
 
-	return 0, fmt.Errorf(" zone not found %s", authZone)
+	return 0, fmt.Errorf("zone not found %s", authZone)
 }
 
 func (d *DNSProvider) findZoneRecord(ctx context.Context, zoneID int, fqdn string) (*internal.ZoneRecord, error) {

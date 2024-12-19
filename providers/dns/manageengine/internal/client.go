@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -74,8 +75,8 @@ func (c *Client) GetAllZoneRecords(ctx context.Context, zoneID int) ([]ZoneRecor
 
 // DeleteZoneRecord deletes a "zone record".
 // https://pitstop.manageengine.com/portal/en/kb/articles/manageengine-clouddns-rest-api-documentation#DEL_Delete_10
-func (c *Client) DeleteZoneRecord(ctx context.Context, zoneID int, recordID int) error {
-	endpoint := c.baseURL.JoinPath("dns", "domain", strconv.Itoa(zoneID), "records", "SPF_TXT", strconv.Itoa(recordID), "/")
+func (c *Client) DeleteZoneRecord(ctx context.Context, zoneID int, domainID int) error {
+	endpoint := c.baseURL.JoinPath("dns", "domain", strconv.Itoa(zoneID), "records", "SPF_TXT", strconv.Itoa(domainID))
 
 	req, err := newRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
@@ -104,8 +105,15 @@ func (c *Client) CreateZoneRecord(ctx context.Context, zoneID int, record ZoneRe
 
 // UpdateZoneRecord update an existing "zone record".
 // https://pitstop.manageengine.com/portal/en/kb/articles/manageengine-clouddns-rest-api-documentation#PUT_Update_10
-func (c *Client) UpdateZoneRecord(ctx context.Context, zoneID int, record ZoneRecord) error {
-	endpoint := c.baseURL.JoinPath("dns", "domain", strconv.Itoa(zoneID), "records", "SPF_TXT", "/")
+func (c *Client) UpdateZoneRecord(ctx context.Context, record ZoneRecord) error {
+	if record.SpfTxtDomainID == 0 {
+		return errors.New("SpfTxtDomainID is empty")
+	}
+	if record.ZoneID == 0 {
+		return errors.New("ZoneID is empty")
+	}
+
+	endpoint := c.baseURL.JoinPath("dns", "domain", strconv.Itoa(record.ZoneID), "records", "SPF_TXT", strconv.Itoa(record.SpfTxtDomainID), "/")
 
 	req, err := newRequest(ctx, http.MethodPut, endpoint, []ZoneRecord{record})
 	if err != nil {

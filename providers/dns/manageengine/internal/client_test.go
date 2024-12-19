@@ -189,14 +189,14 @@ func TestClient_GetAllZoneRecords_error(t *testing.T) {
 }
 
 func TestClient_DeleteZoneRecord(t *testing.T) {
-	client := setupTest(t, "DELETE /dns/domain/4/records/SPF_TXT/6/", http.StatusOK, "zone_record_delete.json")
+	client := setupTest(t, "DELETE /dns/domain/4/records/SPF_TXT/6", http.StatusOK, "zone_record_delete.json")
 
 	err := client.DeleteZoneRecord(context.Background(), 4, 6)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteZoneRecord_error(t *testing.T) {
-	client := setupTest(t, "DELETE /dns/domain/4/records/SPF_TXT/6/", http.StatusUnauthorized, "error.json")
+	client := setupTest(t, "DELETE /dns/domain/4/records/SPF_TXT/6", http.StatusUnauthorized, "error.json")
 
 	err := client.DeleteZoneRecord(context.Background(), 4, 6)
 	require.Error(t, err)
@@ -236,20 +236,26 @@ func TestClient_CreateZoneRecord_error_bad_request(t *testing.T) {
 }
 
 func TestClient_UpdateZoneRecord(t *testing.T) {
-	client := setupTest(t, "PUT /dns/domain/4/records/SPF_TXT/", http.StatusOK, "zone_record_update.json")
+	client := setupTest(t, "PUT /dns/domain/4/records/SPF_TXT/6/", http.StatusOK, "zone_record_update.json")
 
-	record := ZoneRecord{}
+	record := ZoneRecord{
+		SpfTxtDomainID: 6,
+		ZoneID:         4,
+	}
 
-	err := client.UpdateZoneRecord(context.Background(), 4, record)
+	err := client.UpdateZoneRecord(context.Background(), record)
 	require.NoError(t, err)
 }
 
 func TestClient_UpdateZoneRecord_error(t *testing.T) {
-	client := setupTest(t, "PUT /dns/domain/4/records/SPF_TXT/", http.StatusUnauthorized, "error.json")
+	client := setupTest(t, "PUT /dns/domain/4/records/SPF_TXT/6/", http.StatusUnauthorized, "error.json")
 
-	record := ZoneRecord{}
+	record := ZoneRecord{
+		SpfTxtDomainID: 6,
+		ZoneID:         4,
+	}
 
-	err := client.UpdateZoneRecord(context.Background(), 4, record)
+	err := client.UpdateZoneRecord(context.Background(), record)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "[status code: 401] Authentication credentials were not provided.")

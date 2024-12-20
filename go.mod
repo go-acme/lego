@@ -81,7 +81,7 @@ require (
 	github.com/yandex-cloud/go-genproto v0.0.0-20241206133605-07e4a676108b
 	github.com/yandex-cloud/go-sdk v0.0.0-20241206142255-6c3760d17eea
 	golang.org/x/crypto v0.31.0
-	golang.org/x/net v0.32.0
+	golang.org/x/net v0.33.0
 	golang.org/x/oauth2 v0.24.0
 	golang.org/x/text v0.21.0
 	golang.org/x/time v0.8.0

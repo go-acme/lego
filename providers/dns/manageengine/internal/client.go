@@ -146,8 +146,6 @@ func (c *Client) do(req *http.Request, result any) error {
 		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	println(string(raw)) // TODO debug
-
 	err = json.Unmarshal(raw, result)
 	if err != nil {
 		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
@@ -188,8 +186,6 @@ func newRequest(ctx context.Context, method string, endpoint *url.URL, payload a
 
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
-
-	println(string(raw)) // TODO debug
 
 	var errAPI APIError
 	err := json.Unmarshal(raw, &errAPI)

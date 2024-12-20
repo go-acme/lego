@@ -1,5 +1,26 @@
 # Changelog
 
+## [v4.21.0](https://github.com/go-acme/lego/releases/tag/v4.21.0) (2024-12-20)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Rainyun/雨云
+- **[dnsprovider]** Add DNS provider for West.cn/西部数码
+- **[dnsprovider]** Add DNS provider for ManageEngine CloudDNS
+- **[cli]** feat: add --force-cert-domains flag to renew
+
+### Fixed
+
+- **[cli]** create client only when needed
+- **[cli]** clone the transport with tls-skip-verify
+- **[cli]** use retryable client for ACME server calls
+- **[dnsprovider]** bunny: fix zone detection
+- **[dnsprovider]** inwx: delete only the TXT record related to the DNS challenge
+- **[dnsprovider]** infomaniak: increase default propagation timeout
+- **[dnsprovider]** dnsmadeeasy: use default transport
+- **[dnsprovider]** netcup: increase default propagation values
+- **[dnsprovider]** otc: use default transport
+
 ## [v4.20.4](https://github.com/go-acme/lego/releases/tag/v4.20.4) (2024-11-21)
 
 Publish the Snap to the Snapcraft stable channel.

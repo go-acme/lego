@@ -92,6 +92,7 @@ func allDNSCodes() string {
 		"loopia",
 		"luadns",
 		"mailinabox",
+		"manageengine",
 		"metaname",
 		"mijnhost",
 		"mittwald",
@@ -1857,6 +1858,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/mailinabox`)
+
+	case "manageengine":
+		// generated from: providers/dns/manageengine/manageengine.toml
+		ew.writeln(`Configuration for ManageEngine CloudDNS.`)
+		ew.writeln(`Code:	'manageengine'`)
+		ew.writeln(`Since:	'v4.21.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "MANAGEENGINE_CLIENT_ID":	Client ID`)
+		ew.writeln(`	- "MANAGEENGINE_CLIENT_SECRET":	Client Secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "MANAGEENGINE_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "MANAGEENGINE_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "MANAGEENGINE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "MANAGEENGINE_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/manageengine`)
 
 	case "metaname":
 		// generated from: providers/dns/metaname/metaname.toml

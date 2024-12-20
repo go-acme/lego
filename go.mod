@@ -79,7 +79,7 @@ require (
 	github.com/volcengine/volc-sdk-golang v1.0.188
 	github.com/vultr/govultr/v3 v3.9.1
 	github.com/yandex-cloud/go-genproto v0.0.0-20241220122821-aeb3b05efd1c
-	github.com/yandex-cloud/go-sdk v0.0.0-20241206142255-6c3760d17eea
+	github.com/yandex-cloud/go-sdk v0.0.0-20241220131134-2393e243c134
 	golang.org/x/crypto v0.31.0
 	golang.org/x/net v0.33.0
 	golang.org/x/oauth2 v0.24.0

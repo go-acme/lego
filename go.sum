@@ -262,8 +262,8 @@ github.com/frankban/quicktest v1.14.6/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7z
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/fsnotify/fsnotify v1.5.1/go.mod h1:T3375wBYaZdLLcVNkcVbzGHY7f1l/uK5T5Ai1i3InKU=
-github.com/fsnotify/fsnotify v1.7.0 h1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=
-github.com/fsnotify/fsnotify v1.7.0/go.mod h1:40Bi/Hjc2AVfZrqy+aj+yEI+/bRxZnMJyTJwOpGvigM=
+github.com/fsnotify/fsnotify v1.8.0 h1:dAwr6QBTBZIkG8roQaJjGof0pp0EeF+tNV7YBP3F/8M=
+github.com/fsnotify/fsnotify v1.8.0/go.mod h1:8jBTzvmWwFyi3Pb8djgCCO5IBqzKJ/Jwo8TRcHyHii0=
 github.com/gabriel-vasile/mimetype v1.4.2 h1:w5qFW6JKBz9Y393Y4q372O9A7cUSequkh1Q7OhCmWKU=
 github.com/gabriel-vasile/mimetype v1.4.2/go.mod h1:zApsH/mKG4w07erKIaJPFiX0Tsq9BFQgN3qGY5GnNgA=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
@@ -760,8 +760,8 @@ github.com/sacloud/api-client-go v0.2.10 h1:+rv3jDohD+pkdYwOTBiB+jZsM0xK3AxadXRz
 github.com/sacloud/api-client-go v0.2.10/go.mod h1:Jj3CTy2+O4bcMedVDXlbHuqqche85HEPuVXoQFhLaRc=
 github.com/sacloud/go-http v0.1.8 h1:ynreWA/vnM8G2ksbMlmefBHsXURKPz49qlPRqQ9IQdw=
 github.com/sacloud/go-http v0.1.8/go.mod h1:7TL7TN1fnPKHsMifIqURDkGujnKViCgEz5Ei/LQdFK8=
-github.com/sacloud/iaas-api-go v1.12.0 h1:kqXFn3HzCiawlX6hVJb1GVqcSJqcmiGHB4Zp14sxiI8=
-github.com/sacloud/iaas-api-go v1.12.0/go.mod h1:SZLXeWOdXk3WReIS557sbU1gkOgrE4rseIBQV1B3b7o=
+github.com/sacloud/iaas-api-go v1.14.0 h1:xjkFWqdo4ilTrKPNNYBNWR/CZ/kVRsJrdAHAad6J/AQ=
+github.com/sacloud/iaas-api-go v1.14.0/go.mod h1:C8os2Mnj0TOmMdSllwhaDWKMVG2ysFnpe69kyA4M3V0=
 github.com/sacloud/packages-go v0.0.10 h1:UiQGjy8LretewkRhsuna1TBM9Vz/l9FoYpQx+D+AOck=
 github.com/sacloud/packages-go v0.0.10/go.mod h1:f8QITBh9z4IZc4yE9j21Q8b0sXEMwRlRmhhjWeDVTYs=
 github.com/sagikazarmark/locafero v0.4.0 h1:HApY1R9zGo4DBgr7dqsTH/JJxLTTsOt7u6keLGt6kNQ=

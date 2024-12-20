@@ -26,7 +26,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.3
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/civo/civogo v0.3.11
-	github.com/cloudflare/cloudflare-go v0.111.0
+	github.com/cloudflare/cloudflare-go v0.112.0
 	github.com/cpu/goacmedns v0.1.1
 	github.com/dnsimple/dnsimple-go v1.7.0
 	github.com/exoscale/egoscale/v3 v3.1.7
@@ -133,7 +133,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.16.0 // indirect
 	github.com/go-resty/resty/v2 v2.15.3 // indirect
-	github.com/goccy/go-json v0.10.3 // indirect
+	github.com/goccy/go-json v0.10.4 // indirect
 	github.com/gofrs/flock v0.12.1 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect

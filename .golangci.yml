@@ -133,6 +133,8 @@ linters-settings:
     errorf: true
     sprintf1: true
     strconcat: false
+  usetesting:
+    os-setenv: false # we already have a test "framework" to handle env vars
 
 run:
   timeout: 10m

@@ -30,9 +30,10 @@ func TestDNSProviderManual(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			file, err := os.CreateTemp("", "lego_test")
+			file, err := os.CreateTemp(t.TempDir(), "lego_test")
 			require.NoError(t, err)
-			defer func() { _ = os.Remove(file.Name()) }()
+
+			t.Cleanup(func() { _ = file.Close() })
 
 			_, err = file.WriteString(test.input)
 			require.NoError(t, err)

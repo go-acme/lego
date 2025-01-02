@@ -265,10 +265,10 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func createCloudsYaml(t *testing.T, cloudName string, cloud clientconfig.Cloud) string {
 	t.Helper()
 
-	file, err := os.CreateTemp("", "lego_test")
+	file, err := os.CreateTemp(t.TempDir(), "lego_test")
 	require.NoError(t, err)
 
-	t.Cleanup(func() { _ = os.RemoveAll(file.Name()) })
+	t.Cleanup(func() { _ = file.Close() })
 
 	clouds := clientconfig.Clouds{
 		Clouds: map[string]clientconfig.Cloud{

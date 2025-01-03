@@ -10,12 +10,12 @@ import (
 	"time"
 )
 
-func launchHook(hook string, meta map[string]string) error {
+func launchHook(hook string, hookTimeoutSecs uint, meta map[string]string) error {
 	if hook == "" {
 		return nil
 	}
 
-	ctxCmd, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	ctxCmd, cancel := context.WithTimeout(context.Background(), time.Duration(hookTimeoutSecs)*time.Second)
 	defer cancel()
 
 	parts := strings.Fields(hook)

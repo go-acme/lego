@@ -110,10 +110,10 @@ func createRenew() *cli.Command {
 				Name:  flgRenewHook,
 				Usage: "Define a hook. The hook is executed only when the certificates are effectively renewed.",
 			},
-			&cli.UintFlag{
+			&cli.DurationFlag{
 				Name:  flgRenewHookTimeout,
-				Usage: "Define the timeout in seconds for the hook execution.",
-				Value: 120,
+				Usage: "Define the timeout for the hook execution.",
+				Value: 2 * time.Minute,
 			},
 			&cli.BoolFlag{
 				Name: flgNoRandomSleep,
@@ -260,7 +260,7 @@ func renewForDomains(ctx *cli.Context, account *Account, keyType certcrypto.KeyT
 
 	addPathToMetadata(meta, domain, certRes, certsStorage)
 
-	return launchHook(ctx.String(flgRenewHook), ctx.Uint(flgRenewHookTimeout), meta)
+	return launchHook(ctx.String(flgRenewHook), ctx.Duration(flgRenewHookTimeout), meta)
 }
 
 func renewForCSR(ctx *cli.Context, account *Account, keyType certcrypto.KeyType, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
@@ -343,7 +343,7 @@ func renewForCSR(ctx *cli.Context, account *Account, keyType certcrypto.KeyType,
 
 	addPathToMetadata(meta, domain, certRes, certsStorage)
 
-	return launchHook(ctx.String(flgRenewHook), ctx.Uint(flgRenewHookTimeout), meta)
+	return launchHook(ctx.String(flgRenewHook), ctx.Duration(flgRenewHookTimeout), meta)
 }
 
 func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {

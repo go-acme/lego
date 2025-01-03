@@ -76,10 +76,10 @@ func createRun() *cli.Command {
 				Name:  flgRunHook,
 				Usage: "Define a hook. The hook is executed when the certificates are effectively created.",
 			},
-			&cli.UintFlag{
+			&cli.DurationFlag{
 				Name:  flgRunHookTimeout,
-				Usage: "Define the timeout in seconds for the hook execution.",
-				Value: 120,
+				Usage: "Define the timeout for the hook execution.",
+				Value: 2 * time.Minute,
 			},
 		},
 	}
@@ -135,7 +135,7 @@ func run(ctx *cli.Context) error {
 
 	addPathToMetadata(meta, cert.Domain, cert, certsStorage)
 
-	return launchHook(ctx.String(flgRunHook), ctx.Uint(flgRunHookTimeout), meta)
+	return launchHook(ctx.String(flgRunHook), ctx.Duration(flgRunHookTimeout), meta)
 }
 
 func handleTOS(ctx *cli.Context, client *lego.Client) bool {

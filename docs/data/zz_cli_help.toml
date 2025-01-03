@@ -74,6 +74,7 @@ OPTIONS:
    --preferred-chain value                   If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.
    --always-deactivate-authorizations value  Force the authorizations to be relinquished even if the certificate request was successful.
    --run-hook value                          Define a hook. The hook is executed when the certificates are effectively created.
+   --run-hook-timeout value                  Define the timeout for the hook execution. (default: 2m0s)
    --help, -h                                show help
 """
 
@@ -98,6 +99,7 @@ OPTIONS:
    --preferred-chain value                   If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.
    --always-deactivate-authorizations value  Force the authorizations to be relinquished even if the certificate request was successful.
    --renew-hook value                        Define a hook. The hook is executed only when the certificates are effectively renewed.
+   --renew-hook-timeout value                Define the timeout for the hook execution. (default: 2m0s)
    --no-random-sleep                         Do not add a random sleep before the renewal. We do not recommend using this flag if you are doing your renewals in an automated way. (default: false)
    --force-cert-domains                      Check and ensure that the cert's domain list matches those passed in the domains argument. (default: false)
    --help, -h                                show help

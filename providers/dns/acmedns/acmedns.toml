@@ -9,12 +9,27 @@ Example = '''
 ACME_DNS_API_BASE=http://10.0.0.8:4443 \
 ACME_DNS_STORAGE_PATH=/root/.lego-acme-dns-accounts.json \
 lego --email you@example.com --dns "acme-dns" -d '*.example.com' -d example.com run
+
+# or
+ACME_DNS_API_BASE=http://10.0.0.8:4443 \
+ACME_DNS_SUBDOMAIN=8e5700ea-a4bf-41c7-8a77-e990661dcc6a \
+ACME_DNS_USERNAME=c36f50e8-4632-44f0-83fe-e070fef28a10 \
+ACME_DNS_PASSWORD=htB9mR9DYgcu9bX_afHF62erXaH2TS7bg9KW3F7Z \
+lego --email you@example.com --dns "acme-dns" -d '*.example.com' -d example.com run
 '''
 
 [Configuration]
   [Configuration.Credentials]
+    # Registering a per-domain ACME-DNS Account through lego
     ACME_DNS_API_BASE  = "The ACME-DNS API address"
-    ACME_DNS_STORAGE_PATH = "The ACME-DNS JSON account data file. A per-domain account will be registered/persisted to this file and used for TXT updates."
+    ACME_DNS_STORAGE_PATH = "The ACME-DNS JSON account data file. The per-domain account will be persisted to this file and used for TXT updates."
+
+    # Using an already existing ACME-DNS Account for all domains
+    ACME_DNS_API_BASE  = "The ACME-DNS API address"
+    ACME_DNS_SUBDOMAIN = "The subdomain of the account"
+    ACME_DNS_USERNAME = "The username of the account"
+    ACME_DNS_PASSWORD = "The password of the account"
+
 
 [Links]
   API = "https://github.com/joohoi/acme-dns#api"

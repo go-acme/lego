@@ -22,6 +22,18 @@ const (
 	// EnvStoragePath is the environment variable name for the ACME-DNS JSON account data file.
 	// A per-domain account will be registered/persisted to this file and used for TXT updates.
 	EnvStoragePath = envNamespace + "STORAGE_PATH"
+	// EnvSubdomain is the environment variable name for the ACME-DNS subdomain
+	// associated with an already registered account.
+	// (e.g. 8e5700ea-a4bf-41c7-8a77-e990661dcc6a)
+	EnvSubdomain = envNamespace + "SUBDOMAIN"
+	// EnvUsername is the environment variable name for the ACME-DNS username
+	// associated with an already registered account.
+	// (e.g. c36f50e8-4632-44f0-83fe-e070fef28a10)
+	EnvUsername = envNamespace + "USERNAME"
+	// EnvPassword is the environment variable name for the ACME-DNS password
+	// associated with an already registered account.
+	// (e.g. htB9mR9DYgcu9bX_afHF62erXaH2TS7bg9KW3F7Z)
+	EnvPassword = envNamespace + "PASSWORD"
 )
 
 var _ challenge.Provider = (*DNSProvider)(nil)
@@ -40,34 +52,57 @@ type acmeDNSClient interface {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	client  acmeDNSClient
+	account *goacmedns.Account
 	storage goacmedns.Storage
 }
 
 // NewDNSProvider creates an ACME-DNS provider using file based account storage.
 // Its configuration is loaded from the environment by reading EnvAPIBase and EnvStoragePath.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIBase, EnvStoragePath)
-	if err != nil {
-		return nil, fmt.Errorf("acme-dns: %w", err)
-	}
+	var account goacmedns.Account
+	var storage goacmedns.Storage
 
-	client := goacmedns.NewClient(values[EnvAPIBase])
-	storage := goacmedns.NewFileStorage(values[EnvStoragePath], 0o600)
-	return NewDNSProviderClient(client, storage)
+	apiBase := env.GetOrFile(EnvAPIBase)
+	if apiBase == "" {
+		return nil, fmt.Errorf("acme-dns: %s environment variable is missing", EnvAPIBase)
+	}
+	client := goacmedns.NewClient(apiBase)
+
+	subdomain := env.GetOrFile(EnvSubdomain)
+	username := env.GetOrFile(EnvUsername)
+	password := env.GetOrFile(EnvPassword)
+
+	if subdomain == "" || username == "" || password == "" {
+		storagePath := env.GetOrFile(EnvStoragePath)
+		if storagePath == "" {
+			return nil, fmt.Errorf("acme-dns: %s must be defined, along with either %s, %s, and %s or %s", EnvAPIBase, EnvSubdomain, EnvUsername, EnvPassword, EnvStoragePath)
+		}
+		storage = goacmedns.NewFileStorage(storagePath, 0o600)
+	} else {
+		account = goacmedns.Account{
+			SubDomain: subdomain,
+			Username:  username,
+			Password:  password,
+			ServerURL: apiBase,
+		}
+	}
+	return NewDNSProviderClient(client, &account, storage)
 }
 
-// NewDNSProviderClient creates an ACME-DNS DNSProvider with the given acmeDNSClient and goacmedns.Storage.
-func NewDNSProviderClient(client acmeDNSClient, storage goacmedns.Storage) (*DNSProvider, error) {
+// NewDNSProviderClient creates an ACME-DNS DNSProvider with the given acmeDNSClient
+// and either a goacmedns.Account or a goacmedns.Storage.
+func NewDNSProviderClient(client acmeDNSClient, account *goacmedns.Account, storage goacmedns.Storage) (*DNSProvider, error) {
 	if client == nil {
 		return nil, errors.New("ACME-DNS Client must be not nil")
 	}
 
-	if storage == nil {
-		return nil, errors.New("ACME-DNS Storage must be not nil")
+	if account == nil && storage == nil {
+		return nil, errors.New("ACME-DNS Account and Storage cannot both be nil")
 	}
 
 	return &DNSProvider{
 		client:  client,
+		account: account,
 		storage: storage,
 	}, nil
 }
@@ -107,6 +142,11 @@ func (e ErrCNAMERequired) Error() string {
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	// Compute the challenge response FQDN and TXT value for the domain based on the keyAuth.
 	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	// Use existing account if available.
+	if d.account != nil {
+		return d.client.UpdateTXTRecord(*d.account, info.Value)
+	}
 
 	// Check if credentials were previously saved for this domain.
 	account, err := d.storage.Fetch(domain)

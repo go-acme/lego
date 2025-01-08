@@ -1,0 +1,16 @@
+{
+  "a": {
+    "fulldomain": "foo.example.com",
+    "subdomain": "foo",
+    "username": "user",
+    "password": "secret",
+    "server_url": "https://example.com"
+  },
+  "b": {
+    "fulldomain": "bar.example.com",
+    "subdomain": "bar",
+    "username": "user",
+    "password": "secret",
+    "server_url": "https://example.com"
+  }
+}

@@ -1,6 +1,7 @@
 package acmedns
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -88,19 +89,19 @@ type mockStorage struct {
 }
 
 // Save does nothing.
-func (m mockStorage) Save() error {
+func (m mockStorage) Save(_ context.Context) error {
 	return nil
 }
 
 // Put stores an account for the given domain in m.accounts.
-func (m mockStorage) Put(domain string, acct goacmedns.Account) error {
+func (m mockStorage) Put(_ context.Context, domain string, acct goacmedns.Account) error {
 	m.accounts[domain] = acct
 	return nil
 }
 
 // Fetch retrieves an account for the given domain from m.accounts or returns
 // goacmedns.ErrDomainNotFound.
-func (m mockStorage) Fetch(domain string) (goacmedns.Account, error) {
+func (m mockStorage) Fetch(_ context.Context, domain string) (goacmedns.Account, error) {
 	if acct, ok := m.accounts[domain]; ok {
 		return acct, nil
 	}
@@ -108,8 +109,8 @@ func (m mockStorage) Fetch(domain string) (goacmedns.Account, error) {
 }
 
 // FetchAll returns all of m.accounts.
-func (m mockStorage) FetchAll() map[string]goacmedns.Account {
-	return m.accounts
+func (m mockStorage) FetchAll(_ context.Context) (map[string]goacmedns.Account, error) {
+	return m.accounts, nil
 }
 
 // errorPutStorage is a mock implementing the goacmedns.Storage interface that
@@ -119,7 +120,7 @@ type errorPutStorage struct {
 }
 
 // Put always errors.
-func (e errorPutStorage) Put(_ string, _ goacmedns.Account) error {
+func (e errorPutStorage) Put(_ context.Context, _ string, _ goacmedns.Account) error {
 	return errorStorageErr
 }
 
@@ -130,7 +131,7 @@ type errorSaveStorage struct {
 }
 
 // Save always errors.
-func (e errorSaveStorage) Save() error {
+func (e errorSaveStorage) Save(_ context.Context) error {
 	return errorStorageErr
 }
 
@@ -141,13 +142,13 @@ type errorFetchStorage struct {
 }
 
 // Fetch always errors.
-func (e errorFetchStorage) Fetch(_ string) (goacmedns.Account, error) {
+func (e errorFetchStorage) Fetch(_ context.Context, _ string) (goacmedns.Account, error) {
 	return goacmedns.Account{}, errorStorageErr
 }
 
 // FetchAll is a nop for errorFetchStorage.
-func (e errorFetchStorage) FetchAll() map[string]goacmedns.Account {
-	return nil
+func (e errorFetchStorage) FetchAll(_ context.Context) (map[string]goacmedns.Account, error) {
+	return nil, nil
 }
 
 // TestPresent tests that the ACME-DNS Present function for updating a DNS-01
@@ -169,7 +170,7 @@ func TestPresent(t *testing.T) {
 	testCases := []struct {
 		Name          string
 		Client        acmeDNSClient
-		Storage       goacmedns.Storage
+		Storage       Storage
 		ExpectedError error
 	}{
 		{
@@ -202,7 +203,7 @@ func TestPresent(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.Name, func(t *testing.T) {
-			dp, err := NewDNSProviderClient(test.Client, mockStorage{make(map[string]goacmedns.Account)})
+			dp, err := NewDNSProviderWithStorage(test.Client, mockStorage{make(map[string]goacmedns.Account)})
 			require.NoError(t, err)
 
 			// override the storage mock if required by the test case.
@@ -233,7 +234,7 @@ func TestRegister(t *testing.T) {
 	testCases := []struct {
 		Name          string
 		Client        acmeDNSClient
-		Storage       goacmedns.Storage
+		Storage       Storage
 		Domain        string
 		FQDN          string
 		ExpectedError error
@@ -268,7 +269,7 @@ func TestRegister(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.Name, func(t *testing.T) {
-			dp, err := NewDNSProviderClient(test.Client, mockStorage{make(map[string]goacmedns.Account)})
+			dp, err := NewDNSProviderWithStorage(test.Client, mockStorage{make(map[string]goacmedns.Account)})
 			require.NoError(t, err)
 
 			// override the storage mock if required by the testcase.
@@ -277,7 +278,7 @@ func TestRegister(t *testing.T) {
 			}
 
 			// Call register for the example domain/fqdn.
-			err = dp.register(egDomain, egFQDN)
+			err = dp.register(context.Background(), egDomain, egFQDN)
 			if test.ExpectedError != nil {
 				assert.Equal(t, test.ExpectedError, err)
 			} else {

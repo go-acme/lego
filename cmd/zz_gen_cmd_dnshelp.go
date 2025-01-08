@@ -176,6 +176,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "ACME_DNS_API_BASE":	The ACME-DNS API address`)
+		ew.writeln(`	- "ACME_DNS_STORAGE_BASE_URL":	The ACME-DNS JSON account data server.`)
 		ew.writeln(`	- "ACME_DNS_STORAGE_PATH":	The ACME-DNS JSON account data file. A per-domain account will be registered/persisted to this file and used for TXT updates.`)
 		ew.writeln()
 

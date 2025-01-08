@@ -169,7 +169,6 @@ func TestPresent(t *testing.T) {
 	testCases := []struct {
 		Name          string
 		Client        acmeDNSClient
-		Account       *goacmedns.Account
 		Storage       goacmedns.Storage
 		ExpectedError error
 	}{
@@ -202,13 +201,13 @@ func TestPresent(t *testing.T) {
 		{
 			Name:    "present when using an existing account",
 			Client:  mockClient{egTestAccount},
-			Account: &egTestAccount,
+			Storage: &SingleAccountStorage{&egTestAccount},
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.Name, func(t *testing.T) {
-			dp, err := NewDNSProviderClient(test.Client, test.Account, mockStorage{make(map[string]goacmedns.Account)})
+			dp, err := NewDNSProviderClient(test.Client, mockStorage{make(map[string]goacmedns.Account)})
 			require.NoError(t, err)
 
 			// override the storage mock if required by the test case.
@@ -274,7 +273,7 @@ func TestRegister(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.Name, func(t *testing.T) {
-			dp, err := NewDNSProviderClient(test.Client, nil, mockStorage{make(map[string]goacmedns.Account)})
+			dp, err := NewDNSProviderClient(test.Client, mockStorage{make(map[string]goacmedns.Account)})
 			require.NoError(t, err)
 
 			// override the storage mock if required by the testcase.

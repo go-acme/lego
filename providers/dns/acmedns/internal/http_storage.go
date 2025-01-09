@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	"github.com/nrdcg/goacmedns"
+	"github.com/nrdcg/goacmedns/storage"
 )
 
 var _ goacmedns.Storage = (*HTTPStorage)(nil)
@@ -87,6 +88,10 @@ func (s *HTTPStorage) do(req *http.Request, result any) error {
 	}
 
 	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return storage.ErrDomainNotFound
+	}
 
 	if resp.StatusCode/100 != 2 {
 		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)

@@ -5,7 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/cpu/goacmedns"
+	"github.com/nrdcg/goacmedns"
+	"github.com/nrdcg/goacmedns/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -38,12 +39,12 @@ type mockClient struct {
 }
 
 // UpdateTXTRecord does nothing.
-func (c mockClient) UpdateTXTRecord(_ goacmedns.Account, _ string) error {
+func (c mockClient) UpdateTXTRecord(_ context.Context, _ goacmedns.Account, _ string) error {
 	return nil
 }
 
 // RegisterAccount returns c.mockAccount and no errors.
-func (c mockClient) RegisterAccount(_ []string) (goacmedns.Account, error) {
+func (c mockClient) RegisterAccount(_ context.Context, _ []string) (goacmedns.Account, error) {
 	return c.mockAccount, nil
 }
 
@@ -55,7 +56,7 @@ type mockUpdateClient struct {
 }
 
 // UpdateTXTRecord saves a record value to c.records for the given acct.
-func (c mockUpdateClient) UpdateTXTRecord(acct goacmedns.Account, value string) error {
+func (c mockUpdateClient) UpdateTXTRecord(_ context.Context, acct goacmedns.Account, value string) error {
 	c.records[acct] = value
 	return nil
 }
@@ -67,7 +68,7 @@ type errorUpdateClient struct {
 }
 
 // UpdateTXTRecord always returns an error.
-func (c errorUpdateClient) UpdateTXTRecord(_ goacmedns.Account, _ string) error {
+func (c errorUpdateClient) UpdateTXTRecord(_ context.Context, _ goacmedns.Account, _ string) error {
 	return errorClientErr
 }
 
@@ -78,7 +79,7 @@ type errorRegisterClient struct {
 }
 
 // RegisterAccount always returns an error.
-func (c errorRegisterClient) RegisterAccount(_ []string) (goacmedns.Account, error) {
+func (c errorRegisterClient) RegisterAccount(_ context.Context, _ []string) (goacmedns.Account, error) {
 	return goacmedns.Account{}, errorClientErr
 }
 
@@ -105,7 +106,7 @@ func (m mockStorage) Fetch(_ context.Context, domain string) (goacmedns.Account,
 	if acct, ok := m.accounts[domain]; ok {
 		return acct, nil
 	}
-	return goacmedns.Account{}, goacmedns.ErrDomainNotFound
+	return goacmedns.Account{}, storage.ErrDomainNotFound
 }
 
 // FetchAll returns all of m.accounts.
@@ -170,7 +171,7 @@ func TestPresent(t *testing.T) {
 	testCases := []struct {
 		Name          string
 		Client        acmeDNSClient
-		Storage       Storage
+		Storage       goacmedns.Storage
 		ExpectedError error
 	}{
 		{
@@ -203,7 +204,7 @@ func TestPresent(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.Name, func(t *testing.T) {
-			dp, err := NewDNSProviderWithStorage(test.Client, mockStorage{make(map[string]goacmedns.Account)})
+			dp, err := NewDNSProviderClient(test.Client, mockStorage{make(map[string]goacmedns.Account)})
 			require.NoError(t, err)
 
 			// override the storage mock if required by the test case.
@@ -234,7 +235,7 @@ func TestRegister(t *testing.T) {
 	testCases := []struct {
 		Name          string
 		Client        acmeDNSClient
-		Storage       Storage
+		Storage       goacmedns.Storage
 		Domain        string
 		FQDN          string
 		ExpectedError error
@@ -269,7 +270,7 @@ func TestRegister(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.Name, func(t *testing.T) {
-			dp, err := NewDNSProviderWithStorage(test.Client, mockStorage{make(map[string]goacmedns.Account)})
+			dp, err := NewDNSProviderClient(test.Client, mockStorage{make(map[string]goacmedns.Account)})
 			require.NoError(t, err)
 
 			// override the storage mock if required by the testcase.

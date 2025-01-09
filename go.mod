@@ -27,7 +27,6 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/civo/civogo v0.3.11
 	github.com/cloudflare/cloudflare-go v0.112.0
-	github.com/cpu/goacmedns v0.1.1
 	github.com/dnsimple/dnsimple-go v1.7.0
 	github.com/exoscale/egoscale/v3 v3.1.7
 	github.com/go-jose/go-jose/v4 v4.0.4
@@ -52,6 +51,7 @@ require (
 	github.com/nrdcg/desec v0.10.0
 	github.com/nrdcg/dnspod-go v0.4.0
 	github.com/nrdcg/freemyip v0.3.0
+	github.com/nrdcg/goacmedns v0.2.0
 	github.com/nrdcg/goinwx v0.10.0
 	github.com/nrdcg/mailinabox v0.2.0
 	github.com/nrdcg/namesilo v0.2.1

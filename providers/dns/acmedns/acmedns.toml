@@ -25,4 +25,4 @@ lego --email you@example.com --dns "acme-dns" -d '*.example.com' -d example.com 
 
 [Links]
   API = "https://github.com/joohoi/acme-dns#api"
-  GoClient = "https://github.com/cpu/goacmedns"
+  GoClient = "https://github.com/nrdcg/goacmedns"

@@ -10,9 +10,11 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/cpu/goacmedns"
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/nrdcg/goacmedns"
 )
+
+var _ goacmedns.Storage = (*HTTPStorage)(nil)
 
 // HTTPStorage is an implementation of [acmedns.Storage] over HTTP.
 type HTTPStorage struct {
@@ -33,7 +35,7 @@ func NewHTTPStorage(baseURL string) (*HTTPStorage, error) {
 	}, nil
 }
 
-func (s *HTTPStorage) Save(ctx context.Context) error {
+func (s *HTTPStorage) Save(_ context.Context) error {
 	return nil
 }
 

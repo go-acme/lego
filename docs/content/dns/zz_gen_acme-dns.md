@@ -59,7 +59,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 ## More information
 
 - [API documentation](https://github.com/joohoi/acme-dns#api)
-- [Go client](https://github.com/cpu/goacmedns)
+- [Go client](https://github.com/nrdcg/goacmedns)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/acmedns/acmedns.toml -->

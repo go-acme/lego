@@ -7,11 +7,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cpu/goacmedns"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/acmedns/internal"
+	"github.com/nrdcg/goacmedns"
+	"github.com/nrdcg/goacmedns/storage"
 )
 
 const (
@@ -38,16 +39,16 @@ var _ challenge.Provider = (*DNSProvider)(nil)
 type acmeDNSClient interface {
 	// UpdateTXTRecord updates the provided account's TXT record
 	// to the given value or returns an error.
-	UpdateTXTRecord(account goacmedns.Account, value string) error
+	UpdateTXTRecord(ctx context.Context, account goacmedns.Account, value string) error
 	// RegisterAccount registers and returns a new account
 	// with the given allowFrom restriction or returns an error.
-	RegisterAccount(allowFrom []string) (goacmedns.Account, error)
+	RegisterAccount(ctx context.Context, allowFrom []string) (goacmedns.Account, error)
 }
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	client  acmeDNSClient
-	storage Storage
+	storage goacmedns.Storage
 }
 
 // NewDNSProvider creates an ACME-DNS provider using file based account storage.
@@ -69,40 +70,26 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("acme-dns: %s or %s environment variables cannot be used at the same time", EnvStoragePath, EnvStorageBaseURL)
 	}
 
-	var storage Storage
+	var st goacmedns.Storage
 	if storagePath != "" {
-		storage = internal.NewFileStorage(values[EnvStoragePath], 0o600)
+		st = storage.NewFile(values[EnvStoragePath], 0o600)
 	} else {
-		storage, err = internal.NewHTTPStorage(storageBaseURL)
+		st, err = internal.NewHTTPStorage(storageBaseURL)
 		if err != nil {
 			return nil, fmt.Errorf("acme-dns: new HTTP storage: %w", err)
 		}
 	}
 
-	client := goacmedns.NewClient(values[EnvAPIBase])
+	client, err := goacmedns.NewClient(values[EnvAPIBase])
+	if err != nil {
+		return nil, fmt.Errorf("acme-dns: %w", err)
+	}
 
-	return NewDNSProviderWithStorage(client, storage)
+	return NewDNSProviderClient(client, st)
 }
 
 // NewDNSProviderClient creates an ACME-DNS DNSProvider with the given acmeDNSClient and [goacmedns.Storage].
-// Deprecated: use [NewDNSProviderWithStorage] instead.
 func NewDNSProviderClient(client acmeDNSClient, storage goacmedns.Storage) (*DNSProvider, error) {
-	if client == nil {
-		return nil, errors.New("ACME-DNS Client must be not nil")
-	}
-
-	if storage == nil {
-		return nil, errors.New("ACME-DNS Storage must be not nil")
-	}
-
-	return &DNSProvider{
-		client:  client,
-		storage: internal.NewStorageWrapper(storage),
-	}, nil
-}
-
-// NewDNSProviderWithStorage creates an ACME-DNS DNSProvider with the given acmeDNSClient and [acmedns.Storage].
-func NewDNSProviderWithStorage(client acmeDNSClient, storage Storage) (*DNSProvider, error) {
 	if client == nil {
 		return nil, errors.New("ACME-DNS Client must be not nil")
 	}
@@ -158,7 +145,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	// Check if credentials were previously saved for this domain.
 	account, err := d.storage.Fetch(ctx, domain)
 	if err != nil {
-		if errors.Is(err, goacmedns.ErrDomainNotFound) {
+		if errors.Is(err, storage.ErrDomainNotFound) {
 			// The account did not exist.
 			// Create a new one and return an error indicating the required one-time manual CNAME setup.
 			return d.register(ctx, domain, info.FQDN)
@@ -169,7 +156,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	}
 
 	// Update the acme-dns TXT record.
-	return d.client.UpdateTXTRecord(account, info.Value)
+	return d.client.UpdateTXTRecord(ctx, account, info.Value)
 }
 
 // CleanUp removes the record matching the specified parameters. It is not
@@ -186,7 +173,7 @@ func (d *DNSProvider) CleanUp(_, _, _ string) error {
 // If any other error occurs it is returned as-is.
 func (d *DNSProvider) register(ctx context.Context, domain, fqdn string) error {
 	// TODO(@cpu): Read CIDR whitelists from the environment
-	newAcct, err := d.client.RegisterAccount(nil)
+	newAcct, err := d.client.RegisterAccount(ctx, nil)
 	if err != nil {
 		return err
 	}

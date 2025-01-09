@@ -1,0 +1,7 @@
+{
+  "fulldomain": "foo.example.com",
+  "subdomain": "foo",
+  "username": "user",
+  "password": "secret",
+  "server_url": "https://example.com"
+}

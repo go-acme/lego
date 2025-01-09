@@ -3,13 +3,16 @@
 package acmedns
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
-	"github.com/cpu/goacmedns"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/acmedns/internal"
+	"github.com/nrdcg/goacmedns"
+	"github.com/nrdcg/goacmedns/storage"
 )
 
 const (
@@ -19,9 +22,14 @@ const (
 	// EnvAPIBase is the environment variable name for the ACME-DNS API address.
 	// (e.g. https://acmedns.your-domain.com).
 	EnvAPIBase = envNamespace + "API_BASE"
+
 	// EnvStoragePath is the environment variable name for the ACME-DNS JSON account data file.
 	// A per-domain account will be registered/persisted to this file and used for TXT updates.
 	EnvStoragePath = envNamespace + "STORAGE_PATH"
+
+	// EnvStorageBaseURL  is the environment variable name for the ACME-DNS JSON account data.
+	// The URL to the storage server.
+	EnvStorageBaseURL = envNamespace + "STORAGE_BASE_URL"
 )
 
 var _ challenge.Provider = (*DNSProvider)(nil)
@@ -31,10 +39,10 @@ var _ challenge.Provider = (*DNSProvider)(nil)
 type acmeDNSClient interface {
 	// UpdateTXTRecord updates the provided account's TXT record
 	// to the given value or returns an error.
-	UpdateTXTRecord(account goacmedns.Account, value string) error
+	UpdateTXTRecord(ctx context.Context, account goacmedns.Account, value string) error
 	// RegisterAccount registers and returns a new account
 	// with the given allowFrom restriction or returns an error.
-	RegisterAccount(allowFrom []string) (goacmedns.Account, error)
+	RegisterAccount(ctx context.Context, allowFrom []string) (goacmedns.Account, error)
 }
 
 // DNSProvider implements the challenge.Provider interface.
@@ -46,17 +54,41 @@ type DNSProvider struct {
 // NewDNSProvider creates an ACME-DNS provider using file based account storage.
 // Its configuration is loaded from the environment by reading EnvAPIBase and EnvStoragePath.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIBase, EnvStoragePath)
+	values, err := env.Get(EnvAPIBase)
 	if err != nil {
 		return nil, fmt.Errorf("acme-dns: %w", err)
 	}
 
-	client := goacmedns.NewClient(values[EnvAPIBase])
-	storage := goacmedns.NewFileStorage(values[EnvStoragePath], 0o600)
-	return NewDNSProviderClient(client, storage)
+	storagePath := env.GetOrFile(EnvStoragePath)
+	storageBaseURL := env.GetOrFile(EnvStorageBaseURL)
+
+	if storagePath == "" && storageBaseURL == "" {
+		return nil, fmt.Errorf("acme-dns: %s or %s environment variables not set", EnvStoragePath, EnvStorageBaseURL)
+	}
+
+	if storagePath != "" && storageBaseURL != "" {
+		return nil, fmt.Errorf("acme-dns: %s or %s environment variables cannot be used at the same time", EnvStoragePath, EnvStorageBaseURL)
+	}
+
+	var st goacmedns.Storage
+	if storagePath != "" {
+		st = storage.NewFile(values[EnvStoragePath], 0o600)
+	} else {
+		st, err = internal.NewHTTPStorage(storageBaseURL)
+		if err != nil {
+			return nil, fmt.Errorf("acme-dns: new HTTP storage: %w", err)
+		}
+	}
+
+	client, err := goacmedns.NewClient(values[EnvAPIBase])
+	if err != nil {
+		return nil, fmt.Errorf("acme-dns: %w", err)
+	}
+
+	return NewDNSProviderClient(client, st)
 }
 
-// NewDNSProviderClient creates an ACME-DNS DNSProvider with the given acmeDNSClient and goacmedns.Storage.
+// NewDNSProviderClient creates an ACME-DNS DNSProvider with the given acmeDNSClient and [goacmedns.Storage].
 func NewDNSProviderClient(client acmeDNSClient, storage goacmedns.Storage) (*DNSProvider, error) {
 	if client == nil {
 		return nil, errors.New("ACME-DNS Client must be not nil")
@@ -105,16 +137,18 @@ func (e ErrCNAMERequired) Error() string {
 // one will be created and registered with the ACME DNS server and an ErrCNAMERequired error is returned.
 // This will halt issuance and indicate to the user that a one-time manual setup is required for the domain.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
+	ctx := context.Background()
+
 	// Compute the challenge response FQDN and TXT value for the domain based on the keyAuth.
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// Check if credentials were previously saved for this domain.
-	account, err := d.storage.Fetch(domain)
+	account, err := d.storage.Fetch(ctx, domain)
 	if err != nil {
-		if errors.Is(err, goacmedns.ErrDomainNotFound) {
+		if errors.Is(err, storage.ErrDomainNotFound) {
 			// The account did not exist.
 			// Create a new one and return an error indicating the required one-time manual CNAME setup.
-			return d.register(domain, info.FQDN)
+			return d.register(ctx, domain, info.FQDN)
 		}
 
 		// Errors other than goacmedns.ErrDomainNotFound are unexpected.
@@ -122,7 +156,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	}
 
 	// Update the acme-dns TXT record.
-	return d.client.UpdateTXTRecord(account, info.Value)
+	return d.client.UpdateTXTRecord(ctx, account, info.Value)
 }
 
 // CleanUp removes the record matching the specified parameters. It is not
@@ -137,19 +171,19 @@ func (d *DNSProvider) CleanUp(_, _, _ string) error {
 // If account creation works as expected a ErrCNAMERequired error is returned describing
 // the one-time manual CNAME setup required to complete setup of the ACME-DNS hook for the domain.
 // If any other error occurs it is returned as-is.
-func (d *DNSProvider) register(domain, fqdn string) error {
+func (d *DNSProvider) register(ctx context.Context, domain, fqdn string) error {
 	// TODO(@cpu): Read CIDR whitelists from the environment
-	newAcct, err := d.client.RegisterAccount(nil)
+	newAcct, err := d.client.RegisterAccount(ctx, nil)
 	if err != nil {
 		return err
 	}
 
 	// Store the new account in the storage and call save to persist the data.
-	err = d.storage.Put(domain, newAcct)
+	err = d.storage.Put(ctx, domain, newAcct)
 	if err != nil {
 		return err
 	}
-	err = d.storage.Save()
+	err = d.storage.Save(ctx)
 	if err != nil {
 		return err
 	}

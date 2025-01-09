@@ -165,9 +165,6 @@ issues:
       text: 'Error return value of `fmt.Fprintln` is not checked'
       linters:
         - errcheck
-    - path: providers/dns/dns_providers.go
-      linters:
-        - gocyclo
     - path: certcrypto/crypto.go
       text: '(tlsFeatureExtensionOID|ocspMustStapleFeature) is a global variable'
       linters:
@@ -220,7 +217,7 @@ issues:
       text: 'testCases is a global variable'
       linters:
         - gochecknoglobals
-    - path: providers/dns/acmedns/acmedns_test.go
+    - path: providers/dns/acmedns/mock_test.go
       text: 'egTestAccount is a global variable'
       linters:
         - gochecknoglobals
@@ -228,10 +225,6 @@ issues:
       text: 'memcachedHosts is a global variable'
       linters:
         - gochecknoglobals
-    - path: cmd/zz_gen_cmd_dnshelp.go
-      linters:
-        - gocyclo
-        - funlen
     - path: providers/dns/checkdomain/internal/types.go
       text: '`payed` is a misspelling of `paid`'
       linters:
@@ -259,10 +252,6 @@ issues:
       text: 'cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high'
       linters:
         - gocyclo
-    - path: providers/dns/servercow/internal/types.go
-      text: 'the methods of "Value" use pointer receiver and non-pointer receiver.'
-      linters:
-        - recvcheck
 
     # Those elements have been replaced by non-exposed structures.
     - path: providers/dns/linode/linode_test.go

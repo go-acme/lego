@@ -35,7 +35,7 @@ Response status code 200.
 Response body (domain/account mapping):
 
 ```json
-[
+{
   "foo.example.com": {
     "fulldomain": "foo.example.com",
     "subdomain": "foo",
@@ -50,7 +50,7 @@ Response body (domain/account mapping):
     "password": "secret",
     "server_url": "https://example.com"
   }
-]
+}
 ```
 
 ## Put

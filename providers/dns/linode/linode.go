@@ -52,7 +52,7 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
-		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 30),
+		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 	}
 }
 

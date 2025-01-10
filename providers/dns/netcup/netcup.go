@@ -24,7 +24,9 @@ const (
 	EnvAPIKey         = envNamespace + "API_KEY"
 	EnvAPIPassword    = envNamespace + "API_PASSWORD"
 
-	EnvTTL                = envNamespace + "TTL"
+	// Deprecated: the TTL is not configurable on record.
+	EnvTTL = envNamespace + "TTL"
+
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
@@ -37,16 +39,17 @@ type Config struct {
 	Key                string
 	Password           string
 	Customer           string
-	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HTTPClient         *http.Client
+
+	// Deprecated: the TTL is not configurable on record.
+	TTL int
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 15*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 30*time.Second),
 		HTTPClient: &http.Client{
@@ -120,7 +123,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Hostname:    hostname,
 		RecordType:  "TXT",
 		Destination: info.Value,
-		TTL:         d.config.TTL,
 	}
 
 	zone = dns01.UnFqdn(zone)

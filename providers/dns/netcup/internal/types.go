@@ -72,7 +72,6 @@ type DNSRecord struct {
 	Destination  string `json:"destination"`
 	DeleteRecord bool   `json:"deleterecord,omitempty"`
 	State        string `json:"state,omitempty"`
-	TTL          int    `json:"ttl,omitempty"`
 }
 
 // ResponseMsg as specified in netcup WSDL.

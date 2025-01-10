@@ -202,7 +202,6 @@ func TestClient_GetDNSRecords(t *testing.T) {
 		Destination:  "bGVnbzE=",
 		DeleteRecord: false,
 		State:        "yes",
-		TTL:          300,
 	}, {
 		ID:           2,
 		Hostname:     "example2.com",
@@ -211,7 +210,6 @@ func TestClient_GetDNSRecords(t *testing.T) {
 		Destination:  "bGVnbw==",
 		DeleteRecord: false,
 		State:        "yes",
-		TTL:          300,
 	}}
 
 	records, err := client.GetDNSRecords(context.Background(), "example.com")
@@ -363,7 +361,6 @@ func TestClient_UpdateDNSRecord_Live(t *testing.T) {
 		RecordType:   "TXT",
 		Destination:  "asdf5678",
 		DeleteRecord: false,
-		TTL:          120,
 	}
 
 	// test

@@ -63,7 +63,7 @@ func NewDefaultConfig() *Config {
 		Region: env.GetOrDefaultString(EnvRegion, volc.DefaultRegion),
 
 		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 240*time.Second),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 4*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
 		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, volc.Timeout*time.Second),
 	}

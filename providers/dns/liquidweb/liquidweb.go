@@ -55,7 +55,7 @@ func NewDefaultConfig() *Config {
 		BaseURL:            defaultBaseURL,
 		TTL:                env.GetOneWithFallback(EnvTTL, 300, strconv.Atoi, altEnvName(EnvTTL)),
 		PropagationTimeout: env.GetOneWithFallback(EnvPropagationTimeout, 2*time.Minute, env.ParseSecond, altEnvName(EnvPropagationTimeout)),
-		PollingInterval:    env.GetOneWithFallback(EnvPollingInterval, 2*time.Second, env.ParseSecond, altEnvName(EnvPollingInterval)),
+		PollingInterval:    env.GetOneWithFallback(EnvPollingInterval, dns01.DefaultPollingInterval, env.ParseSecond, altEnvName(EnvPollingInterval)),
 		HTTPTimeout:        env.GetOneWithFallback(EnvHTTPTimeout, 1*time.Minute, env.ParseSecond, altEnvName(EnvHTTPTimeout)),
 	}
 }

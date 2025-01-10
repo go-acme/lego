@@ -19,7 +19,6 @@ lego --email you@example.com --dns netcup -d '*.example.com' -d example.com run
   [Configuration.Additional]
     NETCUP_POLLING_INTERVAL = "Time between DNS propagation check"
     NETCUP_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
-    NETCUP_TTL = "The TTL of the TXT record used for the DNS challenge"
     NETCUP_HTTP_TIMEOUT = "API request timeout"
 
 [Links]

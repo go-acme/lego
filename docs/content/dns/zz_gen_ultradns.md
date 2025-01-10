@@ -50,9 +50,9 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `ULTRADNS_ENDPOINT` | API endpoint URL, defaults to https://api.ultradns.com/ |
-| `ULTRADNS_POLLING_INTERVAL` | Time between DNS propagation check |
-| `ULTRADNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `ULTRADNS_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `ULTRADNS_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 4) |
+| `ULTRADNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |
+| `ULTRADNS_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

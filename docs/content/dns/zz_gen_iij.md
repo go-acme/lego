@@ -51,9 +51,9 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `IIJ_POLLING_INTERVAL` | Time between DNS propagation check |
-| `IIJ_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `IIJ_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `IIJ_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 4) |
+| `IIJ_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 240) |
+| `IIJ_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 300) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

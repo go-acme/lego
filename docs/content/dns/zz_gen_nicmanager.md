@@ -70,10 +70,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 |--------------------------------|-------------|
 | `NICMANAGER_API_MODE` | mode: 'anycast' or 'zone' (default: 'anycast') |
 | `NICMANAGER_API_OTP` | TOTP Secret (optional) |
-| `NICMANAGER_HTTP_TIMEOUT` | API request timeout |
-| `NICMANAGER_POLLING_INTERVAL` | Time between DNS propagation check |
-| `NICMANAGER_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `NICMANAGER_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `NICMANAGER_HTTP_TIMEOUT` | API request timeout in seconds (Default: 10) |
+| `NICMANAGER_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `NICMANAGER_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 300) |
+| `NICMANAGER_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 900) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

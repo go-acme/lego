@@ -54,11 +54,11 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `NAMECHEAP_HTTP_TIMEOUT` | API request timeout |
-| `NAMECHEAP_POLLING_INTERVAL` | Time between DNS propagation check |
-| `NAMECHEAP_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `NAMECHEAP_HTTP_TIMEOUT` | API request timeout in seconds (Default: 60) |
+| `NAMECHEAP_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 15) |
+| `NAMECHEAP_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 3600) |
 | `NAMECHEAP_SANDBOX` | Activate the sandbox (boolean) |
-| `NAMECHEAP_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `NAMECHEAP_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

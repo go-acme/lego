@@ -50,11 +50,11 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `PDNS_API_VERSION` | Skip API version autodetection and use the provided version number. |
-| `PDNS_HTTP_TIMEOUT` | API request timeout |
-| `PDNS_POLLING_INTERVAL` | Time between DNS propagation check |
-| `PDNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `PDNS_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `PDNS_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `PDNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |
 | `PDNS_SERVER_NAME` | Name of the server in the URL, 'localhost' by default |
-| `PDNS_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `PDNS_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

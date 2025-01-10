@@ -47,10 +47,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `GANDI_HTTP_TIMEOUT` | API request timeout |
-| `GANDI_POLLING_INTERVAL` | Time between DNS propagation check |
-| `GANDI_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `GANDI_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `GANDI_HTTP_TIMEOUT` | API request timeout in seconds (Default: 60) |
+| `GANDI_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 60) |
+| `GANDI_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 2400) |
+| `GANDI_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 300) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

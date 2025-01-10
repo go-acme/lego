@@ -49,12 +49,12 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `TENCENTCLOUD_HTTP_TIMEOUT` | API request timeout |
-| `TENCENTCLOUD_POLLING_INTERVAL` | Time between DNS propagation check |
-| `TENCENTCLOUD_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `TENCENTCLOUD_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `TENCENTCLOUD_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `TENCENTCLOUD_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
 | `TENCENTCLOUD_REGION` | Region |
 | `TENCENTCLOUD_SESSION_TOKEN` | Access Key token |
-| `TENCENTCLOUD_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `TENCENTCLOUD_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 600) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

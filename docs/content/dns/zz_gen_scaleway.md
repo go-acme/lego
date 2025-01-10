@@ -49,9 +49,9 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `SCW_ACCESS_KEY` | Access key |
-| `SCW_POLLING_INTERVAL` | Time between DNS propagation check |
-| `SCW_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `SCW_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `SCW_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 10) |
+| `SCW_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |
+| `SCW_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 60) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

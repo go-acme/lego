@@ -62,9 +62,9 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `YANDEX_CLOUD_POLLING_INTERVAL` | Time between DNS propagation check |
-| `YANDEX_CLOUD_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `YANDEX_CLOUD_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `YANDEX_CLOUD_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `YANDEX_CLOUD_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
+| `YANDEX_CLOUD_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 60) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

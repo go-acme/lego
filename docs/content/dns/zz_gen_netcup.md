@@ -51,9 +51,9 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `NETCUP_HTTP_TIMEOUT` | API request timeout |
-| `NETCUP_POLLING_INTERVAL` | Time between DNS propagation check |
-| `NETCUP_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `NETCUP_HTTP_TIMEOUT` | API request timeout in seconds (Default: 10) |
+| `NETCUP_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 30) |
+| `NETCUP_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 900) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

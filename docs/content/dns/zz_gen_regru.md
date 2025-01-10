@@ -49,12 +49,12 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `REGRU_HTTP_TIMEOUT` | API request timeout |
-| `REGRU_POLLING_INTERVAL` | Time between DNS propagation check |
-| `REGRU_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `REGRU_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `REGRU_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `REGRU_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
 | `REGRU_TLS_CERT` | authentication certificate |
 | `REGRU_TLS_KEY` | authentication private key |
-| `REGRU_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `REGRU_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 300) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

@@ -50,10 +50,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `HURRICANE_HTTP_TIMEOUT` | API request timeout |
-| `HURRICANE_POLLING_INTERVAL` | Time between DNS propagation checks |
-| `HURRICANE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation; defaults to 300s (5 minutes) |
-| `HURRICANE_SEQUENCE_INTERVAL` | Time between sequential requests |
+| `HURRICANE_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `HURRICANE_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `HURRICANE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation (Default: 300) |
+| `HURRICANE_SEQUENCE_INTERVAL` | Time between sequential requests in seconds (Default: 60) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

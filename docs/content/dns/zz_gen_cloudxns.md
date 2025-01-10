@@ -49,10 +49,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `CLOUDXNS_HTTP_TIMEOUT` | API request timeout |
-| `CLOUDXNS_POLLING_INTERVAL` | Time between DNS propagation check |
-| `CLOUDXNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `CLOUDXNS_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `CLOUDXNS_HTTP_TIMEOUT` | API request timeout in seconds (Default: ) |
+| `CLOUDXNS_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: ) |
+| `CLOUDXNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: ) |
+| `CLOUDXNS_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: ) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

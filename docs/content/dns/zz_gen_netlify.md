@@ -47,10 +47,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `NETLIFY_HTTP_TIMEOUT` | API request timeout |
-| `NETLIFY_POLLING_INTERVAL` | Time between DNS propagation check |
-| `NETLIFY_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `NETLIFY_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `NETLIFY_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `NETLIFY_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `NETLIFY_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
+| `NETLIFY_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 300) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

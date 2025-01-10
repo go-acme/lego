@@ -55,11 +55,11 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `INWX_POLLING_INTERVAL` | Time between DNS propagation check |
-| `INWX_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation (default 360s) |
+| `INWX_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `INWX_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 360) |
 | `INWX_SANDBOX` | Activate the sandbox (boolean) |
 | `INWX_SHARED_SECRET` | shared secret related to 2FA |
-| `INWX_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `INWX_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 300) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

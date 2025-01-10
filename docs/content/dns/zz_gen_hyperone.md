@@ -39,11 +39,12 @@ lego --email you@example.com --dns hyperone -d '*.example.com' -d example.com ru
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `HYPERONE_API_URL` | Allows to pass custom API Endpoint to be used in the challenge (default https://api.hyperone.com/v2) |
+| `HYPERONE_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
 | `HYPERONE_LOCATION_ID` | Specifies location (region) to be used in API calls. (default pl-waw-1) |
 | `HYPERONE_PASSPORT_LOCATION` | Allows to pass custom passport file location (default ~/.h1/passport.json) |
-| `HYPERONE_POLLING_INTERVAL` | Time between DNS propagation check |
-| `HYPERONE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `HYPERONE_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `HYPERONE_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 60) |
+| `HYPERONE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 2) |
+| `HYPERONE_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

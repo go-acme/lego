@@ -48,10 +48,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `GANDIV5_HTTP_TIMEOUT` | API request timeout |
-| `GANDIV5_POLLING_INTERVAL` | Time between DNS propagation check |
-| `GANDIV5_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `GANDIV5_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `GANDIV5_HTTP_TIMEOUT` | API request timeout in seconds (Default: 10) |
+| `GANDIV5_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 20) |
+| `GANDIV5_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 1200) |
+| `GANDIV5_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 300) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

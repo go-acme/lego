@@ -47,10 +47,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `RCODEZERO_HTTP_TIMEOUT` | API request timeout |
-| `RCODEZERO_POLLING_INTERVAL` | Time between DNS propagation check |
-| `RCODEZERO_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `RCODEZERO_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `RCODEZERO_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `RCODEZERO_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 10) |
+| `RCODEZERO_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 240) |
+| `RCODEZERO_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

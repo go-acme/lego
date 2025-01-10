@@ -43,11 +43,11 @@ lego --email you@example.com --dns exec -d '*.example.com' -d example.com run
 
 ## Additional Configuration
 
-| Environment Variable Name  | Description                               |
-|----------------------------|-------------------------------------------|
-| `EXEC_POLLING_INTERVAL`    | Time between DNS propagation check.       |
-| `EXEC_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation. |
-| `EXEC_SEQUENCE_INTERVAL`   | Time between sequential requests.         |
+| Environment Variable Name  | Description                                                        |
+|----------------------------|--------------------------------------------------------------------|
+| `EXEC_POLLING_INTERVAL`    | Time between DNS propagation check in seconds (Default: 3).        |
+| `EXEC_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60). |
+| `EXEC_SEQUENCE_INTERVAL`   | Time between sequential requests in seconds (Default: 60).         |
 
 
 ## Description

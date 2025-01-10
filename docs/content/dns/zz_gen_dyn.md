@@ -51,10 +51,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `DYN_HTTP_TIMEOUT` | API request timeout |
-| `DYN_POLLING_INTERVAL` | Time between DNS propagation check |
-| `DYN_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `DYN_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `DYN_HTTP_TIMEOUT` | API request timeout in seconds (Default: 10) |
+| `DYN_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `DYN_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
+| `DYN_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

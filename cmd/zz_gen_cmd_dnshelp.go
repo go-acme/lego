@@ -2088,7 +2088,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "NETCUP_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "NETCUP_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "NETCUP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "NETCUP_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/netcup`)

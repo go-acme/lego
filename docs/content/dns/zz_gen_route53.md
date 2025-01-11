@@ -60,6 +60,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 |--------------------------------|-------------|
 | `AWS_MAX_RETRIES` | The number of maximum returns the service will use to make an individual API request |
 | `AWS_POLLING_INTERVAL` | Time between DNS propagation check |
+| `AWS_PRIVATE_ZONE` | Set to true to use private zones only (default: use public zones only) |
 | `AWS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `AWS_SHARED_CREDENTIALS_FILE` | Managed by the AWS client. Shared credentials file. |
 | `AWS_TTL` | The TTL of the TXT record used for the DNS challenge |

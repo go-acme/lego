@@ -47,10 +47,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `NJALLA_HTTP_TIMEOUT` | API request timeout |
-| `NJALLA_POLLING_INTERVAL` | Time between DNS propagation check |
-| `NJALLA_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `NJALLA_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `NJALLA_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `NJALLA_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `NJALLA_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
+| `NJALLA_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 300) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

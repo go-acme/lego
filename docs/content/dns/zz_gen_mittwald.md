@@ -47,11 +47,11 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `MITTWALD_HTTP_TIMEOUT` | API request timeout |
-| `MITTWALD_POLLING_INTERVAL` | Time between DNS propagation check |
-| `MITTWALD_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `MITTWALD_SEQUENCE_INTERVAL` | Time between sequential requests |
-| `MITTWALD_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `MITTWALD_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `MITTWALD_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 10) |
+| `MITTWALD_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |
+| `MITTWALD_SEQUENCE_INTERVAL` | Time between sequential requests in seconds (Default: 120) |
+| `MITTWALD_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 300) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

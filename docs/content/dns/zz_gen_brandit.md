@@ -52,10 +52,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `BRANDIT_HTTP_TIMEOUT` | API request timeout |
-| `BRANDIT_POLLING_INTERVAL` | Time between DNS propagation check |
-| `BRANDIT_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `BRANDIT_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `BRANDIT_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `BRANDIT_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `BRANDIT_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 600) |
+| `BRANDIT_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 600) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

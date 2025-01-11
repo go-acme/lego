@@ -51,10 +51,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `DIRECTADMIN_HTTP_TIMEOUT` | API request timeout |
-| `DIRECTADMIN_POLLING_INTERVAL` | Time between DNS propagation check |
-| `DIRECTADMIN_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `DIRECTADMIN_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `DIRECTADMIN_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `DIRECTADMIN_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 5) |
+| `DIRECTADMIN_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
+| `DIRECTADMIN_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 30) |
 | `DIRECTADMIN_ZONE_NAME` | Zone name used to add the TXT record |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

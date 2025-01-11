@@ -51,10 +51,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `AZURE_METADATA_ENDPOINT` | Metadata Service endpoint URL |
-| `AZURE_POLLING_INTERVAL` | Time between DNS propagation check |
+| `AZURE_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
 | `AZURE_PRIVATE_ZONE` | Set to true to use Azure Private DNS Zones and not public |
-| `AZURE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `AZURE_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `AZURE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |
+| `AZURE_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 60) |
 | `AZURE_ZONE_NAME` | Zone name to use inside Azure DNS service to add the TXT record in |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

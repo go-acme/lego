@@ -47,10 +47,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `LINODE_HTTP_TIMEOUT` | API request timeout |
-| `LINODE_POLLING_INTERVAL` | Time between DNS propagation check |
-| `LINODE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `LINODE_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `LINODE_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `LINODE_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 15) |
+| `LINODE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |
+| `LINODE_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 300) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

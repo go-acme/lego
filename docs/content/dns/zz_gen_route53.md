@@ -59,10 +59,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `AWS_MAX_RETRIES` | The number of maximum returns the service will use to make an individual API request |
-| `AWS_POLLING_INTERVAL` | Time between DNS propagation check |
-| `AWS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `AWS_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 4) |
+| `AWS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |
 | `AWS_SHARED_CREDENTIALS_FILE` | Managed by the AWS client. Shared credentials file. |
-| `AWS_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `AWS_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 10) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

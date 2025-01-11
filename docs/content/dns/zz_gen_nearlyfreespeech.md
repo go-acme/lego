@@ -49,11 +49,11 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `NEARLYFREESPEECH_HTTP_TIMEOUT` | API request timeout |
-| `NEARLYFREESPEECH_POLLING_INTERVAL` | Time between DNS propagation check |
-| `NEARLYFREESPEECH_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `NEARLYFREESPEECH_SEQUENCE_INTERVAL` | Time between sequential requests |
-| `NEARLYFREESPEECH_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `NEARLYFREESPEECH_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `NEARLYFREESPEECH_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `NEARLYFREESPEECH_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
+| `NEARLYFREESPEECH_SEQUENCE_INTERVAL` | Time between sequential requests in seconds (Default: 60) |
+| `NEARLYFREESPEECH_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 3600) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

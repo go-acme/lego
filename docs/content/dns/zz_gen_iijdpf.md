@@ -50,9 +50,9 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `IIJ_DPF_API_ENDPOINT` | API endpoint URL, defaults to https://api.dns-platform.jp/dpf/v1 |
-| `IIJ_DPF_POLLING_INTERVAL` | Time between DNS propagation check, defaults to 5 second |
-| `IIJ_DPF_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation, defaults to 660 second |
-| `IIJ_DPF_TTL` | The TTL of the TXT record used for the DNS challenge, default to 300 |
+| `IIJ_DPF_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 5) |
+| `IIJ_DPF_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 660) |
+| `IIJ_DPF_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 300) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

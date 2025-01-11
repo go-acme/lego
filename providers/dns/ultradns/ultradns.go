@@ -53,7 +53,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		Endpoint:           env.GetOrDefaultString(EnvEndpoint, defaultEndpoint),
-		TTL:                env.GetOrDefaultInt(EnvTTL, 120),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
 	}

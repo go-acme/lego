@@ -52,9 +52,9 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `GCE_ALLOW_PRIVATE_ZONE` | Allows requested domain to be in private DNS zone, works only with a private ACME server (by default: false) |
-| `GCE_POLLING_INTERVAL` | Time between DNS propagation check |
-| `GCE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `GCE_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `GCE_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 5) |
+| `GCE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 180) |
+| `GCE_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
 | `GCE_ZONE_ID` | Allows to skip the automatic detection of the zone |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

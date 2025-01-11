@@ -72,10 +72,10 @@ func NewDefaultConfig() *Config {
 		BaseURL:            baseURL,
 		Debug:              env.GetOrDefaultBool(EnvDebug, false),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Minute),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, time.Hour),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 60*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, time.Minute),
 		},
 	}
 }

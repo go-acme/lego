@@ -48,10 +48,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `SELECTEL_BASE_URL` | API endpoint URL |
-| `SELECTEL_HTTP_TIMEOUT` | API request timeout |
-| `SELECTEL_POLLING_INTERVAL` | Time between DNS propagation check |
-| `SELECTEL_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `SELECTEL_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `SELECTEL_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `SELECTEL_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `SELECTEL_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |
+| `SELECTEL_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 60) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

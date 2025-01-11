@@ -49,10 +49,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `SHELLRENT_HTTP_TIMEOUT` | API request timeout |
-| `SHELLRENT_POLLING_INTERVAL` | Time between DNS propagation check |
-| `SHELLRENT_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `SHELLRENT_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `SHELLRENT_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `SHELLRENT_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 10) |
+| `SHELLRENT_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 300) |
+| `SHELLRENT_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 3600) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

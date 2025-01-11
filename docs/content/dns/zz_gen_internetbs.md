@@ -49,10 +49,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `INTERNET_BS_HTTP_TIMEOUT` | API request timeout |
-| `INTERNET_BS_POLLING_INTERVAL` | Time between DNS propagation check |
-| `INTERNET_BS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `INTERNET_BS_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `INTERNET_BS_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `INTERNET_BS_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `INTERNET_BS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
+| `INTERNET_BS_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 3600) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

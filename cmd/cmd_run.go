@@ -130,7 +130,7 @@ func run(ctx *cli.Context) error {
 	certsStorage.SaveResource(cert)
 
 	meta := map[string]string{
-		renewEnvAccountEmail: account.Email,
+		hookEnvAccountEmail: account.Email,
 	}
 
 	addPathToMetadata(meta, cert.Domain, cert, certsStorage)

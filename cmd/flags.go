@@ -71,7 +71,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		&cli.StringFlag{
 			Name:    flgEmail,
 			Aliases: []string{"m"},
-			EnvVars: []string{"LEGO_ACCOUNT_EMAIL"},
+			EnvVars: []string{"LEGO_EMAIL"},
 			Usage:   "Email used for registration and recovery contact.",
 		},
 		&cli.StringFlag{

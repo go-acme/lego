@@ -30,16 +30,6 @@ const (
 	flgForceCertDomains       = "force-cert-domains"
 )
 
-const (
-	renewEnvAccountEmail      = "LEGO_ACCOUNT_EMAIL"
-	renewEnvCertDomain        = "LEGO_CERT_DOMAIN"
-	renewEnvCertPath          = "LEGO_CERT_PATH"
-	renewEnvCertKeyPath       = "LEGO_CERT_KEY_PATH"
-	renewEnvIssuerCertKeyPath = "LEGO_ISSUER_CERT_PATH"
-	renewEnvCertPEMPath       = "LEGO_CERT_PEM_PATH"
-	renewEnvCertPFXPath       = "LEGO_CERT_PFX_PATH"
-)
-
 func createRenew() *cli.Command {
 	return &cli.Command{
 		Name:   "renew",
@@ -139,7 +129,7 @@ func renew(ctx *cli.Context) error {
 
 	bundle := !ctx.Bool(flgNoBundle)
 
-	meta := map[string]string{renewEnvAccountEmail: account.Email}
+	meta := map[string]string{hookEnvAccountEmail: account.Email}
 
 	// CSR
 	if ctx.IsSet(flgCSR) {
@@ -393,24 +383,6 @@ func getARIRenewalTime(ctx *cli.Context, cert *x509.Certificate, domain string, 
 	}
 
 	return renewalTime
-}
-
-func addPathToMetadata(meta map[string]string, domain string, certRes *certificate.Resource, certsStorage *CertificatesStorage) {
-	meta[renewEnvCertDomain] = domain
-	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, certExt)
-	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, keyExt)
-
-	if certRes.IssuerCertificate != nil {
-		meta[renewEnvIssuerCertKeyPath] = certsStorage.GetFileName(domain, issuerExt)
-	}
-
-	if certsStorage.pem {
-		meta[renewEnvCertPEMPath] = certsStorage.GetFileName(domain, pemExt)
-	}
-
-	if certsStorage.pfx {
-		meta[renewEnvCertPFXPath] = certsStorage.GetFileName(domain, pfxExt)
-	}
 }
 
 func merge(prevDomains, nextDomains []string) []string {

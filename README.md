@@ -190,6 +190,7 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
   <td><a href="https://go-acme.github.io/lego/dns/regfish/">Regfish</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/rfc2136/">RFC2136</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/rimuhosting/">RimuHosting</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/nicru/">RU CENTER</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/sakuracloud/">Sakura Cloud</a></td>
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/scaleway/">Scaleway</a></td>

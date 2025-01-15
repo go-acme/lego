@@ -35,6 +35,7 @@ body:
     attributes:
       label: How do you use lego?
       options:
+        - I don't know
         - Library
         - Binary
         - Docker image

@@ -96,6 +96,7 @@ func allDNSCodes() string {
 		"metaname",
 		"mijnhost",
 		"mittwald",
+		"myaddr",
 		"mydnsjp",
 		"mythicbeasts",
 		"namecheap",
@@ -1938,6 +1939,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/mittwald`)
+
+	case "myaddr":
+		// generated from: providers/dns/myaddr/myaddr.toml
+		ew.writeln(`Configuration for myaddr.{tools,dev,io}.`)
+		ew.writeln(`Code:	'myaddr'`)
+		ew.writeln(`Since:	'v4.22.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "MYADDR_PRIVATE_KEYS_MAPPING":	Mapping between subdomains and private keys. The format is: '<subdomain1>:<private_key1>,<subdomain2>:<private_key2>,<subdomain3>:<private_key3>'`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "MYADDR_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "MYADDR_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "MYADDR_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "MYADDR_SEQUENCE_INTERVAL":	Time between sequential requests in seconds (Default: 2)`)
+		ew.writeln(`	- "MYADDR_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/myaddr`)
 
 	case "mydnsjp":
 		// generated from: providers/dns/mydnsjp/mydnsjp.toml

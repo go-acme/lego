@@ -13,6 +13,12 @@ import (
 type OrderOptions struct {
 	NotBefore time.Time
 	NotAfter  time.Time
+
+	// A string uniquely identifying the profile
+	// which will be used to affect issuance of the certificate requested by this Order.
+	// - https://www.ietf.org/id/draft-aaron-acme-profiles-00.html#section-4
+	Profile string
+
 	// A string uniquely identifying a previously-issued certificate which this
 	// order is intended to replace.
 	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
@@ -52,6 +58,10 @@ func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acm
 
 		if o.core.GetDirectory().RenewalInfo != "" {
 			orderReq.Replaces = opts.ReplacesCertID
+		}
+
+		if opts.Profile != "" {
+			orderReq.Profile = opts.Profile
 		}
 	}
 

@@ -69,11 +69,18 @@ type ObtainRequest struct {
 	PrivateKey crypto.PrivateKey
 	MustStaple bool
 
-	NotBefore                      time.Time
-	NotAfter                       time.Time
-	Bundle                         bool
-	PreferredChain                 string
+	NotBefore      time.Time
+	NotAfter       time.Time
+	Bundle         bool
+	PreferredChain string
+
+	// A string uniquely identifying the profile
+	// which will be used to affect issuance of the certificate requested by this Order.
+	// - https://www.ietf.org/id/draft-aaron-acme-profiles-00.html#section-4
+	Profile string
+
 	AlwaysDeactivateAuthorizations bool
+
 	// A string uniquely identifying a previously-issued certificate which this
 	// order is intended to replace.
 	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
@@ -89,11 +96,18 @@ type ObtainRequest struct {
 type ObtainForCSRRequest struct {
 	CSR *x509.CertificateRequest
 
-	NotBefore                      time.Time
-	NotAfter                       time.Time
-	Bundle                         bool
-	PreferredChain                 string
+	NotBefore      time.Time
+	NotAfter       time.Time
+	Bundle         bool
+	PreferredChain string
+
+	// A string uniquely identifying the profile
+	// which will be used to affect issuance of the certificate requested by this Order.
+	// - https://www.ietf.org/id/draft-aaron-acme-profiles-00.html#section-4
+	Profile string
+
 	AlwaysDeactivateAuthorizations bool
+
 	// A string uniquely identifying a previously-issued certificate which this
 	// order is intended to replace.
 	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
@@ -154,6 +168,7 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 	orderOpts := &api.OrderOptions{
 		NotBefore:      request.NotBefore,
 		NotAfter:       request.NotAfter,
+		Profile:        request.Profile,
 		ReplacesCertID: request.ReplacesCertID,
 	}
 
@@ -220,6 +235,7 @@ func (c *Certifier) ObtainForCSR(request ObtainForCSRRequest) (*Resource, error)
 	orderOpts := &api.OrderOptions{
 		NotBefore:      request.NotBefore,
 		NotAfter:       request.NotAfter,
+		Profile:        request.Profile,
 		ReplacesCertID: request.ReplacesCertID,
 	}
 
@@ -437,6 +453,7 @@ type RenewOptions struct {
 	// If true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
 	Bundle                         bool
 	PreferredChain                 string
+	Profile                        string
 	AlwaysDeactivateAuthorizations bool
 	// Not supported for CSR request.
 	MustStaple bool
@@ -505,6 +522,7 @@ func (c *Certifier) RenewWithOptions(certRes Resource, options *RenewOptions) (*
 			request.NotAfter = options.NotAfter
 			request.Bundle = options.Bundle
 			request.PreferredChain = options.PreferredChain
+			request.Profile = options.Profile
 			request.AlwaysDeactivateAuthorizations = options.AlwaysDeactivateAuthorizations
 		}
 
@@ -530,6 +548,7 @@ func (c *Certifier) RenewWithOptions(certRes Resource, options *RenewOptions) (*
 		request.NotAfter = options.NotAfter
 		request.Bundle = options.Bundle
 		request.PreferredChain = options.PreferredChain
+		request.Profile = options.Profile
 		request.AlwaysDeactivateAuthorizations = options.AlwaysDeactivateAuthorizations
 	}
 

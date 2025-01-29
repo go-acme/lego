@@ -21,6 +21,7 @@ const (
 	flgNotBefore                      = "not-before"
 	flgNotAfter                       = "not-after"
 	flgPreferredChain                 = "preferred-chain"
+	flgProfile                        = "profile"
 	flgAlwaysDeactivateAuthorizations = "always-deactivate-authorizations"
 	flgRunHook                        = "run-hook"
 	flgRunHookTimeout                 = "run-hook-timeout"
@@ -67,6 +68,10 @@ func createRun() *cli.Command {
 				Name: flgPreferredChain,
 				Usage: "If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name." +
 					" If no match, the default offered chain will be used.",
+			},
+			&cli.StringFlag{
+				Name:  flgProfile,
+				Usage: "If the CA offers multiple certificate profiles (draft-aaron-acme-profiles), choose this one.",
 			},
 			&cli.StringFlag{
 				Name:  flgAlwaysDeactivateAuthorizations,
@@ -201,6 +206,7 @@ func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Reso
 			Bundle:                         bundle,
 			MustStaple:                     ctx.Bool(flgMustStaple),
 			PreferredChain:                 ctx.String(flgPreferredChain),
+			Profile:                        ctx.String(flgProfile),
 			AlwaysDeactivateAuthorizations: ctx.Bool(flgAlwaysDeactivateAuthorizations),
 		}
 
@@ -230,6 +236,7 @@ func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Reso
 		NotAfter:                       getTime(ctx, flgNotAfter),
 		Bundle:                         bundle,
 		PreferredChain:                 ctx.String(flgPreferredChain),
+		Profile:                        ctx.String(flgProfile),
 		AlwaysDeactivateAuthorizations: ctx.Bool(flgAlwaysDeactivateAuthorizations),
 	}
 

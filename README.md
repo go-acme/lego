@@ -17,6 +17,7 @@ Let's Encrypt client and ACME library written in Go.
   - Support [RFC 8737](https://www.rfc-editor.org/rfc/rfc8737.html): TLS Application‑Layer Protocol Negotiation (ALPN) Challenge Extension
   - Support [RFC 8738](https://www.rfc-editor.org/rfc/rfc8738.html): certificates for IP addresses
   - Support [draft-ietf-acme-ari-03](https://datatracker.ietf.org/doc/draft-ietf-acme-ari/): Renewal Information (ARI) Extension
+  - Support [draft-aaron-acme-profiles-00](https://datatracker.ietf.org/doc/draft-aaron-acme-profiles/): Profiles Extension
 - Register with CA
 - Obtain certificates, both from scratch or with an existing CSR
 - Renew certificates

@@ -93,8 +93,8 @@ func createRenew() *cli.Command {
 					" If no match, the default offered chain will be used.",
 			},
 			&cli.StringFlag{
-				Name:  flgCertificateProfile,
-				Usage: "If the CA offers multiple certificate profiles, choose this one.",
+				Name:  flgProfile,
+				Usage: "If the CA offers multiple certificate profiles (draft-aaron-acme-profiles), choose this one.",
 			},
 			&cli.StringFlag{
 				Name:  flgAlwaysDeactivateAuthorizations,
@@ -238,7 +238,7 @@ func renewForDomains(ctx *cli.Context, account *Account, keyType certcrypto.KeyT
 		NotAfter:                       getTime(ctx, flgNotAfter),
 		Bundle:                         bundle,
 		PreferredChain:                 ctx.String(flgPreferredChain),
-		CertificateProfile:             ctx.String(flgCertificateProfile),
+		Profile:                        ctx.String(flgProfile),
 		AlwaysDeactivateAuthorizations: ctx.Bool(flgAlwaysDeactivateAuthorizations),
 	}
 
@@ -322,7 +322,7 @@ func renewForCSR(ctx *cli.Context, account *Account, keyType certcrypto.KeyType,
 		NotAfter:                       getTime(ctx, flgNotAfter),
 		Bundle:                         bundle,
 		PreferredChain:                 ctx.String(flgPreferredChain),
-		CertificateProfile:             ctx.String(flgCertificateProfile),
+		Profile:                        ctx.String(flgProfile),
 		AlwaysDeactivateAuthorizations: ctx.Bool(flgAlwaysDeactivateAuthorizations),
 	}
 

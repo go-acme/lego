@@ -4,6 +4,16 @@
     "certificate": "fixtures/certs/localhost/cert.pem",
     "privateKey": "fixtures/certs/localhost/key.pem",
     "httpPort": 5002,
-    "tlsPort": 5001
+    "tlsPort": 5001,
+    "profiles": {
+      "default": {
+        "description": "The profile you know and love",
+        "validityPeriod": 7776000
+      },
+      "shortlived": {
+        "description": "A short-lived cert profile, without actual enforcement",
+        "validityPeriod": 518400
+      }
+    }
   }
 }

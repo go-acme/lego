@@ -148,6 +148,10 @@ type Order struct {
 	// An array of identifier objects that the order pertains to.
 	Identifiers []Identifier `json:"identifiers"`
 
+	// profile (optional, string):
+	// The desired certificate profile
+	Profile string `json:"profile,omitempty"`
+
 	// notBefore (optional, string):
 	// The requested value of the notBefore field in the certificate,
 	// in the date format defined in [RFC3339].

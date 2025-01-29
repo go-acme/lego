@@ -11,8 +11,9 @@ import (
 
 // OrderOptions used to create an order (optional).
 type OrderOptions struct {
-	NotBefore time.Time
-	NotAfter  time.Time
+	NotBefore          time.Time
+	NotAfter           time.Time
+	CertificateProfile string
 	// A string uniquely identifying a previously-issued certificate which this
 	// order is intended to replace.
 	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
@@ -52,6 +53,10 @@ func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acm
 
 		if o.core.GetDirectory().RenewalInfo != "" {
 			orderReq.Replaces = opts.ReplacesCertID
+		}
+
+		if opts.CertificateProfile != "" {
+			orderReq.Profile = opts.CertificateProfile
 		}
 	}
 

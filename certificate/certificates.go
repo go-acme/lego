@@ -73,6 +73,7 @@ type ObtainRequest struct {
 	NotAfter                       time.Time
 	Bundle                         bool
 	PreferredChain                 string
+	CertificateProfile             string
 	AlwaysDeactivateAuthorizations bool
 	// A string uniquely identifying a previously-issued certificate which this
 	// order is intended to replace.
@@ -93,6 +94,7 @@ type ObtainForCSRRequest struct {
 	NotAfter                       time.Time
 	Bundle                         bool
 	PreferredChain                 string
+	CertificateProfile             string
 	AlwaysDeactivateAuthorizations bool
 	// A string uniquely identifying a previously-issued certificate which this
 	// order is intended to replace.
@@ -152,9 +154,10 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 	}
 
 	orderOpts := &api.OrderOptions{
-		NotBefore:      request.NotBefore,
-		NotAfter:       request.NotAfter,
-		ReplacesCertID: request.ReplacesCertID,
+		NotBefore:          request.NotBefore,
+		NotAfter:           request.NotAfter,
+		CertificateProfile: request.CertificateProfile,
+		ReplacesCertID:     request.ReplacesCertID,
 	}
 
 	order, err := c.core.Orders.NewWithOptions(domains, orderOpts)
@@ -218,9 +221,10 @@ func (c *Certifier) ObtainForCSR(request ObtainForCSRRequest) (*Resource, error)
 	}
 
 	orderOpts := &api.OrderOptions{
-		NotBefore:      request.NotBefore,
-		NotAfter:       request.NotAfter,
-		ReplacesCertID: request.ReplacesCertID,
+		NotBefore:          request.NotBefore,
+		NotAfter:           request.NotAfter,
+		CertificateProfile: request.CertificateProfile,
+		ReplacesCertID:     request.ReplacesCertID,
 	}
 
 	order, err := c.core.Orders.NewWithOptions(domains, orderOpts)
@@ -437,6 +441,7 @@ type RenewOptions struct {
 	// If true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
 	Bundle                         bool
 	PreferredChain                 string
+	CertificateProfile             string
 	AlwaysDeactivateAuthorizations bool
 	// Not supported for CSR request.
 	MustStaple bool
@@ -505,6 +510,7 @@ func (c *Certifier) RenewWithOptions(certRes Resource, options *RenewOptions) (*
 			request.NotAfter = options.NotAfter
 			request.Bundle = options.Bundle
 			request.PreferredChain = options.PreferredChain
+			request.CertificateProfile = options.CertificateProfile
 			request.AlwaysDeactivateAuthorizations = options.AlwaysDeactivateAuthorizations
 		}
 
@@ -530,6 +536,7 @@ func (c *Certifier) RenewWithOptions(certRes Resource, options *RenewOptions) (*
 		request.NotAfter = options.NotAfter
 		request.Bundle = options.Bundle
 		request.PreferredChain = options.PreferredChain
+		request.CertificateProfile = options.CertificateProfile
 		request.AlwaysDeactivateAuthorizations = options.AlwaysDeactivateAuthorizations
 	}
 

@@ -28,6 +28,7 @@ var load = loader.EnvLoader{
 	LegoOptions: []string{
 		"LEGO_CA_CERTIFICATES=../fixtures/certs/pebble.minica.pem",
 		"EXEC_PATH=../fixtures/update-dns.sh",
+		"LEGO_DEBUG_ACME_HTTP_CLIENT=1",
 	},
 	ChallSrv: &loader.CmdOption{
 		Args: []string{"-http01", ":5012", "-tlsalpn01", ":5011"},

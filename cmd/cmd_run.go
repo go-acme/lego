@@ -92,12 +92,12 @@ func createRun() *cli.Command {
 
 const rootPathWarningMessage = `!!!! HEADS UP !!!!
 
-Your account credentials have been saved in your Let's Encrypt
+Your account credentials have been saved in your
 configuration directory at "%s".
 
 You should make a secure backup of this folder now. This
 configuration directory will also contain certificates and
-private keys obtained from Let's Encrypt so making regular
+private keys obtained from the ACME server so making regular
 backups of this folder is ideal.
 `
 

@@ -27,6 +27,10 @@ func launchHook(hook string, timeout time.Duration, meta map[string]string) erro
 		return nil
 	}
 
+	if hook == "deploy" {
+		return runDeploy(meta)
+	}
+
 	ctxCmd, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 

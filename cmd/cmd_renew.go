@@ -28,6 +28,10 @@ const (
 	flgRenewHookTimeout       = "renew-hook-timeout"
 	flgNoRandomSleep          = "no-random-sleep"
 	flgForceCertDomains       = "force-cert-domains"
+	flgDeployHosts            = "deploy-hosts"
+	flgDeployRemoteDir        = "deploy-remote-dir"
+	flgDeploySSHKey           = "deploy-ssh-key"
+	flgDeployNomadJob         = "deploy-nomad-job"
 )
 
 func createRenew() *cli.Command {
@@ -117,6 +121,24 @@ func createRenew() *cli.Command {
 			&cli.BoolFlag{
 				Name:  flgForceCertDomains,
 				Usage: "Check and ensure that the cert's domain list matches those passed in the domains argument.",
+			},
+			&cli.StringFlag{
+				Name:  flgDeployHosts,
+				Usage: "Comma-separated list of remote hosts for SCP deployment (e.g., \"10.10.1.6, 10.10.1.8, 10.10.1.15, 10.10.1.16\")",
+			},
+			&cli.StringFlag{
+				Name:  flgDeployRemoteDir,
+				Usage: "Remote directory path for certificate deployment (e.g., \"~/traefik/certificates\")",
+			},
+			&cli.StringFlag{
+				Name:  flgDeploySSHKey,
+				Usage: "Path to SSH private key for SCP",
+				Value: "~/.ssh/node",
+			},
+			&cli.StringFlag{
+				Name:  flgDeployNomadJob,
+				Usage: "Nomad job to restart after deployment",
+				Value: "traefik",
 			},
 		},
 	}

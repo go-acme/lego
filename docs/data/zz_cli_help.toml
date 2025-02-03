@@ -102,6 +102,10 @@ OPTIONS:
    --renew-hook-timeout value                Define the timeout for the hook execution. (default: 2m0s)
    --no-random-sleep                         Do not add a random sleep before the renewal. We do not recommend using this flag if you are doing your renewals in an automated way. (default: false)
    --force-cert-domains                      Check and ensure that the cert's domain list matches those passed in the domains argument. (default: false)
+   --deploy-hosts value                      Comma-separated list of remote hosts for SCP deployment (e.g., "10.10.1.6, 10.10.1.8, 10.10.1.15, 10.10.1.16")
+   --deploy-remote-dir value                 Remote directory path for certificate deployment (e.g., "~/traefik/certificates")
+   --deploy-ssh-key value                    Path to SSH private key for SCP (default: "~/.ssh/node")
+   --deploy-nomad-job value                  Nomad job to restart after deployment (default: "traefik")
    --help, -h                                show help
 """
 

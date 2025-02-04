@@ -71,6 +71,10 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 	retryClient.HTTPClient = config.HTTPClient
 	retryClient.Logger = nil
 
+	if _, v := os.LookupEnv("LEGO_DEBUG_ACME_HTTP_CLIENT"); v {
+		retryClient.Logger = log.Logger
+	}
+
 	config.HTTPClient = retryClient.StandardClient()
 
 	client, err := lego.NewClient(config)

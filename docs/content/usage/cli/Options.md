@@ -142,3 +142,13 @@ Example:
 ```bash
 LEGO_DEBUG_CLIENT_VERBOSE_ERROR=true
 ```
+
+### LEGO_DEBUG_ACME_HTTP_CLIENT
+
+The environment variable `LEGO_DEBUG_ACME_HTTP_CLIENT` allows debug the calls to the ACME server.
+
+Example:
+
+```bash
+LEGO_DEBUG_ACME_HTTP_CLIENT=true
+```

@@ -52,7 +52,7 @@ func (c *Certifier) deactivateAuthorizations(order acme.ExtendedOrder, force boo
 	for _, authzURL := range order.Authorizations {
 		auth, err := c.core.Authorizations.Get(authzURL)
 		if err != nil {
-			log.Infof("Unable to get the authorization for: %s", authzURL)
+			log.Infof("Unable to get the authorization for %s: %v", authzURL, err)
 			continue
 		}
 

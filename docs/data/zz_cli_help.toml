@@ -32,6 +32,7 @@ GLOBAL OPTIONS:
    --path value                                                 Directory to use for storing the data. (default: "./.lego") [$LEGO_PATH]
    --http                                                       Use the HTTP-01 challenge to solve challenges. Can be mixed with other types of challenges. (default: false)
    --http.port value                                            Set the port and interface to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port. (default: ":80")
+   --http.delay value                                           Delay between the starts of the HTTP server (use for HTTP-01 based challenges) and the validation of the challenge. (default: 0s)
    --http.proxy-header value                                    Validate against this HTTP header when solving HTTP-01 based challenges behind a reverse proxy. (default: "Host")
    --http.webroot value                                         Set the webroot folder to use for HTTP-01 based challenges to write directly to the .well-known/acme-challenge file. This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge
    --http.memcached-host value [ --http.memcached-host value ]  Set the memcached host(s) to use for HTTP-01 based challenges. Challenges will be written to all specified hosts.
@@ -72,6 +73,7 @@ OPTIONS:
    --not-before value                        Set the notBefore field in the certificate (RFC3339 format)
    --not-after value                         Set the notAfter field in the certificate (RFC3339 format)
    --preferred-chain value                   If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.
+   --profile value                           If the CA offers multiple certificate profiles (draft-aaron-acme-profiles), choose this one.
    --always-deactivate-authorizations value  Force the authorizations to be relinquished even if the certificate request was successful.
    --run-hook value                          Define a hook. The hook is executed when the certificates are effectively created.
    --run-hook-timeout value                  Define the timeout for the hook execution. (default: 2m0s)
@@ -97,6 +99,7 @@ OPTIONS:
    --not-before value                        Set the notBefore field in the certificate (RFC3339 format)
    --not-after value                         Set the notAfter field in the certificate (RFC3339 format)
    --preferred-chain value                   If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.
+   --profile value                           If the CA offers multiple certificate profiles (draft-aaron-acme-profiles), choose this one.
    --always-deactivate-authorizations value  Force the authorizations to be relinquished even if the certificate request was successful.
    --renew-hook value                        Define a hook. The hook is executed only when the certificates are effectively renewed.
    --renew-hook-timeout value                Define the timeout for the hook execution. (default: 2m0s)

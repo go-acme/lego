@@ -25,6 +25,7 @@ const (
 	flgPath                     = "path"
 	flgHTTP                     = "http"
 	flgHTTPPort                 = "http.port"
+	flgHTTPDelay                = "http.delay"
 	flgHTTPProxyHeader          = "http.proxy-header"
 	flgHTTPWebroot              = "http.webroot"
 	flgHTTPMemcachedHost        = "http.memcached-host"
@@ -130,6 +131,11 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Name:  flgHTTPPort,
 			Usage: "Set the port and interface to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port.",
 			Value: ":80",
+		},
+		&cli.DurationFlag{
+			Name:  flgHTTPDelay,
+			Usage: "Delay between the starts of the HTTP server (use for HTTP-01 based challenges) and the validation of the challenge.",
+			Value: 0,
 		},
 		&cli.StringFlag{
 			Name:  flgHTTPProxyHeader,

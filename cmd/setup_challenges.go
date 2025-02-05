@@ -25,7 +25,7 @@ func setupChallenges(ctx *cli.Context, client *lego.Client) {
 	}
 
 	if ctx.Bool(flgHTTP) {
-		err := client.Challenge.SetHTTP01Provider(setupHTTPProvider(ctx))
+		err := client.Challenge.SetHTTP01Provider(setupHTTPProvider(ctx), http01.SetDelay(ctx.Duration(flgHTTPDelay)))
 		if err != nil {
 			log.Fatal(err)
 		}

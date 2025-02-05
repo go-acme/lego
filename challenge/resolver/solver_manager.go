@@ -36,8 +36,8 @@ func NewSolversManager(core *api.Core) *SolverManager {
 }
 
 // SetHTTP01Provider specifies a custom provider p that can solve the given HTTP-01 challenge.
-func (c *SolverManager) SetHTTP01Provider(p challenge.Provider) error {
-	c.solvers[challenge.HTTP01] = http01.NewChallenge(c.core, validate, p)
+func (c *SolverManager) SetHTTP01Provider(p challenge.Provider, opts ...http01.ChallengeOption) error {
+	c.solvers[challenge.HTTP01] = http01.NewChallenge(c.core, validate, p, opts...)
 	return nil
 }
 

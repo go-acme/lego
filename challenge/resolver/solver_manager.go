@@ -137,7 +137,7 @@ func checkChallengeStatus(chlng acme.ExtendedChallenge) (bool, error) {
 	case acme.StatusPending, acme.StatusProcessing:
 		return false, nil
 	case acme.StatusInvalid:
-		return false, chlng.Error
+		return false, chlng.Err()
 	default:
 		return false, errors.New("the server returned an unexpected state")
 	}
@@ -154,7 +154,7 @@ func checkAuthorizationStatus(authz acme.Authorization) (bool, error) {
 	case acme.StatusInvalid:
 		for _, chlg := range authz.Challenges {
 			if chlg.Status == acme.StatusInvalid && chlg.Error != nil {
-				return false, chlg.Error
+				return false, chlg.Err()
 			}
 		}
 		return false, fmt.Errorf("the authorization state %s", authz.Status)

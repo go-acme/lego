@@ -105,7 +105,7 @@ func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (acme.ExtendedO
 	}
 
 	if order.Status == acme.StatusInvalid {
-		return acme.ExtendedOrder{}, order.Error
+		return acme.ExtendedOrder{}, order.Err()
 	}
 
 	return acme.ExtendedOrder{Order: order}, nil

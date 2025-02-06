@@ -25,15 +25,7 @@ type ProblemDetails struct {
 	URL    string `json:"url,omitempty"`
 }
 
-// SubProblem a "subproblems".
-// - https://www.rfc-editor.org/rfc/rfc8555.html#section-6.7.1
-type SubProblem struct {
-	Type       string     `json:"type,omitempty"`
-	Detail     string     `json:"detail,omitempty"`
-	Identifier Identifier `json:"identifier,omitempty"`
-}
-
-func (p ProblemDetails) Error() string {
+func (p *ProblemDetails) Error() string {
 	msg := fmt.Sprintf("acme: error: %d", p.HTTPStatus)
 	if p.Method != "" || p.URL != "" {
 		msg += fmt.Sprintf(" :: %s :: %s", p.Method, p.URL)
@@ -49,6 +41,14 @@ func (p ProblemDetails) Error() string {
 	}
 
 	return msg
+}
+
+// SubProblem a "subproblems".
+// - https://www.rfc-editor.org/rfc/rfc8555.html#section-6.7.1
+type SubProblem struct {
+	Type       string     `json:"type,omitempty"`
+	Detail     string     `json:"detail,omitempty"`
+	Identifier Identifier `json:"identifier,omitempty"`
 }
 
 // NonceError represents the error which is returned

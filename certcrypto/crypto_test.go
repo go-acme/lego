@@ -33,55 +33,75 @@ func TestGenerateCSR(t *testing.T) {
 	testCases := []struct {
 		desc       string
 		privateKey crypto.PrivateKey
-		domain     string
-		san        []string
-		mustStaple bool
+		opts       CSROptions
 		expected   expected
 	}{
 		{
 			desc:       "without SAN (nil)",
 			privateKey: privateKey,
-			domain:     "lego.acme",
-			mustStaple: true,
-			expected:   expected{len: 245},
+			opts: CSROptions{
+				Domain:     "lego.acme",
+				MustStaple: true,
+			},
+			expected: expected{len: 245},
 		},
 		{
 			desc:       "without SAN (empty)",
 			privateKey: privateKey,
-			domain:     "lego.acme",
-			san:        []string{},
-			mustStaple: true,
-			expected:   expected{len: 245},
+			opts: CSROptions{
+				Domain:     "lego.acme",
+				SAN:        []string{},
+				MustStaple: true,
+			},
+			expected: expected{len: 245},
 		},
 		{
 			desc:       "with SAN",
 			privateKey: privateKey,
-			domain:     "lego.acme",
-			san:        []string{"a.lego.acme", "b.lego.acme", "c.lego.acme"},
-			mustStaple: true,
-			expected:   expected{len: 296},
+			opts: CSROptions{
+				Domain:     "lego.acme",
+				SAN:        []string{"a.lego.acme", "b.lego.acme", "c.lego.acme"},
+				MustStaple: true,
+			},
+			expected: expected{len: 296},
 		},
 		{
 			desc:       "no domain",
 			privateKey: privateKey,
-			domain:     "",
-			mustStaple: true,
-			expected:   expected{len: 225},
+			opts: CSROptions{
+				Domain:     "",
+				MustStaple: true,
+			},
+			expected: expected{len: 225},
 		},
 		{
 			desc:       "no domain with SAN",
 			privateKey: privateKey,
-			domain:     "",
-			san:        []string{"a.lego.acme", "b.lego.acme", "c.lego.acme"},
-			mustStaple: true,
-			expected:   expected{len: 276},
+			opts: CSROptions{
+				Domain:     "",
+				SAN:        []string{"a.lego.acme", "b.lego.acme", "c.lego.acme"},
+				MustStaple: true,
+			},
+			expected: expected{len: 276},
 		},
 		{
 			desc:       "private key nil",
 			privateKey: nil,
-			domain:     "fizz.buzz",
-			mustStaple: true,
-			expected:   expected{error: true},
+			opts: CSROptions{
+				Domain:     "fizz.buzz",
+				MustStaple: true,
+			},
+			expected: expected{error: true},
+		},
+		{
+			desc:       "with email addresses",
+			privateKey: privateKey,
+			opts: CSROptions{
+				Domain:         "example.com",
+				SAN:            []string{"example.org"},
+				EmailAddresses: []string{"foo@example.com", "bar@example.com"},
+			},
+			expected: expected{len: 287},
 		},
 	}
 
@@ -89,7 +109,7 @@ func TestGenerateCSR(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			csr, err := GenerateCSR(test.privateKey, test.domain, test.san, test.mustStaple)
+			csr, err := CreateCSR(test.privateKey, test.opts)
 
 			if test.expected.error {
 				require.Error(t, err)

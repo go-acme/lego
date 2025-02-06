@@ -135,10 +135,26 @@ func GeneratePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
 	return nil, fmt.Errorf("invalid KeyType: %s", keyType)
 }
 
+// Deprecated: uses [CreateCSR] instead.
 func GenerateCSR(privateKey crypto.PrivateKey, domain string, san []string, mustStaple bool) ([]byte, error) {
+	return CreateCSR(privateKey, CSROptions{
+		Domain:     domain,
+		SAN:        san,
+		MustStaple: mustStaple,
+	})
+}
+
+type CSROptions struct {
+	Domain         string
+	SAN            []string
+	MustStaple     bool
+	EmailAddresses []string
+}
+
+func CreateCSR(privateKey crypto.PrivateKey, opts CSROptions) ([]byte, error) {
 	var dnsNames []string
 	var ipAddresses []net.IP
-	for _, altname := range san {
+	for _, altname := range opts.SAN {
 		if ip := net.ParseIP(altname); ip != nil {
 			ipAddresses = append(ipAddresses, ip)
 		} else {
@@ -147,12 +163,13 @@ func GenerateCSR(privateKey crypto.PrivateKey, domain string, san []string, must
 	}
 
 	template := x509.CertificateRequest{
-		Subject:     pkix.Name{CommonName: domain},
-		DNSNames:    dnsNames,
-		IPAddresses: ipAddresses,
+		Subject:        pkix.Name{CommonName: opts.Domain},
+		DNSNames:       dnsNames,
+		EmailAddresses: opts.EmailAddresses,
+		IPAddresses:    ipAddresses,
 	}
 
-	if mustStaple {
+	if opts.MustStaple {
 		template.ExtraExtensions = append(template.ExtraExtensions, pkix.Extension{
 			Id:    tlsFeatureExtensionOID,
 			Value: ocspMustStapleFeature,

@@ -687,6 +687,9 @@ func checkOrderStatus(order acme.ExtendedOrder) (bool, error) {
 	case acme.StatusValid:
 		return true, nil
 	case acme.StatusInvalid:
+		if order.Error == nil {
+			return false, nil
+		}
 		return false, order.Error
 	default:
 		return false, nil

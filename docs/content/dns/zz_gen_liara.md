@@ -60,7 +60,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://dns-service.iran.liara.ir/swagger)
+- [API documentation](https://openapi.liara.ir/?urls.primaryName=DNS)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/liara/liara.toml -->

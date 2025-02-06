@@ -65,9 +65,10 @@ type Resource struct {
 // If `AlwaysDeactivateAuthorizations` is true, the authorizations are also relinquished if the obtain request was successful.
 // See https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.2.
 type ObtainRequest struct {
-	Domains    []string
-	PrivateKey crypto.PrivateKey
-	MustStaple bool
+	Domains        []string
+	PrivateKey     crypto.PrivateKey
+	MustStaple     bool
+	EmailAddresses []string
 
 	NotBefore      time.Time
 	NotAfter       time.Time
@@ -194,7 +195,7 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := newObtainError()
-	cert, err := c.getForOrder(domains, order, request.Bundle, request.PrivateKey, request.MustStaple, request.PreferredChain)
+	cert, err := c.getForOrder(domains, order, request)
 	if err != nil {
 		for _, auth := range authz {
 			failures.Add(challenge.GetTargetedDomain(auth), err)
@@ -280,7 +281,9 @@ func (c *Certifier) ObtainForCSR(request ObtainForCSRRequest) (*Resource, error)
 	return cert, failures.Join()
 }
 
-func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bundle bool, privateKey crypto.PrivateKey, mustStaple bool, preferredChain string) (*Resource, error) {
+func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, request ObtainRequest) (*Resource, error) {
+	privateKey := request.PrivateKey
+
 	if privateKey == nil {
 		var err error
 		privateKey, err = certcrypto.GeneratePrivateKey(c.options.KeyType)
@@ -312,13 +315,19 @@ func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bund
 		}
 	}
 
-	// TODO: should the CSR be customizable?
-	csr, err := certcrypto.GenerateCSR(privateKey, commonName, san, mustStaple)
+	csrOptions := certcrypto.CSROptions{
+		Domain:         commonName,
+		SAN:            san,
+		MustStaple:     request.MustStaple,
+		EmailAddresses: request.EmailAddresses,
+	}
+
+	csr, err := certcrypto.CreateCSR(privateKey, csrOptions)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.getForCSR(domains, order, bundle, csr, certcrypto.PEMEncode(privateKey), preferredChain)
+	return c.getForCSR(domains, order, request.Bundle, csr, certcrypto.PEMEncode(privateKey), request.PreferredChain)
 }
 
 func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle bool, csr, privateKeyPem []byte, preferredChain string) (*Resource, error) {
@@ -451,12 +460,15 @@ type RenewOptions struct {
 	NotBefore time.Time
 	NotAfter  time.Time
 	// If true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
-	Bundle                         bool
-	PreferredChain                 string
-	Profile                        string
+	Bundle         bool
+	PreferredChain string
+
+	Profile string
+
 	AlwaysDeactivateAuthorizations bool
 	// Not supported for CSR request.
-	MustStaple bool
+	MustStaple     bool
+	EmailAddresses []string
 }
 
 // Renew takes a Resource and tries to renew the certificate.
@@ -548,6 +560,7 @@ func (c *Certifier) RenewWithOptions(certRes Resource, options *RenewOptions) (*
 		request.NotAfter = options.NotAfter
 		request.Bundle = options.Bundle
 		request.PreferredChain = options.PreferredChain
+		request.EmailAddresses = options.EmailAddresses
 		request.Profile = options.Profile
 		request.AlwaysDeactivateAuthorizations = options.AlwaysDeactivateAuthorizations
 	}

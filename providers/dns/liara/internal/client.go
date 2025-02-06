@@ -34,7 +34,7 @@ func NewClient(hc *http.Client) *Client {
 }
 
 // GetRecords gets the records of a domain.
-// https://dns-service.iran.liara.ir/swagger
+// https://openapi.liara.ir/?urls.primaryName=DNS
 func (c Client) GetRecords(ctx context.Context, domainName string) ([]Record, error) {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records")
 

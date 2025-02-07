@@ -30,7 +30,7 @@ const (
 func createRun() *cli.Command {
 	return &cli.Command{
 		Name:  "run",
-		Usage: "Register an account, then create and install a certificate",
+		Usage: "Register an account (if not registered), then create and install a certificate",
 		Before: func(ctx *cli.Context) error {
 			// we require either domains or csr, but not both
 			hasDomains := len(ctx.StringSlice(flgDomains)) > 0

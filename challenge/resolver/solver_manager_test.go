@@ -55,9 +55,6 @@ func TestValidate(t *testing.T) {
 		statuses = statuses[1:]
 
 		chlg := &acme.Challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"}
-		if st == acme.StatusInvalid {
-			chlg.Error = &acme.ProblemDetails{}
-		}
 
 		err := tester.WriteJSONResponse(w, chlg)
 		if err != nil {
@@ -83,7 +80,6 @@ func TestValidate(t *testing.T) {
 		if st == acme.StatusInvalid {
 			chlg := acme.Challenge{
 				Status: acme.StatusInvalid,
-				Error:  &acme.ProblemDetails{},
 			}
 			authorization.Challenges = append(authorization.Challenges, chlg)
 		}
@@ -106,7 +102,7 @@ func TestValidate(t *testing.T) {
 		{
 			name:     "POST-unexpected",
 			statuses: []string{"weird"},
-			want:     "unexpected",
+			want:     "the server returned an unexpected challenge status: weird",
 		},
 		{
 			name:     "POST-valid",
@@ -115,12 +111,12 @@ func TestValidate(t *testing.T) {
 		{
 			name:     "POST-invalid",
 			statuses: []string{acme.StatusInvalid},
-			want:     "error",
+			want:     "invalid challenge:",
 		},
 		{
 			name:     "POST-pending-unexpected",
 			statuses: []string{acme.StatusPending, "weird"},
-			want:     "unexpected",
+			want:     "the server returned an unexpected authorization status: weird",
 		},
 		{
 			name:     "POST-pending-valid",
@@ -129,7 +125,7 @@ func TestValidate(t *testing.T) {
 		{
 			name:     "POST-pending-invalid",
 			statuses: []string{acme.StatusPending, acme.StatusInvalid},
-			want:     "error",
+			want:     "invalid authorization",
 		},
 	}
 
@@ -144,6 +140,126 @@ func TestValidate(t *testing.T) {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), test.want)
 			}
+		})
+	}
+}
+
+func Test_checkChallengeStatus(t *testing.T) {
+	testCases := []struct {
+		desc       string
+		challenge  acme.Challenge
+		requireErr require.ErrorAssertionFunc
+		expected   bool
+	}{
+		{
+			desc:       "status valid",
+			challenge:  acme.Challenge{Status: acme.StatusValid},
+			requireErr: require.NoError,
+			expected:   true,
+		},
+		{
+			desc:       "status invalid",
+			challenge:  acme.Challenge{Status: acme.StatusInvalid},
+			requireErr: require.Error,
+			expected:   false,
+		},
+		{
+			desc:       "status invalid with error",
+			challenge:  acme.Challenge{Status: acme.StatusInvalid, Error: &acme.ProblemDetails{}},
+			requireErr: require.Error,
+			expected:   false,
+		},
+		{
+			desc:       "status pending",
+			challenge:  acme.Challenge{Status: acme.StatusPending},
+			requireErr: require.NoError,
+			expected:   false,
+		},
+		{
+			desc:       "status processing",
+			challenge:  acme.Challenge{Status: acme.StatusProcessing},
+			requireErr: require.NoError,
+			expected:   false,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			status, err := checkChallengeStatus(acme.ExtendedChallenge{Challenge: test.challenge})
+			test.requireErr(t, err)
+
+			assert.Equal(t, test.expected, status)
+		})
+	}
+}
+
+func Test_checkAuthorizationStatus(t *testing.T) {
+	testCases := []struct {
+		desc          string
+		authorization acme.Authorization
+		requireErr    require.ErrorAssertionFunc
+		expected      bool
+	}{
+		{
+			desc:          "status valid",
+			authorization: acme.Authorization{Status: acme.StatusValid},
+			requireErr:    require.NoError,
+			expected:      true,
+		},
+		{
+			desc:          "status invalid",
+			authorization: acme.Authorization{Status: acme.StatusInvalid},
+			requireErr:    require.Error,
+			expected:      false,
+		},
+		{
+			desc:          "status invalid with error",
+			authorization: acme.Authorization{Status: acme.StatusInvalid, Challenges: []acme.Challenge{{Error: &acme.ProblemDetails{}}}},
+			requireErr:    require.Error,
+			expected:      false,
+		},
+		{
+			desc:          "status pending",
+			authorization: acme.Authorization{Status: acme.StatusPending},
+			requireErr:    require.NoError,
+			expected:      false,
+		},
+		{
+			desc:          "status processing",
+			authorization: acme.Authorization{Status: acme.StatusProcessing},
+			requireErr:    require.NoError,
+			expected:      false,
+		},
+		{
+			desc:          "status deactivated",
+			authorization: acme.Authorization{Status: acme.StatusDeactivated},
+			requireErr:    require.Error,
+			expected:      false,
+		},
+		{
+			desc:          "status expired",
+			authorization: acme.Authorization{Status: acme.StatusExpired},
+			requireErr:    require.Error,
+			expected:      false,
+		},
+		{
+			desc:          "status revoked",
+			authorization: acme.Authorization{Status: acme.StatusRevoked},
+			requireErr:    require.Error,
+			expected:      false,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			status, err := checkAuthorizationStatus(test.authorization)
+			test.requireErr(t, err)
+
+			assert.Equal(t, test.expected, status)
 		})
 	}
 }

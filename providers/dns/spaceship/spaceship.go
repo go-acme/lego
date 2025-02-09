@@ -111,7 +111,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:   d.config.TTL,
 	}
 
-	err = d.client.AddRecord(context.Background(), authZone, record)
+	err = d.client.AddRecord(context.Background(), dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("spaceship: %w", err)
 	}
@@ -139,7 +139,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Value: info.Value,
 	}
 
-	err = d.client.DeleteRecord(context.Background(), authZone, record)
+	err = d.client.DeleteRecord(context.Background(), dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("spaceship: %w", err)
 	}

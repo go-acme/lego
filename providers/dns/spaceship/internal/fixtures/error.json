@@ -1,0 +1,9 @@
+{
+  "detail": "^$",
+  "data": [
+    {
+      "field": "name",
+      "details": "The domain name contains invalid characters"
+    }
+  ]
+}

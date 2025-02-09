@@ -1,0 +1,13 @@
+{
+  "items": [
+    {
+      "type": "A",
+      "name": "@",
+      "ttl": 3600,
+      "group": {
+        "type": "custom"
+      }
+    }
+  ],
+  "total": 100
+}

@@ -134,6 +134,7 @@ func allDNSCodes() string {
 		"shellrent",
 		"simply",
 		"sonic",
+		"spaceship",
 		"stackpath",
 		"technitium",
 		"tencentcloud",
@@ -2769,6 +2770,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/sonic`)
+
+	case "spaceship":
+		// generated from: providers/dns/spaceship/spaceship.toml
+		ew.writeln(`Configuration for Spaceship.`)
+		ew.writeln(`Code:	'spaceship'`)
+		ew.writeln(`Since:	'v4.22.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SPACESHIP_API_KEY":	API key`)
+		ew.writeln(`	- "SPACESHIP_API_SECRET":	API secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SPACESHIP_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "SPACESHIP_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "SPACESHIP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "SPACESHIP_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/spaceship`)
 
 	case "stackpath":
 		// generated from: providers/dns/stackpath/stackpath.toml

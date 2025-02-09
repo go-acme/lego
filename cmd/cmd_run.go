@@ -67,7 +67,7 @@ func createRun() *cli.Command {
 			},
 			&cli.StringFlag{
 				Name:  flgPrivateKey,
-				Usage: "The certificate private key. By default, the private key is generated.",
+				Usage: "Path to private key (in PEM encoding) for the certificate. By default, the private key is generated.",
 			},
 			&cli.StringFlag{
 				Name: flgPreferredChain,

@@ -124,7 +124,7 @@ func validate(core *api.Core, domain string, chlg acme.Challenge) error {
 			return nil
 		}
 
-		return errors.New("the server didn't respond to our request")
+		return fmt.Errorf("the server didn't respond to our request (status=%s)", authz.Status)
 	}
 
 	return backoff.Retry(operation, bo)
@@ -137,9 +137,9 @@ func checkChallengeStatus(chlng acme.ExtendedChallenge) (bool, error) {
 	case acme.StatusPending, acme.StatusProcessing:
 		return false, nil
 	case acme.StatusInvalid:
-		return false, chlng.Error
+		return false, fmt.Errorf("invalid challenge: %w", chlng.Err())
 	default:
-		return false, errors.New("the server returned an unexpected state")
+		return false, fmt.Errorf("the server returned an unexpected challenge status: %s", chlng.Status)
 	}
 }
 
@@ -154,11 +154,11 @@ func checkAuthorizationStatus(authz acme.Authorization) (bool, error) {
 	case acme.StatusInvalid:
 		for _, chlg := range authz.Challenges {
 			if chlg.Status == acme.StatusInvalid && chlg.Error != nil {
-				return false, chlg.Error
+				return false, fmt.Errorf("invalid authorization: %w", chlg.Err())
 			}
 		}
-		return false, fmt.Errorf("the authorization state %s", authz.Status)
+		return false, errors.New("invalid authorization")
 	default:
-		return false, errors.New("the server returned an unexpected state")
+		return false, fmt.Errorf("the server returned an unexpected authorization status: %s", authz.Status)
 	}
 }

@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"net"
 	"time"
 
@@ -105,7 +106,7 @@ func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (acme.ExtendedO
 	}
 
 	if order.Status == acme.StatusInvalid {
-		return acme.ExtendedOrder{}, order.Error
+		return acme.ExtendedOrder{}, fmt.Errorf("invalid order: %w", order.Err())
 	}
 
 	return acme.ExtendedOrder{Order: order}, nil

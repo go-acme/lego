@@ -700,7 +700,7 @@ func checkOrderStatus(order acme.ExtendedOrder) (bool, error) {
 	case acme.StatusValid:
 		return true, nil
 	case acme.StatusInvalid:
-		return false, order.Error
+		return false, fmt.Errorf("invalid order: %w", order.Err())
 	default:
 		return false, nil
 	}

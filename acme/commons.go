@@ -200,6 +200,14 @@ type Order struct {
 	Replaces string `json:"replaces,omitempty"`
 }
 
+func (r *Order) Err() error {
+	if r.Error != nil {
+		return r.Error
+	}
+
+	return nil
+}
+
 // Authorization the ACME authorization object.
 // - https://www.rfc-editor.org/rfc/rfc8555.html#section-7.1.4
 type Authorization struct {
@@ -283,6 +291,14 @@ type Challenge struct {
 
 	// https://www.rfc-editor.org/rfc/rfc8555.html#section-8.1
 	KeyAuthorization string `json:"keyAuthorization"`
+}
+
+func (c *Challenge) Err() error {
+	if c.Error != nil {
+		return c.Error
+	}
+
+	return nil
 }
 
 // Identifier the ACME identifier object.

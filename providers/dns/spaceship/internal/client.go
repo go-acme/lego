@@ -42,8 +42,8 @@ func NewClient(apiKey, apiSecret string) (*Client, error) {
 }
 
 func (c *Client) do(req *http.Request, result any) error {
-	req.Header.Add("X-Api-Secret", c.apiKey)
-	req.Header.Add("X-Api-Key", c.apiSecret)
+	req.Header.Add("X-Api-Secret", c.apiSecret)
+	req.Header.Add("X-Api-Key", c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

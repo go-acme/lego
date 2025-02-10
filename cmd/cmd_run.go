@@ -20,6 +20,7 @@ const (
 	flgMustStaple                     = "must-staple"
 	flgNotBefore                      = "not-before"
 	flgNotAfter                       = "not-after"
+	flgPrivateKey                     = "private-key"
 	flgPreferredChain                 = "preferred-chain"
 	flgProfile                        = "profile"
 	flgAlwaysDeactivateAuthorizations = "always-deactivate-authorizations"
@@ -63,6 +64,10 @@ func createRun() *cli.Command {
 				Name:   flgNotAfter,
 				Usage:  "Set the notAfter field in the certificate (RFC3339 format)",
 				Layout: time.RFC3339,
+			},
+			&cli.StringFlag{
+				Name:  flgPrivateKey,
+				Usage: "Path to private key (in PEM encoding) for the certificate. By default, the private key is generated.",
 			},
 			&cli.StringFlag{
 				Name: flgPreferredChain,
@@ -203,21 +208,21 @@ func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Reso
 		// obtain a certificate, generating a new private key
 		request := certificate.ObtainRequest{
 			Domains:                        domains,
-			Bundle:                         bundle,
 			MustStaple:                     ctx.Bool(flgMustStaple),
+			NotBefore:                      getTime(ctx, flgNotBefore),
+			NotAfter:                       getTime(ctx, flgNotAfter),
+			Bundle:                         bundle,
 			PreferredChain:                 ctx.String(flgPreferredChain),
 			Profile:                        ctx.String(flgProfile),
 			AlwaysDeactivateAuthorizations: ctx.Bool(flgAlwaysDeactivateAuthorizations),
 		}
 
-		notBefore := ctx.Timestamp(flgNotBefore)
-		if notBefore != nil {
-			request.NotBefore = *notBefore
-		}
-
-		notAfter := ctx.Timestamp(flgNotAfter)
-		if notAfter != nil {
-			request.NotAfter = *notAfter
+		if ctx.IsSet(flgPrivateKey) {
+			var err error
+			request.PrivateKey, err = loadPrivateKey(ctx.String(flgPrivateKey))
+			if err != nil {
+				return nil, fmt.Errorf("load private key: %w", err)
+			}
 		}
 
 		return client.Certificate.Obtain(request)
@@ -238,6 +243,14 @@ func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Reso
 		PreferredChain:                 ctx.String(flgPreferredChain),
 		Profile:                        ctx.String(flgProfile),
 		AlwaysDeactivateAuthorizations: ctx.Bool(flgAlwaysDeactivateAuthorizations),
+	}
+
+	if ctx.IsSet(flgPrivateKey) {
+		var err error
+		request.PrivateKey, err = loadPrivateKey(ctx.String(flgPrivateKey))
+		if err != nil {
+			return nil, fmt.Errorf("load private key: %w", err)
+		}
 	}
 
 	return client.Certificate.ObtainForCSR(request)

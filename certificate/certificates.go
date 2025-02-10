@@ -97,6 +97,8 @@ type ObtainRequest struct {
 type ObtainForCSRRequest struct {
 	CSR *x509.CertificateRequest
 
+	PrivateKey crypto.PrivateKey
+
 	NotBefore      time.Time
 	NotAfter       time.Time
 	Bundle         bool
@@ -262,7 +264,13 @@ func (c *Certifier) ObtainForCSR(request ObtainForCSRRequest) (*Resource, error)
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := newObtainError()
-	cert, err := c.getForCSR(domains, order, request.Bundle, request.CSR.Raw, nil, request.PreferredChain)
+
+	var privateKey []byte
+	if request.PrivateKey != nil {
+		privateKey = certcrypto.PEMEncode(request.PrivateKey)
+	}
+
+	cert, err := c.getForCSR(domains, order, request.Bundle, request.CSR.Raw, privateKey, request.PreferredChain)
 	if err != nil {
 		for _, auth := range authz {
 			failures.Add(challenge.GetTargetedDomain(auth), err)

@@ -1,5 +1,33 @@
 # Changelog
 
+## [v4.22.0](https://github.com/go-acme/lego/releases/tag/v4.22.0) (2025-02-16)
+
+### Added
+
+- **[cli]** Add `--private-key` flag to set the private key.
+- **[cli]** Add `LEGO_DEBUG_ACME_HTTP_CLIENT` environment variable to debug the calls to the ACME server.
+- **[cli]** Add `LEGO_EMAIL` environment variable for specifying email.
+- **[cli]** Add `--hook-timeout` flag to run and renew commands.
+- **[dnsprovider]** Add DNS provider for myaddr.{tools,dev,io}
+- **[dnsprovider]** Add DNS provider for Spaceship
+- **[dnsprovider]** acme-dns: add HTTP storage
+- **[lib,cli,httpprovider]** Add `--http.delay` option for HTTP challenge.
+- **[lib,cli,profiles]** Add support for Profiles Extension.
+- **[lib]** Add an option to set CSR email addresses
+
+### Changed
+
+- **[lib]** rewrite status management
+- **[dnsprovider]** docs: improve units and default values
+
+### Removed
+
+- **[dnsprovider]** netcup: remove TTL option
+
+### Fixed
+
+- **[cli,log]** remove extra debug logs
+
 ## [v4.21.0](https://github.com/go-acme/lego/releases/tag/v4.21.0) (2024-12-20)
 
 ### Added

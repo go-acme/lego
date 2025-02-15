@@ -67,4 +67,14 @@ No expected body.
 
 ## Save
 
-No dedicated endpoint.
+### Request
+
+Endpoint: `POST <BaseURL>/`
+
+### Response
+
+Response status code:
+- 200: the process will be stopped to allow the user to create the CNAME.
+- 201: the process will continue without error (This expect the CNAME to be created during the save)
+
+No expected body.

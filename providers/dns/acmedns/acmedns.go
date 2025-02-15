@@ -183,8 +183,13 @@ func (d *DNSProvider) register(ctx context.Context, domain, fqdn string) error {
 	if err != nil {
 		return err
 	}
+
 	err = d.storage.Save(ctx)
 	if err != nil {
+		if errors.Is(err, internal.ErrCNAMECreated) {
+			return nil
+		}
+
 		return err
 	}
 

@@ -22,6 +22,7 @@ lego --email you@example.com --dns "acme-dns" -d '*.example.com' -d example.com 
     ACME_DNS_API_BASE  = "The ACME-DNS API address"
     ACME_DNS_STORAGE_PATH = "The ACME-DNS JSON account data file. A per-domain account will be registered/persisted to this file and used for TXT updates."
     ACME_DNS_STORAGE_BASE_URL = "The ACME-DNS JSON account data server."
+    ACME_DNS_CNAME_PROVISIONED = "Hint the CNAME is provisioned in the DNS zone."
 
 [Links]
   API = "https://github.com/joohoi/acme-dns#api"

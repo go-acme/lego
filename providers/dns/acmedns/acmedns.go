@@ -30,6 +30,11 @@ const (
 	// EnvStorageBaseURL  is the environment variable name for the ACME-DNS JSON account data.
 	// The URL to the storage server.
 	EnvStorageBaseURL = envNamespace + "STORAGE_BASE_URL"
+
+	// EnvCNAMEProvisioned is the environment variable name for the CNAME created flag.
+	// Override that the provider has provisioned the CNAME in the DNS zone. (Default: false)
+	// This is useful when using a HTTP storage backend that can update the DNS zone.
+	EnvCNAMEProvisioned = envNamespace + "CNAME_PROVISIONED"
 )
 
 var _ challenge.Provider = (*DNSProvider)(nil)
@@ -47,8 +52,9 @@ type acmeDNSClient interface {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	client  acmeDNSClient
-	storage goacmedns.Storage
+	client           acmeDNSClient
+	storage          goacmedns.Storage
+	cnameProvisioned bool
 }
 
 // NewDNSProvider creates an ACME-DNS provider using file based account storage.
@@ -59,6 +65,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("acme-dns: %w", err)
 	}
 
+	cnameProvisioned := env.GetOrDefaultBool(EnvCNAMEProvisioned, false)
 	storagePath := env.GetOrFile(EnvStoragePath)
 	storageBaseURL := env.GetOrFile(EnvStorageBaseURL)
 
@@ -85,11 +92,11 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("acme-dns: %w", err)
 	}
 
-	return NewDNSProviderClient(client, st)
+	return NewDNSProviderClient(client, st, cnameProvisioned)
 }
 
-// NewDNSProviderClient creates an ACME-DNS DNSProvider with the given acmeDNSClient and [goacmedns.Storage].
-func NewDNSProviderClient(client acmeDNSClient, storage goacmedns.Storage) (*DNSProvider, error) {
+// NewDNSProviderClient creates an ACME-DNS DNSProvider with the given acmeDNSClient, [goacmedns.Storage], and cnameProvisioned flag.
+func NewDNSProviderClient(client acmeDNSClient, storage goacmedns.Storage, cnameProvisioned bool) (*DNSProvider, error) {
 	if client == nil {
 		return nil, errors.New("ACME-DNS Client must be not nil")
 	}
@@ -99,8 +106,9 @@ func NewDNSProviderClient(client acmeDNSClient, storage goacmedns.Storage) (*DNS
 	}
 
 	return &DNSProvider{
-		client:  client,
-		storage: storage,
+		client:           client,
+		storage:          storage,
+		cnameProvisioned: cnameProvisioned,
 	}, nil
 }
 
@@ -188,12 +196,17 @@ func (d *DNSProvider) register(ctx context.Context, domain, fqdn string) error {
 		return err
 	}
 
-	// Stop issuance by returning an error.
-	// The user needs to perform a manual one-time CNAME setup in their DNS zone
-	// to complete the setup of the new account we created.
-	return ErrCNAMERequired{
-		Domain: domain,
-		FQDN:   fqdn,
-		Target: newAcct.FullDomain,
+	if !d.cnameProvisioned {
+		// Stop issuance by returning an error.
+		// The user needs to perform a manual one-time CNAME setup in their DNS zone
+		// to complete the setup of the new account we created.
+		return ErrCNAMERequired{
+			Domain: domain,
+			FQDN:   fqdn,
+			Target: newAcct.FullDomain,
+		}
 	}
+
+	// CNAME provisioned in the DNS zone
+	return nil
 }

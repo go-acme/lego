@@ -68,7 +68,7 @@ func TestPresent(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.Name, func(t *testing.T) {
-			dp, err := NewDNSProviderClient(test.Client, mockStorage{make(map[string]goacmedns.Account)})
+			dp, err := NewDNSProviderClient(test.Client, mockStorage{make(map[string]goacmedns.Account)}, false)
 			require.NoError(t, err)
 
 			// override the storage mock if required by the test case.
@@ -97,12 +97,13 @@ func TestPresent(t *testing.T) {
 // TestRegister tests that the ACME-DNS register function works correctly.
 func TestRegister(t *testing.T) {
 	testCases := []struct {
-		Name          string
-		Client        acmeDNSClient
-		Storage       goacmedns.Storage
-		Domain        string
-		FQDN          string
-		ExpectedError error
+		Name             string
+		Client           acmeDNSClient
+		Storage          goacmedns.Storage
+		CNAMEProvisioned bool
+		Domain           string
+		FQDN             string
+		ExpectedError    error
 	}{
 		{
 			Name:          "register when acme-dns client returns an error",
@@ -130,11 +131,16 @@ func TestRegister(t *testing.T) {
 				Target: egTestAccount.FullDomain,
 			},
 		},
+		{
+			Name:             "register when everything works and CNAME provisioned",
+			Client:           mockClient{egTestAccount},
+			CNAMEProvisioned: true,
+		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.Name, func(t *testing.T) {
-			dp, err := NewDNSProviderClient(test.Client, mockStorage{make(map[string]goacmedns.Account)})
+			dp, err := NewDNSProviderClient(test.Client, mockStorage{make(map[string]goacmedns.Account)}, test.CNAMEProvisioned)
 			require.NoError(t, err)
 
 			// override the storage mock if required by the testcase.

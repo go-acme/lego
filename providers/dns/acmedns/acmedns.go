@@ -178,19 +178,24 @@ func (d *DNSProvider) register(ctx context.Context, domain, fqdn string) error {
 		return err
 	}
 
+	var cnameCreated bool
+
 	// Store the new account in the storage and call save to persist the data.
 	err = d.storage.Put(ctx, domain, newAcct)
 	if err != nil {
-		if errors.Is(err, internal.ErrCNAMECreated) {
-			return nil
+		cnameCreated = errors.Is(err, internal.ErrCNAMECreated)
+		if !cnameCreated {
+			return err
 		}
-
-		return err
 	}
 
 	err = d.storage.Save(ctx)
 	if err != nil {
 		return err
+	}
+
+	if cnameCreated {
+		return nil
 	}
 
 	// Stop issuance by returning an error.

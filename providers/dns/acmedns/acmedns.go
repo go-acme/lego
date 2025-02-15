@@ -181,15 +181,15 @@ func (d *DNSProvider) register(ctx context.Context, domain, fqdn string) error {
 	// Store the new account in the storage and call save to persist the data.
 	err = d.storage.Put(ctx, domain, newAcct)
 	if err != nil {
+		if errors.Is(err, internal.ErrCNAMECreated) {
+			return nil
+		}
+
 		return err
 	}
 
 	err = d.storage.Save(ctx)
 	if err != nil {
-		if errors.Is(err, internal.ErrCNAMECreated) {
-			return nil
-		}
-
 		return err
 	}
 

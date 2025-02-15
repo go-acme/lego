@@ -39,13 +39,8 @@ func NewHTTPStorage(baseURL string) (*HTTPStorage, error) {
 	}, nil
 }
 
-func (s *HTTPStorage) Save(ctx context.Context) error {
-	req, err := newJSONRequest(ctx, http.MethodPost, s.baseURL, nil)
-	if err != nil {
-		return fmt.Errorf("unable to create request: %w", err)
-	}
-
-	return s.do(req, nil)
+func (s *HTTPStorage) Save(_ context.Context) error {
+	return nil
 }
 
 func (s *HTTPStorage) Put(ctx context.Context, domain string, account goacmedns.Account) error {
@@ -106,7 +101,7 @@ func (s *HTTPStorage) do(req *http.Request, result any) error {
 	}
 
 	if result == nil {
-		// Hack related to `Save`.
+		// Hack related to `Put`.
 		if resp.StatusCode == http.StatusCreated {
 			return ErrCNAMECreated
 		}

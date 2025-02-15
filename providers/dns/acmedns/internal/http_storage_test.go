@@ -139,7 +139,7 @@ func TestHTTPStorage_Put_error(t *testing.T) {
 }
 
 func TestHTTPStorage_Put_CNAME_created(t *testing.T) {
-	storage := setupTest(t, "POST /", "", http.StatusCreated)
+	storage := setupTest(t, "POST /example.com", "", http.StatusCreated)
 
 	account := goacmedns.Account{
 		FullDomain: "foo.example.com",

@@ -68,17 +68,20 @@ func TestPresent(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.Name, func(t *testing.T) {
-			dp, err := NewDNSProviderClient(test.Client, mockStorage{make(map[string]goacmedns.Account)})
-			require.NoError(t, err)
+			p := &DNSProvider{
+				config:  NewDefaultConfig(),
+				client:  test.Client,
+				storage: mockStorage{make(map[string]goacmedns.Account)},
+			}
 
 			// override the storage mock if required by the test case.
 			if test.Storage != nil {
-				dp.storage = test.Storage
+				p.storage = test.Storage
 			}
 
 			// call Present. The token argument can be garbage because the ACME-DNS
 			// provider does not use it.
-			err = dp.Present(egDomain, "foo", egKeyAuth)
+			err := p.Present(egDomain, "foo", egKeyAuth)
 			if test.ExpectedError != nil {
 				assert.Equal(t, test.ExpectedError, err)
 			} else {
@@ -134,16 +137,19 @@ func TestRegister(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.Name, func(t *testing.T) {
-			dp, err := NewDNSProviderClient(test.Client, mockStorage{make(map[string]goacmedns.Account)})
-			require.NoError(t, err)
+			p := &DNSProvider{
+				config:  NewDefaultConfig(),
+				client:  test.Client,
+				storage: mockStorage{make(map[string]goacmedns.Account)},
+			}
 
 			// override the storage mock if required by the testcase.
 			if test.Storage != nil {
-				dp.storage = test.Storage
+				p.storage = test.Storage
 			}
 
 			// Call register for the example domain/fqdn.
-			err = dp.register(context.Background(), egDomain, egFQDN)
+			err := p.register(context.Background(), egDomain, egFQDN)
 			if test.ExpectedError != nil {
 				assert.Equal(t, test.ExpectedError, err)
 			} else {

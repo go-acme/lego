@@ -52,6 +52,14 @@ The environment variable names can be suffixed by `_FILE` to reference a file in
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
+## Additional Configuration
+
+| Environment Variable Name | Description |
+|--------------------------------|-------------|
+| `ACME_DNS_ALLOWLIST` | Source networks using CIDR notation (multiple values should be separated with a comma). |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 

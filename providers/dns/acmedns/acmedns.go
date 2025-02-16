@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -23,6 +24,10 @@ const (
 	// (e.g. https://acmedns.your-domain.com).
 	EnvAPIBase = envNamespace + "API_BASE"
 
+	// EnvAllowList are source networks using CIDR notation,
+	// e.g. "192.168.100.1/24,1.2.3.4/32,2002:c0a8:2a00::0/40".
+	EnvAllowList = envNamespace + "ALLOWLIST"
+
 	// EnvStoragePath is the environment variable name for the ACME-DNS JSON account data file.
 	// A per-domain account will be registered/persisted to this file and used for TXT updates.
 	EnvStoragePath = envNamespace + "STORAGE_PATH"
@@ -33,6 +38,19 @@ const (
 )
 
 var _ challenge.Provider = (*DNSProvider)(nil)
+
+// Config is used to configure the creation of the DNSProvider.
+type Config struct {
+	APIBase        string
+	AllowList      []string
+	StoragePath    string
+	StorageBaseURL string
+}
+
+// NewDefaultConfig returns a default configuration for the DNSProvider.
+func NewDefaultConfig() *Config {
+	return &Config{}
+}
 
 // acmeDNSClient is an interface describing the goacmedns.Client functions the DNSProvider uses.
 // It makes it easier for tests to shim a mock Client into the DNSProvider.
@@ -47,58 +65,67 @@ type acmeDNSClient interface {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
+	config  *Config
 	client  acmeDNSClient
 	storage goacmedns.Storage
 }
 
-// NewDNSProvider creates an ACME-DNS provider using file based account storage.
-// Its configuration is loaded from the environment by reading EnvAPIBase and EnvStoragePath.
+// NewDNSProvider returns a DNSProvider instance configured for Joohoi's acme-dns.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAPIBase)
 	if err != nil {
 		return nil, fmt.Errorf("acme-dns: %w", err)
 	}
 
-	storagePath := env.GetOrFile(EnvStoragePath)
-	storageBaseURL := env.GetOrFile(EnvStorageBaseURL)
+	config := NewDefaultConfig()
+	config.APIBase = values[EnvAPIBase]
+	config.StoragePath = env.GetOrFile(EnvStoragePath)
+	config.StorageBaseURL = env.GetOrFile(EnvStorageBaseURL)
 
-	if storagePath == "" && storageBaseURL == "" {
-		return nil, fmt.Errorf("acme-dns: %s or %s environment variables not set", EnvStoragePath, EnvStorageBaseURL)
+	allowList := env.GetOrFile(EnvAllowList)
+	if allowList != "" {
+		config.AllowList = strings.Split(allowList, ",")
 	}
 
-	if storagePath != "" && storageBaseURL != "" {
-		return nil, fmt.Errorf("acme-dns: %s or %s environment variables cannot be used at the same time", EnvStoragePath, EnvStorageBaseURL)
+	return NewDNSProviderConfig(config)
+}
+
+// NewDNSProviderConfig return a DNSProvider instance configured for Joohoi's acme-dns.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("acme-dns: the configuration of the DNS provider is nil")
 	}
 
-	var st goacmedns.Storage
-	if storagePath != "" {
-		st = storage.NewFile(values[EnvStoragePath], 0o600)
-	} else {
-		st, err = internal.NewHTTPStorage(storageBaseURL)
-		if err != nil {
-			return nil, fmt.Errorf("acme-dns: new HTTP storage: %w", err)
-		}
-	}
-
-	client, err := goacmedns.NewClient(values[EnvAPIBase])
+	st, err := getStorage(config)
 	if err != nil {
 		return nil, fmt.Errorf("acme-dns: %w", err)
 	}
 
-	return NewDNSProviderClient(client, st)
-}
-
-// NewDNSProviderClient creates an ACME-DNS DNSProvider with the given acmeDNSClient and [goacmedns.Storage].
-func NewDNSProviderClient(client acmeDNSClient, storage goacmedns.Storage) (*DNSProvider, error) {
-	if client == nil {
-		return nil, errors.New("ACME-DNS Client must be not nil")
-	}
-
-	if storage == nil {
-		return nil, errors.New("ACME-DNS Storage must be not nil")
+	client, err := goacmedns.NewClient(config.APIBase)
+	if err != nil {
+		return nil, fmt.Errorf("acme-dns: new client: %w", err)
 	}
 
 	return &DNSProvider{
+		config:  config,
+		client:  client,
+		storage: st,
+	}, nil
+}
+
+// NewDNSProviderClient creates an ACME-DNS DNSProvider with the given acmeDNSClient and [goacmedns.Storage].
+// Deprecated: use [NewDNSProviderConfig] instead.
+func NewDNSProviderClient(client acmeDNSClient, storage goacmedns.Storage) (*DNSProvider, error) {
+	if client == nil {
+		return nil, errors.New("acme-dns: Client must be not nil")
+	}
+
+	if storage == nil {
+		return nil, errors.New("acme-dns: Storage must be not nil")
+	}
+
+	return &DNSProvider{
+		config:  NewDefaultConfig(),
 		client:  client,
 		storage: storage,
 	}, nil
@@ -172,8 +199,7 @@ func (d *DNSProvider) CleanUp(_, _, _ string) error {
 // the one-time manual CNAME setup required to complete setup of the ACME-DNS hook for the domain.
 // If any other error occurs it is returned as-is.
 func (d *DNSProvider) register(ctx context.Context, domain, fqdn string) error {
-	// TODO(@cpu): Read CIDR whitelists from the environment
-	newAcct, err := d.client.RegisterAccount(ctx, nil)
+	newAcct, err := d.client.RegisterAccount(ctx, d.config.AllowList)
 	if err != nil {
 		return err
 	}
@@ -206,4 +232,25 @@ func (d *DNSProvider) register(ctx context.Context, domain, fqdn string) error {
 		FQDN:   fqdn,
 		Target: newAcct.FullDomain,
 	}
+}
+
+func getStorage(config *Config) (goacmedns.Storage, error) {
+	if config.StoragePath == "" && config.StorageBaseURL == "" {
+		return nil, errors.New("storagePath or storageBaseURL is not set")
+	}
+
+	if config.StoragePath != "" && config.StorageBaseURL != "" {
+		return nil, errors.New("storagePath and storageBaseURL cannot be used at the same time")
+	}
+
+	if config.StoragePath != "" {
+		return storage.NewFile(config.StoragePath, 0o600), nil
+	}
+
+	st, err := internal.NewHTTPStorage(config.StorageBaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("new HTTP storage: %w", err)
+	}
+
+	return st, nil
 }

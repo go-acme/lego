@@ -182,6 +182,9 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "ACME_DNS_STORAGE_PATH":	The ACME-DNS JSON account data file. A per-domain account will be registered/persisted to this file and used for TXT updates.`)
 		ew.writeln()
 
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ACME_DNS_ALLOWLIST":	Source networks using CIDR notation (multiple values should be separated with a comma).`)
+
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/acme-dns`)
 

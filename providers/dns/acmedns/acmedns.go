@@ -24,8 +24,8 @@ const (
 	// (e.g. https://acmedns.your-domain.com).
 	EnvAPIBase = envNamespace + "API_BASE"
 
-	// EnvAllowList are source networks using CIDR notation.
-	// e.g. "192.168.100.1/24,1.2.3.4/32,2002:c0a8:2a00::0/40"
+	// EnvAllowList are source networks using CIDR notation,
+	// e.g. "192.168.100.1/24,1.2.3.4/32,2002:c0a8:2a00::0/40".
 	EnvAllowList = envNamespace + "ALLOWLIST"
 
 	// EnvStoragePath is the environment variable name for the ACME-DNS JSON account data file.

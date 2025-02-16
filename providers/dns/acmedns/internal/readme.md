@@ -61,7 +61,9 @@ Endpoint: `POST <BaseURL>/<domain>`
 
 ### Response
 
-Response status code 200.
+Response status code:
+- 200: the process will be stopped to allow the user to create the CNAME.
+- 201: the process will continue without error (the CNAME should be created by the server)
 
 No expected body.
 

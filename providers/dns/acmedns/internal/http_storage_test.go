@@ -137,3 +137,18 @@ func TestHTTPStorage_Put_error(t *testing.T) {
 	err := storage.Put(context.Background(), "example.com", account)
 	require.Error(t, err)
 }
+
+func TestHTTPStorage_Put_CNAME_created(t *testing.T) {
+	storage := setupTest(t, "POST /example.com", "", http.StatusCreated)
+
+	account := goacmedns.Account{
+		FullDomain: "foo.example.com",
+		SubDomain:  "foo",
+		Username:   "user",
+		Password:   "secret",
+		ServerURL:  "https://example.com",
+	}
+
+	err := storage.Put(context.Background(), "example.com", account)
+	require.ErrorIs(t, err, ErrCNAMEAlreadyCreated)
+}

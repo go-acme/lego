@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,6 +17,8 @@ import (
 )
 
 var _ goacmedns.Storage = (*HTTPStorage)(nil)
+
+var ErrCNAMEAlreadyCreated = errors.New("the CNAME has already been created")
 
 // HTTPStorage is an implementation of [acmedns.Storage] over HTTP.
 type HTTPStorage struct {
@@ -98,6 +101,11 @@ func (s *HTTPStorage) do(req *http.Request, result any) error {
 	}
 
 	if result == nil {
+		// Hack related to `Put`.
+		if resp.StatusCode == http.StatusCreated {
+			return ErrCNAMEAlreadyCreated
+		}
+
 		return nil
 	}
 

@@ -150,5 +150,5 @@ func TestHTTPStorage_Put_CNAME_created(t *testing.T) {
 	}
 
 	err := storage.Put(context.Background(), "example.com", account)
-	require.ErrorIs(t, err, ErrCNAMECreated)
+	require.ErrorIs(t, err, ErrCNAMEAlreadyCreated)
 }

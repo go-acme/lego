@@ -22,122 +22,139 @@ var egTestAccount = goacmedns.Account{
 	Password:   "trustno1",
 }
 
-// mockClient is a mock implementing the acmeDNSClient interface that always
-// returns a fixed goacmedns.Account from calls to Register.
 type mockClient struct {
-	mockAccount goacmedns.Account
-}
-
-// UpdateTXTRecord does nothing.
-func (c mockClient) UpdateTXTRecord(_ context.Context, _ goacmedns.Account, _ string) error {
-	return nil
-}
-
-// RegisterAccount returns c.mockAccount and no errors.
-func (c mockClient) RegisterAccount(_ context.Context, _ []string) (goacmedns.Account, error) {
-	return c.mockAccount, nil
-}
-
-// mockUpdateClient is a mock implementing the acmeDNSClient interface that
-// tracks the calls to UpdateTXTRecord in the records map.
-type mockUpdateClient struct {
-	mockClient
 	records map[goacmedns.Account]string
+
+	updateTXTRecordCalled bool
+	updateTXTRecord       func(ctx context.Context, acct goacmedns.Account, value string) error
+
+	registerAccountCalled bool
+	registerAccount       func(ctx context.Context, allowFrom []string) (goacmedns.Account, error)
 }
 
-// UpdateTXTRecord saves a record value to c.records for the given acct.
-func (c mockUpdateClient) UpdateTXTRecord(_ context.Context, acct goacmedns.Account, value string) error {
+func newMockClient() *mockClient {
+	return &mockClient{
+		records: make(map[goacmedns.Account]string),
+		updateTXTRecord: func(_ context.Context, _ goacmedns.Account, _ string) error {
+			return nil
+		},
+		registerAccount: func(_ context.Context, _ []string) (goacmedns.Account, error) {
+			return goacmedns.Account{}, nil
+		},
+	}
+}
+
+func (c *mockClient) UpdateTXTRecord(ctx context.Context, acct goacmedns.Account, value string) error {
+	c.updateTXTRecordCalled = true
 	c.records[acct] = value
-	return nil
+
+	return c.updateTXTRecord(ctx, acct, value)
 }
 
-// errorUpdateClient is a mock implementing the acmeDNSClient interface that always
-// returns errors from errorUpdateClient.
-type errorUpdateClient struct {
-	mockClient
+func (c *mockClient) RegisterAccount(ctx context.Context, allowFrom []string) (goacmedns.Account, error) {
+	c.registerAccountCalled = true
+	return c.registerAccount(ctx, allowFrom)
 }
 
-// UpdateTXTRecord always returns an error.
-func (c errorUpdateClient) UpdateTXTRecord(_ context.Context, _ goacmedns.Account, _ string) error {
-	return errorClientErr
+func (c *mockClient) WithUpdateTXTRecordError(err error) *mockClient {
+	c.updateTXTRecord = func(_ context.Context, _ goacmedns.Account, _ string) error {
+		return err
+	}
+
+	return c
 }
 
-// errorRegisterClient is a mock implementing the acmeDNSClient interface that always
-// returns errors from RegisterAccount.
-type errorRegisterClient struct {
-	mockClient
-}
-
-// RegisterAccount always returns an error.
-func (c errorRegisterClient) RegisterAccount(_ context.Context, _ []string) (goacmedns.Account, error) {
-	return goacmedns.Account{}, errorClientErr
-}
-
-// mockStorage is a mock implementing the goacmedns.Storage interface that
-// returns static account data and ignores Save.
-type mockStorage struct {
-	accounts map[string]goacmedns.Account
-}
-
-// Save does nothing.
-func (m mockStorage) Save(_ context.Context) error {
-	return nil
-}
-
-// Put stores an account for the given domain in m.accounts.
-func (m mockStorage) Put(_ context.Context, domain string, acct goacmedns.Account) error {
-	m.accounts[domain] = acct
-	return nil
-}
-
-// Fetch retrieves an account for the given domain from m.accounts or returns
-// goacmedns.ErrDomainNotFound.
-func (m mockStorage) Fetch(_ context.Context, domain string) (goacmedns.Account, error) {
-	if acct, ok := m.accounts[domain]; ok {
+func (c *mockClient) WithRegisterAccount(acct goacmedns.Account) *mockClient {
+	c.registerAccount = func(_ context.Context, _ []string) (goacmedns.Account, error) {
 		return acct, nil
 	}
-	return goacmedns.Account{}, storage.ErrDomainNotFound
+
+	return c
 }
 
-// FetchAll returns all of m.accounts.
-func (m mockStorage) FetchAll(_ context.Context) (map[string]goacmedns.Account, error) {
-	return m.accounts, nil
+func (c *mockClient) WithRegisterAccountError(err error) *mockClient {
+	c.registerAccount = func(_ context.Context, _ []string) (goacmedns.Account, error) {
+		return goacmedns.Account{}, err
+	}
+
+	return c
 }
 
-// errorPutStorage is a mock implementing the goacmedns.Storage interface that
-// always returns errors from Put.
-type errorPutStorage struct {
-	mockStorage
+type mockStorage struct {
+	accounts map[string]goacmedns.Account
+	fetchAll func(ctx context.Context) (map[string]goacmedns.Account, error)
+	fetch    func(ctx context.Context, domain string) (goacmedns.Account, error)
+	put      func(ctx context.Context, domain string, acct goacmedns.Account) error
+	save     func(ctx context.Context) error
 }
 
-// Put always errors.
-func (e errorPutStorage) Put(_ context.Context, _ string, _ goacmedns.Account) error {
-	return errorStorageErr
+func newMockStorage() *mockStorage {
+	m := &mockStorage{
+		accounts: make(map[string]goacmedns.Account),
+		put: func(_ context.Context, _ string, _ goacmedns.Account) error {
+			return nil
+		},
+		save: func(_ context.Context) error {
+			return nil
+		},
+	}
+
+	m.fetchAll = func(ctx context.Context) (map[string]goacmedns.Account, error) {
+		return m.accounts, nil
+	}
+
+	m.fetch = func(_ context.Context, domain string) (goacmedns.Account, error) {
+		if acct, ok := m.accounts[domain]; ok {
+			return acct, nil
+		}
+		return goacmedns.Account{}, storage.ErrDomainNotFound
+	}
+
+	return m
 }
 
-// errorSaveStorage is a mock implementing the goacmedns.Storage interface that
-// always returns errors from Save.
-type errorSaveStorage struct {
-	mockStorage
+func (m *mockStorage) FetchAll(ctx context.Context) (map[string]goacmedns.Account, error) {
+	return m.fetchAll(ctx)
 }
 
-// Save always errors.
-func (e errorSaveStorage) Save(_ context.Context) error {
-	return errorStorageErr
+func (m *mockStorage) Fetch(ctx context.Context, domain string) (goacmedns.Account, error) {
+	return m.fetch(ctx, domain)
 }
 
-// errorFetchStorage is a mock implementing the goacmedns.Storage interface that
-// always returns errors from Fetch.
-type errorFetchStorage struct {
-	mockStorage
+func (m *mockStorage) Put(ctx context.Context, domain string, account goacmedns.Account) error {
+	return m.put(ctx, domain, account)
 }
 
-// Fetch always errors.
-func (e errorFetchStorage) Fetch(_ context.Context, _ string) (goacmedns.Account, error) {
-	return goacmedns.Account{}, errorStorageErr
+func (m *mockStorage) Save(ctx context.Context) error {
+	return m.save(ctx)
 }
 
-// FetchAll is a nop for errorFetchStorage.
-func (e errorFetchStorage) FetchAll(_ context.Context) (map[string]goacmedns.Account, error) {
-	return nil, nil
+func (m *mockStorage) WithAccount(domain string, acct goacmedns.Account) *mockStorage {
+	m.accounts[domain] = acct
+
+	return m
+}
+
+func (m *mockStorage) WithFetchError(err error) *mockStorage {
+	m.fetch = func(_ context.Context, _ string) (goacmedns.Account, error) {
+		return goacmedns.Account{}, err
+	}
+
+	return m
+}
+
+func (m *mockStorage) WithPutError(err error) *mockStorage {
+	m.put = func(_ context.Context, _ string, _ goacmedns.Account) error {
+		return err
+	}
+
+	return m
+}
+
+func (m *mockStorage) WithSaveError(err error) *mockStorage {
+	m.save = func(ctx context.Context) error {
+		return err
+	}
+
+	return m
 }

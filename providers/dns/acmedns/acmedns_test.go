@@ -149,10 +149,11 @@ func TestRegister(t *testing.T) {
 			}
 
 			// Call register for the example domain/fqdn.
-			err := p.register(context.Background(), egDomain, egFQDN)
+			acc, err := p.register(context.Background(), egDomain, egFQDN)
 			if test.ExpectedError != nil {
 				assert.Equal(t, test.ExpectedError, err)
 			} else {
+				assert.Equal(t, goacmedns.Account{}, acc)
 				require.NoError(t, err)
 			}
 		})

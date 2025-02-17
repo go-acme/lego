@@ -178,7 +178,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 		// The account did not exist.
 		// Create a new one and return an error indicating the required one-time manual CNAME setup.
-		err = d.register(ctx, domain, info.FQDN)
+		account, err = d.register(ctx, domain, info.FQDN)
 		if err != nil {
 			return err
 		}
@@ -200,10 +200,10 @@ func (d *DNSProvider) CleanUp(_, _, _ string) error {
 // If account creation works as expected a ErrCNAMERequired error is returned describing
 // the one-time manual CNAME setup required to complete setup of the ACME-DNS hook for the domain.
 // If any other error occurs it is returned as-is.
-func (d *DNSProvider) register(ctx context.Context, domain, fqdn string) error {
+func (d *DNSProvider) register(ctx context.Context, domain, fqdn string) (goacmedns.Account, error) {
 	newAcct, err := d.client.RegisterAccount(ctx, d.config.AllowList)
 	if err != nil {
-		return err
+		return goacmedns.Account{}, err
 	}
 
 	var cnameCreated bool
@@ -213,23 +213,23 @@ func (d *DNSProvider) register(ctx context.Context, domain, fqdn string) error {
 	if err != nil {
 		cnameCreated = errors.Is(err, internal.ErrCNAMEAlreadyCreated)
 		if !cnameCreated {
-			return err
+			return goacmedns.Account{}, err
 		}
 	}
 
 	err = d.storage.Save(ctx)
 	if err != nil {
-		return err
+		return goacmedns.Account{}, err
 	}
 
 	if cnameCreated {
-		return nil
+		return newAcct, nil
 	}
 
 	// Stop issuance by returning an error.
 	// The user needs to perform a manual one-time CNAME setup in their DNS zone
 	// to complete the setup of the new account we created.
-	return ErrCNAMERequired{
+	return goacmedns.Account{}, ErrCNAMERequired{
 		Domain: domain,
 		FQDN:   fqdn,
 		Target: newAcct.FullDomain,

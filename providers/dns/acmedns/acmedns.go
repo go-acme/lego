@@ -171,14 +171,17 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	// Check if credentials were previously saved for this domain.
 	account, err := d.storage.Fetch(ctx, domain)
-	if err != nil && !errors.Is(err, internal.ErrCNAMEAlreadyCreated) {
+	if err != nil {
 		if errors.Is(err, storage.ErrDomainNotFound) {
 			// The account did not exist.
 			// Create a new one and return an error indicating the required one-time manual CNAME setup.
-			return d.register(ctx, domain, info.FQDN)
+			err = d.register(ctx, domain, info.FQDN)
+			if !errors.Is(err, internal.ErrCNAMEAlreadyCreated) {
+				return err
+			}
+		} else {
+			return err
 		}
-
-		return err
 	}
 
 	// Update the acme-dns TXT record.

@@ -171,14 +171,13 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	// Check if credentials were previously saved for this domain.
 	account, err := d.storage.Fetch(ctx, domain)
-	if err != nil {
+	if err != nil && !errors.Is(err, internal.ErrCNAMEAlreadyCreated) {
 		if errors.Is(err, storage.ErrDomainNotFound) {
 			// The account did not exist.
 			// Create a new one and return an error indicating the required one-time manual CNAME setup.
 			return d.register(ctx, domain, info.FQDN)
 		}
 
-		// Errors other than goacmedns.ErrDomainNotFound are unexpected.
 		return err
 	}
 
@@ -221,7 +220,7 @@ func (d *DNSProvider) register(ctx context.Context, domain, fqdn string) error {
 	}
 
 	if cnameCreated {
-		return nil
+		return internal.ErrCNAMEAlreadyCreated
 	}
 
 	// Stop issuance by returning an error.

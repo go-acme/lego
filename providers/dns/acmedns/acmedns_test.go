@@ -12,27 +12,17 @@ import (
 )
 
 const (
-	// Fixed test data for unit tests.
 	egDomain  = "example.com"
 	egFQDN    = "_acme-challenge." + egDomain + "."
 	egKeyAuth = "⚷"
 )
 
-// TestPresent tests that the ACME-DNS Present function for updating a DNS-01
-// challenge response TXT record works as expected.
 func TestPresent(t *testing.T) {
 	// validAccountStorage is a mockStorage configured to return the egTestAccount.
-	validAccountStorage := mockStorage{
-		map[string]goacmedns.Account{
-			egDomain: egTestAccount,
-		},
-	}
-	// validUpdateClient is a mockClient configured with the egTestAccount that will
-	// track TXT updates in a map.
-	validUpdateClient := mockUpdateClient{
-		mockClient{egTestAccount},
-		make(map[goacmedns.Account]string),
-	}
+	validAccountStorage := newMockStorage().WithAccount(egDomain, egTestAccount)
+
+	// validUpdateClient is a mockClient configured with the egTestAccount that will track TXT updates in a map.
+	validUpdateClient := newMockClient()
 
 	testCases := []struct {
 		Name          string
@@ -42,13 +32,13 @@ func TestPresent(t *testing.T) {
 	}{
 		{
 			Name:          "present when client storage returns unexpected error",
-			Client:        mockClient{egTestAccount},
-			Storage:       errorFetchStorage{},
+			Client:        newMockClient().WithRegisterAccount(egTestAccount),
+			Storage:       newMockStorage().WithFetchError(errorStorageErr),
 			ExpectedError: errorStorageErr,
 		},
 		{
 			Name:   "present when client storage returns ErrDomainNotFound",
-			Client: mockClient{egTestAccount},
+			Client: newMockClient().WithRegisterAccount(egTestAccount),
 			ExpectedError: ErrCNAMERequired{
 				Domain: egDomain,
 				FQDN:   egFQDN,
@@ -57,7 +47,7 @@ func TestPresent(t *testing.T) {
 		},
 		{
 			Name:          "present when client UpdateTXTRecord returns unexpected error",
-			Client:        errorUpdateClient{},
+			Client:        newMockClient().WithUpdateTXTRecordError(errorClientErr),
 			Storage:       validAccountStorage,
 			ExpectedError: errorClientErr,
 		},
@@ -73,16 +63,13 @@ func TestPresent(t *testing.T) {
 			p := &DNSProvider{
 				config:  NewDefaultConfig(),
 				client:  test.Client,
-				storage: mockStorage{make(map[string]goacmedns.Account)},
+				storage: newMockStorage(),
 			}
 
-			// override the storage mock if required by the test case.
 			if test.Storage != nil {
 				p.storage = test.Storage
 			}
 
-			// call Present. The token argument can be garbage because the ACME-DNS
-			// provider does not use it.
 			err := p.Present(egDomain, "foo", egKeyAuth)
 			if test.ExpectedError != nil {
 				assert.Equal(t, test.ExpectedError, err)
@@ -104,30 +91,28 @@ func TestRegister(t *testing.T) {
 		Name          string
 		Client        acmeDNSClient
 		Storage       goacmedns.Storage
-		Domain        string
-		FQDN          string
 		ExpectedError error
 	}{
 		{
 			Name:          "register when acme-dns client returns an error",
-			Client:        errorRegisterClient{},
+			Client:        newMockClient().WithRegisterAccountError(errorClientErr),
 			ExpectedError: errorClientErr,
 		},
 		{
 			Name:          "register when acme-dns storage put returns an error",
-			Client:        mockClient{egTestAccount},
-			Storage:       errorPutStorage{mockStorage{make(map[string]goacmedns.Account)}},
+			Client:        newMockClient().WithRegisterAccount(egTestAccount),
+			Storage:       newMockStorage().WithPutError(errorStorageErr),
 			ExpectedError: errorStorageErr,
 		},
 		{
 			Name:          "register when acme-dns storage save returns an error",
-			Client:        mockClient{egTestAccount},
-			Storage:       errorSaveStorage{mockStorage{make(map[string]goacmedns.Account)}},
+			Client:        newMockClient().WithRegisterAccount(egTestAccount),
+			Storage:       newMockStorage().WithSaveError(errorStorageErr),
 			ExpectedError: errorStorageErr,
 		},
 		{
 			Name:   "register when everything works",
-			Client: mockClient{egTestAccount},
+			Client: newMockClient().WithRegisterAccount(egTestAccount),
 			ExpectedError: ErrCNAMERequired{
 				Domain: egDomain,
 				FQDN:   egFQDN,
@@ -141,15 +126,13 @@ func TestRegister(t *testing.T) {
 			p := &DNSProvider{
 				config:  NewDefaultConfig(),
 				client:  test.Client,
-				storage: mockStorage{make(map[string]goacmedns.Account)},
+				storage: newMockStorage(),
 			}
 
-			// override the storage mock if required by the testcase.
 			if test.Storage != nil {
 				p.storage = test.Storage
 			}
 
-			// Call register for the example domain/fqdn.
 			acc, err := p.register(context.Background(), egDomain, egFQDN)
 			if test.ExpectedError != nil {
 				assert.Equal(t, test.ExpectedError, err)
@@ -193,15 +176,7 @@ func TestPresent_httpStorage(t *testing.T) {
 			p, err := NewDNSProviderConfig(config)
 			require.NoError(t, err)
 
-			client := &mockClientCalls{
-				updateTXTRecord: func(_ context.Context, _ goacmedns.Account, _ string) error {
-					return nil
-				},
-				registerAccount: func(_ context.Context, _ []string) (goacmedns.Account, error) {
-					return egTestAccount, nil
-				},
-			}
-
+			client := newMockClient().WithRegisterAccount(egTestAccount)
 			p.client = client
 
 			// Fetch
@@ -260,8 +235,9 @@ func TestRegister_httpStorage(t *testing.T) {
 			p, err := NewDNSProviderConfig(config)
 			require.NoError(t, err)
 
-			p.client = mockClient{mockAccount: egTestAccount}
+			p.client = newMockClient().WithRegisterAccount(egTestAccount)
 
+			// Put
 			mux.HandleFunc("POST /example.com", func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(test.StatusCode)
 			})

@@ -1,5 +1,11 @@
 # Changelog
 
+## [v4.22.2](https://github.com/go-acme/lego/releases/tag/v4.22.2) (2025-02-17)
+
+### Fixed
+
+- **[dnsprovider]** acme-dns: use new registred account
+
 ## [v4.22.1](https://github.com/go-acme/lego/releases/tag/v4.22.1) (2025-02-17)
 
 ### Fixed

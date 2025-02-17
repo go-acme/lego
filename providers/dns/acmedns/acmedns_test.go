@@ -2,6 +2,8 @@ package acmedns
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/nrdcg/goacmedns"
@@ -97,7 +99,6 @@ func TestPresent(t *testing.T) {
 	assert.Len(t, validUpdateClient.records[egTestAccount], 43)
 }
 
-// TestRegister tests that the ACME-DNS register function works correctly.
 func TestRegister(t *testing.T) {
 	testCases := []struct {
 		Name          string
@@ -155,6 +156,122 @@ func TestRegister(t *testing.T) {
 			} else {
 				assert.Equal(t, goacmedns.Account{}, acc)
 				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestPresent_httpStorage(t *testing.T) {
+	testCases := []struct {
+		desc          string
+		StatusCode    int
+		ExpectedError error
+	}{
+		{
+			desc:       "the CNAME is not handled by the storage",
+			StatusCode: http.StatusOK,
+			ExpectedError: ErrCNAMERequired{
+				Domain: egDomain,
+				FQDN:   egFQDN,
+				Target: egTestAccount.FullDomain,
+			},
+		},
+		{
+			desc:       "the CNAME is handled by the storage",
+			StatusCode: http.StatusCreated,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			mux := http.NewServeMux()
+			server := httptest.NewServer(mux)
+
+			config := NewDefaultConfig()
+			config.StorageBaseURL = server.URL
+
+			p, err := NewDNSProviderConfig(config)
+			require.NoError(t, err)
+
+			client := &mockClientCalls{
+				updateTXTRecord: func(_ context.Context, _ goacmedns.Account, _ string) error {
+					return nil
+				},
+				registerAccount: func(_ context.Context, _ []string) (goacmedns.Account, error) {
+					return egTestAccount, nil
+				},
+			}
+
+			p.client = client
+
+			// Fetch
+			mux.HandleFunc("GET /example.com", func(rw http.ResponseWriter, reg *http.Request) {
+				rw.WriteHeader(http.StatusNotFound)
+			})
+
+			// Put
+			mux.HandleFunc("POST /example.com", func(rw http.ResponseWriter, req *http.Request) {
+				rw.WriteHeader(test.StatusCode)
+			})
+
+			err = p.Present(egDomain, "foo", egKeyAuth)
+			if test.ExpectedError != nil {
+				assert.Equal(t, test.ExpectedError, err)
+				assert.True(t, client.registerAccountCalled)
+				assert.False(t, client.updateTXTRecordCalled)
+			} else {
+				require.NoError(t, err)
+				assert.True(t, client.registerAccountCalled)
+				assert.True(t, client.updateTXTRecordCalled)
+			}
+		})
+	}
+}
+
+func TestRegister_httpStorage(t *testing.T) {
+	testCases := []struct {
+		Name          string
+		StatusCode    int
+		ExpectedError error
+	}{
+		{
+			Name:       "status code 200",
+			StatusCode: http.StatusOK,
+			ExpectedError: ErrCNAMERequired{
+				Domain: egDomain,
+				FQDN:   egFQDN,
+				Target: egTestAccount.FullDomain,
+			},
+		},
+		{
+			Name:       "status code 201",
+			StatusCode: http.StatusCreated,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.Name, func(t *testing.T) {
+			mux := http.NewServeMux()
+			server := httptest.NewServer(mux)
+
+			config := NewDefaultConfig()
+			config.StorageBaseURL = server.URL
+
+			p, err := NewDNSProviderConfig(config)
+			require.NoError(t, err)
+
+			p.client = mockClient{mockAccount: egTestAccount}
+
+			mux.HandleFunc("POST /example.com", func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(test.StatusCode)
+			})
+
+			acc, err := p.register(context.Background(), egDomain, egFQDN)
+			if test.ExpectedError != nil {
+				assert.Equal(t, test.ExpectedError, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, egTestAccount, acc)
 			}
 		})
 	}

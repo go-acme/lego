@@ -22,6 +22,23 @@ var egTestAccount = goacmedns.Account{
 	Password:   "trustno1",
 }
 
+type mockClientCalls struct {
+	updateTXTRecordCalled bool
+	registerAccountCalled bool
+	updateTXTRecord       func(_ context.Context, _ goacmedns.Account, _ string) error
+	registerAccount       func(_ context.Context, _ []string) (goacmedns.Account, error)
+}
+
+func (m *mockClientCalls) UpdateTXTRecord(ctx context.Context, account goacmedns.Account, value string) error {
+	m.updateTXTRecordCalled = true
+	return m.updateTXTRecord(ctx, account, value)
+}
+
+func (m *mockClientCalls) RegisterAccount(ctx context.Context, allowFrom []string) (goacmedns.Account, error) {
+	m.registerAccountCalled = true
+	return m.registerAccount(ctx, allowFrom)
+}
+
 // mockClient is a mock implementing the acmeDNSClient interface that always
 // returns a fixed goacmedns.Account from calls to Register.
 type mockClient struct {

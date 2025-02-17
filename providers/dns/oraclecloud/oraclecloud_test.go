@@ -320,7 +320,7 @@ func mustGeneratePrivateKeyFile(pwd string) string {
 }
 
 func generatePrivateKey(pwd string) (*pem.Block, error) {
-	key, err := rsa.GenerateKey(rand.Reader, 512)
+	key, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		return nil, err
 	}

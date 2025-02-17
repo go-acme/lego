@@ -66,7 +66,7 @@ func TestChallenge(t *testing.T) {
 		return nil
 	}
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Could not generate test key")
 
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
@@ -95,7 +95,7 @@ func TestChallenge(t *testing.T) {
 func TestChallengeInvalidPort(t *testing.T) {
 	_, apiURL := tester.SetupFakeAPI(t)
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 128)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Could not generate test key")
 
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
@@ -167,7 +167,7 @@ func TestChallengeIPaddress(t *testing.T) {
 		return nil
 	}
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Could not generate test key")
 
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)

@@ -179,7 +179,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 		// The account did not exist.
 		// Create a new one and return an error indicating the required one-time manual CNAME setup.
 		err = d.register(ctx, domain, info.FQDN)
-		if !errors.Is(err, internal.ErrCNAMEAlreadyCreated) {
+		if err != nil {
 			return err
 		}
 	}
@@ -223,7 +223,7 @@ func (d *DNSProvider) register(ctx context.Context, domain, fqdn string) error {
 	}
 
 	if cnameCreated {
-		return internal.ErrCNAMEAlreadyCreated
+		return nil
 	}
 
 	// Stop issuance by returning an error.

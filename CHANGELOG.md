@@ -1,6 +1,14 @@
 # Changelog
 
-## [v4.22.0](https://github.com/go-acme/lego/releases/tag/v4.22.0) (2025-02-16)
+## [v4.22.1](https://github.com/go-acme/lego/releases/tag/v4.22.1) (2025-02-17)
+
+### Fixed
+
+- **[dnsprovider]** acme-dns: continue the process when the CNAME is handled by the storage
+
+### Added
+
+## [v4.22.0](https://github.com/go-acme/lego/releases/tag/v4.22.0) (2025-02-17)
 
 ### Added
 

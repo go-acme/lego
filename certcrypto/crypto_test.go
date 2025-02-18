@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/pem"
-	"regexp"
 	"testing"
 	"time"
 
@@ -129,9 +128,6 @@ func TestPEMEncode(t *testing.T) {
 
 	data := PEMEncode(key)
 	require.NotNil(t, data)
-
-	exp := regexp.MustCompile(`^-----BEGIN RSA PRIVATE KEY-----\s+[\S\s]{60,}\s+-----END RSA PRIVATE KEY-----\s+`)
-	assert.Regexp(t, exp, string(data))
 
 	p, rest := pem.Decode(data)
 

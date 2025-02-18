@@ -132,6 +132,12 @@ func TestPEMEncode(t *testing.T) {
 
 	exp := regexp.MustCompile(`^-----BEGIN RSA PRIVATE KEY-----\s+[\S\s]{60,}\s+-----END RSA PRIVATE KEY-----\s+`)
 	assert.Regexp(t, exp, string(data))
+
+	p, rest := pem.Decode(data)
+
+	assert.Equal(t, "RSA PRIVATE KEY", p.Type)
+	assert.Empty(t, rest)
+	assert.Empty(t, p.Headers)
 }
 
 func TestParsePEMCertificate(t *testing.T) {

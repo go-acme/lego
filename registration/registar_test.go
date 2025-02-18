@@ -27,7 +27,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 		}
 	})
 
-	key, err := rsa.GenerateKey(rand.Reader, 512)
+	key, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := mockUser{

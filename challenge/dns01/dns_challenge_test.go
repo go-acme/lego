@@ -34,7 +34,7 @@ func (p *providerTimeoutMock) Timeout() (time.Duration, time.Duration)     { ret
 func TestChallenge_PreSolve(t *testing.T) {
 	_, apiURL := tester.SetupFakeAPI(t)
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err)
 
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
@@ -116,7 +116,7 @@ func TestChallenge_PreSolve(t *testing.T) {
 func TestChallenge_Solve(t *testing.T) {
 	_, apiURL := tester.SetupFakeAPI(t)
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err)
 
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
@@ -203,7 +203,7 @@ func TestChallenge_Solve(t *testing.T) {
 func TestChallenge_CleanUp(t *testing.T) {
 	_, apiURL := tester.SetupFakeAPI(t)
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err)
 
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)

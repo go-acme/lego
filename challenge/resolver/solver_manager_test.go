@@ -36,7 +36,7 @@ func TestValidate(t *testing.T) {
 
 	var statuses []string
 
-	privateKey, _ := rsa.GenerateKey(rand.Reader, 512)
+	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 
 	mux.HandleFunc("/chlg", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {

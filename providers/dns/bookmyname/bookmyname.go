@@ -98,7 +98,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	record := internal.Record{
-		Hostname: info.EffectiveFQDN,
+		Hostname: dns01.UnFqdn(info.EffectiveFQDN),
 		Type:     "txt",
 		TTL:      d.config.TTL,
 		Value:    info.Value,
@@ -117,7 +117,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	record := internal.Record{
-		Hostname: info.EffectiveFQDN,
+		Hostname: dns01.UnFqdn(info.EffectiveFQDN),
 		Type:     "txt",
 		TTL:      d.config.TTL,
 		Value:    info.Value,

@@ -23,6 +23,7 @@ func allDNSCodes() string {
 		"azuredns",
 		"bindman",
 		"bluecat",
+		"bookmyname",
 		"brandit",
 		"bunny",
 		"checkdomain",
@@ -396,6 +397,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/bluecat`)
+
+	case "bookmyname":
+		// generated from: providers/dns/bookmyname/bookmyname.toml
+		ew.writeln(`Configuration for BookMyName.`)
+		ew.writeln(`Code:	'bookmyname'`)
+		ew.writeln(`Since:	'v4.23.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "BOOKMYNAME_PASSWORD":	Password`)
+		ew.writeln(`	- "BOOKMYNAME_USERNAME":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "BOOKMYNAME_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "BOOKMYNAME_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "BOOKMYNAME_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "BOOKMYNAME_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/bookmyname`)
 
 	case "brandit":
 		// generated from: providers/dns/brandit/brandit.toml

@@ -21,6 +21,7 @@ func allDNSCodes() string {
 		"autodns",
 		"azure",
 		"azuredns",
+		"beget",
 		"bindman",
 		"bluecat",
 		"brandit",
@@ -352,6 +353,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/azuredns`)
+
+	case "beget":
+		// generated from: providers/dns/beget/beget.toml
+		ew.writeln(`Configuration for Beget.com.`)
+		ew.writeln(`Code:	'beget'`)
+		ew.writeln(`Since:	'v4.23.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "BEGET_PASSWORD":	API password`)
+		ew.writeln(`	- "BEGET_USERNAME":	API username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "BEGET_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "BEGET_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "BEGET_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "BEGET_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/beget`)
 
 	case "bindman":
 		// generated from: providers/dns/bindman/bindman.toml

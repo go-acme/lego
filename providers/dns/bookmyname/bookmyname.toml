@@ -15,10 +15,10 @@ lego --email you@example.com --dns bookmyname -d '*.example.com' -d example.com 
     BOOKMYNAME_USERNAME = "Username"
     BOOKMYNAME_PASSWORD = "Password"
   [Configuration.Additional]
-    BOOKMYNAME_POLLING_INTERVAL = "Time between DNS propagation check"
-    BOOKMYNAME_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
-    BOOKMYNAME_TTL = "The TTL of the TXT record used for the DNS challenge"
-    BOOKMYNAME_HTTP_TIMEOUT = "API request timeout"
+    BOOKMYNAME_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    BOOKMYNAME_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    BOOKMYNAME_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    BOOKMYNAME_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]
   API = "https://fr.faqs.bookmyname.com/frfaqs/dyndns"

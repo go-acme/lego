@@ -40,13 +40,13 @@ func createRenew() *cli.Command {
 			hasDomains := len(ctx.StringSlice(flgDomains)) > 0
 			hasCsr := ctx.String(flgCSR) != ""
 			if hasDomains && hasCsr {
-				log.Fatal("Please specify either --%s/-d or --%s/-c, but not both", flgDomains, flgCSR)
+				log.Fatalf("Please specify either --%s/-d or --%s/-c, but not both", flgDomains, flgCSR)
 			}
 			if !hasDomains && !hasCsr {
-				log.Fatal("Please specify --%s/-d (or --%s/-c if you already have a CSR)", flgDomains, flgCSR)
+				log.Fatalf("Please specify --%s/-d (or --%s/-c if you already have a CSR)", flgDomains, flgCSR)
 			}
 			if ctx.Bool(flgForceCertDomains) && hasCsr {
-				log.Fatal("--%s only works with --%s/-d, --%s/-c doesn't support this option.", flgForceCertDomains, flgDomains, flgCSR)
+				log.Fatalf("--%s only works with --%s/-d, --%s/-c doesn't support this option.", flgForceCertDomains, flgDomains, flgCSR)
 			}
 			return nil
 		},

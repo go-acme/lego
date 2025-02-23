@@ -123,9 +123,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
-		if err != nil {
-			return fmt.Errorf("shellrent: could not find zone for domain %q: %w", domain, err)
-		}
+		return fmt.Errorf("shellrent: could not find zone for domain %q: %w", domain, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.DomainName)

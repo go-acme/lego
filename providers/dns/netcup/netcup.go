@@ -114,7 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	defer func() {
 		err = d.client.Logout(ctx)
 		if err != nil {
-			log.Print("netcup: %v", err)
+			log.Printf("netcup: %v", err)
 		}
 	}()
 
@@ -160,7 +160,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	defer func() {
 		err = d.client.Logout(ctx)
 		if err != nil {
-			log.Print("netcup: %v", err)
+			log.Printf("netcup: %v", err)
 		}
 	}()
 

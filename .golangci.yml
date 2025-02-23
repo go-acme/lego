@@ -40,8 +40,18 @@ linters:
 
 linters-settings:
   govet:
-    enable:
-      - shadow
+    enable-all: true
+    disable:
+      - fieldalignment
+    settings:
+      printf:
+        funcs:
+          - Print
+          - Printf
+          - Warn
+          - Warnf
+          - Fatal
+          - Fatalf
   gocyclo:
     min-complexity: 12
   goconst:

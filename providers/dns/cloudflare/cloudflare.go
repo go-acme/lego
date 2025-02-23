@@ -205,7 +205,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.client.DeleteDNSRecord(context.Background(), zoneID, recordID)
 	if err != nil {
-		log.Printf("cloudflare: failed to delete TXT record: %w", err)
+		log.Printf("cloudflare: failed to delete TXT record: %v", err)
 	}
 
 	// Delete record ID from map

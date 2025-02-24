@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,37 +53,62 @@ func setupTest(t *testing.T, pattern string, status int, filename string) *Clien
 }
 
 func TestClient_UpdateDNSZone(t *testing.T) {
-	client := setupTest(t, "PATCH /dnszone/example.com", http.StatusOK, "")
+	client := setupTest(t, "PATCH /dnszone/example.com", http.StatusOK, "update-dns-zone.json")
 
-	updateRequest := DnszoneUpdateRequest{
-		Add: []Content{
-			{
-				Name:    "@",
-				Type:    "TXT",
-				TTL:     60,
-				Content: "value",
-			},
-		},
+	updateRequest := DNSZoneUpdateRequest{
+		Add: []Record{{
+			Name:    "@",
+			Type:    "TXT",
+			TTL:     60,
+			Content: "value",
+		}},
 	}
 
-	err := client.UpdateDNSZone(context.Background(), "example.com", updateRequest)
+	response, err := client.UpdateDNSZone(context.Background(), "example.com", updateRequest)
 	require.NoError(t, err)
+
+	expected := &DNSZoneUpdateResponse{
+		ResponseID: "mapi1_cb46ad8790b62b76535bd3102bd282aec83b894c",
+		Status:     "ok",
+		Message:    "Command completed successfully",
+	}
+
+	assert.Equal(t, expected, response)
 }
 
 func TestClient_UpdateDNSZone_error(t *testing.T) {
-	client := setupTest(t, "PATCH /dnszone/example.com", http.StatusUnprocessableEntity, "error.json")
-
-	updateRequest := DnszoneUpdateRequest{
-		Add: []Content{
-			{
-				Name:    "@",
-				Type:    "TXT",
-				TTL:     60,
-				Content: "value",
-			},
+	testCases := []struct {
+		desc     string
+		filename string
+		expected string
+	}{
+		{
+			desc:     "authentication error",
+			filename: "error.json",
+			expected: "invalid_token: the supplied token is invalid",
+		},
+		{
+			desc:     "API error",
+			filename: "error-response.json",
+			expected: "error: does_not_exist: This server does not exist",
 		},
 	}
 
-	err := client.UpdateDNSZone(context.Background(), "example.com", updateRequest)
-	require.EqualError(t, err, "invalid_token: the supplied token is invalid")
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			client := setupTest(t, "PATCH /dnszone/example.com", http.StatusUnprocessableEntity, test.filename)
+
+			updateRequest := DNSZoneUpdateRequest{
+				Add: []Record{{
+					Name:    "@",
+					Type:    "TXT",
+					TTL:     60,
+					Content: "value",
+				}},
+			}
+
+			_, err := client.UpdateDNSZone(context.Background(), "example.com", updateRequest)
+			require.EqualError(t, err, test.expected)
+		})
+	}
 }

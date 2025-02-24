@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -96,18 +97,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("metaregistrar: could not find zone for domain %q: %w", domain, err)
 	}
 
-	updateRequest := internal.DnszoneUpdateRequest{
-		Add: []internal.Content{
-			{
-				Name:    dns01.UnFqdn(info.EffectiveFQDN),
-				Type:    "TXT",
-				TTL:     d.config.TTL,
-				Content: info.Value,
-			},
-		},
+	updateRequest := internal.DNSZoneUpdateRequest{
+		Add: []internal.Record{{
+			Name:    dns01.UnFqdn(info.EffectiveFQDN),
+			Type:    "TXT",
+			TTL:     d.config.TTL,
+			Content: info.Value,
+		}},
 	}
 
-	err = d.client.UpdateDNSZone(context.Background(), dns01.UnFqdn((authZone)), updateRequest)
+	_, err = d.client.UpdateDNSZone(context.Background(), dns01.UnFqdn(authZone), updateRequest)
 	if err != nil {
 		return fmt.Errorf("metaregistrar: %w", err)
 	}
@@ -124,18 +123,16 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("metaregistrar: could not find zone for domain %q: %w", domain, err)
 	}
 
-	updateRequest := internal.DnszoneUpdateRequest{
-		Remove: []internal.Content{
-			{
-				Name:    dns01.UnFqdn(info.EffectiveFQDN),
-				Type:    "TXT",
-				TTL:     d.config.TTL,
-				Content: "\"" + info.Value + "\"",
-			},
-		},
+	updateRequest := internal.DNSZoneUpdateRequest{
+		Remove: []internal.Record{{
+			Name:    dns01.UnFqdn(info.EffectiveFQDN),
+			Type:    "TXT",
+			TTL:     d.config.TTL,
+			Content: strconv.Quote(info.Value),
+		}},
 	}
 
-	err = d.client.UpdateDNSZone(context.Background(), dns01.UnFqdn((authZone)), updateRequest)
+	_, err = d.client.UpdateDNSZone(context.Background(), dns01.UnFqdn(authZone), updateRequest)
 	if err != nil {
 		return fmt.Errorf("metaregistrar: %w", err)
 	}

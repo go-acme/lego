@@ -40,22 +40,24 @@ func NewClient(token string) (*Client, error) {
 }
 
 // UpdateDNSZone updates the DNS zone for a domain.
-// To add or remove a TXT record we make a PATCH request
+// To add or remove a TXT record we make a PATCH request.
 // https://metaregistrar.dev/docu/metaapi/requests/patch_Update_dns_zone.html
-func (c Client) UpdateDNSZone(ctx context.Context, domain string, updateRequest DnszoneUpdateRequest) error {
+func (c Client) UpdateDNSZone(ctx context.Context, domain string, updateRequest DNSZoneUpdateRequest) (*DNSZoneUpdateResponse, error) {
 	endpoint := c.baseURL.JoinPath("dnszone", domain)
 
 	req, err := newJSONRequest(ctx, http.MethodPatch, endpoint, updateRequest)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = c.do(req, nil)
+	result := &DNSZoneUpdateResponse{}
+
+	err = c.do(req, result)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return result, nil
 }
 
 func (c Client) do(req *http.Request, result any) error {

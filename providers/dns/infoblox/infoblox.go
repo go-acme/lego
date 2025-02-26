@@ -19,13 +19,14 @@ import (
 const (
 	envNamespace = "INFOBLOX_"
 
-	EnvHost        = envNamespace + "HOST"
-	EnvPort        = envNamespace + "PORT"
-	EnvUsername    = envNamespace + "USERNAME"
-	EnvPassword    = envNamespace + "PASSWORD"
-	EnvDNSView     = envNamespace + "DNS_VIEW"
-	EnvWApiVersion = envNamespace + "WAPI_VERSION"
-	EnvSSLVerify   = envNamespace + "SSL_VERIFY"
+	EnvHost          = envNamespace + "HOST"
+	EnvPort          = envNamespace + "PORT"
+	EnvUsername      = envNamespace + "USERNAME"
+	EnvPassword      = envNamespace + "PASSWORD"
+	EnvDNSView       = envNamespace + "DNS_VIEW"
+	EnvWApiVersion   = envNamespace + "WAPI_VERSION"
+	EnvSSLVerify     = envNamespace + "SSL_VERIFY"
+	EnvCACertificate = envNamespace + "CA_CERTIFICATE"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -57,6 +58,9 @@ type Config struct {
 	// SSLVerify is whether or not to verify the ssl of the server being hit.
 	SSLVerify bool
 
+	// CACertificate is the path to the CA certificate (PEM encoded).
+	CACertificate string
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -66,10 +70,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		DNSView:     env.GetOrDefaultString(EnvDNSView, "External"),
-		WapiVersion: env.GetOrDefaultString(EnvWApiVersion, "2.11"),
-		Port:        env.GetOrDefaultString(EnvPort, "443"),
-		SSLVerify:   env.GetOrDefaultBool(EnvSSLVerify, true),
+		DNSView:       env.GetOrDefaultString(EnvDNSView, "External"),
+		WapiVersion:   env.GetOrDefaultString(EnvWApiVersion, "2.11"),
+		Port:          env.GetOrDefaultString(EnvPort, "443"),
+		SSLVerify:     env.GetOrDefaultBool(EnvSSLVerify, true),
+		CACertificate: env.GetOrDefaultString(EnvCACertificate, ""),
 
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
@@ -122,9 +127,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("infoblox: missing credentials")
 	}
 
+	var sslVerify string
+	if config.CACertificate != "" {
+		sslVerify = config.CACertificate
+	} else {
+		sslVerify = strconv.FormatBool(config.SSLVerify)
+	}
+
 	return &DNSProvider{
 		config:          config,
-		transportConfig: infoblox.NewTransportConfig(strconv.FormatBool(config.SSLVerify), config.HTTPTimeout, defaultPoolConnections),
+		transportConfig: infoblox.NewTransportConfig(sslVerify, config.HTTPTimeout, defaultPoolConnections),
 		ibConfig: infoblox.HostConfig{
 			Host:     config.Host,
 			Version:  config.WapiVersion,

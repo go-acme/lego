@@ -51,6 +51,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `INFOBLOX_CA_CERTIFICATE` | The path to the CA certificate (PEM encoded) |
 | `INFOBLOX_DNS_VIEW` | The view for the TXT records (Default: External) |
 | `INFOBLOX_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
 | `INFOBLOX_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |

@@ -1557,6 +1557,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "INFOBLOX_CA_CERTIFICATE":	The path to the CA certificate (PEM encoded)`)
 		ew.writeln(`	- "INFOBLOX_DNS_VIEW":	The view for the TXT records (Default: External)`)
 		ew.writeln(`	- "INFOBLOX_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "INFOBLOX_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)

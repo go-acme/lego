@@ -12,7 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
-	infoblox "github.com/infobloxopen/infoblox-go-client"
+	infoblox "github.com/infobloxopen/infoblox-go-client/v2"
 )
 
 // Environment variables names.
@@ -88,6 +88,7 @@ type DNSProvider struct {
 	config          *Config
 	transportConfig infoblox.TransportConfig
 	ibConfig        infoblox.HostConfig
+	ibAuth          infoblox.AuthConfig
 
 	recordRefs   map[string]string
 	recordRefsMu sync.Mutex
@@ -138,9 +139,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config:          config,
 		transportConfig: infoblox.NewTransportConfig(sslVerify, config.HTTPTimeout, defaultPoolConnections),
 		ibConfig: infoblox.HostConfig{
-			Host:     config.Host,
-			Version:  config.WapiVersion,
-			Port:     config.Port,
+			Host:    config.Host,
+			Version: config.WapiVersion,
+			Port:    config.Port,
+		},
+		ibAuth: infoblox.AuthConfig{
 			Username: config.Username,
 			Password: config.Password,
 		},
@@ -157,7 +160,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	connector, err := infoblox.NewConnector(d.ibConfig, d.transportConfig, &infoblox.WapiRequestBuilder{}, &infoblox.WapiHttpRequestor{})
+	connector, err := infoblox.NewConnector(d.ibConfig, d.ibAuth, d.transportConfig, &infoblox.WapiRequestBuilder{}, &infoblox.WapiHttpRequestor{})
 	if err != nil {
 		return fmt.Errorf("infoblox: %w", err)
 	}
@@ -166,7 +169,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	objectManager := infoblox.NewObjectManager(connector, useragent.Get(), "")
 
-	record, err := objectManager.CreateTXTRecord(dns01.UnFqdn(info.EffectiveFQDN), info.Value, uint(d.config.TTL), d.config.DNSView)
+	record, err := objectManager.CreateTXTRecord(d.config.DNSView, dns01.UnFqdn(info.EffectiveFQDN), info.Value, uint32(d.config.TTL), true, "lego", nil)
 	if err != nil {
 		return fmt.Errorf("infoblox: could not create TXT record for %s: %w", domain, err)
 	}
@@ -182,7 +185,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	connector, err := infoblox.NewConnector(d.ibConfig, d.transportConfig, &infoblox.WapiRequestBuilder{}, &infoblox.WapiHttpRequestor{})
+	connector, err := infoblox.NewConnector(d.ibConfig, d.ibAuth, d.transportConfig, &infoblox.WapiRequestBuilder{}, &infoblox.WapiHttpRequestor{})
 	if err != nil {
 		return fmt.Errorf("infoblox: %w", err)
 	}

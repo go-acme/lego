@@ -56,6 +56,7 @@ See also:
     AKAMAI_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 15)"
     AKAMAI_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 180)"
     AKAMAI_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    AKAMAI_ACCOUNT_SWITCH_KEY = "Target account ID when the DNS zone and credentials belong to different accounts"
 
 [Links]
   API = "https://developer.akamai.com/api/cloud_security/edge_dns_zone_management/v2.html"

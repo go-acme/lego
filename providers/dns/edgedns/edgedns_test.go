@@ -214,6 +214,20 @@ func TestNewDefaultConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			desc: "with account switch key",
+			envVars: map[string]string{
+				EnvAccountSwitchKey: "F-AC-1234",
+			},
+			expected: &Config{
+				TTL:                99,
+				PropagationTimeout: 60 * time.Second,
+				PollingInterval:    60 * time.Second,
+				Config: edgegrid.Config{
+					MaxBody: maxBody,
+				},
+			},
+		},
 	}
 
 	for _, test := range testCases {

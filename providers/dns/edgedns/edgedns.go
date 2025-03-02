@@ -28,10 +28,11 @@ const (
 	EnvClientSecret = envNamespace + "CLIENT_SECRET"
 	EnvAccessToken  = envNamespace + "ACCESS_TOKEN"
 
+	EnvAccountSwitchKey = envNamespace + "ACCOUNT_SWITCH_KEY"
+
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvAccountSwitchKey   = envNamespace + "ACCOUNT_SWITCH_KEY"
 )
 
 const (

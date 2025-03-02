@@ -1064,6 +1064,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "AKAMAI_ACCOUNT_SWITCH_KEY":	Target account ID when the DNS zone and credentials belong to different accounts`)
 		ew.writeln(`	- "AKAMAI_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 15)`)
 		ew.writeln(`	- "AKAMAI_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 180)`)
 		ew.writeln(`	- "AKAMAI_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)

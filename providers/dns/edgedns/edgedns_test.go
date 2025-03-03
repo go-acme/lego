@@ -25,6 +25,7 @@ var envTest = tester.NewEnvTest(
 	EnvClientToken,
 	EnvClientSecret,
 	EnvAccessToken,
+	EnvAccountSwitchKey,
 	EnvEdgeRc,
 	EnvEdgeRcSection,
 	envTestHost,
@@ -55,6 +56,24 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				ClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 				AccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
 				MaxBody:      maxBody,
+			},
+		},
+		{
+			desc: "with account switch key",
+			envVars: map[string]string{
+				EnvHost:             "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net",
+				EnvClientToken:      "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
+				EnvClientSecret:     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+				EnvAccessToken:      "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
+				EnvAccountSwitchKey: "F-AC-1234",
+			},
+			expectedConfig: &edgegrid.Config{
+				Host:         "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net",
+				ClientToken:  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
+				ClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+				AccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
+				MaxBody:      maxBody,
+				AccountKey:   "F-AC-1234",
 			},
 		},
 		{

@@ -28,6 +28,8 @@ const (
 	EnvClientSecret = envNamespace + "CLIENT_SECRET"
 	EnvAccessToken  = envNamespace + "ACCESS_TOKEN"
 
+	EnvAccountSwitchKey = envNamespace + "ACCOUNT_SWITCH_KEY"
+
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -79,6 +81,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	rcPath := env.GetOrDefaultString(EnvEdgeRc, "")
 	rcSection := env.GetOrDefaultString(EnvEdgeRcSection, "")
+	accountSwitchKey := env.GetOrDefaultString(EnvAccountSwitchKey, "")
 
 	conf, err := edgegrid.Init(rcPath, rcSection)
 	if err != nil {
@@ -86,6 +89,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	conf.MaxBody = maxBody
+
+	if accountSwitchKey != "" {
+		conf.AccountKey = accountSwitchKey
+	}
 
 	config.Config = conf
 

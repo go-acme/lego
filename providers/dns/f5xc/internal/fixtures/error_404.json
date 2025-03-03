@@ -1,0 +1,5 @@
+{
+  "code": 5,
+  "details": [],
+  "message": "the requested resource record was not found: (group,name,type) (acme-records,_acme-challenge,TXT)"
+}

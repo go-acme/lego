@@ -1,0 +1,206 @@
+{
+  "dns_zone_name": "string",
+  "group_name": "string",
+  "record_name": "string",
+  "rrset": {
+    "a_record": {
+      "name": "string",
+      "values": [
+        "string"
+      ]
+    },
+    "aaaa_record": {
+      "name": "string",
+      "values": [
+        "string"
+      ]
+    },
+    "afsdb_record": {
+      "name": "string",
+      "values": [
+        {
+          "hostname": "string",
+          "subtype": "NONE"
+        }
+      ]
+    },
+    "alias_record": {
+      "value": "string"
+    },
+    "caa_record": {
+      "name": "string",
+      "values": [
+        {
+          "flags": 0,
+          "tag": "string",
+          "value": "string"
+        }
+      ]
+    },
+    "cds_record": {
+      "name": "string",
+      "values": [
+        {
+          "ds_key_algorithm": "UNSPECIFIED",
+          "key_tag": 0,
+          "sha1_digest": {
+            "digest": "stringstringstringstringstringstringstri"
+          },
+          "sha256_digest": {
+            "digest": "stringstringstringstringstringstringstringstringstringstringstri"
+          },
+          "sha384_digest": {
+            "digest": "stringstringstringstringstringstringstringstringstringstringstringstringstringstringstringstring"
+          }
+        }
+      ]
+    },
+    "cert_record": {
+      "name": "string",
+      "values": [
+        {
+          "algorithm": "RESERVEDALGORITHM",
+          "cert_key_tag": 0,
+          "cert_type": "INVALIDCERTTYPE",
+          "certificate": "string"
+        }
+      ]
+    },
+    "cname_record": {
+      "name": "string",
+      "value": "string"
+    },
+    "description": "string",
+    "ds_record": {
+      "name": "string",
+      "values": [
+        {
+          "ds_key_algorithm": "UNSPECIFIED",
+          "key_tag": 0,
+          "sha1_digest": {
+            "digest": "stringstringstringstringstringstringstri"
+          },
+          "sha256_digest": {
+            "digest": "stringstringstringstringstringstringstringstringstringstringstri"
+          },
+          "sha384_digest": {
+            "digest": "stringstringstringstringstringstringstringstringstringstringstringstringstringstringstringstring"
+          }
+        }
+      ]
+    },
+    "eui48_record": {
+      "name": "string",
+      "value": "stringstringstrin"
+    },
+    "eui64_record": {
+      "name": "string",
+      "value": "stringstringstringstrin"
+    },
+    "lb_record": {
+      "name": "string",
+      "value": {
+        "name": "string",
+        "namespace": "string",
+        "tenant": "string"
+      }
+    },
+    "loc_record": {
+      "name": "string",
+      "values": [
+        {
+          "altitude": 0.1,
+          "horizontal_precision": 0.1,
+          "latitude_degree": 0,
+          "latitude_hemisphere": "N",
+          "latitude_minute": 0,
+          "latitude_second": 0.1,
+          "location_diameter": 0.1,
+          "longitude_degree": 0,
+          "longitude_hemisphere": "E",
+          "longitude_minute": 0,
+          "longitude_second": 0.1,
+          "vertical_precision": 0.1
+        }
+      ]
+    },
+    "mx_record": {
+      "name": "string",
+      "values": [
+        {
+          "domain": "string",
+          "priority": 0
+        }
+      ]
+    },
+    "naptr_record": {
+      "name": "string",
+      "values": [
+        {
+          "flags": "string",
+          "order": 0,
+          "preference": 0,
+          "regexp": "string",
+          "replacement": "string",
+          "service": "string"
+        }
+      ]
+    },
+    "ns_record": {
+      "name": "string",
+      "values": [
+        "string"
+      ]
+    },
+    "ptr_record": {
+      "name": "string",
+      "values": [
+        "string"
+      ]
+    },
+    "srv_record": {
+      "name": "string",
+      "values": [
+        {
+          "port": 0,
+          "priority": 0,
+          "target": "string",
+          "weight": 0
+        }
+      ]
+    },
+    "sshfp_record": {
+      "name": "string",
+      "values": [
+        {
+          "algorithm": "UNSPECIFIEDALGORITHM",
+          "sha1_fingerprint": {
+            "fingerprint": "stringstringstringstringstringstringstri"
+          },
+          "sha256_fingerprint": {
+            "fingerprint": "stringstringstringstringstringstringstringstringstringstringstri"
+          }
+        }
+      ]
+    },
+    "tlsa_record": {
+      "name": "string",
+      "values": [
+        {
+          "certificate_association_data": "string",
+          "certificate_usage": "CertificateAuthorityConstraint",
+          "matching_type": "NoHash",
+          "selector": "FullCertificate"
+        }
+      ]
+    },
+    "ttl": 0,
+    "txt_record": {
+      "name": "string",
+      "values": [
+        "string"
+      ]
+    }
+  },
+  "type": "string"
+}

@@ -122,6 +122,15 @@ func TestClient_Get(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
+func TestClient_Get_not_found(t *testing.T) {
+	client := setupTest(t, "GET /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT", http.StatusNotFound, "error_404.json")
+
+	result, err := client.GetRRSet(context.Background(), "example.com", "groupA", "www", "TXT")
+	require.NoError(t, err)
+
+	assert.Nil(t, result)
+}
+
 func TestClient_Get_error(t *testing.T) {
 	client := setupTest(t, "GET /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT", http.StatusBadRequest, "")
 

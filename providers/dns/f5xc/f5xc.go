@@ -113,11 +113,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	existingRRSet, err := d.client.GetRRSet(context.Background(), dns01.UnFqdn(authZone), d.config.GroupName, subDomain, "TXT")
 	if err != nil {
-		return err
+		return fmt.Errorf("f5xc: get RR Set: %w", err)
 	}
 
 	// New RRSet.
-	if existingRRSet.RRSet.TXTRecord == nil {
+	if existingRRSet == nil || existingRRSet.RRSet.TXTRecord == nil {
 		rrSet := internal.RRSet{
 			Description: "lego",
 			TTL:         d.config.TTL,

@@ -1,5 +1,26 @@
 package internal
 
+import (
+	"fmt"
+	"strings"
+)
+
+type APIError struct {
+	StatusCode int      `json:"-"`
+	Code       int      `json:"code"`
+	Details    []string `json:"details"`
+	Message    string   `json:"message"`
+}
+
+func (a *APIError) Error() string {
+	var details string
+	if len(a.Details) > 0 {
+		details = " " + strings.Join(a.Details, ", ")
+	}
+
+	return fmt.Sprintf("code: %d, message: %s%s", a.Code, a.Message, details)
+}
+
 type APIRRSet struct {
 	DNSZoneName string `json:"dns_zone_name,omitempty"`
 	GroupName   string `json:"group_name,omitempty"`

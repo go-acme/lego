@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/certificate"
+	"github.com/go-acme/lego/v4/log"
 )
 
 const (
@@ -32,13 +34,37 @@ func launchHook(hook string, timeout time.Duration, meta map[string]string) erro
 
 	parts := strings.Fields(hook)
 
-	cmdCtx := exec.CommandContext(ctxCmd, parts[0], parts[1:]...)
-	cmdCtx.Env = append(os.Environ(), metaToEnv(meta)...)
+	cmd := exec.CommandContext(ctxCmd, parts[0], parts[1:]...)
+	cmd.Env = append(os.Environ(), metaToEnv(meta)...)
 
-	output, err := cmdCtx.CombinedOutput()
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("create pipe: %w", err)
+	}
 
-	if len(output) > 0 {
-		fmt.Println(string(output))
+	cmd.Stderr = cmd.Stdout
+
+	err = cmd.Start()
+	if err != nil {
+		return fmt.Errorf("start command: %w", err)
+	}
+
+	timer := time.AfterFunc(timeout, func() {
+		_ = cmd.Process.Kill()
+		_ = stdout.Close()
+		log.Println("hook timed out: killing command")
+	})
+
+	defer timer.Stop()
+
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		return fmt.Errorf("wait command: %w", err)
 	}
 
 	if errors.Is(ctxCmd.Err(), context.DeadlineExceeded) {

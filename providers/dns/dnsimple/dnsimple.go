@@ -161,25 +161,16 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 		return "", err
 	}
 
-	zoneName := dns01.UnFqdn(authZone)
-
-	zones, err := d.client.Zones.ListZones(context.Background(), accountID, &dnsimple.ZoneListOptions{NameLike: &zoneName})
+	hostedZone, err := d.client.Zones.GetZone(context.Background(), accountID, dns01.UnFqdn(authZone))
 	if err != nil {
-		return "", fmt.Errorf("API call failed: %w", err)
+		return "", fmt.Errorf("get zone: %w", err)
 	}
 
-	var hostedZone dnsimple.Zone
-	for _, zone := range zones.Data {
-		if zone.Name == zoneName {
-			hostedZone = zone
-		}
-	}
-
-	if hostedZone.ID == 0 {
+	if hostedZone == nil || hostedZone.Data == nil || hostedZone.Data.ID == 0 {
 		return "", fmt.Errorf("zone %s not found in DNSimple for domain %s", authZone, domain)
 	}
 
-	return hostedZone.Name, nil
+	return hostedZone.Data.Name, nil
 }
 
 func (d *DNSProvider) findTxtRecords(fqdn string) ([]dnsimple.ZoneRecord, error) {

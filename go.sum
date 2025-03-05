@@ -872,8 +872,8 @@ github.com/vinyldns/go-vinyldns v0.9.16 h1:GZJStDkcCk1F1AcRc64LuuMh+ENL8pHA0CVd4
 github.com/vinyldns/go-vinyldns v0.9.16/go.mod h1:5qIJOdmzAnatKjurI+Tl4uTus7GJKJxb+zitufjHs3Q=
 github.com/volcengine/volc-sdk-golang v1.0.197 h1:jJlcMp+4i3lVL2ZZTVo8u3cndlXzC5SZoqH/4M6pyuw=
 github.com/volcengine/volc-sdk-golang v1.0.197/go.mod h1:stZX+EPgv1vF4nZwOlEe8iGcriUPRBKX8zA19gXycOQ=
-github.com/vultr/govultr/v3 v3.9.1 h1:uxSIb8Miel7tqTs3ee+z3t+JelZikwqBBsZzCOPBy/8=
-github.com/vultr/govultr/v3 v3.9.1/go.mod h1:Rd8ebpXm7jxH3MDmhnEs+zrlYW212ouhx+HeUMfHm2o=
+github.com/vultr/govultr/v3 v3.14.1 h1:9BpyZgsWasuNoR39YVMcq44MSaF576Z4D+U3ro58eJQ=
+github.com/vultr/govultr/v3 v3.14.1/go.mod h1:q34Wd76upKmf+vxFMgaNMH3A8BbsPBmSYZUGC8oZa5w=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.0.2/go.mod h1:1WAq6h33pAW+iRreB34OORO2Nf7qel3VV3fjBj+hCSs=
 github.com/xdg-go/scram v1.1.2/go.mod h1:RT/sEzTbU5y00aCK8UOx6R7YryM0iF1N2MOmC3kKLN4=

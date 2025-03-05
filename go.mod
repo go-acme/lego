@@ -23,7 +23,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/lightsail v1.42.8
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.46.4
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.78.1
-	github.com/aws/aws-sdk-go-v2/service/sts v1.33.3
+	github.com/aws/aws-sdk-go-v2/service/sts v1.33.17
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/civo/civogo v0.3.11
 	github.com/cloudflare/cloudflare-go v0.112.0

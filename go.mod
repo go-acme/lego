@@ -21,7 +21,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.9
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.62
 	github.com/aws/aws-sdk-go-v2/service/lightsail v1.43.1
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.46.4
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.49.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.78.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.17
 	github.com/cenkalti/backoff/v4 v4.3.0

@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/certificate"
-	"github.com/go-acme/lego/v4/log"
 )
 
 const (
@@ -49,13 +48,15 @@ func launchHook(hook string, timeout time.Duration, meta map[string]string) erro
 		return fmt.Errorf("start command: %w", err)
 	}
 
-	timer := time.AfterFunc(timeout, func() {
-		log.Println("hook timed out: killing command")
-		_ = cmd.Process.Kill()
-		_ = stdout.Close()
-	})
-
-	defer timer.Stop()
+	go func() {
+		select {
+		case <-ctxCmd.Done():
+			if ctxCmd.Err() != nil {
+				_ = cmd.Process.Kill()
+				_ = stdout.Close()
+			}
+		}
+	}()
 
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {

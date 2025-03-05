@@ -8,6 +8,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Test_launchHook(t *testing.T) {
+	err := launchHook("echo foo", 1*time.Second, map[string]string{})
+	require.NoError(t, err)
+}
+
 func Test_launchHook_errors(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("skipping test on Windows")

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Installation :: Let’s Encrypt client and ACME library written in Go.</title>
+    <link>https://go-acme.github.io/lego/installation/index.html</link>
+    <description>Binaries To get the binary just download the latest release for your OS/Arch from the release page and put the binary somewhere convenient. lego does not assume anything about the location you run it from.&#xA;From Docker docker run goacme/lego -hFrom package managers ArchLinux (official):&#xA;pacman -S lego ArchLinux (AUR) (official):&#xA;yay -S lego-bin Snap (official):&#xA;sudo snap install legoNote: The snap can only write to the /var/snap/lego/common/.lego directory.&#xA;FreeBSD (Ports) (unofficial):</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate></lastBuildDate>
+    <atom:link href="https://go-acme.github.io/lego/installation/index.xml" rel="self" type="application/rss+xml" />
+  </channel>
+</rss>

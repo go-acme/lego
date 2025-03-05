@@ -49,7 +49,7 @@ func launchHook(hook string, timeout time.Duration, meta map[string]string) erro
 	}
 
 	go func() {
-		<-ctxCmd.Done():
+		<-ctxCmd.Done()
 		if ctxCmd.Err() != nil {
 			_ = cmd.Process.Kill()
 			_ = stdout.Close()

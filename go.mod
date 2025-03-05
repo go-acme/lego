@@ -82,7 +82,7 @@ require (
 	github.com/yandex-cloud/go-sdk v0.0.0-20241220131134-2393e243c134
 	golang.org/x/crypto v0.35.0
 	golang.org/x/net v0.36.0
-	golang.org/x/oauth2 v0.24.0
+	golang.org/x/oauth2 v0.27.0
 	golang.org/x/text v0.22.0
 	golang.org/x/time v0.8.0
 	google.golang.org/api v0.214.0

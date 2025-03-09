@@ -142,6 +142,10 @@ func checkError(req *http.Request, resp *http.Response) error {
 			return &acme.NonceError{ProblemDetails: errorDetails}
 		}
 
+		if errorDetails.HTTPStatus == http.StatusConflict && errorDetails.Type == acme.AlreadyReplacedErr {
+			return &acme.AlreadyReplacedError{ProblemDetails: errorDetails}
+		}
+
 		return errorDetails
 	}
 	return nil

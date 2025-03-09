@@ -6,8 +6,9 @@ import (
 
 // Errors types.
 const (
-	errNS       = "urn:ietf:params:acme:error:"
-	BadNonceErr = errNS + "badNonce"
+	errNS              = "urn:ietf:params:acme:error:"
+	BadNonceErr        = errNS + "badNonce"
+	AlreadyReplacedErr = errNS + "alreadyReplaced"
 )
 
 // ProblemDetails the problem details object.
@@ -54,5 +55,12 @@ type SubProblem struct {
 // NonceError represents the error which is returned
 // if the nonce sent by the client was not accepted by the server.
 type NonceError struct {
+	*ProblemDetails
+}
+
+// AlreadyReplacedError represents the error which is returned
+// If the Server rejects the request because the identified certificate has already been marked as replaced.
+// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-08#section-5
+type AlreadyReplacedError struct {
 	*ProblemDetails
 }

@@ -46,12 +46,14 @@ func TestOrderService_NewWithOptions(t *testing.T) {
 			Status:         acme.StatusValid,
 			Expires:        order.Expires,
 			Identifiers:    order.Identifiers,
+			Profile:        order.Profile,
 			NotBefore:      order.NotBefore,
 			NotAfter:       order.NotAfter,
 			Error:          order.Error,
 			Authorizations: order.Authorizations,
 			Finalize:       order.Finalize,
 			Certificate:    order.Certificate,
+			Replaces:       order.Replaces,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

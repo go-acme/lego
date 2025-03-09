@@ -69,7 +69,20 @@ func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acm
 	var order acme.Order
 	resp, err := o.core.post(o.core.GetDirectory().NewOrderURL, orderReq, &order)
 	if err != nil {
-		return acme.ExtendedOrder{}, err
+		are := &acme.AlreadyReplacedError{}
+		if !errors.As(err, &are) {
+			return acme.ExtendedOrder{}, err
+		}
+
+		// If the Server rejects the request because the identified certificate has already been marked as replaced,
+		// it MUST return an HTTP 409 (Conflict) with a problem document of type "alreadyReplaced" (see Section 7.4).
+		// https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-08#section-5
+		orderReq.Replaces = ""
+
+		resp, err = o.core.post(o.core.GetDirectory().NewOrderURL, orderReq, &order)
+		if err != nil {
+			return acme.ExtendedOrder{}, err
+		}
 	}
 
 	return acme.ExtendedOrder{

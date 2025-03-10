@@ -14,6 +14,7 @@ func allDNSCodes() string {
 	providers := []string{
 		"manual",
 		"acme-dns",
+		"active24",
 		"alidns",
 		"allinkl",
 		"arvancloud",
@@ -190,6 +191,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/acme-dns`)
+
+	case "active24":
+		// generated from: providers/dns/active24/active24.toml
+		ew.writeln(`Configuration for Active24.`)
+		ew.writeln(`Code:	'active24'`)
+		ew.writeln(`Since:	'v4.23.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ACTIVE24_API_KEY":	API key`)
+		ew.writeln(`	- "ACTIVE24_SECRET":	Secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ACTIVE24_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "ACTIVE24_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "ACTIVE24_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "ACTIVE24_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/active24`)
 
 	case "alidns":
 		// generated from: providers/dns/alidns/alidns.toml

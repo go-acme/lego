@@ -201,6 +201,9 @@ func (d *DNSProvider) findRecordID(ctx context.Context, serviceID, subDomain str
 	}
 
 	for _, record := range records {
+		// TODO only for debug
+		fmt.Printf("type: %s, name: %s, content: %s (%s, %s)", record.Type, record.Name, record.Content, subDomain, info.Value)
+
 		if record.Type != "TXT" {
 			continue
 		}

@@ -138,17 +138,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("active24: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
-	if err != nil {
-		return fmt.Errorf("active24: %w", err)
-	}
-
 	serviceID, err := d.findServiceID(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("active24: find service ID: %w", err)
 	}
 
-	recordID, err := d.findRecordID(ctx, strconv.Itoa(serviceID), subDomain, info)
+	recordID, err := d.findRecordID(ctx, strconv.Itoa(serviceID), info)
 	if err != nil {
 		return fmt.Errorf("active24: find record ID: %w", err)
 	}
@@ -188,9 +183,9 @@ func (d *DNSProvider) findServiceID(ctx context.Context, domain string) (int, er
 	return 0, fmt.Errorf("service not found for domain: %s", domain)
 }
 
-func (d *DNSProvider) findRecordID(ctx context.Context, serviceID, subDomain string, info dns01.ChallengeInfo) (int, error) {
+func (d *DNSProvider) findRecordID(ctx context.Context, serviceID string, info dns01.ChallengeInfo) (int, error) {
 	filter := internal.RecordFilter{
-		Name:    subDomain,
+		Name:    dns01.UnFqdn(info.EffectiveFQDN),
 		Type:    []string{"TXT"},
 		Content: info.Value,
 	}
@@ -201,14 +196,11 @@ func (d *DNSProvider) findRecordID(ctx context.Context, serviceID, subDomain str
 	}
 
 	for _, record := range records {
-		// TODO only for debug
-		fmt.Printf("type: %s, name: %s, content: %s (%s, %s)", record.Type, record.Name, record.Content, subDomain, info.Value)
-
 		if record.Type != "TXT" {
 			continue
 		}
 
-		if record.Name != subDomain {
+		if record.Name != dns01.UnFqdn(info.EffectiveFQDN) {
 			continue
 		}
 

@@ -11,8 +11,10 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/active24/internal"
+	"github.com/go-acme/lego/v4/providers/dns/internal/active24"
 )
+
+const baseAPIDomain = "active24.cz"
 
 // Environment variables names.
 const (
@@ -53,7 +55,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *internal.Client
+	client *active24.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Active24.
@@ -76,7 +78,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("active24: the configuration of the DNS provider is nil")
 	}
 
-	client, err := internal.NewClient(config.APIKey, config.Secret)
+	client, err := active24.NewClient(baseAPIDomain, config.APIKey, config.Secret)
 	if err != nil {
 		return nil, fmt.Errorf("active24: %w", err)
 	}
@@ -112,7 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("active24: find service ID: %w", err)
 	}
 
-	record := internal.Record{
+	record := active24.Record{
 		Type:    "TXT",
 		Name:    subDomain,
 		Content: info.Value,
@@ -185,7 +187,7 @@ func (d *DNSProvider) findServiceID(ctx context.Context, domain string) (int, er
 
 func (d *DNSProvider) findRecordID(ctx context.Context, serviceID string, info dns01.ChallengeInfo) (int, error) {
 	// NOTE(ldez): Despite the API documentation, the filter doesn't seem to work.
-	filter := internal.RecordFilter{
+	filter := active24.RecordFilter{
 		Name:    dns01.UnFqdn(info.EffectiveFQDN),
 		Type:    []string{"TXT"},
 		Content: info.Value,

@@ -20,13 +20,14 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAPIKey: "key",
+				EnvAPIKey: "user",
 				EnvSecret: "secret",
 			},
 		},
 		{
 			desc: "missing API key",
 			envVars: map[string]string{
+				EnvAPIKey: "",
 				EnvSecret: "secret",
 			},
 			expected: "websupport: some credentials information are missing: WEBSUPPORT_API_KEY",
@@ -34,7 +35,8 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing secret",
 			envVars: map[string]string{
-				EnvAPIKey: "key",
+				EnvAPIKey: "user",
+				EnvSecret: "",
 			},
 			expected: "websupport: some credentials information are missing: WEBSUPPORT_SECRET",
 		},
@@ -75,17 +77,19 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}{
 		{
 			desc:   "success",
-			apiKey: "key",
+			apiKey: "user",
 			secret: "secret",
 		},
 		{
 			desc:     "missing API key",
+			apiKey:   "",
 			secret:   "secret",
 			expected: "websupport: credentials missing",
 		},
 		{
 			desc:     "missing secret",
-			apiKey:   "key",
+			apiKey:   "user",
+			secret:   "",
 			expected: "websupport: credentials missing",
 		},
 		{

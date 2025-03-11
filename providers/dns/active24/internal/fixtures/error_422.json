@@ -1,0 +1,16 @@
+{
+  "type": "/errors/validation",
+  "status": 422,
+  "title": "The given data was invalid.",
+  "violations": [
+    {
+      "propertyPath": "string",
+      "errors": [
+        {}
+      ]
+    }
+  ],
+  "data": {
+    "name": "Merlin"
+  }
+}

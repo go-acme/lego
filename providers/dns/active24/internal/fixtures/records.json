@@ -1,0 +1,28 @@
+{
+  "currentPage": 0,
+  "rowsPerPage": 0,
+  "totalPages": 0,
+  "totalRecords": 0,
+  "actions": {
+    "additionalProp1": {
+      "additionalProp1": {}
+    },
+    "additionalProp2": {
+      "additionalProp1": {}
+    },
+    "additionalProp3": {
+      "additionalProp1": {}
+    }
+  },
+  "data": [
+    {
+      "id": 13,
+      "name": "string",
+      "content": "string",
+      "ttl": 120,
+      "priority": 1,
+      "port": 443,
+      "weight": 50
+    }
+  ]
+}

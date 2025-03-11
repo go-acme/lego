@@ -1,0 +1,5 @@
+{
+  "type": "/errors/httpException",
+  "status": 403,
+  "title": "This action is unauthorized."
+}

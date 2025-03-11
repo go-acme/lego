@@ -1,0 +1,31 @@
+{
+  "items":
+  [
+    {
+      "id": 1111,
+      "serviceName": ".sk doména",
+      "status": "active",
+      "name": "mydomain.sk",
+      "createTime": 1374357600,
+      "expireTime": 1405914526,
+      "price": 12.3,
+      "autoExtend": false
+    },
+    {
+      "id": 2222,
+      "serviceName": "The Hosting",
+      "status": "active",
+      "name": "myname_1",
+      "createTime": 1400145443,
+      "expireTime": 1431702371,
+      "price": 55.2,
+      "autoExtend": false
+    }
+  ],
+  "pager":
+  {
+    "page": 1,
+    "pagesize": null,
+    "items": 2
+  }
+}

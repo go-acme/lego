@@ -1,4 +1,4 @@
-package internal
+package active24
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-const defaultBaseURL = "https://rest.active24.cz"
+const defaultBaseURL = "https://rest.%s"
 
 // Client the Active24 API client.
 type Client struct {
@@ -29,12 +29,12 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(apiKey, secret string) (*Client, error) {
+func NewClient(baseAPIDomain, apiKey, secret string) (*Client, error) {
 	if apiKey == "" || secret == "" {
 		return nil, errors.New("credentials missing")
 	}
 
-	baseURL, _ := url.Parse(defaultBaseURL)
+	baseURL, _ := url.Parse(fmt.Sprintf(defaultBaseURL, baseAPIDomain))
 
 	return &Client{
 		apiKey:     apiKey,

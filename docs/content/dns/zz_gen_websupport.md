@@ -63,7 +63,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://rest.websupport.sk/docs/v1.zone)
+- [API documentation](https://rest.websupport.sk/v2/docs)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/websupport/websupport.toml -->

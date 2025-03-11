@@ -1,4 +1,4 @@
-package internal
+package active24
 
 import (
 	"context"
@@ -44,7 +44,7 @@ func setupTest(t *testing.T, pattern string, status int, filename string) *Clien
 		}
 	})
 
-	client, err := NewClient("user", "secret")
+	client, err := NewClient("example.com", "user", "secret")
 	require.NoError(t, err)
 
 	client.HTTPClient = server.Client()
@@ -157,7 +157,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 }
 
 func TestClient_sign(t *testing.T) {
-	client, err := NewClient("user", "secret")
+	client, err := NewClient("example.com", "user", "secret")
 	require.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodGet, "/v1/user/self/service", nil)

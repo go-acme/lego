@@ -22,3 +22,4 @@ lego --email you@example.com --dns active24 -d '*.example.com' -d example.com ru
 
 [Links]
   API = "https://rest.active24.cz/v2/docs"
+  APIv1 = "https://rest.active24.cz/docs/v1.service#services"

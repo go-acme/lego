@@ -184,6 +184,7 @@ func (d *DNSProvider) findServiceID(ctx context.Context, domain string) (int, er
 }
 
 func (d *DNSProvider) findRecordID(ctx context.Context, serviceID string, info dns01.ChallengeInfo) (int, error) {
+	// NOTE(ldez): Despite the API documentation, the filter doesn't seem to work.
 	filter := internal.RecordFilter{
 		Name:    dns01.UnFqdn(info.EffectiveFQDN),
 		Type:    []string{"TXT"},

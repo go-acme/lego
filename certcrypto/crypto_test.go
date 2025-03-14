@@ -168,10 +168,12 @@ func TestParsePEMPrivateKey(t *testing.T) {
 
 	pemPrivateKey := PEMEncode(privateKey)
 
-	// Decoding a key should work and create an identical key to the original
+	// Decoding a key should work and create an identical RSA key to the original,
+	// ignoring precomputed values.
 	decoded, err := ParsePEMPrivateKey(pemPrivateKey)
 	require.NoError(t, err)
-	assert.Equal(t, decoded, privateKey)
+	decodedRsaPrivateKey := decoded.(*rsa.PrivateKey)
+	require.True(t, decodedRsaPrivateKey.Equal(privateKey))
 
 	// Decoding a PEM block that doesn't contain a private key should error
 	_, err = ParsePEMPrivateKey(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE"}))

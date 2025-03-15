@@ -33,7 +33,7 @@ body:
     id: version
     attributes:
       label: Effective version of lego
-      description: `latest` or `dev` are not effective versions.
+      description: "`latest` or `dev` are not effective versions."
     validations:
       required: true
 

@@ -16,10 +16,12 @@ var envTest = tester.NewEnvTest(
 	EnvAPIKey,
 	EnvDNSAPIToken,
 	EnvZoneAPIToken,
+	EnvBaseURL,
 	altEnvEmail,
 	altEnvName(EnvAPIKey),
 	altEnvName(EnvDNSAPIToken),
-	altEnvName(EnvZoneAPIToken)).
+	altEnvName(EnvZoneAPIToken),
+	altEnvName(EnvBaseURL)).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -297,4 +299,66 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+}
+
+func TestBaseURL(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "custom base URL",
+			envVars: map[string]string{
+				EnvEmail:   "test@example.com",
+				EnvAPIKey:  "123",
+				EnvBaseURL: "https://example.com/client/v4",
+			},
+			expected: "https://example.com/client/v4",
+		},
+		{
+			desc: "custom base URL from alias",
+			envVars: map[string]string{
+				EnvEmail:               "test@example.com",
+				EnvAPIKey:              "123",
+				altEnvName(EnvBaseURL): "https://example.com/client/v4",
+			},
+			expected: "https://example.com/client/v4",
+		},
+		{
+			desc: "empty base URL",
+			envVars: map[string]string{
+				EnvEmail:   "test@example.com",
+				EnvAPIKey:  "123",
+				EnvBaseURL: "",
+			},
+			expected: "https://api.cloudflare.com/client/v4",
+		},
+		{
+			desc: "no base URL",
+			envVars: map[string]string{
+				EnvEmail:  "test@example.com",
+				EnvAPIKey: "123",
+			},
+			expected: "https://api.cloudflare.com/client/v4",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			require.NoError(t, err)
+			require.NotNil(t, p)
+			assert.NotNil(t, p.config)
+			assert.NotNil(t, p.client)
+			assert.Equal(t, test.expected, p.client.clientEdit.BaseURL)
+			assert.Equal(t, test.expected, p.client.clientRead.BaseURL)
+		})
+	}
 }

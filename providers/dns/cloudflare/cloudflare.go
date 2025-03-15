@@ -22,6 +22,7 @@ import (
 const (
 	envNamespace = "CLOUDFLARE_"
 
+	EnvBaseURL      = envNamespace + "BASE_URL"
 	EnvEmail        = envNamespace + "EMAIL"
 	EnvAPIKey       = envNamespace + "API_KEY"
 	EnvDNSAPIToken  = envNamespace + "DNS_API_TOKEN"
@@ -47,6 +48,8 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
+	BaseURL string
+
 	AuthEmail string
 	AuthKey   string
 
@@ -62,6 +65,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
+		BaseURL:            env.GetOneWithFallback(EnvBaseURL, "", env.ParseString, altEnvName(EnvBaseURL)),
 		TTL:                env.GetOneWithFallback(EnvTTL, minTTL, strconv.Atoi, altEnvName(EnvTTL)),
 		PropagationTimeout: env.GetOneWithFallback(EnvPropagationTimeout, 2*time.Minute, env.ParseSecond, altEnvName(EnvPropagationTimeout)),
 		PollingInterval:    env.GetOneWithFallback(EnvPollingInterval, dns01.DefaultPollingInterval, env.ParseSecond, altEnvName(EnvPollingInterval)),

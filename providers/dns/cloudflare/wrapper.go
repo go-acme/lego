@@ -17,9 +17,14 @@ type metaClient struct {
 }
 
 func newClient(config *Config) (*metaClient, error) {
+	options := []cloudflare.Option{cloudflare.HTTPClient(config.HTTPClient)}
+	if config.BaseURL != "" {
+		options = append(options, cloudflare.BaseURL(config.BaseURL))
+	}
+
 	// with AuthKey/AuthEmail we can access all available APIs
 	if config.AuthToken == "" {
-		client, err := cloudflare.New(config.AuthKey, config.AuthEmail, cloudflare.HTTPClient(config.HTTPClient))
+		client, err := cloudflare.New(config.AuthKey, config.AuthEmail, options...)
 		if err != nil {
 			return nil, err
 		}
@@ -32,7 +37,7 @@ func newClient(config *Config) (*metaClient, error) {
 		}, nil
 	}
 
-	dns, err := cloudflare.NewWithAPIToken(config.AuthToken, cloudflare.HTTPClient(config.HTTPClient))
+	dns, err := cloudflare.NewWithAPIToken(config.AuthToken, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +51,7 @@ func newClient(config *Config) (*metaClient, error) {
 		}, nil
 	}
 
-	zone, err := cloudflare.NewWithAPIToken(config.ZoneToken, cloudflare.HTTPClient(config.HTTPClient))
+	zone, err := cloudflare.NewWithAPIToken(config.ZoneToken, options...)
 	if err != nil {
 		return nil, err
 	}

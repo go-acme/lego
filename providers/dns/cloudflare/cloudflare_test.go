@@ -16,6 +16,7 @@ var envTest = tester.NewEnvTest(
 	EnvAPIKey,
 	EnvDNSAPIToken,
 	EnvZoneAPIToken,
+	EnvBaseURL,
 	altEnvEmail,
 	altEnvName(EnvAPIKey),
 	altEnvName(EnvDNSAPIToken),

@@ -22,10 +22,13 @@ import (
 const (
 	envNamespace = "CLOUDFLARE_"
 
-	EnvEmail        = envNamespace + "EMAIL"
-	EnvAPIKey       = envNamespace + "API_KEY"
+	EnvEmail  = envNamespace + "EMAIL"
+	EnvAPIKey = envNamespace + "API_KEY"
+
 	EnvDNSAPIToken  = envNamespace + "DNS_API_TOKEN"
 	EnvZoneAPIToken = envNamespace + "ZONE_API_TOKEN"
+
+	EnvBaseURL = envNamespace + "BASE_URL"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -52,6 +55,8 @@ type Config struct {
 
 	AuthToken string
 	ZoneToken string
+
+	BaseURL string
 
 	TTL                int
 	PropagationTimeout time.Duration
@@ -114,6 +119,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.AuthKey = values[EnvAPIKey]
 	config.AuthToken = values[EnvDNSAPIToken]
 	config.ZoneToken = values[EnvZoneAPIToken]
+	config.BaseURL = env.GetOrFile(EnvBaseURL)
 
 	return NewDNSProviderConfig(config)
 }

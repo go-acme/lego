@@ -564,6 +564,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CLOUDFLARE_BASE_URL":	API base URL (Default: https://api.cloudflare.com/client/v4)`)
 		ew.writeln(`	- "CLOUDFLARE_HTTP_TIMEOUT":	API request timeout in seconds (Default: )`)
 		ew.writeln(`	- "CLOUDFLARE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "CLOUDFLARE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)

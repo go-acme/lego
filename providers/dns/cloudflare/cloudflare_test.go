@@ -20,8 +20,7 @@ var envTest = tester.NewEnvTest(
 	altEnvEmail,
 	altEnvName(EnvAPIKey),
 	altEnvName(EnvDNSAPIToken),
-	altEnvName(EnvZoneAPIToken),
-	altEnvName(EnvBaseURL)).
+	altEnvName(EnvZoneAPIToken)).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {

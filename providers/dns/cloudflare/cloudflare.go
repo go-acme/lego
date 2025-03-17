@@ -22,11 +22,13 @@ import (
 const (
 	envNamespace = "CLOUDFLARE_"
 
-	EnvBaseURL      = envNamespace + "BASE_URL"
-	EnvEmail        = envNamespace + "EMAIL"
-	EnvAPIKey       = envNamespace + "API_KEY"
+	EnvEmail  = envNamespace + "EMAIL"
+	EnvAPIKey = envNamespace + "API_KEY"
+
 	EnvDNSAPIToken  = envNamespace + "DNS_API_TOKEN"
 	EnvZoneAPIToken = envNamespace + "ZONE_API_TOKEN"
+
+	EnvBaseURL = envNamespace + "BASE_URL"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"

@@ -48,13 +48,13 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	BaseURL string
-
 	AuthEmail string
 	AuthKey   string
 
 	AuthToken string
 	ZoneToken string
+
+	BaseURL string
 
 	TTL                int
 	PropagationTimeout time.Duration
@@ -65,7 +65,6 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOneWithFallback(EnvBaseURL, "", env.ParseString, altEnvName(EnvBaseURL)),
 		TTL:                env.GetOneWithFallback(EnvTTL, minTTL, strconv.Atoi, altEnvName(EnvTTL)),
 		PropagationTimeout: env.GetOneWithFallback(EnvPropagationTimeout, 2*time.Minute, env.ParseSecond, altEnvName(EnvPropagationTimeout)),
 		PollingInterval:    env.GetOneWithFallback(EnvPollingInterval, dns01.DefaultPollingInterval, env.ParseSecond, altEnvName(EnvPollingInterval)),
@@ -118,6 +117,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.AuthKey = values[EnvAPIKey]
 	config.AuthToken = values[EnvDNSAPIToken]
 	config.ZoneToken = values[EnvZoneAPIToken]
+	config.BaseURL = env.GetOrFile(EnvBaseURL)
 
 	return NewDNSProviderConfig(config)
 }

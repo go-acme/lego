@@ -315,7 +315,7 @@ func (d *DNSProvider) getHostedZoneID(ctx context.Context, fqdn string) (string,
 	var hostedZoneID string
 	for _, hostedZone := range resp.HostedZones {
 		// .Name has a trailing dot
-		if ptr.Deref(hostedZone.Name) == authZone && (d.config.PrivateZone && hostedZone.Config.PrivateZone || !d.config.PrivateZone && !hostedZone.Config.PrivateZone) {
+		if ptr.Deref(hostedZone.Name) == authZone && d.config.PrivateZone == hostedZone.Config.PrivateZone {
 			hostedZoneID = ptr.Deref(hostedZone.Id)
 			break
 		}

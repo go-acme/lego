@@ -2644,6 +2644,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "AWS_MAX_RETRIES":	The number of maximum returns the service will use to make an individual API request`)
 		ew.writeln(`	- "AWS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 4)`)
+		ew.writeln(`	- "AWS_PRIVATE_ZONE":	Set to true to use private zones only (default: use public zones only)`)
 		ew.writeln(`	- "AWS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
 		ew.writeln(`	- "AWS_SHARED_CREDENTIALS_FILE":	Managed by the AWS client. Shared credentials file.`)
 		ew.writeln(`	- "AWS_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 10)`)

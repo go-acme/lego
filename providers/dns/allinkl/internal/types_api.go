@@ -89,6 +89,6 @@ type DeleteDNSSettingsAPIResponse struct {
 
 type DeleteDNSSettingsResponse struct {
 	KasFloodDelay float64 `json:"KasFloodDelay"`
-	ReturnInfo    bool    `json:"ReturnInfo"`
 	ReturnString  string  `json:"ReturnString"`
+	// NOTE: ReturnInfo (!= ReturnString) doesn't seem to have a stable type
 }

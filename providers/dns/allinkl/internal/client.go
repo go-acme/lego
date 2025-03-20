@@ -86,23 +86,23 @@ func (c *Client) AddDNSSettings(ctx context.Context, record DNSRequest) (string,
 }
 
 // DeleteDNSSettings Deleting a DNS Resource Record.
-func (c *Client) DeleteDNSSettings(ctx context.Context, recordID string) (bool, error) {
+func (c *Client) DeleteDNSSettings(ctx context.Context, recordID string) (string, error) {
 	requestParams := map[string]string{"record_id": recordID}
 
 	req, err := c.newRequest(ctx, "delete_dns_settings", requestParams)
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
 	var g DeleteDNSSettingsAPIResponse
 	err = c.do(req, &g)
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
 	c.updateFloodTime(g.Response.KasFloodDelay)
 
-	return g.Response.ReturnInfo, nil
+	return g.Response.ReturnString, nil
 }
 
 func (c *Client) newRequest(ctx context.Context, action string, requestParams any) (*http.Request, error) {

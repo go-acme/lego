@@ -131,7 +131,7 @@ func TestClient_DeleteDNSSettings(t *testing.T) {
 	r, err := client.DeleteDNSSettings(mockContext(), "57347450")
 	require.NoError(t, err)
 
-	assert.True(t, r)
+	assert.Equal(t, "TRUE", r)
 }
 
 func testHandler(filename string) http.HandlerFunc {

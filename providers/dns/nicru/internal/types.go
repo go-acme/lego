@@ -20,22 +20,22 @@ type RR struct {
 	Text    string `xml:",chardata"`
 	ID      string `xml:"id,attr,omitempty"`
 	Name    string `xml:"name"`
-	IDNName string `xml:"idn-name,omitempty"`
+	IDNName string `xml:"idn-name"`
 	TTL     string `xml:"ttl"`
 	Type    string `xml:"type"`
-	SOA     *SOA   `xml:"soa"`
-	A       string `xml:"a"`
-	AAAA    string `xml:"aaaa"`
-	CName   *CName `xml:"cname"`
-	NS      *NS    `xml:"ns"`
-	MX      *MX    `xml:"mx"`
-	SRV     *SRV   `xml:"srv"`
-	PTR     *PTR   `xml:"ptr"`
-	TXT     *TXT   `xml:"txt"`
-	DName   *DName `xml:"dname"`
-	HInfo   *HInfo `xml:"hinfo"`
-	NAPTR   *NAPTR `xml:"naptr"`
-	RP      *RP    `xml:"rp"`
+	SOA     *SOA   `xml:"soa,omitempty"`
+	A       string `xml:"a,omitempty"`
+	AAAA    string `xml:"aaaa,omitempty"`
+	CName   *CName `xml:"cname,omitempty"`
+	NS      *NS    `xml:"ns,omitempty"`
+	MX      *MX    `xml:"mx,omitempty"`
+	SRV     *SRV   `xml:"srv,omitempty"`
+	PTR     *PTR   `xml:"ptr,omitempty"`
+	TXT     *TXT   `xml:"txt,omitempty"`
+	DName   *DName `xml:"dname,omitempty"`
+	HInfo   *HInfo `xml:"hinfo,omitempty"`
+	NAPTR   *NAPTR `xml:"naptr,omitempty"`
+	RP      *RP    `xml:"rp,omitempty"`
 }
 
 type SOA struct {

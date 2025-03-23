@@ -5,7 +5,7 @@ go 1.23.0
 require (
 	cloud.google.com/go/compute/metadata v0.6.0
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.17.0
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.17.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.8.2
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns v1.2.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns v1.3.0
@@ -13,22 +13,22 @@ require (
 	github.com/Azure/go-autorest/autorest v0.11.30
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
 	github.com/Azure/go-autorest/autorest/to v0.4.1
-	github.com/BurntSushi/toml v1.4.0
+	github.com/BurntSushi/toml v1.5.0
 	github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
-	github.com/aliyun/alibaba-cloud-sdk-go v1.63.92
+	github.com/aliyun/alibaba-cloud-sdk-go v1.63.100
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.9
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.62
 	github.com/aws/aws-sdk-go-v2/service/lightsail v1.43.1
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.49.1
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.78.1
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.50.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.78.2
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.17
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/civo/civogo v0.3.11
 	github.com/cloudflare/cloudflare-go v0.115.0
 	github.com/dnsimple/dnsimple-go v1.7.0
-	github.com/exoscale/egoscale/v3 v3.1.10
+	github.com/exoscale/egoscale/v3 v3.1.13
 	github.com/go-jose/go-jose/v4 v4.0.5
 	github.com/go-viper/mapstructure/v2 v2.2.1
 	github.com/google/go-querystring v1.1.0
@@ -36,14 +36,14 @@ require (
 	github.com/gophercloud/utils v0.0.0-20231010081019-80377eca5d56
 	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/hashicorp/go-version v1.7.0
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.138
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.141
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/infobloxopen/infoblox-go-client/v2 v2.9.0
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
-	github.com/linode/linodego v1.48.0
+	github.com/linode/linodego v1.48.1
 	github.com/liquidweb/liquidweb-go v1.6.4
 	github.com/mattn/go-isatty v0.0.20
-	github.com/miekg/dns v1.1.63
+	github.com/miekg/dns v1.1.64
 	github.com/mimuret/golang-iij-dpf v0.9.1
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/auroradns v1.1.0
@@ -58,7 +58,7 @@ require (
 	github.com/nrdcg/nodion v0.1.0
 	github.com/nrdcg/porkbun v0.4.0
 	github.com/nzdjb/go-metaname v1.0.0
-	github.com/oracle/oci-go-sdk/v65 v65.85.0
+	github.com/oracle/oci-go-sdk/v65 v65.87.0
 	github.com/ovh/go-ovh v1.7.0
 	github.com/pquerna/otp v1.4.0
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
@@ -70,22 +70,22 @@ require (
 	github.com/selectel/go-selvpcclient/v3 v3.2.1
 	github.com/softlayer/softlayer-go v1.1.7
 	github.com/stretchr/testify v1.10.0
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1114
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.1113
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1128
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.1128
 	github.com/transip/gotransip/v6 v6.26.0
 	github.com/ultradns/ultradns-go-sdk v1.8.0-20241010134910-243eeec
-	github.com/urfave/cli/v2 v2.27.5
+	github.com/urfave/cli/v2 v2.27.6
 	github.com/vinyldns/go-vinyldns v0.9.16
-	github.com/volcengine/volc-sdk-golang v1.0.197
-	github.com/vultr/govultr/v3 v3.14.1
-	github.com/yandex-cloud/go-genproto v0.0.0-20250304111827-f558b88ff434
-	github.com/yandex-cloud/go-sdk v0.0.0-20250304120247-c2605c41f59f
-	golang.org/x/crypto v0.35.0
-	golang.org/x/net v0.36.0
-	golang.org/x/oauth2 v0.27.0
-	golang.org/x/text v0.22.0
-	golang.org/x/time v0.10.0
-	google.golang.org/api v0.223.0
+	github.com/volcengine/volc-sdk-golang v1.0.199
+	github.com/vultr/govultr/v3 v3.17.0
+	github.com/yandex-cloud/go-genproto v0.0.0-20250319153614-fb9d3e5eb01a
+	github.com/yandex-cloud/go-sdk v0.0.0-20250320143332-9cbcfc5de4ae
+	golang.org/x/crypto v0.36.0
+	golang.org/x/net v0.37.0
+	golang.org/x/oauth2 v0.28.0
+	golang.org/x/text v0.23.0
+	golang.org/x/time v0.11.0
+	google.golang.org/api v0.227.0
 	gopkg.in/ns1/ns1-go.v2 v2.13.0
 	gopkg.in/yaml.v2 v2.4.0
 	software.sslmate.com/src/go-pkcs12 v0.5.0
@@ -110,7 +110,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.3 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.34 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.3 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.6.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.7.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.15 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.15 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.25.1 // indirect
@@ -139,7 +139,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -196,14 +196,14 @@ require (
 	go.uber.org/multierr v1.9.0 // indirect
 	go.uber.org/ratelimit v0.3.0 // indirect
 	golang.org/x/exp v0.0.0-20241210194714-1829a127f884 // indirect
-	golang.org/x/mod v0.22.0 // indirect
-	golang.org/x/sync v0.11.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/tools v0.28.0 // indirect
+	golang.org/x/mod v0.23.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/tools v0.30.0 // indirect
 	google.golang.org/genproto v0.0.0-20241021214115-324edc3d5d38 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20241209162323-e6fa225c2576 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250219182151-9fdb1cabc7b2 // indirect
-	google.golang.org/grpc v1.70.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20250106144421-5f5ef82da422 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
+	google.golang.org/grpc v1.71.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

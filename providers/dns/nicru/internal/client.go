@@ -205,8 +205,6 @@ func (c *Client) do(req *http.Request) (*Response, error) {
 		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	fmt.Println(string(raw)) // TODO(ldez) only for debug
-
 	decoder := xml.NewTokenDecoder(Trimmer{decoder: xml.NewDecoder(bytes.NewReader(raw))})
 
 	err = decoder.Decode(apiResponse)

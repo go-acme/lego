@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/nicru/internal"
 )
@@ -225,15 +224,11 @@ func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*internal.
 		return nil, fmt.Errorf("unable to fetch dns zones: %w", err)
 	}
 
-	log.Infof("zones count: %d", len(zones)) // TODO(ldez) only for debug
-
 	if len(zones) == 0 {
 		return nil, errors.New("no zones found")
 	}
 
 	for _, zone := range zones {
-		log.Infof("zone.Name=%s, authZone=%s", zone.Name, authZone) // TODO(ldez) only for debug
-
 		if zone.Name == authZone {
 			return &zone, nil
 		}

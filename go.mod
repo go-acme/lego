@@ -36,7 +36,7 @@ require (
 	github.com/gophercloud/utils v0.0.0-20231010081019-80377eca5d56
 	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/hashicorp/go-version v1.7.0
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.138
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.141
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/infobloxopen/infoblox-go-client/v2 v2.9.0
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2

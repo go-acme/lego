@@ -77,7 +77,7 @@ func Test_parseForwardedHeader(t *testing.T) {
 			actual, err := parseForwardedHeader(test.input)
 			if test.err == "" {
 				require.NoError(t, err)
-				assert.EqualValues(t, test.want, actual)
+				assert.Equal(t, test.want, actual)
 			} else {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), test.err)

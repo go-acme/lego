@@ -97,7 +97,7 @@ func TestClient_GetZone(t *testing.T) {
 		desc        string
 		authFQDN    string
 		apiResponse string
-		expected
+		expected    expected
 	}{
 		{
 			desc:        "zone found",
@@ -157,7 +157,7 @@ func TestClient_FindTxtRecord(t *testing.T) {
 		authFQDN    string
 		zoneName    string
 		apiResponse string
-		expected
+		expected    expected
 	}{
 		{
 			desc:     "record found",
@@ -264,7 +264,7 @@ func TestClient_ListTxtRecord(t *testing.T) {
 		authFQDN    string
 		zoneName    string
 		apiResponse string
-		expected
+		expected    expected
 	}{
 		{
 			desc:     "record found",
@@ -377,7 +377,7 @@ func TestClient_AddTxtRecord(t *testing.T) {
 		value       string
 		ttl         int
 		apiResponse string
-		expected
+		expected    expected
 	}{
 		{
 			desc:        "sub-zone",
@@ -477,7 +477,7 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 		id          int
 		zoneName    string
 		apiResponse string
-		expected
+		expected    expected
 	}{
 		{
 			desc:        "record found",
@@ -550,7 +550,7 @@ func TestClient_GetUpdateStatus(t *testing.T) {
 		authFQDN    string
 		zoneName    string
 		apiResponse string
-		expected
+		expected    expected
 	}{
 		{
 			desc:     "50% sync",

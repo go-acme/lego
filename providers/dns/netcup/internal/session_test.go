@@ -124,7 +124,7 @@ func TestClient_Login_errors(t *testing.T) {
 
 			sessionID, err := client.login(context.Background())
 			assert.Error(t, err)
-			assert.Equal(t, "", sessionID)
+			assert.Empty(t, sessionID)
 		})
 	}
 }

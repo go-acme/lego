@@ -206,7 +206,7 @@ func TestClient_GetZoneRecord(t *testing.T) {
 			RecordID: 12345678,
 		},
 	}
-	assert.EqualValues(t, expected, recordObjs)
+	assert.Equal(t, expected, recordObjs)
 }
 
 func TestClient_rpcCall_404(t *testing.T) {

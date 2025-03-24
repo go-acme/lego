@@ -1,270 +1,266 @@
+version: "2"
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+
 linters:
-  enable-all: true
+  default: all
   disable:
+    - bodyclose
+    - canonicalheader
+    - contextcheck
     - cyclop # duplicate of gocyclo
-    - sqlclosecheck # not relevant (SQL)
-    - rowserrcheck # not relevant (SQL)
-    - lll
-    - gosec
     - dupl # not relevant
-    - prealloc # too many false-positive
-    - bodyclose # too many false-positive
-    - mnd
-    - testpackage # not relevant
-    - tparallel # not relevant
-    - paralleltest # not relevant
-    - nestif # too many false-positive
-    - wrapcheck
     - err113 # not relevant
-    - nlreturn # not relevant
-    - wsl # not relevant
+    - errchkjson
+    - errname
     - exhaustive # not relevant
     - exhaustruct # not relevant
-    - makezero # not relevant
     - forbidigo
-    - varnamelen # not relevant
-    - nilnil # not relevant
-    - ireturn # not relevant
-    - contextcheck # too many false-positive
-    - tenv # we already have a test "framework" to handle env vars
-    - noctx
     - forcetypeassert
-    - tagliatelle
-    - errname
-    - errchkjson
-    - nonamedreturns
+    - gosec
+    - gosmopolitan # not relevant
+    - ireturn # not relevant
+    - lll
+    - makezero # not relevant
+    - mnd
     - musttag # false-positive https://github.com/junk1tm/musttag/issues/17
-    - gosmopolitan  # not relevant
-    - canonicalheader # Can create side effects in the context of API clients
+    - nestif # too many false-positive
+    - nilnil # not relevant
+    - nlreturn # not relevant
+    - noctx
+    - nonamedreturns
+    - paralleltest # not relevant
+    - prealloc # too many false-positive
+    - rowserrcheck # not relevant (SQL)
+    - sqlclosecheck # not relevant (SQL)
+    - tagliatelle
+    - testpackage # not relevant
+    - tparallel # not relevant
     - usestdlibvars # false-positive https://github.com/sashamelentyev/usestdlibvars/issues/96
+    - varnamelen # not relevant
+    - wrapcheck
+    - wsl # should be enabled it the future.
 
-linters-settings:
-  govet:
-    enable-all: true
-    disable:
-      - fieldalignment
-    settings:
-      printf:
-        funcs:
-          - Print
-          - Printf
-          - Warn
-          - Warnf
-          - Fatal
-          - Fatalf
-  gocyclo:
-    min-complexity: 12
-  goconst:
-    min-len: 3
-    min-occurrences: 3
-  funlen:
-    lines: -1
-    statements: 50
-  misspell:
-    locale: US
-    ignore-words:
-      - internetbs
-  depguard:
+  settings:
+    depguard:
+      rules:
+        main:
+          deny:
+            - pkg: github.com/instana/testify
+              desc: not allowed
+            - pkg: github.com/pkg/errors
+              desc: Should be replaced by standard lib errors package
+    funlen:
+      lines: -1
+      statements: 50
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+    gocritic:
+      disabled-checks:
+        - paramTypeCombine # already handle by gofumpt.extra-rules
+        - whyNoLint # already handle by nonolint
+        - unnamedResult
+        - hugeParam
+        - sloppyReassign
+        - rangeValCopy
+        - octalLiteral
+        - ptrToRefParam
+        - appendAssign
+        - ruleguard
+        - httpNoBody
+        - exposedSyncMutex
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
+    gocyclo:
+      min-complexity: 12
+    godox:
+      keywords:
+        - FIXME
+    govet:
+      disable:
+        - fieldalignment
+      enable-all: true
+      settings:
+        printf:
+          funcs:
+            - Print
+            - Printf
+            - Warn
+            - Warnf
+            - Fatal
+            - Fatalf
+    misspell:
+      locale: US
+      ignore-rules:
+        - internetbs
+    perfsprint:
+      err-error: true
+      errorf: true
+      sprintf1: true
+      strconcat: false
+    revive:
+      rules:
+        - name: struct-tag
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: exported
+          disabled: true
+        - name: if-return
+        - name: increment-decrement
+        - name: var-naming
+        - name: var-declaration
+        - name: package-comments
+          disabled: true
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: indent-error-flow
+        - name: errorf
+        - name: empty-block
+        - name: superfluous-else
+        - name: unused-parameter
+          disabled: true
+        - name: unreachable-code
+        - name: redefines-builtin-id
+    tagalign:
+      align: false
+      order:
+        - xml
+        - json
+        - yaml
+        - yml
+        - toml
+        - mapstructure
+        - url
+    testifylint:
+      disable:
+        - require-error
+        - go-require
+    usetesting:
+      os-setenv: false # we already have a test "framework" to handle env vars
+
+  exclusions:
+    warn-unused: true
+    presets:
+      - comments
+      - std-error-handling
     rules:
-      main:
-        deny:
-          - pkg: "github.com/instana/testify"
-            desc: not allowed
-          - pkg: "github.com/pkg/errors"
-            desc: Should be replaced by standard lib errors package
-  tagalign:
-    align: false
-    order:
-      - xml
-      - json
-      - yaml
-      - yml
-      - toml
-      - mapstructure
-      - url
-  godox:
-    keywords:
-      - FIXME
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - style
-      - performance
-    disabled-checks:
-      - paramTypeCombine # already handle by gofumpt.extra-rules
-      - whyNoLint # already handle by nonolint
-      - unnamedResult
-      - hugeParam
-      - sloppyReassign
-      - rangeValCopy
-      - octalLiteral
-      - ptrToRefParam
-      - appendAssign
-      - ruleguard
-      - httpNoBody
-      - exposedSyncMutex
-  revive:
-    rules:
-      - name: struct-tag
-      - name: blank-imports
-      - name: context-as-argument
-      - name: context-keys-type
-      - name: dot-imports
-      - name: error-return
-      - name: error-strings
-      - name: error-naming
-      - name: exported
-        disabled: true
-      - name: if-return
-      - name: increment-decrement
-      - name: var-naming
-      - name: var-declaration
-      - name: package-comments
-        disabled: true
-      - name: range
-      - name: receiver-naming
-      - name: time-naming
-      - name: unexported-return
-      - name: indent-error-flow
-      - name: errorf
-      - name: empty-block
-      - name: superfluous-else
-      - name: unused-parameter
-        disabled: true
-      - name: unreachable-code
-      - name: redefines-builtin-id
-  testifylint:
-    disable:
-      - require-error
-      - go-require
-  perfsprint:
-    err-error: true
-    errorf: true
-    sprintf1: true
-    strconcat: false
-  usetesting:
-    os-setenv: false # we already have a test "framework" to handle env vars
-
-run:
-  timeout: 10m
-  relative-path-mode: cfg
-
-output:
-  show-stats: true
-  sort-results: true
-  sort-order:
-    - linter
-    - file
+      - linters:
+          - funlen
+          - goconst
+          - maintidx
+        path: (.+)_test.go
+      - linters:
+          - errcheck
+        path: (.+)_test.go
+        text: Error return value of `fmt.Fprintln` is not checked
+      - linters:
+          - gochecknoglobals
+        path: certcrypto/crypto.go
+        text: (tlsFeatureExtensionOID|ocspMustStapleFeature) is a global variable
+      - linters:
+          - gochecknoglobals
+        path: challenge/dns01/nameserver.go
+        text: (defaultNameservers|recursiveNameservers|fqdnSoaCache|muFqdnSoaCache) is a global variable
+      - linters:
+          - gochecknoglobals
+        path: challenge/dns01/nameserver_.+.go
+        text: dnsTimeout is a global variable
+      - linters:
+          - gochecknoglobals
+        path: challenge/dns01/nameserver_test.go
+        text: findXByFqdnTestCases is a global variable
+      - linters:
+          - goconst
+        path: challenge/http01/domain_matcher.go
+        text: string `Host` has \d occurrences, make it a constant
+      - linters:
+          - gocyclo
+        path: challenge/http01/domain_matcher.go
+        text: cyclomatic complexity \d+ of func `parseForwardedHeader` is high
+      - linters:
+          - funlen
+        path: challenge/http01/domain_matcher.go
+        text: Function 'parseForwardedHeader' has too many statements
+      - linters:
+          - gochecknoglobals
+        path: challenge/tlsalpn01/tls_alpn_challenge.go
+        text: idPeAcmeIdentifierV1 is a global variable
+      - linters:
+          - gochecknoglobals
+        path: log/logger.go
+        text: Logger is a global variable
+      - linters:
+          - gochecknoglobals
+        path: e2e/(dnschallenge/)?[\d\w]+_test.go
+        text: load is a global variable
+      - linters:
+          - gochecknoglobals
+        path: providers/dns/([\d\w]+/)*[\d\w]+_test.go
+        text: envTest is a global variable
+      - linters:
+          - gochecknoglobals
+        path: providers/http/([\d\w]+/)*[\d\w]+_test.go
+        text: envTest is a global variable
+      - linters:
+          - gochecknoglobals
+        path: providers/dns/namecheap/namecheap_test.go
+        text: testCases is a global variable
+      - linters:
+          - gochecknoglobals
+        path: providers/dns/acmedns/mock_test.go
+        text: egTestAccount is a global variable
+      - linters:
+          - gochecknoglobals
+        path: providers/http/memcached/memcached_test.go
+        text: memcachedHosts is a global variable
+      - linters:
+          - misspell
+        path: providers/dns/checkdomain/internal/types.go
+        text: '`payed` is a misspelling of `paid`'
+      - linters:
+          - thelper
+        path: platform/tester/env_test.go
+      - linters:
+          - staticcheck
+        path: providers/dns/oraclecloud/oraclecloud_test.go
+        text: 'SA1019: x509.EncryptPEMBlock has been deprecated since Go 1.16'
+      - linters:
+          - gochecknoglobals
+        path: providers/dns/sakuracloud/wrapper.go
+        text: mu is a global variable
+      - linters:
+          - gocyclo
+        path: cmd/cmd_renew.go
+        text: cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high
+      - linters:
+          - funlen
+        path: cmd/cmd_renew.go
+        text: Function 'renewForDomains' has too many statements
+      - linters:
+          - gocyclo
+        path: providers/dns/cpanel/cpanel.go
+        text: cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high
+      - linters:
+          - staticcheck
+       # Those elements have been replaced by non-exposed structures.
+        path: providers/dns/linode/linode_test.go
+        text: 'SA1019: linodego\.(DomainsPagedResponse|DomainRecordsPagedResponse) is deprecated'
 
 issues:
-  exclude-generated: strict
-  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
-  exclude:
-    - 'Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*printf?|os\.(Un)?Setenv). is not checked'
-    - 'exported (type|method|function) (.+) should have comment or be unexported'
-    - 'ST1000: at least one file in a package should have a package comment'
-  exclude-rules:
-    - path: (.+)_test.go
-      linters:
-        - funlen
-        - goconst
-        - maintidx
-    - path: (.+)_test.go
-      text: 'Error return value of `fmt.Fprintln` is not checked'
-      linters:
-        - errcheck
-    - path: certcrypto/crypto.go
-      text: '(tlsFeatureExtensionOID|ocspMustStapleFeature) is a global variable'
-      linters:
-        - gochecknoglobals
-    - path: challenge/dns01/nameserver.go
-      text: '(defaultNameservers|recursiveNameservers|fqdnSoaCache|muFqdnSoaCache) is a global variable'
-      linters:
-        - gochecknoglobals
-    - path: challenge/dns01/nameserver_.+.go
-      text: 'dnsTimeout is a global variable'
-      linters:
-        - gochecknoglobals
-    - path: challenge/dns01/nameserver_test.go
-      text: 'findXByFqdnTestCases is a global variable'
-      linters:
-        - gochecknoglobals
-    - path: challenge/http01/domain_matcher.go
-      text: 'string `Host` has \d occurrences, make it a constant'
-      linters:
-        - goconst
-    - path: challenge/http01/domain_matcher.go
-      text: 'cyclomatic complexity \d+ of func `parseForwardedHeader` is high'
-      linters:
-        - gocyclo
-    - path: challenge/http01/domain_matcher.go
-      text: "Function 'parseForwardedHeader' has too many statements"
-      linters:
-        - funlen
-    - path: challenge/tlsalpn01/tls_alpn_challenge.go
-      text: 'idPeAcmeIdentifierV1 is a global variable'
-      linters:
-        - gochecknoglobals
-    - path: log/logger.go
-      text: 'Logger is a global variable'
-      linters:
-        - gochecknoglobals
-    - path: 'e2e/(dnschallenge/)?[\d\w]+_test.go'
-      text: load is a global variable
-      linters:
-        - gochecknoglobals
-    - path: 'providers/dns/([\d\w]+/)*[\d\w]+_test.go'
-      text: 'envTest is a global variable'
-      linters:
-        - gochecknoglobals
-    - path: 'providers/http/([\d\w]+/)*[\d\w]+_test.go'
-      text: 'envTest is a global variable'
-      linters:
-        - gochecknoglobals
-    - path: providers/dns/namecheap/namecheap_test.go
-      text: 'testCases is a global variable'
-      linters:
-        - gochecknoglobals
-    - path: providers/dns/acmedns/mock_test.go
-      text: 'egTestAccount is a global variable'
-      linters:
-        - gochecknoglobals
-    - path: providers/http/memcached/memcached_test.go
-      text: 'memcachedHosts is a global variable'
-      linters:
-        - gochecknoglobals
-    - path: providers/dns/checkdomain/internal/types.go
-      text: '`payed` is a misspelling of `paid`'
-      linters:
-        - misspell
-    - path: platform/tester/env_test.go
-      linters:
-        - thelper
-    - path: providers/dns/oraclecloud/oraclecloud_test.go
-      text: 'SA1019: x509.EncryptPEMBlock has been deprecated since Go 1.16'
-      linters:
-        - staticcheck
-    - path: providers/dns/sakuracloud/wrapper.go
-      text: 'mu is a global variable'
-      linters:
-        - gochecknoglobals
-    - path: cmd/cmd_renew.go
-      text: 'cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high'
-      linters:
-        - gocyclo
-    - path: cmd/cmd_renew.go
-      text: "Function 'renewForDomains' has too many statements"
-      linters:
-        - funlen
-    - path: providers/dns/cpanel/cpanel.go
-      text: 'cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high'
-      linters:
-        - gocyclo
-
-    # Those elements have been replaced by non-exposed structures.
-    - path: providers/dns/linode/linode_test.go
-      linters:
-        - staticcheck
-      text: "SA1019: linodego\\.(DomainsPagedResponse|DomainRecordsPagedResponse) is deprecated"

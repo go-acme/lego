@@ -52,12 +52,11 @@ func utcToCet(utc time.Time) time.Time {
 
 	dayOff := 0
 	breaking := time.Date(utc.Year(), utcMonth+1, dayOff, 1, 0, 0, 0, time.UTC)
-	for {
-		if breaking.Weekday() == time.Sunday {
-			break
-		}
+	for breaking.Weekday() != time.Sunday {
 		dayOff--
+
 		breaking = time.Date(utc.Year(), utcMonth+1, dayOff, 1, 0, 0, 0, time.UTC)
+
 		if dayOff < -7 {
 			panic("safety exit to avoid infinite loop")
 		}

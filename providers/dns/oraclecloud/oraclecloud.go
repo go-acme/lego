@@ -168,7 +168,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	var deleteHash *string
-	for _, record := range domainRecords.RecordCollection.Items {
+	for _, record := range domainRecords.Items {
 		if record.Rdata != nil && *record.Rdata == `"`+info.Value+`"` {
 			deleteHash = record.RecordHash
 			break

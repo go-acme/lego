@@ -62,7 +62,7 @@ func (d *DNSProvider) cleanupTXTRecord(fqdn, value string) error {
 
 	var updRecords iaas.DNSRecords
 	for _, r := range zone.Records {
-		if !(r.Name == subDomain && r.Type == "TXT" && r.RData == value) {
+		if !(r.Name == subDomain && r.Type == "TXT" && r.RData == value) { //nolint:staticcheck // Clearer without De Morgan's law.
 			updRecords = append(updRecords, r)
 		}
 	}

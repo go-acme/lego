@@ -62,7 +62,7 @@ func TestEnvTest(t *testing.T) {
 				assert.True(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
 				assert.Equal(t, "B", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetDomain())
+				assert.Empty(t, envTest.GetDomain())
 			},
 		},
 		{
@@ -75,9 +75,9 @@ func TestEnvTest(t *testing.T) {
 			},
 			expected: func(t *testing.T, envTest *tester.EnvTest) {
 				assert.False(t, envTest.IsLiveTest())
-				assert.Equal(t, "", envTest.GetValue(envVar01))
+				assert.Empty(t, envTest.GetValue(envVar01))
 				assert.Equal(t, "B", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetDomain())
+				assert.Empty(t, envTest.GetDomain())
 			},
 		},
 		{
@@ -94,7 +94,7 @@ func TestEnvTest(t *testing.T) {
 				assert.True(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
 				assert.Equal(t, "B", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetValue(envVarDomain))
+				assert.Empty(t, envTest.GetValue(envVarDomain))
 				assert.Equal(t, "D", envTest.GetDomain())
 			},
 		},
@@ -110,8 +110,8 @@ func TestEnvTest(t *testing.T) {
 			expected: func(t *testing.T, envTest *tester.EnvTest) {
 				assert.False(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
-				assert.Equal(t, "", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetValue(envVarDomain))
+				assert.Empty(t, envTest.GetValue(envVar02))
+				assert.Empty(t, envTest.GetValue(envVarDomain))
 				assert.Equal(t, "D", envTest.GetDomain())
 			},
 		},
@@ -128,8 +128,8 @@ func TestEnvTest(t *testing.T) {
 				assert.False(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
 				assert.Equal(t, "B", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetValue(envVarDomain))
-				assert.Equal(t, "", envTest.GetDomain())
+				assert.Empty(t, envTest.GetValue(envVarDomain))
+				assert.Empty(t, envTest.GetDomain())
 			},
 		},
 		{
@@ -145,7 +145,7 @@ func TestEnvTest(t *testing.T) {
 				assert.True(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
 				assert.Equal(t, "B", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetDomain())
+				assert.Empty(t, envTest.GetDomain())
 			},
 		},
 		{
@@ -161,7 +161,7 @@ func TestEnvTest(t *testing.T) {
 				assert.True(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
 				assert.Equal(t, "B", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetDomain())
+				assert.Empty(t, envTest.GetDomain())
 			},
 		},
 		{
@@ -174,9 +174,9 @@ func TestEnvTest(t *testing.T) {
 			},
 			expected: func(t *testing.T, envTest *tester.EnvTest) {
 				assert.True(t, envTest.IsLiveTest())
-				assert.Equal(t, "", envTest.GetValue(envVar01))
+				assert.Empty(t, envTest.GetValue(envVar01))
 				assert.Equal(t, "B", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetDomain())
+				assert.Empty(t, envTest.GetDomain())
 			},
 		},
 		{
@@ -190,8 +190,8 @@ func TestEnvTest(t *testing.T) {
 			expected: func(t *testing.T, envTest *tester.EnvTest) {
 				assert.False(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
-				assert.Equal(t, "", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetDomain())
+				assert.Empty(t, envTest.GetValue(envVar02))
+				assert.Empty(t, envTest.GetDomain())
 			},
 		},
 		{
@@ -210,7 +210,7 @@ func TestEnvTest(t *testing.T) {
 				assert.True(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
 				assert.Equal(t, "B", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetValue(envVarDomain))
+				assert.Empty(t, envTest.GetValue(envVarDomain))
 				assert.Equal(t, "D", envTest.GetDomain())
 			},
 		},
@@ -229,8 +229,8 @@ func TestEnvTest(t *testing.T) {
 				assert.True(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
 				assert.Equal(t, "B", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetValue(envVarDomain))
-				assert.Equal(t, "", envTest.GetDomain())
+				assert.Empty(t, envTest.GetValue(envVarDomain))
+				assert.Empty(t, envTest.GetDomain())
 			},
 		},
 		{
@@ -247,7 +247,7 @@ func TestEnvTest(t *testing.T) {
 				assert.True(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
 				assert.Equal(t, "B", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetDomain())
+				assert.Empty(t, envTest.GetDomain())
 			},
 		},
 		{
@@ -264,7 +264,7 @@ func TestEnvTest(t *testing.T) {
 				assert.False(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
 				assert.Equal(t, "B", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetDomain())
+				assert.Empty(t, envTest.GetDomain())
 			},
 		},
 		{
@@ -282,7 +282,7 @@ func TestEnvTest(t *testing.T) {
 				assert.True(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
 				assert.Equal(t, "B", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetDomain())
+				assert.Empty(t, envTest.GetDomain())
 			},
 		},
 		{
@@ -300,7 +300,7 @@ func TestEnvTest(t *testing.T) {
 				assert.False(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
 				assert.Equal(t, "B", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetDomain())
+				assert.Empty(t, envTest.GetDomain())
 			},
 		},
 		{
@@ -316,8 +316,8 @@ func TestEnvTest(t *testing.T) {
 			expected: func(t *testing.T, envTest *tester.EnvTest) {
 				assert.False(t, envTest.IsLiveTest())
 				assert.Equal(t, "A", envTest.GetValue(envVar01))
-				assert.Equal(t, "", envTest.GetValue(envVar02))
-				assert.Equal(t, "", envTest.GetDomain())
+				assert.Empty(t, envTest.GetValue(envVar02))
+				assert.Empty(t, envTest.GetDomain())
 			},
 		},
 	}
@@ -357,7 +357,7 @@ func TestEnvTest_ClearEnv(t *testing.T) {
 
 	envTest.ClearEnv()
 
-	assert.Equal(t, "", os.Getenv(envVar01))
-	assert.Equal(t, "", os.Getenv(envVar02))
+	assert.Empty(t, os.Getenv(envVar01))
+	assert.Empty(t, os.Getenv(envVar02))
 	assert.Equal(t, "X", os.Getenv("EXTRA_LEGO_TEST"))
 }

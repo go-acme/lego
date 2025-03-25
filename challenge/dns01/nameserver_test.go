@@ -39,7 +39,7 @@ func TestLookupNameserversOK(t *testing.T) {
 			sort.Strings(nss)
 			sort.Strings(test.nss)
 
-			assert.EqualValues(t, test.nss, nss)
+			assert.Equal(t, test.nss, nss)
 		})
 	}
 }

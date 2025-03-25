@@ -162,7 +162,7 @@ func TestChallengeIPaddress(t *testing.T) {
 		value, err := asn1.Marshal(zBytes[:sha256.Size])
 		require.NoError(t, err, "Expected marshaling of the keyAuth to return no error")
 
-		require.EqualValues(t, value, extValue, "Expected the challenge certificate id-pe-acmeIdentifier extension to contain the SHA-256 digest of the keyAuth")
+		require.Equal(t, value, extValue, "Expected the challenge certificate id-pe-acmeIdentifier extension to contain the SHA-256 digest of the keyAuth")
 
 		return nil
 	}

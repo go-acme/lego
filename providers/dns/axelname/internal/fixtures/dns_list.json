@@ -1,0 +1,33 @@
+{
+  "code": "OK",
+  "message": "DNS-records",
+  "count": 4,
+  "result": "success",
+  "list": [
+    {
+      "id": "74749",
+      "name": "example.com",
+      "type": "A",
+      "value": "46.161.54.22"
+    },
+    {
+      "id": "417",
+      "name": "example.com",
+      "type": "MX",
+      "value": "mx.yandex.ru.",
+      "prio": "10"
+    },
+    {
+      "id": "419",
+      "name": "mail.example.com",
+      "type": "CNAME",
+      "value": "mail.yandex.ru."
+    },
+    {
+      "id": "74750",
+      "name": "www.example.com",
+      "type": "A",
+      "value": "46.161.54.22"
+    }
+  ]
+}

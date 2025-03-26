@@ -248,10 +248,12 @@ func (d *DNSProvider) getZoneID(wanted string) (string, error) {
 	listOpts := zones.ListOpts{
 		Name: wanted,
 	}
+
 	allPages, err := zones.List(d.client, listOpts).AllPages()
 	if err != nil {
 		return "", err
 	}
+
 	allZones, err := zones.ExtractZones(allPages)
 	if err != nil {
 		return "", err
@@ -262,6 +264,7 @@ func (d *DNSProvider) getZoneID(wanted string) (string, error) {
 			return zone.ID, nil
 		}
 	}
+
 	return "", fmt.Errorf("zone id not found for %s", wanted)
 }
 
@@ -270,10 +273,12 @@ func (d *DNSProvider) getRecord(zoneID, wanted string) (*recordsets.RecordSet, e
 		Name: wanted,
 		Type: "TXT",
 	}
+
 	allPages, err := recordsets.ListByZone(d.client, zoneID, listOpts).AllPages()
 	if err != nil {
 		return nil, err
 	}
+
 	allRecords, err := recordsets.ExtractRecordSets(allPages)
 	if err != nil {
 		return nil, err

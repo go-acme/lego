@@ -245,10 +245,15 @@ func (d *DNSProvider) updateRecord(record *recordsets.RecordSet, value string) e
 }
 
 func (d *DNSProvider) getZoneID(wanted string) (string, error) {
-	allPages, err := zones.List(d.client, nil).AllPages()
+	listOpts := zones.ListOpts{
+		Name: wanted,
+	}
+
+	allPages, err := zones.List(d.client, listOpts).AllPages()
 	if err != nil {
 		return "", err
 	}
+
 	allZones, err := zones.ExtractZones(allPages)
 	if err != nil {
 		return "", err
@@ -259,14 +264,21 @@ func (d *DNSProvider) getZoneID(wanted string) (string, error) {
 			return zone.ID, nil
 		}
 	}
+
 	return "", fmt.Errorf("zone id not found for %s", wanted)
 }
 
 func (d *DNSProvider) getRecord(zoneID, wanted string) (*recordsets.RecordSet, error) {
-	allPages, err := recordsets.ListByZone(d.client, zoneID, nil).AllPages()
+	listOpts := recordsets.ListOpts{
+		Name: wanted,
+		Type: "TXT",
+	}
+
+	allPages, err := recordsets.ListByZone(d.client, zoneID, listOpts).AllPages()
 	if err != nil {
 		return nil, err
 	}
+
 	allRecords, err := recordsets.ExtractRecordSets(allPages)
 	if err != nil {
 		return nil, err

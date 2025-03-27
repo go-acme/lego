@@ -134,15 +134,15 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("axelname: list records: %w", err)
 	}
 
-	fmt.Println("DEBUG: records", len(records))
+	fmt.Println("DEBUG: records", len(records)) // TODO: remove debug
 
 	for _, record := range records {
-		fmt.Println("DEBUG: record", record.Type, record.Value, info.Value)
+		fmt.Println("DEBUG: record", record.Type, record.Value, info.Value) // TODO: remove debug
 		if record.Type != "TXT" || record.Value != info.Value {
 			continue
 		}
 
-		err = d.client.DeleteRecord(ctx, record)
+		err = d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), record)
 		if err != nil {
 			return fmt.Errorf("axelname: delete record: %w", err)
 		}

@@ -80,7 +80,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 	record := Record{ID: "74749"}
 
-	err := client.DeleteRecord(context.Background(), record)
+	err := client.DeleteRecord(context.Background(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -89,7 +89,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 
 	record := Record{ID: "74749"}
 
-	err := client.DeleteRecord(context.Background(), record)
+	err := client.DeleteRecord(context.Background(), "example.com", record)
 	require.EqualError(t, err, "error: Domain not found (1)")
 }
 

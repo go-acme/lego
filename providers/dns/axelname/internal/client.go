@@ -47,6 +47,7 @@ func (c *Client) ListRecords(ctx context.Context, domain string) ([]Record, erro
 
 	query := endpoint.Query()
 	query.Set("domain", domain)
+
 	endpoint.RawQuery = query.Encode()
 
 	req, err := c.newRequest(ctx, endpoint)
@@ -68,13 +69,15 @@ func (c *Client) ListRecords(ctx context.Context, domain string) ([]Record, erro
 	return results.List, nil
 }
 
-func (c *Client) DeleteRecord(ctx context.Context, record Record) error {
+func (c *Client) DeleteRecord(ctx context.Context, domain string, record Record) error {
 	endpoint := c.baseURL.JoinPath("dns_delete")
 
 	values, err := querystring.Values(record)
 	if err != nil {
 		return err
 	}
+
+	values.Set("domain", domain)
 
 	endpoint.RawQuery = values.Encode()
 

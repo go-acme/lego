@@ -95,7 +95,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	record := internal.Record{
-		Name:  info.EffectiveFQDN,
+		Name:  dns01.UnFqdn(info.EffectiveFQDN),
 		Type:  "TXT",
 		Value: info.Value,
 	}

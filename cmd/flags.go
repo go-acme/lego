@@ -167,7 +167,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		&cli.DurationFlag{
 			Name:  flgTLSDelay,
-			Usage: "Delay between the starts of the TLS listener (use for TLSALPN-01 based challenges) and the validation of the challenge.",
+			Usage: "Delay between the start of the TLS listener (use for TLSALPN-01 based challenges) and the validation of the challenge.",
 			Value: 0,
 		},
 		&cli.StringFlag{

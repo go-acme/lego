@@ -97,13 +97,15 @@ func (c *Client) DeleteRecord(ctx context.Context, record Record) error {
 	return nil
 }
 
-func (c *Client) AddRecord(ctx context.Context, record Record) error {
+func (c *Client) AddRecord(ctx context.Context, domain string, record Record) error {
 	endpoint := c.baseURL.JoinPath("dns_add")
 
 	values, err := querystring.Values(record)
 	if err != nil {
 		return err
 	}
+
+	values.Set("domain", domain)
 
 	endpoint.RawQuery = values.Encode()
 

@@ -98,7 +98,7 @@ func TestClient_AddRecord(t *testing.T) {
 
 	record := Record{ID: "74749"}
 
-	err := client.AddRecord(context.Background(), record)
+	err := client.AddRecord(context.Background(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -107,6 +107,6 @@ func TestClient_AddRecord_error(t *testing.T) {
 
 	record := Record{ID: "74749"}
 
-	err := client.AddRecord(context.Background(), record)
+	err := client.AddRecord(context.Background(), "example.com", record)
 	require.EqualError(t, err, "error: Domain not found (1)")
 }

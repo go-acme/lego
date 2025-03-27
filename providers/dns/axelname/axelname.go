@@ -134,7 +134,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("axelname: list records: %w", err)
 	}
 
+	fmt.Println("DEBUG: records", len(records))
+
 	for _, record := range records {
+		fmt.Println("DEBUG: record", record.Type, record.Value, info.Value)
 		if record.Type != "TXT" || record.Value != info.Value {
 			continue
 		}

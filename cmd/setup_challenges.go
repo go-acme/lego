@@ -32,7 +32,7 @@ func setupChallenges(ctx *cli.Context, client *lego.Client) {
 	}
 
 	if ctx.Bool(flgTLS) {
-		err := client.Challenge.SetTLSALPN01Provider(setupTLSProvider(ctx))
+		err := client.Challenge.SetTLSALPN01Provider(setupTLSProvider(ctx), tlsalpn01.SetDelay(ctx.Duration(flgTLSDelay)))
 		if err != nil {
 			log.Fatal(err)
 		}

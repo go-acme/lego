@@ -42,8 +42,12 @@ func NewClient(nickname, token string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) ListRecords(ctx context.Context) ([]Record, error) {
+func (c *Client) ListRecords(ctx context.Context, domain string) ([]Record, error) {
 	endpoint := c.baseURL.JoinPath("dns_list")
+
+	query := endpoint.Query()
+	query.Set("domain", domain)
+	endpoint.RawQuery = query.Encode()
 
 	req, err := c.newRequest(ctx, endpoint)
 	if err != nil {

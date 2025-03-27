@@ -94,23 +94,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("axelname: could not find zone for domain %q: %w", domain, err)
-	}
-
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
-	if err != nil {
-		return fmt.Errorf("axelname: %w", err)
-	}
-
 	record := internal.Record{
-		Name:  subDomain,
+		Name:  info.EffectiveFQDN,
 		Type:  "TXT",
 		Value: info.Value,
 	}
 
-	err = d.client.AddRecord(context.Background(), record)
+	err := d.client.AddRecord(context.Background(), record)
 	if err != nil {
 		return fmt.Errorf("axelname: add record: %w", err)
 	}
@@ -124,7 +114,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	records, err := d.client.ListRecords(ctx)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("axelname: could not find zone for domain %q: %w", domain, err)
+	}
+
+	records, err := d.client.ListRecords(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("axelname: list records: %w", err)
 	}

@@ -55,14 +55,14 @@ func setupTest(t *testing.T, pattern string, status int, filename string) *Clien
 func TestClient_ListRecords(t *testing.T) {
 	client := setupTest(t, "GET /dns_list", http.StatusOK, "dns_list.json")
 
-	records, err := client.ListRecords(context.Background())
+	records, err := client.ListRecords(context.Background(), "example.com")
 	require.NoError(t, err)
 
 	expected := []Record{
-		{ID: "74749", Name: "test.ru", Type: "A", Value: "46.161.54.22"},
-		{ID: "417", Name: "test.ru", Type: "MX", Value: "mx.yandex.ru.", Prio: "10"},
-		{ID: "419", Name: "mail.test.ru", Type: "CNAME", Value: "mail.yandex.ru."},
-		{ID: "74750", Name: "www.test.ru", Type: "A", Value: "46.161.54.22"},
+		{ID: "74749", Name: "example.com", Type: "A", Value: "46.161.54.22"},
+		{ID: "417", Name: "example.com", Type: "MX", Value: "mx.yandex.ru.", Prio: "10"},
+		{ID: "419", Name: "mail.example.com", Type: "CNAME", Value: "mail.yandex.ru."},
+		{ID: "74750", Name: "www.example.com", Type: "A", Value: "46.161.54.22"},
 	}
 
 	assert.Equal(t, expected, records)
@@ -71,7 +71,7 @@ func TestClient_ListRecords(t *testing.T) {
 func TestClient_ListRecords_error(t *testing.T) {
 	client := setupTest(t, "GET /dns_list", http.StatusNotFound, "dns_list_error.json")
 
-	_, err := client.ListRecords(context.Background())
+	_, err := client.ListRecords(context.Background(), "example.com")
 	require.EqualError(t, err, "error: Domain not found (1)")
 }
 

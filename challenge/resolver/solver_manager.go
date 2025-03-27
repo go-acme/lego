@@ -42,8 +42,8 @@ func (c *SolverManager) SetHTTP01Provider(p challenge.Provider, opts ...http01.C
 }
 
 // SetTLSALPN01Provider specifies a custom provider p that can solve the given TLS-ALPN-01 challenge.
-func (c *SolverManager) SetTLSALPN01Provider(p challenge.Provider) error {
-	c.solvers[challenge.TLSALPN01] = tlsalpn01.NewChallenge(c.core, validate, p)
+func (c *SolverManager) SetTLSALPN01Provider(p challenge.Provider, opts ...tlsalpn01.ChallengeOption) error {
+	c.solvers[challenge.TLSALPN01] = tlsalpn01.NewChallenge(c.core, validate, p, opts...)
 	return nil
 }
 

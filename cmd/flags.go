@@ -32,6 +32,7 @@ const (
 	flgHTTPS3Bucket             = "http.s3-bucket"
 	flgTLS                      = "tls"
 	flgTLSPort                  = "tls.port"
+	flgTLSDelay                 = "tls.delay"
 	flgDNS                      = "dns"
 	flgDNSDisableCP             = "dns.disable-cp"
 	flgDNSPropagationWait       = "dns.propagation-wait"
@@ -163,6 +164,11 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Name:  flgTLSPort,
 			Usage: "Set the port and interface to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port.",
 			Value: ":443",
+		},
+		&cli.DurationFlag{
+			Name:  flgTLSDelay,
+			Usage: "Delay between the start of the TLS listener (use for TLSALPN-01 based challenges) and the validation of the challenge.",
+			Value: 0,
 		},
 		&cli.StringFlag{
 			Name:  flgDNS,

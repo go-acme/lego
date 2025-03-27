@@ -39,6 +39,7 @@ GLOBAL OPTIONS:
    --http.s3-bucket value                                       Set the S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.
    --tls                                                        Use the TLS-ALPN-01 challenge to solve challenges. Can be mixed with other types of challenges. (default: false)
    --tls.port value                                             Set the port and interface to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port. (default: ":443")
+   --tls.delay value                                            Delay between the start of the TLS listener (use for TLSALPN-01 based challenges) and the validation of the challenge. (default: 0s)
    --dns value                                                  Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage.
    --dns.disable-cp                                             (deprecated) use dns.propagation-disable-ans instead. (default: false)
    --dns.propagation-disable-ans                                By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers. (default: false)

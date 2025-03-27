@@ -135,7 +135,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	for _, record := range records {
-		if record.Type != "TXT" && record.Value != info.Value {
+		if record.Type != "TXT" || record.Value != info.Value {
 			continue
 		}
 

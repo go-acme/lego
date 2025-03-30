@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -150,7 +151,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	rec := internal.Record{
-		Content:  "\"" + info.Value + "\"",
+		Content:  strconv.Quote(info.Value),
 		Disabled: false,
 
 		// pre-v1 API
@@ -202,17 +203,27 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("pdns: no existing record found for %s", info.EffectiveFQDN)
 	}
 
-	rrSets := internal.RRSets{
-		RRSets: []internal.RRSet{
-			{
-				Name:       set.Name,
-				Type:       set.Type,
-				ChangeType: "DELETE",
-			},
-		},
+	var records []internal.Record
+	for _, r := range set.Records {
+		if r.Content != strconv.Quote(info.Value) {
+			records = append(records, r)
+		}
 	}
 
-	err = d.client.UpdateRecords(ctx, zone, rrSets)
+	rrSet := internal.RRSet{
+		Name: set.Name,
+		Type: set.Type,
+	}
+
+	if len(records) > 0 {
+		rrSet.ChangeType = "REPLACE"
+		rrSet.TTL = d.config.TTL
+		rrSet.Records = records
+	} else {
+		rrSet.ChangeType = "DELETE"
+	}
+
+	err = d.client.UpdateRecords(ctx, zone, internal.RRSets{RRSets: []internal.RRSet{rrSet}})
 	if err != nil {
 		return fmt.Errorf("pdns: %w", err)
 	}

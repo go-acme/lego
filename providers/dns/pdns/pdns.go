@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -151,7 +151,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	rec := internal.Record{
-		Content:  "\"" + info.Value + "\"",
+		Content:  strconv.Quote(info.Value),
 		Disabled: false,
 
 		// pre-v1 API
@@ -205,29 +205,25 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var records []internal.Record
 	for _, r := range set.Records {
-		if strings.Trim(r.Content, "\"") != info.Value {
+		if r.Content != strconv.Quote(info.Value) {
 			records = append(records, r)
 		}
 	}
 
-	changeType := "REPLACE"
-	if len(records) < 1 {
-		changeType = "DELETE"
+	rrSet := internal.RRSet{
+		Name: set.Name,
+		Type: set.Type,
 	}
 
-	rrSets := internal.RRSets{
-		RRSets: []internal.RRSet{
-			{
-				Name:       set.Name,
-				Type:       set.Type,
-				ChangeType: changeType,
-				TTL:        d.config.TTL,
-				Records:    records,
-			},
-		},
+	if len(records) > 0 {
+		rrSet.ChangeType = "REPLACE"
+		rrSet.TTL = d.config.TTL
+		rrSet.Records = records
+	} else {
+		rrSet.ChangeType = "DELETE"
 	}
 
-	err = d.client.UpdateRecords(ctx, zone, rrSets)
+	err = d.client.UpdateRecords(ctx, zone, internal.RRSets{RRSets: []internal.RRSet{rrSet}})
 	if err != nil {
 		return fmt.Errorf("pdns: %w", err)
 	}

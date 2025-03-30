@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -202,12 +203,26 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("pdns: no existing record found for %s", info.EffectiveFQDN)
 	}
 
+	var records []internal.Record
+	for _, r := range set.Records {
+		if strings.Trim(r.Content, "\"") != info.Value {
+			records = append(records, r)
+		}
+	}
+
+	changeType := "REPLACE"
+	if len(records) < 1 {
+		changeType = "DELETE"
+	}
+
 	rrSets := internal.RRSets{
 		RRSets: []internal.RRSet{
 			{
 				Name:       set.Name,
 				Type:       set.Type,
-				ChangeType: "DELETE",
+				ChangeType: changeType,
+				TTL:        d.config.TTL,
+				Records:    records,
 			},
 		},
 	}

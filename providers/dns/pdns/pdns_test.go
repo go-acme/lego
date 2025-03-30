@@ -141,8 +141,12 @@ func TestLivePresentAndCleanup(t *testing.T) {
 
 	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+	err = provider.Present(envTest.GetDomain(), "", "123e==")
+	require.NoError(t, err)
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+	err = provider.CleanUp(envTest.GetDomain(), "", "123e==")
 	require.NoError(t, err)
 }
 

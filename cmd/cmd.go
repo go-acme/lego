@@ -1,6 +1,6 @@
 package cmd
 
-import "github.com/urfave/cli/v2"
+import "github.com/urfave/cli/v3"
 
 // CreateCommands Creates all CLI commands.
 func CreateCommands() []*cli.Command {

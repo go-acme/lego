@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -10,7 +11,7 @@ import (
 	"strconv"
 
 	hcversion "github.com/hashicorp/go-version"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const flgMode = "mode"
@@ -29,48 +30,48 @@ const (
 )
 
 func main() {
-	app := cli.NewApp()
-	app.Name = "lego-releaser"
-	app.Usage = "Lego releaser"
-	app.HelpName = "releaser"
-	app.Commands = []*cli.Command{
-		{
-			Name:   "release",
-			Usage:  "Update file for a release",
-			Action: release,
-			Before: func(ctx *cli.Context) error {
-				mode := ctx.String("mode")
-				switch mode {
-				case modePatch, modeMinor, modeMajor:
-					return nil
-				default:
-					return fmt.Errorf("invalid mode: %s", mode)
-				}
-			},
-			Flags: []cli.Flag{
-				&cli.StringFlag{
-					Name:    flgMode,
-					Aliases: []string{"m"},
-					Value:   modePatch,
-					Usage:   fmt.Sprintf("The release mode: %s|%s|%s", modePatch, modeMinor, modeMajor),
+	app := cli.Command{
+		Name:  "lego-releaser",
+		Usage: "Lego releaser",
+		Commands: []*cli.Command{
+			{
+				Name:   "release",
+				Usage:  "Update file for a release",
+				Action: release,
+				Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+					mode := cmd.String("mode")
+					switch mode {
+					case modePatch, modeMinor, modeMajor:
+						return ctx, nil
+					default:
+						return ctx, fmt.Errorf("invalid mode: %s", mode)
+					}
+				},
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    flgMode,
+						Aliases: []string{"m"},
+						Value:   modePatch,
+						Usage:   fmt.Sprintf("The release mode: %s|%s|%s", modePatch, modeMinor, modeMajor),
+					},
 				},
 			},
-		},
-		{
-			Name:   "detach",
-			Usage:  "Update file post release",
-			Action: detach,
+			{
+				Name:   "detach",
+				Usage:  "Update file post release",
+				Action: detach,
+			},
 		},
 	}
 
-	err := app.Run(os.Args)
+	err := app.Run(context.Background(), os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func release(ctx *cli.Context) error {
-	mode := ctx.String(flgMode)
+func release(_ context.Context, cmd *cli.Command) error {
+	mode := cmd.String(flgMode)
 
 	currentVersion, err := readCurrentVersion(versionSourceFile)
 	if err != nil {
@@ -90,7 +91,7 @@ func release(ctx *cli.Context) error {
 	return nil
 }
 
-func detach(_ *cli.Context) error {
+func detach(_ context.Context, _ *cli.Command) error {
 	currentVersion, err := readCurrentVersion(versionSourceFile)
 	if err != nil {
 		return fmt.Errorf("read current version: %w", err)

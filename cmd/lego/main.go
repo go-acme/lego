@@ -3,6 +3,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,34 +11,35 @@ import (
 
 	"github.com/go-acme/lego/v4/cmd"
 	"github.com/go-acme/lego/v4/log"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func main() {
-	app := cli.NewApp()
-	app.Name = "lego"
-	app.HelpName = "lego"
-	app.Usage = "Let's Encrypt client written in Go"
-	app.EnableBashCompletion = true
-
-	app.Version = getVersion()
-	cli.VersionPrinter = func(c *cli.Context) {
-		fmt.Printf("lego version %s %s/%s\n", c.App.Version, runtime.GOOS, runtime.GOARCH)
-	}
-
 	var defaultPath string
 	cwd, err := os.Getwd()
 	if err == nil {
 		defaultPath = filepath.Join(cwd, ".lego")
 	}
 
-	app.Flags = cmd.CreateFlags(defaultPath)
+	app := &cli.Command{
+		Name:                  "lego",
+		Usage:                 "Let's Encrypt client written in Go",
+		Version:               getVersion(),
+		EnableShellCompletion: true,
+		Flags:                 cmd.CreateFlags(defaultPath),
+		Before:                cmd.Before,
+		Commands:              cmd.CreateCommands(),
+	}
 
-	app.Before = cmd.Before
+	cli.VersionPrinter = func(cmd *cli.Command) {
+		fmt.Printf("lego version %s %s/%s\n", cmd.Version, runtime.GOOS, runtime.GOARCH)
+	}
 
 	app.Commands = cmd.CreateCommands()
 
-	err = app.Run(os.Args)
+	ctx := context.Background()
+
+	err = app.Run(ctx, os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}

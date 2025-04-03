@@ -17,7 +17,7 @@ import (
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/log"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"golang.org/x/net/idna"
 	"software.sslmate.com/src/go-pkcs12"
 )
@@ -60,8 +60,8 @@ type CertificatesStorage struct {
 }
 
 // NewCertificatesStorage create a new certificates storage.
-func NewCertificatesStorage(ctx *cli.Context) *CertificatesStorage {
-	pfxFormat := ctx.String(flgPFXFormat)
+func NewCertificatesStorage(cmd *cli.Command) *CertificatesStorage {
+	pfxFormat := cmd.String(flgPFXFormat)
 
 	switch pfxFormat {
 	case "DES", "RC2", "SHA256":
@@ -70,13 +70,13 @@ func NewCertificatesStorage(ctx *cli.Context) *CertificatesStorage {
 	}
 
 	return &CertificatesStorage{
-		rootPath:    filepath.Join(ctx.String(flgPath), baseCertificatesFolderName),
-		archivePath: filepath.Join(ctx.String(flgPath), baseArchivesFolderName),
-		pem:         ctx.Bool(flgPEM),
-		pfx:         ctx.Bool(flgPFX),
-		pfxPassword: ctx.String(flgPFXPass),
+		rootPath:    filepath.Join(cmd.String(flgPath), baseCertificatesFolderName),
+		archivePath: filepath.Join(cmd.String(flgPath), baseArchivesFolderName),
+		pem:         cmd.Bool(flgPEM),
+		pfx:         cmd.Bool(flgPFX),
+		pfxPassword: cmd.String(flgPFXPass),
 		pfxFormat:   pfxFormat,
-		filename:    ctx.String(flgFilename),
+		filename:    cmd.String(flgFilename),
 	}
 }
 

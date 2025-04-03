@@ -97,14 +97,18 @@ func createStubApp() *cli.Command {
 	}
 }
 
-func run(ctx context.Context, cmd *cli.Command, args []string) (h commandHelp, err error) {
-	w := cmd.Writer
-	defer func() { cmd.Writer = w }()
+func run(ctx context.Context, app *cli.Command, args []string) (h commandHelp, err error) {
+	w := app.Writer
+	defer func() { app.Writer = w }()
 
 	var buf bytes.Buffer
-	cmd.Writer = &buf
+	app.Writer = &buf
 
-	if err := cmd.Run(ctx, args); err != nil {
+	if app.Command(args[1]) != nil {
+		app.Command(args[1]).Writer = app.Writer
+	}
+
+	if err := app.Run(ctx, args); err != nil {
 		return h, err
 	}
 

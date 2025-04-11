@@ -153,7 +153,7 @@ func findRecordID(recordResponse *baidudns.ListRecordResponse, info dns01.Challe
 		}
 	}
 
-	return "", fmt.Errorf("record not found")
+	return "", errors.New("record not found")
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

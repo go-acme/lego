@@ -15,10 +15,9 @@ lego --email you@example.com --dns baiducloud -d '*.example.com' -d example.com 
     BAIDUCLOUD_ACCESS_KEY_ID = "Access key"
     BAIDUCLOUD_SECRET_ACCESS_KEY = "Secret access key"
   [Configuration.Additional]
-    BAIDUCLOUD_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: xxx)" # FIXME
-    BAIDUCLOUD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: xxx)" # FIXME
-    BAIDUCLOUD_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: xxx)" # FIXME
-    BAIDUCLOUD_HTTP_TIMEOUT = "API request timeout in seconds (Default: xxx)" # FIXME
+    BAIDUCLOUD_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    BAIDUCLOUD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    BAIDUCLOUD_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
 
 [Links]
   API = "https://cloud.baidu.com/doc/DNS/s/El4s7lssr"

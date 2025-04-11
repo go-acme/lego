@@ -105,8 +105,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Value:       info.Value,
 	}
 
-	// TODO(ldez) I don't understand how to obtain the clientToken.
-
 	err = d.client.CreateRecord(dns01.UnFqdn(authZone), crr, "")
 	if err != nil {
 		return fmt.Errorf("baiducloud: create record: %w", err)
@@ -135,8 +133,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("baiducloud: find record: %w", err)
 	}
-
-	// TODO(ldez) I don't understand how to obtain the clientToken.
 
 	err = d.client.DeleteRecord(dns01.UnFqdn(authZone), recordID, "")
 	if err != nil {

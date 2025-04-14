@@ -20,6 +20,7 @@ func allDNSCodes() string {
 		"arvancloud",
 		"auroradns",
 		"autodns",
+		"axelname",
 		"azure",
 		"azuredns",
 		"baiducloud",
@@ -320,6 +321,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/autodns`)
+
+	case "axelname":
+		// generated from: providers/dns/axelname/axelname.toml
+		ew.writeln(`Configuration for Axelname.`)
+		ew.writeln(`Code:	'axelname'`)
+		ew.writeln(`Since:	'v4.23.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "AXELNAME_NICKNAME":	Account nickname`)
+		ew.writeln(`	- "AXELNAME_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "AXELNAME_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "AXELNAME_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "AXELNAME_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "AXELNAME_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/axelname`)
 
 	case "azure":
 		// generated from: providers/dns/azure/azure.toml

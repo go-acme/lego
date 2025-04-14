@@ -83,10 +83,6 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
-func (c *Config) hasAppKeyAuth() bool {
-	return c.ApplicationKey != "" || c.ApplicationSecret != "" || c.ConsumerKey != ""
-}
-
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
@@ -97,6 +93,10 @@ func NewDefaultConfig() *Config {
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, ovh.DefaultTimeout),
 		},
 	}
+}
+
+func (c *Config) hasAppKeyAuth() bool {
+	return c.ApplicationKey != "" || c.ApplicationSecret != "" || c.ConsumerKey != ""
 }
 
 // DNSProvider implements the challenge.Provider interface.

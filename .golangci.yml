@@ -152,6 +152,8 @@ linters:
         - go-require
     usetesting:
       os-setenv: false # we already have a test "framework" to handle env vars
+    funcorder:
+      struct-method: false
 
   exclusions:
     warn-unused: true
@@ -159,107 +161,103 @@ linters:
       - comments
       - std-error-handling
     rules:
-      - linters:
+      - path: (.+)_test.go
+        linters:
           - funlen
           - goconst
           - maintidx
-        path: (.+)_test.go
-      - linters:
-          - errcheck
-        path: (.+)_test.go
+      - path: (.+)_test.go
         text: Error return value of `fmt.Fprintln` is not checked
-      - linters:
-          - gochecknoglobals
-        path: certcrypto/crypto.go
+        linters:
+          - errcheck
+      - path: certcrypto/crypto.go
         text: (tlsFeatureExtensionOID|ocspMustStapleFeature) is a global variable
-      - linters:
+        linters:
           - gochecknoglobals
-        path: challenge/dns01/nameserver.go
+      - path: challenge/dns01/nameserver.go
         text: (defaultNameservers|recursiveNameservers|fqdnSoaCache|muFqdnSoaCache) is a global variable
-      - linters:
+        linters:
           - gochecknoglobals
-        path: challenge/dns01/nameserver_.+.go
+      - path: challenge/dns01/nameserver_.+.go
         text: dnsTimeout is a global variable
-      - linters:
+        linters:
           - gochecknoglobals
-        path: challenge/dns01/nameserver_test.go
+      - path: challenge/dns01/nameserver_test.go
         text: findXByFqdnTestCases is a global variable
-      - linters:
-          - goconst
-        path: challenge/http01/domain_matcher.go
-        text: string `Host` has \d occurrences, make it a constant
-      - linters:
-          - gocyclo
-        path: challenge/http01/domain_matcher.go
+        linters:
+          - gochecknoglobals
+      - path: challenge/http01/domain_matcher.go
         text: cyclomatic complexity \d+ of func `parseForwardedHeader` is high
-      - linters:
-          - funlen
-        path: challenge/http01/domain_matcher.go
+        linters:
+          - gocyclo
+      - path: challenge/http01/domain_matcher.go
         text: Function 'parseForwardedHeader' has too many statements
-      - linters:
-          - gochecknoglobals
-        path: challenge/tlsalpn01/tls_alpn_challenge.go
-        text: idPeAcmeIdentifierV1 is a global variable
-      - linters:
-          - gochecknoglobals
-        path: log/logger.go
-        text: Logger is a global variable
-      - linters:
-          - gochecknoglobals
-        path: e2e/(dnschallenge/)?[\d\w]+_test.go
-        text: load is a global variable
-      - linters:
-          - gochecknoglobals
-        path: providers/dns/([\d\w]+/)*[\d\w]+_test.go
-        text: envTest is a global variable
-      - linters:
-          - gochecknoglobals
-        path: providers/http/([\d\w]+/)*[\d\w]+_test.go
-        text: envTest is a global variable
-      - linters:
-          - gochecknoglobals
-        path: providers/dns/namecheap/namecheap_test.go
-        text: testCases is a global variable
-      - linters:
-          - gochecknoglobals
-        path: providers/dns/acmedns/mock_test.go
-        text: egTestAccount is a global variable
-      - linters:
-          - gochecknoglobals
-        path: providers/http/memcached/memcached_test.go
-        text: memcachedHosts is a global variable
-      - linters:
-          - misspell
-        path: providers/dns/checkdomain/internal/types.go
-        text: '`payed` is a misspelling of `paid`'
-      - linters:
-          - thelper
-        path: platform/tester/env_test.go
-      - linters:
-          - staticcheck
-        path: providers/dns/oraclecloud/oraclecloud_test.go
-        text: 'SA1019: x509.EncryptPEMBlock has been deprecated since Go 1.16'
-      - linters:
-          - gochecknoglobals
-        path: providers/dns/sakuracloud/wrapper.go
-        text: mu is a global variable
-      - linters:
-          - gocyclo
-        path: cmd/cmd_renew.go
-        text: cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high
-      - linters:
+        linters:
           - funlen
-        path: cmd/cmd_renew.go
-        text: Function 'renewForDomains' has too many statements
-      - linters:
-          - gocyclo
-        path: providers/dns/cpanel/cpanel.go
-        text: cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high
-      - linters:
+      - path: challenge/tlsalpn01/tls_alpn_challenge.go
+        text: idPeAcmeIdentifierV1 is a global variable
+        linters:
+          - gochecknoglobals
+      - path: log/logger.go
+        text: Logger is a global variable
+        linters:
+          - gochecknoglobals
+      - path: e2e/(dnschallenge/)?[\d\w]+_test.go
+        text: load is a global variable
+        linters:
+          - gochecknoglobals
+      - path: providers/dns/([\d\w]+/)*[\d\w]+_test.go
+        text: envTest is a global variable
+        linters:
+          - gochecknoglobals
+      - path: providers/http/([\d\w]+/)*[\d\w]+_test.go
+        text: envTest is a global variable
+        linters:
+          - gochecknoglobals
+      - path: providers/dns/namecheap/namecheap_test.go
+        text: testCases is a global variable
+        linters:
+          - gochecknoglobals
+      - path: providers/dns/acmedns/mock_test.go
+        text: egTestAccount is a global variable
+        linters:
+          - gochecknoglobals
+      - path: providers/http/memcached/memcached_test.go
+        text: memcachedHosts is a global variable
+        linters:
+          - gochecknoglobals
+      - path: providers/dns/checkdomain/internal/types.go
+        text: '`payed` is a misspelling of `paid`'
+        linters:
+          - misspell
+      - path: platform/tester/env_test.go
+        linters:
+          - thelper
+      - path: providers/dns/oraclecloud/oraclecloud_test.go
+        text: 'SA1019: x509.EncryptPEMBlock has been deprecated since Go 1.16'
+        linters:
           - staticcheck
-       # Those elements have been replaced by non-exposed structures.
-        path: providers/dns/linode/linode_test.go
+      - path: providers/dns/sakuracloud/wrapper.go
+        text: mu is a global variable
+        linters:
+          - gochecknoglobals
+      - path: cmd/cmd_renew.go
+        text: cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high
+        linters:
+          - gocyclo
+      - path: cmd/cmd_renew.go
+        text: Function 'renewForDomains' has too many statements
+        linters:
+          - funlen
+      - path: providers/dns/cpanel/cpanel.go
+        text: cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high
+        linters:
+          - gocyclo
+      # Those elements have been replaced by non-exposed structures.
+      - path: providers/dns/linode/linode_test.go
         text: 'SA1019: linodego\.(DomainsPagedResponse|DomainRecordsPagedResponse) is deprecated'
+        linters:
+          - staticcheck
 
 issues:
   max-issues-per-linter: 0

@@ -22,6 +22,7 @@ func allDNSCodes() string {
 		"autodns",
 		"azure",
 		"azuredns",
+		"baiducloud",
 		"bindman",
 		"bluecat",
 		"bookmyname",
@@ -377,6 +378,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/azuredns`)
+
+	case "baiducloud":
+		// generated from: providers/dns/baiducloud/baiducloud.toml
+		ew.writeln(`Configuration for Baidu Cloud.`)
+		ew.writeln(`Code:	'baiducloud'`)
+		ew.writeln(`Since:	'v4.23.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "BAIDUCLOUD_ACCESS_KEY_ID":	Access key`)
+		ew.writeln(`	- "BAIDUCLOUD_SECRET_ACCESS_KEY":	Secret access key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "BAIDUCLOUD_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "BAIDUCLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "BAIDUCLOUD_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/baiducloud`)
 
 	case "bindman":
 		// generated from: providers/dns/bindman/bindman.toml

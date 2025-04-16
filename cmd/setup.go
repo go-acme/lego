@@ -4,32 +4,34 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/certcrypto"
+	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const filePerm os.FileMode = 0o600
 
 // setupClient creates a new client with challenge settings.
-func setupClient(ctx *cli.Context, account *Account, keyType certcrypto.KeyType) *lego.Client {
-	client := newClient(ctx, account, keyType)
+func setupClient(cmd *cli.Command, account *Account, keyType certcrypto.KeyType) *lego.Client {
+	client := newClient(cmd, account, keyType)
 
-	setupChallenges(ctx, client)
+	setupChallenges(cmd, client)
 
 	return client
 }
 
-func setupAccount(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, certcrypto.KeyType) {
-	keyType := getKeyType(ctx)
+func setupAccount(cmd *cli.Command, accountsStorage *AccountsStorage) (*Account, certcrypto.KeyType) {
+	keyType := getKeyType(cmd)
 	privateKey := accountsStorage.GetPrivateKey(keyType)
 
 	var account *Account
@@ -42,22 +44,29 @@ func setupAccount(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account,
 	return account, keyType
 }
 
-func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyType) *lego.Client {
+func newClient(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyType) *lego.Client {
 	config := lego.NewConfig(acc)
-	config.CADirURL = ctx.String(flgServer)
+	config.CADirURL = cmd.String(flgServer)
+
+	overallRequestLimit := certificate.DefaultOverallRequestLimit
+
+	rawOverallRequestLimit := cmd.Uint(flgOverallRequestLimit)
+	if rawOverallRequestLimit <= math.MaxInt {
+		overallRequestLimit = int(rawOverallRequestLimit)
+	}
 
 	config.Certificate = lego.CertificateConfig{
 		KeyType:             keyType,
-		Timeout:             time.Duration(ctx.Int(flgCertTimeout)) * time.Second,
-		OverallRequestLimit: ctx.Int(flgOverallRequestLimit),
+		Timeout:             time.Duration(cmd.Int(flgCertTimeout)) * time.Second,
+		OverallRequestLimit: overallRequestLimit,
 	}
-	config.UserAgent = getUserAgent(ctx)
+	config.UserAgent = getUserAgent(cmd)
 
-	if ctx.IsSet(flgHTTPTimeout) {
-		config.HTTPClient.Timeout = time.Duration(ctx.Int(flgHTTPTimeout)) * time.Second
+	if cmd.IsSet(flgHTTPTimeout) {
+		config.HTTPClient.Timeout = time.Duration(cmd.Int(flgHTTPTimeout)) * time.Second
 	}
 
-	if ctx.Bool(flgTLSSkipVerify) {
+	if cmd.Bool(flgTLSSkipVerify) {
 		defaultTransport, ok := config.HTTPClient.Transport.(*http.Transport)
 		if ok { // This is always true because the default client used by the CLI defined the transport.
 			tr := defaultTransport.Clone()
@@ -82,7 +91,7 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 		log.Fatalf("Could not create client: %v", err)
 	}
 
-	if client.GetExternalAccountRequired() && !ctx.IsSet(flgEAB) {
+	if client.GetExternalAccountRequired() && !cmd.IsSet(flgEAB) {
 		log.Fatalf("Server requires External Account Binding. Use --%s with --%s and --%s.", flgEAB, flgKID, flgHMAC)
 	}
 
@@ -90,8 +99,8 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 }
 
 // getKeyType the type from which private keys should be generated.
-func getKeyType(ctx *cli.Context) certcrypto.KeyType {
-	keyType := ctx.String(flgKeyType)
+func getKeyType(cmd *cli.Command) certcrypto.KeyType {
+	keyType := cmd.String(flgKeyType)
 	switch strings.ToUpper(keyType) {
 	case "RSA2048":
 		return certcrypto.RSA2048
@@ -111,16 +120,16 @@ func getKeyType(ctx *cli.Context) certcrypto.KeyType {
 	return ""
 }
 
-func getEmail(ctx *cli.Context) string {
-	email := ctx.String(flgEmail)
+func getEmail(cmd *cli.Command) string {
+	email := cmd.String(flgEmail)
 	if email == "" {
 		log.Fatalf("You have to pass an account (email address) to the program using --%s or -m", flgEmail)
 	}
 	return email
 }
 
-func getUserAgent(ctx *cli.Context) string {
-	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", ctx.String(flgUserAgent), ctx.App.Version))
+func getUserAgent(cmd *cli.Command) string {
+	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", cmd.String(flgUserAgent), cmd.Version))
 }
 
 func createNonExistingFolder(path string) error {

@@ -1,5 +1,11 @@
 # Changelog
 
+## [v4.23.1](https://github.com/go-acme/lego/releases/tag/v4.23.1) (2025-04-16)
+
+Due to an error related to Snapcraft, some artifacts of the v4.23.0 release have not been published.
+
+This release contains the same things as v4.23.0. 
+
 ## [v4.23.0](https://github.com/go-acme/lego/releases/tag/v4.23.0) (2025-04-16)
 
 ### Added

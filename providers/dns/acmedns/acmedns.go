@@ -115,19 +115,19 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // NewDNSProviderClient creates an ACME-DNS DNSProvider with the given acmeDNSClient and [goacmedns.Storage].
 // Deprecated: use [NewDNSProviderConfig] instead.
-func NewDNSProviderClient(client acmeDNSClient, storage goacmedns.Storage) (*DNSProvider, error) {
+func NewDNSProviderClient(client acmeDNSClient, store goacmedns.Storage) (*DNSProvider, error) {
 	if client == nil {
 		return nil, errors.New("acme-dns: Client must be not nil")
 	}
 
-	if storage == nil {
+	if store == nil {
 		return nil, errors.New("acme-dns: Storage must be not nil")
 	}
 
 	return &DNSProvider{
 		config:  NewDefaultConfig(),
 		client:  client,
-		storage: storage,
+		storage: store,
 	}, nil
 }
 

@@ -46,6 +46,11 @@ func NewDefaultConfig() *Config {
 	}
 }
 
+type DNSProvider struct {
+	config  *Config
+	acmedns *acmedns.Service
+}
+
 // NewDNSProvider returns the Google Domains DNS provider with a default configuration.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAccessToken)
@@ -78,11 +83,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config:  config,
 		acmedns: service,
 	}, nil
-}
-
-type DNSProvider struct {
-	config  *Config
-	acmedns *acmedns.Service
 }
 
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {

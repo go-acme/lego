@@ -1,5 +1,36 @@
 # Changelog
 
+## [v4.23.0](https://github.com/go-acme/lego/releases/tag/v4.23.0) (2025-04-16)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Active24
+- **[dnsprovider]** Add DNS provider for BookMyName
+- **[dnsprovider]** Add DNS provider for Axelname
+- **[dnsprovider]** Add DNS provider for Baidu Cloud
+- **[dnsprovider]** Add DNS provider for Metaregistrar
+- **[dnsprovider]** Add DNS provider for F5 XC
+- **[dnsprovider]** Add INFOBLOX_CA_CERTIFICATE option
+- **[dnsprovider]** route53: adds option to use private zone
+- **[dnsprovider]** edgedns: add account switch key option
+- **[dnsprovider]** infoblox: update API client to v2
+- **[lib,cli]** Add delay option for TLSALPN challenge
+
+### Changed
+
+- **[dnsprovider]** designate: speed up API requests by using filters
+- **[dnsprovider]** cloudflare: make base URL configurable
+- **[dnsprovider]** websupport: migrate to API v2
+- **[dnsprovider]** dnssimple: use GetZone
+
+### Fixed
+
+- **[ari]** Fix retry on `alreadyReplaced` error
+- **[cli,log]** Fix malformed log messages
+- **[cli]** Kill hook when the command is stuck
+- **[dnsprovider]** pdns: fix TXT record cleanup for wildcard domains
+- **[dnsprovider]** allinkl: remove `ReturnInfo`
+
 ## [v4.22.2](https://github.com/go-acme/lego/releases/tag/v4.22.2) (2025-02-17)
 
 ### Fixed

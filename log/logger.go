@@ -3,10 +3,23 @@ package log
 import (
 	"log"
 	"os"
+	"strconv"
 )
 
+const envLogTimestamp = "LEGO_LOG_TIMESTAMP"
+
+func flags() int {
+	if v, ok := os.LookupEnv(envLogTimestamp); ok {
+		b, err := strconv.ParseBool(v)
+		if err == nil && !b {
+			return 0
+		}
+	}
+	return log.LstdFlags
+}
+
 // Logger is an optional custom logger.
-var Logger StdLogger = log.New(os.Stderr, "", log.LstdFlags)
+var Logger StdLogger = log.New(os.Stderr, "", flags())
 
 // StdLogger interface for Standard Logger.
 type StdLogger interface {

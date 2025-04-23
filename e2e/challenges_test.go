@@ -38,7 +38,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestHelp(t *testing.T) {
-	output, err := load.RunLego("-h")
+	output, err := load.RunLegoCombinedOutput("-h")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", output)
 		t.Fatal(err)
@@ -50,7 +50,7 @@ func TestHelp(t *testing.T) {
 func TestChallengeHTTP_Run(t *testing.T) {
 	loader.CleanLegoFiles()
 
-	output, err := load.RunLego(
+	err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -58,10 +58,6 @@ func TestChallengeHTTP_Run(t *testing.T) {
 		"--http",
 		"--http.port", ":5002",
 		"run")
-
-	if len(output) > 0 {
-		fmt.Fprintf(os.Stdout, "%s\n", output)
-	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +66,7 @@ func TestChallengeHTTP_Run(t *testing.T) {
 func TestChallengeTLS_Run_Domains(t *testing.T) {
 	loader.CleanLegoFiles()
 
-	output, err := load.RunLego(
+	err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -78,10 +74,6 @@ func TestChallengeTLS_Run_Domains(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 		"run")
-
-	if len(output) > 0 {
-		fmt.Fprintf(os.Stdout, "%s\n", output)
-	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -90,7 +82,7 @@ func TestChallengeTLS_Run_Domains(t *testing.T) {
 func TestChallengeTLS_Run_IP(t *testing.T) {
 	loader.CleanLegoFiles()
 
-	output, err := load.RunLego(
+	err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -98,10 +90,6 @@ func TestChallengeTLS_Run_IP(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 		"run")
-
-	if len(output) > 0 {
-		fmt.Fprintf(os.Stdout, "%s\n", output)
-	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,7 +98,7 @@ func TestChallengeTLS_Run_IP(t *testing.T) {
 func TestChallengeTLS_Run_CSR(t *testing.T) {
 	loader.CleanLegoFiles()
 
-	output, err := load.RunLego(
+	err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -118,10 +106,6 @@ func TestChallengeTLS_Run_CSR(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 		"run")
-
-	if len(output) > 0 {
-		fmt.Fprintf(os.Stdout, "%s\n", output)
-	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -130,7 +114,7 @@ func TestChallengeTLS_Run_CSR(t *testing.T) {
 func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
 	loader.CleanLegoFiles()
 
-	output, err := load.RunLego(
+	err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -138,10 +122,6 @@ func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 		"run")
-
-	if len(output) > 0 {
-		fmt.Fprintf(os.Stdout, "%s\n", output)
-	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,7 +130,7 @@ func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
 func TestChallengeTLS_Run_Revoke(t *testing.T) {
 	loader.CleanLegoFiles()
 
-	output, err := load.RunLego(
+	err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -159,15 +139,11 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 		"run")
-
-	if len(output) > 0 {
-		fmt.Fprintf(os.Stdout, "%s\n", output)
-	}
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	output, err = load.RunLego(
+	err = load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -175,10 +151,6 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 		"revoke")
-
-	if len(output) > 0 {
-		fmt.Fprintf(os.Stdout, "%s\n", output)
-	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -187,7 +159,7 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 	loader.CleanLegoFiles()
 
-	output, err := load.RunLego(
+	err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -195,15 +167,11 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 		"run")
-
-	if len(output) > 0 {
-		fmt.Fprintf(os.Stdout, "%s\n", output)
-	}
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	output, err = load.RunLego(
+	err = load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -211,10 +179,6 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 		"revoke")
-
-	if len(output) > 0 {
-		fmt.Fprintf(os.Stdout, "%s\n", output)
-	}
 	if err != nil {
 		t.Fatal(err)
 	}

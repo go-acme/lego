@@ -1,6 +1,7 @@
 package loader
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/tls"
 	"errors"
@@ -87,13 +88,44 @@ func (l *EnvLoader) MainTest(m *testing.M) int {
 	return m.Run()
 }
 
-func (l *EnvLoader) RunLego(arg ...string) ([]byte, error) {
+func (l *EnvLoader) RunLegoCombinedOutput(arg ...string) ([]byte, error) {
 	cmd := exec.Command(l.lego, arg...)
 	cmd.Env = l.LegoOptions
 
 	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
 
 	return cmd.CombinedOutput()
+}
+
+func (l *EnvLoader) RunLego(arg ...string) error {
+	cmd := exec.Command(l.lego, arg...)
+	cmd.Env = l.LegoOptions
+
+	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("create pipe: %w", err)
+	}
+
+	cmd.Stderr = cmd.Stdout
+
+	err = cmd.Start()
+	if err != nil {
+		return fmt.Errorf("start command: %w", err)
+	}
+
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		println(scanner.Text())
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		return fmt.Errorf("wait command: %w", err)
+	}
+
+	return nil
 }
 
 func (l *EnvLoader) launchPebble() func() {

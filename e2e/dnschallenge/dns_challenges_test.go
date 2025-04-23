@@ -40,7 +40,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestDNSHelp(t *testing.T) {
-	output, err := load.RunLego("dnshelp")
+	output, err := load.RunLegoCombinedOutput("dnshelp")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", output)
 		t.Fatal(err)
@@ -52,7 +52,7 @@ func TestDNSHelp(t *testing.T) {
 func TestChallengeDNS_Run(t *testing.T) {
 	loader.CleanLegoFiles()
 
-	output, err := load.RunLego(
+	err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
 		"--dns", "exec",
@@ -62,10 +62,6 @@ func TestChallengeDNS_Run(t *testing.T) {
 		"-d", "*.légo.acme",
 		"-d", "légo.acme",
 		"run")
-
-	if len(output) > 0 {
-		fmt.Fprintf(os.Stdout, "%s\n", output)
-	}
 	if err != nil {
 		t.Fatal(err)
 	}

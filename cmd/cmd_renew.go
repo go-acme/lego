@@ -348,13 +348,13 @@ func renewForCSR(cmd *cli.Command, account *Account, keyType certcrypto.KeyType,
 	return launchHook(cmd.String(flgRenewHook), cmd.Duration(flgRenewHookTimeout), meta)
 }
 
-func needRenewal(x509Cert *x509.Certificate, domain string, days int64) bool {
+func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
 	if x509Cert.IsCA {
 		log.Fatalf("[%s] Certificate bundle starts with a CA certificate", domain)
 	}
 
 	if days >= 0 {
-		notAfter := int64(time.Until(x509Cert.NotAfter).Hours() / 24.0)
+		notAfter := int(time.Until(x509Cert.NotAfter).Hours() / 24.0)
 		if notAfter > days {
 			log.Printf("[%s] The certificate expires in %d days, the number of days defined to perform the renewal is %d: no renewal.",
 				domain, notAfter, days)

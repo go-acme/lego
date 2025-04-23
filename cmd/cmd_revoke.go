@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"math"
 
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/log"
@@ -35,7 +33,7 @@ func createRevoke() *cli.Command {
 					" 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged)," +
 					" 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL)," +
 					" 9 (privilegeWithdrawn), or 10 (aACompromise).",
-				Value: uint64(acme.CRLReasonUnspecified),
+				Value: acme.CRLReasonUnspecified,
 			},
 		},
 	}
@@ -61,12 +59,7 @@ func revoke(_ context.Context, cmd *cli.Command) error {
 			log.Fatalf("Error while revoking the certificate for domain %s\n\t%v", domain, err)
 		}
 
-		rawReason := cmd.Uint(flgReason)
-		if rawReason > math.MaxUint {
-			return fmt.Errorf("reason value %d higher than %d", rawReason, uint64(math.MaxUint))
-		}
-
-		reason := uint(rawReason)
+		reason := cmd.Uint(flgReason)
 
 		err = client.Certificate.RevokeWithReason(certBytes, &reason)
 		if err != nil {

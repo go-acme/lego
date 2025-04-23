@@ -61,7 +61,7 @@ func Test_needRenewal(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		x509Cert *x509.Certificate
-		days     int64
+		days     int
 		expected bool
 	}{
 		{

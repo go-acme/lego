@@ -2,13 +2,13 @@ Name = "ConoHa VPS Ver 3.0"
 Description = ''''''
 URL = "https://www.conoha.jp/"
 Code = "conohav3"
-Since = "v4.23.1"
+Since = "v4.24.0"
 
 Example = '''
 CONOHAV3_TENANT_ID=487727e3921d44e3bfe7ebb337bf085e \
 CONOHAV3_API_USER_ID=xxxx \
 CONOHAV3_API_PASSWORD=yyyy \
-lego --email you@example.com --dns conohav3 -d '*.example.com' run
+lego --email you@example.com --dns conohav3 -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

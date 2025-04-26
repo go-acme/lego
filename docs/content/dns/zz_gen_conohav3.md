@@ -4,7 +4,7 @@ date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: conohav3
 dnsprovider:
-  since:    "v4.23.1"
+  since:    "v4.24.0"
   code:     "conohav3"
   url:      "https://www.conoha.jp/"
 ---
@@ -20,7 +20,7 @@ Configuration for [ConoHa VPS Ver 3.0](https://www.conoha.jp/).
 <!--more-->
 
 - Code: `conohav3`
-- Since: v4.23.1
+- Since: v4.24.0
 
 
 Here is an example bash command using the ConoHa VPS Ver 3.0 provider:
@@ -29,7 +29,7 @@ Here is an example bash command using the ConoHa VPS Ver 3.0 provider:
 CONOHAV3_TENANT_ID=487727e3921d44e3bfe7ebb337bf085e \
 CONOHAV3_API_USER_ID=xxxx \
 CONOHAV3_API_PASSWORD=yyyy \
-lego --email you@example.com --dns conohav3 -d '*.example.com' run
+lego --email you@example.com --dns conohav3 -d '*.example.com' -d example.com run
 ```
 
 
@@ -65,7 +65,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://doc.conoha.jp/reference/api-vps3/)
+- [API documentation](https://doc.conoha.jp/reference/api-vps3/api-dns-vps3/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/conohav3/conohav3.toml -->

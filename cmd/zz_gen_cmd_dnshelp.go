@@ -710,7 +710,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		// generated from: providers/dns/conohav3/conohav3.toml
 		ew.writeln(`Configuration for ConoHa VPS Ver 3.0.`)
 		ew.writeln(`Code:	'conohav3'`)
-		ew.writeln(`Since:	'v4.23.1'`)
+		ew.writeln(`Since:	'v4.24.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

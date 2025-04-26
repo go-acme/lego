@@ -65,7 +65,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://www.conoha.jp/docs/)
+- [API documentation](https://doc.conoha.jp/reference/api-vps2/api-dns-vps2)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/conoha/conoha.toml -->

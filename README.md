@@ -84,8 +84,8 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
   <td><a href="https://go-acme.github.io/lego/dns/cloudns/">ClouDNS</a></td>
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/cloudxns/">CloudXNS (Deprecated)</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/conoha/">ConoHa</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/conohav3/">ConoHa VPS Ver 3.0</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/conoha/">ConoHa v2</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/conohav3/">ConoHa v3</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/constellix/">Constellix</a></td>
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/corenetworks/">Core-Networks</a></td>

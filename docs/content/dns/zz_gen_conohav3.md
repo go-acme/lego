@@ -1,5 +1,5 @@
 ---
-title: "ConoHa VPS Ver 3.0"
+title: "ConoHa v3"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: conohav3
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [ConoHa VPS Ver 3.0](https://www.conoha.jp/).
+Configuration for [ConoHa v3](https://www.conoha.jp/).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Configuration for [ConoHa VPS Ver 3.0](https://www.conoha.jp/).
 - Since: v4.24.0
 
 
-Here is an example bash command using the ConoHa VPS Ver 3.0 provider:
+Here is an example bash command using the ConoHa v3 provider:
 
 ```bash
 CONOHAV3_TENANT_ID=487727e3921d44e3bfe7ebb337bf085e \

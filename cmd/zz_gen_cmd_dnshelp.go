@@ -685,7 +685,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "conoha":
 		// generated from: providers/dns/conoha/conoha.toml
-		ew.writeln(`Configuration for ConoHa.`)
+		ew.writeln(`Configuration for ConoHa v2.`)
 		ew.writeln(`Code:	'conoha'`)
 		ew.writeln(`Since:	'v1.2.0'`)
 		ew.writeln()
@@ -708,7 +708,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "conohav3":
 		// generated from: providers/dns/conohav3/conohav3.toml
-		ew.writeln(`Configuration for ConoHa VPS Ver 3.0.`)
+		ew.writeln(`Configuration for ConoHa v3.`)
 		ew.writeln(`Code:	'conohav3'`)
 		ew.writeln(`Since:	'v4.24.0'`)
 		ew.writeln()

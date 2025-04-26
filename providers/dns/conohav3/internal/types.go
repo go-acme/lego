@@ -5,28 +5,25 @@ type IdentityRequest struct {
 	Auth Auth `json:"auth"`
 }
 
-// Auth groups the authentication credentials (Identity) and
-// authorization scope (Scope) that the request is asking for.
+// Auth authentication credentials (Identity) and scope (Scope).
 type Auth struct {
 	Identity Identity `json:"identity"`
 	Scope    Scope    `json:"scope"`
 }
 
 // Identity describes how the client will authenticate.
-// In ConoHa v3.0, only support the “password” method.
+// In ConoHa v3.0, only support the "password" method.
 type Identity struct {
 	Methods  []string `json:"methods"`
 	Password Password `json:"password"`
 }
 
-// Password nests the concrete user credentials used by the password
-// auth method.
+// Password nests the concrete user credentials used by the password auth method.
 type Password struct {
 	User User `json:"user"`
 }
 
-// User holds the API User ID and password that will be verified by
-// the Identity service.
+// User holds the API User ID and password that will be verified by the Identity service.
 type User struct {
 	ID       string `json:"id"`
 	Password string `json:"password"`
@@ -42,8 +39,7 @@ type Project struct {
 	ID string `json:"id"`
 }
 
-// DomainListResponse is returned by GET /v1/domains and contains all
-// DNS zones (domains) owned by the project.
+// DomainListResponse is returned by `GET /v1/domains` and contains all DNS zones (domains) owned by the project.
 type DomainListResponse struct {
 	Domains []Domain `json:"domains"`
 }
@@ -54,9 +50,7 @@ type Domain struct {
 	Name string `json:"name"`
 }
 
-// RecordListResponse is returned by
-// GET /v1/domains/{domain_uuid}/records and lists every record in
-// the zone.
+// RecordListResponse is returned by `GET /v1/domains/{domain_uuid}/records` and lists every record in the zone.
 type RecordListResponse struct {
 	Records []Record `json:"records"`
 }

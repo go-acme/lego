@@ -24,4 +24,4 @@ lego --email you@example.com --dns conohav3 -d '*.example.com' run
     CONOHAV3_REGION = "The region (Default: c3j1)"
 
 [Links]
-  API = "https://doc.conoha.jp/reference/api-vps3/"
+  API = "https://doc.conoha.jp/reference/api-vps3/api-dns-vps3/"

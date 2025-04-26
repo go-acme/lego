@@ -35,6 +35,7 @@ func NewIdentifier(region string) (*Identifier, error) {
 }
 
 // GetToken returns the x-subject-token from Identity API.
+// https://doc.conoha.jp/reference/api-vps3/api-identity-vps3/identity-post_tokens-v3/?btn_id=reference-api-guideline-v3--sidebar_reference-identity-post_tokens-v3
 func (c *Identifier) GetToken(ctx context.Context, auth Auth) (string, error) {
 	endpoint := c.baseURL.JoinPath("v3", "auth", "tokens")
 
@@ -63,7 +64,7 @@ func (c *Identifier) do(req *http.Request) (string, error) {
 		return "", errors.New("x-subject-token header is missing in response")
 	}
 
-	_, _ = io.Copy(io.Discard, resp.Body) // discard body
+	_, _ = io.Copy(io.Discard, resp.Body)
 
 	return token, nil
 }

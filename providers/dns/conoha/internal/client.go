@@ -54,7 +54,7 @@ func (c *Client) GetDomainID(ctx context.Context, domainName string) (string, er
 	return "", fmt.Errorf("no such domain: %s", domainName)
 }
 
-// https://www.conoha.jp/docs/paas-dns-list-domains.php
+// https://doc.conoha.jp/reference/api-vps2/api-dns-vps2/paas-dns-list-domains-v2/?btn_id=reference-api-vps2--sidebar_reference-paas-dns-list-domains-v2
 func (c *Client) getDomains(ctx context.Context) (*DomainListResponse, error) {
 	endpoint := c.baseURL.JoinPath("v1", "domains")
 
@@ -89,7 +89,7 @@ func (c *Client) GetRecordID(ctx context.Context, domainID, recordName, recordTy
 	return "", errors.New("no such record")
 }
 
-// https://www.conoha.jp/docs/paas-dns-list-records-in-a-domain.php
+// https://doc.conoha.jp/reference/api-vps2/api-dns-vps2/paas-dns-list-records-in-a-domain-v2/?btn_id=reference-paas-dns-list-domains-v2--sidebar_reference-paas-dns-list-records-in-a-domain-v2
 func (c *Client) getRecords(ctx context.Context, domainID string) (*RecordListResponse, error) {
 	endpoint := c.baseURL.JoinPath("v1", "domains", domainID, "records")
 
@@ -114,7 +114,7 @@ func (c *Client) CreateRecord(ctx context.Context, domainID string, record Recor
 	return err
 }
 
-// https://www.conoha.jp/docs/paas-dns-create-record.php
+// https://doc.conoha.jp/reference/api-vps2/api-dns-vps2/paas-dns-create-record-v2/?btn_id=reference-paas-dns-list-records-in-a-domain-v2--sidebar_reference-paas-dns-create-record-v2
 func (c *Client) createRecord(ctx context.Context, domainID string, record Record) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("v1", "domains", domainID, "records")
 
@@ -133,7 +133,7 @@ func (c *Client) createRecord(ctx context.Context, domainID string, record Recor
 }
 
 // DeleteRecord removes specified record.
-// https://www.conoha.jp/docs/paas-dns-delete-a-record.php
+// https://doc.conoha.jp/reference/api-vps2/api-dns-vps2/paas-dns-delete-a-record-v2/?btn_id=reference-paas-dns-create-record-v2--sidebar_reference-paas-dns-delete-a-record-v2
 func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID string) error {
 	endpoint := c.baseURL.JoinPath("v1", "domains", domainID, "records", recordID)
 

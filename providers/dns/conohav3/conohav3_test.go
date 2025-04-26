@@ -29,7 +29,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIUserID:   "api_user_id",
 				EnvAPIPassword: "api_password",
 			},
-			expected: `conoha: failed to log in: unexpected status code: [status code: 400] body: {"code": 400, "error": "user does not exist"}`,
+			expected: `conohav3: failed to log in: unexpected status code: [status code: 400] body: {"code": 400, "error": "user does not exist"}`,
 		},
 		{
 			desc: "missing credentials",
@@ -38,7 +38,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIUserID:   "",
 				EnvAPIPassword: "",
 			},
-			expected: "conoha: some credentials information are missing: CONOHAV3_TENANT_ID,CONOHAV3_API_USER_ID,CONOHAV3_API_PASSWORD",
+			expected: "conohav3: some credentials information are missing: CONOHAV3_TENANT_ID,CONOHAV3_API_USER_ID,CONOHAV3_API_PASSWORD",
 		},
 		{
 			desc: "missing tenant id",
@@ -47,7 +47,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIUserID:   "api_user_id",
 				EnvAPIPassword: "api_password",
 			},
-			expected: "conoha: some credentials information are missing: CONOHAV3_TENANT_ID",
+			expected: "conohav3: some credentials information are missing: CONOHAV3_TENANT_ID",
 		},
 		{
 			desc: "missing api user id",
@@ -56,7 +56,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIUserID:   "",
 				EnvAPIPassword: "api_password",
 			},
-			expected: "conoha: some credentials information are missing: CONOHAV3_API_USER_ID",
+			expected: "conohav3: some credentials information are missing: CONOHAV3_API_USER_ID",
 		},
 		{
 			desc: "missing api password",
@@ -65,7 +65,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIUserID:   "api_user_id",
 				EnvAPIPassword: "",
 			},
-			expected: "conoha: some credentials information are missing: CONOHAV3_API_PASSWORD",
+			expected: "conohav3: some credentials information are missing: CONOHAV3_API_PASSWORD",
 		},
 	}
 
@@ -99,30 +99,30 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}{
 		{
 			desc:     "complete credentials, but login failed",
-			expected: `conoha: failed to log in: unexpected status code: [status code: 400] body: {"code": 400, "error": "user does not exist"}`,
+			expected: `conohav3: failed to log in: unexpected status code: [status code: 400] body: {"code": 400, "error": "user does not exist"}`,
 			tenant:   "tenant_id",
 			userid:   "api_user_id",
 			password: "api_password",
 		},
 		{
 			desc:     "missing credentials",
-			expected: "conoha: some credentials information are missing",
+			expected: "conohav3: some credentials information are missing",
 		},
 		{
 			desc:     "missing tenant id",
-			expected: "conoha: some credentials information are missing",
+			expected: "conohav3: some credentials information are missing",
 			userid:   "api_user_id",
 			password: "api_password",
 		},
 		{
 			desc:     "missing api user id",
-			expected: "conoha: some credentials information are missing",
+			expected: "conohav3: some credentials information are missing",
 			tenant:   "tenant_id",
 			password: "api_password",
 		},
 		{
 			desc:     "missing api password",
-			expected: "conoha: some credentials information are missing",
+			expected: "conohav3: some credentials information are missing",
 			tenant:   "tenant_id",
 			userid:   "api_user_id",
 		},

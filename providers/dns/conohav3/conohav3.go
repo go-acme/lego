@@ -68,7 +68,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvTenantID, EnvAPIUserID, EnvAPIPassword)
 	if err != nil {
-		return nil, fmt.Errorf("conoha: %w", err)
+		return nil, fmt.Errorf("conohav3: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -82,16 +82,16 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for ConoHa DNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("conoha: the configuration of the DNS provider is nil")
+		return nil, errors.New("conohav3: the configuration of the DNS provider is nil")
 	}
 
 	if config.TenantID == "" || config.UserID == "" || config.Password == "" {
-		return nil, errors.New("conoha: some credentials information are missing")
+		return nil, errors.New("conohav3: some credentials information are missing")
 	}
 
 	identifier, err := internal.NewIdentifier(config.Region)
 	if err != nil {
-		return nil, fmt.Errorf("conoha: failed to create identity client: %w", err)
+		return nil, fmt.Errorf("conohav3: failed to create identity client: %w", err)
 	}
 
 	if config.HTTPClient != nil {
@@ -117,12 +117,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	token, err := identifier.GetToken(context.Background(), auth)
 	if err != nil {
-		return nil, fmt.Errorf("conoha: failed to log in: %w", err)
+		return nil, fmt.Errorf("conohav3: failed to log in: %w", err)
 	}
 
 	client, err := internal.NewClient(config.Region, token)
 	if err != nil {
-		return nil, fmt.Errorf("conoha: failed to create client: %w", err)
+		return nil, fmt.Errorf("conohav3: failed to create client: %w", err)
 	}
 
 	if config.HTTPClient != nil {
@@ -138,14 +138,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("conoha: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("conohav3: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()
 
 	id, err := d.client.GetDomainID(ctx, authZone)
 	if err != nil {
-		return fmt.Errorf("conoha: failed to get domain ID: %w", err)
+		return fmt.Errorf("conohav3: failed to get domain ID: %w", err)
 	}
 
 	record := internal.Record{
@@ -157,7 +157,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err = d.client.CreateRecord(ctx, id, record)
 	if err != nil {
-		return fmt.Errorf("conoha: failed to create record: %w", err)
+		return fmt.Errorf("conohav3: failed to create record: %w", err)
 	}
 
 	return nil
@@ -169,24 +169,24 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("conoha: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("conohav3: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()
 
 	domID, err := d.client.GetDomainID(ctx, authZone)
 	if err != nil {
-		return fmt.Errorf("conoha: failed to get domain ID: %w", err)
+		return fmt.Errorf("conohav3: failed to get domain ID: %w", err)
 	}
 
 	recID, err := d.client.GetRecordID(ctx, domID, info.EffectiveFQDN, "TXT", info.Value)
 	if err != nil {
-		return fmt.Errorf("conoha: failed to get record ID: %w", err)
+		return fmt.Errorf("conohav3: failed to get record ID: %w", err)
 	}
 
 	err = d.client.DeleteRecord(ctx, domID, recID)
 	if err != nil {
-		return fmt.Errorf("conoha: failed to delete record: %w", err)
+		return fmt.Errorf("conohav3: failed to delete record: %w", err)
 	}
 
 	return nil

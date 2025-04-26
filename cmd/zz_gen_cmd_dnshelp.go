@@ -37,6 +37,7 @@ func allDNSCodes() string {
 		"cloudru",
 		"cloudxns",
 		"conoha",
+		"conohav3",
 		"constellix",
 		"corenetworks",
 		"cpanel",
@@ -704,6 +705,29 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/conoha`)
+
+	case "conohav3":
+		// generated from: providers/dns/conohav3/conohav3.toml
+		ew.writeln(`Configuration for ConoHa VPS Ver 3.0.`)
+		ew.writeln(`Code:	'conohav3'`)
+		ew.writeln(`Since:	'v4.23.1'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "CONOHAV3_API_PASSWORD":	The API password`)
+		ew.writeln(`	- "CONOHAV3_API_USER_ID":	The API user ID`)
+		ew.writeln(`	- "CONOHAV3_TENANT_ID":	Tenant ID`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CONOHAV3_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "CONOHAV3_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "CONOHAV3_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "CONOHAV3_REGION":	The region (Default: c3j1)`)
+		ew.writeln(`	- "CONOHAV3_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/conohav3`)
 
 	case "constellix":
 		// generated from: providers/dns/constellix/constellix.toml

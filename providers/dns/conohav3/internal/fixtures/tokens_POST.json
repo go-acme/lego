@@ -1,0 +1,17 @@
+{
+  "access": {
+    "token": {
+      "issued_at": "2015-05-19T07:08:21.927295",
+      "expires": "2015-05-20T07:08:21Z",
+      "id": "sample00d88246078f2bexample788f7",
+      "tenant": {
+        "name": "example00000000",
+        "enabled": true,
+        "tyo1_image_size": "550GB"
+      },
+      "endpoints_links": [],
+      "type": "mailhosting",
+      "name": "Mail Hosting Service"
+    }
+  }
+}

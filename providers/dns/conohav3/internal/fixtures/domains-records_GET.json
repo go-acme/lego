@@ -1,0 +1,43 @@
+{
+  "records": [
+    {
+      "id": "2e32e609-3a4f-45ba-bdef-e50eacd345ad",
+      "name": "www.example.com.",
+      "type": "A",
+      "ttl": 3600,
+      "created_at": "2012-11-02T19:56:26.000000",
+      "updated_at": "2012-11-04T13:22:36.000000",
+      "data": "15.185.172.153",
+      "domain_id": "89acac79-38e7-497d-807c-a011e1310438",
+      "version": 1,
+      "gslb_region": "JP",
+      "gslb_weight": 250,
+      "gslb_check": 12300
+    },
+    {
+      "id": "8e9ecf3e-fb92-4a3a-a8ae-7596f167bea3",
+      "name": "host1.example.com.",
+      "type": "A",
+      "ttl": 3600,
+      "created_at": "2012-11-04T13:57:50.000000",
+      "updated_at": null,
+      "data": "15.185.172.154",
+      "domain_id": "89acac79-38e7-497d-807c-a011e1310438",
+      "version": 1,
+      "gslb_region": "US",
+      "gslb_weight": 220,
+      "gslb_check": 12200
+    },
+    {
+      "id": "4ad19089-3e62-40f8-9482-17cc8ccb92cb",
+      "name": "web.example.com.",
+      "type": "CNAME",
+      "ttl": 3600,
+      "created_at": "2012-11-04T13:58:16.393735",
+      "updated_at": null,
+      "data": "www.example.com.",
+      "domain_id": "89acac79-38e7-497d-807c-a011e1310438",
+      "version": 1
+    }
+  ]
+}

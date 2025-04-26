@@ -1,0 +1,13 @@
+{
+  "id": "2e32e609-3a4f-45ba-bdef-e50eacd345ad",
+  "name": "www.example.com.",
+  "type": "A",
+  "created_at": "2012-11-02T19:56:26.366792",
+  "updated_at": null,
+  "domain_id": "89acac79-38e7-497d-807c-a011e1310438",
+  "ttl": null,
+  "data": "192.0.2.3",
+  "gslb_check": 1,
+  "gslb_region": "JP",
+  "gslb_weight": 250
+}

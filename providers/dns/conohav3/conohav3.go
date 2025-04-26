@@ -1,4 +1,4 @@
-// Package conoha implements a DNS provider for solving the DNS-01 challenge using ConoHa DNS.
+// Package conohav3 implements a DNS provider for solving the DNS-01 challenge using ConoHa VPS Ver 3.0 DNS.
 package conohav3
 
 import (
@@ -16,11 +16,11 @@ import (
 
 // Environment variables names.
 const (
-	envNamespace = "CONOHA_"
+	envNamespace = "CONOHAV3_"
 
 	EnvRegion      = envNamespace + "REGION"
 	EnvTenantID    = envNamespace + "TENANT_ID"
-	EnvAPIUsername = envNamespace + "API_USERNAME"
+	EnvAPIUserID   = envNamespace + "API_USER_ID"
 	EnvAPIPassword = envNamespace + "API_PASSWORD"
 
 	EnvTTL                = envNamespace + "TTL"
@@ -35,7 +35,7 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 type Config struct {
 	Region             string
 	TenantID           string
-	Username           string
+	UserID             string
 	Password           string
 	TTL                int
 	PropagationTimeout time.Duration
@@ -46,7 +46,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		Region:             env.GetOrDefaultString(EnvRegion, "tyo1"),
+		Region:             env.GetOrDefaultString(EnvRegion, "c3j1"),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
@@ -64,16 +64,16 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for ConoHa DNS.
 // Credentials must be passed in the environment variables:
-// CONOHA_TENANT_ID, CONOHA_API_USERNAME, CONOHA_API_PASSWORD.
+// CONOHAV3_TENANT_ID, CONOHAV3_API_USER_ID, CONOHAV3_API_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvTenantID, EnvAPIUsername, EnvAPIPassword)
+	values, err := env.Get(EnvTenantID, EnvAPIUserID, EnvAPIPassword)
 	if err != nil {
 		return nil, fmt.Errorf("conoha: %w", err)
 	}
 
 	config := NewDefaultConfig()
 	config.TenantID = values[EnvTenantID]
-	config.Username = values[EnvAPIUsername]
+	config.UserID = values[EnvAPIUserID]
 	config.Password = values[EnvAPIPassword]
 
 	return NewDNSProviderConfig(config)
@@ -85,7 +85,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("conoha: the configuration of the DNS provider is nil")
 	}
 
-	if config.TenantID == "" || config.Username == "" || config.Password == "" {
+	if config.TenantID == "" || config.UserID == "" || config.Password == "" {
 		return nil, errors.New("conoha: some credentials information are missing")
 	}
 
@@ -99,19 +99,28 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	auth := internal.Auth{
-		TenantID: config.TenantID,
-		PasswordCredentials: internal.PasswordCredentials{
-			Username: config.Username,
-			Password: config.Password,
+		Identity: internal.Identity{
+			Methods: []string{"password"},
+			Password: internal.Password{
+				User: internal.User{
+					ID:       config.UserID,
+					Password: config.Password,
+				},
+			},
+		},
+		Scope: internal.Scope{
+			Project: internal.Project{
+				ID: config.TenantID,
+			},
 		},
 	}
 
-	tokens, err := identifier.GetToken(context.TODO(), auth)
+	token, err := identifier.GetToken(context.Background(), auth)
 	if err != nil {
 		return nil, fmt.Errorf("conoha: failed to log in: %w", err)
 	}
 
-	client, err := internal.NewClient(config.Region, tokens.Access.Token.ID)
+	client, err := internal.NewClient(config.Region, token)
 	if err != nil {
 		return nil, fmt.Errorf("conoha: failed to create client: %w", err)
 	}
@@ -184,7 +193,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
-// Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }

@@ -12,7 +12,7 @@ const envDomain = envNamespace + "DOMAIN"
 
 var envTest = tester.NewEnvTest(
 	EnvTenantID,
-	EnvAPIUsername,
+	EnvAPIUserID,
 	EnvAPIPassword).
 	WithDomain(envDomain)
 
@@ -26,46 +26,46 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "complete credentials, but login failed",
 			envVars: map[string]string{
 				EnvTenantID:    "tenant_id",
-				EnvAPIUsername: "api_username",
+				EnvAPIUserID:   "api_user_id",
 				EnvAPIPassword: "api_password",
 			},
-			expected: `conoha: failed to log in: unexpected status code: [status code: 401] body: {"unauthorized":{"message":"Invalid user: api_username","code":401}}`,
+			expected: `conoha: failed to log in: unexpected status code: [status code: 400] body: {"code": 400, "error": "user does not exist"}`,
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
 				EnvTenantID:    "",
-				EnvAPIUsername: "",
+				EnvAPIUserID:   "",
 				EnvAPIPassword: "",
 			},
-			expected: "conoha: some credentials information are missing: CONOHA_TENANT_ID,CONOHA_API_USERNAME,CONOHA_API_PASSWORD",
+			expected: "conoha: some credentials information are missing: CONOHAV3_TENANT_ID,CONOHAV3_API_USER_ID,CONOHAV3_API_PASSWORD",
 		},
 		{
 			desc: "missing tenant id",
 			envVars: map[string]string{
 				EnvTenantID:    "",
-				EnvAPIUsername: "api_username",
+				EnvAPIUserID:   "api_user_id",
 				EnvAPIPassword: "api_password",
 			},
-			expected: "conoha: some credentials information are missing: CONOHA_TENANT_ID",
+			expected: "conoha: some credentials information are missing: CONOHAV3_TENANT_ID",
 		},
 		{
-			desc: "missing api username",
+			desc: "missing api user id",
 			envVars: map[string]string{
 				EnvTenantID:    "tenant_id",
-				EnvAPIUsername: "",
+				EnvAPIUserID:   "",
 				EnvAPIPassword: "api_password",
 			},
-			expected: "conoha: some credentials information are missing: CONOHA_API_USERNAME",
+			expected: "conoha: some credentials information are missing: CONOHAV3_API_USER_ID",
 		},
 		{
 			desc: "missing api password",
 			envVars: map[string]string{
 				EnvTenantID:    "tenant_id",
-				EnvAPIUsername: "api_username",
+				EnvAPIUserID:   "api_user_id",
 				EnvAPIPassword: "",
 			},
-			expected: "conoha: some credentials information are missing: CONOHA_API_PASSWORD",
+			expected: "conoha: some credentials information are missing: CONOHAV3_API_PASSWORD",
 		},
 	}
 
@@ -94,14 +94,14 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		desc     string
 		expected string
 		tenant   string
-		username string
+		userid   string
 		password string
 	}{
 		{
 			desc:     "complete credentials, but login failed",
-			expected: `conoha: failed to log in: unexpected status code: [status code: 401] body: {"unauthorized":{"message":"Invalid user: api_username","code":401}}`,
+			expected: `conoha: failed to log in: unexpected status code: [status code: 400] body: {"code": 400, "error": "user does not exist"}`,
 			tenant:   "tenant_id",
-			username: "api_username",
+			userid:   "api_user_id",
 			password: "api_password",
 		},
 		{
@@ -111,11 +111,11 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc:     "missing tenant id",
 			expected: "conoha: some credentials information are missing",
-			username: "api_username",
+			userid:   "api_user_id",
 			password: "api_password",
 		},
 		{
-			desc:     "missing api username",
+			desc:     "missing api user id",
 			expected: "conoha: some credentials information are missing",
 			tenant:   "tenant_id",
 			password: "api_password",
@@ -124,7 +124,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:     "missing api password",
 			expected: "conoha: some credentials information are missing",
 			tenant:   "tenant_id",
-			username: "api_username",
+			userid:   "api_user_id",
 		},
 	}
 
@@ -132,7 +132,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
 			config.TenantID = test.tenant
-			config.Username = test.username
+			config.UserID = test.userid
 			config.Password = test.password
 
 			p, err := NewDNSProviderConfig(config)

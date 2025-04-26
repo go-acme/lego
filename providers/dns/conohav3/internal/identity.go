@@ -1,8 +1,10 @@
+// internal/identity.go
+
 package internal
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -32,51 +34,36 @@ func NewIdentifier(region string) (*Identifier, error) {
 	}, nil
 }
 
-// GetToken gets valid token information.
-// https://www.conoha.jp/docs/identity-post_tokens.php
-func (c *Identifier) GetToken(ctx context.Context, auth Auth) (*IdentityResponse, error) {
-	endpoint := c.baseURL.JoinPath("v2.0", "tokens")
+// GetToken returns the x-subject-token from Identity API.
+func (c *Identifier) GetToken(ctx context.Context, auth Auth) (string, error) {
+	endpoint := c.baseURL.JoinPath("v3", "auth", "tokens")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, &IdentityRequest{Auth: auth})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	identity := &IdentityResponse{}
-
-	err = c.do(req, identity)
-	if err != nil {
-		return nil, err
-	}
-
-	return identity, nil
+	return c.do(req)
 }
 
-func (c *Identifier) do(req *http.Request, result any) error {
+// do sends the request and returns the token from x-subject-token header.
+func (c *Identifier) do(req *http.Request) (string, error) {
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return errutils.NewHTTPDoError(req, err)
+		return "", errutils.NewHTTPDoError(req, err)
 	}
-
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode != http.StatusOK {
-		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	if resp.StatusCode != http.StatusCreated {
+		return "", errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
-	if result == nil {
-		return nil
+	token := resp.Header.Get("x-subject-token")
+	if token == "" {
+		return "", errors.New("x-subject-token header is missing in response")
 	}
 
-	raw, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return errutils.NewReadResponseError(req, resp.StatusCode, err)
-	}
+	_, _ = io.Copy(io.Discard, resp.Body) // discard body
 
-	err = json.Unmarshal(raw, result)
-	if err != nil {
-		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
-	}
-
-	return nil
+	return token, nil
 }

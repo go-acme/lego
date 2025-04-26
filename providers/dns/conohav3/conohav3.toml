@@ -5,23 +5,23 @@ Code = "conohav3"
 Since = "v4.23.1"
 
 Example = '''
-CONOHA_TENANT_ID=487727e3921d44e3bfe7ebb337bf085e \
-CONOHA_API_USERNAME=xxxx \
-CONOHA_API_PASSWORD=yyyy \
-lego --email you@example.com --dns conoha -d '*.example.com' -d example.com run
+CONOHAV3_TENANT_ID=487727e3921d44e3bfe7ebb337bf085e \
+CONOHAV3_API_USER_ID=xxxx \
+CONOHAV3_API_PASSWORD=yyyy \
+lego --email you@example.com --dns conohav3 -d '*.example.com' run
 '''
 
 [Configuration]
   [Configuration.Credentials]
-    CONOHA_TENANT_ID = "Tenant ID"
-    CONOHA_API_USERNAME = "The API username"
-    CONOHA_API_PASSWORD = "The API password"
+    CONOHAV3_TENANT_ID = "Tenant ID"
+    CONOHAV3_API_USER_ID = "The API user ID"
+    CONOHAV3_API_PASSWORD = "The API password"
   [Configuration.Additional]
-    CONOHA_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
-    CONOHA_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
-    CONOHA_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)"
-    CONOHA_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
-    CONOHA_REGION = "The region (Default: tyo1)"
+    CONOHAV3_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    CONOHAV3_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    CONOHAV3_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)"
+    CONOHAV3_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+    CONOHAV3_REGION = "The region (Default: c3j1)"
 
 [Links]
   API = "https://doc.conoha.jp/reference/api-vps3/"

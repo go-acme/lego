@@ -1,56 +1,69 @@
 package internal
 
-// IdentityRequest is an authentication request body.
+// IdentityRequest is the top-level payload sent to the Identity v3.
 type IdentityRequest struct {
 	Auth Auth `json:"auth"`
 }
 
-// Auth is an authentication information.
+// Auth groups the authentication credentials (Identity) and
+// authorization scope (Scope) that the request is asking for.
 type Auth struct {
-	TenantID            string              `json:"tenantId"`
-	PasswordCredentials PasswordCredentials `json:"passwordCredentials"`
+	Identity Identity `json:"identity"`
+	Scope    Scope    `json:"scope"`
 }
 
-// PasswordCredentials is API-user's credentials.
-type PasswordCredentials struct {
-	Username string `json:"username"`
+// Identity describes how the client will authenticate.
+// In ConoHa v3.0, only support the “password” method.
+type Identity struct {
+	Methods  []string `json:"methods"`
+	Password Password `json:"password"`
+}
+
+// Password nests the concrete user credentials used by the password
+// auth method.
+type Password struct {
+	User User `json:"user"`
+}
+
+// User holds the API User ID and password that will be verified by
+// the Identity service.
+type User struct {
+	ID       string `json:"id"`
 	Password string `json:"password"`
 }
 
-// IdentityResponse is an authentication response body.
-type IdentityResponse struct {
-	Access Access `json:"access"`
+// Scope specifies which tenant the issued token should be scoped to.
+type Scope struct {
+	Project Project `json:"project"`
 }
 
-// Access is an identity information.
-type Access struct {
-	Token Token `json:"token"`
-}
-
-// Token is an api access token.
-type Token struct {
+// Project identifies the target tenant by UUID.
+type Project struct {
 	ID string `json:"id"`
 }
 
-// DomainListResponse is a response of a domain listing request.
+// DomainListResponse is returned by GET /v1/domains and contains all
+// DNS zones (domains) owned by the project.
 type DomainListResponse struct {
 	Domains []Domain `json:"domains"`
 }
 
-// Domain is a hosted domain entry.
+// Domain represents a single hosted DNS zone.
 type Domain struct {
-	ID   string `json:"id"`
+	UUID string `json:"uuid"`
 	Name string `json:"name"`
 }
 
-// RecordListResponse is a response of record listing request.
+// RecordListResponse is returned by
+// GET /v1/domains/{domain_uuid}/records and lists every record in
+// the zone.
 type RecordListResponse struct {
 	Records []Record `json:"records"`
 }
 
-// Record is a record entry.
+// Record represents a DNS record inside a zone.
 type Record struct {
-	ID   string `json:"id,omitempty"`
+	UUID string `json:"uuid,omitempty"`
 	Name string `json:"name"`
 	Type string `json:"type"`
 	Data string `json:"data"`

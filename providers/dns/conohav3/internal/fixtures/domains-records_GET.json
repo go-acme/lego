@@ -1,7 +1,7 @@
 {
   "records": [
     {
-      "id": "2e32e609-3a4f-45ba-bdef-e50eacd345ad",
+      "uuid": "2e32e609-3a4f-45ba-bdef-e50eacd345ad",
       "name": "www.example.com.",
       "type": "A",
       "ttl": 3600,
@@ -15,7 +15,7 @@
       "gslb_check": 12300
     },
     {
-      "id": "8e9ecf3e-fb92-4a3a-a8ae-7596f167bea3",
+      "uuid": "8e9ecf3e-fb92-4a3a-a8ae-7596f167bea3",
       "name": "host1.example.com.",
       "type": "A",
       "ttl": 3600,
@@ -29,7 +29,7 @@
       "gslb_check": 12200
     },
     {
-      "id": "4ad19089-3e62-40f8-9482-17cc8ccb92cb",
+      "uuid": "4ad19089-3e62-40f8-9482-17cc8ccb92cb",
       "name": "web.example.com.",
       "type": "CNAME",
       "ttl": 3600,

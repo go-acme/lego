@@ -47,7 +47,7 @@ func (c *Client) GetDomainID(ctx context.Context, domainName string) (string, er
 
 	for _, domain := range domainList.Domains {
 		if domain.Name == domainName {
-			return domain.ID, nil
+			return domain.UUID, nil
 		}
 	}
 
@@ -82,7 +82,7 @@ func (c *Client) GetRecordID(ctx context.Context, domainID, recordName, recordTy
 
 	for _, record := range recordList.Records {
 		if record.Name == recordName && record.Type == recordType && record.Data == data {
-			return record.ID, nil
+			return record.UUID, nil
 		}
 	}
 
@@ -157,7 +157,7 @@ func (c *Client) do(req *http.Request, result any) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 

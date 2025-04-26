@@ -11,31 +11,42 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewClient(t *testing.T) {
+func TestGetToken_HeaderToken(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
-	identifier, err := NewIdentifier("tyo1")
+	identifier, err := NewIdentifier("c3j1")
 	require.NoError(t, err)
 
 	identifier.HTTPClient = server.Client()
 	identifier.baseURL, _ = url.Parse(server.URL)
 
-	mux.HandleFunc("/v2.0/tokens", writeFixtureHandler(http.MethodPost, "tokens_POST.json"))
+	mux.HandleFunc("/v3/auth/tokens", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("x-subject-token", "sample-header-token-123")
+		w.WriteHeader(http.StatusCreated)
+		_, _ = w.Write([]byte(`{}`))
+	})
 
 	auth := Auth{
-		TenantID: "487727e3921d44e3bfe7ebb337bf085e",
-		PasswordCredentials: PasswordCredentials{
-			Username: "ConoHa",
-			Password: "paSSword123456#$%",
+		Identity: Identity{
+			Methods: []string{"password"},
+			Password: Password{
+				User: User{
+					ID:       "dummy-id",
+					Password: "dummy-password",
+				},
+			},
+		},
+		Scope: Scope{
+			Project: Project{
+				ID: "dummy-project-id",
+			},
 		},
 	}
 
 	token, err := identifier.GetToken(context.Background(), auth)
 	require.NoError(t, err)
 
-	expected := &IdentityResponse{Access: Access{Token: Token{ID: "sample00d88246078f2bexample788f7"}}}
-
-	assert.Equal(t, expected, token)
+	assert.Equal(t, "sample-header-token-123", token)
 }

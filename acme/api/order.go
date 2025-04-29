@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"slices"
 	"time"
 
 	"github.com/go-acme/lego/v4/acme"
@@ -83,6 +84,21 @@ func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acm
 		if err != nil {
 			return acme.ExtendedOrder{}, err
 		}
+	}
+
+	// The elements of the "authorizations" and "identifiers" arrays are immutable once set.
+	// The server MUST NOT change the contents of either array after they are created.
+	// If a client observes a change in the contents of either array,
+	// then it SHOULD consider the order invalid.
+	// https://www.rfc-editor.org/rfc/rfc8555#section-7.1.3
+	if compareIdentifiers(orderReq.Identifiers, order.Identifiers) != 0 {
+		// Sorts identifiers to avoid error message ambiguities about the order of the identifiers.
+		slices.SortStableFunc(orderReq.Identifiers, compareIdentifier)
+		slices.SortStableFunc(order.Identifiers, compareIdentifier)
+
+		return acme.ExtendedOrder{},
+			fmt.Errorf("order identifiers have been by the ACME server (RFC8555 §7.1.3): %+v != %+v",
+				orderReq.Identifiers, order.Identifiers)
 	}
 
 	return acme.ExtendedOrder{

@@ -169,7 +169,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	dnsRecord := cloudflare.CreateDNSRecordParams{
 		Type:    "TXT",
 		Name:    dns01.UnFqdn(info.EffectiveFQDN),
-		Content: info.Value,
+		Content: `"` + info.Value + `"`,
 		TTL:     d.config.TTL,
 	}
 

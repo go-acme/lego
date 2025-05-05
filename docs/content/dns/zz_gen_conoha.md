@@ -1,5 +1,5 @@
 ---
-title: "ConoHa"
+title: "ConoHa v2"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: conoha
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [ConoHa](https://www.conoha.jp/).
+Configuration for [ConoHa v2](https://www.conoha.jp/).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Configuration for [ConoHa](https://www.conoha.jp/).
 - Since: v1.2.0
 
 
-Here is an example bash command using the ConoHa provider:
+Here is an example bash command using the ConoHa v2 provider:
 
 ```bash
 CONOHA_TENANT_ID=487727e3921d44e3bfe7ebb337bf085e \
@@ -65,7 +65,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://www.conoha.jp/docs/)
+- [API documentation](https://doc.conoha.jp/reference/api-vps2/api-dns-vps2)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/conoha/conoha.toml -->

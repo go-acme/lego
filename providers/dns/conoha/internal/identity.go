@@ -33,7 +33,7 @@ func NewIdentifier(region string) (*Identifier, error) {
 }
 
 // GetToken gets valid token information.
-// https://www.conoha.jp/docs/identity-post_tokens.php
+// https://doc.conoha.jp/reference/api-vps2/api-identity-vps2/identity-post_tokens-v2/?btn_id=reference-paas-dns-delete-a-record-v2--sidebar_reference-identity-post_tokens-v2
 func (c *Identifier) GetToken(ctx context.Context, auth Auth) (*IdentityResponse, error) {
 	endpoint := c.baseURL.JoinPath("v2.0", "tokens")
 

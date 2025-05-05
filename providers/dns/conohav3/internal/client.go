@@ -47,14 +47,14 @@ func (c *Client) GetDomainID(ctx context.Context, domainName string) (string, er
 
 	for _, domain := range domainList.Domains {
 		if domain.Name == domainName {
-			return domain.ID, nil
+			return domain.UUID, nil
 		}
 	}
 
 	return "", fmt.Errorf("no such domain: %s", domainName)
 }
 
-// https://doc.conoha.jp/reference/api-vps2/api-dns-vps2/paas-dns-list-domains-v2/?btn_id=reference-api-vps2--sidebar_reference-paas-dns-list-domains-v2
+// https://doc.conoha.jp/reference/api-vps3/api-dns-vps3/dnsaas-get_domains_list-v3/?btn_id=reference-api-vps3--sidebar_reference-dnsaas-get_domains_list-v3
 func (c *Client) getDomains(ctx context.Context) (*DomainListResponse, error) {
 	endpoint := c.baseURL.JoinPath("v1", "domains")
 
@@ -82,14 +82,14 @@ func (c *Client) GetRecordID(ctx context.Context, domainID, recordName, recordTy
 
 	for _, record := range recordList.Records {
 		if record.Name == recordName && record.Type == recordType && record.Data == data {
-			return record.ID, nil
+			return record.UUID, nil
 		}
 	}
 
 	return "", errors.New("no such record")
 }
 
-// https://doc.conoha.jp/reference/api-vps2/api-dns-vps2/paas-dns-list-records-in-a-domain-v2/?btn_id=reference-paas-dns-list-domains-v2--sidebar_reference-paas-dns-list-records-in-a-domain-v2
+// https://doc.conoha.jp/reference/api-vps3/api-dns-vps3/dnsaas-get_records_list-v3/?btn_id=reference-dnsaas-get_domains_list-v3--sidebar_reference-dnsaas-get_records_list-v3
 func (c *Client) getRecords(ctx context.Context, domainID string) (*RecordListResponse, error) {
 	endpoint := c.baseURL.JoinPath("v1", "domains", domainID, "records")
 
@@ -114,7 +114,7 @@ func (c *Client) CreateRecord(ctx context.Context, domainID string, record Recor
 	return err
 }
 
-// https://doc.conoha.jp/reference/api-vps2/api-dns-vps2/paas-dns-create-record-v2/?btn_id=reference-paas-dns-list-records-in-a-domain-v2--sidebar_reference-paas-dns-create-record-v2
+// https://doc.conoha.jp/reference/api-vps3/api-dns-vps3/dnsaas-create_record-v3/?btn_id=reference-dnsaas-get_records_list-v3--sidebar_reference-dnsaas-create_record-v3
 func (c *Client) createRecord(ctx context.Context, domainID string, record Record) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("v1", "domains", domainID, "records")
 
@@ -133,7 +133,7 @@ func (c *Client) createRecord(ctx context.Context, domainID string, record Recor
 }
 
 // DeleteRecord removes specified record.
-// https://doc.conoha.jp/reference/api-vps2/api-dns-vps2/paas-dns-delete-a-record-v2/?btn_id=reference-paas-dns-create-record-v2--sidebar_reference-paas-dns-delete-a-record-v2
+// https://doc.conoha.jp/reference/api-vps3/api-dns-vps3/dnsaas-delete_record-v3/?btn_id=reference-dnsaas-create_record-v3--sidebar_reference-dnsaas-delete_record-v3
 func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID string) error {
 	endpoint := c.baseURL.JoinPath("v1", "domains", domainID, "records", recordID)
 
@@ -157,7 +157,7 @@ func (c *Client) do(req *http.Request, result any) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 

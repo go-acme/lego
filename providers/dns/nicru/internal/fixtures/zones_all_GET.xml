@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<response>
+    <status>success</status>
+    <data>
+        <zone admin="123/NIC-REG" enable="true" has-changes="false" has-primary="true" id="227645" idn-name="тест.рф"
+              name="xn—e1aybc.xn--p1ai" payer="123/NIC-REG" service="myservice"/>
+        <zone admin="123/NIC-REG" enable="true" has-changes="false" has-primary="true" id="227642" idn-name="example.ru"
+              name="example.ru" payer="123/NIC-REG" service="myservice"/>
+        <zone admin="123/NIC-REG" enable="true" has-changes="false" has-primary="true" id="227643" idn-name="test.su"
+              name="test.su" payer="123/NIC-REG" service="myservice"/>
+    </data>
+</response>

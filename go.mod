@@ -46,7 +46,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20
 	github.com/miekg/dns v1.1.64
 	github.com/mimuret/golang-iij-dpf v0.9.1
-	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
+	github.com/namedotcom/go/v4 v4.0.2
 	github.com/nrdcg/auroradns v1.1.0
 	github.com/nrdcg/bunny-go v0.0.0-20240207213615-dde5bf4577a3
 	github.com/nrdcg/desec v0.10.0

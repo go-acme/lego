@@ -13,7 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 	selectelapi "github.com/selectel/domains-go/pkg/v2"
-	"github.com/selectel/go-selvpcclient/v3/selvpcclient"
+	"github.com/selectel/go-selvpcclient/v4/selvpcclient"
 	"golang.org/x/net/idna"
 )
 

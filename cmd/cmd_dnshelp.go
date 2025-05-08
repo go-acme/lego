@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strings"
 	"text/tabwriter"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const flgCode = "code"
@@ -26,10 +27,10 @@ func createDNSHelp() *cli.Command {
 	}
 }
 
-func dnsHelp(ctx *cli.Context) error {
-	code := ctx.String(flgCode)
+func dnsHelp(_ context.Context, cmd *cli.Command) error {
+	code := cmd.String(flgCode)
 	if code == "" {
-		w := tabwriter.NewWriter(ctx.App.Writer, 0, 0, 2, ' ', 0)
+		w := tabwriter.NewWriter(cmd.Writer, 0, 0, 2, ' ', 0)
 		ew := &errWriter{w: w}
 
 		ew.writeln(`Credentials for DNS providers must be passed through environment variables.`)
@@ -50,7 +51,7 @@ func dnsHelp(ctx *cli.Context) error {
 		return w.Flush()
 	}
 
-	return displayDNSHelp(ctx.App.Writer, strings.ToLower(code))
+	return displayDNSHelp(cmd.Writer, strings.ToLower(code))
 }
 
 type errWriter struct {

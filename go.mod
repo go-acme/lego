@@ -28,7 +28,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/civo/civogo v0.3.11
 	github.com/cloudflare/cloudflare-go v0.115.0
-	github.com/dnsimple/dnsimple-go v1.7.0
+	github.com/dnsimple/dnsimple-go/v4 v4.0.0
 	github.com/exoscale/egoscale/v3 v3.1.13
 	github.com/go-jose/go-jose/v4 v4.0.5
 	github.com/go-viper/mapstructure/v2 v2.2.1
@@ -46,7 +46,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20
 	github.com/miekg/dns v1.1.64
 	github.com/mimuret/golang-iij-dpf v0.9.1
-	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
+	github.com/namedotcom/go/v4 v4.0.2
 	github.com/nrdcg/auroradns v1.1.0
 	github.com/nrdcg/bunny-go v0.0.0-20240207213615-dde5bf4577a3
 	github.com/nrdcg/desec v0.10.0
@@ -68,7 +68,7 @@ require (
 	github.com/sacloud/iaas-api-go v1.14.0
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.32
 	github.com/selectel/domains-go v1.1.0
-	github.com/selectel/go-selvpcclient/v3 v3.2.1
+	github.com/selectel/go-selvpcclient/v4 v4.1.0
 	github.com/softlayer/softlayer-go v1.1.7
 	github.com/stretchr/testify v1.10.0
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1128
@@ -172,7 +172,7 @@ require (
 	github.com/sacloud/packages-go v0.0.10 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
-	github.com/shopspring/decimal v1.3.1 // indirect
+	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/smartystreets/assertions v1.0.1 // indirect
 	github.com/smartystreets/go-aws-auth v0.0.0-20180515143844-0c1422d1fdb9 // indirect

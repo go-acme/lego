@@ -3,20 +3,14 @@ package yandexcloud
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"slices"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	ycdns "github.com/yandex-cloud/go-genproto/yandex/cloud/dns/v1"
-	ycsdk "github.com/yandex-cloud/go-sdk"
-	"github.com/yandex-cloud/go-sdk/iamkey"
+	"github.com/go-acme/lego/v4/providers/dns/yandexcloud/internal"
 )
 
 // Environment variables names.
@@ -54,7 +48,7 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	client *ycsdk.SDK
+	client *internal.Client
 	config *Config
 }
 
@@ -86,14 +80,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("yandexcloud: some credentials information are missing folder id")
 	}
 
-	creds, err := decodeCredentials(config.IamToken)
+	client, err := internal.NewClient(config.IamToken, config.FolderID, config.TTL)
 	if err != nil {
-		return nil, fmt.Errorf("yandexcloud: iam token is malformed: %w", err)
-	}
-
-	client, err := ycsdk.Build(context.Background(), ycsdk.Config{Credentials: creds})
-	if err != nil {
-		return nil, errors.New("yandexcloud: unable to build yandex cloud sdk")
+		return nil, fmt.Errorf("yandexcloud: %w", err)
 	}
 
 	return &DNSProvider{
@@ -113,7 +102,7 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	ctx := context.Background()
 
-	zones, err := r.getZones(ctx)
+	zones, err := r.client.ListZones(ctx)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
@@ -121,8 +110,8 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 	var zoneID string
 
 	for _, zone := range zones {
-		if zone.GetZone() == authZone {
-			zoneID = zone.GetId()
+		if zone.Zone == authZone {
+			zoneID = zone.ID
 		}
 	}
 
@@ -135,7 +124,7 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
 
-	err = r.upsertRecordSetData(ctx, zoneID, subDomain, info.Value)
+	err = r.client.CreateRecordSet(ctx, zoneID, subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
@@ -154,7 +143,7 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	ctx := context.Background()
 
-	zones, err := r.getZones(ctx)
+	zones, err := r.client.ListZones(ctx)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
@@ -162,8 +151,8 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	var zoneID string
 
 	for _, zone := range zones {
-		if zone.GetZone() == authZone {
-			zoneID = zone.GetId()
+		if zone.Zone == authZone {
+			zoneID = zone.ID
 		}
 	}
 
@@ -176,7 +165,7 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
 
-	err = r.removeRecordSetData(ctx, zoneID, subDomain, info.Value)
+	err = r.client.RemoveRecordSetValue(ctx, zoneID, subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
@@ -188,136 +177,4 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (r *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return r.config.PropagationTimeout, r.config.PollingInterval
-}
-
-// getZones retrieves available zones from yandex cloud.
-func (r *DNSProvider) getZones(ctx context.Context) ([]*ycdns.DnsZone, error) {
-	list := &ycdns.ListDnsZonesRequest{
-		FolderId: r.config.FolderID,
-	}
-
-	response, err := r.client.DNS().DnsZone().List(ctx, list)
-	if err != nil {
-		return nil, errors.New("unable to fetch dns zones")
-	}
-
-	return response.GetDnsZones(), nil
-}
-
-func (r *DNSProvider) upsertRecordSetData(ctx context.Context, zoneID, name, value string) error {
-	get := &ycdns.GetDnsZoneRecordSetRequest{
-		DnsZoneId: zoneID,
-		Name:      name,
-		Type:      "TXT",
-	}
-
-	exist, err := r.client.DNS().DnsZone().GetRecordSet(ctx, get)
-	if err != nil {
-		if !strings.Contains(err.Error(), "RecordSet not found") {
-			return err
-		}
-	}
-
-	record := &ycdns.RecordSet{
-		Name: name,
-		Type: "TXT",
-		Ttl:  int64(r.config.TTL),
-		Data: []string{},
-	}
-
-	var deletions []*ycdns.RecordSet
-	if exist != nil {
-		record.SetData(append(record.GetData(), exist.GetData()...))
-		deletions = append(deletions, exist)
-	}
-
-	appended := appendRecordSetData(record, value)
-	if !appended {
-		// The value already present in RecordSet, nothing to do
-		return nil
-	}
-
-	update := &ycdns.UpdateRecordSetsRequest{
-		DnsZoneId: zoneID,
-		Deletions: deletions,
-		Additions: []*ycdns.RecordSet{record},
-	}
-
-	_, err = r.client.DNS().DnsZone().UpdateRecordSets(ctx, update)
-
-	return err
-}
-
-func (r *DNSProvider) removeRecordSetData(ctx context.Context, zoneID, name, value string) error {
-	get := &ycdns.GetDnsZoneRecordSetRequest{
-		DnsZoneId: zoneID,
-		Name:      name,
-		Type:      "TXT",
-	}
-
-	previousRecord, err := r.client.DNS().DnsZone().GetRecordSet(ctx, get)
-	if err != nil {
-		if strings.Contains(err.Error(), "RecordSet not found") {
-			// RecordSet is not present, nothing to do
-			return nil
-		}
-
-		return err
-	}
-
-	var additions []*ycdns.RecordSet
-
-	if len(previousRecord.GetData()) > 1 {
-		// RecordSet is not empty we should update it
-		record := &ycdns.RecordSet{
-			Name: name,
-			Type: "TXT",
-			Ttl:  int64(r.config.TTL),
-			Data: []string{},
-		}
-
-		for _, data := range previousRecord.GetData() {
-			if data != value {
-				record.SetData(append(record.GetData(), data))
-			}
-		}
-
-		additions = append(additions, record)
-	}
-
-	update := &ycdns.UpdateRecordSetsRequest{
-		DnsZoneId: zoneID,
-		Deletions: []*ycdns.RecordSet{previousRecord},
-		Additions: additions,
-	}
-
-	_, err = r.client.DNS().DnsZone().UpdateRecordSets(ctx, update)
-
-	return err
-}
-
-// decodeCredentials converts base64 encoded json of iam token to struct.
-func decodeCredentials(accountB64 string) (ycsdk.Credentials, error) {
-	account, err := base64.StdEncoding.DecodeString(accountB64)
-	if err != nil {
-		return nil, err
-	}
-
-	key := &iamkey.Key{}
-	err = json.Unmarshal(account, key)
-	if err != nil {
-		return nil, err
-	}
-
-	return ycsdk.ServiceAccountKey(key)
-}
-
-func appendRecordSetData(record *ycdns.RecordSet, value string) bool {
-	if slices.Contains(record.GetData(), value) {
-		return false
-	}
-
-	record.SetData(append(record.GetData(), value))
-
-	return true
 }

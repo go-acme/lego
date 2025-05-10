@@ -64,7 +64,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvIamToken: "aW52YWxpZCBqc29u",
 				EnvFolderID: "folder_id",
 			},
-			expected: "yandexcloud: iam token is malformed: invalid character 'i' looking for beginning of value",
+			expected: "yandexcloud: failed to unmarshal key data: invalid character 'i' looking for beginning of value",
 		},
 	}
 

@@ -32,7 +32,9 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success (RAM role)",
 			envVars: map[string]string{
-				EnvRAMRole: "LegoInstanceRole",
+				EnvRAMRole:   "LegoInstanceRole",
+				EnvAccessKey: "123",
+				EnvSecretKey: "456",
 			},
 		},
 		{
@@ -96,22 +98,24 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			secretKey: "456",
 		},
 		{
-			desc:    "success",
-			ramRole: "LegoInstanceRole",
+			desc:      "success",
+			ramRole:   "LegoInstanceRole",
+			apiKey:    "123",
+			secretKey: "456",
 		},
 		{
 			desc:     "missing credentials",
-			expected: "alicloud: ram role or credentials missing",
+			expected: "alicloud: credentials missing",
 		},
 		{
 			desc:      "missing api key",
 			secretKey: "456",
-			expected:  "alicloud: ram role or credentials missing",
+			expected:  "alicloud: credentials missing",
 		},
 		{
 			desc:     "missing secret key",
 			apiKey:   "123",
-			expected: "alicloud: ram role or credentials missing",
+			expected: "alicloud: credentials missing",
 		},
 	}
 

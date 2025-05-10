@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,7 +25,14 @@ var envTest = tester.NewEnvTest(
 	EnvPubKeyFingerprint,
 	EnvRegion,
 	EnvCompartmentOCID).
-	WithDomain(envDomain)
+	WithDomain(envDomain).
+	WithLiveTestRequirements(EnvPrivKeyFile,
+		EnvPrivKeyPass,
+		EnvTenancyOCID,
+		EnvUserOCID,
+		EnvPubKeyFingerprint,
+		EnvRegion,
+		EnvCompartmentOCID)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -100,7 +106,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvRegion:            "us-phoenix-1",
 				EnvCompartmentOCID:   "123",
 			},
-			expected: "oraclecloud: can not create client, bad configuration: ",
+			expected: "oraclecloud: private key is encrypted but no password was provided",
 		},
 		{
 			desc: "missing OCI_TENANCY_OCID",
@@ -154,19 +160,6 @@ func TestNewDNSProvider(t *testing.T) {
 			},
 			expected: "oraclecloud: some credentials information are missing: OCI_REGION",
 		},
-		{
-			desc: "missing OCI_REGION",
-			envVars: map[string]string{
-				envPrivKey:           mustGeneratePrivateKey("secret"),
-				EnvPrivKeyPass:       "secret",
-				EnvTenancyOCID:       "ocid1.tenancy.oc1..secret",
-				EnvUserOCID:          "ocid1.user.oc1..secret",
-				EnvPubKeyFingerprint: "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
-				EnvRegion:            "",
-				EnvCompartmentOCID:   "123",
-			},
-			expected: "oraclecloud: some credentials information are missing: OCI_REGION",
-		},
 	}
 
 	for _, test := range testCases {
@@ -202,34 +195,54 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	defer envTest.RestoreEnv()
 
 	testCases := []struct {
-		desc                  string
-		compartmentID         string
-		configurationProvider common.ConfigurationProvider
-		expected              string
+		desc          string
+		privateKey    *rsa.PrivateKey
+		keyID         string
+		compartmentID string
+		region        string
+		expected      string
 	}{
 		{
-			desc:                  "configuration provider error",
-			configurationProvider: mockConfigurationProvider("wrong-secret"),
-			compartmentID:         "123",
-			expected:              "oraclecloud: can not create client, bad configuration: x509: decryption password incorrect",
-		},
-		{
-			desc:          "OCIConfigProvider is missing",
+			desc:          "success",
+			privateKey:    mustGenerateKey(),
+			keyID:         "keyID",
 			compartmentID: "123",
-			expected:      "oraclecloud: OCIConfigProvider is missing",
+			region:        "us-phoenix-1",
 		},
 		{
-			desc:                  "missing CompartmentID",
-			configurationProvider: mockConfigurationProvider("secret"),
-			expected:              "oraclecloud: CompartmentID is missing",
+			desc:     "missing privateKey",
+			keyID:    "keyID",
+			region:   "us-phoenix-1",
+			expected: "oraclecloud: PrivateKey is missing",
+		},
+		{
+			desc:       "missing keyID",
+			privateKey: mustGenerateKey(),
+			region:     "us-phoenix-1",
+			expected:   "oraclecloud: KeyID is missing",
+		},
+		{
+			desc:       "missing region",
+			privateKey: mustGenerateKey(),
+			keyID:      "keyID",
+			expected:   "oraclecloud: Region is missing",
+		},
+		{
+			desc:       "missing compartmentID",
+			privateKey: mustGenerateKey(),
+			keyID:      "keyID",
+			region:     "us-phoenix-1",
+			expected:   "oraclecloud: CompartmentID is missing",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
+			config.PrivateKey = test.privateKey
+			config.KeyID = test.keyID
+			config.Region = test.region
 			config.CompartmentID = test.compartmentID
-			config.OCIConfigProvider = test.configurationProvider
 
 			p, err := NewDNSProviderConfig(config)
 
@@ -256,6 +269,8 @@ func TestLivePresent(t *testing.T) {
 
 	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+
+	time.Sleep(2 * time.Second)
 }
 
 func TestLiveCleanUp(t *testing.T) {
@@ -267,75 +282,65 @@ func TestLiveCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
-
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
-func mockConfigurationProvider(keyPassphrase string) *configProvider {
-	envTest.Apply(map[string]string{
-		envPrivKey: mustGeneratePrivateKey("secret"),
-	})
-
-	return &configProvider{
-		values: map[string]string{
-			EnvCompartmentOCID:   "test",
-			EnvPrivKeyPass:       "test",
-			EnvTenancyOCID:       "test",
-			EnvUserOCID:          "test",
-			EnvPubKeyFingerprint: "test",
-			EnvRegion:            "test",
-		},
-		privateKeyPassphrase: keyPassphrase,
+func mustGenerateKey() *rsa.PrivateKey {
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		panic(err)
 	}
+	return key
 }
 
 func mustGeneratePrivateKey(pwd string) string {
-	block, err := generatePrivateKey(pwd)
+	pemBlock, err := generatePrivateKey(pwd)
 	if err != nil {
 		panic(err)
 	}
 
-	return base64.StdEncoding.EncodeToString(pem.EncodeToMemory(block))
+	return base64.StdEncoding.EncodeToString(pem.EncodeToMemory(pemBlock))
 }
 
 func mustGeneratePrivateKeyFile(pwd string) string {
-	block, err := generatePrivateKey(pwd)
+	pemBlock, err := generatePrivateKey(pwd)
 	if err != nil {
 		panic(err)
 	}
 
-	file, err := os.CreateTemp("", "lego_oci_*.pem")
+	// Create temporary file for the key
+	tmpfile, err := os.CreateTemp("", "lego_test_")
 	if err != nil {
 		panic(err)
 	}
 
-	err = pem.Encode(file, block)
+	err = pem.Encode(tmpfile, pemBlock)
 	if err != nil {
 		panic(err)
 	}
 
-	return file.Name()
+	err = tmpfile.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	return tmpfile.Name()
 }
 
 func generatePrivateKey(pwd string) (*pem.Block, error) {
-	key, err := rsa.GenerateKey(rand.Reader, 1024)
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return nil, err
 	}
 
-	block := &pem.Block{
-		Type:  "RSA PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(key),
+	encryptedBlock, err := x509.EncryptPEMBlock(rand.Reader,
+		"RSA PRIVATE KEY",
+		x509.MarshalPKCS1PrivateKey(key),
+		[]byte(pwd), x509.PEMCipherAES256)
+	if err != nil {
+		return nil, err
 	}
 
-	if pwd != "" {
-		block, err = x509.EncryptPEMBlock(rand.Reader, block.Type, block.Bytes, []byte(pwd), x509.PEMCipherAES256)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return block, nil
+	return encryptedBlock, nil
 }

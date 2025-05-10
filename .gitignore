@@ -4,3 +4,4 @@
 .vscode/
 dist/
 builds/
+.DS_Store

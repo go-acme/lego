@@ -2,6 +2,7 @@
 package sakuracloud
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,10 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
-	client "github.com/sacloud/api-client-go"
-	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/iaas-api-go/helper/api"
+	"github.com/go-acme/lego/v4/providers/dns/sakuracloud/internal"
 )
 
 // Environment variables names.
@@ -56,7 +54,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client iaas.DNSAPI
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for SakuraCloud.
@@ -89,31 +87,28 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("sakuracloud: AccessSecret is missing")
 	}
 
-	defaultOption, err := api.DefaultOption()
+	client, err := internal.NewClient(config.Token, config.Secret, config.TTL)
 	if err != nil {
 		return nil, fmt.Errorf("sakuracloud: %w", err)
 	}
 
-	options := &api.CallerOptions{
-		Options: &client.Options{
-			AccessToken:       config.Token,
-			AccessTokenSecret: config.Secret,
-			HttpClient:        config.HTTPClient,
-			UserAgent:         fmt.Sprintf("%s %s", iaas.DefaultUserAgent, useragent.Get()),
-		},
-	}
-
 	return &DNSProvider{
-		client: iaas.NewDNSOp(api.NewCallerWithOptions(api.MergeOptions(defaultOption, options))),
+		client: client,
 		config: config,
 	}, nil
+}
+
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.addTXTRecord(info.EffectiveFQDN, info.Value, d.config.TTL)
+	err := d.addTXTRecord(info.EffectiveFQDN, info.Value)
 	if err != nil {
 		return fmt.Errorf("sakuracloud: %w", err)
 	}
@@ -133,8 +128,54 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-// Timeout returns the timeout and interval to use when checking for DNS propagation.
-// Adjusting here to cope with spikes in propagation times.
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.config.PropagationTimeout, d.config.PollingInterval
+// addTXTRecord adds a TXT record for the specified FQDN and value.
+func (d *DNSProvider) addTXTRecord(fqdn string, value string) error {
+	ctx := context.Background()
+
+	// Get the appropriate zone for the domain
+	domain := dns01.UnFqdn(fqdn)
+	zone, err := d.client.GetZoneByDomain(ctx, domain)
+	if err != nil {
+		return fmt.Errorf("failed to find hosted zone: %w", err)
+	}
+	// Create the record
+	recordName := getRecordName(fqdn, zone.Name)
+	err = d.client.CreateTXTRecord(ctx, zone.ID, recordName, value)
+	if err != nil {
+		return fmt.Errorf("failed to create TXT record: %w", err)
+	}
+
+	return nil
+}
+
+// cleanupTXTRecord removes a TXT record for the specified FQDN and value.
+func (d *DNSProvider) cleanupTXTRecord(fqdn string, value string) error {
+	ctx := context.Background()
+
+	// Get the appropriate zone for the domain
+	domain := dns01.UnFqdn(fqdn)
+	zone, err := d.client.GetZoneByDomain(ctx, domain)
+	if err != nil {
+		return fmt.Errorf("failed to find hosted zone: %w", err)
+	}
+
+	// Delete the record
+	recordName := getRecordName(fqdn, zone.Name)
+	err = d.client.DeleteTXTRecord(ctx, zone.ID, recordName, value)
+	if err != nil {
+		return fmt.Errorf("failed to delete TXT record: %w", err)
+	}
+
+	return nil
+}
+
+// getRecordName returns the name of the TXT record to create, relative to the zone.
+func getRecordName(fqdn, domain string) string {
+	name := dns01.UnFqdn(fqdn)
+
+	if name == domain {
+		return "@"
+	}
+
+	return name[:len(name)-len(domain)-1]
 }

@@ -3,16 +3,22 @@ package oraclecloud
 
 import (
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/oracle/oci-go-sdk/v65/common"
-	"github.com/oracle/oci-go-sdk/v65/dns"
+	"github.com/go-acme/lego/v4/providers/dns/oraclecloud/internal"
+	"github.com/youmark/pkcs8"
 )
 
 // Environment variables names.
@@ -34,12 +40,17 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+// RecordOperationRemove is the operation to remove a record.
+const RecordOperationRemove = "REMOVE"
+
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	CompartmentID      string
-	OCIConfigProvider  common.ConfigurationProvider
+	PrivateKey         *rsa.PrivateKey
+	KeyID              string
+	Region             string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -60,7 +71,7 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	client *dns.DnsClient
+	client *internal.Client
 	config *Config
 }
 
@@ -71,9 +82,16 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("oraclecloud: %w", err)
 	}
 
+	privateKey, err := loadPrivateKey()
+	if err != nil {
+		return nil, fmt.Errorf("oraclecloud: %w", err)
+	}
+
 	config := NewDefaultConfig()
 	config.CompartmentID = values[EnvCompartmentOCID]
-	config.OCIConfigProvider = newConfigProvider(values)
+	config.PrivateKey = privateKey
+	config.KeyID = fmt.Sprintf("%s/%s/%s", values[EnvTenancyOCID], values[EnvUserOCID], values[EnvPubKeyFingerprint])
+	config.Region = values[EnvRegion]
 
 	return NewDNSProviderConfig(config)
 }
@@ -84,24 +102,25 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("oraclecloud: the configuration of the DNS provider is nil")
 	}
 
+	if config.PrivateKey == nil {
+		return nil, errors.New("oraclecloud: PrivateKey is missing")
+	}
+
+	if config.KeyID == "" {
+		return nil, errors.New("oraclecloud: KeyID is missing")
+	}
+
+	if config.Region == "" {
+		return nil, errors.New("oraclecloud: Region is missing")
+	}
+
 	if config.CompartmentID == "" {
 		return nil, errors.New("oraclecloud: CompartmentID is missing")
 	}
 
-	if config.OCIConfigProvider == nil {
-		return nil, errors.New("oraclecloud: OCIConfigProvider is missing")
-	}
+	client := internal.NewClient(config.HTTPClient, config.PrivateKey, config.KeyID, config.Region, config.CompartmentID)
 
-	client, err := dns.NewDnsClientWithConfigurationProvider(config.OCIConfigProvider)
-	if err != nil {
-		return nil, fmt.Errorf("oraclecloud: %w", err)
-	}
-
-	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
-	}
-
-	return &DNSProvider{client: &client, config: config}, nil
+	return &DNSProvider{client: client, config: config}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
@@ -113,25 +132,27 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("oraclecloud: could not find zone for domain %q: %w", domain, err)
 	}
 
-	// generate request to dns.PatchDomainRecordsRequest
-	recordOperation := dns.RecordOperation{
-		Domain:      common.String(dns01.UnFqdn(info.EffectiveFQDN)),
-		Rdata:       common.String(info.Value),
-		Rtype:       common.String("TXT"),
-		Ttl:         common.Int(d.config.TTL),
-		IsProtected: common.Bool(false),
+	// First, try to delete any existing challenge records to avoid duplicates
+	err = d.client.FindAndDeleteDomainRecord(context.Background(), zoneNameOrID, dns01.UnFqdn(info.EffectiveFQDN), info.Value)
+	if err != nil {
+		fmt.Printf("oraclecloud: warning: failed to clean up existing records: %v\n", err)
+		// Continue even if deletion fails
 	}
 
-	request := dns.PatchDomainRecordsRequest{
-		CompartmentId: common.String(d.config.CompartmentID),
-		ZoneNameOrId:  common.String(zoneNameOrID),
-		Domain:        common.String(dns01.UnFqdn(info.EffectiveFQDN)),
-		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
-			Items: []dns.RecordOperation{recordOperation},
-		},
+	// generate request to update records
+	recordOperation := internal.RecordOperation{
+		Domain:      dns01.UnFqdn(info.EffectiveFQDN),
+		RData:       info.Value,
+		RType:       "TXT",
+		TTL:         d.config.TTL,
+		IsProtected: false,
 	}
 
-	_, err = d.client.PatchDomainRecords(context.Background(), request)
+	request := internal.PatchRecordsRequest{
+		Items: []internal.RecordOperation{recordOperation},
+	}
+
+	err = d.client.PatchDomainRecords(context.Background(), zoneNameOrID, dns01.UnFqdn(info.EffectiveFQDN), request)
 	if err != nil {
 		return fmt.Errorf("oraclecloud: %w", err)
 	}
@@ -148,52 +169,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("oraclecloud: could not find zone for domain %q: %w", domain, err)
 	}
 
-	// search to TXT record's hash to delete
-	getRequest := dns.GetDomainRecordsRequest{
-		ZoneNameOrId:  common.String(zoneNameOrID),
-		Domain:        common.String(dns01.UnFqdn(info.EffectiveFQDN)),
-		CompartmentId: common.String(d.config.CompartmentID),
-		Rtype:         common.String("TXT"),
-	}
-
-	ctx := context.Background()
-
-	domainRecords, err := d.client.GetDomainRecords(ctx, getRequest)
-	if err != nil {
-		return fmt.Errorf("oraclecloud: %w", err)
-	}
-
-	if *domainRecords.OpcTotalItems == 0 {
-		return errors.New("oraclecloud: no record to clean up")
-	}
-
-	var deleteHash *string
-	for _, record := range domainRecords.Items {
-		if record.Rdata != nil && *record.Rdata == `"`+info.Value+`"` {
-			deleteHash = record.RecordHash
-			break
-		}
-	}
-
-	if deleteHash == nil {
-		return errors.New("oraclecloud: no record to clean up")
-	}
-
-	recordOperation := dns.RecordOperation{
-		RecordHash: deleteHash,
-		Operation:  dns.RecordOperationOperationRemove,
-	}
-
-	patchRequest := dns.PatchDomainRecordsRequest{
-		ZoneNameOrId: common.String(zoneNameOrID),
-		Domain:       common.String(dns01.UnFqdn(info.EffectiveFQDN)),
-		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
-			Items: []dns.RecordOperation{recordOperation},
-		},
-		CompartmentId: common.String(d.config.CompartmentID),
-	}
-
-	_, err = d.client.PatchDomainRecords(ctx, patchRequest)
+	err = d.client.FindAndDeleteDomainRecord(context.Background(), zoneNameOrID, dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 	if err != nil {
 		return fmt.Errorf("oraclecloud: %w", err)
 	}
@@ -205,4 +181,136 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// loadPrivateKey gets the private key from the environment.
+func loadPrivateKey() (*rsa.PrivateKey, error) {
+	privateKeyData, err := getPrivateKeyData()
+	if err != nil {
+		return nil, err
+	}
+
+	privateKeyPass := env.GetOrFile(EnvPrivKeyPass)
+
+	key, err := parsePrivateKey(privateKeyData, privateKeyPass)
+	if err != nil {
+		return nil, err
+	}
+
+	return key, nil
+}
+
+// getPrivateKeyData gets the private key data from the environment.
+func getPrivateKeyData() ([]byte, error) {
+	envVarValue := os.Getenv(envPrivKey)
+	if envVarValue != "" {
+		bytes, err := base64.StdEncoding.DecodeString(envVarValue)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read base64 value %s (defined by env var %s): %w", envVarValue, envPrivKey, err)
+		}
+		return bytes, nil
+	}
+
+	fileVar := EnvPrivKeyFile
+	fileVarValue := os.Getenv(fileVar)
+	if fileVarValue == "" {
+		return nil, fmt.Errorf("no value provided for: %s or %s", envPrivKey, EnvPrivKeyFile)
+	}
+
+	fileContents, err := os.ReadFile(fileVarValue)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read the file %s (defined by env var %s): %w", fileVarValue, EnvPrivKeyFile, err)
+	}
+
+	return fileContents, nil
+}
+
+// parsePrivateKey parses a PEM encoded private key.
+func parsePrivateKey(privateKey []byte, privateKeyPass string) (*rsa.PrivateKey, error) {
+	keyBlock, _ := pem.Decode(privateKey)
+	if keyBlock == nil {
+		return nil, errors.New("failed to decode PEM block containing private key")
+	}
+
+	// Handle different private key formats and encryption
+	switch {
+	// Unencrypted PKCS1 private key
+	case keyBlock.Type == "RSA PRIVATE KEY" && !strings.Contains(string(keyBlock.Headers["Proc-Type"]), "ENCRYPTED"):
+		key, err := x509.ParsePKCS1PrivateKey(keyBlock.Bytes)
+		if err == nil {
+			return key, nil
+		}
+		return nil, fmt.Errorf("failed to parse PKCS1 private key: %w", err)
+
+	// Unencrypted PKCS8 private key
+	case keyBlock.Type == "PRIVATE KEY":
+		pkcs8Key, err := x509.ParsePKCS8PrivateKey(keyBlock.Bytes)
+		if err == nil {
+			rsaKey, ok := pkcs8Key.(*rsa.PrivateKey)
+			if !ok {
+				return nil, errors.New("private key is not an RSA private key")
+			}
+			return rsaKey, nil
+		}
+		return nil, fmt.Errorf("failed to parse PKCS8 private key: %w", err)
+
+	// PKCS8 Encrypted private key
+	case keyBlock.Type == "ENCRYPTED PRIVATE KEY":
+		if privateKeyPass == "" {
+			return nil, errors.New("private key is encrypted but no password was provided")
+		}
+
+		// Use youmark/pkcs8 to parse encrypted PKCS8 key
+		key, err := pkcs8.ParsePKCS8PrivateKey(keyBlock.Bytes, []byte(privateKeyPass))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse encrypted PKCS8 private key: %w", err)
+		}
+
+		rsaKey, ok := key.(*rsa.PrivateKey)
+		if !ok {
+			return nil, errors.New("private key is not an RSA private key")
+		}
+		return rsaKey, nil
+
+	// Encrypted PKCS1 private key (legacy OpenSSL format)
+	case keyBlock.Type == "RSA PRIVATE KEY" && len(keyBlock.Headers) > 0:
+		if privateKeyPass == "" {
+			return nil, errors.New("private key is encrypted but no password was provided")
+		}
+
+		// Handle traditional OpenSSL encryption (for backward compatibility)
+		// This is deprecated but we need to support existing keys
+		// This will only be used if the PEM header contains encryption info
+		// #nosec G501 - We need to support legacy encryption formats
+		if x509.IsEncryptedPEMBlock(keyBlock) {
+			// #nosec G501 - We need to support legacy encryption formats
+			decryptedKey, err := x509.DecryptPEMBlock(keyBlock, []byte(privateKeyPass))
+			if err != nil {
+				return nil, fmt.Errorf("failed to decrypt private key: %w", err)
+			}
+
+			// Try PKCS1 format first
+			key, err := x509.ParsePKCS1PrivateKey(decryptedKey)
+			if err == nil {
+				return key, nil
+			}
+
+			// Then try PKCS8
+			pkcs8Key, err := x509.ParsePKCS8PrivateKey(decryptedKey)
+			if err == nil {
+				rsaKey, ok := pkcs8Key.(*rsa.PrivateKey)
+				if !ok {
+					return nil, errors.New("private key is not an RSA private key")
+				}
+				return rsaKey, nil
+			}
+
+			return nil, fmt.Errorf("failed to parse decrypted private key: %w", err)
+		}
+
+		return nil, errors.New("unsupported encrypted private key format")
+
+	default:
+		return nil, fmt.Errorf("unsupported private key type: %s", keyBlock.Type)
+	}
 }

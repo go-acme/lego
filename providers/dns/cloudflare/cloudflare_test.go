@@ -199,9 +199,9 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 			assert.Equal(t, test.expected.dnsToken, p.config.AuthToken)
 			assert.Equal(t, test.expected.zoneToken, p.config.ZoneToken)
 			if test.expected.sameClient {
-				assert.Equal(t, p.client.clientRead, p.client.clientEdit)
+				assert.Equal(t, p.config.AuthToken, p.config.ZoneToken)
 			} else {
-				assert.NotEqual(t, p.client.clientRead, p.client.clientEdit)
+				assert.NotEqual(t, p.config.AuthToken, p.config.ZoneToken)
 			}
 		})
 	}

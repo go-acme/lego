@@ -2,17 +2,16 @@
 package tencentcloud
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"math"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
-	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
-	dnspod "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod/v20210323"
+	"github.com/libdns/libdns"
+	"github.com/libdns/tencentcloud"
 )
 
 // Environment variables names.
@@ -57,8 +56,8 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config *Config
-	client *dnspod.Client
+	config   *Config
+	provider *tencentcloud.Provider
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Tencent Cloud DNS.
@@ -84,27 +83,18 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("tencentcloud: the configuration of the DNS provider is nil")
 	}
 
-	var credential *common.Credential
-
-	switch {
-	case config.SecretID != "" && config.SecretKey != "" && config.SessionToken != "":
-		credential = common.NewTokenCredential(config.SecretID, config.SecretKey, config.SessionToken)
-	case config.SecretID != "" && config.SecretKey != "":
-		credential = common.NewCredential(config.SecretID, config.SecretKey)
-	default:
+	if config.SecretID == "" || config.SecretKey == "" {
 		return nil, errors.New("tencentcloud: credentials missing")
 	}
 
-	cpf := profile.NewClientProfile()
-	cpf.HttpProfile.Endpoint = "dnspod.tencentcloudapi.com"
-	cpf.HttpProfile.ReqTimeout = int(math.Round(config.HTTPTimeout.Seconds()))
-
-	client, err := dnspod.NewClient(credential, config.Region, cpf)
-	if err != nil {
-		return nil, fmt.Errorf("tencentcloud: %w", err)
+	provider := &tencentcloud.Provider{
+		SecretId:     config.SecretID,
+		SecretKey:    config.SecretKey,
+		Region:       config.Region,
+		SessionToken: config.SessionToken,
 	}
 
-	return &DNSProvider{config: config, client: client}, nil
+	return &DNSProvider{config: config, provider: provider}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -117,28 +107,38 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	ttl := time.Duration(d.config.TTL) * time.Second
+
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
+		return fmt.Errorf("tencentcloud: failed to find zone: %w", err)
 	}
 
-	recordName, err := extractRecordName(info.EffectiveFQDN, *zone.Name)
+	authZone = dns01.UnFqdn(authZone)
+
+	recordName, err := extractRecordName(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to extract record name: %w", err)
 	}
 
-	request := dnspod.NewCreateRecordRequest()
-	request.Domain = zone.Name
-	request.DomainId = zone.DomainId
-	request.SubDomain = common.StringPtr(recordName)
-	request.RecordType = common.StringPtr("TXT")
-	request.RecordLine = common.StringPtr("默认")
-	request.Value = common.StringPtr(info.Value)
-	request.TTL = common.Uint64Ptr(uint64(d.config.TTL))
+	record := libdns.RR{
+		Type: "TXT",
+		Name: recordName,
+		Data: info.Value,
+		TTL:  ttl,
+	}
 
-	_, err = d.client.CreateRecord(request)
+	recordVal, err := record.Parse()
 	if err != nil {
-		return fmt.Errorf("dnspod: API call failed: %w", err)
+		return fmt.Errorf("tencentcloud: failed to parse TXT record: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), d.config.HTTPTimeout)
+	defer cancel()
+
+	_, err = d.provider.SetRecords(ctx, authZone, []libdns.Record{recordVal})
+	if err != nil {
+		return fmt.Errorf("tencentcloud: failed to create TXT record: %w", err)
 	}
 
 	return nil
@@ -148,26 +148,43 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
+		return fmt.Errorf("tencentcloud: failed to find zone: %w", err)
 	}
 
-	records, err := d.findTxtRecords(zone, info.EffectiveFQDN)
+	authZone = dns01.UnFqdn(authZone)
+
+	ctx, cancel := context.WithTimeout(context.Background(), d.config.HTTPTimeout)
+	defer cancel()
+
+	// Get all records for the zone
+	records, err := d.provider.GetRecords(ctx, authZone)
 	if err != nil {
-		return fmt.Errorf("tencentcloud: failed to find TXT records: %w", err)
+		return fmt.Errorf("tencentcloud: failed to get records: %w", err)
 	}
 
-	for _, record := range records {
-		request := dnspod.NewDeleteRecordRequest()
-		request.Domain = zone.Name
-		request.DomainId = zone.DomainId
-		request.RecordId = record.RecordId
+	recordName, err := extractRecordName(info.EffectiveFQDN, authZone)
+	if err != nil {
+		return fmt.Errorf("tencentcloud: failed to extract record name: %w", err)
+	}
 
-		_, err := d.client.DeleteRecord(request)
-		if err != nil {
-			return fmt.Errorf("tencentcloud: delete record failed: %w", err)
+	// Find the record we want to delete
+	var recordsToDelete []libdns.Record
+	for _, rec := range records {
+		rr := rec.RR()
+		if rr.Type == "TXT" && rr.Name == recordName && rr.Data == info.Value {
+			recordsToDelete = append(recordsToDelete, rec)
 		}
+	}
+
+	if len(recordsToDelete) == 0 {
+		return nil
+	}
+
+	_, err = d.provider.DeleteRecords(ctx, authZone, recordsToDelete)
+	if err != nil {
+		return fmt.Errorf("tencentcloud: failed to delete TXT record: %w", err)
 	}
 
 	return nil

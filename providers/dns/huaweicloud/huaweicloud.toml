@@ -26,4 +26,4 @@ lego --email you@example.com --dns huaweicloud -d '*.example.com' -d example.com
 [Links]
   API = "https://console-intl.huaweicloud.com/apiexplorer/#/openapi/DNS/doc?locale=en-us"
   CN_API = "https://support.huaweicloud.com/api-dns/zh-cn_topic_0132421999.html"
-  GoClient = "https://github.com/huaweicloud/huaweicloud-sdk-go-v3"
+  GoClient = "github.com/libdns/huaweicloud"

@@ -32,5 +32,4 @@ lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com
 
 [Links]
   API = "https://docs.cloud.oracle.com/iaas/Content/DNS/Concepts/dnszonemanagement.htm"
-  GoClient = "https://github.com/oracle/oci-go-sdk"
 

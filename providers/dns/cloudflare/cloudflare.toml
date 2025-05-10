@@ -77,4 +77,4 @@ It follows the principle of least privilege and limits the possible damage, shou
 
 [Links]
   API = "https://api.cloudflare.com/"
-  GoClient = "https://github.com/cloudflare/cloudflare-go"
+  GoClient = "github.com/libdns/cloudflare"

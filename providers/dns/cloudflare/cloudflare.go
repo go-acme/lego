@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
@@ -134,6 +133,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("cloudflare: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
+	// Credentials check: prefer AuthToken, fallback to AuthEmail+AuthKey
+	if config.AuthToken == "" {
+		if config.AuthEmail == "" || config.AuthKey == "" {
+			return nil, errors.New("cloudflare: invalid credentials: key & email must not be empty")
+		}
+	}
+
 	client, err := newClient(config)
 	if err != nil {
 		return nil, fmt.Errorf("cloudflare: %w", err)
@@ -161,28 +167,24 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("cloudflare: could not find zone for domain %q: %w", domain, err)
 	}
 
-	zoneID, err := d.client.ZoneIDByName(authZone)
-	if err != nil {
-		return fmt.Errorf("cloudflare: failed to find zone %s: %w", authZone, err)
-	}
+	zoneName := dns01.UnFqdn(authZone)
+	recordName := dns01.UnFqdn(info.EffectiveFQDN)
 
-	dnsRecord := cloudflare.CreateDNSRecordParams{
-		Type:    "TXT",
-		Name:    dns01.UnFqdn(info.EffectiveFQDN),
-		Content: `"` + info.Value + `"`,
-		TTL:     d.config.TTL,
-	}
-
-	response, err := d.client.CreateDNSRecord(context.Background(), zoneID, dnsRecord)
+	// Use CreateTXTRecord method to create TXT record
+	recordID, err := d.client.CreateTXTRecord(context.Background(), zoneName, recordName, info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("cloudflare: failed to create TXT record: %w", err)
 	}
 
+	if recordID == "" {
+		return fmt.Errorf("cloudflare: no record was created")
+	}
+
 	d.recordIDsMu.Lock()
-	d.recordIDs[token] = response.ID
+	d.recordIDs[token] = recordID
 	d.recordIDsMu.Unlock()
 
-	log.Infof("cloudflare: new record for %s, ID %s", domain, response.ID)
+	log.Infof("cloudflare: new record for %s, ID %s", domain, recordID)
 
 	return nil
 }
@@ -196,25 +198,16 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("cloudflare: could not find zone for domain %q: %w", domain, err)
 	}
 
-	zoneID, err := d.client.ZoneIDByName(authZone)
-	if err != nil {
-		return fmt.Errorf("cloudflare: failed to find zone %s: %w", authZone, err)
-	}
+	zoneName := dns01.UnFqdn(authZone)
+	recordName := dns01.UnFqdn(info.EffectiveFQDN)
 
-	// get the record's unique ID from when we created it
-	d.recordIDsMu.Lock()
-	recordID, ok := d.recordIDs[token]
-	d.recordIDsMu.Unlock()
-	if !ok {
-		return fmt.Errorf("cloudflare: unknown record ID for '%s'", info.EffectiveFQDN)
-	}
-
-	err = d.client.DeleteDNSRecord(context.Background(), zoneID, recordID)
+	// Use DeleteTXTRecord method to delete TXT record
+	err = d.client.DeleteTXTRecord(context.Background(), zoneName, recordName, info.Value)
 	if err != nil {
 		log.Printf("cloudflare: failed to delete TXT record: %v", err)
 	}
 
-	// Delete record ID from map
+	// Remove record ID from map
 	d.recordIDsMu.Lock()
 	delete(d.recordIDs, token)
 	d.recordIDsMu.Unlock()

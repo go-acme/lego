@@ -30,4 +30,4 @@ lego --email you@example.com --dns alidns - -d '*.example.com' -d example.com ru
 
 [Links]
   API = "https://www.alibabacloud.com/help/en/alibaba-cloud-dns/latest/api-alidns-2015-01-09-dir-parsing-records"
-  GoClient = "https://github.com/aliyun/alibaba-cloud-sdk-go"
+  GoClient = "https://github.com/libdns/alidns"

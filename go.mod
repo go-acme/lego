@@ -26,7 +26,7 @@ require (
 	github.com/baidubce/bce-sdk-go v0.9.223
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/civo/civogo v0.3.11
-	github.com/dnsimple/dnsimple-go v1.7.0
+	github.com/dnsimple/dnsimple-go/v4 v4.0.0
 	github.com/exoscale/egoscale/v3 v3.1.13
 	github.com/go-jose/go-jose/v4 v4.0.5
 	github.com/go-viper/mapstructure/v2 v2.2.1
@@ -49,7 +49,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20
 	github.com/miekg/dns v1.1.64
 	github.com/mimuret/golang-iij-dpf v0.9.1
-	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
+	github.com/namedotcom/go/v4 v4.0.2
 	github.com/nrdcg/auroradns v1.1.0
 	github.com/nrdcg/bunny-go v0.0.0-20240207213615-dde5bf4577a3
 	github.com/nrdcg/desec v0.10.0
@@ -68,7 +68,7 @@ require (
 	github.com/regfish/regfish-dnsapi-go v0.1.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.32
 	github.com/selectel/domains-go v1.1.0
-	github.com/selectel/go-selvpcclient/v3 v3.2.1
+	github.com/selectel/go-selvpcclient/v4 v4.1.0
 	github.com/softlayer/softlayer-go v1.1.7
 	github.com/stretchr/testify v1.10.0
 	github.com/transip/gotransip/v6 v6.26.0
@@ -77,6 +77,7 @@ require (
 	github.com/vinyldns/go-vinyldns v0.9.16
 	github.com/volcengine/volc-sdk-golang v1.0.199
 	github.com/vultr/govultr/v3 v3.17.0
+	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78
 	golang.org/x/crypto v0.36.0
 	golang.org/x/net v0.37.0
 	golang.org/x/oauth2 v0.28.0
@@ -157,7 +158,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
-	github.com/shopspring/decimal v1.3.1 // indirect
+	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/smartystreets/assertions v1.0.1 // indirect
 	github.com/smartystreets/go-aws-auth v0.0.0-20180515143844-0c1422d1fdb9 // indirect
@@ -170,7 +171,6 @@ require (
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
-	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.59.0 // indirect
 	go.opentelemetry.io/otel v1.34.0 // indirect

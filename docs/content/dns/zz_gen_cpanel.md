@@ -28,17 +28,17 @@ Here is an example bash command using the CPanel/WHM provider:
 ```bash
 ### CPANEL (default)
 
-CPANEL_USERNAME = "yyyy"
-CPANEL_TOKEN = "xxxx"
-CPANEL_BASE_URL = "https://example.com:2083" \
+CPANEL_USERNAME="yyyy" \
+CPANEL_TOKEN="xxxx" \
+CPANEL_BASE_URL="https://example.com:2083" \
 lego --email you@example.com --dns cpanel -d '*.example.com' -d example.com run
 
 ## WHM
 
-CPANEL_MODE = whm
-CPANEL_USERNAME = "yyyy"
-CPANEL_TOKEN = "xxxx"
-CPANEL_BASE_URL = "https://example.com:2087" \
+CPANEL_MODE=whm \
+CPANEL_USERNAME="yyyy" \
+CPANEL_TOKEN="xxxx" \
+CPANEL_BASE_URL="https://example.com:2087" \
 lego --email you@example.com --dns cpanel -d '*.example.com' -d example.com run
 ```
 

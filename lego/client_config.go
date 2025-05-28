@@ -79,7 +79,7 @@ func createDefaultHTTPClient() *http.Client {
 				KeepAlive: 30 * time.Second,
 			}).DialContext,
 			TLSHandshakeTimeout:   30 * time.Second,
-			ResponseHeaderTimeout: 30 * time.Second,
+			ResponseHeaderTimeout: 45 * time.Second,
 			TLSClientConfig: &tls.Config{
 				ServerName: os.Getenv(caServerNameEnvVar),
 				RootCAs:    initCertPool(),

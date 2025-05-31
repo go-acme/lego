@@ -15,7 +15,7 @@ import (
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/registration"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const (
@@ -63,20 +63,20 @@ type AccountsStorage struct {
 	rootUserPath    string
 	keysPath        string
 	accountFilePath string
-	ctx             *cli.Context
+	cmd             *cli.Command
 }
 
 // NewAccountsStorage Creates a new AccountsStorage.
-func NewAccountsStorage(ctx *cli.Context) *AccountsStorage {
+func NewAccountsStorage(cmd *cli.Command) *AccountsStorage {
 	// TODO: move to account struct? Currently MUST pass email.
-	email := getEmail(ctx)
+	email := getEmail(cmd)
 
-	serverURL, err := url.Parse(ctx.String(flgServer))
+	serverURL, err := url.Parse(cmd.String(flgServer))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	rootPath := filepath.Join(ctx.String(flgPath), baseAccountsRootFolderName)
+	rootPath := filepath.Join(cmd.String(flgPath), baseAccountsRootFolderName)
 	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(serverURL.Host)
 	accountsPath := filepath.Join(rootPath, serverPath)
 	rootUserPath := filepath.Join(accountsPath, email)
@@ -87,7 +87,7 @@ func NewAccountsStorage(ctx *cli.Context) *AccountsStorage {
 		rootUserPath:    rootUserPath,
 		keysPath:        filepath.Join(rootUserPath, baseKeysFolderName),
 		accountFilePath: filepath.Join(rootUserPath, accountFileName),
-		ctx:             ctx,
+		cmd:             cmd,
 	}
 }
 
@@ -137,7 +137,7 @@ func (s *AccountsStorage) LoadAccount(privateKey crypto.PrivateKey) *Account {
 	account.key = privateKey
 
 	if account.Registration == nil || account.Registration.Body.Status == "" {
-		reg, err := tryRecoverRegistration(s.ctx, privateKey)
+		reg, err := tryRecoverRegistration(s.cmd, privateKey)
 		if err != nil {
 			log.Fatalf("Could not load account for %s. Registration is nil: %#v", s.userID, err)
 		}
@@ -221,11 +221,11 @@ func loadPrivateKey(file string) (crypto.PrivateKey, error) {
 	return nil, errors.New("unknown private key type")
 }
 
-func tryRecoverRegistration(ctx *cli.Context, privateKey crypto.PrivateKey) (*registration.Resource, error) {
+func tryRecoverRegistration(cmd *cli.Command, privateKey crypto.PrivateKey) (*registration.Resource, error) {
 	// couldn't load account but got a key. Try to look the account up.
 	config := lego.NewConfig(&Account{key: privateKey})
-	config.CADirURL = ctx.String(flgServer)
-	config.UserAgent = getUserAgent(ctx)
+	config.CADirURL = cmd.String(flgServer)
+	config.UserAgent = getUserAgent(cmd)
 
 	client, err := lego.NewClient(config)
 	if err != nil {

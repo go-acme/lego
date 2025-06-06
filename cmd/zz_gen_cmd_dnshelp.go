@@ -2307,7 +2307,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "NICMANAGER_API_MODE":	mode: 'anycast' or 'zone' (default: 'anycast')`)
+		ew.writeln(`	- "NICMANAGER_API_MODE":	mode: 'anycast' or 'zones' (for FreeDNS) (default: 'anycast')`)
 		ew.writeln(`	- "NICMANAGER_API_OTP":	TOTP Secret (optional)`)
 		ew.writeln(`	- "NICMANAGER_HTTP_TIMEOUT":	API request timeout in seconds (Default: 10)`)
 		ew.writeln(`	- "NICMANAGER_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)

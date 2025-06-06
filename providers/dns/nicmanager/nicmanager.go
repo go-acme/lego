@@ -24,7 +24,7 @@ const (
 	EnvEmail    = envNamespace + "API_EMAIL"
 	EnvPassword = envNamespace + "API_PASSWORD"
 	EnvOTP      = envNamespace + "API_OTP"
-	EnvMode     = envNamespace + "MODE"
+	EnvMode     = envNamespace + "API_MODE"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -85,7 +85,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Password = values[EnvPassword]
 
-	config.Mode = env.GetOrDefaultString(EnvMode, internal.ModeAnycast)
+	config.Mode = env.GetOneWithFallback(EnvMode, internal.ModeAnycast, env.ParseString, envNamespace+"MODE")
 	config.Username = env.GetOrFile(EnvUsername)
 	config.Login = env.GetOrFile(EnvLogin)
 	config.Email = env.GetOrFile(EnvEmail)

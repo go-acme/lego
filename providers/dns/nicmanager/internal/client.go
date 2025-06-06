@@ -23,7 +23,7 @@ const (
 // Modes.
 const (
 	ModeAnycast = "anycast"
-	ModeZone    = "zone"
+	ModeZone    = "zones"
 )
 
 // Options the Client options.

@@ -216,9 +216,8 @@ func (d *DNSProvider) findExistingRecordID(zoneID egoscale.UUID, recordName stri
 	}
 
 	for _, record := range records.DNSDomainRecords {
-		// we must unquote TXT records as exoscale returns "\"123d==\"" when we expect "123d=="
-		content, _ := strconv.Unquote(record.Content)
-		if record.Name == recordName && record.Type == egoscale.DNSDomainRecordTypeTXT && content == value {
+		if record.Name == recordName && record.Type == egoscale.DNSDomainRecordTypeTXT &&
+			(record.Content == value || record.Content == strconv.Quote(value)) {
 			return record.ID, nil
 		}
 	}

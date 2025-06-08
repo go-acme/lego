@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	egoscale "github.com/exoscale/egoscale/v3"
@@ -215,7 +216,8 @@ func (d *DNSProvider) findExistingRecordID(zoneID egoscale.UUID, recordName stri
 	}
 
 	for _, record := range records.DNSDomainRecords {
-		if record.Name == recordName && record.Type == egoscale.DNSDomainRecordTypeTXT && record.Content == value {
+		if record.Name == recordName && record.Type == egoscale.DNSDomainRecordTypeTXT &&
+			(record.Content == value || record.Content == strconv.Quote(value)) {
 			return record.ID, nil
 		}
 	}

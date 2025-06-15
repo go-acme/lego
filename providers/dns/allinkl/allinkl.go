@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/allinkl/internal"
+	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -129,6 +130,20 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	ctx = internal.WithContext(ctx, credential)
+
+	for _, index := range dns.Split(authZone) {
+		z := authZone[index:]
+
+		settings, err := d.client.GetDNSSettings(ctx, z, "")
+		if err != nil {
+			fmt.Printf("allinkl: zone[%s] %v\n", z, err)
+			continue
+		}
+
+		for i, setting := range settings {
+			fmt.Printf("allinkl: zone[%s] settings[%d]: %#v\n", z, i, setting)
+		}
+	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {

@@ -135,6 +135,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	ctx = internal.WithContext(ctx, credential)
 
+	for z := range dns01.UnFqdnDomainsSeq(info.EffectiveFQDN) {
+		settings, err := d.client.GetDNSSettings(ctx, z, "")
+		if err != nil {
+			fmt.Printf("allinkl: zone[%s] %v\n", z, err)
+			continue
+		}
+
+		for i, setting := range settings {
+			fmt.Printf("allinkl: zone[%s] settings[%d]: %#v\n", z, i, setting)
+		}
+	}
+
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("allinkl: %w", err)

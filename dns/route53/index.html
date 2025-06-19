@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" itemscope itemtype="http://schema.org/Article">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.131.0">
+    <meta name="generator" content="Relearn 6.1.1">
+    <meta name="description" content=" Configuration for Amazon Route 53.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Amazon Route 53 :: Let’s Encrypt client and ACME library written in Go.">
+    <meta name="twitter:description" content=" Configuration for Amazon Route 53.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/dns/route53/index.html">
+    <meta property="og:site_name" content="Let’s Encrypt client and ACME library written in Go.">
+    <meta property="og:title" content="Amazon Route 53 :: Let’s Encrypt client and ACME library written in Go.">
+    <meta property="og:description" content=" Configuration for Amazon Route 53.">
+    <meta property="og:locale" content="en">
+    <meta property="og:type" content="article">
+    <meta property="article:section" content="DNS Providers">
+    <meta property="article:published_time" content="2019-03-03T16:39:46+01:00">
+    <meta property="article:modified_time" content="2025-03-19T13:56:07+01:00">
+    <meta itemprop="name" content="Amazon Route 53 :: Let’s Encrypt client and ACME library written in Go.">
+    <meta itemprop="description" content=" Configuration for Amazon Route 53.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2025-03-19T13:56:07+01:00">
+    <meta itemprop="wordCount" content="590">
+    <title>Amazon Route 53 :: Let’s Encrypt client and ACME library written in Go.</title>
+    <link href="/lego/images/favicon.svg?1750343537" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1750343537" rel="icon" type="image/png">
+    <link href="/lego/css/fontawesome-all.min.css?1750343537" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/css/fontawesome-all.min.css?1750343537" rel="stylesheet"></noscript>
+    <link href="/lego/css/nucleus.css?1750343537" rel="stylesheet">
+    <link href="/lego/css/auto-complete.css?1750343537" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/css/auto-complete.css?1750343537" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar.min.css?1750343537" rel="stylesheet">
+    <link href="/lego/css/fonts.css?1750343537" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/css/fonts.css?1750343537" rel="stylesheet"></noscript>
+    <link href="/lego/css/theme.css?1750343537" rel="stylesheet">
+    <link href="/lego/css/theme-blue.css?1750343537" rel="stylesheet" id="R-variant-style">
+    <link href="/lego/css/chroma-learn.css?1750343537" rel="stylesheet" id="R-variant-chroma-style">
+    <link href="/lego/css/variant.css?1750343537" rel="stylesheet">
+    <link href="/lego/css/print.css?1750343537" rel="stylesheet" media="print">
+    <script src="/lego/js/variant.js?1750343537"></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.relBasePath='..\/..';
+      window.relearn.relBaseUri='..\/..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.index_js_url="/lego/index.search.js?1750343537";
+      // variant stuff
+      window.variants && variants.init( [ 'blue' ] );
+      // translations
+      window.T_Copy_to_clipboard = `Copy to clipboard`;
+      window.T_Copied_to_clipboard = `Copied to clipboard!`;
+      window.T_Copy_link_to_clipboard = `Copy link to clipboard`;
+      window.T_Link_copied_to_clipboard = `Copied link to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+    </script>
+  </head>
+  <body class="mobile-support html" data-url="/lego/dns/route53/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar">
+        <div class="topbar-wrapper">
+          <div class="topbar-sidebar-divider"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide"><button class="topbar-control" onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button>
+            </div>
+            <div class="topbar-button topbar-button-toc" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show"><button class="topbar-control" onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-list-alt"></i></button>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper"><nav class="TableOfContents">
+  <ul>
+    <li><a href="#credentials">Credentials</a></li>
+    <li><a href="#additional-configuration">Additional Configuration</a></li>
+    <li><a href="#description">Description</a></li>
+    <li><a href="#iam-policy-examples">IAM Policy Examples</a>
+      <ul>
+        <li><a href="#broad-privileges-for-testing-purposes">Broad privileges for testing purposes</a></li>
+        <li><a href="#least-privilege-policy-for-production-purposes">Least privilege policy for production purposes</a></li>
+      </ul>
+    </li>
+    <li><a href="#more-information">More information</a></li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li
+            itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li
+            itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><a itemprop="item" href="/lego/dns/index.html"><span itemprop="name">DNS Providers</span></a><meta itemprop="position" content="2">&nbsp;>&nbsp;</li><li
+            itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement"><span itemprop="name">Amazon Route 53</span><meta itemprop="position" content="3"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-prev" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show"><a class="topbar-control" href="/lego/dns/lightsail/index.html" title="Amazon Lightsail (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a>
+            </div>
+            <div class="topbar-button topbar-button-next" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show"><a class="topbar-control" href="/lego/dns/arvancloud/index.html" title="ArvanCloud (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a>
+            </div>
+            <div class="topbar-button topbar-button-more" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show"><button class="topbar-control" onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable default" tabindex="-1">
+        <div class="flex-block-wrapper">
+          <article class="default">
+            <header class="headline">
+            </header>
+
+<h1 id="amazon-route-53">Amazon Route 53</h1>
+
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>Configuration for <a href="https://aws.amazon.com/route53/" rel="external" target="_blank">Amazon Route 53</a>.</p>
+<ul>
+<li>Code: <code>route53</code></li>
+<li>Since: v0.3.0</li>
+</ul>
+<p>Here is an example bash command using the Amazon Route 53 provider:</p>
+<div class="highlight wrap-code"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span>your_key_id <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span>your_secret_access_key <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="nv">AWS_REGION</span><span class="o">=</span>aws-region <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="nv">AWS_HOSTED_ZONE_ID</span><span class="o">=</span>your_hosted_zone_id <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>lego --email you@example.com --dns route53 -d <span class="s1">&#39;*.example.com&#39;</span> -d example.com run</span></span></code></pre></div><h2 id="credentials">Credentials</h2>
+<table>
+<thead>
+<tr>
+<th>Environment Variable Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AWS_ACCESS_KEY_ID</code></td>
+<td>Managed by the AWS client. Access key ID (<code>AWS_ACCESS_KEY_ID_FILE</code> is not supported, use <code>AWS_SHARED_CREDENTIALS_FILE</code> instead)</td>
+</tr>
+<tr>
+<td><code>AWS_ASSUME_ROLE_ARN</code></td>
+<td>Managed by the AWS Role ARN (<code>AWS_ASSUME_ROLE_ARN_FILE</code> is not supported)</td>
+</tr>
+<tr>
+<td><code>AWS_EXTERNAL_ID</code></td>
+<td>Managed by STS AssumeRole API operation (<code>AWS_EXTERNAL_ID_FILE</code> is not supported)</td>
+</tr>
+<tr>
+<td><code>AWS_HOSTED_ZONE_ID</code></td>
+<td>Override the hosted zone ID.</td>
+</tr>
+<tr>
+<td><code>AWS_PROFILE</code></td>
+<td>Managed by the AWS client (<code>AWS_PROFILE_FILE</code> is not supported)</td>
+</tr>
+<tr>
+<td><code>AWS_REGION</code></td>
+<td>Managed by the AWS client (<code>AWS_REGION_FILE</code> is not supported)</td>
+</tr>
+<tr>
+<td><code>AWS_SDK_LOAD_CONFIG</code></td>
+<td>Managed by the AWS client. Retrieve the region from the CLI config file (<code>AWS_SDK_LOAD_CONFIG_FILE</code> is not supported)</td>
+</tr>
+<tr>
+<td><code>AWS_SECRET_ACCESS_KEY</code></td>
+<td>Managed by the AWS client. Secret access key (<code>AWS_SECRET_ACCESS_KEY_FILE</code> is not supported, use <code>AWS_SHARED_CREDENTIALS_FILE</code> instead)</td>
+</tr>
+<tr>
+<td><code>AWS_WAIT_FOR_RECORD_SETS_CHANGED</code></td>
+<td>Wait for changes to be INSYNC (it can be unstable)</td>
+</tr>
+</tbody>
+</table>
+<p>The environment variable names can be suffixed by <code>_FILE</code> to reference a file instead of a value.
+More information <a href="https://go-acme.github.io/lego/dns/#configuration-and-credentials" rel="external" target="_blank">here</a>.</p>
+<h2 id="additional-configuration">Additional Configuration</h2>
+<table>
+<thead>
+<tr>
+<th>Environment Variable Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AWS_MAX_RETRIES</code></td>
+<td>The number of maximum returns the service will use to make an individual API request</td>
+</tr>
+<tr>
+<td><code>AWS_POLLING_INTERVAL</code></td>
+<td>Time between DNS propagation check in seconds (Default: 4)</td>
+</tr>
+<tr>
+<td><code>AWS_PRIVATE_ZONE</code></td>
+<td>Set to true to use private zones only (default: use public zones only)</td>
+</tr>
+<tr>
+<td><code>AWS_PROPAGATION_TIMEOUT</code></td>
+<td>Maximum waiting time for DNS propagation in seconds (Default: 120)</td>
+</tr>
+<tr>
+<td><code>AWS_SHARED_CREDENTIALS_FILE</code></td>
+<td>Managed by the AWS client. Shared credentials file.</td>
+</tr>
+<tr>
+<td><code>AWS_TTL</code></td>
+<td>The TTL of the TXT record used for the DNS challenge in seconds (Default: 10)</td>
+</tr>
+</tbody>
+</table>
+<p>The environment variable names can be suffixed by <code>_FILE</code> to reference a file instead of a value.
+More information <a href="https://go-acme.github.io/lego/dns/#configuration-and-credentials" rel="external" target="_blank">here</a>.</p>
+<h2 id="description">Description</h2>
+<p>AWS Credentials are automatically detected in the following locations and prioritized in the following order:</p>
+<ol>
+<li>Environment variables: <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>, [<code>AWS_SESSION_TOKEN</code>]</li>
+<li>Shared credentials file (defaults to <code>~/.aws/credentials</code>, profiles can be specified using <code>AWS_PROFILE</code>)</li>
+<li>Amazon EC2 IAM role</li>
+</ol>
+<p>The AWS Region is automatically detected in the following locations and prioritized in the following order:</p>
+<ol>
+<li>Environment variables: <code>AWS_REGION</code></li>
+<li>Shared configuration file if <code>AWS_SDK_LOAD_CONFIG</code> is set (defaults to <code>~/.aws/config</code>, profiles can be specified using <code>AWS_PROFILE</code>)</li>
+</ol>
+<p>If <code>AWS_HOSTED_ZONE_ID</code> is not set, Lego tries to determine the correct public hosted zone via the FQDN.</p>
+<p>See also:</p>
+<ul>
+<li><a href="https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html" rel="external" target="_blank">sessions</a></li>
+<li><a href="https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials" rel="external" target="_blank">Setting AWS Credentials</a></li>
+<li><a href="https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-the-region" rel="external" target="_blank">Setting AWS Region</a></li>
+</ul>
+<h2 id="iam-policy-examples">IAM Policy Examples</h2>
+<h3 id="broad-privileges-for-testing-purposes">Broad privileges for testing purposes</h3>
+<p>The following <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html" rel="external" target="_blank">IAM policy</a> document grants access to the required APIs needed by lego to complete the DNS challenge.
+A word of caution:
+These permissions grant write access to any DNS record in any hosted zone,
+so it is recommended to narrow them down as much as possible if you are using this policy in production.</p>
+<div class="highlight wrap-code"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;Version&#34;</span><span class="p">:</span> <span class="s2">&#34;2012-10-17&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;Statement&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Effect&#34;</span><span class="p">:</span> <span class="s2">&#34;Allow&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Action&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;route53:GetChange&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;route53:ChangeResourceRecordSets&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;route53:ListResourceRecordSets&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">],</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Resource&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;arn:aws:route53:::hostedzone/*&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;arn:aws:route53:::change/*&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Effect&#34;</span><span class="p">:</span> <span class="s2">&#34;Allow&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Action&#34;</span><span class="p">:</span> <span class="s2">&#34;route53:ListHostedZonesByName&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Resource&#34;</span><span class="p">:</span> <span class="s2">&#34;*&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div><h3 id="least-privilege-policy-for-production-purposes">Least privilege policy for production purposes</h3>
+<p>The following AWS IAM policy document describes the least privilege permissions required for lego to complete the DNS challenge.
+Write access is limited to a specified hosted zone&rsquo;s DNS TXT records with a key of <code>_acme-challenge.example.com</code>.
+Replace <code>Z11111112222222333333</code> with your hosted zone ID and <code>example.com</code> with your domain name to use this policy.</p>
+<div class="highlight wrap-code"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;Version&#34;</span><span class="p">:</span> <span class="s2">&#34;2012-10-17&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;Statement&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Effect&#34;</span><span class="p">:</span> <span class="s2">&#34;Allow&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Action&#34;</span><span class="p">:</span> <span class="s2">&#34;route53:GetChange&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Resource&#34;</span><span class="p">:</span> <span class="s2">&#34;arn:aws:route53:::change/*&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Effect&#34;</span><span class="p">:</span> <span class="s2">&#34;Allow&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Action&#34;</span><span class="p">:</span> <span class="s2">&#34;route53:ListHostedZonesByName&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Resource&#34;</span><span class="p">:</span> <span class="s2">&#34;*&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Effect&#34;</span><span class="p">:</span> <span class="s2">&#34;Allow&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Action&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;route53:ListResourceRecordSets&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">],</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Resource&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;arn:aws:route53:::hostedzone/Z11111112222222333333&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Effect&#34;</span><span class="p">:</span> <span class="s2">&#34;Allow&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Action&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;route53:ChangeResourceRecordSets&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">],</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Resource&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;arn:aws:route53:::hostedzone/Z11111112222222333333&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">],</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Condition&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;ForAllValues:StringEquals&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;route53:ChangeResourceRecordSetsNormalizedRecordNames&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;_acme-challenge.example.com&#34;</span>
+</span></span><span class="line"><span class="cl">          <span class="p">],</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;route53:ChangeResourceRecordSetsRecordTypes&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;TXT&#34;</span>
+</span></span><span class="line"><span class="cl">          <span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div><h2 id="more-information">More information</h2>
+<ul>
+<li><a href="https://docs.aws.amazon.com/Route53/latest/APIReference/API_Operations_Amazon_Route_53.html" rel="external" target="_blank">API documentation</a></li>
+<li><a href="https://github.com/aws/aws-sdk-go-v2" rel="external" target="_blank">Go client</a></li>
+</ul>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+            <footer class="footline">
+              <i class='fa-fw fas fa-user'></i> <a href="mailto:ldez@users.noreply.github.com">Ludovic Fernandez</a>
+              <i class='fa-fw fas fa-calendar'></i> Mar 19, 2025
+            </footer>
+          </article>
+        </div>
+      </main>
+    </div>
+    <aside id="R-sidebar" class="default-animation showVisitedLinks">
+      <div id="R-header-topbar" class="default-animation"></div>
+      <div id="R-header-wrapper" class="default-animation">
+        <div id="R-header" class="default-animation">
+<a id="logo" href="/lego"><img src="/lego/images/lego-logo-white.min.svg" alt="lego logo"></a>
+
+        </div>
+
+        <search><form action="/lego/search.html" method="get">
+          <div class="searchbox default-animation">
+            <button class="search-detail" type="submit" title="Search (CTRL+ALT+f)"><i class="fas fa-search"></i></button>
+            <label class="a11y-only" for="R-search-by">Search</label>
+            <input data-search-input id="R-search-by" name="search-by" class="search-by" type="search" placeholder="Search...">
+            <button class="search-clear" type="button" data-search-clear="" title="Clear search"><i class="fas fa-times" title="Clear search"></i></button>
+          </div>
+        </form></search>
+        <script>
+          var contentLangs=['en'];
+        </script>
+        <script src="/lego/js/auto-complete.js?1750343537" defer></script>
+        <script src="/lego/js/lunr/lunr.min.js?1750343537" defer></script>
+        <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1750343537" defer></script>
+        <script src="/lego/js/lunr/lunr.multi.min.js?1750343537" defer></script>
+        <script src="/lego/js/lunr/lunr.en.min.js?1750343537" defer></script>
+        <script src="/lego/js/search.js?1750343537" defer></script>
+      </div>
+      <div id="R-homelinks" class="default-animation">
+        <hr class="padding">
+      </div>
+      <div id="R-content-wrapper" class="highlightable">
+        <div id="R-topics">
+          <ul class="enlarge morespace collapsible-menu">
+          <li data-nav-id="/lego/installation/index.html" class=""><a class="padding" href="/lego/installation/index.html">Installation<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/usage/index.html" class=""><a class="padding" href="/lego/usage/index.html">Usage<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-d268af524e6a04c6ce5ceb8978e78675" class="morespace collapsible-menu">
+          <li data-nav-id="/lego/usage/cli/index.html" class="alwaysopen"><a class="padding" href="/lego/usage/cli/index.html">CLI<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-4bedf655c003c74bf3dfcaf165159a22" class="morespace collapsible-menu">
+          <li data-nav-id="/lego/usage/cli/general-instructions/index.html" class=""><a class="padding" href="/lego/usage/cli/general-instructions/index.html">General Instructions<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/usage/cli/obtain-a-certificate/index.html" class=""><a class="padding" href="/lego/usage/cli/obtain-a-certificate/index.html">Obtain a Certificate<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/usage/cli/renew-a-certificate/index.html" class=""><a class="padding" href="/lego/usage/cli/renew-a-certificate/index.html">Renew a Certificate<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/usage/cli/options/index.html" class=""><a class="padding" href="/lego/usage/cli/options/index.html">Options<i class="fa-fw fas fa-check read-icon"></i></a></li></ul></li>
+          <li data-nav-id="/lego/usage/library/index.html" class="alwaysopen"><a class="padding" href="/lego/usage/library/index.html">Library<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-8267206098b41689b8a03bc8eea14060" class="morespace collapsible-menu">
+          <li data-nav-id="/lego/usage/library/writing-a-challenge-solver/index.html" class=""><a class="padding" href="/lego/usage/library/writing-a-challenge-solver/index.html">Writing a Challenge Solver<i class="fa-fw fas fa-check read-icon"></i></a></li></ul></li></ul></li>
+          <li data-nav-id="/lego/dns/index.html" class="parent "><a class="padding" href="/lego/dns/index.html">DNS Providers<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-f8a73daaf50d04518248c0a522615f84" class="morespace collapsible-menu">
+          <li data-nav-id="/lego/dns/active24/index.html" class=""><a class="padding" href="/lego/dns/active24/index.html">Active24<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/edgedns/index.html" class=""><a class="padding" href="/lego/dns/edgedns/index.html">Akamai EdgeDNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/alidns/index.html" class=""><a class="padding" href="/lego/dns/alidns/index.html">Alibaba Cloud DNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/allinkl/index.html" class=""><a class="padding" href="/lego/dns/allinkl/index.html">all-inkl<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/lightsail/index.html" class=""><a class="padding" href="/lego/dns/lightsail/index.html">Amazon Lightsail<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/route53/index.html" class="active"><a class="padding" href="/lego/dns/route53/index.html">Amazon Route 53<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/arvancloud/index.html" class=""><a class="padding" href="/lego/dns/arvancloud/index.html">ArvanCloud<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/auroradns/index.html" class=""><a class="padding" href="/lego/dns/auroradns/index.html">Aurora DNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/autodns/index.html" class=""><a class="padding" href="/lego/dns/autodns/index.html">Autodns<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/axelname/index.html" class=""><a class="padding" href="/lego/dns/axelname/index.html">Axelname<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/azure/index.html" class=""><a class="padding" href="/lego/dns/azure/index.html">Azure (deprecated)<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/azuredns/index.html" class=""><a class="padding" href="/lego/dns/azuredns/index.html">Azure DNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/baiducloud/index.html" class=""><a class="padding" href="/lego/dns/baiducloud/index.html">Baidu Cloud<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/bindman/index.html" class=""><a class="padding" href="/lego/dns/bindman/index.html">Bindman<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/bluecat/index.html" class=""><a class="padding" href="/lego/dns/bluecat/index.html">Bluecat<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/bookmyname/index.html" class=""><a class="padding" href="/lego/dns/bookmyname/index.html">BookMyName<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/brandit/index.html" class=""><a class="padding" href="/lego/dns/brandit/index.html">Brandit (deprecated)<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/bunny/index.html" class=""><a class="padding" href="/lego/dns/bunny/index.html">Bunny<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/checkdomain/index.html" class=""><a class="padding" href="/lego/dns/checkdomain/index.html">Checkdomain<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/civo/index.html" class=""><a class="padding" href="/lego/dns/civo/index.html">Civo<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/cloudru/index.html" class=""><a class="padding" href="/lego/dns/cloudru/index.html">Cloud.ru<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/clouddns/index.html" class=""><a class="padding" href="/lego/dns/clouddns/index.html">CloudDNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/cloudflare/index.html" class=""><a class="padding" href="/lego/dns/cloudflare/index.html">Cloudflare<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/cloudns/index.html" class=""><a class="padding" href="/lego/dns/cloudns/index.html">ClouDNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/cloudxns/index.html" class=""><a class="padding" href="/lego/dns/cloudxns/index.html">CloudXNS (Deprecated)<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/conoha/index.html" class=""><a class="padding" href="/lego/dns/conoha/index.html">ConoHa v2<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/conohav3/index.html" class=""><a class="padding" href="/lego/dns/conohav3/index.html">ConoHa v3<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/constellix/index.html" class=""><a class="padding" href="/lego/dns/constellix/index.html">Constellix<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/corenetworks/index.html" class=""><a class="padding" href="/lego/dns/corenetworks/index.html">Core-Networks<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/cpanel/index.html" class=""><a class="padding" href="/lego/dns/cpanel/index.html">CPanel/WHM<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/derak/index.html" class=""><a class="padding" href="/lego/dns/derak/index.html">Derak Cloud<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/desec/index.html" class=""><a class="padding" href="/lego/dns/desec/index.html">deSEC.io<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/designate/index.html" class=""><a class="padding" href="/lego/dns/designate/index.html">Designate DNSaaS for Openstack<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/digitalocean/index.html" class=""><a class="padding" href="/lego/dns/digitalocean/index.html">Digital Ocean<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/directadmin/index.html" class=""><a class="padding" href="/lego/dns/directadmin/index.html">DirectAdmin<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/dnsmadeeasy/index.html" class=""><a class="padding" href="/lego/dns/dnsmadeeasy/index.html">DNS Made Easy<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/dnshomede/index.html" class=""><a class="padding" href="/lego/dns/dnshomede/index.html">dnsHome.de<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/dnsimple/index.html" class=""><a class="padding" href="/lego/dns/dnsimple/index.html">DNSimple<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/dnspod/index.html" class=""><a class="padding" href="/lego/dns/dnspod/index.html">DNSPod (deprecated)<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/dode/index.html" class=""><a class="padding" href="/lego/dns/dode/index.html">Domain Offensive (do.de)<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/domeneshop/index.html" class=""><a class="padding" href="/lego/dns/domeneshop/index.html">Domeneshop<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/dreamhost/index.html" class=""><a class="padding" href="/lego/dns/dreamhost/index.html">DreamHost<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/duckdns/index.html" class=""><a class="padding" href="/lego/dns/duckdns/index.html">Duck DNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/dyn/index.html" class=""><a class="padding" href="/lego/dns/dyn/index.html">Dyn<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/dyndnsfree/index.html" class=""><a class="padding" href="/lego/dns/dyndnsfree/index.html">DynDnsFree.de<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/dynu/index.html" class=""><a class="padding" href="/lego/dns/dynu/index.html">Dynu<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/easydns/index.html" class=""><a class="padding" href="/lego/dns/easydns/index.html">EasyDNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/efficientip/index.html" class=""><a class="padding" href="/lego/dns/efficientip/index.html">Efficient IP<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/epik/index.html" class=""><a class="padding" href="/lego/dns/epik/index.html">Epik<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/exoscale/index.html" class=""><a class="padding" href="/lego/dns/exoscale/index.html">Exoscale<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/exec/index.html" class=""><a class="padding" href="/lego/dns/exec/index.html">External program<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/f5xc/index.html" class=""><a class="padding" href="/lego/dns/f5xc/index.html">F5 XC<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/freemyip/index.html" class=""><a class="padding" href="/lego/dns/freemyip/index.html">freemyip.com<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/gcore/index.html" class=""><a class="padding" href="/lego/dns/gcore/index.html">G-Core<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/gandi/index.html" class=""><a class="padding" href="/lego/dns/gandi/index.html">Gandi<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/gandiv5/index.html" class=""><a class="padding" href="/lego/dns/gandiv5/index.html">Gandi Live DNS (v5)<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/glesys/index.html" class=""><a class="padding" href="/lego/dns/glesys/index.html">Glesys<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/godaddy/index.html" class=""><a class="padding" href="/lego/dns/godaddy/index.html">Go Daddy<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/gcloud/index.html" class=""><a class="padding" href="/lego/dns/gcloud/index.html">Google Cloud<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/googledomains/index.html" class=""><a class="padding" href="/lego/dns/googledomains/index.html">Google Domains<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/hetzner/index.html" class=""><a class="padding" href="/lego/dns/hetzner/index.html">Hetzner<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/hostingde/index.html" class=""><a class="padding" href="/lego/dns/hostingde/index.html">Hosting.de<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/hosttech/index.html" class=""><a class="padding" href="/lego/dns/hosttech/index.html">Hosttech<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/httpreq/index.html" class=""><a class="padding" href="/lego/dns/httpreq/index.html">HTTP request<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/httpnet/index.html" class=""><a class="padding" href="/lego/dns/httpnet/index.html">http.net<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/huaweicloud/index.html" class=""><a class="padding" href="/lego/dns/huaweicloud/index.html">Huawei Cloud<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/hurricane/index.html" class=""><a class="padding" href="/lego/dns/hurricane/index.html">Hurricane Electric DNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/hyperone/index.html" class=""><a class="padding" href="/lego/dns/hyperone/index.html">HyperOne<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/ibmcloud/index.html" class=""><a class="padding" href="/lego/dns/ibmcloud/index.html">IBM Cloud (SoftLayer)<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/iijdpf/index.html" class=""><a class="padding" href="/lego/dns/iijdpf/index.html">IIJ DNS Platform Service<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/infoblox/index.html" class=""><a class="padding" href="/lego/dns/infoblox/index.html">Infoblox<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/infomaniak/index.html" class=""><a class="padding" href="/lego/dns/infomaniak/index.html">Infomaniak<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/iij/index.html" class=""><a class="padding" href="/lego/dns/iij/index.html">Internet Initiative Japan<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/internetbs/index.html" class=""><a class="padding" href="/lego/dns/internetbs/index.html">Internet.bs<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/inwx/index.html" class=""><a class="padding" href="/lego/dns/inwx/index.html">INWX<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/ionos/index.html" class=""><a class="padding" href="/lego/dns/ionos/index.html">Ionos<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/ipv64/index.html" class=""><a class="padding" href="/lego/dns/ipv64/index.html">IPv64<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/iwantmyname/index.html" class=""><a class="padding" href="/lego/dns/iwantmyname/index.html">iwantmyname<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/joker/index.html" class=""><a class="padding" href="/lego/dns/joker/index.html">Joker<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/acme-dns/index.html" class=""><a class="padding" href="/lego/dns/acme-dns/index.html">Joohoi&#39;s ACME-DNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/liara/index.html" class=""><a class="padding" href="/lego/dns/liara/index.html">Liara<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/limacity/index.html" class=""><a class="padding" href="/lego/dns/limacity/index.html">Lima-City<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/linode/index.html" class=""><a class="padding" href="/lego/dns/linode/index.html">Linode (v4)<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/liquidweb/index.html" class=""><a class="padding" href="/lego/dns/liquidweb/index.html">Liquid Web<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/loopia/index.html" class=""><a class="padding" href="/lego/dns/loopia/index.html">Loopia<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/luadns/index.html" class=""><a class="padding" href="/lego/dns/luadns/index.html">LuaDNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/mailinabox/index.html" class=""><a class="padding" href="/lego/dns/mailinabox/index.html">Mail-in-a-Box<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/manageengine/index.html" class=""><a class="padding" href="/lego/dns/manageengine/index.html">ManageEngine CloudDNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/manual/index.html" class=""><a class="padding" href="/lego/dns/manual/index.html">Manual<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/metaname/index.html" class=""><a class="padding" href="/lego/dns/metaname/index.html">Metaname<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/metaregistrar/index.html" class=""><a class="padding" href="/lego/dns/metaregistrar/index.html">Metaregistrar<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/mijnhost/index.html" class=""><a class="padding" href="/lego/dns/mijnhost/index.html">mijn.host<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/mittwald/index.html" class=""><a class="padding" href="/lego/dns/mittwald/index.html">Mittwald<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/myaddr/index.html" class=""><a class="padding" href="/lego/dns/myaddr/index.html">myaddr.{tools,dev,io}<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/mydnsjp/index.html" class=""><a class="padding" href="/lego/dns/mydnsjp/index.html">MyDNS.jp<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/mythicbeasts/index.html" class=""><a class="padding" href="/lego/dns/mythicbeasts/index.html">MythicBeasts<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/namedotcom/index.html" class=""><a class="padding" href="/lego/dns/namedotcom/index.html">Name.com<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/namecheap/index.html" class=""><a class="padding" href="/lego/dns/namecheap/index.html">Namecheap<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/namesilo/index.html" class=""><a class="padding" href="/lego/dns/namesilo/index.html">Namesilo<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/nearlyfreespeech/index.html" class=""><a class="padding" href="/lego/dns/nearlyfreespeech/index.html">NearlyFreeSpeech.NET<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/netcup/index.html" class=""><a class="padding" href="/lego/dns/netcup/index.html">Netcup<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/netlify/index.html" class=""><a class="padding" href="/lego/dns/netlify/index.html">Netlify<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/nicmanager/index.html" class=""><a class="padding" href="/lego/dns/nicmanager/index.html">Nicmanager<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/nifcloud/index.html" class=""><a class="padding" href="/lego/dns/nifcloud/index.html">NIFCloud<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/njalla/index.html" class=""><a class="padding" href="/lego/dns/njalla/index.html">Njalla<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/nodion/index.html" class=""><a class="padding" href="/lego/dns/nodion/index.html">Nodion<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/ns1/index.html" class=""><a class="padding" href="/lego/dns/ns1/index.html">NS1<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/otc/index.html" class=""><a class="padding" href="/lego/dns/otc/index.html">Open Telekom Cloud<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/oraclecloud/index.html" class=""><a class="padding" href="/lego/dns/oraclecloud/index.html">Oracle Cloud<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/ovh/index.html" class=""><a class="padding" href="/lego/dns/ovh/index.html">OVH<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/plesk/index.html" class=""><a class="padding" href="/lego/dns/plesk/index.html">plesk.com<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/porkbun/index.html" class=""><a class="padding" href="/lego/dns/porkbun/index.html">Porkbun<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/pdns/index.html" class=""><a class="padding" href="/lego/dns/pdns/index.html">PowerDNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/rackspace/index.html" class=""><a class="padding" href="/lego/dns/rackspace/index.html">Rackspace<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/rainyun/index.html" class=""><a class="padding" href="/lego/dns/rainyun/index.html">Rain Yun/雨云<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/rcodezero/index.html" class=""><a class="padding" href="/lego/dns/rcodezero/index.html">RcodeZero<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/regru/index.html" class=""><a class="padding" href="/lego/dns/regru/index.html">reg.ru<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/regfish/index.html" class=""><a class="padding" href="/lego/dns/regfish/index.html">Regfish<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/rfc2136/index.html" class=""><a class="padding" href="/lego/dns/rfc2136/index.html">RFC2136<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/rimuhosting/index.html" class=""><a class="padding" href="/lego/dns/rimuhosting/index.html">RimuHosting<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/nicru/index.html" class=""><a class="padding" href="/lego/dns/nicru/index.html">RU CENTER<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/sakuracloud/index.html" class=""><a class="padding" href="/lego/dns/sakuracloud/index.html">Sakura Cloud<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/scaleway/index.html" class=""><a class="padding" href="/lego/dns/scaleway/index.html">Scaleway<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/selectel/index.html" class=""><a class="padding" href="/lego/dns/selectel/index.html">Selectel<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/selectelv2/index.html" class=""><a class="padding" href="/lego/dns/selectelv2/index.html">Selectel v2<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/selfhostde/index.html" class=""><a class="padding" href="/lego/dns/selfhostde/index.html">SelfHost.(de|eu)<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/servercow/index.html" class=""><a class="padding" href="/lego/dns/servercow/index.html">Servercow<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/shellrent/index.html" class=""><a class="padding" href="/lego/dns/shellrent/index.html">Shellrent<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/simply/index.html" class=""><a class="padding" href="/lego/dns/simply/index.html">Simply.com<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/sonic/index.html" class=""><a class="padding" href="/lego/dns/sonic/index.html">Sonic<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/spaceship/index.html" class=""><a class="padding" href="/lego/dns/spaceship/index.html">Spaceship<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/stackpath/index.html" class=""><a class="padding" href="/lego/dns/stackpath/index.html">Stackpath<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/technitium/index.html" class=""><a class="padding" href="/lego/dns/technitium/index.html">Technitium<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/tencentcloud/index.html" class=""><a class="padding" href="/lego/dns/tencentcloud/index.html">Tencent Cloud DNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/timewebcloud/index.html" class=""><a class="padding" href="/lego/dns/timewebcloud/index.html">Timeweb Cloud<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/transip/index.html" class=""><a class="padding" href="/lego/dns/transip/index.html">TransIP<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/safedns/index.html" class=""><a class="padding" href="/lego/dns/safedns/index.html">UKFast SafeDNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/ultradns/index.html" class=""><a class="padding" href="/lego/dns/ultradns/index.html">Ultradns<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/variomedia/index.html" class=""><a class="padding" href="/lego/dns/variomedia/index.html">Variomedia<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/vegadns/index.html" class=""><a class="padding" href="/lego/dns/vegadns/index.html">VegaDNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/vercel/index.html" class=""><a class="padding" href="/lego/dns/vercel/index.html">Vercel<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/versio/index.html" class=""><a class="padding" href="/lego/dns/versio/index.html">Versio.[nl|eu|uk]<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/vinyldns/index.html" class=""><a class="padding" href="/lego/dns/vinyldns/index.html">VinylDNS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/vkcloud/index.html" class=""><a class="padding" href="/lego/dns/vkcloud/index.html">VK Cloud<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/volcengine/index.html" class=""><a class="padding" href="/lego/dns/volcengine/index.html">Volcano Engine/火山引擎<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/vscale/index.html" class=""><a class="padding" href="/lego/dns/vscale/index.html">Vscale<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/vultr/index.html" class=""><a class="padding" href="/lego/dns/vultr/index.html">Vultr<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/webnames/index.html" class=""><a class="padding" href="/lego/dns/webnames/index.html">Webnames<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/websupport/index.html" class=""><a class="padding" href="/lego/dns/websupport/index.html">Websupport<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/wedos/index.html" class=""><a class="padding" href="/lego/dns/wedos/index.html">WEDOS<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/westcn/index.html" class=""><a class="padding" href="/lego/dns/westcn/index.html">West.cn/西部数码<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/yandex360/index.html" class=""><a class="padding" href="/lego/dns/yandex360/index.html">Yandex 360<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/yandexcloud/index.html" class=""><a class="padding" href="/lego/dns/yandexcloud/index.html">Yandex Cloud<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/yandex/index.html" class=""><a class="padding" href="/lego/dns/yandex/index.html">Yandex PDD<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/zoneee/index.html" class=""><a class="padding" href="/lego/dns/zoneee/index.html">Zone.ee<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          <li data-nav-id="/lego/dns/zonomi/index.html" class=""><a class="padding" href="/lego/dns/zonomi/index.html">Zonomi<i class="fa-fw fas fa-check read-icon"></i></a></li></ul></li>
+          </ul>
+        </div>
+        <div id="R-shortcuts">
+          <div class="nav-title padding">More</div>
+          <ul class="space">
+            <li><a class="padding" href="https://github.com/go-acme/lego"><i class='fab fa-fw fa-github'></i> GitHub repo</a></li>
+            <li><a class="padding" href="https://github.com/go-acme/lego/issues"><i class='fas fa-fw fa-bug'></i> Issues</a></li>
+            <li><a class="padding" href="https://github.com/go-acme/lego/discussions"><i class='fas fa-fw fa-comments'></i> Discussions</a></li>
+          </ul>
+        </div>
+        <div class="padding footermargin footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVisitedLinks showFooter"></div>
+        <div id="R-menu-footer">
+          <hr class="padding default-animation footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showVisitedLinks showFooter">
+          <div id="R-prefooter" class="footerLangSwitch footerVariantSwitch footerVisitedLinks showVisitedLinks">
+            <ul>
+              <li id="R-select-language-container" class="footerLangSwitch">
+                <div class="padding menu-control">
+                  <i class="fa-fw fas fa-language"></i>
+                  <span>&nbsp;</span>
+                  <div class="control-style">
+                    <label class="a11y-only" for="R-select-language">Language</label>
+                    <select id="R-select-language" onchange="location = this.querySelector( this.value ).dataset.url;">
+                      <option id="R-select-language-en" value="#R-select-language-en" data-url="/lego/dns/route53/index.html" lang="en" selected>English</option>
+                    </select>
+                  </div>
+                  <div class="clear"></div>
+                </div>
+              </li>
+              <li id="R-select-variant-container" class="footerVariantSwitch">
+                <div class="padding menu-control">
+                  <i class="fa-fw fas fa-paint-brush"></i>
+                  <span>&nbsp;</span>
+                  <div class="control-style">
+                    <label class="a11y-only" for="R-select-variant">Theme</label>
+                    <select id="R-select-variant" onchange="window.variants && variants.changeVariant( this.value );">
+                      <option id="R-select-variant-blue" value="blue" selected>Blue</option>
+                    </select>
+                  </div>
+                  <div class="clear"></div>
+                </div>
+                <script>window.variants && variants.markSelectedVariant();</script>
+              </li>
+              <li class="footerVisitedLinks showVisitedLinks">
+                <div class="padding menu-control">
+                  <i class="fa-fw fas fa-history"></i>
+                  <span>&nbsp;</span>
+                  <div class="control-style">
+                    <button onclick="clearHistory();">Clear History</button>
+                  </div>
+                  <div class="clear"></div>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div id="R-footer" class="footerFooter showFooter">
+	    <p>Built with <a href="https://github.com/McShelby/hugo-theme-relearn" title="love"><i class="fas fa-heart"></i></a> by <a href="https://gohugo.io/">Hugo</a></p>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <script src="/lego/js/clipboard.min.js?1750343537" defer></script>
+    <script src="/lego/js/perfect-scrollbar.min.js?1750343537" defer></script>
+    <script src="/lego/js/theme.js?1750343537" defer></script>
+  </body>
+</html>

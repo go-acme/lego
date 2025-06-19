@@ -2,6 +2,7 @@
 package dyndnsfree
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,9 +10,8 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/dyndnsfree/internal"
 )
-
-const baseDomain = "dynup.de"
 
 // Environment variables names.
 const (
@@ -20,7 +20,6 @@ const (
 	EnvUsername = envNamespace + "USERNAME"
 	EnvPassword = envNamespace + "PASSWORD"
 
-	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
@@ -33,27 +32,24 @@ type Config struct {
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-	TTL                int
 	HTTPClient         *http.Client
-
-	ForceCleanUp bool
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
-		}
+		},
 	}
 }
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for DynDNSFree.
@@ -76,8 +72,18 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("dyndnsfree: the configuration of the DNS provider is nil")
 	}
 
+	client, err := internal.NewClient(config.Username, config.Password)
+	if err != nil {
+		return nil, fmt.Errorf("dyndnsfree: new client: %w", err)
+	}
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
 	return &DNSProvider{
 		config: config,
+		client: client,
 	}, nil
 }
 
@@ -90,12 +96,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("dyndnsforfree: could not find zone for domain %q: %w", domain, err)
 	}
 
-	hostname := dns01.UnFqdn(authZone)
-	addHostname := dns01.UnFqdn(info.EffectiveFQDN)
-
-	_, err = d.config.HTTPClient.Get("https://" + baseDomain + "/acme.php?username=" + d.config.Username + "&password=" + d.config.Password + "&hostname=" + hostname + "&add_hostname=" + addHostname + "&txt=" + info.Value)
+	err = d.client.AddTXTRecord(context.Background(), dns01.UnFqdn(authZone), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 	if err != nil {
-		return fmt.Errorf("dyndnsfree: %w", err)
+		return fmt.Errorf("dyndnsfree: add record: %w", err)
 	}
 
 	return nil
@@ -103,7 +106,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	// Records are deleted automatically
+	// Records are deleted automatically.
 
 	return nil
 }

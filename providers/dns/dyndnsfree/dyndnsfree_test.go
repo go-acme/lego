@@ -25,7 +25,7 @@ func TestNewDNSProvider(t *testing.T) {
 			},
 		},
 		{
-			desc: "missing API key",
+			desc: "missing username",
 			envVars: map[string]string{
 				EnvUsername: "",
 				EnvPassword: "secret",
@@ -33,7 +33,7 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "dyndnsfree: some credentials information are missing: DYNDNSFREE_USERNAME",
 		},
 		{
-			desc: "missing secret",
+			desc: "missing password",
 			envVars: map[string]string{
 				EnvUsername: "user",
 				EnvPassword: "",
@@ -80,20 +80,20 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			password: "secret",
 		},
 		{
-			desc:     "missing API key",
+			desc:     "missing username",
 			username: "",
 			password: "secret",
-			expected: "dyndnsfree: credentials missing",
+			expected: "dyndnsfree: new client: credentials missing",
 		},
 		{
-			desc:     "missing secret",
+			desc:     "missing password",
 			username: "user",
 			password: "",
-			expected: "dyndnsfree: credentials missing",
+			expected: "dyndnsfree: new client: credentials missing",
 		},
 		{
 			desc:     "missing credentials",
-			expected: "dyndnsfree: credentials missing",
+			expected: "dyndnsfree: new client: credentials missing",
 		},
 	}
 

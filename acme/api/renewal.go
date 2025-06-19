@@ -14,7 +14,7 @@ var ErrNoARI = errors.New("renewalInfo[get/post]: server does not advertise a re
 // Note: this endpoint is part of a draft specification, not all ACME servers will implement it.
 // This method will return api.ErrNoARI if the server does not advertise a renewal info endpoint.
 //
-// https://datatracker.ietf.org/doc/draft-ietf-acme-ari
+// https://www.rfc-editor.org/rfc/rfc9773.html
 func (c *CertificateService) GetRenewalInfo(certID string) (*http.Response, error) {
 	if c.core.GetDirectory().RenewalInfo == "" {
 		return nil, ErrNoARI

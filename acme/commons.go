@@ -38,7 +38,7 @@ const (
 
 // Directory the ACME directory object.
 // - https://www.rfc-editor.org/rfc/rfc8555.html#section-7.1.1
-// - https://datatracker.ietf.org/doc/draft-ietf-acme-ari/
+// - https://www.rfc-editor.org/rfc/rfc9773.html
 type Directory struct {
 	NewNonceURL   string `json:"newNonce"`
 	NewAccountURL string `json:"newAccount"`
@@ -196,7 +196,7 @@ type Order struct {
 	// replaces (optional, string):
 	// replaces (string, optional): A string uniquely identifying a
 	// previously-issued certificate which this order is intended to replace.
-	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
+	// - https://www.rfc-editor.org/rfc/rfc9773.html#section-5
 	Replaces string `json:"replaces,omitempty"`
 }
 
@@ -349,7 +349,7 @@ type Window struct {
 }
 
 // RenewalInfoResponse is the response to GET requests made the renewalInfo endpoint.
-// - (4.1. Getting Renewal Information) https://datatracker.ietf.org/doc/draft-ietf-acme-ari/
+// - (4.1. Getting Renewal Information) https://www.rfc-editor.org/rfc/rfc9773.html
 type RenewalInfoResponse struct {
 	// SuggestedWindow contains two fields, start and end,
 	// whose values are timestamps which bound the window of time in which the CA recommends renewing the certificate.
@@ -362,11 +362,11 @@ type RenewalInfoResponse struct {
 }
 
 // RenewalInfoUpdateRequest is the JWS payload for POST requests made to the renewalInfo endpoint.
-// - (4.2. RenewalInfo Objects) https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-4.2
+// - (4.2. RenewalInfo Objects) https://www.rfc-editor.org/rfc/rfc9773.html#section-4.2
 type RenewalInfoUpdateRequest struct {
 	// CertID is a composite string in the format: base64url(AKI) || '.' || base64url(Serial), where AKI is the
 	// certificate's authority key identifier and Serial is the certificate's serial number. For details, see:
-	// https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-4.1
+	// https://www.rfc-editor.org/rfc/rfc9773.html#section-4.1
 	CertID string `json:"certID"`
 	// Replaced is required and indicates whether or not the client considers the certificate to have been replaced.
 	// A certificate is considered replaced when its revocation would not disrupt any ongoing services,

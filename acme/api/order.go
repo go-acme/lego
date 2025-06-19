@@ -23,7 +23,7 @@ type OrderOptions struct {
 
 	// A string uniquely identifying a previously-issued certificate which this
 	// order is intended to replace.
-	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
+	// - https://www.rfc-editor.org/rfc/rfc9773.html#section-5
 	ReplacesCertID string
 }
 
@@ -77,7 +77,7 @@ func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acm
 
 		// If the Server rejects the request because the identified certificate has already been marked as replaced,
 		// it MUST return an HTTP 409 (Conflict) with a problem document of type "alreadyReplaced" (see Section 7.4).
-		// https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-08#section-5
+		// https://www.rfc-editor.org/rfc/rfc9773.html#section-5
 		orderReq.Replaces = ""
 
 		resp, err = o.core.post(o.core.GetDirectory().NewOrderURL, orderReq, &order)

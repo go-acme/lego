@@ -58,7 +58,7 @@ func createRenew() *cli.Command {
 			},
 			&cli.BoolFlag{
 				Name:  flgARIDisable,
-				Usage: "Do not use the renewalInfo endpoint (draft-ietf-acme-ari) to check if a certificate should be renewed.",
+				Usage: "Do not use the renewalInfo endpoint (RFC9773) to check if a certificate should be renewed.",
 			},
 			&cli.DurationFlag{
 				Name:  flgARIWaitToRenewDuration,

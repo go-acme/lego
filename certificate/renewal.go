@@ -25,15 +25,15 @@ type RenewalInfoResponse struct {
 	// RetryAfter header indicating the polling interval that the ACME server recommends.
 	// Conforming clients SHOULD query the renewalInfo URL again after the RetryAfter period has passed,
 	// as the server may provide a different suggestedWindow.
-	// https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-4.2
+	// https://www.rfc-editor.org/rfc/rfc9773.html#section-4.2
 	RetryAfter time.Duration
 }
 
 // ShouldRenewAt determines the optimal renewal time based on the current time (UTC),renewal window suggest by ARI, and the client's willingness to sleep.
 // It returns a pointer to a time.Time value indicating when the renewal should be attempted or nil if deferred until the next normal wake time.
-// This method implements the RECOMMENDED algorithm described in draft-ietf-acme-ari.
+// This method implements the RECOMMENDED algorithm described in RFC 9773.
 //
-// - (4.1-11. Getting Renewal Information) https://datatracker.ietf.org/doc/draft-ietf-acme-ari/
+// - (4.1-11. Getting Renewal Information) https://www.rfc-editor.org/rfc/rfc9773.html
 func (r *RenewalInfoResponse) ShouldRenewAt(now time.Time, willingToSleep time.Duration) *time.Time {
 	// Explicitly convert all times to UTC.
 	now = now.UTC()
@@ -71,7 +71,7 @@ func (r *RenewalInfoResponse) ShouldRenewAt(now time.Time, willingToSleep time.D
 // Note: this endpoint is part of a draft specification, not all ACME servers will implement it.
 // This method will return api.ErrNoARI if the server does not advertise a renewal info endpoint.
 //
-// https://datatracker.ietf.org/doc/draft-ietf-acme-ari
+// https://www.rfc-editor.org/rfc/rfc9773.html
 func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse, error) {
 	certID, err := MakeARICertID(req.Cert)
 	if err != nil {
@@ -100,7 +100,7 @@ func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse
 	return &info, nil
 }
 
-// MakeARICertID constructs a certificate identifier as described in draft-ietf-acme-ari-03, section 4.1.
+// MakeARICertID constructs a certificate identifier as described in RFC 9773, section 4.1.
 func MakeARICertID(leaf *x509.Certificate) (string, error) {
 	if leaf == nil {
 		return "", errors.New("leaf certificate is nil")

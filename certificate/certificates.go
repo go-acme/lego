@@ -84,7 +84,7 @@ type ObtainRequest struct {
 
 	// A string uniquely identifying a previously-issued certificate which this
 	// order is intended to replace.
-	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
+	// - https://www.rfc-editor.org/rfc/rfc9773.html#section-5
 	ReplacesCertID string
 }
 
@@ -113,7 +113,7 @@ type ObtainForCSRRequest struct {
 
 	// A string uniquely identifying a previously-issued certificate which this
 	// order is intended to replace.
-	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
+	// - https://www.rfc-editor.org/rfc/rfc9773.html#section-5
 	ReplacesCertID string
 }
 

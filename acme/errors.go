@@ -60,7 +60,7 @@ type NonceError struct {
 
 // AlreadyReplacedError represents the error which is returned
 // If the Server rejects the request because the identified certificate has already been marked as replaced.
-// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-08#section-5
+// - https://www.rfc-editor.org/rfc/rfc9773.html#section-5
 type AlreadyReplacedError struct {
 	*ProblemDetails
 }

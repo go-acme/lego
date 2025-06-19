@@ -1113,7 +1113,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "DYNDNSFREE_HTTP_TIMEOUT":	Request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "DYNDNSFREE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "DYNDNSFREE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
-		ew.writeln(`	- "DYNDNSFREE_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dyndnsfree`)

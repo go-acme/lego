@@ -52,7 +52,6 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | `DYNDNSFREE_HTTP_TIMEOUT` | Request timeout in seconds (Default: 30) |
 | `DYNDNSFREE_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
 | `DYNDNSFREE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
-| `DYNDNSFREE_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
@@ -62,7 +61,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-
+- [API documentation](https://www.dyndnsfree.de/user/hilfe.php?hsm=2)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/dyndnsfree/dyndnsfree.toml -->

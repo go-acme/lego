@@ -30,7 +30,7 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	return client, mux
 }
 
-func testHandler(filename string, method string, statusCode int) http.HandlerFunc {
+func testHandler(filename, method string, statusCode int) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != method {
 			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusMethodNotAllowed)

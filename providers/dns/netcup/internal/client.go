@@ -142,7 +142,7 @@ func GetDNSRecordIdx(records []DNSRecord, record DNSRecord) (int, error) {
 	return -1, errors.New("no DNS Record found")
 }
 
-func newJSONRequest(ctx context.Context, method string, endpoint string, payload any) (*http.Request, error) {
+func newJSONRequest(ctx context.Context, method, endpoint string, payload any) (*http.Request, error) {
 	buf := new(bytes.Buffer)
 
 	if payload != nil {

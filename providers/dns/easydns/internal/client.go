@@ -26,7 +26,7 @@ type Client struct {
 }
 
 // NewClient Creates a new Client.
-func NewClient(token string, key string) *Client {
+func NewClient(token, key string) *Client {
 	baseURL, _ := url.Parse(DefaultBaseURL)
 
 	return &Client{

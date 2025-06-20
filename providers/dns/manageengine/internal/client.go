@@ -75,7 +75,7 @@ func (c *Client) GetAllZoneRecords(ctx context.Context, zoneID int) ([]ZoneRecor
 
 // DeleteZoneRecord deletes a "zone record".
 // https://pitstop.manageengine.com/portal/en/kb/articles/manageengine-clouddns-rest-api-documentation#DEL_Delete_10
-func (c *Client) DeleteZoneRecord(ctx context.Context, zoneID int, domainID int) error {
+func (c *Client) DeleteZoneRecord(ctx context.Context, zoneID, domainID int) error {
 	endpoint := c.baseURL.JoinPath("dns", "domain", strconv.Itoa(zoneID), "records", "SPF_TXT", strconv.Itoa(domainID))
 
 	req, err := newRequest(ctx, http.MethodDelete, endpoint, nil)

@@ -107,7 +107,7 @@ func getOneWithFallback(main string, names ...string) (string, string) {
 
 // GetOrDefaultString returns the given environment variable value as a string.
 // Returns the default if the env var cannot be found.
-func GetOrDefaultString(envVar string, defaultValue string) string {
+func GetOrDefaultString(envVar, defaultValue string) string {
 	return getOrDefault(envVar, defaultValue, ParseString)
 }
 

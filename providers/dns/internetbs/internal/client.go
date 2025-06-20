@@ -34,7 +34,7 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(apiKey string, password string) *Client {
+func NewClient(apiKey, password string) *Client {
 	baseURL, _ := url.Parse(baseURL)
 
 	return &Client{
@@ -90,7 +90,7 @@ func (c Client) ListRecords(ctx context.Context, query ListRecordQuery) ([]Recor
 	return l.Records, nil
 }
 
-func (c Client) doRequest(ctx context.Context, action string, params any, result any) error {
+func (c Client) doRequest(ctx context.Context, action string, params, result any) error {
 	endpoint := c.baseURL.JoinPath("Domain", "DnsRecord", action)
 
 	values, err := querystring.Values(params)

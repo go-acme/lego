@@ -26,7 +26,7 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-func NewClient(apiKey string, apiSecret string) *Client {
+func NewClient(apiKey, apiSecret string) *Client {
 	baseURL, _ := url.Parse(DefaultBaseURL)
 
 	return &Client{

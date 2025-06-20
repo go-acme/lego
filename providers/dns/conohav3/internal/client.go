@@ -25,7 +25,7 @@ type Client struct {
 }
 
 // NewClient returns a client instance logged into the ConoHa service.
-func NewClient(region string, token string) (*Client, error) {
+func NewClient(region, token string) (*Client, error) {
 	baseURL, err := url.Parse(fmt.Sprintf(dnsServiceBaseURL, region))
 	if err != nil {
 		return nil, err

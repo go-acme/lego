@@ -72,7 +72,7 @@ func (c *Client) GetDomainByName(ctx context.Context, domain string) (*Domain, e
 
 // CreateTXTRecord creates a TXT record with the provided host (subdomain) and data.
 // https://api.domeneshop.no/docs/#tag/dns/paths/~1domains~1{domainId}~1dns/post
-func (c *Client) CreateTXTRecord(ctx context.Context, domain *Domain, host string, data string) error {
+func (c *Client) CreateTXTRecord(ctx context.Context, domain *Domain, host, data string) error {
 	endpoint := c.baseURL.JoinPath("domains", strconv.Itoa(domain.ID), "dns")
 
 	record := DNSRecord{
@@ -92,7 +92,7 @@ func (c *Client) CreateTXTRecord(ctx context.Context, domain *Domain, host strin
 
 // DeleteTXTRecord deletes the DNS record matching the provided host and data.
 // https://api.domeneshop.no/docs/#tag/dns/paths/~1domains~1{domainId}~1dns~1{recordId}/delete
-func (c *Client) DeleteTXTRecord(ctx context.Context, domain *Domain, host string, data string) error {
+func (c *Client) DeleteTXTRecord(ctx context.Context, domain *Domain, host, data string) error {
 	record, err := c.getDNSRecordByHostData(ctx, *domain, host, data)
 	if err != nil {
 		return err
@@ -110,7 +110,7 @@ func (c *Client) DeleteTXTRecord(ctx context.Context, domain *Domain, host strin
 
 // getDNSRecordByHostData finds the first matching DNS record with the provided host and data.
 // https://api.domeneshop.no/docs/#operation/getDnsRecords
-func (c *Client) getDNSRecordByHostData(ctx context.Context, domain Domain, host string, data string) (*DNSRecord, error) {
+func (c *Client) getDNSRecordByHostData(ctx context.Context, domain Domain, host, data string) (*DNSRecord, error) {
 	endpoint := c.baseURL.JoinPath("domains", strconv.Itoa(domain.ID), "dns")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)

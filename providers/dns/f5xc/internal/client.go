@@ -27,7 +27,7 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(apiToken string, tenantName string) (*Client, error) {
+func NewClient(apiToken, tenantName string) (*Client, error) {
 	if apiToken == "" {
 		return nil, errors.New("credentials missing")
 	}

@@ -27,7 +27,7 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	return client, mux
 }
 
-func mockHandler(method string, filename string) http.HandlerFunc {
+func mockHandler(method, filename string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != method {
 			http.Error(rw, fmt.Sprintf("invalid method, got %s want %s", req.Method, method), http.StatusBadRequest)

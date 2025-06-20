@@ -61,7 +61,7 @@ func (c Client) GetRecords(ctx context.Context, zoneID string, params *GetRecord
 }
 
 // GetRecord gets a record by ID.
-func (c Client) GetRecord(ctx context.Context, zoneID string, recordID string) (*Record, error) {
+func (c Client) GetRecord(ctx context.Context, zoneID, recordID string) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("zones", zoneID, "dnsrecords", recordID)
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
@@ -97,7 +97,7 @@ func (c Client) CreateRecord(ctx context.Context, zoneID string, record Record) 
 }
 
 // EditRecord edits an existing record.
-func (c Client) EditRecord(ctx context.Context, zoneID string, recordID string, record Record) (*Record, error) {
+func (c Client) EditRecord(ctx context.Context, zoneID, recordID string, record Record) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("zones", zoneID, "dnsrecords", recordID)
 
 	req, err := newJSONRequest(ctx, http.MethodPatch, endpoint, record)
@@ -115,7 +115,7 @@ func (c Client) EditRecord(ctx context.Context, zoneID string, recordID string, 
 }
 
 // DeleteRecord deletes an existing record.
-func (c Client) DeleteRecord(ctx context.Context, zoneID string, recordID string) error {
+func (c Client) DeleteRecord(ctx context.Context, zoneID, recordID string) error {
 	endpoint := c.baseURL.JoinPath("zones", zoneID, "dnsrecords", recordID)
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)

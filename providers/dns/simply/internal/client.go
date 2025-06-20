@@ -28,7 +28,7 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(accountName string, apiKey string) (*Client, error) {
+func NewClient(accountName, apiKey string) (*Client, error) {
 	if accountName == "" {
 		return nil, errors.New("credentials missing: accountName")
 	}
@@ -110,7 +110,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneName string, id int64) er
 	return c.do(req, &apiResponse[json.RawMessage, json.RawMessage]{})
 }
 
-func (c *Client) createEndpoint(zoneName string, uri string) *url.URL {
+func (c *Client) createEndpoint(zoneName, uri string) *url.URL {
 	return c.baseURL.JoinPath(c.accountName, c.apiKey, "my", "products", zoneName, "dns", "records", strings.TrimSuffix(uri, "/"))
 }
 

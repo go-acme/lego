@@ -7,6 +7,8 @@ formatters:
     - gofumpt
     - goimports
   settings:
+    gofumpt:
+      extra-rules: true
     gofmt:
       rewrite-rules:
         - pattern: 'interface{}'

@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern string, filename string) *Client {
+func setupTest(t *testing.T, pattern, filename string) *Client {
 	t.Helper()
 
 	mux := http.NewServeMux()

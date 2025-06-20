@@ -34,7 +34,7 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-func NewClient(login string, apiKey string) *Client {
+func NewClient(login, apiKey string) *Client {
 	baseURL, _ := url.Parse(apiURL)
 
 	return &Client{
@@ -114,7 +114,7 @@ func NewSigner() *Signer {
 	return &Signer{saltShaker: getRandomSalt, clock: time.Now}
 }
 
-func (c Signer) Sign(uri string, body, login, apiKey string) string {
+func (c Signer) Sign(uri, body, login, apiKey string) string {
 	// Header is "login;timestamp;salt;hash".
 	// hash is SHA1("login;timestamp;salt;api-key;request-uri;body-hash")
 	// and body-hash is SHA1(body).

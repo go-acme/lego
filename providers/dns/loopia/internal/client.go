@@ -37,7 +37,7 @@ func NewClient(apiUser, apiPassword string) *Client {
 }
 
 // AddTXTRecord adds a TXT record.
-func (c *Client) AddTXTRecord(ctx context.Context, domain string, subdomain string, ttl int, value string) error {
+func (c *Client) AddTXTRecord(ctx context.Context, domain, subdomain string, ttl int, value string) error {
 	call := &methodCall{
 		MethodName: "addZoneRecord",
 		Params: []param{
@@ -67,7 +67,7 @@ func (c *Client) AddTXTRecord(ctx context.Context, domain string, subdomain stri
 }
 
 // RemoveTXTRecord removes a TXT record.
-func (c *Client) RemoveTXTRecord(ctx context.Context, domain string, subdomain string, recordID int) error {
+func (c *Client) RemoveTXTRecord(ctx context.Context, domain, subdomain string, recordID int) error {
 	call := &methodCall{
 		MethodName: "removeZoneRecord",
 		Params: []param{
@@ -89,7 +89,7 @@ func (c *Client) RemoveTXTRecord(ctx context.Context, domain string, subdomain s
 }
 
 // GetTXTRecords gets TXT records.
-func (c *Client) GetTXTRecords(ctx context.Context, domain string, subdomain string) ([]RecordObj, error) {
+func (c *Client) GetTXTRecords(ctx context.Context, domain, subdomain string) ([]RecordObj, error) {
 	call := &methodCall{
 		MethodName: "getZoneRecords",
 		Params: []param{

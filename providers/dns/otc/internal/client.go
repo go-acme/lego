@@ -31,7 +31,7 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-func NewClient(username string, password string, domainName string, projectName string) *Client {
+func NewClient(username, password, domainName, projectName string) *Client {
 	return &Client{
 		username:         username,
 		password:         password,

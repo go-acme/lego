@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func authToken(userName string, wapiPass string) string {
+func authToken(userName, wapiPass string) string {
 	return sha1string(userName + sha1string(wapiPass) + czechHourString())
 }
 

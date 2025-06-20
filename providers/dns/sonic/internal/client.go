@@ -42,7 +42,7 @@ func NewClient(userID, apiKey string) (*Client, error) {
 // SetRecord creates or updates a TXT records.
 // Sonic does not provide a delete record API endpoint.
 // https://public-api.sonic.net/dyndns#updating_or_adding_host_records
-func (c *Client) SetRecord(ctx context.Context, hostname string, value string, ttl int) error {
+func (c *Client) SetRecord(ctx context.Context, hostname, value string, ttl int) error {
 	payload := &Record{
 		UserID:   c.userID,
 		APIKey:   c.apiKey,

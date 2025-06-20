@@ -32,7 +32,7 @@ func setupTest(t *testing.T, pattern string, handler http.HandlerFunc) *Client {
 	return client
 }
 
-func writeFixtures(method string, filename string, status int) http.HandlerFunc {
+func writeFixtures(method, filename string, status int) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != method {
 			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusMethodNotAllowed)

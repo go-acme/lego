@@ -207,7 +207,7 @@ func (d *DNSProvider) findExistingZone(zoneName string) (*egoscale.DNSDomain, er
 
 // findExistingRecordID Query Exoscale to find an existing record for this name.
 // Returns empty result if no record could be found.
-func (d *DNSProvider) findExistingRecordID(zoneID egoscale.UUID, recordName string, value string) (egoscale.UUID, error) {
+func (d *DNSProvider) findExistingRecordID(zoneID egoscale.UUID, recordName, value string) (egoscale.UUID, error) {
 	ctx := context.Background()
 
 	records, err := d.client.ListDNSDomainRecords(ctx, zoneID)

@@ -96,10 +96,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 				// causing a high number of consecutive throttling errors.
 				// For reference: Route 53 enforces an account-wide(!) 5req/s query limit.
 				options.Backoff = retry.BackoffDelayerFunc(func(attempt int, err error) (time.Duration, error) {
-					retryCount := attempt
-					if retryCount > 7 {
-						retryCount = 7
-					}
+					retryCount := min(attempt, 7)
 
 					delay := (1 << uint(retryCount)) * (rand.Intn(50) + 200)
 					return time.Duration(delay) * time.Millisecond, nil

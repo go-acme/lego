@@ -189,10 +189,7 @@ func TestDNSProvider_getHostedZone(t *testing.T) {
 					start = cursor * len(domains)
 				}
 
-				end := (cursor + 1) * perPage
-				if len(domains) < end {
-					end = len(domains)
-				}
+				end := min(len(domains), (cursor+1)*perPage)
 
 				db := domainsBase{
 					Domains: domains[start:end],

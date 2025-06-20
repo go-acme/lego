@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -14,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/iij/doapi"
 	"github.com/iij/doapi/protocol"
+	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -226,26 +226,20 @@ func (d *DNSProvider) listZones() ([]string, error) {
 }
 
 func splitDomain(domain string, zones []string) (string, string, error) {
-	parts := strings.Split(strings.Trim(domain, "."), ".")
+	base := dns01.UnFqdn(domain)
 
-	var owner string
-	var zone string
+	for _, index := range dns.Split(base) {
+		zone := base[index:]
 
-	for i := range len(parts) - 1 {
-		zone = strings.Join(parts[i:], ".")
 		if slices.Contains(zones, zone) {
-			baseOwner := strings.Join(parts[0:i], ".")
+			baseOwner := base[:index]
 			if baseOwner != "" {
 				baseOwner = "." + baseOwner
 			}
-			owner = "_acme-challenge" + baseOwner
-			break
+
+			return "_acme-challenge" + dns01.UnFqdn(baseOwner), zone, nil
 		}
 	}
 
-	if owner == "" {
-		return "", "", fmt.Errorf("%s not found", domain)
-	}
-
-	return owner, zone, nil
+	return "", "", fmt.Errorf("%s not found", domain)
 }

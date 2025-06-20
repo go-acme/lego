@@ -175,9 +175,7 @@ func fetchSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) {
 	var err error
 	var r *dns.Msg
 
-	for _, index := range dns.Split(fqdn) {
-		domain := fqdn[index:]
-
+	for domain := range DomainsSeq(fqdn) {
 		r, err = dnsQuery(domain, dns.TypeSOA, nameservers, true)
 		if err != nil {
 			continue

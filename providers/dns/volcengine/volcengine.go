@@ -13,7 +13,6 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
-	"github.com/miekg/dns"
 	"github.com/volcengine/volc-sdk-golang/base"
 	volc "github.com/volcengine/volc-sdk-golang/service/dns"
 )
@@ -175,9 +174,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func (d *DNSProvider) getZone(ctx context.Context, fqdn string) (volc.TopZoneResponse, error) {
-	for _, index := range dns.Split(fqdn) {
-		domain := fqdn[index:]
-
+	for domain := range dns01.UnFqdnDomainsSeq(fqdn) {
 		lzr := &volc.ListZonesRequest{
 			Key:        ptr.Pointer(dns01.UnFqdn(domain)),
 			SearchMode: ptr.Pointer("exact"),

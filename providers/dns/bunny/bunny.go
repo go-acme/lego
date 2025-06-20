@@ -12,7 +12,6 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
-	"github.com/miekg/dns"
 	"github.com/nrdcg/bunny-go"
 	"golang.org/x/net/publicsuffix"
 )
@@ -201,14 +200,13 @@ func possibleDomains(domain string) []string {
 	var domains []string
 
 	tld, _ := publicsuffix.PublicSuffix(domain)
-
-	for _, index := range dns.Split(domain) {
-		if tld == domain[index:] {
+	for d := range dns01.DomainsSeq(domain) {
+		if tld == d {
 			// skip the TLD
 			break
 		}
 
-		domains = append(domains, dns01.UnFqdn(domain[index:]))
+		domains = append(domains, dns01.UnFqdn(d))
 	}
 
 	return domains

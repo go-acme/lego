@@ -10,50 +10,50 @@ var Logger StdLogger = log.New(os.Stderr, "", log.LstdFlags)
 
 // StdLogger interface for Standard Logger.
 type StdLogger interface {
-	Fatal(args ...interface{})
-	Fatalln(args ...interface{})
-	Fatalf(format string, args ...interface{})
-	Print(args ...interface{})
-	Println(args ...interface{})
-	Printf(format string, args ...interface{})
+	Fatal(args ...any)
+	Fatalln(args ...any)
+	Fatalf(format string, args ...any)
+	Print(args ...any)
+	Println(args ...any)
+	Printf(format string, args ...any)
 }
 
 // Fatal writes a log entry.
 // It uses Logger if not nil, otherwise it uses the default log.Logger.
-func Fatal(args ...interface{}) {
+func Fatal(args ...any) {
 	Logger.Fatal(args...)
 }
 
 // Fatalf writes a log entry.
 // It uses Logger if not nil, otherwise it uses the default log.Logger.
-func Fatalf(format string, args ...interface{}) {
+func Fatalf(format string, args ...any) {
 	Logger.Fatalf(format, args...)
 }
 
 // Print writes a log entry.
 // It uses Logger if not nil, otherwise it uses the default log.Logger.
-func Print(args ...interface{}) {
+func Print(args ...any) {
 	Logger.Print(args...)
 }
 
 // Println writes a log entry.
 // It uses Logger if not nil, otherwise it uses the default log.Logger.
-func Println(args ...interface{}) {
+func Println(args ...any) {
 	Logger.Println(args...)
 }
 
 // Printf writes a log entry.
 // It uses Logger if not nil, otherwise it uses the default log.Logger.
-func Printf(format string, args ...interface{}) {
+func Printf(format string, args ...any) {
 	Logger.Printf(format, args...)
 }
 
 // Warnf writes a log entry.
-func Warnf(format string, args ...interface{}) {
+func Warnf(format string, args ...any) {
 	Printf("[WARN] "+format, args...)
 }
 
 // Infof writes a log entry.
-func Infof(format string, args ...interface{}) {
+func Infof(format string, args ...any) {
 	Printf("[INFO] "+format, args...)
 }

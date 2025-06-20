@@ -59,7 +59,7 @@ func TestClient_AddRecord(t *testing.T) {
 
 		apiReq.Params.ID = "123"
 
-		resp := map[string]interface{}{
+		resp := map[string]any{
 			"jsonrpc": "2.0",
 			"id":      "897",
 			"result":  apiReq.Params,
@@ -125,7 +125,7 @@ func TestClient_ListRecords(t *testing.T) {
 			return
 		}
 
-		resp := map[string]interface{}{
+		resp := map[string]any{
 			"jsonrpc": "2.0",
 			"id":      "897",
 			"result": Records{

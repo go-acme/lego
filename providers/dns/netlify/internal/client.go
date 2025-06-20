@@ -124,7 +124,7 @@ func (c *Client) RemoveRecord(ctx context.Context, zoneID, recordID string) erro
 	return nil
 }
 
-func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload interface{}) (*http.Request, error) {
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
 	buf := new(bytes.Buffer)
 
 	if payload != nil {

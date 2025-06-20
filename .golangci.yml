@@ -6,6 +6,11 @@ formatters:
     - gofmt
     - gofumpt
     - goimports
+  settings:
+    gofmt:
+      rewrite-rules:
+        - pattern: 'interface{}'
+          replacement: 'any'
 
 linters:
   default: all

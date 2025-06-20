@@ -112,7 +112,7 @@ func TestClient_CreateRecord(t *testing.T) {
 	expected := &DNSRecord{
 		ID:            "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
 		Type:          "txt",
-		Value:         map[string]interface{}{"text": "txtxtxt"},
+		Value:         map[string]any{"text": "txtxtxt"},
 		Name:          "_acme-challenge",
 		TTL:           120,
 		UpstreamHTTPS: "default",

@@ -96,7 +96,7 @@ func generateCLIHelp(models *descriptors.Providers) error {
 
 	b := &bytes.Buffer{}
 	err = template.Must(
-		template.New(filepath.Base(cliTemplate)).Funcs(map[string]interface{}{
+		template.New(filepath.Base(cliTemplate)).Funcs(map[string]any{
 			"safe": func(src string) string {
 				return strings.ReplaceAll(src, "`", "'")
 			},

@@ -183,7 +183,7 @@ func setupTest(t *testing.T, method, path string, handlers ...assertHandler) *Cl
 
 type assertHandler func(http.ResponseWriter, *http.Request) (int, error)
 
-func hasReqBody(v interface{}) assertHandler {
+func hasReqBody(v any) assertHandler {
 	return func(rw http.ResponseWriter, req *http.Request) (int, error) {
 		reqBody, err := io.ReadAll(req.Body)
 		if err != nil {

@@ -223,7 +223,7 @@ func handleAPIError() http.HandlerFunc {
 	}
 }
 
-func handleJSONResponse(data interface{}) http.HandlerFunc {
+func handleJSONResponse(data any) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		err := json.NewEncoder(rw).Encode(data)
 		if err != nil {

@@ -60,7 +60,7 @@ func New(httpClient *http.Client, userAgent, caDirURL, kid string, privateKey cr
 
 // post performs an HTTP POST request and parses the response body as JSON,
 // into the provided respBody object.
-func (a *Core) post(uri string, reqBody, response interface{}) (*http.Response, error) {
+func (a *Core) post(uri string, reqBody, response any) (*http.Response, error) {
 	content, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, errors.New("failed to marshal message")
@@ -71,11 +71,11 @@ func (a *Core) post(uri string, reqBody, response interface{}) (*http.Response, 
 
 // postAsGet performs an HTTP POST ("POST-as-GET") request.
 // https://www.rfc-editor.org/rfc/rfc8555.html#section-6.3
-func (a *Core) postAsGet(uri string, response interface{}) (*http.Response, error) {
+func (a *Core) postAsGet(uri string, response any) (*http.Response, error) {
 	return a.retrievablePost(uri, []byte{}, response)
 }
 
-func (a *Core) retrievablePost(uri string, content []byte, response interface{}) (*http.Response, error) {
+func (a *Core) retrievablePost(uri string, content []byte, response any) (*http.Response, error) {
 	// during tests, allow to support ~90% of bad nonce with a minimum of attempts.
 	bo := backoff.NewExponentialBackOff()
 	bo.InitialInterval = 200 * time.Millisecond
@@ -111,7 +111,7 @@ func (a *Core) retrievablePost(uri string, content []byte, response interface{})
 	return resp, nil
 }
 
-func (a *Core) signedPost(uri string, content []byte, response interface{}) (*http.Response, error) {
+func (a *Core) signedPost(uri string, content []byte, response any) (*http.Response, error) {
 	signedContent, err := a.jws.SignContent(uri, content)
 	if err != nil {
 		return nil, fmt.Errorf("failed to post JWS message: failed to sign content: %w", err)

@@ -58,7 +58,7 @@ type errWriter struct {
 	err error
 }
 
-func (ew *errWriter) writeln(a ...interface{}) {
+func (ew *errWriter) writeln(a ...any) {
 	if ew.err != nil {
 		return
 	}
@@ -66,7 +66,7 @@ func (ew *errWriter) writeln(a ...interface{}) {
 	_, ew.err = fmt.Fprintln(ew.w, a...)
 }
 
-func (ew *errWriter) writef(format string, a ...interface{}) {
+func (ew *errWriter) writef(format string, a ...any) {
 	if ew.err != nil {
 		return
 	}

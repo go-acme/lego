@@ -34,14 +34,14 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvTokens: ",",
 			},
-			expected: "hurricane: incorrect credential pair: ",
+			expected: "hurricane: credentials: incorrect pair: ",
 		},
 		{
 			desc: "invalid credentials, partial",
 			envVars: map[string]string{
 				EnvTokens: "example.org:123,example.net",
 			},
-			expected: "hurricane: incorrect credential pair: example.net",
+			expected: "hurricane: credentials: incorrect pair: example.net",
 		},
 		{
 			desc: "missing credentials",

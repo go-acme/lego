@@ -184,3 +184,20 @@ func ParseString(s string) (string, error) {
 
 	return s, nil
 }
+
+// ParsePairs parses a raw string of comma-separated key-value pairs into a map.
+// Keys and values are separated by a colon and are trimmed of whitespace.
+func ParsePairs(raw string) (map[string]string, error) {
+	result := make(map[string]string)
+
+	for pair := range strings.SplitSeq(strings.TrimSuffix(raw, ","), ",") {
+		data := strings.Split(pair, ":")
+		if len(data) != 2 {
+			return nil, fmt.Errorf("incorrect pair: %s", pair)
+		}
+
+		result[strings.TrimSpace(data[0])] = strings.TrimSpace(data[1])
+	}
+
+	return result, nil
+}

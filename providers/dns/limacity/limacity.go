@@ -185,9 +185,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func findDomain(domains []internal.Domain, fqdn string) (internal.Domain, error) {
-	labelIndexes := dns.Split(fqdn)
-
-	for _, index := range labelIndexes {
+	for _, index := range dns.Split(fqdn) {
 		f := fqdn[index:]
 		domain := dns01.UnFqdn(f)
 

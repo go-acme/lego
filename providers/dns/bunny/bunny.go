@@ -200,10 +200,9 @@ func findZone(zones *bunny.DNSZones, domain string) *bunny.DNSZone {
 func possibleDomains(domain string) []string {
 	var domains []string
 
-	labelIndexes := dns.Split(domain)
+	tld, _ := publicsuffix.PublicSuffix(domain)
 
-	for _, index := range labelIndexes {
-		tld, _ := publicsuffix.PublicSuffix(domain)
+	for _, index := range dns.Split(domain) {
 		if tld == domain[index:] {
 			// skip the TLD
 			break

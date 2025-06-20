@@ -146,8 +146,7 @@ func (d *DNSProvider) Sequential() time.Duration {
 func parseCredentials(raw string) (map[string]string, error) {
 	credentials := make(map[string]string)
 
-	credStrings := strings.Split(strings.TrimSuffix(raw, ","), ",")
-	for _, credPair := range credStrings {
+	for credPair := range strings.SplitSeq(strings.TrimSuffix(raw, ","), ",") {
 		data := strings.Split(credPair, ":")
 		if len(data) != 2 {
 			return nil, fmt.Errorf("incorrect credential pair: %s", credPair)

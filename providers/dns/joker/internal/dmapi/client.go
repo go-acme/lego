@@ -126,7 +126,7 @@ func parseResponse(message string) *Response {
 
 	lines, body, _ := strings.Cut(message, "\n\n")
 
-	for _, line := range strings.Split(lines, "\n") {
+	for line := range strings.Lines(lines) {
 		if strings.TrimSpace(line) == "" {
 			continue
 		}
@@ -177,7 +177,7 @@ func RemoveTxtEntryFromZone(zone, relative string) (string, bool) {
 
 	modified := false
 	var zoneEntries []string
-	for _, line := range strings.Split(zone, "\n") {
+	for line := range strings.Lines(zone) {
 		if strings.HasPrefix(line, prefix) {
 			modified = true
 			continue
@@ -192,7 +192,7 @@ func RemoveTxtEntryFromZone(zone, relative string) (string, bool) {
 func AddTxtEntryToZone(zone, relative, value string, ttl int) string {
 	var zoneEntries []string
 
-	for _, line := range strings.Split(zone, "\n") {
+	for line := range strings.Lines(zone) {
 		zoneEntries = append(zoneEntries, fixTxtLines(line))
 	}
 

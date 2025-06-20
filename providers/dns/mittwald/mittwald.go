@@ -212,9 +212,7 @@ func (d *DNSProvider) getOrCreateZone(ctx context.Context, fqdn string) (*intern
 }
 
 func findDomain(domains []internal.Domain, fqdn string) (internal.Domain, error) {
-	labelIndexes := dns.Split(fqdn)
-
-	for _, index := range labelIndexes {
+	for _, index := range dns.Split(fqdn) {
 		domain := dns01.UnFqdn(fqdn[index:])
 
 		for _, dom := range domains {
@@ -228,9 +226,7 @@ func findDomain(domains []internal.Domain, fqdn string) (internal.Domain, error)
 }
 
 func findZone(zones []internal.DNSZone, fqdn string) (internal.DNSZone, error) {
-	labelIndexes := dns.Split(fqdn)
-
-	for _, index := range labelIndexes {
+	for _, index := range dns.Split(fqdn) {
 		domain := dns01.UnFqdn(fqdn[index:])
 
 		for _, zon := range zones {

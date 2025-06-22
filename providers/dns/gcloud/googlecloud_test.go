@@ -30,7 +30,8 @@ var envTest = tester.NewEnvTest(
 	envServiceAccountFile,
 	envGoogleApplicationCredentials,
 	envMetadataHost,
-	EnvServiceAccount).
+	EnvServiceAccount,
+	EnvImpersonateServiceAccount).
 	WithDomain(envDomain).
 	WithLiveTestExtra(func() bool {
 		_, err := google.DefaultClient(context.Background(), dns.NdevClouddnsReadwriteScope)
@@ -79,6 +80,14 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvServiceAccount: `{"project_id": "A","type": "service_account","client_email": "foo@bar.com","private_key_id": "pki","private_key": "pk","token_uri": "/token","client_secret": "secret","client_id": "C","refresh_token": "D"}`,
 			},
 		},
+		{
+			desc: "success key with impersonation",
+			envVars: map[string]string{
+				EnvProject:                   "",
+				EnvServiceAccount:            `{"project_id": "A","type": "service_account","client_email": "foo@bar.com","private_key_id": "pki","private_key": "pk","token_uri": "/token","client_secret": "secret","client_id": "C","refresh_token": "D"}`,
+				EnvImpersonateServiceAccount: "target-sa@project-id.iam.gserviceaccount.com",
+			},
+		},
 	}
 
 	for _, test := range testCases {
@@ -99,6 +108,40 @@ func TestNewDNSProvider(t *testing.T) {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), test.expected)
 			}
+		})
+	}
+}
+
+func TestNewDefaultConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc:     "default values",
+			envVars:  map[string]string{},
+			expected: "",
+		},
+		{
+			desc: "with impersonation",
+			envVars: map[string]string{
+				EnvImpersonateServiceAccount: "test-sa@project.iam.gserviceaccount.com",
+			},
+			expected: "test-sa@project.iam.gserviceaccount.com",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			config := NewDefaultConfig()
+
+			require.Equal(t, test.expected, config.ImpersonateServiceAccount)
 		})
 	}
 }

@@ -17,9 +17,11 @@ import (
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/platform/wait"
 	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
 	"google.golang.org/api/googleapi"
+	"google.golang.org/api/impersonate"
 	"google.golang.org/api/option"
 )
 
@@ -27,11 +29,12 @@ import (
 const (
 	envNamespace = "GCE_"
 
-	EnvServiceAccount   = envNamespace + "SERVICE_ACCOUNT"
-	EnvProject          = envNamespace + "PROJECT"
-	EnvZoneID           = envNamespace + "ZONE_ID"
-	EnvAllowPrivateZone = envNamespace + "ALLOW_PRIVATE_ZONE"
-	EnvDebug            = envNamespace + "DEBUG"
+	EnvServiceAccount            = envNamespace + "SERVICE_ACCOUNT"
+	EnvProject                   = envNamespace + "PROJECT"
+	EnvZoneID                    = envNamespace + "ZONE_ID"
+	EnvAllowPrivateZone          = envNamespace + "ALLOW_PRIVATE_ZONE"
+	EnvDebug                     = envNamespace + "DEBUG"
+	EnvImpersonateServiceAccount = envNamespace + "IMPERSONATE_SERVICE_ACCOUNT"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -44,25 +47,27 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Debug              bool
-	Project            string
-	ZoneID             string
-	AllowPrivateZone   bool
-	PropagationTimeout time.Duration
-	PollingInterval    time.Duration
-	TTL                int
-	HTTPClient         *http.Client
+	Debug                     bool
+	Project                   string
+	ZoneID                    string
+	AllowPrivateZone          bool
+	PropagationTimeout        time.Duration
+	PollingInterval           time.Duration
+	TTL                       int
+	HTTPClient                *http.Client
+	ImpersonateServiceAccount string
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		Debug:              env.GetOrDefaultBool(EnvDebug, false),
-		ZoneID:             env.GetOrDefaultString(EnvZoneID, ""),
-		AllowPrivateZone:   env.GetOrDefaultBool(EnvAllowPrivateZone, false),
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
+		Debug:                     env.GetOrDefaultBool(EnvDebug, false),
+		ZoneID:                    env.GetOrDefaultString(EnvZoneID, ""),
+		AllowPrivateZone:          env.GetOrDefaultBool(EnvAllowPrivateZone, false),
+		TTL:                       env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout:        env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
+		PollingInterval:           env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
+		ImpersonateServiceAccount: env.GetOrDefaultString(EnvImpersonateServiceAccount, ""),
 	}
 }
 
@@ -95,13 +100,39 @@ func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 		return nil, errors.New("googlecloud: project name missing")
 	}
 
-	client, err := google.DefaultClient(context.Background(), dns.NdevClouddnsReadwriteScope)
-	if err != nil {
-		return nil, fmt.Errorf("googlecloud: unable to get Google Cloud client: %w", err)
-	}
-
 	config := NewDefaultConfig()
 	config.Project = project
+
+	ctx := context.Background()
+	scopes := []string{dns.NdevClouddnsReadwriteScope}
+
+	var client *http.Client
+
+	if config.ImpersonateServiceAccount != "" {
+		// Create impersonated credentials
+		ts, err := google.DefaultTokenSource(ctx, scopes...)
+		if err != nil {
+			return nil, fmt.Errorf("googlecloud: unable to get default token source: %w", err)
+		}
+
+		impersonatedTS, err := impersonate.CredentialsTokenSource(ctx, impersonate.CredentialsConfig{
+			TargetPrincipal: config.ImpersonateServiceAccount,
+			Scopes:          scopes,
+		}, option.WithTokenSource(ts))
+		if err != nil {
+			return nil, fmt.Errorf("googlecloud: unable to create impersonated credentials: %w", err)
+		}
+
+		client = oauth2.NewClient(ctx, impersonatedTS)
+	} else {
+		// Use default credentials without impersonation
+		var err error
+		client, err = google.DefaultClient(ctx, dns.NdevClouddnsReadwriteScope)
+		if err != nil {
+			return nil, fmt.Errorf("googlecloud: unable to get Google Cloud client: %w", err)
+		}
+	}
+
 	config.HTTPClient = client
 
 	return NewDNSProviderConfig(config)
@@ -129,14 +160,41 @@ func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
 		project = datJSON.ProjectID
 	}
 
-	conf, err := google.JWTConfigFromJSON(saKey, dns.NdevClouddnsReadwriteScope)
-	if err != nil {
-		return nil, fmt.Errorf("googlecloud: unable to acquire config: %w", err)
-	}
-	client := conf.Client(context.Background())
-
 	config := NewDefaultConfig()
 	config.Project = project
+
+	ctx := context.Background()
+	scopes := []string{dns.NdevClouddnsReadwriteScope}
+
+	var client *http.Client
+
+	if config.ImpersonateServiceAccount != "" {
+		// Create credentials from service account key
+		conf, err := google.JWTConfigFromJSON(saKey, scopes...)
+		if err != nil {
+			return nil, fmt.Errorf("googlecloud: unable to acquire config: %w", err)
+		}
+		ts := conf.TokenSource(ctx)
+
+		// Create impersonated credentials
+		impersonatedTS, err := impersonate.CredentialsTokenSource(ctx, impersonate.CredentialsConfig{
+			TargetPrincipal: config.ImpersonateServiceAccount,
+			Scopes:          scopes,
+		}, option.WithTokenSource(ts))
+		if err != nil {
+			return nil, fmt.Errorf("googlecloud: unable to create impersonated credentials: %w", err)
+		}
+
+		client = oauth2.NewClient(ctx, impersonatedTS)
+	} else {
+		// Use service account key without impersonation
+		conf, err := google.JWTConfigFromJSON(saKey, dns.NdevClouddnsReadwriteScope)
+		if err != nil {
+			return nil, fmt.Errorf("googlecloud: unable to acquire config: %w", err)
+		}
+		client = conf.Client(ctx)
+	}
+
 	config.HTTPClient = client
 
 	return NewDNSProviderConfig(config)

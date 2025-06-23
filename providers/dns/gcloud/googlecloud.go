@@ -104,20 +104,25 @@ func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 	config.Project = project
 
 	ctx := context.Background()
-	scopes := []string{dns.NdevClouddnsReadwriteScope}
-
 	var client *http.Client
 
 	if config.ImpersonateServiceAccount != "" {
+		// When using impersonation, the source account needs cloud-platform scope
+		// to call the IAM Credentials API
+		sourceScopes := []string{"https://www.googleapis.com/auth/cloud-platform"}
+		
 		// Create impersonated credentials
-		ts, err := google.DefaultTokenSource(ctx, scopes...)
+		ts, err := google.DefaultTokenSource(ctx, sourceScopes...)
 		if err != nil {
 			return nil, fmt.Errorf("googlecloud: unable to get default token source: %w", err)
 		}
 
+		// The impersonated service account will have DNS scope
+		targetScopes := []string{dns.NdevClouddnsReadwriteScope}
+		
 		impersonatedTS, err := impersonate.CredentialsTokenSource(ctx, impersonate.CredentialsConfig{
 			TargetPrincipal: config.ImpersonateServiceAccount,
-			Scopes:          scopes,
+			Scopes:          targetScopes,
 		}, option.WithTokenSource(ts))
 		if err != nil {
 			return nil, fmt.Errorf("googlecloud: unable to create impersonated credentials: %w", err)
@@ -164,22 +169,27 @@ func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
 	config.Project = project
 
 	ctx := context.Background()
-	scopes := []string{dns.NdevClouddnsReadwriteScope}
-
 	var client *http.Client
 
 	if config.ImpersonateServiceAccount != "" {
+		// When using impersonation, the source account needs cloud-platform scope
+		// to call the IAM Credentials API
+		sourceScopes := []string{"https://www.googleapis.com/auth/cloud-platform"}
+		
 		// Create credentials from service account key
-		conf, err := google.JWTConfigFromJSON(saKey, scopes...)
+		conf, err := google.JWTConfigFromJSON(saKey, sourceScopes...)
 		if err != nil {
 			return nil, fmt.Errorf("googlecloud: unable to acquire config: %w", err)
 		}
 		ts := conf.TokenSource(ctx)
 
+		// The impersonated service account will have DNS scope
+		targetScopes := []string{dns.NdevClouddnsReadwriteScope}
+		
 		// Create impersonated credentials
 		impersonatedTS, err := impersonate.CredentialsTokenSource(ctx, impersonate.CredentialsConfig{
 			TargetPrincipal: config.ImpersonateServiceAccount,
-			Scopes:          scopes,
+			Scopes:          targetScopes,
 		}, option.WithTokenSource(ts))
 		if err != nil {
 			return nil, fmt.Errorf("googlecloud: unable to create impersonated credentials: %w", err)

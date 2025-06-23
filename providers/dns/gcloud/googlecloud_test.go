@@ -30,7 +30,8 @@ var envTest = tester.NewEnvTest(
 	envServiceAccountFile,
 	envGoogleApplicationCredentials,
 	envMetadataHost,
-	EnvServiceAccount).
+	EnvServiceAccount,
+	EnvImpersonateServiceAccount).
 	WithDomain(envDomain).
 	WithLiveTestExtra(func() bool {
 		_, err := google.DefaultClient(context.Background(), dns.NdevClouddnsReadwriteScope)

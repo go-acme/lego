@@ -17,9 +17,11 @@ import (
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/platform/wait"
 	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
 	"google.golang.org/api/googleapi"
+	"google.golang.org/api/impersonate"
 	"google.golang.org/api/option"
 )
 
@@ -27,11 +29,12 @@ import (
 const (
 	envNamespace = "GCE_"
 
-	EnvServiceAccount   = envNamespace + "SERVICE_ACCOUNT"
-	EnvProject          = envNamespace + "PROJECT"
-	EnvZoneID           = envNamespace + "ZONE_ID"
-	EnvAllowPrivateZone = envNamespace + "ALLOW_PRIVATE_ZONE"
-	EnvDebug            = envNamespace + "DEBUG"
+	EnvServiceAccount            = envNamespace + "SERVICE_ACCOUNT"
+	EnvProject                   = envNamespace + "PROJECT"
+	EnvZoneID                    = envNamespace + "ZONE_ID"
+	EnvAllowPrivateZone          = envNamespace + "ALLOW_PRIVATE_ZONE"
+	EnvDebug                     = envNamespace + "DEBUG"
+	EnvImpersonateServiceAccount = envNamespace + "IMPERSONATE_SERVICE_ACCOUNT"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -44,25 +47,27 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Debug              bool
-	Project            string
-	ZoneID             string
-	AllowPrivateZone   bool
-	PropagationTimeout time.Duration
-	PollingInterval    time.Duration
-	TTL                int
-	HTTPClient         *http.Client
+	Debug                     bool
+	Project                   string
+	ZoneID                    string
+	AllowPrivateZone          bool
+	ImpersonateServiceAccount string
+	PropagationTimeout        time.Duration
+	PollingInterval           time.Duration
+	TTL                       int
+	HTTPClient                *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		Debug:              env.GetOrDefaultBool(EnvDebug, false),
-		ZoneID:             env.GetOrDefaultString(EnvZoneID, ""),
-		AllowPrivateZone:   env.GetOrDefaultBool(EnvAllowPrivateZone, false),
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
+		Debug:                     env.GetOrDefaultBool(EnvDebug, false),
+		ZoneID:                    env.GetOrDefaultString(EnvZoneID, ""),
+		AllowPrivateZone:          env.GetOrDefaultBool(EnvAllowPrivateZone, false),
+		ImpersonateServiceAccount: env.GetOrDefaultString(EnvImpersonateServiceAccount, ""),
+		TTL:                       env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout:        env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
+		PollingInterval:           env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
 	}
 }
 
@@ -95,14 +100,14 @@ func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 		return nil, errors.New("googlecloud: project name missing")
 	}
 
-	client, err := google.DefaultClient(context.Background(), dns.NdevClouddnsReadwriteScope)
-	if err != nil {
-		return nil, fmt.Errorf("googlecloud: unable to get Google Cloud client: %w", err)
-	}
-
 	config := NewDefaultConfig()
 	config.Project = project
-	config.HTTPClient = client
+
+	var err error
+	config.HTTPClient, err = newClientFromCredentials(context.Background(), config)
+	if err != nil {
+		return nil, fmt.Errorf("googlecloud: %w", err)
+	}
 
 	return NewDNSProviderConfig(config)
 }
@@ -129,15 +134,14 @@ func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
 		project = datJSON.ProjectID
 	}
 
-	conf, err := google.JWTConfigFromJSON(saKey, dns.NdevClouddnsReadwriteScope)
-	if err != nil {
-		return nil, fmt.Errorf("googlecloud: unable to acquire config: %w", err)
-	}
-	client := conf.Client(context.Background())
-
 	config := NewDefaultConfig()
 	config.Project = project
-	config.HTTPClient = client
+
+	var err error
+	config.HTTPClient, err = newClientFromServiceAccountKey(context.Background(), config, saKey)
+	if err != nil {
+		return nil, fmt.Errorf("googlecloud: %w", err)
+	}
 
 	return NewDNSProviderConfig(config)
 }
@@ -382,6 +386,54 @@ func (d *DNSProvider) findTxtRecords(zone, fqdn string) ([]*dns.ResourceRecordSe
 	}
 
 	return recs.Rrsets, nil
+}
+
+func newClientFromCredentials(ctx context.Context, config *Config) (*http.Client, error) {
+	if config.ImpersonateServiceAccount != "" {
+		ts, err := google.DefaultTokenSource(ctx, "https://www.googleapis.com/auth/cloud-platform")
+		if err != nil {
+			return nil, fmt.Errorf("unable to get default token source: %w", err)
+		}
+
+		return newImpersonateClient(ctx, config.ImpersonateServiceAccount, ts)
+	}
+
+	client, err := google.DefaultClient(ctx, dns.NdevClouddnsReadwriteScope)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get Google Cloud client: %w", err)
+	}
+
+	return client, nil
+}
+
+func newClientFromServiceAccountKey(ctx context.Context, config *Config, saKey []byte) (*http.Client, error) {
+	if config.ImpersonateServiceAccount != "" {
+		conf, err := google.JWTConfigFromJSON(saKey, "https://www.googleapis.com/auth/cloud-platform")
+		if err != nil {
+			return nil, fmt.Errorf("unable to acquire config: %w", err)
+		}
+
+		return newImpersonateClient(ctx, config.ImpersonateServiceAccount, conf.TokenSource(ctx))
+	}
+
+	conf, err := google.JWTConfigFromJSON(saKey, dns.NdevClouddnsReadwriteScope)
+	if err != nil {
+		return nil, fmt.Errorf("unable to acquire config: %w", err)
+	}
+
+	return conf.Client(ctx), nil
+}
+
+func newImpersonateClient(ctx context.Context, impersonateServiceAccount string, ts oauth2.TokenSource) (*http.Client, error) {
+	impersonatedTS, err := impersonate.CredentialsTokenSource(ctx, impersonate.CredentialsConfig{
+		TargetPrincipal: impersonateServiceAccount,
+		Scopes:          []string{dns.NdevClouddnsReadwriteScope},
+	}, option.WithTokenSource(ts))
+	if err != nil {
+		return nil, fmt.Errorf("unable to create impersonated credentials: %w", err)
+	}
+
+	return oauth2.NewClient(ctx, impersonatedTS), nil
 }
 
 func mustUnquote(raw string) string {

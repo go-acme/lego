@@ -26,9 +26,21 @@ Configuration for [Google Cloud](https://cloud.google.com).
 Here is an example bash command using the Google Cloud provider:
 
 ```bash
+# Using a service account file
 GCE_PROJECT="gc-project-id" \
 GCE_SERVICE_ACCOUNT_FILE="/path/to/svc/account/file.json" \
-lego --email you@email.com --dns gcloud -d '*.example.com' -d example.com run
+lego --email you@example.com --dns gcloud -d '*.example.com' -d example.com run
+
+# Using default credentials with impersonation
+GCE_PROJECT="gc-project-id" \
+GCE_IMPERSONATE_SERVICE_ACCOUNT="target-sa@gc-project-id.iam.gserviceaccount.com" \
+lego --email you@example.com --dns gcloud -d '*.example.com' -d example.com run
+
+# Using service account key with impersonation
+GCE_PROJECT="gc-project-id" \
+GCE_SERVICE_ACCOUNT_FILE="/path/to/svc/account/file.json" \
+GCE_IMPERSONATE_SERVICE_ACCOUNT="target-sa@gc-project-id.iam.gserviceaccount.com" \
+lego --email you@example.com --dns gcloud -d '*.example.com' -d example.com run
 ```
 
 
@@ -52,6 +64,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `GCE_ALLOW_PRIVATE_ZONE` | Allows requested domain to be in private DNS zone, works only with a private ACME server (by default: false) |
+| `GCE_IMPERSONATE_SERVICE_ACCOUNT` | Service account email to impersonate |
 | `GCE_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 5) |
 | `GCE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 180) |
 | `GCE_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
@@ -60,6 +73,11 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
+Supports service account impersonation to access Google Cloud DNS resources across different projects or with restricted permissions.
+
+When using impersonation, the source service account must have:
+1. The "Service Account Token Creator" role on the source service account
+2. The "https://www.googleapis.com/auth/cloud-platform" scope
 
 
 

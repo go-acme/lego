@@ -1,7 +1,9 @@
 Name = "Google Cloud"
 Description = '''
 Supports service account impersonation to access Google Cloud DNS resources across different projects or with restricted permissions.
-When using impersonation, the base service account must have the "Service Account Token Creator" role on the target service account.
+When using impersonation, the source service account must have:
+1. The "Service Account Token Creator" role on the target service account
+2. The "https://www.googleapis.com/auth/cloud-platform" scope (automatically requested by lego)
 '''
 URL = "https://cloud.google.com"
 Code = "gcloud"
@@ -15,6 +17,12 @@ lego --email you@email.com --dns gcloud -d '*.example.com' -d example.com run
 
 # Using default credentials with impersonation
 GCE_PROJECT="gc-project-id" \
+GCE_IMPERSONATE_SERVICE_ACCOUNT="target-sa@gc-project-id.iam.gserviceaccount.com" \
+lego --email you@email.com --dns gcloud -d '*.example.com' -d example.com run
+
+# Using service account key with impersonation
+GCE_PROJECT="gc-project-id" \
+GCE_SERVICE_ACCOUNT_FILE="/path/to/svc/account/file.json" \
 GCE_IMPERSONATE_SERVICE_ACCOUNT="target-sa@gc-project-id.iam.gserviceaccount.com" \
 lego --email you@email.com --dns gcloud -d '*.example.com' -d example.com run
 '''

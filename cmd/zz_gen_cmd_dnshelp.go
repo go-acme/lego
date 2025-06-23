@@ -1354,6 +1354,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "Application Default Credentials":	[Documentation](https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application)`)
+		ew.writeln(`	- "GCE_IMPERSONATE_SERVICE_ACCOUNT":	Service account email to impersonate (optional)`)
 		ew.writeln(`	- "GCE_PROJECT":	Project name (by default, the project name is auto-detected by using the metadata service)`)
 		ew.writeln(`	- "GCE_SERVICE_ACCOUNT":	Account`)
 		ew.writeln(`	- "GCE_SERVICE_ACCOUNT_FILE":	Account file path`)

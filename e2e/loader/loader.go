@@ -3,6 +3,7 @@ package loader
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/wait"
+	"github.com/ldez/grignotin/goenv"
 )
 
 const (
@@ -311,8 +313,13 @@ func goTool() (string, error) {
 		exeSuffix = ".exe"
 	}
 
-	path := filepath.Join(runtime.GOROOT(), "bin", "go"+exeSuffix)
-	if _, err := os.Stat(path); err == nil {
+	goRoot, err := goenv.GetOne(context.Background(), goenv.GOROOT)
+	if err != nil {
+		return "", fmt.Errorf("cannot find go root: %w", err)
+	}
+
+	path := filepath.Join(goRoot, "bin", "go"+exeSuffix)
+	if _, err = os.Stat(path); err == nil {
 		return path, nil
 	}
 

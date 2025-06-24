@@ -1,7 +1,6 @@
 package selectel
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -47,7 +46,7 @@ func TestClient_ListRecords(t *testing.T) {
 		}
 	})
 
-	records, err := client.ListRecords(context.Background(), 123)
+	records, err := client.ListRecords(t.Context(), 123)
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -76,7 +75,7 @@ func TestClient_ListRecords_error(t *testing.T) {
 		}
 	})
 
-	records, err := client.ListRecords(context.Background(), 123)
+	records, err := client.ListRecords(t.Context(), 123)
 
 	require.EqualError(t, err, "request failed with status code 401: API error: 400 - error description - field that the error occurred in")
 	assert.Nil(t, records)
@@ -118,7 +117,7 @@ func TestClient_GetDomainByName(t *testing.T) {
 		}
 	})
 
-	domain, err := client.GetDomainByName(context.Background(), "sub.sub.example.org")
+	domain, err := client.GetDomainByName(t.Context(), "sub.sub.example.org")
 	require.NoError(t, err)
 
 	expected := &Domain{
@@ -155,7 +154,7 @@ func TestClient_AddRecord(t *testing.T) {
 		}
 	})
 
-	record, err := client.AddRecord(context.Background(), 123, Record{
+	record, err := client.AddRecord(t.Context(), 123, Record{
 		Name:    "example.org",
 		Type:    "TXT",
 		TTL:     60,
@@ -187,7 +186,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		}
 	})
 
-	err := client.DeleteRecord(context.Background(), 123, 456)
+	err := client.DeleteRecord(t.Context(), 123, 456)
 	require.NoError(t, err)
 }
 

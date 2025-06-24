@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -53,7 +52,7 @@ func TestClient_SetRecord(t *testing.T) {
 
 			client := setupTest(t, test.response)
 
-			err := client.SetRecord(context.Background(), "example.com", "txttxttxt", 10)
+			err := client.SetRecord(t.Context(), "example.com", "txttxttxt", 10)
 			test.assert(t, err)
 		})
 	}

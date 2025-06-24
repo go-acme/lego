@@ -1,7 +1,6 @@
 package vultr
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -206,7 +205,7 @@ func TestDNSProvider_getHostedZone(t *testing.T) {
 				}
 			})
 
-			zone, err := p.getHostedZone(context.Background(), test.domain)
+			zone, err := p.getHostedZone(t.Context(), test.domain)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, zone)

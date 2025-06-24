@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -72,7 +71,7 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 func TestListRecords(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/dns_rr_list", http.StatusOK, "dns_rr_list.json")
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	records, err := client.ListRecords(ctx)
 	require.NoError(t, err)
@@ -339,7 +338,7 @@ func TestListRecords(t *testing.T) {
 func TestGetRecord(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/dns_rr_info", http.StatusOK, "dns_rr_info.json")
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	record, err := client.GetRecord(ctx, "239")
 	require.NoError(t, err)
@@ -386,7 +385,7 @@ func TestGetRecord(t *testing.T) {
 func TestAddRecord(t *testing.T) {
 	client := setupTest(t, http.MethodPost, "/dns_rr_add", http.StatusCreated, "dns_rr_add.json")
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	r := ResourceRecord{
 		RRName:      "test.example.com",
@@ -407,7 +406,7 @@ func TestAddRecord(t *testing.T) {
 func TestDeleteRecord(t *testing.T) {
 	client := setupTest(t, http.MethodDelete, "/dns_rr_delete", http.StatusOK, "dns_rr_delete.json")
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	resp, err := client.DeleteRecord(ctx, DeleteInputParameters{RRID: "251"})
 	require.NoError(t, err)
@@ -420,7 +419,7 @@ func TestDeleteRecord(t *testing.T) {
 func TestDeleteRecord_error(t *testing.T) {
 	client := setupTest(t, http.MethodDelete, "/dns_rr_delete", http.StatusBadRequest, "dns_rr_delete-error.json")
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	_, err := client.DeleteRecord(ctx, DeleteInputParameters{RRID: "251"})
 	require.ErrorAs(t, err, &APIError{})

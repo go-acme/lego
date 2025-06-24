@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -64,7 +63,7 @@ func TestClient_Create(t *testing.T) {
 		},
 	}
 
-	result, err := client.CreateRRSet(context.Background(), "example.com", "groupA", rrSet)
+	result, err := client.CreateRRSet(t.Context(), "example.com", "groupA", rrSet)
 	require.NoError(t, err)
 
 	expected := &APIRRSet{
@@ -94,14 +93,14 @@ func TestClient_Create_error(t *testing.T) {
 		},
 	}
 
-	_, err := client.CreateRRSet(context.Background(), "example.com", "groupA", rrSet)
+	_, err := client.CreateRRSet(t.Context(), "example.com", "groupA", rrSet)
 	require.Error(t, err)
 }
 
 func TestClient_Get(t *testing.T) {
 	client := setupTest(t, "GET /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT", http.StatusOK, "get.json")
 
-	result, err := client.GetRRSet(context.Background(), "example.com", "groupA", "www", "TXT")
+	result, err := client.GetRRSet(t.Context(), "example.com", "groupA", "www", "TXT")
 	require.NoError(t, err)
 
 	expected := &APIRRSet{
@@ -125,7 +124,7 @@ func TestClient_Get(t *testing.T) {
 func TestClient_Get_not_found(t *testing.T) {
 	client := setupTest(t, "GET /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT", http.StatusNotFound, "error_404.json")
 
-	result, err := client.GetRRSet(context.Background(), "example.com", "groupA", "www", "TXT")
+	result, err := client.GetRRSet(t.Context(), "example.com", "groupA", "www", "TXT")
 	require.NoError(t, err)
 
 	assert.Nil(t, result)
@@ -134,14 +133,14 @@ func TestClient_Get_not_found(t *testing.T) {
 func TestClient_Get_error(t *testing.T) {
 	client := setupTest(t, "GET /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT", http.StatusBadRequest, "")
 
-	_, err := client.GetRRSet(context.Background(), "example.com", "groupA", "www", "TXT")
+	_, err := client.GetRRSet(t.Context(), "example.com", "groupA", "www", "TXT")
 	require.Error(t, err)
 }
 
 func TestClient_Delete(t *testing.T) {
 	client := setupTest(t, "DELETE /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT", http.StatusOK, "get.json")
 
-	result, err := client.DeleteRRSet(context.Background(), "example.com", "groupA", "www", "TXT")
+	result, err := client.DeleteRRSet(t.Context(), "example.com", "groupA", "www", "TXT")
 	require.NoError(t, err)
 
 	expected := &APIRRSet{
@@ -165,7 +164,7 @@ func TestClient_Delete(t *testing.T) {
 func TestClient_Delete_error(t *testing.T) {
 	client := setupTest(t, "DELETE /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT", http.StatusBadRequest, "")
 
-	_, err := client.DeleteRRSet(context.Background(), "example.com", "groupA", "www", "TXT")
+	_, err := client.DeleteRRSet(t.Context(), "example.com", "groupA", "www", "TXT")
 	require.Error(t, err)
 }
 
@@ -181,7 +180,7 @@ func TestClient_Replace(t *testing.T) {
 		},
 	}
 
-	result, err := client.ReplaceRRSet(context.Background(), "example.com", "groupA", "www", "TXT", rrSet)
+	result, err := client.ReplaceRRSet(t.Context(), "example.com", "groupA", "www", "TXT", rrSet)
 	require.NoError(t, err)
 
 	expected := &APIRRSet{
@@ -214,6 +213,6 @@ func TestClient_Replace_error(t *testing.T) {
 		},
 	}
 
-	_, err := client.ReplaceRRSet(context.Background(), "example.com", "groupA", "www", "TXT", rrSet)
+	_, err := client.ReplaceRRSet(t.Context(), "example.com", "groupA", "www", "TXT", rrSet)
 	require.Error(t, err)
 }

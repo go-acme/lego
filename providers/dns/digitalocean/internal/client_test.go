@@ -2,7 +2,6 @@ package internal
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -98,7 +97,7 @@ func TestClient_AddTxtRecord(t *testing.T) {
 		TTL:  30,
 	}
 
-	newRecord, err := client.AddTxtRecord(context.Background(), "example.com", record)
+	newRecord, err := client.AddTxtRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 
 	expected := &TxtRecordResponse{DomainRecord: Record{
@@ -134,6 +133,6 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 		rw.WriteHeader(http.StatusNoContent)
 	})
 
-	err := client.RemoveTxtRecord(context.Background(), "example.com", 1234567)
+	err := client.RemoveTxtRecord(t.Context(), "example.com", 1234567)
 	require.NoError(t, err)
 }

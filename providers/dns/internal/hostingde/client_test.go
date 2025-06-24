@@ -2,7 +2,6 @@ package hostingde
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -72,7 +71,7 @@ func TestClient_ListZoneConfigs(t *testing.T) {
 		Page:   1,
 	}
 
-	zoneResponse, err := client.ListZoneConfigs(context.Background(), zonesFind)
+	zoneResponse, err := client.ListZoneConfigs(t.Context(), zonesFind)
 	require.NoError(t, err)
 
 	expected := &ZoneResponse{
@@ -124,7 +123,7 @@ func TestClient_ListZoneConfigs_error(t *testing.T) {
 		Page:   1,
 	}
 
-	_, err := client.ListZoneConfigs(context.Background(), zonesFind)
+	_, err := client.ListZoneConfigs(t.Context(), zonesFind)
 	require.Error(t, err)
 }
 
@@ -179,7 +178,7 @@ func TestClient_UpdateZone(t *testing.T) {
 		}},
 	}
 
-	response, err := client.UpdateZone(context.Background(), request)
+	response, err := client.UpdateZone(t.Context(), request)
 	require.NoError(t, err)
 
 	expected := &Zone{
@@ -259,6 +258,6 @@ func TestClient_UpdateZone_error(t *testing.T) {
 		}},
 	}
 
-	_, err := client.UpdateZone(context.Background(), request)
+	_, err := client.UpdateZone(t.Context(), request)
 	require.Error(t, err)
 }

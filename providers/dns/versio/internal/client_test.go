@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -58,7 +57,7 @@ func TestClient_GetDomain(t *testing.T) {
 		writeFixture(rw, "get-domain.json")
 	})
 
-	records, err := client.GetDomain(context.Background(), "example.com")
+	records, err := client.GetDomain(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := &DomainInfoResponse{DomainInfo: DomainInfo{DNSRecords: []Record{
@@ -91,7 +90,7 @@ func TestClient_GetDomain_error(t *testing.T) {
 		writeFixture(rw, "get-domain-error.json")
 	})
 
-	_, err := client.GetDomain(context.Background(), "example.com")
+	_, err := client.GetDomain(t.Context(), "example.com")
 	require.ErrorAs(t, err, &ErrorMessage{})
 }
 
@@ -126,7 +125,7 @@ func TestClient_UpdateDomain(t *testing.T) {
 		{Type: "A", Name: "redirect.example.com", Value: "localhost", Priority: 10, TTL: 14400},
 	}}
 
-	records, err := client.UpdateDomain(context.Background(), "example.com", msg)
+	records, err := client.UpdateDomain(t.Context(), "example.com", msg)
 	require.NoError(t, err)
 
 	expected := &DomainInfoResponse{DomainInfo: DomainInfo{DNSRecords: []Record{
@@ -174,6 +173,6 @@ func TestClient_UpdateDomain_error(t *testing.T) {
 		{Type: "A", Name: "redirect.example.com", Value: "localhost", Priority: 10, TTL: 14400},
 	}}
 
-	_, err := client.UpdateDomain(context.Background(), "example.com", msg)
+	_, err := client.UpdateDomain(t.Context(), "example.com", msg)
 	require.ErrorAs(t, err, &ErrorMessage{})
 }

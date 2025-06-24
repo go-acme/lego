@@ -2,7 +2,6 @@ package internal
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -75,7 +74,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		TTL:   60,
 	}
 
-	resp, err := client.CreateRecord(context.Background(), "example.com.", record)
+	resp, err := client.CreateRecord(t.Context(), "example.com.", record)
 	require.NoError(t, err)
 
 	expected := &CreateRecordResponse{
@@ -109,6 +108,6 @@ func TestClient_DeleteRecord(t *testing.T) {
 		rw.WriteHeader(http.StatusOK)
 	})
 
-	err := client.DeleteRecord(context.Background(), "example.com.", "1234567")
+	err := client.DeleteRecord(t.Context(), "example.com.", "1234567")
 	require.NoError(t, err)
 }

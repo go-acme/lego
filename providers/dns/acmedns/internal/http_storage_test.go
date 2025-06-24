@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -54,7 +53,7 @@ func setupTest(t *testing.T, pattern, filename string, statusCode int) *HTTPStor
 func TestHTTPStorage_Fetch(t *testing.T) {
 	storage := setupTest(t, "GET /example.com", "fetch.json", http.StatusOK)
 
-	account, err := storage.Fetch(context.Background(), "example.com")
+	account, err := storage.Fetch(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := goacmedns.Account{
@@ -71,14 +70,14 @@ func TestHTTPStorage_Fetch(t *testing.T) {
 func TestHTTPStorage_Fetch_error(t *testing.T) {
 	storage := setupTest(t, "GET /example.com", "error.json", http.StatusInternalServerError)
 
-	_, err := storage.Fetch(context.Background(), "example.com")
+	_, err := storage.Fetch(t.Context(), "example.com")
 	require.Error(t, err)
 }
 
 func TestHTTPStorage_FetchAll(t *testing.T) {
 	storage := setupTest(t, "GET /", "fetch-all.json", http.StatusOK)
 
-	account, err := storage.FetchAll(context.Background())
+	account, err := storage.FetchAll(t.Context())
 	require.NoError(t, err)
 
 	expected := map[string]goacmedns.Account{
@@ -104,7 +103,7 @@ func TestHTTPStorage_FetchAll(t *testing.T) {
 func TestHTTPStorage_FetchAll_error(t *testing.T) {
 	storage := setupTest(t, "GET /", "error.json", http.StatusInternalServerError)
 
-	_, err := storage.FetchAll(context.Background())
+	_, err := storage.FetchAll(t.Context())
 	require.Error(t, err)
 }
 
@@ -119,7 +118,7 @@ func TestHTTPStorage_Put(t *testing.T) {
 		ServerURL:  "https://example.com",
 	}
 
-	err := storage.Put(context.Background(), "example.com", account)
+	err := storage.Put(t.Context(), "example.com", account)
 	require.NoError(t, err)
 }
 
@@ -134,7 +133,7 @@ func TestHTTPStorage_Put_error(t *testing.T) {
 		ServerURL:  "https://example.com",
 	}
 
-	err := storage.Put(context.Background(), "example.com", account)
+	err := storage.Put(t.Context(), "example.com", account)
 	require.Error(t, err)
 }
 
@@ -149,6 +148,6 @@ func TestHTTPStorage_Put_CNAME_created(t *testing.T) {
 		ServerURL:  "https://example.com",
 	}
 
-	err := storage.Put(context.Background(), "example.com", account)
+	err := storage.Put(t.Context(), "example.com", account)
 	require.ErrorIs(t, err, ErrCNAMEAlreadyCreated)
 }

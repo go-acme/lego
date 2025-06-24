@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -70,7 +69,7 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 func TestClient_ListZones(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/zones/records/all/example.com", http.StatusOK, "list-zone.json")
 
-	zones, err := client.ListZones(context.Background(), "example.com")
+	zones, err := client.ListZones(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := []ZoneRecord{{
@@ -90,7 +89,7 @@ func TestClient_ListZones(t *testing.T) {
 func TestClient_ListZones_error(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/zones/records/all/example.com", http.StatusOK, "error1.json")
 
-	_, err := client.ListZones(context.Background(), "example.com")
+	_, err := client.ListZones(t.Context(), "example.com")
 	require.EqualError(t, err, "code 420: Enhance Your Calm. Rate limit exceeded (too many requests) OR you did NOT provide any credentials with your request!")
 }
 
@@ -106,7 +105,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Priority: "0",
 	}
 
-	recordID, err := client.AddRecord(context.Background(), "example.com", record)
+	recordID, err := client.AddRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 
 	assert.Equal(t, "xxx", recordID)
@@ -124,13 +123,13 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Priority: "0",
 	}
 
-	_, err := client.AddRecord(context.Background(), "example.com", record)
+	_, err := client.AddRecord(t.Context(), "example.com", record)
 	require.EqualError(t, err, "code 420: Enhance Your Calm. Rate limit exceeded (too many requests) OR you did NOT provide any credentials with your request!")
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, http.MethodDelete, "/zones/records/example.com/xxx", http.StatusOK, "")
 
-	err := client.DeleteRecord(context.Background(), "example.com", "xxx")
+	err := client.DeleteRecord(t.Context(), "example.com", "xxx")
 	require.NoError(t, err)
 }

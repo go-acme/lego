@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -63,7 +62,7 @@ func testHandler(method, filename string, statusCode int) http.HandlerFunc {
 func TestClient_GetDomains(t *testing.T) {
 	client := setupTest(t, testHandler(http.MethodGet, "get_domains.json", http.StatusOK))
 
-	domains, err := client.GetDomains(context.Background())
+	domains, err := client.GetDomains(t.Context())
 	require.NoError(t, err)
 
 	expected := &Domains{
@@ -114,7 +113,7 @@ func TestClient_GetDomains(t *testing.T) {
 func TestClient_GetDomains_error(t *testing.T) {
 	client := setupTest(t, testHandler(http.MethodGet, "error.json", http.StatusUnauthorized))
 
-	domains, err := client.GetDomains(context.Background())
+	domains, err := client.GetDomains(t.Context())
 	require.Error(t, err)
 
 	require.Nil(t, domains)
@@ -123,27 +122,27 @@ func TestClient_GetDomains_error(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := setupTest(t, testHandler(http.MethodPost, "add_record.json", http.StatusCreated))
 
-	err := client.AddRecord(context.Background(), "lego.ipv64.net", "_acme-challenge", "TXT", "value")
+	err := client.AddRecord(t.Context(), "lego.ipv64.net", "_acme-challenge", "TXT", "value")
 	require.NoError(t, err)
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
 	client := setupTest(t, testHandler(http.MethodPost, "add_record-error.json", http.StatusBadRequest))
 
-	err := client.AddRecord(context.Background(), "lego.ipv64.net", "_acme-challenge", "TXT", "value")
+	err := client.AddRecord(t.Context(), "lego.ipv64.net", "_acme-challenge", "TXT", "value")
 	require.Error(t, err)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, testHandler(http.MethodDelete, "del_record.json", http.StatusAccepted))
 
-	err := client.DeleteRecord(context.Background(), "lego.ipv64.net", "_acme-challenge", "TXT", "value")
+	err := client.DeleteRecord(t.Context(), "lego.ipv64.net", "_acme-challenge", "TXT", "value")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := setupTest(t, testHandler(http.MethodDelete, "del_record-error.json", http.StatusBadRequest))
 
-	err := client.DeleteRecord(context.Background(), "lego.ipv64.net", "_acme-challenge", "TXT", "value")
+	err := client.DeleteRecord(t.Context(), "lego.ipv64.net", "_acme-challenge", "TXT", "value")
 	require.Error(t, err)
 }

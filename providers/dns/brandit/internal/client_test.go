@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -46,7 +45,7 @@ func setupTest(t *testing.T, filename string) *Client {
 func TestClient_StatusDomain(t *testing.T) {
 	client := setupTest(t, "status-domain.json")
 
-	domain, err := client.StatusDomain(context.Background(), "example.com")
+	domain, err := client.StatusDomain(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := &StatusResponse{
@@ -82,14 +81,14 @@ func TestClient_StatusDomain(t *testing.T) {
 func TestClient_StatusDomain_error(t *testing.T) {
 	client := setupTest(t, "error.json")
 
-	_, err := client.StatusDomain(context.Background(), "example.com")
+	_, err := client.StatusDomain(t.Context(), "example.com")
 	require.ErrorIs(t, err, APIError{Code: 402, Status: "error", Message: "Invalid user."})
 }
 
 func TestClient_ListRecords(t *testing.T) {
 	client := setupTest(t, "list-records.json")
 
-	resp, err := client.ListRecords(context.Background(), "example", "example.com")
+	resp, err := client.ListRecords(t.Context(), "example", "example.com")
 	require.NoError(t, err)
 
 	expected := &ListRecordsResponse{
@@ -108,7 +107,7 @@ func TestClient_ListRecords(t *testing.T) {
 func TestClient_ListRecords_error(t *testing.T) {
 	client := setupTest(t, "error.json")
 
-	_, err := client.ListRecords(context.Background(), "example", "example.com")
+	_, err := client.ListRecords(t.Context(), "example", "example.com")
 	require.ErrorIs(t, err, APIError{Code: 402, Status: "error", Message: "Invalid user."})
 }
 
@@ -122,7 +121,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Content: "txttxttxt",
 		TTL:     600,
 	}
-	resp, err := client.AddRecord(context.Background(), "example.com", "test", "2565", testRecord)
+	resp, err := client.AddRecord(t.Context(), "example.com", "test", "2565", testRecord)
 	require.NoError(t, err)
 
 	expected := &AddRecord{
@@ -150,20 +149,20 @@ func TestClient_AddRecord_error(t *testing.T) {
 		TTL:     600,
 	}
 
-	_, err := client.AddRecord(context.Background(), "example.com", "test", "2565", testRecord)
+	_, err := client.AddRecord(t.Context(), "example.com", "test", "2565", testRecord)
 	require.ErrorIs(t, err, APIError{Code: 402, Status: "error", Message: "Invalid user."})
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, "delete-record.json")
 
-	err := client.DeleteRecord(context.Background(), "example.com", "test", "example.com 600 IN TXT txttxttxt", "2374")
+	err := client.DeleteRecord(t.Context(), "example.com", "test", "example.com 600 IN TXT txttxttxt", "2374")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := setupTest(t, "error.json")
 
-	err := client.DeleteRecord(context.Background(), "example.com", "test", "example.com 600 IN TXT txttxttxt", "2374")
+	err := client.DeleteRecord(t.Context(), "example.com", "test", "example.com 600 IN TXT txttxttxt", "2374")
 	require.ErrorIs(t, err, APIError{Code: 402, Status: "error", Message: "Invalid user."})
 }

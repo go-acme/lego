@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -18,7 +17,7 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
-	client := NewClient(context.Background(), "STACK_ID", "CLIENT_ID", "CLIENT_SECRET")
+	client := NewClient(t.Context(), "STACK_ID", "CLIENT_ID", "CLIENT_SECRET")
 	client.httpClient = server.Client()
 	client.baseURL, _ = url.Parse(server.URL + "/")
 
@@ -44,7 +43,7 @@ func TestClient_GetZoneRecords(t *testing.T) {
 		}
 	})
 
-	records, err := client.GetZoneRecords(context.Background(), "foo1", &Zone{ID: "A", Domain: "test"})
+	records, err := client.GetZoneRecords(t.Context(), "foo1", &Zone{ID: "A", Domain: "test"})
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -73,7 +72,7 @@ func TestClient_GetZoneRecords_apiError(t *testing.T) {
 		}
 	})
 
-	_, err := client.GetZoneRecords(context.Background(), "foo1", &Zone{ID: "A", Domain: "test"})
+	_, err := client.GetZoneRecords(t.Context(), "foo1", &Zone{ID: "A", Domain: "test"})
 
 	expected := &ErrorResponse{Code: 401, Message: "an unauthorized request is attempted."}
 	assert.Equal(t, expected, err)
@@ -122,7 +121,7 @@ func TestClient_GetZones(t *testing.T) {
 		}
 	})
 
-	zone, err := client.GetZones(context.Background(), "sub.foo.com")
+	zone, err := client.GetZones(t.Context(), "sub.foo.com")
 	require.NoError(t, err)
 
 	expected := &Zone{ID: "A", Domain: "foo.com"}

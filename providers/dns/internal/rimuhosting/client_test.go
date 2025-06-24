@@ -1,7 +1,6 @@
 package rimuhosting
 
 import (
-	"context"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -99,7 +98,7 @@ func TestClient_FindTXTRecords(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			records, err := client.FindTXTRecords(context.Background(), test.domain)
+			records, err := client.FindTXTRecords(t.Context(), test.domain)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, records)
@@ -291,7 +290,7 @@ func TestClient_DoActions(t *testing.T) {
 				}
 			})
 
-			resp, err := client.DoActions(context.Background(), test.actions...)
+			resp, err := client.DoActions(t.Context(), test.actions...)
 			if test.expected.Error != "" {
 				require.EqualError(t, err, test.expected.Error)
 				return

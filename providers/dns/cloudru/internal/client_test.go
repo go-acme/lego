@@ -58,7 +58,7 @@ func writeFixtureHandler(method, filename string) http.HandlerFunc {
 func TestClient_GetZones(t *testing.T) {
 	client := setupTest(t, "/zones", writeFixtureHandler(http.MethodGet, "zones.json"))
 
-	ctx := mockContext()
+	ctx := mockContext(t)
 
 	zones, err := client.GetZones(ctx, "xxx")
 	require.NoError(t, err)
@@ -80,7 +80,7 @@ func TestClient_GetZones(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := setupTest(t, "/zones/zzz/records", writeFixtureHandler(http.MethodGet, "records.json"))
 
-	ctx := mockContext()
+	ctx := mockContext(t)
 
 	records, err := client.GetRecords(ctx, "zzz")
 	require.NoError(t, err)
@@ -124,7 +124,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := setupTest(t, "/zones/zzz/records", writeFixtureHandler(http.MethodPost, "record.json"))
 
-	ctx := mockContext()
+	ctx := mockContext(t)
 
 	recordReq := Record{
 		Name:   "www.example.com.",
@@ -152,7 +152,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, "/zones/zzz/records/example.com/TXT", writeFixtureHandler(http.MethodDelete, "record.json"))
 
-	ctx := mockContext()
+	ctx := mockContext(t)
 
 	err := client.DeleteRecord(ctx, "zzz", "example.com", "TXT")
 	require.NoError(t, err)

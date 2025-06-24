@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -43,7 +42,7 @@ func setupTest(t *testing.T, pattern string, status int, filename string) *Clien
 		}
 	})
 
-	client := NewClient(context.Background(), "abc", "secret")
+	client := NewClient(t.Context(), "abc", "secret")
 
 	client.httpClient = server.Client()
 	client.baseURL, _ = url.Parse(server.URL)
@@ -54,7 +53,7 @@ func setupTest(t *testing.T, pattern string, status int, filename string) *Clien
 func TestClient_GetAllZones(t *testing.T) {
 	client := setupTest(t, "GET /dns/domain", http.StatusOK, "zone_domains_all.json")
 
-	groups, err := client.GetAllZones(context.Background())
+	groups, err := client.GetAllZones(t.Context())
 	require.NoError(t, err)
 
 	expected := []Zone{
@@ -135,7 +134,7 @@ func TestClient_GetAllZones(t *testing.T) {
 func TestClient_GetAllZones_error(t *testing.T) {
 	client := setupTest(t, "GET /dns/domain", http.StatusUnauthorized, "error.json")
 
-	_, err := client.GetAllZones(context.Background())
+	_, err := client.GetAllZones(t.Context())
 	require.Error(t, err)
 
 	require.EqualError(t, err, "[status code: 401] Authentication credentials were not provided.")
@@ -144,7 +143,7 @@ func TestClient_GetAllZones_error(t *testing.T) {
 func TestClient_GetAllZoneRecords(t *testing.T) {
 	client := setupTest(t, "GET /dns/domain/4/records/SPF_TXT", http.StatusOK, "zone_records_all.json")
 
-	groups, err := client.GetAllZoneRecords(context.Background(), 4)
+	groups, err := client.GetAllZoneRecords(t.Context(), 4)
 	require.NoError(t, err)
 
 	expected := []ZoneRecord{
@@ -182,7 +181,7 @@ func TestClient_GetAllZoneRecords(t *testing.T) {
 func TestClient_GetAllZoneRecords_error(t *testing.T) {
 	client := setupTest(t, "GET /dns/domain/4/records/SPF_TXT", http.StatusUnauthorized, "error.json")
 
-	_, err := client.GetAllZoneRecords(context.Background(), 4)
+	_, err := client.GetAllZoneRecords(t.Context(), 4)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "[status code: 401] Authentication credentials were not provided.")
@@ -191,14 +190,14 @@ func TestClient_GetAllZoneRecords_error(t *testing.T) {
 func TestClient_DeleteZoneRecord(t *testing.T) {
 	client := setupTest(t, "DELETE /dns/domain/4/records/SPF_TXT/6", http.StatusOK, "zone_record_delete.json")
 
-	err := client.DeleteZoneRecord(context.Background(), 4, 6)
+	err := client.DeleteZoneRecord(t.Context(), 4, 6)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteZoneRecord_error(t *testing.T) {
 	client := setupTest(t, "DELETE /dns/domain/4/records/SPF_TXT/6", http.StatusUnauthorized, "error.json")
 
-	err := client.DeleteZoneRecord(context.Background(), 4, 6)
+	err := client.DeleteZoneRecord(t.Context(), 4, 6)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "[status code: 401] Authentication credentials were not provided.")
@@ -209,7 +208,7 @@ func TestClient_CreateZoneRecord(t *testing.T) {
 
 	record := ZoneRecord{}
 
-	err := client.CreateZoneRecord(context.Background(), 4, record)
+	err := client.CreateZoneRecord(t.Context(), 4, record)
 	require.NoError(t, err)
 }
 
@@ -218,7 +217,7 @@ func TestClient_CreateZoneRecord_error(t *testing.T) {
 
 	record := ZoneRecord{}
 
-	err := client.CreateZoneRecord(context.Background(), 4, record)
+	err := client.CreateZoneRecord(t.Context(), 4, record)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "[status code: 401] Authentication credentials were not provided.")
@@ -229,7 +228,7 @@ func TestClient_CreateZoneRecord_error_bad_request(t *testing.T) {
 
 	record := ZoneRecord{}
 
-	err := client.CreateZoneRecord(context.Background(), 4, record)
+	err := client.CreateZoneRecord(t.Context(), 4, record)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "[status code: 400] Invalid record format, Record should be in list.")
@@ -243,7 +242,7 @@ func TestClient_UpdateZoneRecord(t *testing.T) {
 		ZoneID:         4,
 	}
 
-	err := client.UpdateZoneRecord(context.Background(), record)
+	err := client.UpdateZoneRecord(t.Context(), record)
 	require.NoError(t, err)
 }
 
@@ -255,7 +254,7 @@ func TestClient_UpdateZoneRecord_error(t *testing.T) {
 		ZoneID:         4,
 	}
 
-	err := client.UpdateZoneRecord(context.Background(), record)
+	err := client.UpdateZoneRecord(t.Context(), record)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "[status code: 401] Authentication credentials were not provided.")

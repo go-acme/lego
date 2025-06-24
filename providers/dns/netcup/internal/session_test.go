@@ -13,8 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func mockContext() context.Context {
-	return context.WithValue(context.Background(), sessionIDKey, "session-id")
+func mockContext(t *testing.T) context.Context {
+	t.Helper()
+
+	return context.WithValue(t.Context(), sessionIDKey, "session-id")
 }
 
 func TestClient_Login(t *testing.T) {
@@ -53,7 +55,7 @@ func TestClient_Login(t *testing.T) {
 		}
 	})
 
-	sessionID, err := client.login(context.Background())
+	sessionID, err := client.login(t.Context())
 	require.NoError(t, err)
 
 	assert.Equal(t, "api-session-id", sessionID)
@@ -122,7 +124,7 @@ func TestClient_Login_errors(t *testing.T) {
 
 			mux.HandleFunc("/", test.handler)
 
-			sessionID, err := client.login(context.Background())
+			sessionID, err := client.login(t.Context())
 			assert.Error(t, err)
 			assert.Empty(t, sessionID)
 		})
@@ -162,7 +164,7 @@ func TestClient_Logout(t *testing.T) {
 		}
 	})
 
-	err := client.Logout(mockContext())
+	err := client.Logout(mockContext(t))
 	require.NoError(t, err)
 }
 
@@ -208,7 +210,7 @@ func TestClient_Logout_errors(t *testing.T) {
 
 			mux.HandleFunc("/", test.handler)
 
-			err := client.Logout(context.Background())
+			err := client.Logout(t.Context())
 			require.Error(t, err)
 		})
 	}
@@ -232,7 +234,7 @@ func TestLiveClientAuth(t *testing.T) {
 		t.Run("Test_"+strconv.Itoa(i+1), func(t *testing.T) {
 			t.Parallel()
 
-			ctx, err := client.CreateSessionContext(context.Background())
+			ctx, err := client.CreateSessionContext(t.Context())
 			require.NoError(t, err)
 
 			err = client.Logout(ctx)

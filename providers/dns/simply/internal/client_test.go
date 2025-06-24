@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,7 +20,7 @@ func TestClient_GetRecords(t *testing.T) {
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records", mockHandler(http.MethodGet, http.StatusOK, "get_records.json"))
 
-	records, err := client.GetRecords(context.Background(), "azone01")
+	records, err := client.GetRecords(t.Context(), "azone01")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -67,7 +66,7 @@ func TestClient_GetRecords_error(t *testing.T) {
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records", mockHandler(http.MethodGet, http.StatusBadRequest, "bad_auth_error.json"))
 
-	records, err := client.GetRecords(context.Background(), "azone01")
+	records, err := client.GetRecords(t.Context(), "azone01")
 	require.Error(t, err)
 
 	assert.Nil(t, records)
@@ -86,7 +85,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Priority: 0,
 	}
 
-	recordID, err := client.AddRecord(context.Background(), "azone01", record)
+	recordID, err := client.AddRecord(t.Context(), "azone01", record)
 	require.NoError(t, err)
 
 	assert.EqualValues(t, 123456789, recordID)
@@ -105,7 +104,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Priority: 0,
 	}
 
-	recordID, err := client.AddRecord(context.Background(), "azone01", record)
+	recordID, err := client.AddRecord(t.Context(), "azone01", record)
 	require.Error(t, err)
 
 	assert.Zero(t, recordID)
@@ -124,7 +123,7 @@ func TestClient_EditRecord(t *testing.T) {
 		Priority: 0,
 	}
 
-	err := client.EditRecord(context.Background(), "azone01", 123456789, record)
+	err := client.EditRecord(t.Context(), "azone01", 123456789, record)
 	require.NoError(t, err)
 }
 
@@ -141,7 +140,7 @@ func TestClient_EditRecord_error(t *testing.T) {
 		Priority: 0,
 	}
 
-	err := client.EditRecord(context.Background(), "azone01", 123456789, record)
+	err := client.EditRecord(t.Context(), "azone01", 123456789, record)
 	require.Error(t, err)
 }
 
@@ -150,7 +149,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records/123456789", mockHandler(http.MethodDelete, http.StatusOK, "success.json"))
 
-	err := client.DeleteRecord(context.Background(), "azone01", 123456789)
+	err := client.DeleteRecord(t.Context(), "azone01", 123456789)
 	require.NoError(t, err)
 }
 
@@ -159,7 +158,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records/123456789", mockHandler(http.MethodDelete, http.StatusNotFound, "invalid_record_id.json"))
 
-	err := client.DeleteRecord(context.Background(), "azone01", 123456789)
+	err := client.DeleteRecord(t.Context(), "azone01", 123456789)
 	require.Error(t, err)
 }
 

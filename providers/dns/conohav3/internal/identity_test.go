@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -45,7 +44,7 @@ func TestGetToken_HeaderToken(t *testing.T) {
 		},
 	}
 
-	token, err := identifier.GetToken(context.Background(), auth)
+	token, err := identifier.GetToken(t.Context(), auth)
 	require.NoError(t, err)
 
 	assert.Equal(t, "sample-header-token-123", token)

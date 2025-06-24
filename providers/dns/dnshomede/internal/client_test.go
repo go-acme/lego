@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -31,7 +30,7 @@ func TestClient_Add(t *testing.T) {
 
 	client := setupTest(t, map[string]string{"example.org": "secret"}, handlerMock(addAction, txtValue))
 
-	err := client.Add(context.Background(), "example.org", txtValue)
+	err := client.Add(t.Context(), "example.org", txtValue)
 	require.NoError(t, err)
 }
 
@@ -40,7 +39,7 @@ func TestClient_Add_error(t *testing.T) {
 
 	client := setupTest(t, map[string]string{"example.com": "secret"}, handlerMock(addAction, txtValue))
 
-	err := client.Add(context.Background(), "example.org", txtValue)
+	err := client.Add(t.Context(), "example.org", txtValue)
 	require.Error(t, err)
 }
 
@@ -49,7 +48,7 @@ func TestClient_Remove(t *testing.T) {
 
 	client := setupTest(t, map[string]string{"example.org": "secret"}, handlerMock(removeAction, txtValue))
 
-	err := client.Remove(context.Background(), "example.org", txtValue)
+	err := client.Remove(t.Context(), "example.org", txtValue)
 	require.NoError(t, err)
 }
 
@@ -58,7 +57,7 @@ func TestClient_Remove_error(t *testing.T) {
 
 	client := setupTest(t, map[string]string{"example.com": "secret"}, handlerMock(removeAction, txtValue))
 
-	err := client.Remove(context.Background(), "example.org", txtValue)
+	err := client.Remove(t.Context(), "example.org", txtValue)
 	require.Error(t, err)
 }
 

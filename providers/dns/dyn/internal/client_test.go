@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -103,20 +102,20 @@ func unauthenticatedHandler(method string, status int, file string) http.Handler
 func TestClient_Publish(t *testing.T) {
 	client := setupTest(t, "/Zone/example.com", unauthenticatedHandler(http.MethodPut, http.StatusOK, "publish.json"))
 
-	err := client.Publish(context.Background(), "example.com", "my message")
+	err := client.Publish(t.Context(), "example.com", "my message")
 	require.NoError(t, err)
 }
 
 func TestClient_AddTXTRecord(t *testing.T) {
 	client := setupTest(t, "/TXTRecord/example.com/example.com.", unauthenticatedHandler(http.MethodPost, http.StatusCreated, "create-txt-record.json"))
 
-	err := client.AddTXTRecord(context.Background(), "example.com", "example.com.", "txt", 120)
+	err := client.AddTXTRecord(t.Context(), "example.com", "example.com.", "txt", 120)
 	require.NoError(t, err)
 }
 
 func TestClient_RemoveTXTRecord(t *testing.T) {
 	client := setupTest(t, "/TXTRecord/example.com/example.com.", unauthenticatedHandler(http.MethodDelete, http.StatusOK, ""))
 
-	err := client.RemoveTXTRecord(context.Background(), "example.com", "example.com.")
+	err := client.RemoveTXTRecord(t.Context(), "example.com", "example.com.")
 	require.NoError(t, err)
 }

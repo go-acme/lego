@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -97,7 +96,7 @@ func TestClient_AddRecord(t *testing.T) {
 		TTL:  30,
 	}
 
-	err := client.AddRecord(context.Background(), "example.com", record)
+	err := client.AddRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -113,7 +112,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		TTL:  30,
 	}
 
-	err := client.AddRecord(context.Background(), "example.com", record)
+	err := client.AddRecord(t.Context(), "example.com", record)
 	require.Error(t, err)
 }
 
@@ -134,7 +133,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 		Data: "txtTXTtxt",
 	}
 
-	err := client.RemoveRecord(context.Background(), "example.com", record)
+	err := client.RemoveRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -149,7 +148,7 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 		Data: "txtTXTtxt",
 	}
 
-	err := client.RemoveRecord(context.Background(), "example.com", record)
+	err := client.RemoveRecord(t.Context(), "example.com", record)
 	require.Error(t, err)
 }
 

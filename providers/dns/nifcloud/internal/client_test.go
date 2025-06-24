@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -45,7 +44,7 @@ func TestChangeResourceRecordSets(t *testing.T) {
 
 	client := setupTest(t, responseBody, http.StatusOK)
 
-	res, err := client.ChangeResourceRecordSets(context.Background(), "example.com", ChangeResourceRecordSetsRequest{})
+	res, err := client.ChangeResourceRecordSets(t.Context(), "example.com", ChangeResourceRecordSetsRequest{})
 	require.NoError(t, err)
 
 	assert.Equal(t, "xxxxx", res.ChangeInfo.ID)
@@ -92,7 +91,7 @@ func TestChangeResourceRecordSetsErrors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := setupTest(t, test.responseBody, test.statusCode)
 
-			res, err := client.ChangeResourceRecordSets(context.Background(), "example.com", ChangeResourceRecordSetsRequest{})
+			res, err := client.ChangeResourceRecordSets(t.Context(), "example.com", ChangeResourceRecordSetsRequest{})
 			assert.Nil(t, res)
 			assert.EqualError(t, err, test.expected)
 		})
@@ -112,7 +111,7 @@ func TestGetChange(t *testing.T) {
 
 	client := setupTest(t, responseBody, http.StatusOK)
 
-	res, err := client.GetChange(context.Background(), "12345")
+	res, err := client.GetChange(t.Context(), "12345")
 	require.NoError(t, err)
 
 	assert.Equal(t, "xxxxx", res.ChangeInfo.ID)
@@ -159,7 +158,7 @@ func TestGetChangeErrors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := setupTest(t, test.responseBody, test.statusCode)
 
-			res, err := client.GetChange(context.Background(), "12345")
+			res, err := client.GetChange(t.Context(), "12345")
 			assert.Nil(t, res)
 			assert.EqualError(t, err, test.expected)
 		})

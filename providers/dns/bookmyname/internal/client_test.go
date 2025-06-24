@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -62,7 +61,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Value:    "test",
 	}
 
-	err := client.AddRecord(context.Background(), record)
+	err := client.AddRecord(t.Context(), record)
 	require.NoError(t, err)
 }
 
@@ -76,7 +75,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Value:    "test",
 	}
 
-	err := client.AddRecord(context.Background(), record)
+	err := client.AddRecord(t.Context(), record)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "unexpected response: notfqdn: Host _acme-challenge.sub.example.com. malformed / vhn")
@@ -92,7 +91,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 		Value:    "test",
 	}
 
-	err := client.RemoveRecord(context.Background(), record)
+	err := client.RemoveRecord(t.Context(), record)
 	require.NoError(t, err)
 }
 
@@ -106,7 +105,7 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 		Value:    "test",
 	}
 
-	err := client.RemoveRecord(context.Background(), record)
+	err := client.RemoveRecord(t.Context(), record)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "unexpected response: notfqdn: Host _acme-challenge.sub.example.com. malformed / vhn")

@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -77,7 +76,7 @@ func TestGetRecords(t *testing.T) {
 	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
 		testHandler(http.MethodGet, http.StatusOK, "records-GET.json"))
 
-	records, err := client.GetRecords(context.Background(), "47c0ecf6c91243308c649ad1d2d618dd", &GetRecordsParameters{DNSType: "TXT", Content: `"test"'`})
+	records, err := client.GetRecords(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", &GetRecordsParameters{DNSType: "TXT", Content: `"test"'`})
 	require.NoError(t, err)
 
 	excepted := &GetRecordsResponse{Data: []Record{
@@ -140,7 +139,7 @@ func TestGetRecords_error(t *testing.T) {
 	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
 		testHandler(http.MethodGet, http.StatusUnauthorized, "error.json"))
 
-	_, err := client.GetRecords(context.Background(), "47c0ecf6c91243308c649ad1d2d618dd", &GetRecordsParameters{DNSType: "TXT", Content: `"test"'`})
+	_, err := client.GetRecords(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", &GetRecordsParameters{DNSType: "TXT", Content: `"test"'`})
 	require.Error(t, err)
 }
 
@@ -150,7 +149,7 @@ func TestGetRecord(t *testing.T) {
 	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/812bee17a0b440b0bd5ee099a78b839c",
 		testHandler(http.MethodGet, http.StatusOK, "record-GET.json"))
 
-	record, err := client.GetRecord(context.Background(), "47c0ecf6c91243308c649ad1d2d618dd", "812bee17a0b440b0bd5ee099a78b839c")
+	record, err := client.GetRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "812bee17a0b440b0bd5ee099a78b839c")
 	require.NoError(t, err)
 
 	excepted := &Record{
@@ -169,7 +168,7 @@ func TestGetRecord_error(t *testing.T) {
 	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/812bee17a0b440b0bd5ee099a78b839c",
 		testHandler(http.MethodGet, http.StatusUnauthorized, "error.json"))
 
-	_, err := client.GetRecord(context.Background(), "47c0ecf6c91243308c649ad1d2d618dd", "812bee17a0b440b0bd5ee099a78b839c")
+	_, err := client.GetRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "812bee17a0b440b0bd5ee099a78b839c")
 	require.Error(t, err)
 }
 
@@ -186,7 +185,7 @@ func TestCreateRecord(t *testing.T) {
 		TTL:     120,
 	}
 
-	record, err := client.CreateRecord(context.Background(), "47c0ecf6c91243308c649ad1d2d618dd", r)
+	record, err := client.CreateRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", r)
 	require.NoError(t, err)
 
 	excepted := &Record{
@@ -212,7 +211,7 @@ func TestCreateRecord_error(t *testing.T) {
 		TTL:     120,
 	}
 
-	_, err := client.CreateRecord(context.Background(), "47c0ecf6c91243308c649ad1d2d618dd", r)
+	_, err := client.CreateRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", r)
 	require.Error(t, err)
 }
 
@@ -222,7 +221,7 @@ func TestEditRecord(t *testing.T) {
 	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/eebc813de2f94d67b09d91e10e2d65c2",
 		testHandler(http.MethodPatch, http.StatusOK, "record-PATCH.json"))
 
-	record, err := client.EditRecord(context.Background(), "47c0ecf6c91243308c649ad1d2d618dd", "eebc813de2f94d67b09d91e10e2d65c2", Record{
+	record, err := client.EditRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "eebc813de2f94d67b09d91e10e2d65c2", Record{
 		Content: "foo",
 	})
 	require.NoError(t, err)
@@ -243,7 +242,7 @@ func TestEditRecord_error(t *testing.T) {
 	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/eebc813de2f94d67b09d91e10e2d65c2",
 		testHandler(http.MethodPatch, http.StatusUnauthorized, "error.json"))
 
-	_, err := client.EditRecord(context.Background(), "47c0ecf6c91243308c649ad1d2d618dd", "eebc813de2f94d67b09d91e10e2d65c2", Record{
+	_, err := client.EditRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "eebc813de2f94d67b09d91e10e2d65c2", Record{
 		Content: "foo",
 	})
 	require.Error(t, err)
@@ -255,7 +254,7 @@ func TestDeleteRecord(t *testing.T) {
 	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/653464211b7447a1bee6b8fcb9fb86df",
 		testHandler(http.MethodDelete, http.StatusOK, "record-DELETE.json"))
 
-	err := client.DeleteRecord(context.Background(), "47c0ecf6c91243308c649ad1d2d618dd", "653464211b7447a1bee6b8fcb9fb86df")
+	err := client.DeleteRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "653464211b7447a1bee6b8fcb9fb86df")
 	require.NoError(t, err)
 }
 
@@ -265,7 +264,7 @@ func TestDeleteRecord_error(t *testing.T) {
 	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/653464211b7447a1bee6b8fcb9fb86df",
 		testHandler(http.MethodDelete, http.StatusUnauthorized, "error.json"))
 
-	err := client.DeleteRecord(context.Background(), "47c0ecf6c91243308c649ad1d2d618dd", "653464211b7447a1bee6b8fcb9fb86df")
+	err := client.DeleteRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "653464211b7447a1bee6b8fcb9fb86df")
 	require.Error(t, err)
 }
 
@@ -274,7 +273,7 @@ func TestGetZones(t *testing.T) {
 
 	mux.HandleFunc("/", testHandler(http.MethodGet, http.StatusOK, "service-cdn-zones.json"))
 
-	zones, err := client.GetZones(context.Background())
+	zones, err := client.GetZones(t.Context())
 	require.NoError(t, err)
 
 	excepted := []Zone{{
@@ -307,6 +306,6 @@ func TestGetZones_error(t *testing.T) {
 
 	mux.HandleFunc("/", testHandler(http.MethodGet, http.StatusUnauthorized, "error.json"))
 
-	_, err := client.GetZones(context.Background())
+	_, err := client.GetZones(t.Context())
 	require.Error(t, err)
 }

@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -35,7 +34,7 @@ func TestTxtRecordService_Create(t *testing.T) {
 		}
 	})
 
-	records, err := client.TxtRecords.Create(context.Background(), 12345, RecordRequest{})
+	records, err := client.TxtRecords.Create(t.Context(), 12345, RecordRequest{})
 	require.NoError(t, err)
 
 	recordsJSON, err := json.Marshal(records)
@@ -70,7 +69,7 @@ func TestTxtRecordService_GetAll(t *testing.T) {
 		}
 	})
 
-	records, err := client.TxtRecords.GetAll(context.Background(), 12345)
+	records, err := client.TxtRecords.GetAll(t.Context(), 12345)
 	require.NoError(t, err)
 
 	recordsJSON, err := json.Marshal(records)
@@ -105,7 +104,7 @@ func TestTxtRecordService_Get(t *testing.T) {
 		}
 	})
 
-	record, err := client.TxtRecords.Get(context.Background(), 12345, 6789)
+	record, err := client.TxtRecords.Get(t.Context(), 12345, 6789)
 	require.NoError(t, err)
 
 	expected := &Record{
@@ -146,7 +145,7 @@ func TestTxtRecordService_Update(t *testing.T) {
 		}
 	})
 
-	msg, err := client.TxtRecords.Update(context.Background(), 12345, 6789, RecordRequest{})
+	msg, err := client.TxtRecords.Update(t.Context(), 12345, 6789, RecordRequest{})
 	require.NoError(t, err)
 
 	expected := &SuccessMessage{Success: "Record  updated successfully"}
@@ -169,7 +168,7 @@ func TestTxtRecordService_Delete(t *testing.T) {
 		}
 	})
 
-	msg, err := client.TxtRecords.Delete(context.Background(), 12345, 6789)
+	msg, err := client.TxtRecords.Delete(t.Context(), 12345, 6789)
 	require.NoError(t, err)
 
 	expected := &SuccessMessage{Success: "Record  deleted successfully"}
@@ -199,7 +198,7 @@ func TestTxtRecordService_Search(t *testing.T) {
 		}
 	})
 
-	records, err := client.TxtRecords.Search(context.Background(), 12345, Exact, "test")
+	records, err := client.TxtRecords.Search(t.Context(), 12345, Exact, "test")
 	require.NoError(t, err)
 
 	recordsJSON, err := json.Marshal(records)

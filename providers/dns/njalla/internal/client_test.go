@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -80,7 +79,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Type:    "TXT",
 	}
 
-	result, err := client.AddRecord(context.Background(), record)
+	result, err := client.AddRecord(t.Context(), record)
 	require.NoError(t, err)
 
 	expected := &Record{
@@ -106,7 +105,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Type:    "TXT",
 	}
 
-	result, err := client.AddRecord(context.Background(), record)
+	result, err := client.AddRecord(t.Context(), record)
 	require.Error(t, err)
 
 	assert.Nil(t, result)
@@ -157,7 +156,7 @@ func TestClient_ListRecords(t *testing.T) {
 		}
 	})
 
-	records, err := client.ListRecords(context.Background(), "example.com")
+	records, err := client.ListRecords(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -186,7 +185,7 @@ func TestClient_ListRecords_error(t *testing.T) {
 	client := setupTest(t, nil)
 	client.token = "invalid"
 
-	records, err := client.ListRecords(context.Background(), "example.com")
+	records, err := client.ListRecords(t.Context(), "example.com")
 	require.Error(t, err)
 
 	assert.Empty(t, records)
@@ -218,7 +217,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 		_, _ = rw.Write([]byte(`{"jsonrpc":"2.0"}`))
 	})
 
-	err := client.RemoveRecord(context.Background(), "123", "example.com")
+	err := client.RemoveRecord(t.Context(), "123", "example.com")
 	require.NoError(t, err)
 }
 
@@ -226,6 +225,6 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 	client := setupTest(t, nil)
 	client.token = "invalid"
 
-	err := client.RemoveRecord(context.Background(), "123", "example.com")
+	err := client.RemoveRecord(t.Context(), "123", "example.com")
 	require.Error(t, err)
 }

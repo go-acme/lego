@@ -14,12 +14,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func mockContext(sessionID string) context.Context {
+func mockContext(t *testing.T, sessionID string) context.Context {
+	t.Helper()
+
 	if sessionID == "" {
 		sessionID = "xxx"
 	}
 
-	return context.WithValue(context.Background(), sessionIDKey, sessionID)
+	return context.WithValue(t.Context(), sessionIDKey, sessionID)
 }
 
 func TestClient_login_apikey(t *testing.T) {
@@ -78,7 +80,7 @@ func TestClient_login_apikey(t *testing.T) {
 			client := NewClient(AuthInfo{APIKey: test.apiKey})
 			client.BaseURL = serverURL
 
-			response, err := client.login(context.Background())
+			response, err := client.login(t.Context())
 			if test.expectedError {
 				require.Error(t, err)
 			} else {
@@ -153,7 +155,7 @@ func TestClient_login_username(t *testing.T) {
 			client := NewClient(AuthInfo{Username: test.username, Password: test.password})
 			client.BaseURL = serverURL
 
-			response, err := client.login(context.Background())
+			response, err := client.login(t.Context())
 			if test.expectedError {
 				require.Error(t, err)
 			} else {
@@ -216,7 +218,7 @@ func TestClient_logout(t *testing.T) {
 			client.BaseURL = serverURL
 			client.token = &Token{SessionID: test.authSid}
 
-			response, err := client.Logout(mockContext(test.authSid))
+			response, err := client.Logout(mockContext(t, test.authSid))
 			if test.expectedError {
 				require.Error(t, err)
 			} else {
@@ -253,7 +255,7 @@ func TestClient_CreateAuthenticatedContext(t *testing.T) {
 	client.HTTPClient = server.Client()
 	client.BaseURL = server.URL
 
-	ctx, err := client.CreateAuthenticatedContext(context.Background())
+	ctx, err := client.CreateAuthenticatedContext(t.Context())
 	require.NoError(t, err)
 
 	assert.Equal(t, "100", getSessionID(ctx))
@@ -263,7 +265,7 @@ func TestClient_CreateAuthenticatedContext(t *testing.T) {
 	client.token.SessionID = "cache"
 	client.muToken.Unlock()
 
-	ctx, err = client.CreateAuthenticatedContext(context.Background())
+	ctx, err = client.CreateAuthenticatedContext(t.Context())
 	require.NoError(t, err)
 
 	assert.Equal(t, "cache", getSessionID(ctx))
@@ -273,7 +275,7 @@ func TestClient_CreateAuthenticatedContext(t *testing.T) {
 	client.token.ExpireAt = time.Now().UTC().Add(-1 * time.Hour)
 	client.muToken.Unlock()
 
-	ctx, err = client.CreateAuthenticatedContext(context.Background())
+	ctx, err = client.CreateAuthenticatedContext(t.Context())
 	require.NoError(t, err)
 
 	assert.Equal(t, "200", getSessionID(ctx))

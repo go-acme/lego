@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -82,6 +81,6 @@ func TestClient_Do(t *testing.T) {
 		TTL:      120,
 	}
 
-	err := client.SendRequest(context.Background(), record)
+	err := client.SendRequest(t.Context(), record)
 	require.NoError(t, err)
 }

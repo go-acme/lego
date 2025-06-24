@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -65,7 +64,7 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 func TestClient_AddTXTRecord(t *testing.T) {
 	client := setupTest(t, http.MethodPost, "/domain/addrecord", http.StatusOK, "add-record.json")
 
-	recordID, err := client.AddTXTRecord(context.Background(), "example.com", "foo", "txt", 120)
+	recordID, err := client.AddTXTRecord(t.Context(), "example.com", "foo", "txt", 120)
 	require.NoError(t, err)
 
 	assert.Equal(t, 123, recordID)
@@ -74,6 +73,6 @@ func TestClient_AddTXTRecord(t *testing.T) {
 func TestClient_DeleteTXTRecord(t *testing.T) {
 	client := setupTest(t, http.MethodPost, "/domain/deleterecord", http.StatusOK, "delete-record.json")
 
-	err := client.DeleteTXTRecord(context.Background(), 123)
+	err := client.DeleteTXTRecord(t.Context(), 123)
 	require.NoError(t, err)
 }

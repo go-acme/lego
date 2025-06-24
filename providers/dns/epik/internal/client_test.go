@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -34,7 +33,7 @@ func TestClient_GetDNSRecords(t *testing.T) {
 
 	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodGet, http.StatusOK, "getDnsRecord.json"))
 
-	records, err := client.GetDNSRecords(context.Background(), "example.com")
+	records, err := client.GetDNSRecords(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -93,7 +92,7 @@ func TestClient_GetDNSRecords_error(t *testing.T) {
 
 	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodGet, http.StatusUnauthorized, "error.json"))
 
-	_, err := client.GetDNSRecords(context.Background(), "example.com")
+	_, err := client.GetDNSRecords(t.Context(), "example.com")
 	require.Error(t, err)
 }
 
@@ -110,7 +109,7 @@ func TestClient_CreateHostRecord(t *testing.T) {
 		TTL:  300,
 	}
 
-	data, err := client.CreateHostRecord(context.Background(), "example.com", record)
+	data, err := client.CreateHostRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 
 	expected := &Data{
@@ -134,7 +133,7 @@ func TestClient_CreateHostRecord_error(t *testing.T) {
 		TTL:  300,
 	}
 
-	_, err := client.CreateHostRecord(context.Background(), "example.com", record)
+	_, err := client.CreateHostRecord(t.Context(), "example.com", record)
 	require.Error(t, err)
 }
 
@@ -143,7 +142,7 @@ func TestClient_RemoveHostRecord(t *testing.T) {
 
 	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodDelete, http.StatusOK, "removeHostRecord.json"))
 
-	data, err := client.RemoveHostRecord(context.Background(), "example.com", "abc123")
+	data, err := client.RemoveHostRecord(t.Context(), "example.com", "abc123")
 	require.NoError(t, err)
 
 	expected := &Data{
@@ -159,7 +158,7 @@ func TestClient_RemoveHostRecord_error(t *testing.T) {
 
 	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodDelete, http.StatusUnauthorized, "error.json"))
 
-	_, err := client.RemoveHostRecord(context.Background(), "example.com", "abc123")
+	_, err := client.RemoveHostRecord(t.Context(), "example.com", "abc123")
 	require.Error(t, err)
 }
 

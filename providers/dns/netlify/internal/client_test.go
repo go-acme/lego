@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -58,7 +57,7 @@ func TestClient_GetRecords(t *testing.T) {
 		}
 	})
 
-	records, err := client.GetRecords(context.Background(), "zoneID")
+	records, err := client.GetRecords(t.Context(), "zoneID")
 	require.NoError(t, err)
 
 	expected := []DNSRecord{
@@ -108,7 +107,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		Value:    "txtxtxtxtxtxt",
 	}
 
-	result, err := client.CreateRecord(context.Background(), "zoneID", record)
+	result, err := client.CreateRecord(t.Context(), "zoneID", record)
 	require.NoError(t, err)
 
 	expected := &DNSRecord{
@@ -140,6 +139,6 @@ func TestClient_RemoveRecord(t *testing.T) {
 		rw.WriteHeader(http.StatusNoContent)
 	})
 
-	err := client.RemoveRecord(context.Background(), "zoneID", "recordID")
+	err := client.RemoveRecord(t.Context(), "zoneID", "recordID")
 	require.NoError(t, err)
 }

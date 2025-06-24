@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -72,7 +71,7 @@ func TestClient_UpdateRecords_error(t *testing.T) {
 		Records:    []Record{{Content: `"my-acme-challenge"`}},
 	}}
 
-	resp, err := client.UpdateRecords(context.Background(), "example.org", rrSet)
+	resp, err := client.UpdateRecords(t.Context(), "example.org", rrSet)
 	require.ErrorAs(t, err, new(*APIResponse))
 	assert.Nil(t, resp)
 }
@@ -87,7 +86,7 @@ func TestClient_UpdateRecords(t *testing.T) {
 		Records:    []Record{{Content: `"my-acme-challenge"`}},
 	}}
 
-	resp, err := client.UpdateRecords(context.Background(), "example.org", rrSet)
+	resp, err := client.UpdateRecords(t.Context(), "example.org", rrSet)
 	require.NoError(t, err)
 
 	expected := &APIResponse{Status: "ok", Message: "RRsets updated"}

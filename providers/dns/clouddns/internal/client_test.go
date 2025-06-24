@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -62,7 +61,7 @@ func TestClient_AddRecord(t *testing.T) {
 		}
 	})
 
-	err := client.AddRecord(context.Background(), "example.com", "_acme-challenge.example.com", "txt")
+	err := client.AddRecord(t.Context(), "example.com", "_acme-challenge.example.com", "txt")
 	require.NoError(t, err)
 }
 
@@ -124,7 +123,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		}
 	})
 
-	ctx, err := client.CreateAuthenticatedContext(context.Background())
+	ctx, err := client.CreateAuthenticatedContext(t.Context())
 	require.NoError(t, err)
 
 	err = client.DeleteRecord(ctx, "example.com", "_acme-challenge.example.com")

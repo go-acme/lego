@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -66,7 +65,7 @@ func TestClient_GetTxtRecord(t *testing.T) {
 		}
 	})
 
-	record, err := client.GetTxtRecord(context.Background(), "test1", "txttxttxt", zoneID)
+	record, err := client.GetTxtRecord(t.Context(), "test1", "txttxttxt", zoneID)
 	require.NoError(t, err)
 
 	fmt.Println(record)
@@ -112,7 +111,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		ZoneID: zoneID,
 	}
 
-	err := client.CreateRecord(context.Background(), record)
+	err := client.CreateRecord(t.Context(), record)
 	require.NoError(t, err)
 }
 
@@ -134,7 +133,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		}
 	})
 
-	err := client.DeleteRecord(context.Background(), "recordID")
+	err := client.DeleteRecord(t.Context(), "recordID")
 	require.NoError(t, err)
 }
 
@@ -169,7 +168,7 @@ func TestClient_GetZoneID(t *testing.T) {
 		}
 	})
 
-	zoneID, err := client.GetZoneID(context.Background(), "example.com")
+	zoneID, err := client.GetZoneID(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	assert.Equal(t, "zoneA", zoneID)

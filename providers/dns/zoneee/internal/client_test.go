@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -59,7 +58,7 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 func TestClient_GetTxtRecords(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/dns/example.com/txt", http.StatusOK, "get-txt-records.json")
 
-	records, err := client.GetTxtRecords(context.Background(), "example.com")
+	records, err := client.GetTxtRecords(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := []TXTRecord{
@@ -72,7 +71,7 @@ func TestClient_GetTxtRecords(t *testing.T) {
 func TestClient_AddTxtRecord(t *testing.T) {
 	client := setupTest(t, http.MethodPost, "/dns/example.com/txt", http.StatusCreated, "create-txt-record.json")
 
-	records, err := client.AddTxtRecord(context.Background(), "example.com", TXTRecord{Name: "prefix.example.com", Destination: "server.example.com"})
+	records, err := client.AddTxtRecord(t.Context(), "example.com", TXTRecord{Name: "prefix.example.com", Destination: "server.example.com"})
 	require.NoError(t, err)
 
 	expected := []TXTRecord{
@@ -85,6 +84,6 @@ func TestClient_AddTxtRecord(t *testing.T) {
 func TestClient_RemoveTxtRecord(t *testing.T) {
 	client := setupTest(t, http.MethodDelete, "/dns/example.com/txt/123", http.StatusNoContent, "")
 
-	err := client.RemoveTxtRecord(context.Background(), "example.com", "123")
+	err := client.RemoveTxtRecord(t.Context(), "example.com", "123")
 	require.NoError(t, err)
 }

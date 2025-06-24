@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -81,13 +80,13 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 func TestClient_UpdateTxtRecord(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/letsencrypt", http.StatusOK, "success.json")
 
-	err := client.UpdateTxtRecord(context.Background(), "example.com.", "value", false)
+	err := client.UpdateTxtRecord(t.Context(), "example.com.", "value", false)
 	require.NoError(t, err)
 }
 
 func TestClient_UpdateTxtRecord_clear(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/letsencrypt", http.StatusOK, "success.json")
 
-	err := client.UpdateTxtRecord(context.Background(), "example.com.", "value", true)
+	err := client.UpdateTxtRecord(t.Context(), "example.com.", "value", true)
 	require.NoError(t, err)
 }

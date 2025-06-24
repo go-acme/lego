@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -57,7 +56,7 @@ func TestClient_ListZones(t *testing.T) {
 		}
 	})
 
-	zones, err := client.ListZones(context.Background())
+	zones, err := client.ListZones(t.Context())
 	require.NoError(t, err)
 
 	expected := []DNSZone{
@@ -126,7 +125,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		TTL:     300,
 	}
 
-	newRecord, err := client.CreateRecord(context.Background(), zone, record)
+	newRecord, err := client.CreateRecord(t.Context(), zone, record)
 	require.NoError(t, err)
 
 	expected := &DNSRecord{
@@ -179,6 +178,6 @@ func TestClient_DeleteRecord(t *testing.T) {
 		ZoneID:  1,
 	}
 
-	err := client.DeleteRecord(context.Background(), record)
+	err := client.DeleteRecord(t.Context(), record)
 	require.NoError(t, err)
 }

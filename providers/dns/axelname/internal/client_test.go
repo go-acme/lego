@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -55,7 +54,7 @@ func setupTest(t *testing.T, pattern string, status int, filename string) *Clien
 func TestClient_ListRecords(t *testing.T) {
 	client := setupTest(t, "GET /dns_list", http.StatusOK, "dns_list.json")
 
-	records, err := client.ListRecords(context.Background(), "example.com")
+	records, err := client.ListRecords(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -71,7 +70,7 @@ func TestClient_ListRecords(t *testing.T) {
 func TestClient_ListRecords_error(t *testing.T) {
 	client := setupTest(t, "GET /dns_list", http.StatusNotFound, "dns_list_error.json")
 
-	_, err := client.ListRecords(context.Background(), "example.com")
+	_, err := client.ListRecords(t.Context(), "example.com")
 	require.EqualError(t, err, "error: Domain not found (1)")
 }
 
@@ -80,7 +79,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 	record := Record{ID: "74749"}
 
-	err := client.DeleteRecord(context.Background(), "example.com", record)
+	err := client.DeleteRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -89,7 +88,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 
 	record := Record{ID: "74749"}
 
-	err := client.DeleteRecord(context.Background(), "example.com", record)
+	err := client.DeleteRecord(t.Context(), "example.com", record)
 	require.EqualError(t, err, "error: Domain not found (1)")
 }
 
@@ -98,7 +97,7 @@ func TestClient_AddRecord(t *testing.T) {
 
 	record := Record{ID: "74749"}
 
-	err := client.AddRecord(context.Background(), "example.com", record)
+	err := client.AddRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -107,6 +106,6 @@ func TestClient_AddRecord_error(t *testing.T) {
 
 	record := Record{ID: "74749"}
 
-	err := client.AddRecord(context.Background(), "example.com", record)
+	err := client.AddRecord(t.Context(), "example.com", record)
 	require.EqualError(t, err, "error: Domain not found (1)")
 }

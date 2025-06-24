@@ -2,7 +2,6 @@ package internal
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -212,7 +211,7 @@ func TestClient_GetDNSRecords(t *testing.T) {
 		State:        "yes",
 	}}
 
-	records, err := client.GetDNSRecords(context.Background(), "example.com")
+	records, err := client.GetDNSRecords(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, records)
@@ -292,7 +291,7 @@ func TestClient_GetDNSRecords_errors(t *testing.T) {
 
 			mux.HandleFunc("/", test.handler)
 
-			records, err := client.GetDNSRecords(context.Background(), "example.com")
+			records, err := client.GetDNSRecords(t.Context(), "example.com")
 			require.Error(t, err)
 			assert.Empty(t, records)
 		})
@@ -313,7 +312,7 @@ func TestClient_GetDNSRecords_Live(t *testing.T) {
 		envTest.GetValue("NETCUP_API_PASSWORD"))
 	require.NoError(t, err)
 
-	ctx, err := client.CreateSessionContext(context.Background())
+	ctx, err := client.CreateSessionContext(t.Context())
 	require.NoError(t, err)
 
 	info := dns01.GetChallengeInfo(envTest.GetDomain(), "123d==")
@@ -346,7 +345,7 @@ func TestClient_UpdateDNSRecord_Live(t *testing.T) {
 		envTest.GetValue("NETCUP_API_PASSWORD"))
 	require.NoError(t, err)
 
-	ctx, err := client.CreateSessionContext(context.Background())
+	ctx, err := client.CreateSessionContext(t.Context())
 	require.NoError(t, err)
 
 	info := dns01.GetChallengeInfo(envTest.GetDomain(), "123d==")

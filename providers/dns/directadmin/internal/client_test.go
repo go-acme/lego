@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -92,7 +91,7 @@ func TestClient_SetRecord(t *testing.T) {
 		TTL:   123,
 	}
 
-	err := client.SetRecord(context.Background(), "example.com", record)
+	err := client.SetRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -110,7 +109,7 @@ func TestClient_SetRecord_error(t *testing.T) {
 		TTL:   123,
 	}
 
-	err := client.SetRecord(context.Background(), "example.com", record)
+	err := client.SetRecord(t.Context(), "example.com", record)
 	require.EqualError(t, err, "[status code 500] Cannot View Dns Record: OOPS")
 }
 
@@ -133,7 +132,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		Value: "txtTXTtxt",
 	}
 
-	err := client.DeleteRecord(context.Background(), "example.com", record)
+	err := client.DeleteRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -150,6 +149,6 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 		Value: "txtTXTtxt",
 	}
 
-	err := client.DeleteRecord(context.Background(), "example.com", record)
+	err := client.DeleteRecord(t.Context(), "example.com", record)
 	require.EqualError(t, err, "[status code 500] Cannot View Dns Record: OOPS")
 }

@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -124,7 +123,7 @@ func TestAddRecord(t *testing.T) {
 
 			mux.HandleFunc("/add", test.handler)
 
-			record, err := client.AddRecord(context.Background(), test.data)
+			record, err := client.AddRecord(t.Context(), test.data)
 			if test.expectError {
 				require.Error(t, err)
 				require.Nil(t, record)
@@ -219,7 +218,7 @@ func TestRemoveRecord(t *testing.T) {
 
 			mux.HandleFunc("/del", test.handler)
 
-			id, err := client.RemoveRecord(context.Background(), test.data)
+			id, err := client.RemoveRecord(t.Context(), test.data)
 			if test.expectError {
 				require.Error(t, err)
 				require.Equal(t, 0, id)
@@ -315,7 +314,7 @@ func TestGetRecords(t *testing.T) {
 
 			mux.HandleFunc("/list", test.handler)
 
-			records, err := client.GetRecords(context.Background(), test.domain)
+			records, err := client.GetRecords(t.Context(), test.domain)
 			if test.expectError {
 				require.Error(t, err)
 				require.Empty(t, records)

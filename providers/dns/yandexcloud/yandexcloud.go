@@ -103,7 +103,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (r *DNSProvider) Present(domain, _, keyAuth string) error {
+func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
@@ -113,7 +113,7 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	ctx := context.Background()
 
-	zones, err := r.getZones(ctx)
+	zones, err := d.getZones(ctx)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
@@ -135,7 +135,7 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
 
-	err = r.upsertRecordSetData(ctx, zoneID, subDomain, info.Value)
+	err = d.upsertRecordSetData(ctx, zoneID, subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
@@ -144,7 +144,7 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
@@ -154,7 +154,7 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	ctx := context.Background()
 
-	zones, err := r.getZones(ctx)
+	zones, err := d.getZones(ctx)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
@@ -176,7 +176,7 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
 
-	err = r.removeRecordSetData(ctx, zoneID, subDomain, info.Value)
+	err = d.removeRecordSetData(ctx, zoneID, subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
@@ -186,17 +186,17 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
 // Adjusting here to cope with spikes in propagation times.
-func (r *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return r.config.PropagationTimeout, r.config.PollingInterval
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
 // getZones retrieves available zones from yandex cloud.
-func (r *DNSProvider) getZones(ctx context.Context) ([]*ycdns.DnsZone, error) {
+func (d *DNSProvider) getZones(ctx context.Context) ([]*ycdns.DnsZone, error) {
 	list := &ycdns.ListDnsZonesRequest{
-		FolderId: r.config.FolderID,
+		FolderId: d.config.FolderID,
 	}
 
-	response, err := r.client.DNS().DnsZone().List(ctx, list)
+	response, err := d.client.DNS().DnsZone().List(ctx, list)
 	if err != nil {
 		return nil, errors.New("unable to fetch dns zones")
 	}
@@ -204,14 +204,14 @@ func (r *DNSProvider) getZones(ctx context.Context) ([]*ycdns.DnsZone, error) {
 	return response.GetDnsZones(), nil
 }
 
-func (r *DNSProvider) upsertRecordSetData(ctx context.Context, zoneID, name, value string) error {
+func (d *DNSProvider) upsertRecordSetData(ctx context.Context, zoneID, name, value string) error {
 	get := &ycdns.GetDnsZoneRecordSetRequest{
 		DnsZoneId: zoneID,
 		Name:      name,
 		Type:      "TXT",
 	}
 
-	exist, err := r.client.DNS().DnsZone().GetRecordSet(ctx, get)
+	exist, err := d.client.DNS().DnsZone().GetRecordSet(ctx, get)
 	if err != nil {
 		if !strings.Contains(err.Error(), "RecordSet not found") {
 			return err
@@ -221,7 +221,7 @@ func (r *DNSProvider) upsertRecordSetData(ctx context.Context, zoneID, name, val
 	record := &ycdns.RecordSet{
 		Name: name,
 		Type: "TXT",
-		Ttl:  int64(r.config.TTL),
+		Ttl:  int64(d.config.TTL),
 		Data: []string{},
 	}
 
@@ -243,19 +243,19 @@ func (r *DNSProvider) upsertRecordSetData(ctx context.Context, zoneID, name, val
 		Additions: []*ycdns.RecordSet{record},
 	}
 
-	_, err = r.client.DNS().DnsZone().UpdateRecordSets(ctx, update)
+	_, err = d.client.DNS().DnsZone().UpdateRecordSets(ctx, update)
 
 	return err
 }
 
-func (r *DNSProvider) removeRecordSetData(ctx context.Context, zoneID, name, value string) error {
+func (d *DNSProvider) removeRecordSetData(ctx context.Context, zoneID, name, value string) error {
 	get := &ycdns.GetDnsZoneRecordSetRequest{
 		DnsZoneId: zoneID,
 		Name:      name,
 		Type:      "TXT",
 	}
 
-	previousRecord, err := r.client.DNS().DnsZone().GetRecordSet(ctx, get)
+	previousRecord, err := d.client.DNS().DnsZone().GetRecordSet(ctx, get)
 	if err != nil {
 		if strings.Contains(err.Error(), "RecordSet not found") {
 			// RecordSet is not present, nothing to do
@@ -272,7 +272,7 @@ func (r *DNSProvider) removeRecordSetData(ctx context.Context, zoneID, name, val
 		record := &ycdns.RecordSet{
 			Name: name,
 			Type: "TXT",
-			Ttl:  int64(r.config.TTL),
+			Ttl:  int64(d.config.TTL),
 			Data: []string{},
 		}
 
@@ -291,7 +291,7 @@ func (r *DNSProvider) removeRecordSetData(ctx context.Context, zoneID, name, val
 		Additions: additions,
 	}
 
-	_, err = r.client.DNS().DnsZone().UpdateRecordSets(ctx, update)
+	_, err = d.client.DNS().DnsZone().UpdateRecordSets(ctx, update)
 
 	return err
 }

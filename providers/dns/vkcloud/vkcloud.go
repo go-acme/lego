@@ -119,7 +119,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (r *DNSProvider) Present(domain, _, keyAuth string) error {
+func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
@@ -129,7 +129,7 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	authZone = dns01.UnFqdn(authZone)
 
-	zones, err := r.client.ListZones()
+	zones, err := d.client.ListZones()
 	if err != nil {
 		return fmt.Errorf("vkcloud: unable to fetch dns zones: %w", err)
 	}
@@ -150,7 +150,7 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("vkcloud: %w", err)
 	}
 
-	err = r.upsertTXTRecord(zoneUUID, subDomain, info.Value)
+	err = d.upsertTXTRecord(zoneUUID, subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("vkcloud: %w", err)
 	}
@@ -159,7 +159,7 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
@@ -169,7 +169,7 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	authZone = dns01.UnFqdn(authZone)
 
-	zones, err := r.client.ListZones()
+	zones, err := d.client.ListZones()
 	if err != nil {
 		return fmt.Errorf("vkcloud: unable to fetch dns zones: %w", err)
 	}
@@ -191,7 +191,7 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("vkcloud: %w", err)
 	}
 
-	err = r.removeTXTRecord(zoneUUID, subDomain, info.Value)
+	err = d.removeTXTRecord(zoneUUID, subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("vkcloud: %w", err)
 	}
@@ -201,12 +201,12 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
 // Adjusting here to cope with spikes in propagation times.
-func (r *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return r.config.PropagationTimeout, r.config.PollingInterval
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (r *DNSProvider) upsertTXTRecord(zoneUUID, name, value string) error {
-	records, err := r.client.ListTXTRecords(zoneUUID)
+func (d *DNSProvider) upsertTXTRecord(zoneUUID, name, value string) error {
+	records, err := d.client.ListTXTRecords(zoneUUID)
 	if err != nil {
 		return err
 	}
@@ -218,15 +218,15 @@ func (r *DNSProvider) upsertTXTRecord(zoneUUID, name, value string) error {
 		}
 	}
 
-	return r.client.CreateTXTRecord(zoneUUID, &internal.DNSTXTRecord{
+	return d.client.CreateTXTRecord(zoneUUID, &internal.DNSTXTRecord{
 		Name:    name,
 		Content: value,
-		TTL:     r.config.TTL,
+		TTL:     d.config.TTL,
 	})
 }
 
-func (r *DNSProvider) removeTXTRecord(zoneUUID, name, value string) error {
-	records, err := r.client.ListTXTRecords(zoneUUID)
+func (d *DNSProvider) removeTXTRecord(zoneUUID, name, value string) error {
+	records, err := d.client.ListTXTRecords(zoneUUID)
 	if err != nil {
 		return err
 	}
@@ -234,7 +234,7 @@ func (r *DNSProvider) removeTXTRecord(zoneUUID, name, value string) error {
 	name = dns01.UnFqdn(name)
 	for _, record := range records {
 		if record.Name == name && record.Content == value {
-			return r.client.DeleteTXTRecord(zoneUUID, record.UUID)
+			return d.client.DeleteTXTRecord(zoneUUID, record.UUID)
 		}
 	}
 

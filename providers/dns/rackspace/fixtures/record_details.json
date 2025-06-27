@@ -1,0 +1,13 @@
+{
+  "records": [
+    {
+      "name": "_acme-challenge.example.com",
+      "id": "TXT-654321",
+      "type": "TXT",
+      "data": "pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM",
+      "ttl": 300,
+      "updated": "1970-01-01T00:00:00.000+0000",
+      "created": "1970-01-01T00:00:00.000+0000"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "status": "ok",
+  "record": {
+    "name": "_acme-challenge.example.com",
+    "value": "my_challenge",
+    "record_type": "TXT",
+    "ttl": 3600,
+    "record_id": 3,
+    "location_id": null,
+    "domain_id": 1
+  }
+}

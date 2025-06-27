@@ -1,0 +1,31 @@
+{
+  "access": {
+    "token": {
+      "id": "testToken",
+      "expires": "1970-01-01T00:00:00.000Z",
+      "tenant": {
+        "id": "123456",
+        "name": "123456"
+      },
+      "RAX-AUTH:authenticatedBy": [
+        "APIKEY"
+      ]
+    },
+    "serviceCatalog": [
+      {
+        "type": "rax:dns",
+        "endpoints": [
+          {
+            "publicURL": "https://dns.api.rackspacecloud.com/v1.0/123456",
+            "tenantId": "123456"
+          }
+        ],
+        "name": "cloudDNS"
+      }
+    ],
+    "user": {
+      "id": "fakeUseID",
+      "name": "testUser"
+    }
+  }
+}

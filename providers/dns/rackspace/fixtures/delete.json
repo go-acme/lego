@@ -1,0 +1,7 @@
+{
+  "status": "RUNNING",
+  "verb": "DELETE",
+  "jobId": "00000000-0000-0000-0000-0000000000",
+  "callbackUrl": "https://dns.api.rackspacecloud.com/v1.0/123456/status/00000000-0000-0000-0000-0000000000",
+  "requestUrl": "https://dns.api.rackspacecloud.com/v1.0/123456/domains/112233/recordsid=TXT-654321"
+}

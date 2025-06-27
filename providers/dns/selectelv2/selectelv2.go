@@ -124,15 +124,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Timeout returns the Timeout and interval to use when checking for DNS propagation.
 // Adjusting here to cope with spikes in propagation times.
-func (p *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return p.config.PropagationTimeout, p.config.PollingInterval
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
 // Present creates a TXT record to fulfill DNS-01 challenge.
-func (p *DNSProvider) Present(domain, _, keyAuth string) error {
+func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
 
-	client, err := p.authorize()
+	client, err := d.authorize()
 	if err != nil {
 		return fmt.Errorf("selectelv2: authorize: %w", err)
 	}
@@ -153,7 +153,7 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 		newRRSet := &selectelapi.RRSet{
 			Name:    info.EffectiveFQDN,
 			Type:    selectelapi.TXT,
-			TTL:     p.config.TTL,
+			TTL:     d.config.TTL,
 			Records: []selectelapi.RecordItem{{Content: fmt.Sprintf("%q", info.Value)}},
 		}
 
@@ -176,10 +176,10 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 }
 
 // CleanUp removes a TXT record used for DNS-01 challenge.
-func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
 
-	client, err := p.authorize()
+	client, err := d.authorize()
 	if err != nil {
 		return fmt.Errorf("selectelv2: authorize: %w", err)
 	}
@@ -220,8 +220,8 @@ func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	return nil
 }
 
-func (p *DNSProvider) authorize() (*clientWrapper, error) {
-	token, err := obtainOpenstackToken(p.config)
+func (d *DNSProvider) authorize() (*clientWrapper, error) {
+	token, err := obtainOpenstackToken(d.config)
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +230,7 @@ func (p *DNSProvider) authorize() (*clientWrapper, error) {
 	extraHeaders.Set(tokenHeader, token)
 
 	return &clientWrapper{
-		DNSClient: p.baseClient.WithHeaders(extraHeaders),
+		DNSClient: d.baseClient.WithHeaders(extraHeaders),
 	}, nil
 }
 

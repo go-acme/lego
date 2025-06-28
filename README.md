@@ -251,4 +251,4 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
 
 <!-- END DNS PROVIDERS LIST -->
 
-If your DNS provider is not supported, please open an [issue](https://github.com/go-acme/lego/issues/new?assignees=&labels=enhancement%2C+new-provider&template=new_dns_provider.md).
+If your DNS provider is not supported, please open an [issue](https://github.com/go-acme/lego/issues/new?assignees=&labels=enhancement%2C+new-provider&template=new_dns_provider.yml).

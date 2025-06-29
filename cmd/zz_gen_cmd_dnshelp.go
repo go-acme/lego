@@ -351,7 +351,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		// generated from: providers/dns/azion/azion.toml
 		ew.writeln(`Configuration for Azion.`)
 		ew.writeln(`Code:	'azion'`)
-		ew.writeln(`Since:	'v4.23.1'`)
+		ew.writeln(`Since:	'v4.24.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

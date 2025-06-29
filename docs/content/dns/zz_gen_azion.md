@@ -4,7 +4,7 @@ date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: azion
 dnsprovider:
-  since:    "v4.23.1"
+  since:    "v4.24.0"
   code:     "azion"
   url:      "https://www.azion.com/en/products/edge-dns/"
 ---
@@ -20,7 +20,7 @@ Configuration for [Azion](https://www.azion.com/en/products/edge-dns/).
 <!--more-->
 
 - Code: `azion`
-- Since: v4.23.1
+- Since: v4.24.0
 
 
 Here is an example bash command using the Azion provider:

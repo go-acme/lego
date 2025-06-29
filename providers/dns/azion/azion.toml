@@ -1,7 +1,7 @@
 Name = "Azion"
 Description = ''''''
 Code = "azion"
-Since = "v4.23.1"
+Since = "v4.24.0"
 URL = "https://www.azion.com/en/products/edge-dns/"
 
 Example = '''
@@ -20,5 +20,4 @@ lego --email you@example.com --dns azion -d '*.example.com' -d example.com run
 
 [Links]
   API = "https://api.azion.com/"
-  Documentation = "https://www.azion.com/en/documentation/products/secure/edge-dns/"
   GoClient = "https://github.com/aziontech/azionapi-go-sdk"

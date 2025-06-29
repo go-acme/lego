@@ -15,6 +15,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/auroradns"
 	"github.com/go-acme/lego/v4/providers/dns/autodns"
 	"github.com/go-acme/lego/v4/providers/dns/axelname"
+	"github.com/go-acme/lego/v4/providers/dns/azion"
 	"github.com/go-acme/lego/v4/providers/dns/azure"
 	"github.com/go-acme/lego/v4/providers/dns/azuredns"
 	"github.com/go-acme/lego/v4/providers/dns/baiducloud"
@@ -185,6 +186,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return autodns.NewDNSProvider()
 	case "axelname":
 		return axelname.NewDNSProvider()
+	case "azion":
+		return azion.NewDNSProvider()
 	case "azure":
 		return azure.NewDNSProvider()
 	case "azuredns":

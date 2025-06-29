@@ -24,6 +24,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.50.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.78.2
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.17
+	github.com/aziontech/azionapi-go-sdk v0.142.0
 	github.com/baidubce/bce-sdk-go v0.9.223
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/civo/civogo v0.3.11

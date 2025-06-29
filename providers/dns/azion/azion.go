@@ -1,0 +1,279 @@
+// Package azion implements a DNS provider for solving the DNS-01 challenge using Azion Edge DNS.
+package azion
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/aziontech/azionapi-go-sdk/idns"
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/platform/config/env"
+)
+
+// Environment variables names.
+const (
+	envNamespace = "AZION_"
+
+	EnvPersonalToken = envNamespace + "PERSONAL_TOKEN"
+
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvTTL                = envNamespace + "TTL"
+)
+
+// Config is used to configure the creation of the DNSProvider.
+type Config struct {
+	PersonalToken      string
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+	TTL                int
+	HTTPClient         *http.Client
+}
+
+// NewDefaultConfig returns a default configuration for the DNSProvider.
+func NewDefaultConfig() *Config {
+	return &Config{
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
+	}
+}
+
+// DNSProvider implements the challenge.Provider interface.
+type DNSProvider struct {
+	config *Config
+	client *idns.APIClient
+
+	recordIDs   map[string]int32
+	recordIDsMu sync.Mutex
+}
+
+// NewDNSProvider returns a DNSProvider instance configured for Azion.
+// Credentials must be passed in the environment variable: AZION_PERSONAL_TOKEN.
+func NewDNSProvider() (*DNSProvider, error) {
+	values, err := env.Get(EnvPersonalToken)
+	if err != nil {
+		return nil, fmt.Errorf("azion: %w", err)
+	}
+
+	config := NewDefaultConfig()
+	config.PersonalToken = values[EnvPersonalToken]
+
+	return NewDNSProviderConfig(config)
+}
+
+// NewDNSProviderConfig return a DNSProvider instance configured for Azion.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("azion: the configuration of the DNS provider is nil")
+	}
+
+	if config.PersonalToken == "" {
+		return nil, errors.New("azion: missing credentials")
+	}
+
+	clientConfig := idns.NewConfiguration()
+	clientConfig.AddDefaultHeader("Accept", "application/json; version=3")
+	clientConfig.UserAgent = "lego-dns/azion"
+
+	if config.HTTPClient != nil {
+		clientConfig.HTTPClient = config.HTTPClient
+	}
+
+	client := idns.NewAPIClient(clientConfig)
+
+	return &DNSProvider{
+		config:    config,
+		client:    client,
+		recordIDs: make(map[string]int32),
+	}, nil
+}
+
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// Present creates a TXT record using the specified parameters.
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	zone, err := d.findZone(info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("azion: could not find zone for domain %q: %w", domain, err)
+	}
+
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.GetName())
+	if err != nil {
+		return fmt.Errorf("azion: %w", err)
+	}
+
+	ctx := context.WithValue(context.Background(), idns.ContextAPIKeys, map[string]idns.APIKey{
+		"tokenAuth": {
+			Key:    d.config.PersonalToken,
+			Prefix: "Token",
+		},
+	})
+
+	// For root domains, the subdomain will be empty, so we use _acme-challenge directly
+	if subDomain == "" {
+		subDomain = "_acme-challenge"
+	}
+
+	// Check if a TXT record with the same name already exists
+	existingRecord, err := d.findExistingTXTRecord(ctx, zone.GetId(), subDomain)
+	if err != nil {
+		return fmt.Errorf("azion: failed to check existing records: %w", err)
+	}
+
+	record := idns.NewRecordPostOrPut()
+	record.SetEntry(subDomain)
+	record.SetRecordType("TXT")
+	record.SetTtl(int32(d.config.TTL))
+
+	var resp *idns.PostOrPutRecordResponse
+	if existingRecord != nil {
+		// Update existing record by adding the new value to the existing ones
+		existingAnswers := existingRecord.GetAnswersList()
+		updatedAnswers := append(existingAnswers, info.Value)
+		record.SetAnswersList(updatedAnswers)
+
+		// Use PUT to update the existing record
+		resp, _, err = d.client.RecordsAPI.PutZoneRecord(ctx, zone.GetId(), existingRecord.GetRecordId()).RecordPostOrPut(*record).Execute()
+		if err != nil {
+			return fmt.Errorf("azion: failed to update existing record: %w", err)
+		}
+	} else {
+		// Create new record
+		record.SetAnswersList([]string{info.Value})
+		resp, _, err = d.client.RecordsAPI.PostZoneRecord(ctx, zone.GetId()).RecordPostOrPut(*record).Execute()
+		if err != nil {
+			return fmt.Errorf("azion: failed to create new record: %w", err)
+		}
+	}
+
+	if resp == nil || resp.Results == nil {
+		return errors.New("azion: invalid response from API")
+	}
+
+	results := resp.GetResults()
+	d.recordIDsMu.Lock()
+	d.recordIDs[token] = results.GetId()
+	d.recordIDsMu.Unlock()
+
+	return nil
+}
+
+// CleanUp removes the TXT record matching the specified parameters.
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	zone, err := d.findZone(info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("azion: could not find zone for domain %q: %w", domain, err)
+	}
+
+	// gets the record's unique ID from when we created it
+	d.recordIDsMu.Lock()
+	recordID, ok := d.recordIDs[token]
+	d.recordIDsMu.Unlock()
+	if !ok {
+		return fmt.Errorf("azion: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
+	}
+
+	ctx := context.WithValue(context.Background(), idns.ContextAPIKeys, map[string]idns.APIKey{
+		"tokenAuth": {
+			Key:    d.config.PersonalToken,
+			Prefix: "Token",
+		},
+	})
+
+	// Try to delete the record
+	_, _, err = d.client.RecordsAPI.DeleteZoneRecord(ctx, zone.GetId(), recordID).Execute()
+	if err != nil {
+		// If record doesn't exist (404), consider cleanup successful
+		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "Not Found") {
+			// Remove the record ID from our map since it doesn't exist
+			d.recordIDsMu.Lock()
+			delete(d.recordIDs, token)
+			d.recordIDsMu.Unlock()
+			return nil
+		}
+		return fmt.Errorf("azion: failed to delete record: %w", err)
+	}
+
+	// Remove the record ID from our map after successful deletion
+	d.recordIDsMu.Lock()
+	delete(d.recordIDs, token)
+	d.recordIDsMu.Unlock()
+
+	return nil
+}
+
+func (d *DNSProvider) findZone(fqdn string) (*idns.Zone, error) {
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find zone by FQDN %q: %w", fqdn, err)
+	}
+
+	ctx := context.WithValue(context.Background(), idns.ContextAPIKeys, map[string]idns.APIKey{
+		"tokenAuth": {
+			Key:    d.config.PersonalToken,
+			Prefix: "Token",
+		},
+	})
+	resp, _, err := d.client.ZonesAPI.GetZones(ctx).Execute()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get zones from Azion API: %w", err)
+	}
+
+	if resp == nil {
+		return nil, errors.New("received nil response from Azion API")
+	}
+
+	targetZone := dns01.UnFqdn(authZone)
+	for _, zone := range resp.GetResults() {
+		if zone.GetName() == targetZone {
+			return &zone, nil
+		}
+	}
+
+	return nil, fmt.Errorf("zone %q not found in Azion account (looking for %q)", authZone, targetZone)
+}
+
+// findExistingTXTRecord searches for an existing TXT record with the given name in the specified zone.
+func (d *DNSProvider) findExistingTXTRecord(ctx context.Context, zoneID int32, recordName string) (*idns.RecordGet, error) {
+	// Get all records for the zone
+	resp, _, err := d.client.RecordsAPI.GetZoneRecords(ctx, zoneID).Execute()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get zone records: %w", err)
+	}
+
+	if resp == nil {
+		return nil, errors.New("received nil response from GetZoneRecords API")
+	}
+
+	results, ok := resp.GetResultsOk()
+	if !ok || results == nil {
+		return nil, errors.New("received nil results from GetZoneRecords API")
+	}
+
+	// Search for existing TXT record with the same name
+	for _, record := range results.GetRecords() {
+		if record.GetRecordType() == "TXT" && record.GetEntry() == recordName {
+			return &record, nil
+		}
+	}
+
+	// No existing record found
+	return nil, nil
+}

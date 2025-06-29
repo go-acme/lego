@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -187,24 +186,23 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("azion: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
+	defer func() {
+		// Remove the record ID from our map after successful deletion
+		d.recordIDsMu.Lock()
+		delete(d.recordIDs, token)
+		d.recordIDsMu.Unlock()
+	}()
+
 	// Try to delete the record
-	_, _, err = d.client.RecordsAPI.DeleteZoneRecord(ctxAuth, zone.GetId(), recordID).Execute()
+	_, resp, err := d.client.RecordsAPI.DeleteZoneRecord(ctxAuth, zone.GetId(), recordID).Execute()
 	if err != nil {
-		// If record doesn't exist (404), consider cleanup successful
-		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "Not Found") {
-			// Remove the record ID from our map since it doesn't exist
-			d.recordIDsMu.Lock()
-			delete(d.recordIDs, token)
-			d.recordIDsMu.Unlock()
+		// If a record doesn't exist (404), consider cleanup successful
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
 			return nil
 		}
+
 		return fmt.Errorf("azion: failed to delete record: %w", err)
 	}
-
-	// Remove the record ID from our map after successful deletion
-	d.recordIDsMu.Lock()
-	delete(d.recordIDs, token)
-	d.recordIDsMu.Unlock()
 
 	return nil
 }

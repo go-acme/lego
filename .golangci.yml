@@ -10,6 +10,7 @@ formatters:
 linters:
   default: all
   disable:
+    - wsl # Deprecated
     - bodyclose
     - canonicalheader
     - contextcheck
@@ -33,6 +34,7 @@ linters:
     - nilnil # not relevant
     - nlreturn # not relevant
     - noctx
+    - noinlineerr # too strict
     - nonamedreturns
     - paralleltest # not relevant
     - prealloc # too many false-positive
@@ -44,7 +46,8 @@ linters:
     - usestdlibvars # false-positive https://github.com/sashamelentyev/usestdlibvars/issues/96
     - varnamelen # not relevant
     - wrapcheck
-    - wsl # should be enabled it the future.
+    - wsl_v5 # should be enabled the future.
+    - embeddedstructfieldcheck # should be enabled the future.
 
   settings:
     depguard:

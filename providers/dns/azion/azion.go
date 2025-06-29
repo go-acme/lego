@@ -107,7 +107,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.findZone(info.EffectiveFQDN)
+	ctxAuth := authContext(context.Background(), d.config.PersonalToken)
+
+	zone, err := d.findZone(ctxAuth, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azion: could not find zone for domain %q: %w", domain, err)
 	}
@@ -117,22 +119,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("azion: %w", err)
 	}
 
-	ctx := context.WithValue(context.Background(), idns.ContextAPIKeys, map[string]idns.APIKey{
-		"tokenAuth": {
-			Key:    d.config.PersonalToken,
-			Prefix: "Token",
-		},
-	})
-
 	// For root domains, the subdomain will be empty, so we use _acme-challenge directly
 	if subDomain == "" {
 		subDomain = "_acme-challenge"
 	}
 
 	// Check if a TXT record with the same name already exists
-	existingRecord, err := d.findExistingTXTRecord(ctx, zone.GetId(), subDomain)
+	existingRecord, err := d.findExistingTXTRecord(ctxAuth, zone.GetId(), subDomain)
 	if err != nil {
-		return fmt.Errorf("azion: failed to check existing records: %w", err)
+		return fmt.Errorf("azion: check existing records: %w", err)
 	}
 
 	record := idns.NewRecordPostOrPut()
@@ -148,21 +143,21 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		record.SetAnswersList(updatedAnswers)
 
 		// Use PUT to update the existing record
-		resp, _, err = d.client.RecordsAPI.PutZoneRecord(ctx, zone.GetId(), existingRecord.GetRecordId()).RecordPostOrPut(*record).Execute()
+		resp, _, err = d.client.RecordsAPI.PutZoneRecord(ctxAuth, zone.GetId(), existingRecord.GetRecordId()).RecordPostOrPut(*record).Execute()
 		if err != nil {
-			return fmt.Errorf("azion: failed to update existing record: %w", err)
+			return fmt.Errorf("azion: update existing record: %w", err)
 		}
 	} else {
-		// Create new record
+		// Create a new record
 		record.SetAnswersList([]string{info.Value})
-		resp, _, err = d.client.RecordsAPI.PostZoneRecord(ctx, zone.GetId()).RecordPostOrPut(*record).Execute()
+		resp, _, err = d.client.RecordsAPI.PostZoneRecord(ctxAuth, zone.GetId()).RecordPostOrPut(*record).Execute()
 		if err != nil {
-			return fmt.Errorf("azion: failed to create new record: %w", err)
+			return fmt.Errorf("azion: create new zone record: %w", err)
 		}
 	}
 
 	if resp == nil || resp.Results == nil {
-		return errors.New("azion: invalid response from API")
+		return errors.New("azion: create zone record error")
 	}
 
 	results := resp.GetResults()
@@ -177,7 +172,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.findZone(info.EffectiveFQDN)
+	ctxAuth := authContext(context.Background(), d.config.PersonalToken)
+
+	zone, err := d.findZone(ctxAuth, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azion: could not find zone for domain %q: %w", domain, err)
 	}
@@ -190,15 +187,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("azion: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	ctx := context.WithValue(context.Background(), idns.ContextAPIKeys, map[string]idns.APIKey{
-		"tokenAuth": {
-			Key:    d.config.PersonalToken,
-			Prefix: "Token",
-		},
-	})
-
 	// Try to delete the record
-	_, _, err = d.client.RecordsAPI.DeleteZoneRecord(ctx, zone.GetId(), recordID).Execute()
+	_, _, err = d.client.RecordsAPI.DeleteZoneRecord(ctxAuth, zone.GetId(), recordID).Execute()
 	if err != nil {
 		// If record doesn't exist (404), consider cleanup successful
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "Not Found") {
@@ -219,25 +209,19 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) findZone(fqdn string) (*idns.Zone, error) {
+func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*idns.Zone, error) {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find zone by FQDN %q: %w", fqdn, err)
+		return nil, fmt.Errorf("could not find a zone for domain %q: %w", fqdn, err)
 	}
 
-	ctx := context.WithValue(context.Background(), idns.ContextAPIKeys, map[string]idns.APIKey{
-		"tokenAuth": {
-			Key:    d.config.PersonalToken,
-			Prefix: "Token",
-		},
-	})
 	resp, _, err := d.client.ZonesAPI.GetZones(ctx).Execute()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get zones from Azion API: %w", err)
+		return nil, fmt.Errorf("get zones: %w", err)
 	}
 
 	if resp == nil {
-		return nil, errors.New("received nil response from Azion API")
+		return nil, errors.New("get zones: no results")
 	}
 
 	targetZone := dns01.UnFqdn(authZone)
@@ -247,24 +231,23 @@ func (d *DNSProvider) findZone(fqdn string) (*idns.Zone, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("zone %q not found in Azion account (looking for %q)", authZone, targetZone)
+	return nil, fmt.Errorf("zone %q not found (looking for %q)", authZone, targetZone)
 }
 
 // findExistingTXTRecord searches for an existing TXT record with the given name in the specified zone.
 func (d *DNSProvider) findExistingTXTRecord(ctx context.Context, zoneID int32, recordName string) (*idns.RecordGet, error) {
-	// Get all records for the zone
 	resp, _, err := d.client.RecordsAPI.GetZoneRecords(ctx, zoneID).Execute()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get zone records: %w", err)
+		return nil, fmt.Errorf("get zone records: %w", err)
 	}
 
 	if resp == nil {
-		return nil, errors.New("received nil response from GetZoneRecords API")
+		return nil, errors.New("get zone records: no results")
 	}
 
 	results, ok := resp.GetResultsOk()
 	if !ok || results == nil {
-		return nil, errors.New("received nil results from GetZoneRecords API")
+		return nil, errors.New("get zone records: empty")
 	}
 
 	// Search for existing TXT record with the same name
@@ -276,4 +259,13 @@ func (d *DNSProvider) findExistingTXTRecord(ctx context.Context, zoneID int32, r
 
 	// No existing record found
 	return nil, nil
+}
+
+func authContext(ctx context.Context, key string) context.Context {
+	return context.WithValue(ctx, idns.ContextAPIKeys, map[string]idns.APIKey{
+		"tokenAuth": {
+			Key:    key,
+			Prefix: "Token",
+		},
+	})
 }

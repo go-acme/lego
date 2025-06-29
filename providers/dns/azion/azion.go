@@ -179,6 +179,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("azion: %w", err)
 	}
 
+	defer func() {
+		// Remove the record ID from our map
+		d.recordIDsMu.Lock()
+		delete(d.recordIDs, token)
+		d.recordIDsMu.Unlock()
+
+	}()
+
 	// Find the existing TXT record
 	existingRecord, err := d.findExistingTXTRecord(ctxAuth, zone.GetId(), subDomain)
 	if err != nil {
@@ -186,37 +194,31 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	if existingRecord == nil {
-		// Record doesn't exist, cleanup is already done
-		d.recordIDsMu.Lock()
-		delete(d.recordIDs, token)
-		d.recordIDsMu.Unlock()
 		return nil
 	}
 
 	// Get current answers and remove the specific value
 	currentAnswers := existingRecord.GetAnswersList()
-	updatedAnswers := make([]string, 0, len(currentAnswers))
+
+	var updatedAnswers []string
 	for _, answer := range currentAnswers {
 		if answer != info.Value {
 			updatedAnswers = append(updatedAnswers, answer)
 		}
 	}
 
-	// Remove the record ID from our map
-	d.recordIDsMu.Lock()
-	delete(d.recordIDs, token)
-	d.recordIDsMu.Unlock()
-
 	// If no answers remain, delete the entire record
 	if len(updatedAnswers) == 0 {
 		_, resp, err := d.client.RecordsAPI.DeleteZoneRecord(ctxAuth, zone.GetId(), existingRecord.GetRecordId()).Execute()
 		if err != nil {
-			// If record doesn't exist (404), consider cleanup successful
+			// If a record doesn't exist (404), consider cleanup successful
 			if resp != nil && resp.StatusCode == http.StatusNotFound {
 				return nil
 			}
+
 			return fmt.Errorf("azion: failed to delete record: %w", err)
 		}
+
 		return nil
 	}
 

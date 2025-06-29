@@ -184,7 +184,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		d.recordIDsMu.Lock()
 		delete(d.recordIDs, token)
 		d.recordIDsMu.Unlock()
-
 	}()
 
 	// Find the existing TXT record

@@ -118,6 +118,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("azion: %w", err)
 	}
 
+	if subDomain == "" {
+		subDomain = "@"
+	}
+
 	// Check if a TXT record with the same name already exists
 	existingRecord, err := d.findExistingTXTRecord(ctxAuth, zone.GetId(), subDomain)
 	if err != nil {
@@ -177,6 +181,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.GetName())
 	if err != nil {
 		return fmt.Errorf("azion: %w", err)
+	}
+
+	if subDomain == "" {
+		subDomain = "@"
 	}
 
 	defer func() {
@@ -258,7 +266,7 @@ func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*idns.Zone, er
 		}
 	}
 
-	return nil, fmt.Errorf("zone %q not found (looking for %q)", authZone, targetZone)
+	return nil, fmt.Errorf("zone %q not found (fqdn: %q)", authZone, fqdn)
 }
 
 // findExistingTXTRecord searches for an existing TXT record with the given name in the specified zone.

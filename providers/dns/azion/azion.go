@@ -108,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	ctxAuth := authContext(context.Background(), d.config.PersonalToken)
 
-	zone, err := d.findZone(ctxAuth, info.EffectiveFQDN)
+	zone, err := d.findZone(ctxAuth, info.FQDN)
 	if err != nil {
 		return fmt.Errorf("azion: could not find zone for domain %q: %w", domain, err)
 	}
@@ -116,11 +116,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.GetName())
 	if err != nil {
 		return fmt.Errorf("azion: %w", err)
-	}
-
-	// For root domains, the subdomain will be empty, so we use _acme-challenge directly
-	if subDomain == "" {
-		subDomain = "_acme-challenge"
 	}
 
 	// Check if a TXT record with the same name already exists
@@ -173,7 +168,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	ctxAuth := authContext(context.Background(), d.config.PersonalToken)
 
-	zone, err := d.findZone(ctxAuth, info.EffectiveFQDN)
+	zone, err := d.findZone(ctxAuth, info.FQDN)
 	if err != nil {
 		return fmt.Errorf("azion: could not find zone for domain %q: %w", domain, err)
 	}

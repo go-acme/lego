@@ -108,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	ctxAuth := authContext(context.Background(), d.config.PersonalToken)
 
-	zone, err := d.findZone(ctxAuth, info.FQDN)
+	zone, err := d.findZone(ctxAuth, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azion: could not find zone for domain %q: %w", domain, err)
 	}
@@ -168,7 +168,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	ctxAuth := authContext(context.Background(), d.config.PersonalToken)
 
-	zone, err := d.findZone(ctxAuth, info.FQDN)
+	zone, err := d.findZone(ctxAuth, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azion: could not find zone for domain %q: %w", domain, err)
 	}

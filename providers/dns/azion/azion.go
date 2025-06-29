@@ -113,13 +113,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("azion: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.GetName())
+	subDomain, err := extractSubDomain(info, zone)
 	if err != nil {
 		return fmt.Errorf("azion: %w", err)
-	}
-
-	if subDomain == "" {
-		subDomain = "@"
 	}
 
 	// Check if a TXT record with the same name already exists
@@ -136,9 +132,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	var resp *idns.PostOrPutRecordResponse
 	if existingRecord != nil {
 		// Update existing record by adding the new value to the existing ones
-		existingAnswers := existingRecord.GetAnswersList()
-		updatedAnswers := append(existingAnswers, info.Value)
-		record.SetAnswersList(updatedAnswers)
+		record.SetAnswersList(append(existingRecord.GetAnswersList(), info.Value))
 
 		// Use PUT to update the existing record
 		resp, _, err = d.client.RecordsAPI.PutZoneRecord(ctxAuth, zone.GetId(), existingRecord.GetRecordId()).RecordPostOrPut(*record).Execute()
@@ -148,6 +142,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	} else {
 		// Create a new record
 		record.SetAnswersList([]string{info.Value})
+
 		resp, _, err = d.client.RecordsAPI.PostZoneRecord(ctxAuth, zone.GetId()).RecordPostOrPut(*record).Execute()
 		if err != nil {
 			return fmt.Errorf("azion: create new zone record: %w", err)
@@ -177,14 +172,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("azion: could not find zone for domain %q: %w", domain, err)
 	}
 
-	// Extract subdomain from FQDN
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.GetName())
+	subDomain, err := extractSubDomain(info, zone)
 	if err != nil {
 		return fmt.Errorf("azion: %w", err)
-	}
-
-	if subDomain == "" {
-		subDomain = "@"
 	}
 
 	defer func() {
@@ -197,7 +187,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// Find the existing TXT record
 	existingRecord, err := d.findExistingTXTRecord(ctxAuth, zone.GetId(), subDomain)
 	if err != nil {
-		return fmt.Errorf("azion: failed to find existing record: %w", err)
+		return fmt.Errorf("azion: find existing record: %w", err)
 	}
 
 	if existingRecord == nil {
@@ -216,14 +206,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// If no answers remain, delete the entire record
 	if len(updatedAnswers) == 0 {
-		_, resp, err := d.client.RecordsAPI.DeleteZoneRecord(ctxAuth, zone.GetId(), existingRecord.GetRecordId()).Execute()
-		if err != nil {
+		_, resp, errDelete := d.client.RecordsAPI.DeleteZoneRecord(ctxAuth, zone.GetId(), existingRecord.GetRecordId()).Execute()
+		if errDelete != nil {
 			// If a record doesn't exist (404), consider cleanup successful
 			if resp != nil && resp.StatusCode == http.StatusNotFound {
 				return nil
 			}
 
-			return fmt.Errorf("azion: failed to delete record: %w", err)
+			return fmt.Errorf("azion: delete record: %w", errDelete)
 		}
 
 		return nil
@@ -238,7 +228,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, _, err = d.client.RecordsAPI.PutZoneRecord(ctxAuth, zone.GetId(), existingRecord.GetRecordId()).RecordPostOrPut(*record).Execute()
 	if err != nil {
-		return fmt.Errorf("azion: failed to update record: %w", err)
+		return fmt.Errorf("azion: update record: %w", err)
 	}
 
 	return nil
@@ -303,4 +293,17 @@ func authContext(ctx context.Context, key string) context.Context {
 			Prefix: "Token",
 		},
 	})
+}
+
+func extractSubDomain(info dns01.ChallengeInfo, zone *idns.Zone) (string, error) {
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.GetName())
+	if err != nil {
+		return "", err
+	}
+
+	if subDomain != "" {
+		return subDomain, nil
+	}
+
+	return "@", nil
 }

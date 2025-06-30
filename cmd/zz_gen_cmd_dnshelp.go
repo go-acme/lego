@@ -21,6 +21,7 @@ func allDNSCodes() string {
 		"auroradns",
 		"autodns",
 		"axelname",
+		"azion",
 		"azure",
 		"azuredns",
 		"baiducloud",
@@ -345,6 +346,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/axelname`)
+
+	case "azion":
+		// generated from: providers/dns/azion/azion.toml
+		ew.writeln(`Configuration for Azion.`)
+		ew.writeln(`Code:	'azion'`)
+		ew.writeln(`Since:	'v4.24.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "AZION_PERSONAL_TOKEN":	Your Azion personal token.`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "AZION_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "AZION_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "AZION_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "AZION_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/azion`)
 
 	case "azure":
 		// generated from: providers/dns/azure/azure.toml

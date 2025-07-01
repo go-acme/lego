@@ -1,5 +1,28 @@
 # Changelog
 
+## [v4.24.0](https://github.com/go-acme/lego/releases/tag/v4.24.0) (2025-07-07)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Azion
+- **[dnsprovider]** Add DNS provider for DynDnsFree.de
+- **[dnsprovider]** Add DNS provider for ConoHa v3
+- **[dnsprovider]** Add DNS provider for RU Center
+- **[dnsprovider]** gcloud: add service account impersonation
+
+### Changed
+
+- **[dnsprovider]** pdns: improve error messages
+- **[dnsprovider]** cloudflare: add quotation marks to TXT record
+- **[dnsprovider]** googledomains: provider deprecation
+- **[dnsprovider]** mijnhost: improve record filter
+
+### Fixed
+
+- **[dnsprovider]** exoscale: fix find record
+- **[dnsprovider]** nicmanager: fix mode env var name and value
+- **[lib,cli]** Check order identifiers difference between client and server
+
 ## [v4.23.1](https://github.com/go-acme/lego/releases/tag/v4.23.1) (2025-04-16)
 
 Due to an error related to Snapcraft, some artifacts of the v4.23.0 release have not been published.

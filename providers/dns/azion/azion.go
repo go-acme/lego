@@ -19,34 +19,35 @@ const (
 	envNamespace = "AZION_"
 
 	EnvPersonalToken = envNamespace + "PERSONAL_TOKEN"
+	EnvPageSize      = envNamespace + "PAGE_SIZE"
 
-	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
-	EnvPageSize           = envNamespace + "PAGE_SIZE"
+	EnvTTL                = envNamespace + "TTL"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
-	EnvTTL                = envNamespace + "TTL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	PersonalToken      string
-	HTTPClient         *http.Client
-	PageSize           int
+	PersonalToken string
+	PageSize      int
+
 	PollingInterval    time.Duration
 	PropagationTimeout time.Duration
 	TTL                int
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
-		},
 		PageSize:           env.GetOrDefaultInt(EnvPageSize, 50),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
 	}
 }
 
@@ -265,7 +266,7 @@ func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*idns.Zone, er
 // findExistingTXTRecord searches for an existing TXT record with the given name in the specified zone.
 // It handles pagination to search through all pages of results.
 func (d *DNSProvider) findExistingTXTRecord(ctx context.Context, zoneID int32, recordName string) (*idns.RecordGet, error) {
-	page := int64(1)
+	var page int64 = 1
 
 	for {
 		resp, _, err := d.client.RecordsAPI.GetZoneRecords(ctx, zoneID).Page(page).PageSize(int64(d.config.PageSize)).Execute()
@@ -290,8 +291,7 @@ func (d *DNSProvider) findExistingTXTRecord(ctx context.Context, zoneID int32, r
 		}
 
 		// Check if there are more pages to search
-		totalPages, hasTotalPages := resp.GetTotalPagesOk()
-		if !hasTotalPages || page >= int64(*totalPages) {
+		if page >= int64(resp.GetTotalPages()) {
 			break
 		}
 

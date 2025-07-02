@@ -360,6 +360,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "AZION_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "AZION_PAGE_SIZE":	The page size for the API request (Default: 50)`)
 		ew.writeln(`	- "AZION_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "AZION_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
 		ew.writeln(`	- "AZION_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)

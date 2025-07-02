@@ -20,30 +20,33 @@ const (
 
 	EnvPersonalToken = envNamespace + "PERSONAL_TOKEN"
 
-	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
-	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvPageSize           = envNamespace + "PAGE_SIZE"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvTTL                = envNamespace + "TTL"
 )
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	PersonalToken      string
-	PropagationTimeout time.Duration
-	PollingInterval    time.Duration
-	TTL                int
 	HTTPClient         *http.Client
+	PageSize           int
+	PollingInterval    time.Duration
+	PropagationTimeout time.Duration
+	TTL                int
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
+		PageSize:           env.GetOrDefaultInt(EnvPageSize, 50),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 	}
 }
 
@@ -260,29 +263,42 @@ func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*idns.Zone, er
 }
 
 // findExistingTXTRecord searches for an existing TXT record with the given name in the specified zone.
+// It handles pagination to search through all pages of results.
 func (d *DNSProvider) findExistingTXTRecord(ctx context.Context, zoneID int32, recordName string) (*idns.RecordGet, error) {
-	resp, _, err := d.client.RecordsAPI.GetZoneRecords(ctx, zoneID).Execute()
-	if err != nil {
-		return nil, fmt.Errorf("get zone records: %w", err)
-	}
+	page := int64(1)
 
-	if resp == nil {
-		return nil, errors.New("get zone records: no results")
-	}
-
-	results, ok := resp.GetResultsOk()
-	if !ok || results == nil {
-		return nil, errors.New("get zone records: empty")
-	}
-
-	// Search for existing TXT record with the same name
-	for _, record := range results.GetRecords() {
-		if record.GetRecordType() == "TXT" && record.GetEntry() == recordName {
-			return &record, nil
+	for {
+		resp, _, err := d.client.RecordsAPI.GetZoneRecords(ctx, zoneID).Page(page).PageSize(int64(d.config.PageSize)).Execute()
+		if err != nil {
+			return nil, fmt.Errorf("get zone records (page %d): %w", page, err)
 		}
+
+		if resp == nil {
+			return nil, errors.New("get zone records: no results")
+		}
+
+		results, ok := resp.GetResultsOk()
+		if !ok || results == nil {
+			return nil, errors.New("get zone records: empty")
+		}
+
+		// Search for existing TXT record with the same name in current page
+		for _, record := range results.GetRecords() {
+			if record.GetRecordType() == "TXT" && record.GetEntry() == recordName {
+				return &record, nil
+			}
+		}
+
+		// Check if there are more pages to search
+		totalPages, hasTotalPages := resp.GetTotalPagesOk()
+		if !hasTotalPages || page >= int64(*totalPages) {
+			break
+		}
+
+		page++
 	}
 
-	// No existing record found
+	// No existing record found in any page
 	return nil, nil
 }
 

@@ -13,6 +13,7 @@ lego --email you@example.com --dns azion -d '*.example.com' -d example.com run
   [Configuration.Credentials]
     AZION_PERSONAL_TOKEN = "Your Azion personal token."
   [Configuration.Additional]
+    AZION_PAGE_SIZE = "The page size for the API request (Default: 50)"
     AZION_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     AZION_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
     AZION_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"

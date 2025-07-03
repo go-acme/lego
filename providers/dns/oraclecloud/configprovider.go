@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/oracle/oci-go-sdk/v65/common"
+	"github.com/nrdcg/oci-go-sdk/common/v1065"
 )
 
 type configProvider struct {

@@ -45,7 +45,7 @@ lego --email you@example.com --dns alidns - -d '*.example.com' -d example.com ru
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `ALICLOUD_ACCESS_KEY` | Access key ID |
-| `ALICLOUD_RAM_ROLE` | Your instance RAM role (https://www.alibabacloud.com/help/doc-detail/54579.htm) |
+| `ALICLOUD_RAM_ROLE` | Your instance RAM role (https://www.alibabacloud.com/help/en/ecs/user-guide/attach-an-instance-ram-role-to-an-ecs-instance) |
 | `ALICLOUD_SECRET_KEY` | Access Key secret |
 | `ALICLOUD_SECURITY_TOKEN` | STS Security Token (optional) |
 
@@ -71,7 +71,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 ## More information
 
 - [API documentation](https://www.alibabacloud.com/help/en/alibaba-cloud-dns/latest/api-alidns-2015-01-09-dir-parsing-records)
-- [Go client](https://github.com/aliyun/alibaba-cloud-sdk-go)
+- [Go client](https://github.com/alibabacloud-go/alidns-20150109)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/alidns/alidns.toml -->

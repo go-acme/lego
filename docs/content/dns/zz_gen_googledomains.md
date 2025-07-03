@@ -6,15 +6,15 @@ slug: googledomains
 dnsprovider:
   since:    "v4.11.0"
   code:     "googledomains"
-  url:      "https://domains.google"
+  url:      "https://github.com/go-acme/lego/issues/2553"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/googledomains/googledomains.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+The Google Domains DNS provider has shut down.
 
-Configuration for [Google Domains](https://domains.google).
 
 
 <!--more-->

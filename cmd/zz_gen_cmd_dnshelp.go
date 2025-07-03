@@ -228,7 +228,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "ALICLOUD_ACCESS_KEY":	Access key ID`)
-		ew.writeln(`	- "ALICLOUD_RAM_ROLE":	Your instance RAM role (https://www.alibabacloud.com/help/doc-detail/54579.htm)`)
+		ew.writeln(`	- "ALICLOUD_RAM_ROLE":	Your instance RAM role (https://www.alibabacloud.com/help/en/ecs/user-guide/attach-an-instance-ram-role-to-an-ecs-instance)`)
 		ew.writeln(`	- "ALICLOUD_SECRET_KEY":	Access Key secret`)
 		ew.writeln(`	- "ALICLOUD_SECURITY_TOKEN":	STS Security Token (optional)`)
 		ew.writeln()

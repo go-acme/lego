@@ -137,7 +137,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// mijn.host doesn't support multiple values for a domain,
 	// so we removed existing record for the subdomain.
 	cleanedRecords := filterRecords(records, func(record internal.Record) bool {
-		return record.Name == subDomain || record.Name == dns01.UnFqdn(info.EffectiveFQDN)
+		return record.Type == "TXT" && (record.Name == subDomain || record.Name == dns01.UnFqdn(info.EffectiveFQDN))
 	})
 
 	cleanedRecords = append(cleanedRecords, record)
@@ -170,7 +170,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	cleanedRecords := filterRecords(records, func(record internal.Record) bool {
-		return record.Value == info.Value
+		return record.Type == "TXT" && record.Value == info.Value
 	})
 
 	err = d.client.UpdateRecords(context.Background(), dom.Domain, cleanedRecords)

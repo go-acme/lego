@@ -37,7 +37,7 @@ func NewClient(signature string) *Client {
 
 // GetDNSRecords gets DNS records for a domain.
 // https://docs.userapi.epik.com/v2/#/DNS%20Host%20Records/getDnsRecord
-func (c Client) GetDNSRecords(ctx context.Context, domain string) ([]Record, error) {
+func (c *Client) GetDNSRecords(ctx context.Context, domain string) ([]Record, error) {
 	endpoint := c.createEndpoint(domain, url.Values{})
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
@@ -56,7 +56,7 @@ func (c Client) GetDNSRecords(ctx context.Context, domain string) ([]Record, err
 
 // CreateHostRecord creates a record for a domain.
 // https://docs.userapi.epik.com/v2/#/DNS%20Host%20Records/createHostRecord
-func (c Client) CreateHostRecord(ctx context.Context, domain string, record RecordRequest) (*Data, error) {
+func (c *Client) CreateHostRecord(ctx context.Context, domain string, record RecordRequest) (*Data, error) {
 	endpoint := c.createEndpoint(domain, url.Values{})
 
 	payload := CreateHostRecords{Payload: record}
@@ -77,7 +77,7 @@ func (c Client) CreateHostRecord(ctx context.Context, domain string, record Reco
 
 // RemoveHostRecord removes a record for a domain.
 // https://docs.userapi.epik.com/v2/#/DNS%20Host%20Records/removeHostRecord
-func (c Client) RemoveHostRecord(ctx context.Context, domain, recordID string) (*Data, error) {
+func (c *Client) RemoveHostRecord(ctx context.Context, domain, recordID string) (*Data, error) {
 	params := url.Values{}
 	params.Set("ID", recordID)
 
@@ -97,7 +97,7 @@ func (c Client) RemoveHostRecord(ctx context.Context, domain, recordID string) (
 	return &data, nil
 }
 
-func (c Client) do(req *http.Request, result any) error {
+func (c *Client) do(req *http.Request, result any) error {
 	useragent.SetHeader(req.Header)
 
 	resp, err := c.HTTPClient.Do(req)
@@ -128,7 +128,7 @@ func (c Client) do(req *http.Request, result any) error {
 	return nil
 }
 
-func (c Client) createEndpoint(domain string, params url.Values) *url.URL {
+func (c *Client) createEndpoint(domain string, params url.Values) *url.URL {
 	endpoint := c.baseURL.JoinPath("domains", domain, "records")
 
 	params.Set("SIGNATURE", c.signature)

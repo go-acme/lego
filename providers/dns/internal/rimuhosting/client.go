@@ -49,7 +49,7 @@ func NewClient(apiKey string) *Client {
 // ex:
 // - https://zonomi.com/app/dns/dyndns.jsp?action=QUERY&name=example.com&api_key=apikeyvaluehere
 // - https://zonomi.com/app/dns/dyndns.jsp?action=QUERY&name=**.example.com&api_key=apikeyvaluehere
-func (c Client) FindTXTRecords(ctx context.Context, domain string) ([]Record, error) {
+func (c *Client) FindTXTRecords(ctx context.Context, domain string) ([]Record, error) {
 	action := ActionParameter{
 		Action: QueryAction,
 		Name:   domain,
@@ -65,7 +65,7 @@ func (c Client) FindTXTRecords(ctx context.Context, domain string) ([]Record, er
 }
 
 // DoActions performs actions.
-func (c Client) DoActions(ctx context.Context, actions ...ActionParameter) (*DNSAPIResult, error) {
+func (c *Client) DoActions(ctx context.Context, actions ...ActionParameter) (*DNSAPIResult, error) {
 	if len(actions) == 0 {
 		return nil, errors.New("no action")
 	}
@@ -93,7 +93,7 @@ func (c Client) DoActions(ctx context.Context, actions ...ActionParameter) (*DNS
 	return resp, nil
 }
 
-func (c Client) toMultiParameters(params []ActionParameter) multiActionParameter {
+func (c *Client) toMultiParameters(params []ActionParameter) multiActionParameter {
 	multi := multiActionParameter{
 		APIKey: c.apiKey,
 	}
@@ -109,7 +109,7 @@ func (c Client) toMultiParameters(params []ActionParameter) multiActionParameter
 	return multi
 }
 
-func (c Client) do(ctx context.Context, params, result any) error {
+func (c *Client) do(ctx context.Context, params, result any) error {
 	baseURL, err := url.Parse(c.BaseURL)
 	if err != nil {
 		return err

@@ -39,7 +39,7 @@ func NewClient(apiKey string) *Client {
 }
 
 // GetZone gets a zone.
-func (c Client) GetZone(ctx context.Context, req ZoneConfigsFindRequest) (*ZoneConfig, error) {
+func (c *Client) GetZone(ctx context.Context, req ZoneConfigsFindRequest) (*ZoneConfig, error) {
 	var zoneConfig *ZoneConfig
 
 	operation := func() error {
@@ -73,7 +73,7 @@ func (c Client) GetZone(ctx context.Context, req ZoneConfigsFindRequest) (*ZoneC
 
 // ListZoneConfigs lists zone configuration.
 // https://www.hosting.de/api/?json#list-zoneconfigs
-func (c Client) ListZoneConfigs(ctx context.Context, req ZoneConfigsFindRequest) (*ZoneResponse, error) {
+func (c *Client) ListZoneConfigs(ctx context.Context, req ZoneConfigsFindRequest) (*ZoneResponse, error) {
 	endpoint := c.BaseURL.JoinPath("zoneConfigsFind")
 
 	req.AuthToken = c.apiKey
@@ -98,7 +98,7 @@ func (c Client) ListZoneConfigs(ctx context.Context, req ZoneConfigsFindRequest)
 
 // UpdateZone updates a zone.
 // https://www.hosting.de/api/?json#updating-zones
-func (c Client) UpdateZone(ctx context.Context, req ZoneUpdateRequest) (*Zone, error) {
+func (c *Client) UpdateZone(ctx context.Context, req ZoneUpdateRequest) (*Zone, error) {
 	endpoint := c.BaseURL.JoinPath("zoneUpdate")
 
 	req.AuthToken = c.apiKey
@@ -118,7 +118,7 @@ func (c Client) UpdateZone(ctx context.Context, req ZoneUpdateRequest) (*Zone, e
 	return response.Response, nil
 }
 
-func (c Client) post(ctx context.Context, endpoint *url.URL, request, result any) ([]byte, error) {
+func (c *Client) post(ctx context.Context, endpoint *url.URL, request, result any) ([]byte, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request JSON body: %w", err)

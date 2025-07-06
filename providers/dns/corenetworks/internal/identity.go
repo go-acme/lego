@@ -13,7 +13,7 @@ const tokenKey token = "token"
 
 // CreateAuthenticationToken gets an authentication token.
 // https://beta.api.core-networks.de/doc/#functon_auth_token
-func (c Client) CreateAuthenticationToken(ctx context.Context) (*Token, error) {
+func (c *Client) CreateAuthenticationToken(ctx context.Context) (*Token, error) {
 	endpoint := c.baseURL.JoinPath("auth", "token")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, Auth{Login: c.login, Password: c.password})
@@ -30,7 +30,7 @@ func (c Client) CreateAuthenticationToken(ctx context.Context) (*Token, error) {
 	return &token, nil
 }
 
-func (c Client) CreateAuthenticatedContext(ctx context.Context) (context.Context, error) {
+func (c *Client) CreateAuthenticatedContext(ctx context.Context) (context.Context, error) {
 	tok, err := c.CreateAuthenticationToken(ctx)
 	if err != nil {
 		return nil, err

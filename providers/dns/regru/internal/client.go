@@ -38,7 +38,7 @@ func NewClient(username, password string) *Client {
 
 // RemoveTxtRecord removes a TXT record.
 // https://www.reg.ru/support/help/api2#zone_remove_record
-func (c Client) RemoveTxtRecord(ctx context.Context, domain, subDomain, content string) error {
+func (c *Client) RemoveTxtRecord(ctx context.Context, domain, subDomain, content string) error {
 	request := RemoveRecordRequest{
 		Domains:           []Domain{{DName: domain}},
 		SubDomain:         subDomain,
@@ -57,7 +57,7 @@ func (c Client) RemoveTxtRecord(ctx context.Context, domain, subDomain, content 
 
 // AddTXTRecord adds a TXT record.
 // https://www.reg.ru/support/help/api2#zone_add_txt
-func (c Client) AddTXTRecord(ctx context.Context, domain, subDomain, content string) error {
+func (c *Client) AddTXTRecord(ctx context.Context, domain, subDomain, content string) error {
 	request := AddTxtRequest{
 		Domains:           []Domain{{DName: domain}},
 		SubDomain:         subDomain,
@@ -73,7 +73,7 @@ func (c Client) AddTXTRecord(ctx context.Context, domain, subDomain, content str
 	return resp.HasError()
 }
 
-func (c Client) doRequest(ctx context.Context, request any, fragments ...string) (*APIResponse, error) {
+func (c *Client) doRequest(ctx context.Context, request any, fragments ...string) (*APIResponse, error) {
 	endpoint := c.baseURL.JoinPath(fragments...)
 
 	inputData, err := json.Marshal(request)

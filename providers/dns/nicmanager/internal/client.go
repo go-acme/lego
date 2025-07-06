@@ -74,7 +74,7 @@ func NewClient(opts Options) *Client {
 	return c
 }
 
-func (c Client) GetZone(ctx context.Context, name string) (*Zone, error) {
+func (c *Client) GetZone(ctx context.Context, name string) (*Zone, error) {
 	endpoint := c.baseURL.JoinPath(c.mode, name)
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
@@ -91,7 +91,7 @@ func (c Client) GetZone(ctx context.Context, name string) (*Zone, error) {
 	return &zone, nil
 }
 
-func (c Client) AddRecord(ctx context.Context, zone string, payload RecordCreateUpdate) error {
+func (c *Client) AddRecord(ctx context.Context, zone string, payload RecordCreateUpdate) error {
 	endpoint := c.baseURL.JoinPath(c.mode, zone, "records")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, payload)
@@ -107,7 +107,7 @@ func (c Client) AddRecord(ctx context.Context, zone string, payload RecordCreate
 	return nil
 }
 
-func (c Client) DeleteRecord(ctx context.Context, zone string, record int) error {
+func (c *Client) DeleteRecord(ctx context.Context, zone string, record int) error {
 	endpoint := c.baseURL.JoinPath(c.mode, zone, "records", strconv.Itoa(record))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
@@ -123,7 +123,7 @@ func (c Client) DeleteRecord(ctx context.Context, zone string, record int) error
 	return nil
 }
 
-func (c Client) do(req *http.Request, expectedStatusCode int, result any) error {
+func (c *Client) do(req *http.Request, expectedStatusCode int, result any) error {
 	req.SetBasicAuth(c.username, c.password)
 
 	if c.otp != "" {

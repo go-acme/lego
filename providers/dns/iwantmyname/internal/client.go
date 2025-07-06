@@ -35,7 +35,7 @@ func NewClient(username, password string) *Client {
 }
 
 // SendRequest send a request (create/add/delete) to the API.
-func (c Client) SendRequest(ctx context.Context, record Record) error {
+func (c *Client) SendRequest(ctx context.Context, record Record) error {
 	values, err := querystring.Values(record)
 	if err != nil {
 		return err

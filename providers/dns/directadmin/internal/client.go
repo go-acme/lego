@@ -38,7 +38,7 @@ func NewClient(baseURL, username, password string) (*Client, error) {
 	}, nil
 }
 
-func (c Client) SetRecord(ctx context.Context, domain string, record Record) error {
+func (c *Client) SetRecord(ctx context.Context, domain string, record Record) error {
 	data, err := querystring.Values(record)
 	if err != nil {
 		return err
@@ -49,7 +49,7 @@ func (c Client) SetRecord(ctx context.Context, domain string, record Record) err
 	return c.do(ctx, domain, data)
 }
 
-func (c Client) DeleteRecord(ctx context.Context, domain string, record Record) error {
+func (c *Client) DeleteRecord(ctx context.Context, domain string, record Record) error {
 	data, err := querystring.Values(record)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (c Client) DeleteRecord(ctx context.Context, domain string, record Record) 
 	return c.do(ctx, domain, data)
 }
 
-func (c Client) do(ctx context.Context, domain string, data url.Values) error {
+func (c *Client) do(ctx context.Context, domain string, data url.Values) error {
 	endpoint := c.baseURL.JoinPath("CMD_API_DNS_CONTROL")
 
 	query := endpoint.Query()

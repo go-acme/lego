@@ -254,7 +254,6 @@ func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*idns.Zone, er
 
 		for _, zone := range resp.GetResults() {
 			if zone.GetDomain() == domain {
-				println(zone.GetName(), domain)
 				return &zone, nil
 			}
 		}

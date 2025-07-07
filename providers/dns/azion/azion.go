@@ -264,12 +264,12 @@ func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*idns.Zone, er
 
 	// If exact match not found, try to find parent zones
 	// This handles cases like *.test.example.com where example.com is registered
-	return d.findParentZone(resp.GetResults(), fqdn)
+	return findParentZone(resp.GetResults(), fqdn)
 }
 
 // findParentZone attempts to find a parent zone for the given FQDN by trying each domain level.
 // This handles cases like *.test.example.com where only example.com is registered as a zone.
-func (d *DNSProvider) findParentZone(zones []idns.Zone, fqdn string) (*idns.Zone, error) {
+func findParentZone(zones []idns.Zone, fqdn string) (*idns.Zone, error) {
 	// Use dns.Split to get all possible domain levels
 	// For "_acme-challenge.test.example.com.", this returns indexes for:
 	// - test.example.com.

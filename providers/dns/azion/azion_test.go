@@ -115,9 +115,7 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestFindParentZone(t *testing.T) {
-	provider := &DNSProvider{}
-
+func Test_findParentZone(t *testing.T) {
 	// Mock zones with various domain levels to test hierarchical search
 	mockZones := []idns.Zone{
 		{
@@ -213,7 +211,7 @@ func TestFindParentZone(t *testing.T) {
 				zones = []idns.Zone{}
 			}
 
-			zone, err := provider.findParentZone(zones, test.fqdn)
+			zone, err := findParentZone(zones, test.fqdn)
 
 			if test.expectedErr {
 				require.Error(t, err)
@@ -228,11 +226,9 @@ func TestFindParentZone(t *testing.T) {
 	}
 }
 
-// TestFindParentZoneWildcardScenario tests the specific wildcard certificate scenario
+// tests the specific wildcard certificate scenario
 // where only the parent domain is registered but wildcard certificates are requested.
-func TestFindParentZoneWildcardScenario(t *testing.T) {
-	provider := &DNSProvider{}
-
+func Test_findParentZone_wildcard(t *testing.T) {
 	// Simulate only example.com registered as zone (common real-world scenario)
 	mockZones := []idns.Zone{
 		{
@@ -267,7 +263,7 @@ func TestFindParentZoneWildcardScenario(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			zone, err := provider.findParentZone(mockZones, test.fqdn)
+			zone, err := findParentZone(mockZones, test.fqdn)
 
 			// Should find the parent zone example.com
 			require.NoError(t, err, "Should find parent zone example.com")
@@ -281,7 +277,7 @@ func TestFindParentZoneWildcardScenario(t *testing.T) {
 	t.Run("domain not found", func(t *testing.T) {
 		t.Parallel()
 
-		zone, err := provider.findParentZone(mockZones, "_acme-challenge.notfound.net.")
+		zone, err := findParentZone(mockZones, "_acme-challenge.notfound.net.")
 		require.Error(t, err, "Should return error for domain not found")
 		require.Nil(t, zone, "Zone should be nil for domain not found")
 		require.Contains(t, err.Error(), "no parent zone found", "Error should mention no parent zone found")

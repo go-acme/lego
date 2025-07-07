@@ -8,11 +8,11 @@
   "results": [
     {
       "id": 1,
-      "name": "example.com"
+      "domain": "example.com"
     },
     {
       "id": 2,
-      "name": "sub.example.com"
+      "domain": "sub.example.com"
     }
   ],
   "schema_version": 3

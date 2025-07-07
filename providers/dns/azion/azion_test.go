@@ -135,32 +135,32 @@ func TestDNSProvider_findZone(t *testing.T) {
 			desc: "apex",
 			fqdn: "example.com.",
 			expected: &idns.Zone{
-				Id:   idns.PtrInt32(1),
-				Name: idns.PtrString("example.com"),
+				Id:     idns.PtrInt32(1),
+				Domain: idns.PtrString("example.com"),
 			},
 		},
 		{
 			desc: "sub domain",
 			fqdn: "sub.example.com.",
 			expected: &idns.Zone{
-				Id:   idns.PtrInt32(2),
-				Name: idns.PtrString("sub.example.com"),
+				Id:     idns.PtrInt32(2),
+				Domain: idns.PtrString("sub.example.com"),
 			},
 		},
 		{
 			desc: "long sub domain",
 			fqdn: "_acme-challenge.api.sub.example.com.",
 			expected: &idns.Zone{
-				Id:   idns.PtrInt32(2),
-				Name: idns.PtrString("sub.example.com"),
+				Id:     idns.PtrInt32(2),
+				Domain: idns.PtrString("sub.example.com"),
 			},
 		},
 		{
 			desc: "long sub domain, apex",
 			fqdn: "_acme-challenge.test.example.com.",
 			expected: &idns.Zone{
-				Id:   idns.PtrInt32(1),
-				Name: idns.PtrString("example.com"),
+				Id:     idns.PtrInt32(1),
+				Domain: idns.PtrString("example.com"),
 			},
 		},
 	}

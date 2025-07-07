@@ -2,6 +2,7 @@
 package tencentcloud
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -117,7 +118,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	ctx := context.Background()
+
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
 	}
@@ -136,7 +139,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	request.Value = common.StringPtr(info.Value)
 	request.TTL = common.Uint64Ptr(uint64(d.config.TTL))
 
-	_, err = d.client.CreateRecord(request)
+	_, err = d.client.CreateRecordWithContext(ctx, request)
 	if err != nil {
 		return fmt.Errorf("dnspod: API call failed: %w", err)
 	}
@@ -148,12 +151,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	ctx := context.Background()
+
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
 	}
 
-	records, err := d.findTxtRecords(zone, info.EffectiveFQDN)
+	records, err := d.findTxtRecords(ctx, zone, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to find TXT records: %w", err)
 	}
@@ -164,7 +169,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		request.DomainId = zone.DomainId
 		request.RecordId = record.RecordId
 
-		_, err := d.client.DeleteRecord(request)
+		_, err := d.client.DeleteRecordWithContext(ctx, request)
 		if err != nil {
 			return fmt.Errorf("tencentcloud: delete record failed: %w", err)
 		}

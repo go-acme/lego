@@ -3,6 +3,7 @@ package azion
 import (
 	"testing"
 
+	"github.com/aziontech/azionapi-go-sdk/idns"
 	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/stretchr/testify/require"
 )
@@ -112,4 +113,86 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+}
+
+func TestFindParentZone(t *testing.T) {
+	// Create a mock DNSProvider
+	provider := &DNSProvider{}
+
+	// Create mock zones - simulating that only example.com is registered
+	mockZones := []idns.Zone{
+		{
+			Id:   idns.PtrInt32(1),
+			Name: idns.PtrString("example.com"),
+		},
+		{
+			Id:   idns.PtrInt32(2),
+			Name: idns.PtrString("another.org"),
+		},
+	}
+
+	testCases := []struct {
+		desc        string
+		fqdn        string
+		expectedID  int32
+		expectedErr bool
+	}{
+		{
+			desc:        "exact match - example.com",
+			fqdn:        "example.com.",
+			expectedID:  1,
+			expectedErr: false,
+		},
+		{
+			desc:        "subdomain - test.example.com should find example.com",
+			fqdn:        "test.example.com.",
+			expectedID:  1,
+			expectedErr: false,
+		},
+		{
+			desc:        "deep subdomain - _acme-challenge.test.example.com should find example.com",
+			fqdn:        "_acme-challenge.test.example.com.",
+			expectedID:  1,
+			expectedErr: false,
+		},
+		{
+			desc:        "wildcard subdomain - *.test.example.com should find example.com",
+			fqdn:        "_acme-challenge.test.example.com.",
+			expectedID:  1,
+			expectedErr: false,
+		},
+		{
+			desc:        "no parent zone found",
+			fqdn:        "notfound.net.",
+			expectedID:  0,
+			expectedErr: true,
+		},
+		{
+			desc:        "another domain exact match",
+			fqdn:        "another.org.",
+			expectedID:  2,
+			expectedErr: false,
+		},
+		{
+			desc:        "subdomain of another domain",
+			fqdn:        "sub.another.org.",
+			expectedID:  2,
+			expectedErr: false,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			zone, err := provider.findParentZone(mockZones, test.fqdn)
+
+			if test.expectedErr {
+				require.Error(t, err)
+				require.Nil(t, zone)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, zone)
+				require.Equal(t, test.expectedID, zone.GetId())
+			}
+		})
+	}
 }

@@ -1,0 +1,19 @@
+{
+  "count": 2,
+  "links": {
+    "previous": null,
+    "next": null
+  },
+  "total_pages": 1,
+  "results": [
+    {
+      "id": 1,
+      "domain": "example.com"
+    },
+    {
+      "id": 2,
+      "domain": "sub.example.com"
+    }
+  ],
+  "schema_version": 3
+}

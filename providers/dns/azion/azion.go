@@ -12,6 +12,7 @@ import (
 	"github.com/aziontech/azionapi-go-sdk/idns"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -182,13 +183,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	defer func() {
-		// Remove the record ID from our map
+		// Cleans the record ID.
 		d.recordIDsMu.Lock()
 		delete(d.recordIDs, token)
 		d.recordIDsMu.Unlock()
 	}()
 
-	// Find the existing TXT record
 	existingRecord, err := d.findExistingTXTRecord(ctxAuth, zone.GetId(), subDomain)
 	if err != nil {
 		return fmt.Errorf("azion: find existing record: %w", err)
@@ -198,7 +198,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	// Get current answers and remove the specific value
 	currentAnswers := existingRecord.GetAnswersList()
 
 	var updatedAnswers []string
@@ -239,11 +238,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*idns.Zone, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return nil, fmt.Errorf("could not find a zone for domain %q: %w", fqdn, err)
-	}
-
 	resp, _, err := d.client.ZonesAPI.GetZones(ctx).Execute()
 	if err != nil {
 		return nil, fmt.Errorf("get zones: %w", err)
@@ -253,14 +247,19 @@ func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*idns.Zone, er
 		return nil, errors.New("get zones: no results")
 	}
 
-	targetZone := dns01.UnFqdn(authZone)
-	for _, zone := range resp.GetResults() {
-		if zone.GetName() == targetZone {
-			return &zone, nil
+	labelIndexes := dns.Split(fqdn)
+
+	for _, index := range labelIndexes {
+		domain := dns01.UnFqdn(fqdn[index:])
+
+		for _, zone := range resp.GetResults() {
+			if zone.GetDomain() == domain {
+				return &zone, nil
+			}
 		}
 	}
 
-	return nil, fmt.Errorf("zone %q not found (fqdn: %q)", authZone, fqdn)
+	return nil, fmt.Errorf("zone not found (fqdn: %q)", fqdn)
 }
 
 // findExistingTXTRecord searches for an existing TXT record with the given name in the specified zone.

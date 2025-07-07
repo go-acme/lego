@@ -229,7 +229,7 @@ func TestFindParentZone(t *testing.T) {
 }
 
 // TestFindParentZoneWildcardScenario tests the specific wildcard certificate scenario
-// where only the parent domain is registered but wildcard certificates are requested
+// where only the parent domain is registered but wildcard certificates are requested.
 func TestFindParentZoneWildcardScenario(t *testing.T) {
 	provider := &DNSProvider{}
 

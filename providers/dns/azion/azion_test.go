@@ -116,10 +116,9 @@ func TestLiveCleanUp(t *testing.T) {
 }
 
 func TestFindParentZone(t *testing.T) {
-	// Create a mock DNSProvider
 	provider := &DNSProvider{}
 
-	// Create mock zones - simulating that only example.com is registered
+	// Mock zones with various domain levels to test hierarchical search
 	mockZones := []idns.Zone{
 		{
 			Id:   idns.PtrInt32(1),
@@ -127,63 +126,94 @@ func TestFindParentZone(t *testing.T) {
 		},
 		{
 			Id:   idns.PtrInt32(2),
-			Name: idns.PtrString("another.org"),
+			Name: idns.PtrString("sub.example.com"),
+		},
+		{
+			Id:   idns.PtrInt32(3),
+			Name: idns.PtrString("test.example.org"),
+		},
+		{
+			Id:   idns.PtrInt32(4),
+			Name: idns.PtrString("example.org"),
 		},
 	}
 
 	testCases := []struct {
-		desc        string
-		fqdn        string
-		expectedID  int32
-		expectedErr bool
+		desc         string
+		fqdn         string
+		expectedZone *idns.Zone
+		expectedErr  bool
 	}{
 		{
-			desc:        "exact match - example.com",
-			fqdn:        "example.com.",
-			expectedID:  1,
-			expectedErr: false,
+			desc: "exact match - example.com",
+			fqdn: "example.com.",
+			expectedZone: &idns.Zone{
+				Id:   idns.PtrInt32(1),
+				Name: idns.PtrString("example.com"),
+			},
 		},
 		{
-			desc:        "subdomain - test.example.com should find example.com",
-			fqdn:        "test.example.com.",
-			expectedID:  1,
-			expectedErr: false,
+			desc: "exact match - subdomain zone",
+			fqdn: "sub.example.com.",
+			expectedZone: &idns.Zone{
+				Id:   idns.PtrInt32(2),
+				Name: idns.PtrString("sub.example.com"),
+			},
 		},
 		{
-			desc:        "deep subdomain - _acme-challenge.test.example.com should find example.com",
-			fqdn:        "_acme-challenge.test.example.com.",
-			expectedID:  1,
-			expectedErr: false,
+			desc: "find closest parent - should find sub.example.com",
+			fqdn: "_acme-challenge.api.sub.example.com.",
+			expectedZone: &idns.Zone{
+				Id:   idns.PtrInt32(2),
+				Name: idns.PtrString("sub.example.com"),
+			},
 		},
 		{
-			desc:        "wildcard subdomain - *.test.example.com should find example.com",
-			fqdn:        "_acme-challenge.test.example.com.",
-			expectedID:  1,
-			expectedErr: false,
+			desc: "find parent when subdomain not registered - should find example.com",
+			fqdn: "_acme-challenge.test.example.com.",
+			expectedZone: &idns.Zone{
+				Id:   idns.PtrInt32(1),
+				Name: idns.PtrString("example.com"),
+			},
+		},
+		{
+			desc: "deep subdomain - should find example.org",
+			fqdn: "_acme-challenge.api.staging.example.org.",
+			expectedZone: &idns.Zone{
+				Id:   idns.PtrInt32(4),
+				Name: idns.PtrString("example.org"),
+			},
+		},
+		{
+			desc: "find specific subdomain zone - should find test.example.org",
+			fqdn: "_acme-challenge.api.test.example.org.",
+			expectedZone: &idns.Zone{
+				Id:   idns.PtrInt32(3),
+				Name: idns.PtrString("test.example.org"),
+			},
 		},
 		{
 			desc:        "no parent zone found",
-			fqdn:        "notfound.net.",
-			expectedID:  0,
+			fqdn:        "_acme-challenge.notfound.net.",
 			expectedErr: true,
 		},
 		{
-			desc:        "another domain exact match",
-			fqdn:        "another.org.",
-			expectedID:  2,
-			expectedErr: false,
-		},
-		{
-			desc:        "subdomain of another domain",
-			fqdn:        "sub.another.org.",
-			expectedID:  2,
-			expectedErr: false,
+			desc:        "empty zones list",
+			fqdn:        "example.com.",
+			expectedErr: true,
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			zone, err := provider.findParentZone(mockZones, test.fqdn)
+			t.Parallel()
+
+			zones := mockZones
+			if test.desc == "empty zones list" {
+				zones = []idns.Zone{}
+			}
+
+			zone, err := provider.findParentZone(zones, test.fqdn)
 
 			if test.expectedErr {
 				require.Error(t, err)
@@ -191,8 +221,69 @@ func TestFindParentZone(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				require.NotNil(t, zone)
-				require.Equal(t, test.expectedID, zone.GetId())
+				require.Equal(t, test.expectedZone.GetId(), zone.GetId())
+				require.Equal(t, test.expectedZone.GetName(), zone.GetName())
 			}
 		})
 	}
+}
+
+// TestFindParentZoneWildcardScenario tests the specific wildcard certificate scenario
+// where only the parent domain is registered but wildcard certificates are requested
+func TestFindParentZoneWildcardScenario(t *testing.T) {
+	provider := &DNSProvider{}
+
+	// Simulate only example.com registered as zone (common real-world scenario)
+	mockZones := []idns.Zone{
+		{
+			Id:   idns.PtrInt32(123),
+			Name: idns.PtrString("example.com"),
+		},
+	}
+
+	testCases := []struct {
+		desc string
+		fqdn string
+	}{
+		{
+			desc: "wildcard certificate for *.test.example.com",
+			fqdn: "_acme-challenge.test.example.com.",
+		},
+		{
+			desc: "wildcard certificate for *.api.example.com",
+			fqdn: "_acme-challenge.api.example.com.",
+		},
+		{
+			desc: "deep subdomain certificate",
+			fqdn: "_acme-challenge.api.v1.example.com.",
+		},
+		{
+			desc: "multiple level subdomain",
+			fqdn: "_acme-challenge.app.staging.test.example.com.",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			zone, err := provider.findParentZone(mockZones, test.fqdn)
+
+			// Should find the parent zone example.com
+			require.NoError(t, err, "Should find parent zone example.com")
+			require.NotNil(t, zone, "Zone should not be nil")
+			require.Equal(t, int32(123), zone.GetId(), "Should find zone example.com (ID 123)")
+			require.Equal(t, "example.com", zone.GetName(), "Zone name should be example.com")
+		})
+	}
+
+	// Test negative case
+	t.Run("domain not found", func(t *testing.T) {
+		t.Parallel()
+
+		zone, err := provider.findParentZone(mockZones, "_acme-challenge.notfound.net.")
+		require.Error(t, err, "Should return error for domain not found")
+		require.Nil(t, zone, "Zone should be nil for domain not found")
+		require.Contains(t, err.Error(), "no parent zone found", "Error should mention no parent zone found")
+	})
 }

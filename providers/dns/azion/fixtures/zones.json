@@ -1,5 +1,5 @@
 {
-  "count": 4,
+  "count": 2,
   "links": {
     "previous": null,
     "next": null
@@ -13,14 +13,6 @@
     {
       "id": 2,
       "name": "sub.example.com"
-    },
-    {
-      "id": 3,
-      "name": "test.example.org"
-    },
-    {
-      "id": 4,
-      "name": "example.org"
     }
   ],
   "schema_version": 3

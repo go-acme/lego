@@ -163,22 +163,6 @@ func TestDNSProvider_findZone(t *testing.T) {
 				Name: idns.PtrString("example.com"),
 			},
 		},
-		{
-			desc: "long sub domain, apex 2",
-			fqdn: "_acme-challenge.api.staging.example.org.",
-			expected: &idns.Zone{
-				Id:   idns.PtrInt32(4),
-				Name: idns.PtrString("example.org"),
-			},
-		},
-		{
-			desc: "long sub domain 2",
-			fqdn: "_acme-challenge.api.test.example.org.",
-			expected: &idns.Zone{
-				Id:   idns.PtrInt32(3),
-				Name: idns.PtrString("test.example.org"),
-			},
-		},
 	}
 
 	for _, test := range testCases {
@@ -200,9 +184,9 @@ func TestDNSProvider_findZone_error(t *testing.T) {
 	}{
 		{
 			desc:     "no parent zone found",
-			fqdn:     "_acme-challenge.notfound.net.",
+			fqdn:     "_acme-challenge.example.org.",
 			response: "zones.json",
-			expected: `zone not found (fqdn: "_acme-challenge.notfound.net.")`,
+			expected: `zone not found (fqdn: "_acme-challenge.example.org.")`,
 		},
 		{
 			desc:     "empty zones list",

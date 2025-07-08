@@ -1,0 +1,8 @@
+{
+  "type": "txt",
+  "value": {
+    "text": "txtxtxt"
+  },
+  "name": "_acme-challenge",
+  "ttl": 600
+}

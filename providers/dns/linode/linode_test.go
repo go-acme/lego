@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type MockResponseMap map[string]interface{}
+type MockResponseMap map[string]any
 
 var envTest = tester.NewEnvTest(EnvToken)
 

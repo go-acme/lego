@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -63,7 +62,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Type: "TXT",
 	}
 
-	newRecord, err := client.AddRecord(context.Background(), "example.com", record)
+	newRecord, err := client.AddRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 
 	expected := &Record{
@@ -87,7 +86,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Type: "TXT",
 	}
 
-	newRecord, err := client.AddRecord(context.Background(), "example.com", record)
+	newRecord, err := client.AddRecord(t.Context(), "example.com", record)
 	require.Error(t, err)
 
 	assert.Nil(t, newRecord)
@@ -96,13 +95,13 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, "/directory/v1/org/123456/domains/example.com/dns/789456", http.MethodDelete, http.StatusOK, "delete-record.json")
 
-	err := client.DeleteRecord(context.Background(), "example.com", 789456)
+	err := client.DeleteRecord(t.Context(), "example.com", 789456)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := setupTest(t, "/directory/v1/org/123456/domains/example.com/dns/789456", http.MethodDelete, http.StatusUnauthorized, "error.json")
 
-	err := client.DeleteRecord(context.Background(), "example.com", 789456)
+	err := client.DeleteRecord(t.Context(), "example.com", 789456)
 	require.Error(t, err)
 }

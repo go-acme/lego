@@ -1,6 +1,7 @@
 package gcloud
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
 )

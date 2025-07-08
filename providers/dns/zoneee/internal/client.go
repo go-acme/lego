@@ -26,7 +26,7 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(username string, apiKey string) *Client {
+func NewClient(username, apiKey string) *Client {
 	baseURL, _ := url.Parse(DefaultEndpoint)
 
 	return &Client{

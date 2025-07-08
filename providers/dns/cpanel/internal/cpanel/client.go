@@ -24,7 +24,7 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-func NewClient(baseURL string, username string, token string) (*Client, error) {
+func NewClient(baseURL, username, token string) (*Client, error) {
 	apiEndpoint, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, err

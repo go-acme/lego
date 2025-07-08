@@ -178,7 +178,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) waitJob(ctx context.Context, domain string, id string) error {
+func (d *DNSProvider) waitJob(ctx context.Context, domain, id string) error {
 	return wait.For("variomedia: apply change on "+domain, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
 		result, err := d.client.GetJob(ctx, id)
 		if err != nil {

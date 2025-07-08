@@ -31,7 +31,7 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-func NewClient(username string, password string, domainName string, projectName string) *Client {
+func NewClient(username, password, domainName, projectName string) *Client {
 	return &Client{
 		username:         username,
 		password:         password,
@@ -196,7 +196,7 @@ func (c *Client) do(req *http.Request, result any) error {
 	return nil
 }
 
-func newJSONRequest[T string | *url.URL](ctx context.Context, method string, endpoint T, payload interface{}) (*http.Request, error) {
+func newJSONRequest[T string | *url.URL](ctx context.Context, method string, endpoint T, payload any) (*http.Request, error) {
 	buf := new(bytes.Buffer)
 
 	if payload != nil {

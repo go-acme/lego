@@ -116,7 +116,7 @@ func (c *Client) updateRRSet(ctx context.Context, zone, name string, record RRSe
 	return c.doRequest(ctx, http.MethodPut, endpoint, record, nil)
 }
 
-func (c *Client) doRequest(ctx context.Context, method string, endpoint *url.URL, bodyParams any, result any) error {
+func (c *Client) doRequest(ctx context.Context, method string, endpoint *url.URL, bodyParams, result any) error {
 	req, err := newJSONRequest(ctx, method, endpoint, bodyParams)
 	if err != nil {
 		return fmt.Errorf("new request: %w", err)

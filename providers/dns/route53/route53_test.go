@@ -1,7 +1,6 @@
 package route53
 
 import (
-	"context"
 	"os"
 	"testing"
 	"time"
@@ -55,7 +54,7 @@ func Test_loadCredentials_FromEnv(t *testing.T) {
 	_ = os.Setenv(EnvSecretAccessKey, "456")
 	_ = os.Setenv(EnvRegion, "us-east-1")
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	cfg, err := awsconfig.LoadDefaultConfig(ctx)
 	require.NoError(t, err)
@@ -79,7 +78,7 @@ func Test_loadRegion_FromEnv(t *testing.T) {
 
 	_ = os.Setenv(EnvRegion, "foo")
 
-	cfg, err := awsconfig.LoadDefaultConfig(context.Background())
+	cfg, err := awsconfig.LoadDefaultConfig(t.Context())
 	require.NoError(t, err)
 
 	assert.Equal(t, "foo", cfg.Region, "Region")
@@ -96,7 +95,7 @@ func Test_getHostedZoneID_FromEnv(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	hostedZoneID, err := provider.getHostedZoneID(context.Background(), "whatever")
+	hostedZoneID, err := provider.getHostedZoneID(t.Context(), "whatever")
 	require.NoError(t, err, "HostedZoneID")
 
 	assert.Equal(t, expectedZoneID, hostedZoneID)
@@ -268,7 +267,7 @@ func Test_createAWSConfig(t *testing.T) {
 
 			envTest.Apply(test.env)
 
-			ctx := context.Background()
+			ctx := t.Context()
 
 			cfg, err := createAWSConfig(ctx, test.config)
 			requireErr(t, err, test.wantErr)

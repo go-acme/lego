@@ -52,7 +52,7 @@ func SetupFakeAPI(t *testing.T) (*http.ServeMux, string) {
 }
 
 // WriteJSONResponse marshals the body as JSON and writes it to the response.
-func WriteJSONResponse(w http.ResponseWriter, body interface{}) error {
+func WriteJSONResponse(w http.ResponseWriter, body any) error {
 	bs, err := json.Marshal(body)
 	if err != nil {
 		return err

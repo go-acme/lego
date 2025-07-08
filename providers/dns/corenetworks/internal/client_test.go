@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -92,7 +91,7 @@ func TestClient_CreateAuthenticationToken(t *testing.T) {
 
 	mux.HandleFunc("/auth/token", testHandlerAuth(http.MethodPost, http.StatusOK, "auth.json"))
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	token, err := client.CreateAuthenticationToken(ctx)
 	require.NoError(t, err)
@@ -109,7 +108,7 @@ func TestClient_ListZone(t *testing.T) {
 
 	mux.HandleFunc("/dnszones/", testHandler(http.MethodGet, http.StatusOK, "ListZone.json"))
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	zones, err := client.ListZone(ctx)
 	require.NoError(t, err)
@@ -127,7 +126,7 @@ func TestClient_GetZoneDetails(t *testing.T) {
 
 	mux.HandleFunc("/dnszones/example.com", testHandler(http.MethodGet, http.StatusOK, "GetZoneDetails.json"))
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	zone, err := client.GetZoneDetails(ctx, "example.com")
 	require.NoError(t, err)
@@ -147,7 +146,7 @@ func TestClient_ListRecords(t *testing.T) {
 
 	mux.HandleFunc("/dnszones/example.com/records/", testHandler(http.MethodGet, http.StatusOK, "ListRecords.json"))
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	records, err := client.ListRecords(ctx, "example.com")
 	require.NoError(t, err)
@@ -181,7 +180,7 @@ func TestClient_AddRecord(t *testing.T) {
 
 	mux.HandleFunc("/dnszones/example.com/records/", testHandler(http.MethodPost, http.StatusNoContent, ""))
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	record := Record{Name: "www", TTL: 3600, Type: "A", Data: "127.0.0.1"}
 
@@ -194,7 +193,7 @@ func TestClient_DeleteRecords(t *testing.T) {
 
 	mux.HandleFunc("/dnszones/example.com/records/delete", testHandler(http.MethodPost, http.StatusNoContent, ""))
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	record := Record{Name: "www", Type: "A", Data: "127.0.0.1"}
 
@@ -207,7 +206,7 @@ func TestClient_CommitRecords(t *testing.T) {
 
 	mux.HandleFunc("/dnszones/example.com/records/commit", testHandler(http.MethodPost, http.StatusNoContent, ""))
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	err := client.CommitRecords(ctx, "example.com")
 	require.NoError(t, err)

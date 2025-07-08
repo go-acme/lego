@@ -36,7 +36,7 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-func NewClient(baseURL string, username, password string) *Client {
+func NewClient(baseURL, username, password string) *Client {
 	bu, _ := url.Parse(baseURL)
 
 	return &Client{

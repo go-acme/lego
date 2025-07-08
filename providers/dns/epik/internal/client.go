@@ -77,7 +77,7 @@ func (c Client) CreateHostRecord(ctx context.Context, domain string, record Reco
 
 // RemoveHostRecord removes a record for a domain.
 // https://docs.userapi.epik.com/v2/#/DNS%20Host%20Records/removeHostRecord
-func (c Client) RemoveHostRecord(ctx context.Context, domain string, recordID string) (*Data, error) {
+func (c Client) RemoveHostRecord(ctx context.Context, domain, recordID string) (*Data, error) {
 	params := url.Values{}
 	params.Set("ID", recordID)
 

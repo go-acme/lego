@@ -20,7 +20,7 @@ func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		envVars  map[string]string
-		expected interface{}
+		expected any
 	}{
 		{
 			desc: "mode DMAPI (default)",
@@ -72,7 +72,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		mode     string
-		expected interface{}
+		expected any
 	}{
 		{
 			desc:     "mode DMAPI (default)",

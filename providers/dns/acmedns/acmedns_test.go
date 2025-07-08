@@ -1,7 +1,6 @@
 package acmedns
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -133,7 +132,7 @@ func TestRegister(t *testing.T) {
 				p.storage = test.Storage
 			}
 
-			acc, err := p.register(context.Background(), egDomain, egFQDN)
+			acc, err := p.register(t.Context(), egDomain, egFQDN)
 			if test.ExpectedError != nil {
 				assert.Equal(t, test.ExpectedError, err)
 			} else {
@@ -242,7 +241,7 @@ func TestRegister_httpStorage(t *testing.T) {
 				w.WriteHeader(test.StatusCode)
 			})
 
-			acc, err := p.register(context.Background(), egDomain, egFQDN)
+			acc, err := p.register(t.Context(), egDomain, egFQDN)
 			if test.ExpectedError != nil {
 				assert.Equal(t, test.ExpectedError, err)
 			} else {

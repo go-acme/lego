@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -97,7 +96,7 @@ func TestGetRootDomain(t *testing.T) {
 
 			client := setupTest(t, http.MethodGet, test.pattern, test.status, test.file)
 
-			domain, err := client.GetRootDomain(context.Background(), "test.lego.freeddns.org")
+			domain, err := client.GetRootDomain(t.Context(), "test.lego.freeddns.org")
 
 			if test.expected.error != "" {
 				assert.EqualError(t, err, test.expected.error)
@@ -185,7 +184,7 @@ func TestGetRecords(t *testing.T) {
 
 			client := setupTest(t, http.MethodGet, test.pattern, test.status, test.file)
 
-			records, err := client.GetRecords(context.Background(), "_acme-challenge.lego.freeddns.org", "TXT")
+			records, err := client.GetRecords(t.Context(), "_acme-challenge.lego.freeddns.org", "TXT")
 
 			if test.expected.error != "" {
 				assert.EqualError(t, err, test.expected.error)
@@ -245,7 +244,7 @@ func TestAddNewRecord(t *testing.T) {
 				TTL:        300,
 			}
 
-			err := client.AddNewRecord(context.Background(), 9007481, record)
+			err := client.AddNewRecord(t.Context(), 9007481, record)
 
 			if test.expected.error != "" {
 				assert.EqualError(t, err, test.expected.error)
@@ -292,7 +291,7 @@ func TestDeleteRecord(t *testing.T) {
 
 			client := setupTest(t, http.MethodDelete, test.pattern, test.status, test.file)
 
-			err := client.DeleteRecord(context.Background(), 9007481, 6041418)
+			err := client.DeleteRecord(t.Context(), 9007481, 6041418)
 
 			if test.expected.error != "" {
 				assert.EqualError(t, err, test.expected.error)

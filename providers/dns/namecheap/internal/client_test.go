@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -69,7 +68,7 @@ func TestClient_GetHosts(t *testing.T) {
 		writeFixture(rw, "getHosts.xml")
 	})
 
-	hosts, err := client.GetHosts(context.Background(), "foo", "example.com")
+	hosts, err := client.GetHosts(t.Context(), "foo", "example.com")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -90,7 +89,7 @@ func TestClient_GetHosts_error(t *testing.T) {
 		writeFixture(rw, "getHosts_errorBadAPIKey1.xml")
 	})
 
-	_, err := client.GetHosts(context.Background(), "foo", "example.com")
+	_, err := client.GetHosts(t.Context(), "foo", "example.com")
 	require.ErrorAs(t, err, &apiError{})
 }
 
@@ -149,7 +148,7 @@ func TestClient_SetHosts(t *testing.T) {
 		{Name: "_acme-challenge.test.example.org", Type: "TXT", Address: "txtTXTtxt", MXPref: "10", TTL: "120"},
 	}
 
-	err := client.SetHosts(context.Background(), "foo", "example.com", records)
+	err := client.SetHosts(t.Context(), "foo", "example.com", records)
 	require.NoError(t, err)
 }
 
@@ -168,6 +167,6 @@ func TestClient_SetHosts_error(t *testing.T) {
 		{Name: "_acme-challenge.test.example.org", Type: "TXT", Address: "txtTXTtxt", MXPref: "10", TTL: "120"},
 	}
 
-	err := client.SetHosts(context.Background(), "foo", "example.com", records)
+	err := client.SetHosts(t.Context(), "foo", "example.com", records)
 	require.ErrorAs(t, err, &apiError{})
 }

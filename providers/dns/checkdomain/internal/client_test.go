@@ -2,7 +2,6 @@ package internal
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -67,7 +66,7 @@ func TestClient_GetDomainIDByName(t *testing.T) {
 		}
 	})
 
-	id, err := client.GetDomainIDByName(context.Background(), "test.com")
+	id, err := client.GetDomainIDByName(t.Context(), "test.com")
 	require.NoError(t, err)
 
 	assert.Equal(t, 1, id)
@@ -103,7 +102,7 @@ func TestClient_CheckNameservers(t *testing.T) {
 		}
 	})
 
-	err := client.CheckNameservers(context.Background(), 1)
+	err := client.CheckNameservers(t.Context(), 1)
 	require.NoError(t, err)
 }
 
@@ -141,7 +140,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		Value: "value",
 	}
 
-	err := client.CreateRecord(context.Background(), 1, record)
+	err := client.CreateRecord(t.Context(), 1, record)
 	require.NoError(t, err)
 }
 
@@ -256,6 +255,6 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 	})
 
 	info := dns01.GetChallengeInfo(domainName, "abc")
-	err := client.DeleteTXTRecord(context.Background(), 1, info.EffectiveFQDN, recordValue)
+	err := client.DeleteTXTRecord(t.Context(), 1, info.EffectiveFQDN, recordValue)
 	require.NoError(t, err)
 }

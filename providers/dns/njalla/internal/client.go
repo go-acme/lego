@@ -55,7 +55,7 @@ func (c *Client) AddRecord(ctx context.Context, record Record) (*Record, error) 
 }
 
 // RemoveRecord removes a record.
-func (c *Client) RemoveRecord(ctx context.Context, id string, domain string) error {
+func (c *Client) RemoveRecord(ctx context.Context, id, domain string) error {
 	data := APIRequest{
 		Method: "remove-record",
 		Params: Record{
@@ -127,7 +127,7 @@ func (c *Client) do(req *http.Request, result Response) error {
 	return result.GetError()
 }
 
-func newJSONRequest(ctx context.Context, method string, endpoint string, payload any) (*http.Request, error) {
+func newJSONRequest(ctx context.Context, method, endpoint string, payload any) (*http.Request, error) {
 	buf := new(bytes.Buffer)
 
 	if payload != nil {

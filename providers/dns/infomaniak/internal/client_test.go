@@ -2,7 +2,6 @@ package internal
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -73,7 +72,7 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 		TTL:    60,
 	}
 
-	recordID, err := client.CreateDNSRecord(context.Background(), domain, record)
+	recordID, err := client.CreateDNSRecord(t.Context(), domain, record)
 	require.NoError(t, err)
 
 	assert.Equal(t, "123", recordID)
@@ -128,7 +127,7 @@ func TestClient_GetDomainByName(t *testing.T) {
 		}
 	})
 
-	domain, err := client.GetDomainByName(context.Background(), "one.two.three.example.com.")
+	domain, err := client.GetDomainByName(t.Context(), "one.two.three.example.com.")
 	require.NoError(t, err)
 
 	expected := &DNSDomain{ID: 123, CustomerName: "two.three.example.com"}
@@ -156,6 +155,6 @@ func TestClient_DeleteDNSRecord(t *testing.T) {
 		}
 	})
 
-	err := client.DeleteDNSRecord(context.Background(), 123, "456")
+	err := client.DeleteDNSRecord(t.Context(), 123, "456")
 	require.NoError(t, err)
 }

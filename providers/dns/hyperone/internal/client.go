@@ -132,7 +132,7 @@ func (c *Client) CreateRecordset(ctx context.Context, zoneID, recordType, name, 
 
 // DeleteRecordset deletes a recordset.
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_recordset_delete
-func (c *Client) DeleteRecordset(ctx context.Context, zoneID string, recordsetID string) error {
+func (c *Client) DeleteRecordset(ctx context.Context, zoneID, recordsetID string) error {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset/{recordsetId}
 	endpoint := c.baseURL.JoinPath("zone", zoneID, "recordset", recordsetID)
 
@@ -146,7 +146,7 @@ func (c *Client) DeleteRecordset(ctx context.Context, zoneID string, recordsetID
 
 // GetRecords gets all records within specified recordset.
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_recordset_record_list
-func (c *Client) GetRecords(ctx context.Context, zoneID string, recordsetID string) ([]Record, error) {
+func (c *Client) GetRecords(ctx context.Context, zoneID, recordsetID string) ([]Record, error) {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset/{recordsetId}/record
 	endpoint := c.baseURL.JoinPath("zone", zoneID, "recordset", recordsetID, "record")
 

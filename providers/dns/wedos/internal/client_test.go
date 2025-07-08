@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupNew(t *testing.T, expectedForm string, filename string) *Client {
+func setupNew(t *testing.T, expectedForm, filename string) *Client {
 	t.Helper()
 
 	mux := http.NewServeMux()
@@ -58,7 +57,7 @@ func TestClient_GetRecords(t *testing.T) {
 	expectedForm := `{"request":{"user":"user","auth":"xxx","command":"dns-rows-list","data":{"domain":"example.com"}}}`
 	client := setupNew(t, expectedForm, commandDNSRowsList)
 
-	records, err := client.GetRecords(context.Background(), "example.com.")
+	records, err := client.GetRecords(t.Context(), "example.com.")
 	require.NoError(t, err)
 
 	assert.Len(t, records, 4)
@@ -107,7 +106,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Data: "foobar",
 	}
 
-	err := client.AddRecord(context.Background(), "example.com.", record)
+	err := client.AddRecord(t.Context(), "example.com.", record)
 	require.NoError(t, err)
 }
 
@@ -124,7 +123,7 @@ func TestClient_AddRecord_update(t *testing.T) {
 		Data: "foobar",
 	}
 
-	err := client.AddRecord(context.Background(), "example.com.", record)
+	err := client.AddRecord(t.Context(), "example.com.", record)
 	require.NoError(t, err)
 }
 
@@ -133,7 +132,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 	client := setupNew(t, expectedForm, commandDNSRowDelete)
 
-	err := client.DeleteRecord(context.Background(), "example.com.", "1")
+	err := client.DeleteRecord(t.Context(), "example.com.", "1")
 	require.NoError(t, err)
 }
 
@@ -142,6 +141,6 @@ func TestClient_Commit(t *testing.T) {
 
 	client := setupNew(t, expectedForm, commandDNSDomainCommit)
 
-	err := client.Commit(context.Background(), "example.com.")
+	err := client.Commit(t.Context(), "example.com.")
 	require.NoError(t, err)
 }

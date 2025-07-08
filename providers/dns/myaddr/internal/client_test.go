@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -58,20 +57,20 @@ func setupTest(t *testing.T, pattern string, status int, filename string) *Clien
 func TestClient_AddTXTRecord(t *testing.T) {
 	client := setupTest(t, "POST /update", http.StatusOK, "")
 
-	err := client.AddTXTRecord(context.Background(), "example", "txt")
+	err := client.AddTXTRecord(t.Context(), "example", "txt")
 	require.NoError(t, err)
 }
 
 func TestClient_AddTXTRecord_error(t *testing.T) {
 	client := setupTest(t, "POST /update", http.StatusBadRequest, "error.txt")
 
-	err := client.AddTXTRecord(context.Background(), "example", "txt")
+	err := client.AddTXTRecord(t.Context(), "example", "txt")
 	require.EqualError(t, err, `unexpected status code: [status code: 400] body: invalid value for "key"`)
 }
 
 func TestClient_AddTXTRecord_error_credentials(t *testing.T) {
 	client := setupTest(t, "POST /update", http.StatusOK, "")
 
-	err := client.AddTXTRecord(context.Background(), "nx", "txt")
+	err := client.AddTXTRecord(t.Context(), "nx", "txt")
 	require.EqualError(t, err, "subdomain nx not found in credentials, check your credentials map")
 }

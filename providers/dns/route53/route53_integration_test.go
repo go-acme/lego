@@ -1,7 +1,6 @@
 package route53
 
 import (
-	"context"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -29,7 +28,7 @@ func TestLiveTTL(t *testing.T) {
 	// we need a separate R53 client here as the one in the DNS provider is unexported.
 	fqdn := "_acme-challenge." + domain + "."
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	cfg, err := awsconfig.LoadDefaultConfig(ctx)
 	require.NoError(t, err)
@@ -43,7 +42,7 @@ func TestLiveTTL(t *testing.T) {
 		}
 	}()
 
-	zoneID, err := provider.getHostedZoneID(context.Background(), fqdn)
+	zoneID, err := provider.getHostedZoneID(t.Context(), fqdn)
 	require.NoError(t, err)
 
 	params := &route53.ListResourceRecordSetsInput{

@@ -33,7 +33,7 @@ type Generator struct {
 	targetFile   string
 }
 
-func NewGenerator(templatePath string, targetFile string) *Generator {
+func NewGenerator(templatePath, targetFile string) *Generator {
 	return &Generator{templatePath: templatePath, targetFile: targetFile}
 }
 

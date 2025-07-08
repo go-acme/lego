@@ -14,7 +14,6 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/limacity/internal"
-	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -185,10 +184,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func findDomain(domains []internal.Domain, fqdn string) (internal.Domain, error) {
-	labelIndexes := dns.Split(fqdn)
-
-	for _, index := range labelIndexes {
-		f := fqdn[index:]
+	for f := range dns01.DomainsSeq(fqdn) {
 		domain := dns01.UnFqdn(f)
 
 		for _, dom := range domains {

@@ -12,7 +12,6 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
-	"github.com/miekg/dns"
 	"github.com/nrdcg/bunny-go"
 	"golang.org/x/net/publicsuffix"
 )
@@ -200,16 +199,14 @@ func findZone(zones *bunny.DNSZones, domain string) *bunny.DNSZone {
 func possibleDomains(domain string) []string {
 	var domains []string
 
-	labelIndexes := dns.Split(domain)
-
-	for _, index := range labelIndexes {
-		tld, _ := publicsuffix.PublicSuffix(domain)
-		if tld == domain[index:] {
+	tld, _ := publicsuffix.PublicSuffix(domain)
+	for d := range dns01.DomainsSeq(domain) {
+		if tld == d {
 			// skip the TLD
 			break
 		}
 
-		domains = append(domains, dns01.UnFqdn(domain[index:]))
+		domains = append(domains, dns01.UnFqdn(d))
 	}
 
 	return domains

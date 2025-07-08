@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -63,9 +62,9 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("hurricane: %w", err)
 	}
 
-	credentials, err := parseCredentials(values[EnvTokens])
+	credentials, err := env.ParsePairs(values[EnvTokens])
 	if err != nil {
-		return nil, fmt.Errorf("hurricane: %w", err)
+		return nil, fmt.Errorf("hurricane: credentials: %w", err)
 	}
 
 	config.Credentials = credentials
@@ -121,20 +120,4 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Returns the interval between each iteration.
 func (d *DNSProvider) Sequential() time.Duration {
 	return d.config.SequenceInterval
-}
-
-func parseCredentials(raw string) (map[string]string, error) {
-	credentials := make(map[string]string)
-
-	credStrings := strings.Split(strings.TrimSuffix(raw, ","), ",")
-	for _, credPair := range credStrings {
-		data := strings.Split(credPair, ":")
-		if len(data) != 2 {
-			return nil, fmt.Errorf("incorrect credential pair: %s", credPair)
-		}
-
-		credentials[strings.TrimSpace(data[0])] = strings.TrimSpace(data[1])
-	}
-
-	return credentials, nil
 }

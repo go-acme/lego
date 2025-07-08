@@ -32,7 +32,7 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(apiUser string, apiKey string, clientIP string) *Client {
+func NewClient(apiUser, apiKey, clientIP string) *Client {
 	return &Client{
 		apiUser:    apiUser,
 		apiKey:     apiKey,

@@ -29,7 +29,7 @@ type Identifier struct {
 }
 
 // NewIdentifier creates a new Identifier.
-func NewIdentifier(login string, password string) *Identifier {
+func NewIdentifier(login, password string) *Identifier {
 	return &Identifier{
 		login:        login,
 		password:     password,

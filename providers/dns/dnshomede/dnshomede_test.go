@@ -34,7 +34,7 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvCredentials: ",",
 			},
-			expected: `dnshomede: invalid credential pair: ""`,
+			expected: `dnshomede: credentials: incorrect pair: `,
 		},
 		{
 			desc: "missing password",
@@ -55,7 +55,7 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvCredentials: "example.org:123,example.net",
 			},
-			expected: `dnshomede: invalid credential pair: "example.net"`,
+			expected: "dnshomede: credentials: incorrect pair: example.net",
 		},
 		{
 			desc: "missing credentials",

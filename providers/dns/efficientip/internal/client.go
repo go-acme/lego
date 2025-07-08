@@ -22,7 +22,7 @@ type Client struct {
 	password string
 }
 
-func NewClient(hostname string, username string, password string) *Client {
+func NewClient(hostname, username, password string) *Client {
 	baseURL, _ := url.Parse(fmt.Sprintf("https://%s/rest/", hostname))
 
 	return &Client{

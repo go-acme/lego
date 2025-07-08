@@ -1,7 +1,6 @@
 package sakuracloud
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"testing"
@@ -33,7 +32,7 @@ func fakeCaller() iaas.APICaller {
 func createDummyZone(t *testing.T, caller iaas.APICaller) {
 	t.Helper()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	dnsOp := iaas.NewDNSOp(caller)
 
@@ -50,7 +49,7 @@ func createDummyZone(t *testing.T, caller iaas.APICaller) {
 	}
 
 	// create dummy zone
-	_, err = iaas.NewDNSOp(caller).Create(context.Background(), &iaas.DNSCreateRequest{Name: "example.com"})
+	_, err = iaas.NewDNSOp(caller).Create(t.Context(), &iaas.DNSCreateRequest{Name: "example.com"})
 	require.NoError(t, err)
 }
 

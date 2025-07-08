@@ -23,7 +23,7 @@ func TestClient_GetDNSSettings(t *testing.T) {
 	client := NewClient("user")
 	client.baseURL = server.URL
 
-	records, err := client.GetDNSSettings(mockContext(), "example.com", "")
+	records, err := client.GetDNSSettings(mockContext(t), "example.com", "")
 	require.NoError(t, err)
 
 	expected := []ReturnInfo{
@@ -112,7 +112,7 @@ func TestClient_AddDNSSettings(t *testing.T) {
 		RecordData: "abcdefgh",
 	}
 
-	recordID, err := client.AddDNSSettings(mockContext(), record)
+	recordID, err := client.AddDNSSettings(mockContext(t), record)
 	require.NoError(t, err)
 
 	assert.Equal(t, "57347444", recordID)
@@ -128,7 +128,7 @@ func TestClient_DeleteDNSSettings(t *testing.T) {
 	client := NewClient("user")
 	client.baseURL = server.URL
 
-	r, err := client.DeleteDNSSettings(mockContext(), "57347450")
+	r, err := client.DeleteDNSSettings(mockContext(t), "57347450")
 	require.NoError(t, err)
 
 	assert.Equal(t, "TRUE", r)

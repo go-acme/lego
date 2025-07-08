@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -32,7 +31,7 @@ func setupTest(t *testing.T, pattern string, handler http.HandlerFunc) *Client {
 	return client
 }
 
-func writeFixtures(method string, filename string, status int) http.HandlerFunc {
+func writeFixtures(method, filename string, status int) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != method {
 			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusMethodNotAllowed)
@@ -60,7 +59,7 @@ func TestClient_GetServices(t *testing.T) {
 	client := setupTest(t, "/services",
 		writeFixtures(http.MethodGet, "services_GET.xml", http.StatusOK))
 
-	zones, err := client.GetServices(context.Background())
+	zones, err := client.GetServices(t.Context())
 	require.NoError(t, err)
 
 	expected := []Service{
@@ -95,7 +94,7 @@ func TestClient_ListZones(t *testing.T) {
 	client := setupTest(t, "/zones",
 		writeFixtures(http.MethodGet, "zones_all_GET.xml", http.StatusOK))
 
-	zones, err := client.ListZones(context.Background())
+	zones, err := client.ListZones(t.Context())
 	require.NoError(t, err)
 
 	expected := []Zone{
@@ -141,7 +140,7 @@ func TestClient_ListZones_error(t *testing.T) {
 	client := setupTest(t, "/zones",
 		writeFixtures(http.MethodGet, "errors.xml", http.StatusOK))
 
-	_, err := client.ListZones(context.Background())
+	_, err := client.ListZones(t.Context())
 	require.ErrorIs(t, err, Error{
 		Text: "Access token expired or not found",
 		Code: "4097",
@@ -152,7 +151,7 @@ func TestClient_GetZonesByService(t *testing.T) {
 	client := setupTest(t, "/services/test/zones",
 		writeFixtures(http.MethodGet, "zones_GET.xml", http.StatusOK))
 
-	zones, err := client.GetZonesByService(context.Background(), "test")
+	zones, err := client.GetZonesByService(t.Context(), "test")
 	require.NoError(t, err)
 
 	expected := []Zone{
@@ -198,7 +197,7 @@ func TestClient_GetZonesByService_error(t *testing.T) {
 	client := setupTest(t, "/services/test/zones",
 		writeFixtures(http.MethodGet, "errors.xml", http.StatusOK))
 
-	_, err := client.GetZonesByService(context.Background(), "test")
+	_, err := client.GetZonesByService(t.Context(), "test")
 	require.ErrorIs(t, err, Error{
 		Text: "Access token expired or not found",
 		Code: "4097",
@@ -209,7 +208,7 @@ func TestClient_GetRecords(t *testing.T) {
 	client := setupTest(t, "/services/test/zones/example.com./records",
 		writeFixtures(http.MethodGet, "records_GET.xml", http.StatusOK))
 
-	records, err := client.GetRecords(context.Background(), "test", "example.com.")
+	records, err := client.GetRecords(t.Context(), "test", "example.com.")
 	require.NoError(t, err)
 
 	expected := []RR{
@@ -274,7 +273,7 @@ func TestClient_GetRecords_error(t *testing.T) {
 	client := setupTest(t, "/services/test/zones/example.com./records",
 		writeFixtures(http.MethodGet, "errors.xml", http.StatusOK))
 
-	_, err := client.GetRecords(context.Background(), "test", "example.com.")
+	_, err := client.GetRecords(t.Context(), "test", "example.com.")
 	require.ErrorIs(t, err, Error{
 		Text: "Access token expired or not found",
 		Code: "4097",
@@ -298,7 +297,7 @@ func TestClient_AddRecord(t *testing.T) {
 		},
 	}
 
-	response, err := client.AddRecords(context.Background(), "test", "example.com.", rrs)
+	response, err := client.AddRecords(t.Context(), "test", "example.com.", rrs)
 	require.NoError(t, err)
 
 	expected := []Zone{
@@ -354,7 +353,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		},
 	}
 
-	_, err := client.AddRecords(context.Background(), "test", "example.com.", rrs)
+	_, err := client.AddRecords(t.Context(), "test", "example.com.", rrs)
 	require.ErrorIs(t, err, Error{
 		Text: "Access token expired or not found",
 		Code: "4097",
@@ -365,7 +364,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, "/services/test/zones/example.com./records/123",
 		writeFixtures(http.MethodDelete, "record_DELETE.xml", http.StatusUnauthorized))
 
-	err := client.DeleteRecord(context.Background(), "test", "example.com.", "123")
+	err := client.DeleteRecord(t.Context(), "test", "example.com.", "123")
 	require.NoError(t, err)
 }
 
@@ -373,7 +372,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 	client := setupTest(t, "/services/test/zones/example.com./records/123",
 		writeFixtures(http.MethodDelete, "errors.xml", http.StatusUnauthorized))
 
-	err := client.DeleteRecord(context.Background(), "test", "example.com.", "123")
+	err := client.DeleteRecord(t.Context(), "test", "example.com.", "123")
 	require.ErrorIs(t, err, Error{
 		Text: "Access token expired or not found",
 		Code: "4097",
@@ -383,14 +382,14 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 func TestClient_CommitZone(t *testing.T) {
 	client := setupTest(t, "/services/test/zones/example.com./commit", writeFixtures(http.MethodPost, "commit_POST.xml", http.StatusOK))
 
-	err := client.CommitZone(context.Background(), "test", "example.com.")
+	err := client.CommitZone(t.Context(), "test", "example.com.")
 	require.NoError(t, err)
 }
 
 func TestClient_CommitZone_error(t *testing.T) {
 	client := setupTest(t, "/services/test/zones/example.com./commit", writeFixtures(http.MethodPost, "errors.xml", http.StatusOK))
 
-	err := client.CommitZone(context.Background(), "test", "example.com.")
+	err := client.CommitZone(t.Context(), "test", "example.com.")
 	require.ErrorIs(t, err, Error{
 		Text: "Access token expired or not found",
 		Code: "4097",

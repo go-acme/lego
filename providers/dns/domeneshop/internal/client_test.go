@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -45,7 +44,7 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 		_, _ = rw.Write([]byte(`{"id": 1}`))
 	})
 
-	err := client.CreateTXTRecord(context.Background(), &Domain{ID: 1}, "example", "txtTXTtxt")
+	err := client.CreateTXTRecord(t.Context(), &Domain{ID: 1}, "example", "txtTXTtxt")
 	require.NoError(t, err)
 }
 
@@ -88,7 +87,7 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 		}
 	})
 
-	err := client.DeleteTXTRecord(context.Background(), &Domain{ID: 1}, "example.com", "txtTXTtxt")
+	err := client.DeleteTXTRecord(t.Context(), &Domain{ID: 1}, "example.com", "txtTXTtxt")
 	require.NoError(t, err)
 }
 
@@ -118,7 +117,7 @@ func TestClient_getDNSRecordByHostData(t *testing.T) {
 ]`))
 	})
 
-	record, err := client.getDNSRecordByHostData(context.Background(), Domain{ID: 1}, "example.com", "txtTXTtxt")
+	record, err := client.getDNSRecordByHostData(t.Context(), Domain{ID: 1}, "example.com", "txtTXTtxt")
 	require.NoError(t, err)
 
 	expected := &DNSRecord{
@@ -171,7 +170,7 @@ func TestClient_GetDomainByName(t *testing.T) {
 ]`))
 	})
 
-	domain, err := client.GetDomainByName(context.Background(), "example.com")
+	domain, err := client.GetDomainByName(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := &Domain{

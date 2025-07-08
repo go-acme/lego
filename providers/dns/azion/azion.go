@@ -12,7 +12,6 @@ import (
 	"github.com/aziontech/azionapi-go-sdk/idns"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -247,11 +246,7 @@ func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*idns.Zone, er
 		return nil, errors.New("get zones: no results")
 	}
 
-	labelIndexes := dns.Split(fqdn)
-
-	for _, index := range labelIndexes {
-		domain := dns01.UnFqdn(fqdn[index:])
-
+	for domain := range dns01.UnFqdnDomainsSeq(fqdn) {
 		for _, zone := range resp.GetResults() {
 			if zone.GetDomain() == domain {
 				return &zone, nil

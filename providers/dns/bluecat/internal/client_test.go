@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -35,7 +34,7 @@ func TestClient_LookupParentZoneID(t *testing.T) {
 		http.Error(rw, "{}", http.StatusOK)
 	})
 
-	parentID, name, err := client.LookupParentZoneID(context.Background(), 2, "foo.example.com")
+	parentID, name, err := client.LookupParentZoneID(t.Context(), 2, "foo.example.com")
 	require.NoError(t, err)
 
 	assert.EqualValues(t, 2, parentID)

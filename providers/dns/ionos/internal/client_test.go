@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,7 +20,7 @@ func TestClient_ListZones(t *testing.T) {
 
 	mux.HandleFunc("/v1/zones", mockHandler(http.MethodGet, http.StatusOK, "list_zones.json"))
 
-	zones, err := client.ListZones(context.Background())
+	zones, err := client.ListZones(t.Context())
 	require.NoError(t, err)
 
 	expected := []Zone{{
@@ -38,7 +37,7 @@ func TestClient_ListZones_error(t *testing.T) {
 
 	mux.HandleFunc("/v1/zones", mockHandler(http.MethodGet, http.StatusUnauthorized, "list_zones_error.json"))
 
-	zones, err := client.ListZones(context.Background())
+	zones, err := client.ListZones(t.Context())
 	require.Error(t, err)
 
 	assert.Nil(t, zones)
@@ -53,7 +52,7 @@ func TestClient_GetRecords(t *testing.T) {
 
 	mux.HandleFunc("/v1/zones/azone01", mockHandler(http.MethodGet, http.StatusOK, "get_records.json"))
 
-	records, err := client.GetRecords(context.Background(), "azone01", nil)
+	records, err := client.GetRecords(t.Context(), "azone01", nil)
 	require.NoError(t, err)
 
 	expected := []Record{{
@@ -71,7 +70,7 @@ func TestClient_GetRecords_error(t *testing.T) {
 
 	mux.HandleFunc("/v1/zones/azone01", mockHandler(http.MethodGet, http.StatusUnauthorized, "get_records_error.json"))
 
-	records, err := client.GetRecords(context.Background(), "azone01", nil)
+	records, err := client.GetRecords(t.Context(), "azone01", nil)
 	require.Error(t, err)
 
 	assert.Nil(t, records)
@@ -86,7 +85,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 
 	mux.HandleFunc("/v1/zones/azone01/records/arecord01", mockHandler(http.MethodDelete, http.StatusOK, ""))
 
-	err := client.RemoveRecord(context.Background(), "azone01", "arecord01")
+	err := client.RemoveRecord(t.Context(), "azone01", "arecord01")
 	require.NoError(t, err)
 }
 
@@ -95,7 +94,7 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 
 	mux.HandleFunc("/v1/zones/azone01/records/arecord01", mockHandler(http.MethodDelete, http.StatusInternalServerError, "remove_record_error.json"))
 
-	err := client.RemoveRecord(context.Background(), "azone01", "arecord01")
+	err := client.RemoveRecord(t.Context(), "azone01", "arecord01")
 	require.Error(t, err)
 
 	var cErr *ClientError
@@ -115,7 +114,7 @@ func TestClient_ReplaceRecords(t *testing.T) {
 		Type:    "A",
 	}}
 
-	err := client.ReplaceRecords(context.Background(), "azone01", records)
+	err := client.ReplaceRecords(t.Context(), "azone01", records)
 	require.NoError(t, err)
 }
 
@@ -131,7 +130,7 @@ func TestClient_ReplaceRecords_error(t *testing.T) {
 		Type:    "A",
 	}}
 
-	err := client.ReplaceRecords(context.Background(), "azone01", records)
+	err := client.ReplaceRecords(t.Context(), "azone01", records)
 	require.Error(t, err)
 
 	var cErr *ClientError

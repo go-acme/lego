@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -46,13 +45,13 @@ func setupTest(t *testing.T, message string) *Client {
 func TestAddTXTRecord(t *testing.T) {
 	client := setupTest(t, "success")
 
-	err := client.AddTXTRecord(context.Background(), "example.com", "sub.example.com", "value")
+	err := client.AddTXTRecord(t.Context(), "example.com", "sub.example.com", "value")
 	require.NoError(t, err)
 }
 
 func TestAddTXTRecord_error(t *testing.T) {
 	client := setupTest(t, "error: authentification failed")
 
-	err := client.AddTXTRecord(context.Background(), "example.com", "sub.example.com", "value")
+	err := client.AddTXTRecord(t.Context(), "example.com", "sub.example.com", "value")
 	require.EqualError(t, err, "error: authentification failed")
 }

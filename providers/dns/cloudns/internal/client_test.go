@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -134,7 +133,7 @@ func TestClient_GetZone(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := setupTest(t, "", handlerMock(http.MethodGet, []byte(test.apiResponse)))
 
-			zone, err := client.GetZone(context.Background(), test.authFQDN)
+			zone, err := client.GetZone(t.Context(), test.authFQDN)
 
 			if test.expected.errorMsg != "" {
 				require.EqualError(t, err, test.expected.errorMsg)
@@ -241,7 +240,7 @@ func TestClient_FindTxtRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := setupTest(t, "", handlerMock(http.MethodGet, []byte(test.apiResponse)))
 
-			txtRecord, err := client.FindTxtRecord(context.Background(), test.zoneName, test.authFQDN)
+			txtRecord, err := client.FindTxtRecord(t.Context(), test.zoneName, test.authFQDN)
 
 			if test.expected.errorMsg != "" {
 				require.EqualError(t, err, test.expected.errorMsg)
@@ -350,7 +349,7 @@ func TestClient_ListTxtRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := setupTest(t, "", handlerMock(http.MethodGet, []byte(test.apiResponse)))
 
-			txtRecords, err := client.ListTxtRecords(context.Background(), test.zoneName, test.authFQDN)
+			txtRecords, err := client.ListTxtRecords(t.Context(), test.zoneName, test.authFQDN)
 
 			if test.expected.errorMsg != "" {
 				require.EqualError(t, err, test.expected.errorMsg)
@@ -455,7 +454,7 @@ func TestClient_AddTxtRecord(t *testing.T) {
 				handlerMock(http.MethodPost, []byte(test.apiResponse))(rw, req)
 			})
 
-			err := client.AddTxtRecord(context.Background(), test.zoneName, test.authFQDN, test.value, test.ttl)
+			err := client.AddTxtRecord(t.Context(), test.zoneName, test.authFQDN, test.value, test.ttl)
 
 			if test.expected.errorMsg != "" {
 				require.EqualError(t, err, test.expected.errorMsg)
@@ -528,7 +527,7 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 
 			client.BaseURL, _ = url.Parse(server.URL)
 
-			err = client.RemoveTxtRecord(context.Background(), test.id, test.zoneName)
+			err = client.RemoveTxtRecord(t.Context(), test.id, test.zoneName)
 
 			if test.expected.errorMsg != "" {
 				require.EqualError(t, err, test.expected.errorMsg)
@@ -598,7 +597,7 @@ func TestClient_GetUpdateStatus(t *testing.T) {
 
 			client.BaseURL, _ = url.Parse(server.URL)
 
-			syncProgress, err := client.GetUpdateStatus(context.Background(), test.zoneName)
+			syncProgress, err := client.GetUpdateStatus(t.Context(), test.zoneName)
 
 			if test.expected.errorMsg != "" {
 				require.EqualError(t, err, test.expected.errorMsg)

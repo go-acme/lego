@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -106,7 +105,7 @@ func TestClient_AddTXTRecord(t *testing.T) {
 			subDomain := "foo"
 			content := "txtTXTtxt"
 
-			err := client.AddTXTRecord(context.Background(), domain, subDomain, content)
+			err := client.AddTXTRecord(t.Context(), domain, subDomain, content)
 			test.require(t, err)
 		})
 	}
@@ -146,7 +145,7 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 			subDomain := "foo"
 			content := "txtTXTtxt"
 
-			err := client.RemoveTXTRecord(context.Background(), domain, subDomain, content)
+			err := client.RemoveTXTRecord(t.Context(), domain, subDomain, content)
 			test.require(t, err)
 		})
 	}

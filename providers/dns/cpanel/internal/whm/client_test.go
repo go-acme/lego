@@ -1,7 +1,6 @@
 package whm
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -15,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern string, filename string) *Client {
+func setupTest(t *testing.T, pattern, filename string) *Client {
 	t.Helper()
 
 	mux := http.NewServeMux()
@@ -55,7 +54,7 @@ func setupTest(t *testing.T, pattern string, filename string) *Client {
 func TestClient_FetchZoneInformation(t *testing.T) {
 	client := setupTest(t, "/json-api/parse_dns_zone", "zone-info.json")
 
-	zoneInfo, err := client.FetchZoneInformation(context.Background(), "example.com")
+	zoneInfo, err := client.FetchZoneInformation(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := []shared.ZoneRecord{{
@@ -73,7 +72,7 @@ func TestClient_FetchZoneInformation(t *testing.T) {
 func TestClient_FetchZoneInformation_error(t *testing.T) {
 	client := setupTest(t, "/json-api/parse_dns_zone", "zone-info_error.json")
 
-	zoneInfo, err := client.FetchZoneInformation(context.Background(), "example.com")
+	zoneInfo, err := client.FetchZoneInformation(t.Context(), "example.com")
 	require.Error(t, err)
 
 	assert.Nil(t, zoneInfo)
@@ -89,7 +88,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Data:       []string{"string1", "string2"},
 	}
 
-	zoneSerial, err := client.AddRecord(context.Background(), 123456, "example.com", record)
+	zoneSerial, err := client.AddRecord(t.Context(), 123456, "example.com", record)
 	require.NoError(t, err)
 
 	expected := &shared.ZoneSerial{NewSerial: "2021031903"}
@@ -107,7 +106,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Data:       []string{"string1", "string2"},
 	}
 
-	zoneSerial, err := client.AddRecord(context.Background(), 123456, "example.com", record)
+	zoneSerial, err := client.AddRecord(t.Context(), 123456, "example.com", record)
 	require.Error(t, err)
 
 	assert.Nil(t, zoneSerial)
@@ -124,7 +123,7 @@ func TestClient_EditRecord(t *testing.T) {
 		Data:       []string{"string1", "string2"},
 	}
 
-	zoneSerial, err := client.EditRecord(context.Background(), 123456, "example.com", record)
+	zoneSerial, err := client.EditRecord(t.Context(), 123456, "example.com", record)
 	require.NoError(t, err)
 
 	expected := &shared.ZoneSerial{NewSerial: "2021031903"}
@@ -143,7 +142,7 @@ func TestClient_EditRecord_error(t *testing.T) {
 		Data:       []string{"string1", "string2"},
 	}
 
-	zoneSerial, err := client.EditRecord(context.Background(), 123456, "example.com", record)
+	zoneSerial, err := client.EditRecord(t.Context(), 123456, "example.com", record)
 	require.Error(t, err)
 
 	assert.Nil(t, zoneSerial)
@@ -152,7 +151,7 @@ func TestClient_EditRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, "/json-api/mass_edit_dns_zone", "update-zone.json")
 
-	zoneSerial, err := client.DeleteRecord(context.Background(), 123456, "example.com", 0)
+	zoneSerial, err := client.DeleteRecord(t.Context(), 123456, "example.com", 0)
 	require.NoError(t, err)
 
 	expected := &shared.ZoneSerial{NewSerial: "2021031903"}
@@ -163,7 +162,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := setupTest(t, "/json-api/mass_edit_dns_zone", "update-zone_error.json")
 
-	zoneSerial, err := client.DeleteRecord(context.Background(), 123456, "example.com", 0)
+	zoneSerial, err := client.DeleteRecord(t.Context(), 123456, "example.com", 0)
 	require.Error(t, err)
 
 	assert.Nil(t, zoneSerial)

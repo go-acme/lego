@@ -24,7 +24,7 @@ type Client struct {
 }
 
 // NewClient created a new Client.
-func NewClient(baseURL *url.URL, login string, password string) *Client {
+func NewClient(baseURL *url.URL, login, password string) *Client {
 	return &Client{
 		login:      login,
 		password:   password,

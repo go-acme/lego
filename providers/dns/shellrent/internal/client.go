@@ -29,7 +29,7 @@ type Client struct {
 }
 
 // NewClient Creates a new Client.
-func NewClient(username string, token string) *Client {
+func NewClient(username, token string) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 
 	return &Client{
@@ -142,7 +142,7 @@ func (c Client) CreateRecord(ctx context.Context, domainID int, record Record) (
 
 // DeleteRecord deletes a record.
 // https://api.shellrent.com/eliminazione-record-dns-di-un-dominio
-func (c Client) DeleteRecord(ctx context.Context, domainID int, recordID int) error {
+func (c Client) DeleteRecord(ctx context.Context, domainID, recordID int) error {
 	endpoint := c.baseURL.JoinPath("dns_record", "remove", strconv.Itoa(domainID), strconv.Itoa(recordID))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)

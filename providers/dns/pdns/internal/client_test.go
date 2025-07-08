@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -163,7 +162,7 @@ func TestClient_GetHostedZone(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/api/v1/servers/server/zones/example.org.", http.StatusOK, "zone.json")
 	client.apiVersion = 1
 
-	zone, err := client.GetHostedZone(context.Background(), "example.org.")
+	zone, err := client.GetHostedZone(t.Context(), "example.org.")
 	require.NoError(t, err)
 
 	expected := &HostedZone{
@@ -206,7 +205,7 @@ func TestClient_GetHostedZone_error(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/api/v1/servers/server/zones/example.org.", http.StatusUnprocessableEntity, "error.json")
 	client.apiVersion = 1
 
-	_, err := client.GetHostedZone(context.Background(), "example.org.")
+	_, err := client.GetHostedZone(t.Context(), "example.org.")
 	require.ErrorAs(t, err, &apiError{})
 }
 
@@ -214,7 +213,7 @@ func TestClient_GetHostedZone_v0(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/servers/server/zones/example.org.", http.StatusOK, "zone.json")
 	client.apiVersion = 0
 
-	zone, err := client.GetHostedZone(context.Background(), "example.org.")
+	zone, err := client.GetHostedZone(t.Context(), "example.org.")
 	require.NoError(t, err)
 
 	expected := &HostedZone{
@@ -279,7 +278,7 @@ func TestClient_UpdateRecords(t *testing.T) {
 		}},
 	}
 
-	err := client.UpdateRecords(context.Background(), zone, rrSets)
+	err := client.UpdateRecords(t.Context(), zone, rrSets)
 	require.NoError(t, err)
 }
 
@@ -310,7 +309,7 @@ func TestClient_UpdateRecords_NonRootApi(t *testing.T) {
 		}},
 	}
 
-	err := client.UpdateRecords(context.Background(), zone, rrSets)
+	err := client.UpdateRecords(t.Context(), zone, rrSets)
 	require.NoError(t, err)
 }
 
@@ -340,7 +339,7 @@ func TestClient_UpdateRecords_v0(t *testing.T) {
 		}},
 	}
 
-	err := client.UpdateRecords(context.Background(), zone, rrSets)
+	err := client.UpdateRecords(t.Context(), zone, rrSets)
 	require.NoError(t, err)
 }
 
@@ -356,7 +355,7 @@ func TestClient_Notify(t *testing.T) {
 		Kind: "Master",
 	}
 
-	err := client.Notify(context.Background(), zone)
+	err := client.Notify(t.Context(), zone)
 	require.NoError(t, err)
 }
 
@@ -373,7 +372,7 @@ func TestClient_Notify_NonRootApi(t *testing.T) {
 		Kind: "Master",
 	}
 
-	err := client.Notify(context.Background(), zone)
+	err := client.Notify(t.Context(), zone)
 	require.NoError(t, err)
 }
 
@@ -388,14 +387,14 @@ func TestClient_Notify_v0(t *testing.T) {
 		Kind: "Master",
 	}
 
-	err := client.Notify(context.Background(), zone)
+	err := client.Notify(t.Context(), zone)
 	require.NoError(t, err)
 }
 
 func TestClient_getAPIVersion(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/api", http.StatusOK, "versions.json")
 
-	version, err := client.getAPIVersion(context.Background())
+	version, err := client.getAPIVersion(t.Context())
 	require.NoError(t, err)
 
 	assert.Equal(t, 4, version)

@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -61,21 +60,21 @@ func writeFixtureHandler(method, filename string) http.HandlerFunc {
 func TestClient_AddRecord(t *testing.T) {
 	client := setupTest(t, "/domains/1234/records", writeFixtureHandler(http.MethodPost, "add-records.json"))
 
-	err := client.AddRecord(context.Background(), "1234", Record{})
+	err := client.AddRecord(t.Context(), "1234", Record{})
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, "/domains/1234/records", writeFixtureHandler(http.MethodDelete, ""))
 
-	err := client.DeleteRecord(context.Background(), "1234", "2725233")
+	err := client.DeleteRecord(t.Context(), "1234", "2725233")
 	require.NoError(t, err)
 }
 
 func TestClient_searchRecords(t *testing.T) {
 	client := setupTest(t, "/domains/1234/records", writeFixtureHandler(http.MethodGet, "search-records.json"))
 
-	records, err := client.searchRecords(context.Background(), "1234", "2725233", "A")
+	records, err := client.searchRecords(t.Context(), "1234", "2725233", "A")
 	require.NoError(t, err)
 
 	expected := &Records{
@@ -96,7 +95,7 @@ func TestClient_searchRecords(t *testing.T) {
 func TestClient_listDomainsByName(t *testing.T) {
 	client := setupTest(t, "/domains", writeFixtureHandler(http.MethodGet, "list-domains-by-name.json"))
 
-	domains, err := client.listDomainsByName(context.Background(), "1234")
+	domains, err := client.listDomainsByName(t.Context(), "1234")
 	require.NoError(t, err)
 
 	expected := &ZoneSearchResponse{

@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -48,7 +47,7 @@ func TestDomainService_GetAll(t *testing.T) {
 		}
 	})
 
-	data, err := client.Domains.GetAll(context.Background(), nil)
+	data, err := client.Domains.GetAll(t.Context(), nil)
 	require.NoError(t, err)
 
 	expected := []Domain{
@@ -84,7 +83,7 @@ func TestDomainService_Search(t *testing.T) {
 		}
 	})
 
-	data, err := client.Domains.Search(context.Background(), Exact, "lego.wtf")
+	data, err := client.Domains.Search(t.Context(), Exact, "lego.wtf")
 	require.NoError(t, err)
 
 	expected := []Domain{

@@ -1,7 +1,6 @@
 package active24
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -56,7 +55,7 @@ func setupTest(t *testing.T, pattern string, status int, filename string) *Clien
 func TestClient_GetServices(t *testing.T) {
 	client := setupTest(t, "GET /v1/user/self/service", http.StatusOK, "services.json")
 
-	services, err := client.GetServices(context.Background())
+	services, err := client.GetServices(t.Context())
 	require.NoError(t, err)
 
 	expected := []Service{
@@ -86,7 +85,7 @@ func TestClient_GetServices(t *testing.T) {
 func TestClient_GetServices_errors(t *testing.T) {
 	client := setupTest(t, "GET /v1/user/self/service", http.StatusUnauthorized, "error_v1.json")
 
-	_, err := client.GetServices(context.Background())
+	_, err := client.GetServices(t.Context())
 	require.EqualError(t, err, "401: No username or password.")
 }
 
@@ -99,7 +98,7 @@ func TestClient_GetRecords(t *testing.T) {
 		Content: "txt",
 	}
 
-	records, err := client.GetRecords(context.Background(), "aaa", filter)
+	records, err := client.GetRecords(t.Context(), "aaa", filter)
 	require.NoError(t, err)
 
 	expected := []Record{{
@@ -124,35 +123,35 @@ func TestClient_GetRecords_errors(t *testing.T) {
 		Content: "txt",
 	}
 
-	_, err := client.GetRecords(context.Background(), "aaa", filter)
+	_, err := client.GetRecords(t.Context(), "aaa", filter)
 	require.EqualError(t, err, "403: /errors/httpException: This action is unauthorized.")
 }
 
 func TestClient_CreateRecord(t *testing.T) {
 	client := setupTest(t, "POST /v2/service/aaa/dns/record", http.StatusNoContent, "")
 
-	err := client.CreateRecord(context.Background(), "aaa", Record{})
+	err := client.CreateRecord(t.Context(), "aaa", Record{})
 	require.NoError(t, err)
 }
 
 func TestClient_CreateRecord_errors(t *testing.T) {
 	client := setupTest(t, "POST /v2/service/aaa/dns/record", http.StatusForbidden, "error_403.json")
 
-	err := client.CreateRecord(context.Background(), "aaa", Record{})
+	err := client.CreateRecord(t.Context(), "aaa", Record{})
 	require.EqualError(t, err, "403: /errors/httpException: This action is unauthorized.")
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, "DELETE /v2/service/aaa/dns/record/123", http.StatusNoContent, "")
 
-	err := client.DeleteRecord(context.Background(), "aaa", "123")
+	err := client.DeleteRecord(t.Context(), "aaa", "123")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := setupTest(t, "DELETE /v2/service/aaa/dns/record/123", http.StatusForbidden, "error_403.json")
 
-	err := client.DeleteRecord(context.Background(), "aaa", "123")
+	err := client.DeleteRecord(t.Context(), "aaa", "123")
 	require.EqualError(t, err, "403: /errors/httpException: This action is unauthorized.")
 }
 

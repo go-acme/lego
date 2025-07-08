@@ -26,7 +26,7 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(username string, password string) *Client {
+func NewClient(username, password string) *Client {
 	return &Client{
 		username:   username,
 		password:   password,
@@ -87,7 +87,7 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record DNSRow) erro
 // DeleteRecord deletes a record from the zone.
 // If a record does not have an ID, it will be looked up.
 // https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-row-delete/
-func (c *Client) DeleteRecord(ctx context.Context, zone string, recordID string) error {
+func (c *Client) DeleteRecord(ctx context.Context, zone, recordID string) error {
 	payload := DNSRowRequest{
 		Domain: dns01.UnFqdn(zone),
 		ID:     recordID,

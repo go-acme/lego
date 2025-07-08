@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -78,7 +77,7 @@ func TestClient_AddRecord(t *testing.T) {
 		TTL:     dns01.DefaultTTL,
 	}
 
-	response, err := client.AddRecord(context.Background(), "example.com", record)
+	response, err := client.AddRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 
 	expected := &AddRecordResponse{
@@ -114,6 +113,6 @@ func TestClient_RemoveRecord(t *testing.T) {
 		rw.WriteHeader(http.StatusNoContent)
 	})
 
-	err := client.RemoveRecord(context.Background(), "example.com", 1234567)
+	err := client.RemoveRecord(t.Context(), "example.com", 1234567)
 	require.NoError(t, err)
 }

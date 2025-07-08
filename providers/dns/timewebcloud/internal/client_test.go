@@ -2,7 +2,6 @@ package internal
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -89,7 +88,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		SubDomain: "_acme-challenge",
 	}
 
-	response, err := client.CreateRecord(context.Background(), "example.com.", payload)
+	response, err := client.CreateRecord(t.Context(), "example.com.", payload)
 	require.NoError(t, err)
 
 	expected := &DNSRecord{
@@ -111,7 +110,7 @@ func TestClient_CreateRecord_error(t *testing.T) {
 		}
 	})
 
-	_, err := client.CreateRecord(context.Background(), "example.com.", DNSRecord{})
+	_, err := client.CreateRecord(t.Context(), "example.com.", DNSRecord{})
 	require.Error(t, err)
 
 	assert.EqualError(t, err, "400: Value must be a number conforming to the specified constraints (bad_request) [15095f25-aac3-4d60-a788-96cb5136f186]")
@@ -130,7 +129,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		rw.WriteHeader(http.StatusNoContent)
 	})
 
-	err := client.DeleteRecord(context.Background(), "example.com.", 123)
+	err := client.DeleteRecord(t.Context(), "example.com.", 123)
 	require.NoError(t, err)
 }
 
@@ -145,7 +144,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 		}
 	})
 
-	err := client.DeleteRecord(context.Background(), "example.com.", 123)
+	err := client.DeleteRecord(t.Context(), "example.com.", 123)
 	require.Error(t, err)
 
 	assert.EqualError(t, err, "401: Unauthorized (unauthorized) [15095f25-aac3-4d60-a788-96cb5136f186]")

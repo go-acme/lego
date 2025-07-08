@@ -2,7 +2,6 @@ package internal
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -25,7 +24,7 @@ func (s signerMock) GetJWT() (string, error) {
 func TestClient_FindRecordset(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/dns/loc123/project/proj123/zone/zone321/recordset", respFromFile("recordset.json"))
 
-	recordset, err := client.FindRecordset(context.Background(), "zone321", "SOA", "example.com.")
+	recordset, err := client.FindRecordset(t.Context(), "zone321", "SOA", "example.com.")
 	require.NoError(t, err)
 
 	expected := &Recordset{
@@ -49,7 +48,7 @@ func TestClient_CreateRecordset(t *testing.T) {
 	client := setupTest(t, http.MethodPost, "/dns/loc123/project/proj123/zone/zone123/recordset",
 		hasReqBody(expectedReqBody), respFromFile("createRecordset.json"))
 
-	rs, err := client.CreateRecordset(context.Background(), "zone123", "TXT", "test.example.com.", "value", 3600)
+	rs, err := client.CreateRecordset(t.Context(), "zone123", "TXT", "test.example.com.", "value", 3600)
 	require.NoError(t, err)
 
 	expected := &Recordset{RecordType: "TXT", Name: "test.example.com.", TTL: 3600, ID: "1234567890qwertyuiop"}
@@ -59,14 +58,14 @@ func TestClient_CreateRecordset(t *testing.T) {
 func TestClient_DeleteRecordset(t *testing.T) {
 	client := setupTest(t, http.MethodDelete, "/dns/loc123/project/proj123/zone/zone321/recordset/rs322")
 
-	err := client.DeleteRecordset(context.Background(), "zone321", "rs322")
+	err := client.DeleteRecordset(t.Context(), "zone321", "rs322")
 	require.NoError(t, err)
 }
 
 func TestClient_GetRecords(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/dns/loc123/project/proj123/zone/321/recordset/322/record", respFromFile("record.json"))
 
-	records, err := client.GetRecords(context.Background(), "321", "322")
+	records, err := client.GetRecords(t.Context(), "321", "322")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -88,7 +87,7 @@ func TestClient_CreateRecord(t *testing.T) {
 	client := setupTest(t, http.MethodPost, "/dns/loc123/project/proj123/zone/z123/recordset/rs325/record",
 		hasReqBody(expectedReqBody), respFromFile("createRecord.json"))
 
-	rs, err := client.CreateRecord(context.Background(), "z123", "rs325", "value")
+	rs, err := client.CreateRecord(t.Context(), "z123", "rs325", "value")
 	require.NoError(t, err)
 
 	expected := &Record{ID: "123321qwerqwewqerq", Content: "value", Enabled: true}
@@ -98,14 +97,14 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, http.MethodDelete, "/dns/loc123/project/proj123/zone/321/recordset/322/record/323")
 
-	err := client.DeleteRecord(context.Background(), "321", "322", "323")
+	err := client.DeleteRecord(t.Context(), "321", "322", "323")
 	require.NoError(t, err)
 }
 
 func TestClient_FindZone(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/dns/loc123/project/proj123/zone", respFromFile("zones.json"))
 
-	zone, err := client.FindZone(context.Background(), "example.com")
+	zone, err := client.FindZone(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := &Zone{
@@ -122,7 +121,7 @@ func TestClient_FindZone(t *testing.T) {
 func TestClient_GetZones(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/dns/loc123/project/proj123/zone", respFromFile("zones.json"))
 
-	zones, err := client.GetZones(context.Background())
+	zones, err := client.GetZones(t.Context())
 	require.NoError(t, err)
 
 	expected := []Zone{
@@ -183,7 +182,7 @@ func setupTest(t *testing.T, method, path string, handlers ...assertHandler) *Cl
 
 type assertHandler func(http.ResponseWriter, *http.Request) (int, error)
 
-func hasReqBody(v interface{}) assertHandler {
+func hasReqBody(v any) assertHandler {
 	return func(rw http.ResponseWriter, req *http.Request) (int, error) {
 		reqBody, err := io.ReadAll(req.Body)
 		if err != nil {

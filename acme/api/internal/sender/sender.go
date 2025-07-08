@@ -35,7 +35,7 @@ func NewDoer(client *http.Client, userAgent string) *Doer {
 
 // Get performs a GET request with a proper User-Agent string.
 // If "response" is not provided, callers should close resp.Body when done reading from it.
-func (d *Doer) Get(url string, response interface{}) (*http.Response, error) {
+func (d *Doer) Get(url string, response any) (*http.Response, error) {
 	req, err := d.newRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (d *Doer) Head(url string) (*http.Response, error) {
 
 // Post performs a POST request with a proper User-Agent string.
 // If "response" is not provided, callers should close resp.Body when done reading from it.
-func (d *Doer) Post(url string, body io.Reader, bodyType string, response interface{}) (*http.Response, error) {
+func (d *Doer) Post(url string, body io.Reader, bodyType string, response any) (*http.Response, error) {
 	req, err := d.newRequest(http.MethodPost, url, body, contentType(bodyType))
 	if err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func (d *Doer) newRequest(method, uri string, body io.Reader, opts ...RequestOpt
 	return req, nil
 }
 
-func (d *Doer) do(req *http.Request, response interface{}) (*http.Response, error) {
+func (d *Doer) do(req *http.Request, response any) (*http.Response, error) {
 	resp, err := d.httpClient.Do(req)
 	if err != nil {
 		return nil, err

@@ -13,8 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func mockContext() context.Context {
-	return context.WithValue(context.Background(), tokenKey, &Token{Token: "xxx"})
+func mockContext(t *testing.T) context.Context {
+	t.Helper()
+
+	return context.WithValue(t.Context(), tokenKey, &Token{Token: "xxx"})
 }
 
 func tokenHandler(rw http.ResponseWriter, req *http.Request) {
@@ -49,7 +51,7 @@ func TestClient_obtainToken(t *testing.T) {
 
 	assert.Nil(t, client.token)
 
-	tok, err := client.obtainToken(context.Background())
+	tok, err := client.obtainToken(t.Context())
 	require.NoError(t, err)
 
 	assert.NotNil(t, tok)
@@ -70,7 +72,7 @@ func TestClient_CreateAuthenticatedContext(t *testing.T) {
 
 	assert.Nil(t, client.token)
 
-	ctx, err := client.CreateAuthenticatedContext(context.Background())
+	ctx, err := client.CreateAuthenticatedContext(t.Context())
 	require.NoError(t, err)
 
 	tok := getToken(ctx)

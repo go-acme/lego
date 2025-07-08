@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -128,7 +127,7 @@ func TestClientAddRecord(t *testing.T) {
 		TTL:    60,
 	}
 
-	id, err := client.AddRecord(context.Background(), record)
+	id, err := client.AddRecord(t.Context(), record)
 	require.NoError(t, err)
 
 	assert.Equal(t, 123456, id)
@@ -145,7 +144,7 @@ func TestClientAddRecord_error(t *testing.T) {
 		TTL:    60,
 	}
 
-	_, err := client.AddRecord(context.Background(), record)
+	_, err := client.AddRecord(t.Context(), record)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "10000: username,time,token必传 (500)")
@@ -157,14 +156,14 @@ func TestClientDeleteRecord(t *testing.T) {
 		expectValue("domain", "example.com"),
 	)
 
-	err := client.DeleteRecord(context.Background(), "example.com", 123)
+	err := client.DeleteRecord(t.Context(), "example.com", 123)
 	require.NoError(t, err)
 }
 
 func TestClientDeleteRecord_error(t *testing.T) {
 	client := setupTest(t, "error.json", noop())
 
-	err := client.DeleteRecord(context.Background(), "example.com", 123)
+	err := client.DeleteRecord(t.Context(), "example.com", 123)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "10000: username,time,token必传 (500)")

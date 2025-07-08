@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
@@ -35,7 +34,7 @@ func TestClient_CreateAuthenticatedContext(t *testing.T) {
 		}
 	})
 
-	ctx, err := client.CreateAuthenticatedContext(context.Background())
+	ctx, err := client.CreateAuthenticatedContext(t.Context())
 	require.NoError(t, err)
 
 	at := getAccessToken(ctx)

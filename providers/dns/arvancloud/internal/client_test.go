@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -61,7 +60,7 @@ func TestClient_GetTxtRecord(t *testing.T) {
 		}
 	})
 
-	_, err := client.GetTxtRecord(context.Background(), domain, "_acme-challenge", "txtxtxt")
+	_, err := client.GetTxtRecord(t.Context(), domain, "_acme-challenge", "txtxtxt")
 	require.NoError(t, err)
 }
 
@@ -106,13 +105,13 @@ func TestClient_CreateRecord(t *testing.T) {
 		TTL:   600,
 	}
 
-	newRecord, err := client.CreateRecord(context.Background(), domain, record)
+	newRecord, err := client.CreateRecord(t.Context(), domain, record)
 	require.NoError(t, err)
 
 	expected := &DNSRecord{
 		ID:            "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
 		Type:          "txt",
-		Value:         map[string]interface{}{"text": "txtxtxt"},
+		Value:         map[string]any{"text": "txtxtxt"},
 		Name:          "_acme-challenge",
 		TTL:           120,
 		UpstreamHTTPS: "default",
@@ -147,6 +146,6 @@ func TestClient_DeleteRecord(t *testing.T) {
 		}
 	})
 
-	err := client.DeleteRecord(context.Background(), domain, recordID)
+	err := client.DeleteRecord(t.Context(), domain, recordID)
 	require.NoError(t, err)
 }

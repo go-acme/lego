@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -80,13 +79,13 @@ func setupTest(t *testing.T, cmdName string) *Client {
 func TestClient_AddTXTRecord(t *testing.T) {
 	client := setupTest(t, "REGIST")
 
-	err := client.AddTXTRecord(context.Background(), "example.com", "txt")
+	err := client.AddTXTRecord(t.Context(), "example.com", "txt")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteTXTRecord(t *testing.T) {
 	client := setupTest(t, "DELETE")
 
-	err := client.DeleteTXTRecord(context.Background(), "example.com", "txt")
+	err := client.DeleteTXTRecord(t.Context(), "example.com", "txt")
 	require.NoError(t, err)
 }

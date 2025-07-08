@@ -13,7 +13,6 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/mittwald/internal"
-	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -212,11 +211,7 @@ func (d *DNSProvider) getOrCreateZone(ctx context.Context, fqdn string) (*intern
 }
 
 func findDomain(domains []internal.Domain, fqdn string) (internal.Domain, error) {
-	labelIndexes := dns.Split(fqdn)
-
-	for _, index := range labelIndexes {
-		domain := dns01.UnFqdn(fqdn[index:])
-
+	for domain := range dns01.UnFqdnDomainsSeq(fqdn) {
 		for _, dom := range domains {
 			if dom.Domain == domain {
 				return dom, nil
@@ -228,11 +223,7 @@ func findDomain(domains []internal.Domain, fqdn string) (internal.Domain, error)
 }
 
 func findZone(zones []internal.DNSZone, fqdn string) (internal.DNSZone, error) {
-	labelIndexes := dns.Split(fqdn)
-
-	for _, index := range labelIndexes {
-		domain := dns01.UnFqdn(fqdn[index:])
-
+	for domain := range dns01.UnFqdnDomainsSeq(fqdn) {
 		for _, zon := range zones {
 			if zon.Domain == domain {
 				return zon, nil

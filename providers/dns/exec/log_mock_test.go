@@ -6,26 +6,26 @@ type LogRecorder struct {
 	mock.Mock
 }
 
-func (*LogRecorder) Fatal(args ...interface{}) {
+func (*LogRecorder) Fatal(args ...any) {
 	panic("implement me")
 }
 
-func (*LogRecorder) Fatalln(args ...interface{}) {
+func (*LogRecorder) Fatalln(args ...any) {
 	panic("implement me")
 }
 
-func (*LogRecorder) Fatalf(format string, args ...interface{}) {
+func (*LogRecorder) Fatalf(format string, args ...any) {
 	panic("implement me")
 }
 
-func (*LogRecorder) Print(args ...interface{}) {
+func (*LogRecorder) Print(args ...any) {
 	panic("implement me")
 }
 
-func (l *LogRecorder) Println(args ...interface{}) {
+func (l *LogRecorder) Println(args ...any) {
 	l.Called(args...)
 }
 
-func (*LogRecorder) Printf(format string, args ...interface{}) {
+func (*LogRecorder) Printf(format string, args ...any) {
 	panic("implement me")
 }

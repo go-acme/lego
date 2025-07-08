@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -64,7 +63,7 @@ func TestClient_UpdateDNSZone(t *testing.T) {
 		}},
 	}
 
-	response, err := client.UpdateDNSZone(context.Background(), "example.com", updateRequest)
+	response, err := client.UpdateDNSZone(t.Context(), "example.com", updateRequest)
 	require.NoError(t, err)
 
 	expected := &DNSZoneUpdateResponse{
@@ -107,7 +106,7 @@ func TestClient_UpdateDNSZone_error(t *testing.T) {
 				}},
 			}
 
-			_, err := client.UpdateDNSZone(context.Background(), "example.com", updateRequest)
+			_, err := client.UpdateDNSZone(t.Context(), "example.com", updateRequest)
 			require.EqualError(t, err, test.expected)
 		})
 	}

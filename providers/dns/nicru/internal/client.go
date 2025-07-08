@@ -136,7 +136,7 @@ func (c *Client) GetRecords(ctx context.Context, serviceName, zoneName string) (
 	return records, nil
 }
 
-func (c *Client) DeleteRecord(ctx context.Context, serviceName, zoneName string, id string) error {
+func (c *Client) DeleteRecord(ctx context.Context, serviceName, zoneName, id string) error {
 	endpoint := c.baseURL.JoinPath("services", serviceName, "zones", zoneName, "records", id)
 
 	req, err := newXMLRequest(ctx, http.MethodDelete, endpoint, nil)

@@ -10,8 +10,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func mockContext() context.Context {
-	return context.WithValue(context.Background(), tokenKey, "593959ca04f0de9689b586c6a647d15d")
+func mockContext(t *testing.T) context.Context {
+	t.Helper()
+
+	return context.WithValue(t.Context(), tokenKey, "593959ca04f0de9689b586c6a647d15d")
 }
 
 func TestIdentifier_Authentication(t *testing.T) {
@@ -24,7 +26,7 @@ func TestIdentifier_Authentication(t *testing.T) {
 	client := NewIdentifier("user", "secret")
 	client.authEndpoint = server.URL
 
-	credentialToken, err := client.Authentication(context.Background(), 60, false)
+	credentialToken, err := client.Authentication(t.Context(), 60, false)
 	require.NoError(t, err)
 
 	assert.Equal(t, "593959ca04f0de9689b586c6a647d15d", credentialToken)
@@ -40,6 +42,6 @@ func TestIdentifier_Authentication_error(t *testing.T) {
 	client := NewIdentifier("user", "secret")
 	client.authEndpoint = server.URL
 
-	_, err := client.Authentication(context.Background(), 60, false)
+	_, err := client.Authentication(t.Context(), 60, false)
 	require.Error(t, err)
 }

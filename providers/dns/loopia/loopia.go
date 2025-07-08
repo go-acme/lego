@@ -34,9 +34,9 @@ const minTTL = 300
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 type dnsClient interface {
-	AddTXTRecord(ctx context.Context, domain string, subdomain string, ttl int, value string) error
-	RemoveTXTRecord(ctx context.Context, domain string, subdomain string, recordID int) error
-	GetTXTRecords(ctx context.Context, domain string, subdomain string) ([]internal.RecordObj, error)
+	AddTXTRecord(ctx context.Context, domain, subdomain string, ttl int, value string) error
+	RemoveTXTRecord(ctx context.Context, domain, subdomain string, recordID int) error
+	GetTXTRecords(ctx context.Context, domain, subdomain string) ([]internal.RecordObj, error)
 	RemoveSubdomain(ctx context.Context, domain, subdomain string) error
 }
 

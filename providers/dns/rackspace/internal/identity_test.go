@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -45,7 +44,7 @@ func TestIdentifier_Login(t *testing.T) {
 
 	mux.HandleFunc("/", writeIdentityFixtureHandler(http.MethodPost, "tokens.json"))
 
-	identity, err := identifier.Login(context.Background(), "user", "secret")
+	identity, err := identifier.Login(t.Context(), "user", "secret")
 	require.NoError(t, err)
 
 	expected := &Identity{

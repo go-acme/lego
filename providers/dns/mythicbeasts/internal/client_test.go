@@ -57,13 +57,13 @@ func writeFixtureHandler(method, filename string) http.HandlerFunc {
 func TestClient_CreateTXTRecord(t *testing.T) {
 	client := setupTest(t, "/zones/example.com/records/foo/TXT", writeFixtureHandler(http.MethodPost, "post-zoneszonerecords.json"))
 
-	err := client.CreateTXTRecord(mockContext(), "example.com", "foo", "txt", 120)
+	err := client.CreateTXTRecord(mockContext(t), "example.com", "foo", "txt", 120)
 	require.NoError(t, err)
 }
 
 func TestClient_RemoveTXTRecord(t *testing.T) {
 	client := setupTest(t, "/zones/example.com/records/foo/TXT", writeFixtureHandler(http.MethodDelete, "delete-zoneszonerecords.json"))
 
-	err := client.RemoveTXTRecord(mockContext(), "example.com", "foo", "txt")
+	err := client.RemoveTXTRecord(mockContext(t), "example.com", "foo", "txt")
 	require.NoError(t, err)
 }

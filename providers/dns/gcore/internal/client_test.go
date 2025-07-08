@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -44,7 +43,7 @@ func TestClient_GetZone(t *testing.T) {
 		next:   handleJSONResponse(expected),
 	})
 
-	zone, err := client.GetZone(context.Background(), "example.com")
+	zone, err := client.GetZone(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, zone)
@@ -58,7 +57,7 @@ func TestClient_GetZone_error(t *testing.T) {
 		next:   handleAPIError(),
 	})
 
-	_, err := client.GetZone(context.Background(), "example.com")
+	_, err := client.GetZone(t.Context(), "example.com")
 	require.Error(t, err)
 }
 
@@ -77,7 +76,7 @@ func TestClient_GetRRSet(t *testing.T) {
 		next:   handleJSONResponse(expected),
 	})
 
-	rrSet, err := client.GetRRSet(context.Background(), "example.com", "foo.example.com")
+	rrSet, err := client.GetRRSet(t.Context(), "example.com", "foo.example.com")
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, rrSet)
@@ -91,7 +90,7 @@ func TestClient_GetRRSet_error(t *testing.T) {
 		next:   handleAPIError(),
 	})
 
-	_, err := client.GetRRSet(context.Background(), "example.com", "foo.example.com")
+	_, err := client.GetRRSet(t.Context(), "example.com", "foo.example.com")
 	require.Error(t, err)
 }
 
@@ -101,7 +100,7 @@ func TestClient_DeleteRRSet(t *testing.T) {
 	mux.Handle("/v2/zones/test.example.com/my.test.example.com/"+txtRecordType,
 		validationHandler{method: http.MethodDelete})
 
-	err := client.DeleteRRSet(context.Background(), "test.example.com", "my.test.example.com.")
+	err := client.DeleteRRSet(t.Context(), "test.example.com", "my.test.example.com.")
 	require.NoError(t, err)
 }
 
@@ -113,7 +112,7 @@ func TestClient_DeleteRRSet_error(t *testing.T) {
 		next:   handleAPIError(),
 	})
 
-	err := client.DeleteRRSet(context.Background(), "test.example.com", "my.test.example.com.")
+	err := client.DeleteRRSet(t.Context(), "test.example.com", "my.test.example.com.")
 	require.NoError(t, err)
 }
 
@@ -183,7 +182,7 @@ func TestClient_AddRRSet(t *testing.T) {
 				mux.Handle(pattern, handler)
 			}
 
-			err := cl.AddRRSet(context.Background(), test.zone, test.recordName, test.value, testTTL)
+			err := cl.AddRRSet(t.Context(), test.zone, test.recordName, test.value, testTTL)
 			if test.wantErr {
 				require.Error(t, err)
 				return
@@ -223,7 +222,7 @@ func handleAPIError() http.HandlerFunc {
 	}
 }
 
-func handleJSONResponse(data interface{}) http.HandlerFunc {
+func handleJSONResponse(data any) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		err := json.NewEncoder(rw).Encode(data)
 		if err != nil {

@@ -1,7 +1,6 @@
 package lightsail
 
 import (
-	"context"
 	"os"
 	"testing"
 
@@ -53,7 +52,7 @@ func TestCredentialsFromEnv(t *testing.T) {
 	_ = os.Setenv(envAwsSecretAccessKey, "123")
 	_ = os.Setenv(envAwsRegion, "us-east-1")
 
-	ctx := context.Background()
+	ctx := t.Context()
 	cfg, err := awsconfig.LoadDefaultConfig(ctx)
 	require.NoError(t, err)
 

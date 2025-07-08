@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -67,7 +66,7 @@ func TestClient_AddTxtRecords(t *testing.T) {
 
 	records := []*ResourceRecord{{}}
 
-	zone, err := client.AddTxtRecords(context.Background(), "example.com", records)
+	zone, err := client.AddTxtRecords(t.Context(), "example.com", records)
 	require.NoError(t, err)
 
 	expected := &Zone{
@@ -91,6 +90,6 @@ func TestClient_RemoveTXTRecords(t *testing.T) {
 
 	records := []*ResourceRecord{{}}
 
-	err := client.RemoveTXTRecords(context.Background(), "example.com", records)
+	err := client.RemoveTXTRecords(t.Context(), "example.com", records)
 	require.NoError(t, err)
 }

@@ -54,7 +54,7 @@ func (j *JWS) SignContent(url string, content []byte) (*jose.JSONWebSignature, e
 
 	options := jose.SignerOptions{
 		NonceSource: j.nonces,
-		ExtraHeaders: map[jose.HeaderKey]interface{}{
+		ExtraHeaders: map[jose.HeaderKey]any{
 			"url": url,
 		},
 	}
@@ -87,7 +87,7 @@ func (j *JWS) SignEABContent(url, kid string, hmac []byte) (*jose.JSONWebSignatu
 		jose.SigningKey{Algorithm: jose.HS256, Key: hmac},
 		&jose.SignerOptions{
 			EmbedJWK: false,
-			ExtraHeaders: map[jose.HeaderKey]interface{}{
+			ExtraHeaders: map[jose.HeaderKey]any{
 				"kid": kid,
 				"url": url,
 			},

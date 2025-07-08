@@ -179,11 +179,11 @@ func CreateCSR(privateKey crypto.PrivateKey, opts CSROptions) ([]byte, error) {
 	return x509.CreateCertificateRequest(rand.Reader, &template, privateKey)
 }
 
-func PEMEncode(data interface{}) []byte {
+func PEMEncode(data any) []byte {
 	return pem.EncodeToMemory(PEMBlock(data))
 }
 
-func PEMBlock(data interface{}) *pem.Block {
+func PEMBlock(data any) *pem.Block {
 	var pemBlock *pem.Block
 	switch key := data.(type) {
 	case *ecdsa.PrivateKey:

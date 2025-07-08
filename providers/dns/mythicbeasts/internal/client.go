@@ -35,7 +35,7 @@ type Client struct {
 }
 
 // NewClient Creates a new Client.
-func NewClient(username string, password string) *Client {
+func NewClient(username, password string) *Client {
 	apiEndpoint, _ := url.Parse(APIBaseURL)
 	authEndpoint, _ := url.Parse(AuthBaseURL)
 

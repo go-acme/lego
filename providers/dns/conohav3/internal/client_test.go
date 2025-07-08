@@ -2,7 +2,6 @@ package internal
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -106,7 +105,7 @@ func TestClient_GetDomainID(t *testing.T) {
 
 			mux.Handle("/v1/domains", test.handler)
 
-			domainID, err := client.GetDomainID(context.Background(), test.domainName)
+			domainID, err := client.GetDomainID(t.Context(), test.domainName)
 
 			if test.expected.error {
 				require.Error(t, err)
@@ -177,7 +176,7 @@ func TestClient_CreateRecord(t *testing.T) {
 				TTL:  300,
 			}
 
-			err := client.CreateRecord(context.Background(), domainID, record)
+			err := client.CreateRecord(t.Context(), domainID, record)
 			test.assert(t, err)
 		})
 	}
@@ -189,7 +188,7 @@ func TestClient_GetRecordID(t *testing.T) {
 	mux.HandleFunc("/v1/domains/89acac79-38e7-497d-807c-a011e1310438/records",
 		writeFixtureHandler(http.MethodGet, "domains-records_GET.json"))
 
-	recordID, err := client.GetRecordID(context.Background(), "89acac79-38e7-497d-807c-a011e1310438", "www.example.com.", "A", "15.185.172.153")
+	recordID, err := client.GetRecordID(t.Context(), "89acac79-38e7-497d-807c-a011e1310438", "www.example.com.", "A", "15.185.172.153")
 	require.NoError(t, err)
 
 	assert.Equal(t, "2e32e609-3a4f-45ba-bdef-e50eacd345ad", recordID)
@@ -207,6 +206,6 @@ func TestClient_DeleteRecord(t *testing.T) {
 		rw.WriteHeader(http.StatusOK)
 	})
 
-	err := client.DeleteRecord(context.Background(), "89acac79-38e7-497d-807c-a011e1310438", "2e32e609-3a4f-45ba-bdef-e50eacd345ad")
+	err := client.DeleteRecord(t.Context(), "89acac79-38e7-497d-807c-a011e1310438", "2e32e609-3a4f-45ba-bdef-e50eacd345ad")
 	require.NoError(t, err)
 }

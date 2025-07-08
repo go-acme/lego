@@ -93,7 +93,7 @@ func TestClient_GetZone(t *testing.T) {
 			client := NewClient(AuthInfo{APIKey: "12345"})
 			client.BaseURL = serverURL
 
-			response, err := client.GetZone(mockContext(test.authSid), test.domain)
+			response, err := client.GetZone(mockContext(t, test.authSid), test.domain)
 			if test.expectedError {
 				require.Error(t, err)
 			} else {

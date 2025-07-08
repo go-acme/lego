@@ -52,7 +52,7 @@ func NewClient(credentials map[string]string) *Client {
 }
 
 // UpdateTxtRecord updates a TXT record.
-func (c *Client) UpdateTxtRecord(ctx context.Context, hostname string, txt string) error {
+func (c *Client) UpdateTxtRecord(ctx context.Context, hostname, txt string) error {
 	domain := strings.TrimPrefix(hostname, "_acme-challenge.")
 
 	c.credMu.Lock()
@@ -101,7 +101,7 @@ func (c *Client) UpdateTxtRecord(ctx context.Context, hostname string, txt strin
 	return evaluateBody(string(bytes.TrimSpace(raw)), hostname)
 }
 
-func evaluateBody(body string, hostname string) error {
+func evaluateBody(body, hostname string) error {
 	code, _, _ := strings.Cut(body, " ")
 
 	switch code {

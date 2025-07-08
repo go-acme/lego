@@ -215,17 +215,17 @@ type mockedClient struct {
 	mock.Mock
 }
 
-func (c *mockedClient) RemoveTXTRecord(ctx context.Context, domain string, subdomain string, recordID int) error {
+func (c *mockedClient) RemoveTXTRecord(ctx context.Context, domain, subdomain string, recordID int) error {
 	args := c.Called(domain, subdomain, recordID)
 	return args.Error(0)
 }
 
-func (c *mockedClient) AddTXTRecord(ctx context.Context, domain string, subdomain string, ttl int, value string) error {
+func (c *mockedClient) AddTXTRecord(ctx context.Context, domain, subdomain string, ttl int, value string) error {
 	args := c.Called(domain, subdomain, ttl, value)
 	return args.Error(0)
 }
 
-func (c *mockedClient) GetTXTRecords(ctx context.Context, domain string, subdomain string) ([]internal.RecordObj, error) {
+func (c *mockedClient) GetTXTRecords(ctx context.Context, domain, subdomain string) ([]internal.RecordObj, error) {
 	args := c.Called(domain, subdomain)
 	return args.Get(0).([]internal.RecordObj), args.Error(1)
 }

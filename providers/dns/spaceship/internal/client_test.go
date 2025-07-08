@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -61,7 +60,7 @@ func TestClient_AddRecord(t *testing.T) {
 		TTL:  60,
 	}
 
-	err := client.AddRecord(context.Background(), "example.com", record)
+	err := client.AddRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -74,7 +73,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		TTL:  60,
 	}
 
-	err := client.AddRecord(context.Background(), "example.com", record)
+	err := client.AddRecord(t.Context(), "example.com", record)
 	require.EqualError(t, err, "^$, name: The domain name contains invalid characters")
 }
 
@@ -87,7 +86,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		TTL:  60,
 	}
 
-	err := client.DeleteRecord(context.Background(), "example.com", record)
+	err := client.DeleteRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -100,14 +99,14 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 		TTL:  60,
 	}
 
-	err := client.DeleteRecord(context.Background(), "example.com", record)
+	err := client.DeleteRecord(t.Context(), "example.com", record)
 	require.EqualError(t, err, "^$, name: The domain name contains invalid characters")
 }
 
 func TestClient_GetRecords(t *testing.T) {
 	client := setupTest(t, "GET /dns/records/example.com", http.StatusOK, "get-records.json")
 
-	records, err := client.GetRecords(context.Background(), "example.com")
+	records, err := client.GetRecords(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -120,6 +119,6 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_GetRecords_error(t *testing.T) {
 	client := setupTest(t, "GET /dns/records/example.com", http.StatusUnprocessableEntity, "error.json")
 
-	_, err := client.GetRecords(context.Background(), "example.com")
+	_, err := client.GetRecords(t.Context(), "example.com")
 	require.EqualError(t, err, "^$, name: The domain name contains invalid characters")
 }

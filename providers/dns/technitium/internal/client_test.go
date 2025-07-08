@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern string, filename string) *Client {
+func setupTest(t *testing.T, pattern, filename string) *Client {
 	t.Helper()
 
 	mux := http.NewServeMux()
@@ -53,7 +52,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Text:   "txtTXTtxt",
 	}
 
-	newRecord, err := client.AddRecord(context.Background(), record)
+	newRecord, err := client.AddRecord(t.Context(), record)
 	require.NoError(t, err)
 
 	expected := &Record{Name: "example.com", Type: "A"}
@@ -70,7 +69,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Text:   "txtTXTtxt",
 	}
 
-	_, err := client.AddRecord(context.Background(), record)
+	_, err := client.AddRecord(t.Context(), record)
 	require.Error(t, err)
 
 	assert.EqualError(t, err, "Status: error, ErrorMessage: error message, StackTrace: application stack trace, InnerErrorMessage: inner exception message")
@@ -85,7 +84,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		Text:   "txtTXTtxt",
 	}
 
-	err := client.DeleteRecord(context.Background(), record)
+	err := client.DeleteRecord(t.Context(), record)
 	require.NoError(t, err)
 }
 
@@ -98,7 +97,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 		Text:   "txtTXTtxt",
 	}
 
-	err := client.DeleteRecord(context.Background(), record)
+	err := client.DeleteRecord(t.Context(), record)
 	require.Error(t, err)
 
 	assert.EqualError(t, err, "Status: error, ErrorMessage: error message, StackTrace: application stack trace, InnerErrorMessage: inner exception message")

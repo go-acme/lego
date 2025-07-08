@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -27,7 +26,7 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	return client, mux
 }
 
-func mockHandler(method string, filename string) http.HandlerFunc {
+func mockHandler(method, filename string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != method {
 			http.Error(rw, fmt.Sprintf("invalid method, got %s want %s", req.Method, method), http.StatusBadRequest)
@@ -72,7 +71,7 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 		TTL:        300,
 	}
 
-	resp, err := client.CreateDNSRecord(context.Background(), record)
+	resp, err := client.CreateDNSRecord(t.Context(), record)
 	require.NoError(t, err)
 
 	expected := &CreateDNSRecordResponse{
@@ -112,7 +111,7 @@ func TestClient_DeleteDNSRecord(t *testing.T) {
 
 	mux.HandleFunc("/dns-records/test", mockHandler(http.MethodDelete, "DELETE_dns-records_pending.json"))
 
-	resp, err := client.DeleteDNSRecord(context.Background(), "test")
+	resp, err := client.DeleteDNSRecord(t.Context(), "test")
 	require.NoError(t, err)
 
 	expected := &DeleteRecordResponse{
@@ -147,7 +146,7 @@ func TestClient_GetJob(t *testing.T) {
 
 	mux.HandleFunc("/queue-jobs/test", mockHandler(http.MethodGet, "GET_queue-jobs.json"))
 
-	resp, err := client.GetJob(context.Background(), "test")
+	resp, err := client.GetJob(t.Context(), "test")
 	require.NoError(t, err)
 
 	expected := &GetJobResponse{

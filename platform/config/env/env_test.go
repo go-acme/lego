@@ -408,3 +408,77 @@ func TestGetOrFile_PrefersEnvVars(t *testing.T) {
 
 	assert.Equal(t, "lego_env", value)
 }
+
+func TestParsePairs(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		value    string
+		expected map[string]string
+	}{
+		{
+			desc:     "one pair",
+			value:    "foo:bar",
+			expected: map[string]string{"foo": "bar"},
+		},
+		{
+			desc:     "multiple pairs",
+			value:    "foo:bar,a:b,c:d",
+			expected: map[string]string{"a": "b", "c": "d", "foo": "bar"},
+		},
+		{
+			desc:     "multiple pairs with spaces",
+			value:    "foo:bar, a:b , c: d",
+			expected: map[string]string{"a": "b", "c": "d", "foo": "bar"},
+		},
+		{
+			desc:     "empty value pair",
+			value:    "foo:",
+			expected: map[string]string{"foo": ""},
+		},
+		{
+			desc:     "empty key pair",
+			value:    ":bar",
+			expected: map[string]string{"": "bar"},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			pairs, err := ParsePairs(test.value)
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expected, pairs)
+		})
+	}
+}
+
+func TestParsePairs_error(t *testing.T) {
+	testCases := []struct {
+		desc  string
+		value string
+	}{
+		{
+			desc:  "empty value",
+			value: "",
+		},
+		{
+			desc:  "multiple colons",
+			value: "foo:bar:bir",
+		},
+		{
+			desc:  "valid pair and multiple colons",
+			value: "a:b,foo:bar:bir",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := ParsePairs(test.value)
+			require.Error(t, err)
+		})
+	}
+}

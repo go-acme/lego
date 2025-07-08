@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -34,7 +33,7 @@ func TestClient_GetRecords(t *testing.T) {
 
 	mux.HandleFunc("/v1/domains/example.com/records/TXT/", testHandler(http.MethodGet, http.StatusOK, "getrecords.json"))
 
-	records, err := client.GetRecords(context.Background(), "example.com", "TXT", "")
+	records, err := client.GetRecords(t.Context(), "example.com", "TXT", "")
 	require.NoError(t, err)
 
 	expected := []DNSRecord{
@@ -54,7 +53,7 @@ func TestClient_GetRecords_errors(t *testing.T) {
 
 	mux.HandleFunc("/v1/domains/example.com/records/TXT/", testHandler(http.MethodGet, http.StatusUnprocessableEntity, "errors.json"))
 
-	records, err := client.GetRecords(context.Background(), "example.com", "TXT", "")
+	records, err := client.GetRecords(t.Context(), "example.com", "TXT", "")
 	require.EqualError(t, err, "[status code: 422] INVALID_BODY: Request body doesn't fulfill schema, see details in `fields`")
 	assert.Nil(t, records)
 }
@@ -84,7 +83,7 @@ func TestClient_UpdateTxtRecords(t *testing.T) {
 		{Name: "_acme-challenge.lego", Type: "TXT", Data: "acme", TTL: 600},
 	}
 
-	err := client.UpdateTxtRecords(context.Background(), records, "example.com", "lego")
+	err := client.UpdateTxtRecords(t.Context(), records, "example.com", "lego")
 	require.NoError(t, err)
 }
 
@@ -103,7 +102,7 @@ func TestClient_UpdateTxtRecords_errors(t *testing.T) {
 		{Name: "_acme-challenge.lego", Type: "TXT", Data: "acme", TTL: 600},
 	}
 
-	err := client.UpdateTxtRecords(context.Background(), records, "example.com", "lego")
+	err := client.UpdateTxtRecords(t.Context(), records, "example.com", "lego")
 	require.EqualError(t, err, "[status code: 422] INVALID_BODY: Request body doesn't fulfill schema, see details in `fields`")
 }
 
@@ -112,7 +111,7 @@ func TestClient_DeleteTxtRecords(t *testing.T) {
 
 	mux.HandleFunc("/v1/domains/example.com/records/TXT/foo", testHandler(http.MethodDelete, http.StatusNoContent, ""))
 
-	err := client.DeleteTxtRecords(context.Background(), "example.com", "foo")
+	err := client.DeleteTxtRecords(t.Context(), "example.com", "foo")
 	require.NoError(t, err)
 }
 
@@ -121,7 +120,7 @@ func TestClient_DeleteTxtRecords_errors(t *testing.T) {
 
 	mux.HandleFunc("/v1/domains/example.com/records/TXT/foo", testHandler(http.MethodDelete, http.StatusConflict, "error-extended.json"))
 
-	err := client.DeleteTxtRecords(context.Background(), "example.com", "foo")
+	err := client.DeleteTxtRecords(t.Context(), "example.com", "foo")
 	require.EqualError(t, err, "[status code: 409] ACCESS_DENIED: Authenticated user is not allowed access [test: content (path=/foo) (pathRelated=/bar)]")
 }
 

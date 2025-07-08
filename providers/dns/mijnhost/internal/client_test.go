@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,7 +29,7 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	return client, mux
 }
 
-func testHandler(filename string, method string, statusCode int) http.HandlerFunc {
+func testHandler(filename, method string, statusCode int) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != method {
 			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusMethodNotAllowed)
@@ -66,7 +65,7 @@ func TestClient_ListDomains(t *testing.T) {
 
 	mux.HandleFunc("/domains", testHandler("./list-domains.json", http.MethodGet, http.StatusOK))
 
-	domains, err := client.ListDomains(context.Background())
+	domains, err := client.ListDomains(t.Context())
 	require.NoError(t, err)
 
 	expected := []Domain{{
@@ -86,7 +85,7 @@ func TestClient_GetRecords(t *testing.T) {
 
 	mux.HandleFunc("/domains/example.com/dns", testHandler("./get-dns-records.json", http.MethodGet, http.StatusOK))
 
-	records, err := client.GetRecords(context.Background(), "example.com")
+	records, err := client.GetRecords(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -124,6 +123,6 @@ func TestClient_UpdateRecords(t *testing.T) {
 
 	mux.HandleFunc("/domains/example.com/dns", testHandler("./update-dns-records.json", http.MethodPut, http.StatusOK))
 
-	err := client.UpdateRecords(context.Background(), "example.com", nil)
+	err := client.UpdateRecords(t.Context(), "example.com", nil)
 	require.NoError(t, err)
 }

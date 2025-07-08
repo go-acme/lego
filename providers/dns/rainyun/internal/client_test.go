@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -55,7 +54,7 @@ func setupTest(t *testing.T, pattern string, status int, filename string) *Clien
 func TestClient_ListDomains(t *testing.T) {
 	client := setupTest(t, "GET /domain", http.StatusOK, "domains.json")
 
-	domains, err := client.ListDomains(context.Background())
+	domains, err := client.ListDomains(t.Context())
 	require.NoError(t, err)
 
 	expected := []Domain{
@@ -69,7 +68,7 @@ func TestClient_ListDomains(t *testing.T) {
 func TestClient_ListDomains_error(t *testing.T) {
 	client := setupTest(t, "GET /domain", http.StatusForbidden, "error.json")
 
-	_, err := client.ListDomains(context.Background())
+	_, err := client.ListDomains(t.Context())
 	require.Error(t, err)
 
 	assert.EqualError(t, err, "30039: 密钥认证错误或已失效")
@@ -78,7 +77,7 @@ func TestClient_ListDomains_error(t *testing.T) {
 func TestClient_ListRecords(t *testing.T) {
 	client := setupTest(t, "GET /domain/123/dns", http.StatusOK, "records.json")
 
-	records, err := client.ListRecords(context.Background(), 123)
+	records, err := client.ListRecords(t.Context(), 123)
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -106,7 +105,7 @@ func TestClient_ListRecords(t *testing.T) {
 func TestClient_ListRecords_error(t *testing.T) {
 	client := setupTest(t, "GET /domain/123/dns", http.StatusForbidden, "error.json")
 
-	_, err := client.ListRecords(context.Background(), 123)
+	_, err := client.ListRecords(t.Context(), 123)
 	require.Error(t, err)
 
 	assert.EqualError(t, err, "30039: 密钥认证错误或已失效")
@@ -123,7 +122,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Value: "foo",
 	}
 
-	err := client.AddRecord(context.Background(), 123, record)
+	err := client.AddRecord(t.Context(), 123, record)
 	require.NoError(t, err)
 }
 
@@ -138,7 +137,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Value: "foo",
 	}
 
-	err := client.AddRecord(context.Background(), 123, record)
+	err := client.AddRecord(t.Context(), 123, record)
 	require.Error(t, err)
 
 	assert.EqualError(t, err, "30039: 密钥认证错误或已失效")
@@ -147,14 +146,14 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, "DELETE /domain/123/dns", http.StatusOK, "")
 
-	err := client.DeleteRecord(context.Background(), 123, 456)
+	err := client.DeleteRecord(t.Context(), 123, 456)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := setupTest(t, "DELETE /domain/123/dns", http.StatusForbidden, "error.json")
 
-	err := client.DeleteRecord(context.Background(), 123, 456)
+	err := client.DeleteRecord(t.Context(), 123, 456)
 	require.Error(t, err)
 
 	assert.EqualError(t, err, "30039: 密钥认证错误或已失效")

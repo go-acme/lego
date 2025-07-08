@@ -47,7 +47,7 @@ func generate() error {
 
 	b := &bytes.Buffer{}
 	err = template.Must(
-		template.New("").Funcs(map[string]interface{}{
+		template.New("").Funcs(map[string]any{
 			"cleanName": func(src string) string {
 				return strings.ReplaceAll(src, "-", "")
 			},

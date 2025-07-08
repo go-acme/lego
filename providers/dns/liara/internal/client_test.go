@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -22,7 +21,7 @@ func TestClient_GetRecords(t *testing.T) {
 
 	mux.HandleFunc("/api/v1/zones/example.com/dns-records", testHandler("./RecordsResponse.json", http.MethodGet, http.StatusOK))
 
-	records, err := client.GetRecords(context.Background(), "example.com")
+	records, err := client.GetRecords(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -46,7 +45,7 @@ func TestClient_GetRecord(t *testing.T) {
 
 	mux.HandleFunc("/api/v1/zones/example.com/dns-records/123", testHandler("./RecordResponse.json", http.MethodGet, http.StatusOK))
 
-	record, err := client.GetRecord(context.Background(), "example.com", "123")
+	record, err := client.GetRecord(t.Context(), "example.com", "123")
 	require.NoError(t, err)
 
 	expected := &Record{
@@ -79,7 +78,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		TTL: 3600,
 	}
 
-	record, err := client.CreateRecord(context.Background(), "example.com", data)
+	record, err := client.CreateRecord(t.Context(), "example.com", data)
 	require.NoError(t, err)
 
 	expected := &Record{
@@ -104,7 +103,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		rw.WriteHeader(http.StatusNoContent)
 	})
 
-	err := client.DeleteRecord(context.Background(), "example.com", "123")
+	err := client.DeleteRecord(t.Context(), "example.com", "123")
 	require.NoError(t, err)
 }
 
@@ -115,7 +114,7 @@ func TestClient_DeleteRecord_NotFound_Response(t *testing.T) {
 		rw.WriteHeader(http.StatusNotFound)
 	})
 
-	err := client.DeleteRecord(context.Background(), "example.com", "123")
+	err := client.DeleteRecord(t.Context(), "example.com", "123")
 	require.NoError(t, err)
 }
 
@@ -124,11 +123,11 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 
 	mux.HandleFunc("/api/v1/zones/example.com/dns-records/123", testHandler("./error.json", http.MethodDelete, http.StatusUnauthorized))
 
-	err := client.DeleteRecord(context.Background(), "example.com", "123")
+	err := client.DeleteRecord(t.Context(), "example.com", "123")
 	require.Error(t, err)
 }
 
-func testHandler(filename string, method string, statusCode int) http.HandlerFunc {
+func testHandler(filename, method string, statusCode int) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != method {
 			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusMethodNotAllowed)

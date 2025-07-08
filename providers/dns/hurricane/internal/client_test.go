@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -75,7 +74,7 @@ func TestClient_UpdateTxtRecord(t *testing.T) {
 			client.baseURL = server.URL
 			client.HTTPClient = server.Client()
 
-			err := client.UpdateTxtRecord(context.Background(), "_acme-challenge.example.com", "foo")
+			err := client.UpdateTxtRecord(t.Context(), "_acme-challenge.example.com", "foo")
 			test.expected(t, err)
 		})
 	}

@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -32,7 +31,7 @@ func TestNewClient(t *testing.T) {
 		},
 	}
 
-	token, err := identifier.GetToken(context.Background(), auth)
+	token, err := identifier.GetToken(t.Context(), auth)
 	require.NoError(t, err)
 
 	expected := &IdentityResponse{Access: Access{Token: Token{ID: "sample00d88246078f2bexample788f7"}}}

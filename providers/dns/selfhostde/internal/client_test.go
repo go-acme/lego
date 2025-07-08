@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -49,7 +48,7 @@ func TestClient_UpdateTXTRecord(t *testing.T) {
 		}
 	})
 
-	err := client.UpdateTXTRecord(context.Background(), "123456", "txt")
+	err := client.UpdateTXTRecord(t.Context(), "123456", "txt")
 	require.NoError(t, err)
 }
 
@@ -60,6 +59,6 @@ func TestClient_UpdateTXTRecord_error(t *testing.T) {
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	})
 
-	err := client.UpdateTXTRecord(context.Background(), "123456", "txt")
+	err := client.UpdateTXTRecord(t.Context(), "123456", "txt")
 	require.Error(t, err)
 }

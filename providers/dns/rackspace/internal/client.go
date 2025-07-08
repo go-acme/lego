@@ -21,7 +21,7 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-func NewClient(endpoint string, token string) (*Client, error) {
+func NewClient(endpoint, token string) (*Client, error) {
 	baseURL, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func (c *Client) listDomainsByName(ctx context.Context, domain string) (*ZoneSea
 }
 
 // FindTxtRecord searches a DNS zone for a TXT record with a specific name.
-func (c *Client) FindTxtRecord(ctx context.Context, fqdn string, zoneID string) (*Record, error) {
+func (c *Client) FindTxtRecord(ctx context.Context, fqdn, zoneID string) (*Record, error) {
 	records, err := c.searchRecords(ctx, zoneID, dns01.UnFqdn(fqdn), "TXT")
 	if err != nil {
 		return nil, err
@@ -191,7 +191,7 @@ func (c *Client) do(req *http.Request, result any) error {
 	return nil
 }
 
-func newJSONRequest[T string | *url.URL](ctx context.Context, method string, endpoint T, payload interface{}) (*http.Request, error) {
+func newJSONRequest[T string | *url.URL](ctx context.Context, method string, endpoint T, payload any) (*http.Request, error) {
 	buf := new(bytes.Buffer)
 
 	if payload != nil {

@@ -161,31 +161,31 @@ func TestSplitDomain(t *testing.T) {
 	}{
 		{
 			desc:          "domain equals zone",
-			domain:        "domain.com",
-			zones:         []string{"domain.com"},
+			domain:        "example.com",
+			zones:         []string{"example.com"},
 			expectedOwner: "_acme-challenge",
-			expectedZone:  "domain.com",
+			expectedZone:  "example.com",
 		},
 		{
 			desc:          "with a subdomain",
-			domain:        "my.domain.com",
-			zones:         []string{"domain.com"},
+			domain:        "my.example.com",
+			zones:         []string{"example.com"},
 			expectedOwner: "_acme-challenge.my",
-			expectedZone:  "domain.com",
+			expectedZone:  "example.com",
 		},
 		{
 			desc:          "with a subdomain in a zone",
-			domain:        "my.sub.domain.com",
-			zones:         []string{"sub.domain.com", "domain.com"},
+			domain:        "my.sub.example.com",
+			zones:         []string{"sub.example.com", "example.com"},
 			expectedOwner: "_acme-challenge.my",
-			expectedZone:  "sub.domain.com",
+			expectedZone:  "sub.example.com",
 		},
 		{
 			desc:          "with a sub-subdomain",
-			domain:        "my.sub.domain.com",
-			zones:         []string{"domain1.com", "domain.com"},
+			domain:        "my.sub.example.com",
+			zones:         []string{"domain1.com", "example.com"},
 			expectedOwner: "_acme-challenge.my.sub",
-			expectedZone:  "domain.com",
+			expectedZone:  "example.com",
 		},
 	}
 
@@ -198,6 +198,36 @@ func TestSplitDomain(t *testing.T) {
 
 			assert.Equal(t, test.expectedOwner, owner)
 			assert.Equal(t, test.expectedZone, zone)
+		})
+	}
+}
+
+func TestSplitDomain_error(t *testing.T) {
+	testCases := []struct {
+		desc          string
+		domain        string
+		zones         []string
+		expectedOwner string
+		expectedZone  string
+	}{
+		{
+			desc:   "no zone",
+			domain: "example.com",
+			zones:  nil,
+		},
+		{
+			desc:   "domain does not contain zone",
+			domain: "example.com",
+			zones:  []string{"example.org"},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			_, _, err := splitDomain(test.domain, test.zones)
+			require.Error(t, err)
 		})
 	}
 }

@@ -1,7 +1,6 @@
 package svc
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -52,7 +51,7 @@ func TestClient_Send(t *testing.T) {
 	label := "_acme-challenge"
 	value := "123"
 
-	err := client.SendRequest(context.Background(), zone, label, value)
+	err := client.SendRequest(t.Context(), zone, label, value)
 	require.NoError(t, err)
 }
 
@@ -83,6 +82,6 @@ func TestClient_Send_empty(t *testing.T) {
 	label := "_acme-challenge"
 	value := ""
 
-	err := client.SendRequest(context.Background(), zone, label, value)
+	err := client.SendRequest(t.Context(), zone, label, value)
 	require.NoError(t, err)
 }

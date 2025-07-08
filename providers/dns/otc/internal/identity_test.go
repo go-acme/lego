@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"net/url"
 	"testing"
 
@@ -16,7 +15,7 @@ func TestClient_Login(t *testing.T) {
 	client := NewClient("user", "secret", "example.com", "test")
 	client.IdentityEndpoint, _ = url.JoinPath(mock.GetServerURL(), "/v3/auth/token")
 
-	err := client.Login(context.Background())
+	err := client.Login(t.Context())
 	require.NoError(t, err)
 
 	serverURL, _ := url.Parse(mock.GetServerURL())

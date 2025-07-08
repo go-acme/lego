@@ -1807,7 +1807,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "IONOS_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "IONOS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
-		ew.writeln(`	- "IONOS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "IONOS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 900)`)
 		ew.writeln(`	- "IONOS_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)`)
 
 		ew.writeln()

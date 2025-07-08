@@ -14,6 +14,8 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
+const AuthToken = "X-Auth-Token"
+
 type Client struct {
 	token string
 
@@ -34,7 +36,7 @@ func NewClient(endpoint, token string) (*Client, error) {
 	}, nil
 }
 
-// AddRecord Adds one  record to a specified domain.
+// AddRecord Adds one record to a specified domain.
 // https://docs.rackspace.com/docs/cloud-dns/v1/api-reference/records#add-records
 func (c *Client) AddRecord(ctx context.Context, zoneID string, record Record) error {
 	endpoint := c.baseURL.JoinPath("domains", zoneID, "records")
@@ -161,7 +163,7 @@ func (c *Client) searchRecords(ctx context.Context, zoneID, recordName, recordTy
 }
 
 func (c *Client) do(req *http.Request, result any) error {
-	req.Header.Set("X-Auth-Token", c.token)
+	req.Header.Set(AuthToken, c.token)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

@@ -1,0 +1,24 @@
+{
+  "id": "897",
+  "jsonrpc": "2.0",
+  "result": {
+    "records": [
+      {
+        "id": "1",
+        "content": "test",
+        "domain": "example.com",
+        "name": "test01",
+        "ttl": 300,
+        "type": "TXT"
+      },
+      {
+        "id": "2",
+        "content": "txtTxt",
+        "domain": "example.com",
+        "name": "test02",
+        "ttl": 120,
+        "type": "TXT"
+      }
+    ]
+  }
+}

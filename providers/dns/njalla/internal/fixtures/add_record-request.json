@@ -1,0 +1,10 @@
+{
+  "method": "add-record",
+  "params": {
+    "content": "foobar",
+    "domain": "test",
+    "name": "example.com",
+    "ttl": 300,
+    "type": "TXT"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "897",
+  "jsonrpc": "2.0",
+  "result": {
+    "id": "123",
+    "content": "foobar",
+    "domain": "test",
+    "name": "example.com",
+    "ttl": 300,
+    "type": "TXT"
+  }
+}

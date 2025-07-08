@@ -1,0 +1,6 @@
+{
+  "records": [
+    {"id":"1","name":"foo1","type":"TXT","ttl":120,"data":"txtTXTtxt"},
+    {"id":"2","name":"foo2","type":"TXT","ttl":121,"data":"TXTtxtTXT"}
+  ]
+}

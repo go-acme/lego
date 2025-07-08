@@ -1,0 +1,8 @@
+{
+  "action": "logout",
+  "param": {
+    "customernumber": "a",
+    "apikey": "b",
+    "apisessionid": "session-id"
+  }
+}

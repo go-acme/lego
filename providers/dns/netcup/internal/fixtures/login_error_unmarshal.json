@@ -1,0 +1,10 @@
+{
+  "serverrequestid": "srv-request-id",
+  "clientrequestid": "",
+  "action": "login",
+  "status": "success",
+  "statuscode": 2000,
+  "shortmessage": "Login successful",
+  "longmessage": "Session has been created successful.",
+  "responsedata": ""
+}

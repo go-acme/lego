@@ -1,0 +1,8 @@
+{
+  "action": "login",
+  "param": {
+    "customernumber": "a",
+    "apikey": "b",
+    "apipassword": "c"
+  }
+}

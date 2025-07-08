@@ -63,7 +63,7 @@ func (l *RequestBodyLink) Bind(next http.Handler) http.Handler {
 		}
 
 		if !bytes.Equal(bytes.TrimSpace(expectedRaw), bytes.TrimSpace(body)) {
-			msg := fmt.Sprintf("%s: request body differences: got: %s, want %s", req.URL.Path,
+			msg := fmt.Sprintf("%s: request body differences: got: %s, want: %s", req.URL.Path,
 				string(bytes.TrimSpace(body)), string(bytes.TrimSpace(expectedRaw)))
 			http.Error(rw, msg, http.StatusBadRequest)
 			return

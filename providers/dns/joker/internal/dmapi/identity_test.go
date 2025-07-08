@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -58,27 +57,22 @@ func TestClient_login_apikey(t *testing.T) {
 		},
 	}
 
-	mux, serverURL := setupTest(t)
-
-	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, http.MethodPost, r.Method)
-
-		switch r.FormValue("api-key") {
-		case correctAPIKey:
-			_, _ = io.WriteString(w, "Status-Code: 0\nStatus-Text: OK\nAuth-Sid: 123\n\ncom\nnet")
-		case incorrectAPIKey:
-			_, _ = io.WriteString(w, "Status-Code: 2200\nStatus-Text: Authentication error")
-		case serverErrorAPIKey:
-			http.NotFound(w, r)
-		default:
-			_, _ = io.WriteString(w, "Status-Code: 2202\nStatus-Text: OK\n\ncom\nnet")
-		}
-	})
-
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := NewClient(AuthInfo{APIKey: test.apiKey})
-			client.BaseURL = serverURL
+			client := mockBuilder(AuthInfo{APIKey: test.apiKey}).
+				Route("POST /login", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+					switch req.FormValue("api-key") {
+					case correctAPIKey:
+						_, _ = io.WriteString(rw, "Status-Code: 0\nStatus-Text: OK\nAuth-Sid: 123\n\ncom\nnet")
+					case incorrectAPIKey:
+						_, _ = io.WriteString(rw, "Status-Code: 2200\nStatus-Text: Authentication error")
+					case serverErrorAPIKey:
+						http.NotFound(rw, req)
+					default:
+						_, _ = io.WriteString(rw, "Status-Code: 2202\nStatus-Text: OK\n\ncom\nnet")
+					}
+				})).
+				Build(t)
 
 			response, err := client.login(t.Context())
 			if test.expectedError {
@@ -133,27 +127,22 @@ func TestClient_login_username(t *testing.T) {
 		},
 	}
 
-	mux, serverURL := setupTest(t)
-
-	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, http.MethodPost, r.Method)
-
-		switch r.FormValue("username") {
-		case correctUsername:
-			_, _ = io.WriteString(w, "Status-Code: 0\nStatus-Text: OK\nAuth-Sid: 123\n\ncom\nnet")
-		case incorrectUsername:
-			_, _ = io.WriteString(w, "Status-Code: 2200\nStatus-Text: Authentication error")
-		case serverErrorUsername:
-			http.NotFound(w, r)
-		default:
-			_, _ = io.WriteString(w, "Status-Code: 2202\nStatus-Text: OK\n\ncom\nnet")
-		}
-	})
-
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := NewClient(AuthInfo{Username: test.username, Password: test.password})
-			client.BaseURL = serverURL
+			client := mockBuilder(AuthInfo{Username: test.username, Password: test.password}).
+				Route("POST /login", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+					switch req.FormValue("username") {
+					case correctUsername:
+						_, _ = io.WriteString(rw, "Status-Code: 0\nStatus-Text: OK\nAuth-Sid: 123\n\ncom\nnet")
+					case incorrectUsername:
+						_, _ = io.WriteString(rw, "Status-Code: 2200\nStatus-Text: Authentication error")
+					case serverErrorUsername:
+						http.NotFound(rw, req)
+					default:
+						_, _ = io.WriteString(rw, "Status-Code: 2202\nStatus-Text: OK\n\ncom\nnet")
+					}
+				})).
+				Build(t)
 
 			response, err := client.login(t.Context())
 			if test.expectedError {
@@ -197,25 +186,21 @@ func TestClient_logout(t *testing.T) {
 		},
 	}
 
-	mux, serverURL := setupTest(t)
-
-	mux.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, http.MethodPost, r.Method)
-
-		switch r.FormValue("auth-sid") {
-		case correctAPIKey:
-			_, _ = io.WriteString(w, "Status-Code: 0\nStatus-Text: OK\n")
-		case incorrectAPIKey:
-			_, _ = io.WriteString(w, "Status-Code: 2200\nStatus-Text: Authentication error")
-		default:
-			http.NotFound(w, r)
-		}
-	})
-
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := NewClient(AuthInfo{APIKey: "12345"})
-			client.BaseURL = serverURL
+			client := mockBuilder(AuthInfo{APIKey: "12345"}).
+				Route("POST /logout", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+					switch req.FormValue("auth-sid") {
+					case correctAPIKey:
+						_, _ = io.WriteString(rw, "Status-Code: 0\nStatus-Text: OK\n")
+					case incorrectAPIKey:
+						_, _ = io.WriteString(rw, "Status-Code: 2200\nStatus-Text: Authentication error")
+					default:
+						http.NotFound(rw, req)
+					}
+				})).
+				Build(t)
+
 			client.token = &Token{SessionID: test.authSid}
 
 			response, err := client.Logout(mockContext(t, test.authSid))
@@ -231,29 +216,21 @@ func TestClient_logout(t *testing.T) {
 }
 
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
 	id := atomic.Int32{}
 	id.Add(100)
 
-	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, http.MethodPost, r.Method)
+	client := mockBuilder(AuthInfo{Username: correctUsername, Password: "secret"}).
+		Route("POST /login", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			switch req.FormValue("username") {
+			case correctUsername:
+				_, _ = fmt.Fprintf(rw, "Status-Code: 0\nStatus-Text: OK\nAuth-Sid: %d\n\ncom\nnet", id.Load())
+				id.Add(100)
 
-		switch r.FormValue("username") {
-		case correctUsername:
-			_, _ = fmt.Fprintf(w, "Status-Code: 0\nStatus-Text: OK\nAuth-Sid: %d\n\ncom\nnet", id.Load())
-			id.Add(100)
-
-		default:
-			_, _ = io.WriteString(w, "Status-Code: 2200\nStatus-Text: Authentication error")
-		}
-	})
-
-	client := NewClient(AuthInfo{Username: correctUsername, Password: "secret"})
-	client.HTTPClient = server.Client()
-	client.BaseURL = server.URL
+			default:
+				_, _ = io.WriteString(rw, "Status-Code: 2200\nStatus-Text: Authentication error")
+			}
+		})).
+		Build(t)
 
 	ctx, err := client.CreateAuthenticatedContext(t.Context())
 	require.NoError(t, err)

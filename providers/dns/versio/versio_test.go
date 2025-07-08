@@ -215,20 +215,16 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 func muxSuccess() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/domains/example.com", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet && r.URL.Query().Get("show_dns_records") == "true" {
+	mux.HandleFunc("GET /domains/example.com", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("show_dns_records") == "true" {
 			fmt.Fprint(w, tokenResponseMock)
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
 	})
 
-	mux.HandleFunc("/domains/example.com/update", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			fmt.Fprint(w, tokenResponseMock)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
+	mux.HandleFunc("POST /domains/example.com/update", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, tokenResponseMock)
 	})
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -245,7 +241,7 @@ func muxSuccess() *http.ServeMux {
 func muxFailToFindZone() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/domains/example.com", func(w http.ResponseWriter, _ *http.Request) {
+	mux.HandleFunc("GET /domains/example.com", func(w http.ResponseWriter, _ *http.Request) {
 		http.Error(w, tokenFailToFindZoneMock, http.StatusUnauthorized)
 	})
 
@@ -255,20 +251,16 @@ func muxFailToFindZone() *http.ServeMux {
 func muxFailToCreateTXT() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/domains/example.com", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet && r.URL.Query().Get("show_dns_records") == "true" {
+	mux.HandleFunc("GET /domains/example.com", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("show_dns_records") == "true" {
 			fmt.Fprint(w, tokenResponseMock)
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
 	})
 
-	mux.HandleFunc("/domains/example.com/update", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			http.Error(w, tokenFailToCreateTXTMock, http.StatusBadRequest)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
+	mux.HandleFunc("POST /domains/example.com/update", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, tokenFailToCreateTXTMock, http.StatusBadRequest)
 	})
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

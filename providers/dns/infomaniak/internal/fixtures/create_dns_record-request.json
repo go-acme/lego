@@ -1,0 +1,6 @@
+{
+  "source": "foo",
+  "type": "TXT",
+  "ttl": 60,
+  "target": "txtxtxttxt"
+}

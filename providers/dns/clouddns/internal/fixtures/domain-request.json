@@ -1,0 +1,14 @@
+{
+  "id": "Z",
+  "domainName": "example.com",
+  "lastDomainRecordList": [
+    {
+      "id": "R01",
+      "domainId": "A",
+      "name": "_acme-challenge.example.com",
+      "value": "txt",
+      "type": "TXT"
+    }
+  ],
+  "soaTtl": 300
+}

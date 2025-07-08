@@ -16,6 +16,7 @@ const (
 	flgServer                   = "server"
 	flgAcceptTOS                = "accept-tos"
 	flgEmail                    = "email"
+	flgDisableCommonName        = "disable-cn"
 	flgCSR                      = "csr"
 	flgEAB                      = "eab"
 	flgKID                      = "kid"
@@ -87,6 +88,11 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Aliases: []string{"m"},
 			EnvVars: []string{envEmail},
 			Usage:   "Email used for registration and recovery contact.",
+		},
+		&cli.StringFlag{
+			Name:    flgDisableCommonName,
+			EnvVars: []string{flgDisableCommonName},
+			Usage:   "Disable the use of the common name in the CSR.",
 		},
 		&cli.StringFlag{
 			Name:    flgCSR,

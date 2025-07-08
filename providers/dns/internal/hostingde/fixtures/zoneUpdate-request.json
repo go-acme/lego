@@ -1,0 +1,35 @@
+{
+  "authToken": "secret",
+  "zoneConfig": {
+    "id": "123",
+    "accountId": "456",
+    "status": "s",
+    "name": "n",
+    "nameUnicode": "u",
+    "masterIp": "m",
+    "type": "t",
+    "emailAddress": "e",
+    "zoneTransferWhitelist": [
+      "a",
+      "b"
+    ],
+    "lastChangeDate": "l",
+    "dnsServerGroupId": "g",
+    "dnsSecMode": "m",
+    "soaValues": {
+      "refresh": 1,
+      "retry": 2,
+      "expire": 3,
+      "ttl": 4,
+      "negativeTtl": 5
+    }
+  },
+  "recordsToAdd": null,
+  "recordsToDelete": [
+    {
+      "name": "_acme-challenge.example.com",
+      "type": "TXT",
+      "content": "\"txt\""
+    }
+  ]
+}

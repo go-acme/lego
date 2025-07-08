@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<methodCall>
+    <methodName>domain.zone.set</methodName>
+    <param>
+        <value>
+            <string>secret</string>
+        </value>
+    </param>
+    <param>
+        <value>
+            <string>example.com</string>
+        </value>
+    </param>
+    <param>
+        <value>
+            <int>1</int>
+        </value>
+    </param>
+</methodCall>

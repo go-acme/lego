@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<methodCall>
+	<methodName>domain.info</methodName>
+	<param>
+		<value>
+			<string>secret</string>
+		</value>
+	</param>
+	<param>
+		<value>
+			<string>example.com</string>
+		</value>
+	</param>
+</methodCall>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<methodCall>
+    <methodName>domain.zone.clone</methodName>
+    <param>
+        <value>
+            <string>secret</string>
+        </value>
+    </param>
+    <param>
+        <value>
+            <int>6</int>
+        </value>
+    </param>
+    <param>
+        <value>
+            <int>0</int>
+        </value>
+    </param>
+    <param>
+        <value>
+            <struct>
+                <member>
+                    <name>name</name>
+                    <value>
+                        <string>foo</string>
+                    </value>
+                </member>
+            </struct>
+        </value>
+    </param>
+</methodCall>

@@ -17,6 +17,9 @@ import (
 // defaultBaseURL represents the API endpoint to call.
 const defaultBaseURL = "https://api.hosting.ionos.com/dns"
 
+// APIKeyHeader API key header.
+const APIKeyHeader = "X-Api-Key"
+
 // Client Ionos API client.
 type Client struct {
 	apiKey string
@@ -119,7 +122,7 @@ func (c *Client) RemoveRecord(ctx context.Context, zoneID, recordID string) erro
 }
 
 func (c *Client) do(req *http.Request, result any) error {
-	req.Header.Set("X-API-Key", c.apiKey)
+	req.Header.Set(APIKeyHeader, c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

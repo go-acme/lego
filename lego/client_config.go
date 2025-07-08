@@ -64,6 +64,7 @@ type CertificateConfig struct {
 	KeyType             certcrypto.KeyType
 	Timeout             time.Duration
 	OverallRequestLimit int
+	DisableCommonName   bool
 }
 
 // createDefaultHTTPClient Creates an HTTP client with a reasonable timeout value

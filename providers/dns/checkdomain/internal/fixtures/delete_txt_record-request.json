@@ -1,0 +1,16 @@
+[
+  {
+    "name": "_acme-challenge",
+    "value": "test",
+    "ttl": 0,
+    "priority": 0,
+    "type": "A"
+  },
+  {
+    "name": "foobar",
+    "value": "test",
+    "ttl": 0,
+    "priority": 0,
+    "type": "TXT"
+  }
+]

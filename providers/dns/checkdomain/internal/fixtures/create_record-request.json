@@ -1,0 +1,7 @@
+{
+  "name": "test.com",
+  "value": "value",
+  "ttl": 300,
+  "priority": 0,
+  "type": "TXT"
+}

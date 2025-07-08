@@ -1,0 +1,14 @@
+{
+  "answer": {
+    "domains": [
+      {
+        "dname": "test.ru",
+        "result": "success",
+        "service_id": 12345
+      }
+    ]
+  },
+  "charset": "utf-8",
+  "messagestore": null,
+  "result": "success"
+}

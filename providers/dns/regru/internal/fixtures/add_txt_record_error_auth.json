@@ -1,0 +1,10 @@
+{
+  "charset": "utf-8",
+  "error_code": "NO_AUTH",
+  "error_params": {
+    "command_name": "nop/zone/add_txt"
+  },
+  "error_text": "No authorization mechanism selected",
+  "messagestore": null,
+  "result": "error"
+}

@@ -1,0 +1,14 @@
+{
+  "answer": {
+    "domains": [
+      {
+        "error_code": "NO_DOMAIN",
+        "error_text": "domain_name not given or empty",
+        "result": "error"
+      }
+    ]
+  },
+  "charset": "utf-8",
+  "messagestore": null,
+  "result": "success"
+}

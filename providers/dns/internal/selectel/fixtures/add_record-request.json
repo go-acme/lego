@@ -1,0 +1,7 @@
+{
+  "name": "example.org",
+  "type": "TXT",
+  "ttl": 60,
+  "email": "email@example.org",
+  "content": "txttxttxttxt"
+}

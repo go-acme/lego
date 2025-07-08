@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "host": "example.com",
+    "ttl": 3600,
+    "type": "TXT",
+    "data": "txtTXTtxt"
+  }
+]

@@ -2,9 +2,9 @@ package internal
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/clientmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,7 +16,10 @@ func mockContext(t *testing.T) context.Context {
 }
 
 func TestClient_login(t *testing.T) {
-	client := setupTest(t, "/Session", unauthenticatedHandler(http.MethodPost, http.StatusOK, "login.json"))
+	client := mockBuilder().
+		Route("POST /Session", clientmock.ResponseFromFixture("login.json"),
+			clientmock.CheckRequestJSONBody(`{"customer_name":"bob","user_name":"user","password":"secret"}`)).
+		Build(t)
 
 	sess, err := client.login(t.Context())
 	require.NoError(t, err)
@@ -27,14 +30,22 @@ func TestClient_login(t *testing.T) {
 }
 
 func TestClient_Logout(t *testing.T) {
-	client := setupTest(t, "/Session", authenticatedHandler(http.MethodDelete, http.StatusOK, ""))
+	client := clientmock.NewBuilder[*Client](setupClient,
+		clientmock.CheckHeader().WithJSONHeaders().
+			With(authTokenHeader, "tok"),
+	).
+		Route("DELETE /Session", nil).
+		Build(t)
 
 	err := client.Logout(mockContext(t))
 	require.NoError(t, err)
 }
 
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
-	client := setupTest(t, "/Session", unauthenticatedHandler(http.MethodPost, http.StatusOK, "login.json"))
+	client := mockBuilder().
+		Route("POST /Session", clientmock.ResponseFromFixture("login.json"),
+			clientmock.CheckRequestJSONBody(`{"customer_name":"bob","user_name":"user","password":"secret"}`)).
+		Build(t)
 
 	ctx, err := client.CreateAuthenticatedContext(t.Context())
 	require.NoError(t, err)

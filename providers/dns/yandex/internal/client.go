@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
-	"github.com/google/go-querystring/query"
+	querystring "github.com/google/go-querystring/query"
 )
 
 const defaultBaseURL = "https://pddimp.yandex.ru/api2/admin/dns"
@@ -130,7 +130,7 @@ func newRequest(ctx context.Context, method string, endpoint *url.URL, payload a
 	if payload != nil {
 		switch method {
 		case http.MethodPost:
-			values, err := query.Values(payload)
+			values, err := querystring.Values(payload)
 			if err != nil {
 				return nil, err
 			}
@@ -138,7 +138,7 @@ func newRequest(ctx context.Context, method string, endpoint *url.URL, payload a
 			buf.WriteString(values.Encode())
 
 		case http.MethodGet:
-			values, err := query.Values(payload)
+			values, err := querystring.Values(payload)
 			if err != nil {
 				return nil, err
 			}

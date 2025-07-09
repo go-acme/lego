@@ -20,7 +20,8 @@ import (
 
 // Flag names.
 const (
-	flgDays                   = "days"
+	flgRenewDays              = "days"
+	flgRenewDynamic           = "dynamic"
 	flgARIDisable             = "ari-disable"
 	flgARIWaitToRenewDuration = "ari-wait-to-renew-duration"
 	flgReuseKey               = "reuse-key"
@@ -52,9 +53,15 @@ func createRenew() *cli.Command {
 		},
 		Flags: []cli.Flag{
 			&cli.IntFlag{
-				Name:  flgDays,
+				Name:  flgRenewDays,
 				Value: 30,
 				Usage: "The number of days left on a certificate to renew it.",
+			},
+			// TODO(ldez): in v5, remove this flag, use this behavior as default.
+			&cli.BoolFlag{
+				Name:  flgRenewDynamic,
+				Value: false,
+				Usage: "Dynamically defines the renewal date. (1/3rd of the lifetime left or 1/2 of the lifetime left, if the lifetime is shorter than 10 days)",
 			},
 			&cli.BoolFlag{
 				Name:  flgARIDisable,
@@ -187,7 +194,7 @@ func renewForDomains(ctx *cli.Context, account *Account, keyType certcrypto.KeyT
 
 	certDomains := certcrypto.ExtractDomains(cert)
 
-	if ariRenewalTime == nil && !needRenewal(cert, domain, ctx.Int(flgDays)) &&
+	if ariRenewalTime == nil && !needRenewal(cert, domain, ctx.Int(flgRenewDays), ctx.Bool(flgRenewDynamic)) &&
 		(!forceDomains || slices.Equal(certDomains, domains)) {
 		return nil
 	}
@@ -304,7 +311,7 @@ func renewForCSR(ctx *cli.Context, account *Account, keyType certcrypto.KeyType,
 		}
 	}
 
-	if ariRenewalTime == nil && !needRenewal(cert, domain, ctx.Int(flgDays)) {
+	if ariRenewalTime == nil && !needRenewal(cert, domain, ctx.Int(flgRenewDays), ctx.Bool(flgRenewDynamic)) {
 		return nil
 	}
 
@@ -342,21 +349,41 @@ func renewForCSR(ctx *cli.Context, account *Account, keyType certcrypto.KeyType,
 	return launchHook(ctx.String(flgRenewHook), ctx.Duration(flgRenewHookTimeout), meta)
 }
 
-func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
+func needRenewal(x509Cert *x509.Certificate, domain string, days int, dynamic bool) bool {
 	if x509Cert.IsCA {
 		log.Fatalf("[%s] Certificate bundle starts with a CA certificate", domain)
 	}
 
-	if days >= 0 {
-		notAfter := int(time.Until(x509Cert.NotAfter).Hours() / 24.0)
-		if notAfter > days {
-			log.Printf("[%s] The certificate expires in %d days, the number of days defined to perform the renewal is %d: no renewal.",
-				domain, notAfter, days)
-			return false
-		}
+	if dynamic {
+		return needRenewalDynamic(x509Cert, time.Now())
 	}
 
-	return true
+	if days < 0 {
+		return true
+	}
+
+	notAfter := int(time.Until(x509Cert.NotAfter).Hours() / 24.0)
+	if notAfter <= days {
+		return true
+	}
+
+	log.Printf("[%s] The certificate expires in %d days, the number of days defined to perform the renewal is %d: no renewal.",
+		domain, notAfter, days)
+
+	return false
+}
+
+func needRenewalDynamic(x509Cert *x509.Certificate, now time.Time) bool {
+	lifetime := x509Cert.NotAfter.Sub(x509Cert.NotBefore)
+
+	var divisor int64 = 3
+	if lifetime.Round(24*time.Hour).Hours()/24.0 <= 10 {
+		divisor = 2
+	}
+
+	dueDate := x509Cert.NotAfter.Add(-1 * time.Duration(lifetime.Nanoseconds()/divisor))
+
+	return dueDate.Before(now)
 }
 
 // getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.

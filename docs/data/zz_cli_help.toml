@@ -23,6 +23,7 @@ GLOBAL OPTIONS:
    --server value, -s value                                     CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
    --accept-tos, -a                                             By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service. (default: false)
    --email value, -m value                                      Email used for registration and recovery contact. [$LEGO_EMAIL]
+   --disable-cn value                                           Disable the use of the common name in the CSR. [$disable-cn]
    --csr value, -c value                                        Certificate signing request filename, if an external CSR is to be used.
    --eab                                                        Use External Account Binding for account registration. Requires --kid and --hmac. (default: false) [$LEGO_EAB]
    --kid value                                                  Key identifier from External CA. Used for External Account Binding. [$LEGO_EAB_KID]
@@ -93,6 +94,7 @@ USAGE:
 
 OPTIONS:
    --days value                              The number of days left on a certificate to renew it. (default: 30)
+   --dynamic                                 Dynamically defines the renewal date. (1/3rd of the lifetime left or 1/2 of the lifetime left, if the lifetime is shorter than 10 days) (default: false)
    --ari-disable                             Do not use the renewalInfo endpoint (RFC9773) to check if a certificate should be renewed. (default: false)
    --ari-wait-to-renew-duration value        The maximum duration you're willing to sleep for a renewal time returned by the renewalInfo endpoint. (default: 0s)
    --reuse-key                               Used to indicate you want to reuse your current private key for the new certificate. (default: false)

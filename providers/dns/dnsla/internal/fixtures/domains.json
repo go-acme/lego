@@ -1,0 +1,31 @@
+{
+  "code": 200,
+  "msg": "",
+  "data": {
+    "total": 1,
+    "results": [
+      {
+        "id": "85369994254488576",
+        "createdAt": 1692856597,
+        "updatedAt": 1692856597,
+        "userId": "85068081529119744",
+        "userAccount": "example@example.com",
+        "assetId": "",
+        "groupId": "",
+        "groupName": "",
+        "domain": "example.com.",
+        "displayDomain": "example.com.",
+        "state": 1,
+        "nsState": 0,
+        "nsCheckedAt": 0,
+        "productCode": "",
+        "productName": "",
+        "expiredAt": 4102416000,
+        "quoteDomainId": "",
+        "quoteDomain": "",
+        "suffix": "com.",
+        "displaySuffix": "com."
+      }
+    ]
+  }
+}

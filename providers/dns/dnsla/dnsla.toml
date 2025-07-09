@@ -1,0 +1,24 @@
+Name = "dns.la"
+Description = ''''''
+URL = "https://www.dns.la"
+Code = "dnsla"
+Since = "v5.0.0"
+
+Example = '''
+DNSLA_API_SECRET="xxx" \
+DNSLA_API_SECRET="yyy" \
+lego --dns dnsla -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    DNSLA_API_ID = "API ID"
+    DNSLA_API_SECRET = "API secret"
+  [Configuration.Additional]
+    DNSLA_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    DNSLA_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    DNSLA_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    DNSLA_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://www.dns.la/docs/ApiDoc"

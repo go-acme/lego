@@ -61,7 +61,7 @@ func createRenew() *cli.Command {
 			&cli.BoolFlag{
 				Name:  flgRenewDynamic,
 				Value: false,
-				Usage: "Dynamically defines the renewal date. (1/3rd of the lifetime left or 1/2 of the lifetime left, if the lifetime is shorter than 10 days)",
+				Usage: "Compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates). This supersedes --days and will be the default behavior in Lego v5.",
 			},
 			&cli.BoolFlag{
 				Name:  flgARIDisable,

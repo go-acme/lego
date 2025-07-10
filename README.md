@@ -248,8 +248,8 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
   <td><a href="https://go-acme.github.io/lego/dns/yandex/">Yandex PDD</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/zoneee/">Zone.ee</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/zoneedit/">ZoneEdit</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/zonomi/">Zonomi</a></td>
-  <td></td>
   <td></td>
   <td></td>
 </tr></table>

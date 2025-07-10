@@ -225,7 +225,7 @@ func renewForDomains(ctx *cli.Context, account *Account, keyType certcrypto.KeyT
 		time.Sleep(sleepTime)
 	}
 
-	renewalDomains := domains
+	renewalDomains := slices.Clone(domains)
 	if !forceDomains {
 		renewalDomains = merge(certDomains, domains)
 	}
@@ -250,6 +250,8 @@ func renewForDomains(ctx *cli.Context, account *Account, keyType certcrypto.KeyT
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	certRes.Domain = domain
 
 	certsStorage.SaveResource(certRes)
 

@@ -108,9 +108,62 @@ func Test_needRenewal(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			actual := needRenewal(test.x509Cert, "foo.com", test.days)
+			actual := needRenewal(test.x509Cert, "foo.com", test.days, false)
 
 			assert.Equal(t, test.expected, actual)
+		})
+	}
+}
+
+func Test_needRenewalDynamic(t *testing.T) {
+	testCases := []struct {
+		desc                string
+		now                 time.Time
+		notBefore, notAfter time.Time
+		expected            assert.BoolAssertionFunc
+	}{
+		{
+			desc:      "higher than 1/3 of the certificate lifetime left (lifetime > 10 days)",
+			now:       time.Date(2025, 1, 19, 1, 1, 1, 1, time.UTC),
+			notBefore: time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC),
+			notAfter:  time.Date(2025, 1, 30, 1, 1, 1, 1, time.UTC),
+			expected:  assert.False,
+		},
+		{
+			desc:      "lower than 1/3 of the certificate lifetime left(lifetime > 10 days)",
+			now:       time.Date(2025, 1, 21, 1, 1, 1, 1, time.UTC),
+			notBefore: time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC),
+			notAfter:  time.Date(2025, 1, 30, 1, 1, 1, 1, time.UTC),
+			expected:  assert.True,
+		},
+		{
+			desc:      "higher than 1/2 of the certificate lifetime left (lifetime < 10 days)",
+			now:       time.Date(2025, 1, 4, 1, 1, 1, 1, time.UTC),
+			notBefore: time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC),
+			notAfter:  time.Date(2025, 1, 10, 1, 1, 1, 1, time.UTC),
+			expected:  assert.False,
+		},
+		{
+			desc:      "lower than 1/2 of the certificate lifetime left (lifetime < 10 days)",
+			now:       time.Date(2025, 1, 6, 1, 1, 1, 1, time.UTC),
+			notBefore: time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC),
+			notAfter:  time.Date(2025, 1, 10, 1, 1, 1, 1, time.UTC),
+			expected:  assert.True,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			x509Cert := &x509.Certificate{
+				NotBefore: test.notBefore,
+				NotAfter:  test.notAfter,
+			}
+
+			ok := needRenewalDynamic(x509Cert, test.now)
+
+			test.expected(t, ok)
 		})
 	}
 }

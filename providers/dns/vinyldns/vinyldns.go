@@ -4,6 +4,7 @@ package vinyldns
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -17,9 +18,10 @@ import (
 const (
 	envNamespace = "VINYLDNS_"
 
-	EnvAccessKey = envNamespace + "ACCESS_KEY"
-	EnvSecretKey = envNamespace + "SECRET_KEY"
-	EnvHost      = envNamespace + "HOST"
+	EnvAccessKey  = envNamespace + "ACCESS_KEY"
+	EnvSecretKey  = envNamespace + "SECRET_KEY"
+	EnvHost       = envNamespace + "HOST"
+	EnvQuoteValue = envNamespace + "QUOTE_VALUE"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -30,9 +32,11 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	AccessKey          string
-	SecretKey          string
-	Host               string
+	AccessKey  string
+	SecretKey  string
+	Host       string
+	QuoteValue bool
+
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -66,6 +70,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.AccessKey = values[EnvAccessKey]
 	config.SecretKey = values[EnvSecretKey]
 	config.Host = values[EnvHost]
+	config.QuoteValue = env.GetOrDefaultBool(EnvQuoteValue, false)
 
 	return NewDNSProviderConfig(config)
 }
@@ -105,7 +110,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("vinyldns: %w", err)
 	}
 
-	record := vinyldns.Record{Text: info.Value}
+	value := d.formatValue(info.Value)
+
+	record := vinyldns.Record{Text: value}
 
 	if existingRecord == nil || existingRecord.ID == "" {
 		err = d.createRecordSet(info.EffectiveFQDN, []vinyldns.Record{record})
@@ -117,7 +124,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	for _, i := range existingRecord.Records {
-		if i.Text == info.Value {
+		if i.Text == value {
 			return nil
 		}
 	}
@@ -146,9 +153,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
+	value := d.formatValue(info.Value)
+
 	var records []vinyldns.Record
 	for _, i := range existingRecord.Records {
-		if i.Text != info.Value {
+		if i.Text != value {
 			records = append(records, i)
 		}
 	}
@@ -174,4 +183,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) formatValue(v string) string {
+	if d.config.QuoteValue {
+		return strconv.Quote(v)
+	}
+
+	return v
 }

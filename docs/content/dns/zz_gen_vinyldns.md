@@ -53,6 +53,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 |--------------------------------|-------------|
 | `VINYLDNS_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 4) |
 | `VINYLDNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |
+| `VINYLDNS_QUOTE_VALUE` | Adds quotes around the TXT record value (Default: false) |
 | `VINYLDNS_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 30) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

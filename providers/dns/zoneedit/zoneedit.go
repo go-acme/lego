@@ -95,6 +95,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("zoneedit: create TXT record: %w", err)
 	}
 
+	// ERROR CODE="702" TEXT="Minimum 10 seconds between requests"
+	time.Sleep(11 * time.Second)
+
 	return nil
 }
 
@@ -106,6 +109,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("zoneedit: delete TXT record: %w", err)
 	}
+
+	// ERROR CODE="702" TEXT="Minimum 10 seconds between requests"
+	time.Sleep(11 * time.Second)
 
 	return nil
 }

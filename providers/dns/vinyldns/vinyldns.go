@@ -105,7 +105,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("vinyldns: %w", err)
 	}
 
-	record := vinyldns.Record{Text: info.Value}
+	record := vinyldns.Record{Text: fmt.Sprintf("\"%s\"", info.Value)}
 
 	if existingRecord == nil || existingRecord.ID == "" {
 		err = d.createRecordSet(info.EffectiveFQDN, []vinyldns.Record{record})
@@ -117,7 +117,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	for _, i := range existingRecord.Records {
-		if i.Text == info.Value {
+		if i.Text == fmt.Sprintf("\"%s\"", info.Value) {
 			return nil
 		}
 	}
@@ -148,7 +148,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var records []vinyldns.Record
 	for _, i := range existingRecord.Records {
-		if i.Text != info.Value {
+		if i.Text != fmt.Sprintf("\"%s\"", info.Value) {
 			records = append(records, i)
 		}
 	}

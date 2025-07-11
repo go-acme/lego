@@ -3249,6 +3249,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "VINYLDNS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 4)`)
 		ew.writeln(`	- "VINYLDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
+		ew.writeln(`	- "VINYLDNS_QUOTE_VALUE":	Adds quotes around the TXT record value (Default: false)`)
 		ew.writeln(`	- "VINYLDNS_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 30)`)
 
 		ew.writeln()

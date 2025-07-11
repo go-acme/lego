@@ -9,7 +9,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvUserID, EnvPassword).WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvUser, EnAuthToken).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -20,30 +20,30 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvUserID:   "user",
-				EnvPassword: "secret",
+				EnvUser:     "user",
+				EnAuthToken: "secret",
 			},
 		},
 		{
 			desc: "missing user ID",
 			envVars: map[string]string{
-				EnvUserID:   "",
-				EnvPassword: "secret",
+				EnvUser:     "",
+				EnAuthToken: "secret",
 			},
-			expected: "zoneedit: some credentials information are missing: ZONEEDIT_USER_ID",
+			expected: "zoneedit: some credentials information are missing: ZONEEDIT_USER",
 		},
 		{
-			desc: "missing password",
+			desc: "missing auth token",
 			envVars: map[string]string{
-				EnvUserID:   "user",
-				EnvPassword: "",
+				EnvUser:     "user",
+				EnAuthToken: "",
 			},
-			expected: "zoneedit: some credentials information are missing: ZONEEDIT_PASSWORD",
+			expected: "zoneedit: some credentials information are missing: ZONEEDIT_AUTH_TOKEN",
 		},
 		{
 			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "zoneedit: some credentials information are missing: ZONEEDIT_USER_ID,ZONEEDIT_PASSWORD",
+			expected: "zoneedit: some credentials information are missing: ZONEEDIT_USER,ZONEEDIT_AUTH_TOKEN",
 		},
 	}
 
@@ -70,24 +70,24 @@ func TestNewDNSProvider(t *testing.T) {
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc     string
-		userID   string
-		password string
-		expected string
+		desc      string
+		user      string
+		authToken string
+		expected  string
 	}{
 		{
-			desc:     "success",
-			userID:   "user",
-			password: "secret",
+			desc:      "success",
+			user:      "user",
+			authToken: "secret",
 		},
 		{
-			desc:     "missing user ID",
-			password: "secret",
-			expected: "zoneedit: credentials missing",
+			desc:      "missing user ID",
+			authToken: "secret",
+			expected:  "zoneedit: credentials missing",
 		},
 		{
-			desc:     "missing password",
-			userID:   "user",
+			desc:     "missing auth token",
+			user:     "user",
 			expected: "zoneedit: credentials missing",
 		},
 		{
@@ -99,8 +99,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.UserID = test.userID
-			config.Password = test.password
+			config.User = test.user
+			config.AuthToken = test.authToken
 
 			p, err := NewDNSProviderConfig(config)
 

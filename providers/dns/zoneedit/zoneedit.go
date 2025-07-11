@@ -16,8 +16,8 @@ import (
 const (
 	envNamespace = "ZONEEDIT_"
 
-	EnvUserID   = envNamespace + "USER_ID"
-	EnvPassword = envNamespace + "PASSWORD"
+	EnvUser     = envNamespace + "USER"
+	EnAuthToken = envNamespace + "AUTH_TOKEN"
 
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -26,8 +26,8 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	UserID   string
-	Password string
+	User      string
+	AuthToken string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -53,14 +53,14 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for ZoneEdit.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUserID, EnvPassword)
+	values, err := env.Get(EnvUser, EnAuthToken)
 	if err != nil {
 		return nil, fmt.Errorf("zoneedit: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.UserID = values[EnvUserID]
-	config.Password = values[EnvPassword]
+	config.User = values[EnvUser]
+	config.AuthToken = values[EnAuthToken]
 
 	return NewDNSProviderConfig(config)
 }
@@ -71,7 +71,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("zoneedit: the configuration of the DNS provider is nil")
 	}
 
-	client, err := internal.NewClient(config.UserID, config.Password)
+	client, err := internal.NewClient(config.User, config.AuthToken)
 	if err != nil {
 		return nil, fmt.Errorf("zoneedit: %w", err)
 	}

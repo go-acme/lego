@@ -1,0 +1,13 @@
+[
+  {
+    "id": "76cc107f-fbef-4e2b-b97f-f5d34f4075d3",
+    "created_at": "2019-04-11T12:47:56.000+01:00",
+    "updated_at": "2019-04-11T12:47:56.000+01:00",
+    "account_id": null,
+    "domain_id": "edc5dacf-a2ad-4757-41ee-c12f06259c70",
+    "name": "_acme-challenge",
+    "value": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "type": "txt",
+    "ttl": 600
+  }
+]

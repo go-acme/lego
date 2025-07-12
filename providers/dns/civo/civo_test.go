@@ -147,7 +147,6 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 			WithJSONHeaders().
 			With("Authorization", "bearer secret").
 			With("User-Agent", "civogo/0.2.21"),
-
 	)
 }
 

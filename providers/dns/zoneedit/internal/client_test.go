@@ -29,7 +29,7 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	return client, mux
 }
 
-func writeFixture(filename string) http.HandlerFunc {
+func fixtureHandler(filename string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
@@ -59,7 +59,7 @@ func writeFixture(filename string) http.HandlerFunc {
 func TestClient_CreateTXTRecord(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/txt-create.php", writeFixture("success.xml"))
+	mux.HandleFunc("/txt-create.php", fixtureHandler("success.xml"))
 
 	err := client.CreateTXTRecord("_acme-challenge.example.com", "value")
 	require.NoError(t, err)
@@ -68,7 +68,7 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 func TestClient_CreateTXTRecord_error(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/txt-create.php", writeFixture("error.xml"))
+	mux.HandleFunc("/txt-create.php", fixtureHandler("error.xml"))
 
 	err := client.CreateTXTRecord("_acme-challenge.example.com", "value")
 	require.EqualError(t, err, "[status code: 200] 708: Failed Login: user (_acme-challenge.example.com)")
@@ -77,7 +77,7 @@ func TestClient_CreateTXTRecord_error(t *testing.T) {
 func TestClient_DeleteTXTRecord(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/txt-delete.php", writeFixture("success.xml"))
+	mux.HandleFunc("/txt-delete.php", fixtureHandler("success.xml"))
 
 	err := client.DeleteTXTRecord("_acme-challenge.example.com", "value")
 	require.NoError(t, err)
@@ -86,7 +86,7 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 func TestClient_DeleteTXTRecord_error(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/txt-delete.php", writeFixture("error.xml"))
+	mux.HandleFunc("/txt-delete.php", fixtureHandler("error.xml"))
 
 	err := client.DeleteTXTRecord("_acme-challenge.example.com", "value")
 	require.EqualError(t, err, "[status code: 200] 708: Failed Login: user (_acme-challenge.example.com)")

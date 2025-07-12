@@ -6,30 +6,30 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 const testAPIKey = "secret"
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(OAuthStaticAccessToken(server.Client(), testAPIKey))
 			client.baseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer secret"))
 }
 
 func TestClient_GetZones(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /user/v1/zones",
-			clientmock.ResponseFromFixture("zones.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("zones.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("limit", "100").
 				With("query", "")).
 		Build(t)
@@ -55,7 +55,7 @@ func TestClient_GetZones(t *testing.T) {
 func TestClient_GetZones_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /user/v1/zones",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -66,7 +66,7 @@ func TestClient_GetZones_error(t *testing.T) {
 func TestClient_GetZone(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /user/v1/zones/123",
-			clientmock.ResponseFromFixture("zone.json")).
+			stubrouter.ResponseFromFixture("zone.json")).
 		Build(t)
 
 	zone, err := client.GetZone(t.Context(), "123")
@@ -88,7 +88,7 @@ func TestClient_GetZone(t *testing.T) {
 func TestClient_GetZone_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /user/v1/zones/123",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -99,8 +99,8 @@ func TestClient_GetZone_error(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /user/v1/zones/123/records",
-			clientmock.ResponseFromFixture("records.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("records.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("type", "TXT")).
 		Build(t)
 
@@ -184,7 +184,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_GetRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /user/v1/zones/123/records",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -195,7 +195,7 @@ func TestClient_GetRecords_error(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /user/v1/zones/123/records",
-			clientmock.ResponseFromFixture("record.json").
+			stubrouter.ResponseFromFixture("record.json").
 				WithStatusCode(http.StatusCreated)).
 		Build(t)
 
@@ -225,7 +225,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /user/v1/zones/123/records",
-			clientmock.ResponseFromFixture("error-details.json").
+			stubrouter.ResponseFromFixture("error-details.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -244,7 +244,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /user/v1/zones/123/records/6",
-			clientmock.Noop().WithStatusCode(http.StatusNoContent).
+			stubrouter.Noop().WithStatusCode(http.StatusNoContent).
 				WithStatusCode(http.StatusCreated)).
 		Build(t)
 
@@ -255,7 +255,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /user/v1/zones/123/records/6",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 

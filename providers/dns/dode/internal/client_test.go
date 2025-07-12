@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,9 +18,9 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_UpdateTxtRecord(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
-		Route("GET /letsencrypt", clientmock.ResponseFromFixture("success.json"),
-			clientmock.CheckQueryParameter().Strict().
+	client := stubrouter.NewBuilder[*Client](setupClient).
+		Route("GET /letsencrypt", stubrouter.ResponseFromFixture("success.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("domain", "example.com").
 				With("token", "secret").
 				With("value", "value")).
@@ -31,9 +31,9 @@ func TestClient_UpdateTxtRecord(t *testing.T) {
 }
 
 func TestClient_UpdateTxtRecord_clear(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
-		Route("GET /letsencrypt", clientmock.ResponseFromFixture("success.json"),
-			clientmock.CheckQueryParameter().Strict().
+	client := stubrouter.NewBuilder[*Client](setupClient).
+		Route("GET /letsencrypt", stubrouter.ResponseFromFixture("success.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("action", "delete").
 				With("domain", "example.com").
 				With("token", "secret")).

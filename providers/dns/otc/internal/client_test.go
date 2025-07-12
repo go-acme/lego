@@ -7,13 +7,13 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder(
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder(
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret", "example.com", "test")
 			client.HTTPClient = server.Client()
@@ -21,15 +21,15 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders(),
+		stubrouter.CheckHeader().WithJSONHeaders(),
 	)
 }
 
 func TestClient_GetZoneID(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones",
-			clientmock.ResponseFromFixture("zones_GET.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("zones_GET.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Build(t)
 
@@ -42,8 +42,8 @@ func TestClient_GetZoneID(t *testing.T) {
 func TestClient_GetZoneID_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones",
-			clientmock.ResponseFromFixture("zones_GET_empty.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("zones_GET_empty.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Build(t)
 
@@ -54,8 +54,8 @@ func TestClient_GetZoneID_error(t *testing.T) {
 func TestClient_GetRecordSetID(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones/123123/recordsets",
-			clientmock.ResponseFromFixture("zones-recordsets_GET.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("zones-recordsets_GET.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("name", "example.com.").
 				With("type", "TXT"),
 		).
@@ -70,8 +70,8 @@ func TestClient_GetRecordSetID(t *testing.T) {
 func TestClient_GetRecordSetID_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones/123123/recordsets",
-			clientmock.ResponseFromFixture("zones-recordsets_GET_empty.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("zones-recordsets_GET_empty.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("name", "example.com.").
 				With("type", "TXT"),
 		).
@@ -84,7 +84,7 @@ func TestClient_GetRecordSetID_error(t *testing.T) {
 func TestClient_CreateRecordSet(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/123123/recordsets",
-			clientmock.ResponseFromFixture("zones-recordsets_POST.json")).
+			stubrouter.ResponseFromFixture("zones-recordsets_POST.json")).
 		Build(t)
 
 	rs := RecordSets{
@@ -101,7 +101,7 @@ func TestClient_CreateRecordSet(t *testing.T) {
 func TestClient_DeleteRecordSet(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/123123/recordsets/321321",
-			clientmock.ResponseFromFixture("zones-recordsets_DELETE.json")).
+			stubrouter.ResponseFromFixture("zones-recordsets_DELETE.json")).
 		Build(t)
 
 	err := client.DeleteRecordSet(context.Background(), "123123", "321321")

@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,10 +18,10 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_GetHosts(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
+	client := stubrouter.NewBuilder[*Client](setupClient).
 		Route("GET /",
-			clientmock.ResponseFromFixture("getHosts.xml"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("getHosts.xml"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("ApiKey", "secret").
 				With("ApiUser", "user").
 				With("ClientIp", "127.0.0.1").
@@ -44,9 +44,9 @@ func TestClient_GetHosts(t *testing.T) {
 }
 
 func TestClient_GetHosts_error(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
+	client := stubrouter.NewBuilder[*Client](setupClient).
 		Route("GET /",
-			clientmock.ResponseFromFixture("getHosts_errorBadAPIKey1.xml")).
+			stubrouter.ResponseFromFixture("getHosts_errorBadAPIKey1.xml")).
 		Build(t)
 
 	_, err := client.GetHosts(t.Context(), "foo", "example.com")
@@ -54,10 +54,10 @@ func TestClient_GetHosts_error(t *testing.T) {
 }
 
 func TestClient_SetHosts(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient, clientmock.CheckHeader().WithContentTypeFromURLEncoded()).
+	client := stubrouter.NewBuilder[*Client](setupClient, stubrouter.CheckHeader().WithContentTypeFromURLEncoded()).
 		Route("POST /",
-			clientmock.ResponseFromFixture("setHosts.xml"),
-			clientmock.CheckForm().Strict().
+			stubrouter.ResponseFromFixture("setHosts.xml"),
+			stubrouter.CheckForm().Strict().
 				With("ApiKey", "secret").
 				With("ApiUser", "user").
 				With("ClientIp", "127.0.0.1").
@@ -90,9 +90,9 @@ func TestClient_SetHosts(t *testing.T) {
 }
 
 func TestClient_SetHosts_error(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
+	client := stubrouter.NewBuilder[*Client](setupClient).
 		Route("POST /",
-			clientmock.ResponseFromFixture("setHosts_errorBadAPIKey1.xml")).
+			stubrouter.ResponseFromFixture("setHosts_errorBadAPIKey1.xml")).
 		Build(t)
 
 	records := []Record{

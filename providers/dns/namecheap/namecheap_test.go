@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -54,8 +54,8 @@ func TestDNSProvider_Present(t *testing.T) {
 
 			provider := mockBuilder().
 				Route("GET /",
-					clientmock.ResponseFromFile(filepath.Join("internal", "fixtures", test.getHostsResponse)),
-					clientmock.CheckForm().Strict().
+					stubrouter.ResponseFromFile(filepath.Join("internal", "fixtures", test.getHostsResponse)),
+					stubrouter.CheckForm().Strict().
 						With("ClientIp", "10.0.0.1").
 						With("Command", "namecheap.domains.dns.getHosts").
 						With("SLD", ch.sld).
@@ -65,8 +65,8 @@ func TestDNSProvider_Present(t *testing.T) {
 						With("ApiUser", "foo"),
 				).
 				Route("POST /",
-					clientmock.ResponseFromFile(filepath.Join("internal", "fixtures", test.setHostsResponse)),
-					clientmock.CheckForm().
+					stubrouter.ResponseFromFile(filepath.Join("internal", "fixtures", test.setHostsResponse)),
+					stubrouter.CheckForm().
 						With("ClientIp", "10.0.0.1").
 						With("Command", "namecheap.domains.dns.setHosts").
 						With("SLD", ch.sld).
@@ -94,8 +94,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 			provider := mockBuilder().
 				Route("GET /",
-					clientmock.ResponseFromFile(filepath.Join("internal", "fixtures", test.getHostsResponse)),
-					clientmock.CheckForm().Strict().
+					stubrouter.ResponseFromFile(filepath.Join("internal", "fixtures", test.getHostsResponse)),
+					stubrouter.CheckForm().Strict().
 						With("ClientIp", "10.0.0.1").
 						With("Command", "namecheap.domains.dns.getHosts").
 						With("SLD", ch.sld).
@@ -105,8 +105,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 						With("ApiUser", "foo"),
 				).
 				Route("POST /",
-					clientmock.ResponseFromFile(filepath.Join("internal", "fixtures", test.setHostsResponse)),
-					clientmock.CheckForm().
+					stubrouter.ResponseFromFile(filepath.Join("internal", "fixtures", test.setHostsResponse)),
+					stubrouter.CheckForm().
 						With("ClientIp", "10.0.0.1").
 						With("Command", "namecheap.domains.dns.setHosts").
 						With("SLD", ch.sld).
@@ -177,8 +177,8 @@ func Test_newPseudoRecord_domainSplit(t *testing.T) {
 	}
 }
 
-func mockBuilder() *clientmock.Builder[*DNSProvider] {
-	return clientmock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+func mockBuilder() *stubrouter.Builder[*DNSProvider] {
+	return stubrouter.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 		config := NewDefaultConfig()
 		config.BaseURL = server.URL
 		config.APIUser = envTestUser

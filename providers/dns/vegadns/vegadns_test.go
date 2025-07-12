@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -40,26 +40,26 @@ func TestDNSProvider_Present(t *testing.T) {
 	testCases := []struct {
 		desc          string
 		handler       http.Handler
-		builder       *clientmock.Builder[*DNSProvider]
+		builder       *stubrouter.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
 			desc: "Success",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
-					clientmock.ResponseFromFixture("token.json")).
+					stubrouter.ResponseFromFixture("token.json")).
 				Route("GET /1.0/domains", getDomainHandler()).
 				Route("POST /1.0/records",
-					clientmock.ResponseFromFixture("create_record.json").
+					stubrouter.ResponseFromFixture("create_record.json").
 						WithStatusCode(http.StatusCreated)),
 		},
 		{
 			desc: "FailToFindZone",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
-					clientmock.ResponseFromFixture("token.json")).
+					stubrouter.ResponseFromFixture("token.json")).
 				Route("GET /1.0/domains",
-					clientmock.Noop().
+					stubrouter.Noop().
 						WithStatusCode(http.StatusNotFound)),
 			expectedError: "vegadns: can't find Authoritative Zone for _acme-challenge.example.com. in Present: Unable to find auth zone for fqdn _acme-challenge.example.com",
 		},
@@ -67,10 +67,10 @@ func TestDNSProvider_Present(t *testing.T) {
 			desc: "FailToCreateTXT",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
-					clientmock.ResponseFromFixture("token.json")).
+					stubrouter.ResponseFromFixture("token.json")).
 				Route("GET /1.0/domains", getDomainHandler()).
 				Route("POST /1.0/records",
-					clientmock.Noop().
+					stubrouter.Noop().
 						WithStatusCode(http.StatusBadRequest)),
 			expectedError: "vegadns: Got bad answer from VegaDNS on CreateTXT. Code: 400. Message: ",
 		},
@@ -96,28 +96,28 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		builder       *clientmock.Builder[*DNSProvider]
+		builder       *stubrouter.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
 			desc: "Success",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
-					clientmock.ResponseFromFixture("token.json")).
+					stubrouter.ResponseFromFixture("token.json")).
 				Route("GET /1.0/domains", getDomainHandler()).
 				Route("GET /1.0/records",
-					clientmock.ResponseFromFixture("records.json"),
-					clientmock.CheckQueryParameter().With("domain_id", "1")).
+					stubrouter.ResponseFromFixture("records.json"),
+					stubrouter.CheckQueryParameter().With("domain_id", "1")).
 				Route("DELETE /1.0/records/3",
-					clientmock.ResponseFromFixture("record_delete.json")),
+					stubrouter.ResponseFromFixture("record_delete.json")),
 		},
 		{
 			desc: "FailToFindZone",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
-					clientmock.ResponseFromFixture("token.json")).
+					stubrouter.ResponseFromFixture("token.json")).
 				Route("GET /1.0/domains",
-					clientmock.Noop().
+					stubrouter.Noop().
 						WithStatusCode(http.StatusNotFound)),
 			expectedError: "vegadns: can't find Authoritative Zone for _acme-challenge.example.com. in CleanUp: Unable to find auth zone for fqdn _acme-challenge.example.com",
 		},
@@ -125,12 +125,12 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			desc: "FailToGetRecordID",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
-					clientmock.ResponseFromFixture("token.json")).
+					stubrouter.ResponseFromFixture("token.json")).
 				Route("GET /1.0/domains", getDomainHandler()).
 				Route("GET /1.0/records",
-					clientmock.Noop().
+					stubrouter.Noop().
 						WithStatusCode(http.StatusNotFound),
-					clientmock.CheckQueryParameter().With("domain_id", "1")),
+					stubrouter.CheckQueryParameter().With("domain_id", "1")),
 			expectedError: "vegadns: couldn't get Record ID in CleanUp: Got bad answer from VegaDNS on GetRecordID. Code: 404. Message: ",
 		},
 	}
@@ -174,8 +174,8 @@ func getDomainHandler() http.HandlerFunc {
 	}
 }
 
-func mockBuilder() *clientmock.Builder[*DNSProvider] {
-	return clientmock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+func mockBuilder() *stubrouter.Builder[*DNSProvider] {
+	return stubrouter.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 		envTest.Apply(map[string]string{
 			EnvKey:    "key",
 			EnvSecret: "secret",

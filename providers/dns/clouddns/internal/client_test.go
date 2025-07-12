@@ -5,12 +5,12 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("clientID", "email@example.com", "secret", 300)
 			client.HTTPClient = server.Client()
@@ -19,22 +19,22 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders(),
+		stubrouter.CheckHeader().WithJSONHeaders(),
 	)
 }
 
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/domain/search",
-			clientmock.ResponseFromFixture("domain_search.json"),
-			clientmock.CheckRequestJSONBodyFromFile("domain_search-request.json")).
+			stubrouter.ResponseFromFixture("domain_search.json"),
+			stubrouter.CheckRequestJSONBodyFromFile("domain_search-request.json")).
 		Route("POST /api/record-txt", nil,
-			clientmock.CheckRequestJSONBodyFromFile("record_txt-request.json")).
+			stubrouter.CheckRequestJSONBodyFromFile("record_txt-request.json")).
 		Route("PUT /api/domain/A/publish", nil,
-			clientmock.CheckRequestJSONBodyFromFile("publish-request.json")).
+			stubrouter.CheckRequestJSONBodyFromFile("publish-request.json")).
 		Route("POST /login",
-			clientmock.ResponseFromFixture("login.json"),
-			clientmock.CheckRequestJSONBodyFromFile("login-request.json")).
+			stubrouter.ResponseFromFixture("login.json"),
+			stubrouter.CheckRequestJSONBodyFromFile("login-request.json")).
 		Build(t)
 
 	ctx, err := client.CreateAuthenticatedContext(t.Context())
@@ -47,16 +47,16 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/domain/search",
-			clientmock.ResponseFromFixture("domain_search.json"),
-			clientmock.CheckRequestJSONBodyFromFile("domain_search-request.json")).
+			stubrouter.ResponseFromFixture("domain_search.json"),
+			stubrouter.CheckRequestJSONBodyFromFile("domain_search-request.json")).
 		Route("GET /api/domain/A",
-			clientmock.ResponseFromFixture("domain-request.json")).
+			stubrouter.ResponseFromFixture("domain-request.json")).
 		Route("DELETE /api/record/R01", nil).
 		Route("PUT /api/domain/A/publish", nil,
-			clientmock.CheckRequestJSONBodyFromFile("publish-request.json")).
+			stubrouter.CheckRequestJSONBodyFromFile("publish-request.json")).
 		Route("POST /login",
-			clientmock.ResponseFromFixture("login.json"),
-			clientmock.CheckRequestJSONBodyFromFile("login-request.json")).
+			stubrouter.ResponseFromFixture("login.json"),
+			stubrouter.CheckRequestJSONBodyFromFile("login-request.json")).
 		Build(t)
 
 	ctx, err := client.CreateAuthenticatedContext(t.Context())

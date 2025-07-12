@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,14 +20,14 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_Do(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient,
-		clientmock.CheckHeader().
+	client := stubrouter.NewBuilder[*Client](setupClient,
+		stubrouter.CheckHeader().
 			WithBasicAuth("user", "secret"),
 	).
 		Route("POST /", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			fmt.Println(req)
 		}),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.CheckQueryParameter().Strict().
 				With("hostname", "example.com").
 				With("ttl", "120").
 				With("type", "TXT").

@@ -5,13 +5,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("a", "b", "c")
 			if err != nil {
@@ -23,7 +23,7 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders(),
+		stubrouter.CheckHeader().WithJSONHeaders(),
 	)
 }
 
@@ -130,8 +130,8 @@ func TestGetDNSRecordIdx(t *testing.T) {
 
 func TestClient_GetDNSRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /", clientmock.ResponseFromFixture("get_dns_records.json"),
-			clientmock.CheckRequestJSONBodyFromFile("get_dns_records-request.json")).
+		Route("POST /", stubrouter.ResponseFromFixture("get_dns_records.json"),
+			stubrouter.CheckRequestJSONBodyFromFile("get_dns_records-request.json")).
 		Build(t)
 
 	expected := []DNSRecord{{
@@ -166,17 +166,17 @@ func TestClient_GetDNSRecords_errors(t *testing.T) {
 	}{
 		{
 			desc:     "HTTP error",
-			handler:  clientmock.Noop().WithStatusCode(http.StatusInternalServerError),
+			handler:  stubrouter.Noop().WithStatusCode(http.StatusInternalServerError),
 			expected: `error when sending the request: unexpected status code: [status code: 500] body: `,
 		},
 		{
 			desc:     "API error",
-			handler:  clientmock.ResponseFromFixture("get_dns_records_error.json"),
+			handler:  stubrouter.ResponseFromFixture("get_dns_records_error.json"),
 			expected: `error when sending the request: an error occurred during the action infoDnsRecords: [Status=error, StatusCode=4013, ShortMessage=Validation Error., LongMessage=Message is empty.]`,
 		},
 		{
 			desc:     "responsedata marshaling error",
-			handler:  clientmock.ResponseFromFixture("get_dns_records_error_unmarshal.json"),
+			handler:  stubrouter.ResponseFromFixture("get_dns_records_error_unmarshal.json"),
 			expected: `error when sending the request: unable to unmarshal response: [status code: 200] body: "" error: json: cannot unmarshal string into Go value of type internal.InfoDNSRecordsResponse`,
 		},
 	}

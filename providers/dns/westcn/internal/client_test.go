@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("user", "secret")
 			if err != nil {
@@ -25,18 +25,18 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().
+		stubrouter.CheckHeader().
 			WithContentTypeFromURLEncoded())
 }
 
 func TestClientAddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domain/",
-			clientmock.ResponseFromFixture("adddnsrecord.json").
+			stubrouter.ResponseFromFixture("adddnsrecord.json").
 				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.CheckQueryParameter().Strict().
 				With("act", "adddnsrecord"),
-			clientmock.CheckForm().UsePostForm().Strict().
+			stubrouter.CheckForm().UsePostForm().Strict().
 				With("domain", "example.com").
 				With("host", "@").
 				With("ttl", "60").
@@ -66,9 +66,9 @@ func TestClientAddRecord(t *testing.T) {
 func TestClientAddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domain/",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.CheckQueryParameter().Strict().
 				With("act", "adddnsrecord")).
 		Build(t)
 
@@ -89,11 +89,11 @@ func TestClientAddRecord_error(t *testing.T) {
 func TestClientDeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domain/",
-			clientmock.ResponseFromFixture("deldnsrecord.json").
+			stubrouter.ResponseFromFixture("deldnsrecord.json").
 				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.CheckQueryParameter().Strict().
 				With("act", "deldnsrecord"),
-			clientmock.CheckForm().UsePostForm().Strict().
+			stubrouter.CheckForm().UsePostForm().Strict().
 				With("id", "123").
 				With("domain", "example.com").
 				With("username", "user").
@@ -109,9 +109,9 @@ func TestClientDeleteRecord(t *testing.T) {
 func TestClientDeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domain/",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.CheckQueryParameter().Strict().
 				With("act", "deldnsrecord"),
 		).
 		Build(t)

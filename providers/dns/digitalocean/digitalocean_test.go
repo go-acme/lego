@@ -6,14 +6,14 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
 var envTest = tester.NewEnvTest(EnvAuthToken)
 
-func mockProvider() *clientmock.Builder[*DNSProvider] {
-	return clientmock.NewBuilder(
+func mockProvider() *stubrouter.Builder[*DNSProvider] {
+	return stubrouter.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.AuthToken = "asdf1234"
@@ -22,7 +22,7 @@ func mockProvider() *clientmock.Builder[*DNSProvider] {
 
 			return NewDNSProviderConfig(config)
 		},
-		clientmock.CheckHeader().
+		stubrouter.CheckHeader().
 			WithJSONHeaders().
 			With("Authorization", "Bearer asdf1234"))
 }
@@ -107,7 +107,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockProvider().
 		Route("POST /v2/domains/example.com/records",
-			clientmock.RawStringResponse(`{
+			stubrouter.RawStringResponse(`{
 			"domain_record": {
 				"id": 1234567,
 				"type": "TXT",
@@ -119,7 +119,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			}
 		}`).
 				WithStatusCode(http.StatusCreated),
-			clientmock.CheckRequestJSONBody(`{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`)).
+			stubrouter.CheckRequestJSONBody(`{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`)).
 		Build(t)
 
 	err := provider.Present("example.com", "", "foobar")
@@ -129,7 +129,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockProvider().
 		Route("DELETE /v2/domains/example.com/records/1234567",
-			clientmock.Noop().
+			stubrouter.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 

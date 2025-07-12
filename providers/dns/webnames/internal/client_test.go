@@ -4,12 +4,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("secret")
 			client.baseURL = server.URL
@@ -17,7 +17,7 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().
+		stubrouter.CheckHeader().
 			WithContentTypeFromURLEncoded(),
 	)
 }
@@ -46,8 +46,8 @@ func TestClient_AddTXTRecord(t *testing.T) {
 
 			client := mockBuilder().
 				Route("POST /",
-					clientmock.ResponseFromFixture(test.filename),
-					clientmock.CheckForm().Strict().
+					stubrouter.ResponseFromFixture(test.filename),
+					stubrouter.CheckForm().Strict().
 						With("domain", "example.com").
 						With("type", "TXT").
 						With("record", "foo:txtTXTtxt").
@@ -90,8 +90,8 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 
 			client := mockBuilder().
 				Route("POST /",
-					clientmock.ResponseFromFixture(test.filename),
-					clientmock.CheckForm().Strict().
+					stubrouter.ResponseFromFixture(test.filename),
+					stubrouter.CheckForm().Strict().
 						With("domain", "example.com").
 						With("type", "TXT").
 						With("record", "foo:txtTXTtxt").

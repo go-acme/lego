@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -55,10 +55,10 @@ func TestClient_UpdateTxtRecord(t *testing.T) {
 		t.Run(test.code, func(t *testing.T) {
 			t.Parallel()
 
-			client := clientmock.NewBuilder[*Client](setupClient, clientmock.CheckHeader().WithContentTypeFromURLEncoded()).
+			client := stubrouter.NewBuilder[*Client](setupClient, stubrouter.CheckHeader().WithContentTypeFromURLEncoded()).
 				Route("POST /",
-					clientmock.RawStringResponse(test.code),
-					clientmock.CheckForm().Strict().
+					stubrouter.RawStringResponse(test.code),
+					stubrouter.CheckForm().Strict().
 						With("hostname", "_acme-challenge.example.com").
 						With("password", "secret").
 						With("txt", "foo")).

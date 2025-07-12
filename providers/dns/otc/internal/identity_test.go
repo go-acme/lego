@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -13,7 +13,7 @@ import (
 func TestClient_Login(t *testing.T) {
 	var serverURL *url.URL
 
-	client := clientmock.NewBuilder(
+	client := stubrouter.NewBuilder(
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret", "example.com", "test")
 			client.HTTPClient = server.Client()
@@ -23,7 +23,7 @@ func TestClient_Login(t *testing.T) {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders(),
+		stubrouter.CheckHeader().WithJSONHeaders(),
 	).
 		Route("POST /v3/auth/token", IdentityHandlerMock()).
 		Build(t)

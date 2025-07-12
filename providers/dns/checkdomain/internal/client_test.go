@@ -6,27 +6,27 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(OAuthStaticAccessToken(server.Client(), "secret"))
 			client.BaseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer secret"))
 }
 
 func TestClient_GetDomainIDByName(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/domains",
-			clientmock.JSONEncode(DomainListingResponse{
+			stubrouter.JSONEncode(DomainListingResponse{
 				Embedded: EmbeddedDomainList{Domains: []*Domain{
 					{ID: 1, Name: "test.com"},
 					{ID: 2, Name: "test.org"},
@@ -43,7 +43,7 @@ func TestClient_GetDomainIDByName(t *testing.T) {
 func TestClient_CheckNameservers(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/domains/1/nameservers",
-			clientmock.JSONEncode(NameserverResponse{
+			stubrouter.JSONEncode(NameserverResponse{
 				Nameservers: []*Nameserver{
 					{Name: ns1},
 					{Name: ns2},
@@ -59,7 +59,7 @@ func TestClient_CheckNameservers(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /v1/domains/1/nameservers/records", nil,
-			clientmock.CheckRequestJSONBodyFromFile("create_record-request.json")).
+			stubrouter.CheckRequestJSONBodyFromFile("create_record-request.json")).
 		Build(t)
 
 	record := &Record{
@@ -79,16 +79,16 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 
 	client := mockBuilder().
 		Route("GET /v1/domains/",
-			clientmock.JSONEncode(DomainResponse{
+			stubrouter.JSONEncode(DomainResponse{
 				ID:   1,
 				Name: domainName,
 			})).
 		Route("GET /v1/domains/1/nameservers",
-			clientmock.JSONEncode(NameserverResponse{
+			stubrouter.JSONEncode(NameserverResponse{
 				Nameservers: []*Nameserver{{Name: ns1}, {Name: ns2}},
 			})).
 		Route("GET /v1/domains/1/nameservers/records",
-			clientmock.JSONEncode(RecordListingResponse{
+			stubrouter.JSONEncode(RecordListingResponse{
 				Embedded: EmbeddedRecordList{
 					Records: []*Record{
 						{
@@ -110,7 +110,7 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 				},
 			})).
 		Route("PUT /v1/domains/1/nameservers/records", nil,
-			clientmock.CheckRequestJSONBodyFromFile("delete_txt_record-request.json")).
+			stubrouter.CheckRequestJSONBodyFromFile("delete_txt_record-request.json")).
 		Build(t)
 
 	info := dns01.GetChallengeInfo(domainName, "abc")

@@ -4,13 +4,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := New(OAuthStaticAccessToken(server.Client(), "token"), server.URL)
 			if err != nil {
@@ -19,15 +19,15 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer token"))
 }
 
 func TestClient_CreateDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /1/domain/666/dns/record",
-			clientmock.RawStringResponse(`{"result":"success","data": "123"}`),
-			clientmock.CheckRequestJSONBodyFromFile("create_dns_record-request.json")).
+			stubrouter.RawStringResponse(`{"result":"success","data": "123"}`),
+			stubrouter.CheckRequestJSONBodyFromFile("create_dns_record-request.json")).
 		Build(t)
 
 	domain := &DNSDomain{
@@ -51,8 +51,8 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 func TestClient_GetDomainByName(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /1/product",
-			clientmock.ResponseFromFixture("get_domain_name.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("get_domain_name.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				WithRegexp("customer_name", `.+\.example\.com`).
 				With("service_name", "domain")).
 		Build(t)
@@ -67,7 +67,7 @@ func TestClient_GetDomainByName(t *testing.T) {
 func TestClient_DeleteDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /1/domain/123/dns/record/456",
-			clientmock.RawStringResponse(`{"result":"success"}`)).
+			stubrouter.RawStringResponse(`{"result":"success"}`)).
 		Build(t)
 
 	err := client.DeleteDNSRecord(t.Context(), 123, "456")

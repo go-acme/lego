@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -17,8 +17,8 @@ func mockContext(t *testing.T) context.Context {
 
 func TestClient_login(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /Session", clientmock.ResponseFromFixture("login.json"),
-			clientmock.CheckRequestJSONBody(`{"customer_name":"bob","user_name":"user","password":"secret"}`)).
+		Route("POST /Session", stubrouter.ResponseFromFixture("login.json"),
+			stubrouter.CheckRequestJSONBody(`{"customer_name":"bob","user_name":"user","password":"secret"}`)).
 		Build(t)
 
 	sess, err := client.login(t.Context())
@@ -30,8 +30,8 @@ func TestClient_login(t *testing.T) {
 }
 
 func TestClient_Logout(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient,
-		clientmock.CheckHeader().WithJSONHeaders().
+	client := stubrouter.NewBuilder[*Client](setupClient,
+		stubrouter.CheckHeader().WithJSONHeaders().
 			With(authTokenHeader, "tok"),
 	).
 		Route("DELETE /Session", nil).
@@ -43,8 +43,8 @@ func TestClient_Logout(t *testing.T) {
 
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /Session", clientmock.ResponseFromFixture("login.json"),
-			clientmock.CheckRequestJSONBody(`{"customer_name":"bob","user_name":"user","password":"secret"}`)).
+		Route("POST /Session", stubrouter.ResponseFromFixture("login.json"),
+			stubrouter.CheckRequestJSONBody(`{"customer_name":"bob","user_name":"user","password":"secret"}`)).
 		Build(t)
 
 	ctx, err := client.CreateAuthenticatedContext(t.Context())

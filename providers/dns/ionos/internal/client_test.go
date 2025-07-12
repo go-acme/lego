@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("secret")
 			if err != nil {
@@ -24,14 +24,14 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders(),
-		clientmock.CheckHeader().With(APIKeyHeader, "secret"))
+		stubrouter.CheckHeader().WithJSONHeaders(),
+		stubrouter.CheckHeader().With(APIKeyHeader, "secret"))
 }
 
 func TestClient_ListZones(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/zones",
-			clientmock.ResponseFromFixture("list_zones.json")).
+			stubrouter.ResponseFromFixture("list_zones.json")).
 		Build(t)
 
 	zones, err := client.ListZones(t.Context())
@@ -49,7 +49,7 @@ func TestClient_ListZones(t *testing.T) {
 func TestClient_ListZones_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/zones",
-			clientmock.ResponseFromFixture("list_zones_error.json").
+			stubrouter.ResponseFromFixture("list_zones_error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -66,7 +66,7 @@ func TestClient_ListZones_error(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/zones/azone01",
-			clientmock.ResponseFromFixture("get_records.json")).
+			stubrouter.ResponseFromFixture("get_records.json")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "azone01", nil)
@@ -85,7 +85,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_GetRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/zones/azone01",
-			clientmock.ResponseFromFixture("get_records_error.json").
+			stubrouter.ResponseFromFixture("get_records_error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -111,7 +111,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 func TestClient_RemoveRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v1/zones/azone01/records/arecord01",
-			clientmock.ResponseFromFixture("remove_record_error.json").
+			stubrouter.ResponseFromFixture("remove_record_error.json").
 				WithStatusCode(http.StatusInternalServerError)).
 		Build(t)
 
@@ -142,7 +142,7 @@ func TestClient_ReplaceRecords(t *testing.T) {
 func TestClient_ReplaceRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /v1/zones/azone01",
-			clientmock.ResponseFromFixture("replace_records_error.json").
+			stubrouter.ResponseFromFixture("replace_records_error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 

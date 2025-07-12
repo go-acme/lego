@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,10 +24,10 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_ListRecords(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
+	client := stubrouter.NewBuilder[*Client](setupClient).
 		Route("GET /dns_list",
-			clientmock.ResponseFromFixture("dns_list.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("dns_list.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("domain", "example.com").
 				With("nichdl", "user").
 				With("token", "secret")).
@@ -47,9 +47,9 @@ func TestClient_ListRecords(t *testing.T) {
 }
 
 func TestClient_ListRecords_error(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
+	client := stubrouter.NewBuilder[*Client](setupClient).
 		Route("GET /dns_list",
-			clientmock.ResponseFromFixture("dns_list_error.json").
+			stubrouter.ResponseFromFixture("dns_list_error.json").
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
 
@@ -58,10 +58,10 @@ func TestClient_ListRecords_error(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
+	client := stubrouter.NewBuilder[*Client](setupClient).
 		Route("GET /dns_delete",
-			clientmock.ResponseFromFixture("dns_delete.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("dns_delete.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("id", "74749").
 				With("domain", "example.com").
 				With("nichdl", "user").
@@ -75,9 +75,9 @@ func TestClient_DeleteRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
+	client := stubrouter.NewBuilder[*Client](setupClient).
 		Route("GET /dns_delete",
-			clientmock.ResponseFromFixture("dns_delete_error.json").
+			stubrouter.ResponseFromFixture("dns_delete_error.json").
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
 
@@ -88,10 +88,10 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
+	client := stubrouter.NewBuilder[*Client](setupClient).
 		Route("GET /dns_add",
-			clientmock.ResponseFromFixture("dns_add.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("dns_add.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("id", "74749").
 				With("domain", "example.com").
 				With("nichdl", "user").
@@ -105,9 +105,9 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
+	client := stubrouter.NewBuilder[*Client](setupClient).
 		Route("GET /dns_add",
-			clientmock.ResponseFromFixture("dns_add_error.json").
+			stubrouter.ResponseFromFixture("dns_add_error.json").
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
 

@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,8 +18,8 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_UpdateTXTRecord(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
-		Route("GET /", nil, clientmock.CheckQueryParameter().Strict().
+	client := stubrouter.NewBuilder[*Client](setupClient).
+		Route("GET /", nil, stubrouter.CheckQueryParameter().Strict().
 			With("rid", "123456").
 			With("content", "txt").
 			With("username", "user").
@@ -32,8 +32,8 @@ func TestClient_UpdateTXTRecord(t *testing.T) {
 }
 
 func TestClient_UpdateTXTRecord_error(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
-		Route("GET /", clientmock.Noop().WithStatusCode(http.StatusBadRequest)).
+	client := stubrouter.NewBuilder[*Client](setupClient).
+		Route("GET /", stubrouter.Noop().WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
 	err := client.UpdateTXTRecord(t.Context(), "123456", "txt")

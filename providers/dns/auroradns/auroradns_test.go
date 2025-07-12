@@ -6,15 +6,15 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/nrdcg/auroradns"
 	"github.com/stretchr/testify/require"
 )
 
 var envTest = tester.NewEnvTest(EnvAPIKey, EnvSecret)
 
-func mockBuilder() *clientmock.Builder[*DNSProvider] {
-	return clientmock.NewBuilder(
+func mockBuilder() *stubrouter.Builder[*DNSProvider] {
+	return stubrouter.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.APIKey = "asdf1234"
@@ -23,7 +23,7 @@ func mockBuilder() *clientmock.Builder[*DNSProvider] {
 
 			return NewDNSProviderConfig(config)
 		},
-		clientmock.CheckHeader().
+		stubrouter.CheckHeader().
 			WithContentType("application/json").
 			WithRegexp("Authorization", `AuroraDNSv1 .+`).
 			WithRegexp("X-Auroradns-Date", `[0-9TZ]+`))
@@ -144,13 +144,13 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /zones",
-			clientmock.JSONEncode([]auroradns.Zone{{
+			stubrouter.JSONEncode([]auroradns.Zone{{
 				ID:   "c56a4180-65aa-42ec-a945-5fd21dec0538",
 				Name: "example.com",
 			}}).
 				WithStatusCode(http.StatusCreated)).
 		Route("POST /zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records",
-			clientmock.JSONEncode(auroradns.Record{
+			stubrouter.JSONEncode(auroradns.Record{
 				ID:         "ec56a4180-65aa-42ec-a945-5fd21dec0538",
 				RecordType: "TXT",
 				Name:       "_acme-challenge",
@@ -166,13 +166,13 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /zones",
-			clientmock.JSONEncode([]auroradns.Zone{{
+			stubrouter.JSONEncode([]auroradns.Zone{{
 				ID:   "c56a4180-65aa-42ec-a945-5fd21dec0538",
 				Name: "example.com",
 			}}).
 				WithStatusCode(http.StatusCreated)).
 		Route("POST /zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records",
-			clientmock.JSONEncode(auroradns.Record{
+			stubrouter.JSONEncode(auroradns.Record{
 				ID:         "ec56a4180-65aa-42ec-a945-5fd21dec0538",
 				RecordType: "TXT",
 				Name:       "_acme-challenge",
@@ -180,7 +180,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			}).
 				WithStatusCode(http.StatusCreated)).
 		Route("DELETE /zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records/ec56a4180-65aa-42ec-a945-5fd21dec0538",
-			clientmock.RawStringResponse("{}").
+			stubrouter.RawStringResponse("{}").
 				WithStatusCode(http.StatusCreated)).
 		Build(t)
 

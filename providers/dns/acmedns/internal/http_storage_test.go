@@ -5,14 +5,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/nrdcg/goacmedns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*HTTPStorage] {
-	return clientmock.NewBuilder[*HTTPStorage](
+func mockBuilder() *stubrouter.Builder[*HTTPStorage] {
+	return stubrouter.NewBuilder[*HTTPStorage](
 		func(server *httptest.Server) (*HTTPStorage, error) {
 			storage, err := NewHTTPStorage(server.URL)
 			if err != nil {
@@ -23,12 +23,12 @@ func mockBuilder() *clientmock.Builder[*HTTPStorage] {
 
 			return storage, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders())
+		stubrouter.CheckHeader().WithJSONHeaders())
 }
 
 func TestHTTPStorage_Fetch(t *testing.T) {
 	storage := mockBuilder().
-		Route("GET /example.com", clientmock.ResponseFromFixture("fetch.json")).
+		Route("GET /example.com", stubrouter.ResponseFromFixture("fetch.json")).
 		Build(t)
 
 	account, err := storage.Fetch(t.Context(), "example.com")
@@ -48,7 +48,7 @@ func TestHTTPStorage_Fetch(t *testing.T) {
 func TestHTTPStorage_Fetch_error(t *testing.T) {
 	storage := mockBuilder().
 		Route("GET /example.com",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusInternalServerError)).
 		Build(t)
 
@@ -58,7 +58,7 @@ func TestHTTPStorage_Fetch_error(t *testing.T) {
 
 func TestHTTPStorage_FetchAll(t *testing.T) {
 	storage := mockBuilder().
-		Route("GET /", clientmock.ResponseFromFixture("fetch-all.json")).
+		Route("GET /", stubrouter.ResponseFromFixture("fetch-all.json")).
 		Build(t)
 
 	account, err := storage.FetchAll(t.Context())
@@ -87,7 +87,7 @@ func TestHTTPStorage_FetchAll(t *testing.T) {
 func TestHTTPStorage_FetchAll_error(t *testing.T) {
 	storage := mockBuilder().
 		Route("GET /",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusInternalServerError)).
 		Build(t)
 
@@ -98,7 +98,7 @@ func TestHTTPStorage_FetchAll_error(t *testing.T) {
 func TestHTTPStorage_Put(t *testing.T) {
 	storage := mockBuilder().
 		Route("POST /example.com", nil,
-			clientmock.CheckRequestJSONBodyFromFile("request-body.json")).
+			stubrouter.CheckRequestJSONBodyFromFile("request-body.json")).
 		Build(t)
 
 	account := goacmedns.Account{
@@ -116,7 +116,7 @@ func TestHTTPStorage_Put(t *testing.T) {
 func TestHTTPStorage_Put_error(t *testing.T) {
 	storage := mockBuilder().
 		Route("POST /example.com",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusInternalServerError)).
 		Build(t)
 
@@ -135,9 +135,9 @@ func TestHTTPStorage_Put_error(t *testing.T) {
 func TestHTTPStorage_Put_CNAME_created(t *testing.T) {
 	storage := mockBuilder().
 		Route("POST /example.com",
-			clientmock.Noop().
+			stubrouter.Noop().
 				WithStatusCode(http.StatusCreated),
-			clientmock.CheckRequestJSONBodyFromFile("request-body.json")).
+			stubrouter.CheckRequestJSONBodyFromFile("request-body.json")).
 		Build(t)
 
 	account := goacmedns.Account{

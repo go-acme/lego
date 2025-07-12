@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/lightsail"
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -56,7 +56,7 @@ func TestCredentialsFromEnv(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider := clientmock.NewBuilder(
+	provider := stubrouter.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			return &DNSProvider{
 				client: lightsail.NewFromConfig(aws.Config{

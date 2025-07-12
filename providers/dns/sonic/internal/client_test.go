@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -42,10 +42,10 @@ func TestClient_SetRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client := clientmock.NewBuilder[*Client](setupClient, clientmock.CheckHeader().WithJSONHeaders()).
+			client := stubrouter.NewBuilder[*Client](setupClient, stubrouter.CheckHeader().WithJSONHeaders()).
 				Route("PUT /host",
-					clientmock.RawStringResponse(test.response),
-					clientmock.CheckRequestJSONBody(`{"userid":"foo","apikey":"secret","hostname":"example.com","value":"txttxttxt","ttl":10,"type":"TXT"}`)).
+					stubrouter.RawStringResponse(test.response),
+					stubrouter.CheckRequestJSONBody(`{"userid":"foo","apikey":"secret","hostname":"example.com","value":"txttxttxt","ttl":10,"type":"TXT"}`)).
 				Build(t)
 
 			err := client.SetRecord(t.Context(), "example.com", "txttxttxt", 10)

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -123,24 +123,24 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		builder       *clientmock.Builder[*DNSProvider]
+		builder       *stubrouter.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
 			desc: "Success",
 			builder: mockBuilder().
 				Route("GET /domains/example.com",
-					clientmock.ResponseFromFixture("token.json"),
-					clientmock.CheckQueryParameter().Strict().
+					stubrouter.ResponseFromFixture("token.json"),
+					stubrouter.CheckQueryParameter().Strict().
 						With("show_dns_records", "true")).
 				Route("POST /domains/example.com/update",
-					clientmock.ResponseFromFixture("token.json")),
+					stubrouter.ResponseFromFixture("token.json")),
 		},
 		{
 			desc: "FailToFindZone",
 			builder: mockBuilder().
 				Route("GET /domains/example.com",
-					clientmock.ResponseFromFixture("error_failToFindZone.json").
+					stubrouter.ResponseFromFixture("error_failToFindZone.json").
 						WithStatusCode(http.StatusUnauthorized)),
 			expectedError: `versio: [status code: 401] 401: ObjectDoesNotExist|Domain not found`,
 		},
@@ -148,11 +148,11 @@ func TestDNSProvider_Present(t *testing.T) {
 			desc: "FailToCreateTXT",
 			builder: mockBuilder().
 				Route("GET /domains/example.com",
-					clientmock.ResponseFromFixture("token.json"),
-					clientmock.CheckQueryParameter().Strict().
+					stubrouter.ResponseFromFixture("token.json"),
+					stubrouter.CheckQueryParameter().Strict().
 						With("show_dns_records", "true")).
 				Route("POST /domains/example.com/update",
-					clientmock.ResponseFromFixture("error_failToCreateTXT.json").
+					stubrouter.ResponseFromFixture("error_failToCreateTXT.json").
 						WithStatusCode(http.StatusBadRequest)),
 			expectedError: `versio: [status code: 400] 400: ProcessError|DNS record invalid type _acme-challenge.example.eu. TST`,
 		},
@@ -178,24 +178,24 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		builder       *clientmock.Builder[*DNSProvider]
+		builder       *stubrouter.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
 			desc: "Success",
 			builder: mockBuilder().
 				Route("GET /domains/example.com",
-					clientmock.ResponseFromFixture("token.json"),
-					clientmock.CheckQueryParameter().Strict().
+					stubrouter.ResponseFromFixture("token.json"),
+					stubrouter.CheckQueryParameter().Strict().
 						With("show_dns_records", "true")).
 				Route("POST /domains/example.com/update",
-					clientmock.ResponseFromFixture("token.json")),
+					stubrouter.ResponseFromFixture("token.json")),
 		},
 		{
 			desc: "FailToFindZone",
 			builder: mockBuilder().
 				Route("GET /domains/example.com",
-					clientmock.ResponseFromFixture("error_failToFindZone.json").
+					stubrouter.ResponseFromFixture("error_failToFindZone.json").
 						WithStatusCode(http.StatusUnauthorized)),
 			expectedError: `versio: [status code: 401] 401: ObjectDoesNotExist|Domain not found`,
 		},
@@ -244,8 +244,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *clientmock.Builder[*DNSProvider] {
-	return clientmock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+func mockBuilder() *stubrouter.Builder[*DNSProvider] {
+	return stubrouter.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 		envTest.Apply(map[string]string{
 			EnvUsername: "me@example.com",
 			EnvPassword: "secret",

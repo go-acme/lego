@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 			client.HTTPClient = server.Client()
@@ -20,15 +20,15 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithBasicAuth("user", "secret"))
 }
 
 func TestClient_GetDomain(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains/example.com",
-			clientmock.ResponseFromFixture("get-domain.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("get-domain.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("show_dns_records", "true")).
 		Build(t)
 
@@ -56,7 +56,7 @@ func TestClient_GetDomain(t *testing.T) {
 func TestClient_GetDomain_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains/example.com",
-			clientmock.ResponseFromFixture("get-domain-error.json").
+			stubrouter.ResponseFromFixture("get-domain-error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -67,8 +67,8 @@ func TestClient_GetDomain_error(t *testing.T) {
 func TestClient_UpdateDomain(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/update",
-			clientmock.ResponseFromFixture("update-domain.json"),
-			clientmock.CheckRequestJSONBodyFromFile("update-domain-request.json")).
+			stubrouter.ResponseFromFixture("update-domain.json"),
+			stubrouter.CheckRequestJSONBodyFromFile("update-domain-request.json")).
 		Build(t)
 
 	msg := &DomainInfo{DNSRecords: []Record{
@@ -110,7 +110,7 @@ func TestClient_UpdateDomain(t *testing.T) {
 func TestClient_UpdateDomain_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/update",
-			clientmock.ResponseFromFixture("update-domain-error.json").
+			stubrouter.ResponseFromFixture("update-domain-error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 

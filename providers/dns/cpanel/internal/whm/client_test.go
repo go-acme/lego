@@ -4,14 +4,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/shared"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(server.URL, "user", "secret")
 			if err != nil {
@@ -22,15 +22,15 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("whm user:secret"))
 }
 
 func TestClient_FetchZoneInformation(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /json-api/parse_dns_zone",
-			clientmock.ResponseFromFixture("zone-info.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("zone-info.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("api.version", "1").
 				With("zone", "example.com")).
 		Build(t)
@@ -53,7 +53,7 @@ func TestClient_FetchZoneInformation(t *testing.T) {
 func TestClient_FetchZoneInformation_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /json-api/parse_dns_zone",
-			clientmock.ResponseFromFixture("zone-info_error.json")).
+			stubrouter.ResponseFromFixture("zone-info_error.json")).
 		Build(t)
 
 	zoneInfo, err := client.FetchZoneInformation(t.Context(), "example.com")
@@ -65,8 +65,8 @@ func TestClient_FetchZoneInformation_error(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /json-api/mass_edit_dns_zone",
-			clientmock.ResponseFromFixture("update-zone.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("update-zone.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("add", `{"dname":"example","ttl":14400,"record_type":"TXT","data":["string1","string2"]}`).
 				With("api.version", "1").
 				With("serial", "123456").
@@ -91,7 +91,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /json-api/mass_edit_dns_zone",
-			clientmock.ResponseFromFixture("update-zone_error.json")).
+			stubrouter.ResponseFromFixture("update-zone_error.json")).
 		Build(t)
 
 	record := shared.Record{
@@ -110,8 +110,8 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_EditRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /json-api/mass_edit_dns_zone",
-			clientmock.ResponseFromFixture("update-zone.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("update-zone.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("edit", `{"dname":"example","ttl":14400,"record_type":"TXT","data":["string1","string2"],"line_index":9}`).
 				With("api.version", "1").
 				With("serial", "123456").
@@ -137,7 +137,7 @@ func TestClient_EditRecord(t *testing.T) {
 func TestClient_EditRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /json-api/mass_edit_dns_zone",
-			clientmock.ResponseFromFixture("update-zone_error.json")).
+			stubrouter.ResponseFromFixture("update-zone_error.json")).
 		Build(t)
 
 	record := shared.Record{
@@ -157,8 +157,8 @@ func TestClient_EditRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /json-api/mass_edit_dns_zone",
-			clientmock.ResponseFromFixture("update-zone.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("update-zone.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("remove", "0").
 				With("api.version", "1").
 				With("serial", "123456").
@@ -176,7 +176,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /json-api/mass_edit_dns_zone",
-			clientmock.ResponseFromFixture("update-zone_error.json")).
+			stubrouter.ResponseFromFixture("update-zone_error.json")).
 		Build(t)
 
 	zoneSerial, err := client.DeleteRecord(t.Context(), 123456, "example.com", 0)

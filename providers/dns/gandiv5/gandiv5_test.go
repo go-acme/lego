@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -91,7 +91,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 // TestDNSProvider runs Present and CleanUp against a fake Gandi RPC
 // Server, whose responses are predetermined for particular requests.
 func TestDNSProvider(t *testing.T) {
-	provider := clientmock.NewBuilder(
+	provider := stubrouter.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.PersonalAccessToken = "123412341234123412341234"
@@ -99,14 +99,14 @@ func TestDNSProvider(t *testing.T) {
 
 			return NewDNSProviderConfig(config)
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer 123412341234123412341234"),
 	).
 		Route("GET /domains/example.com/records/_acme-challenge.abc.def/TXT",
-			clientmock.RawStringResponse(`{"rrset_ttl":300,"rrset_values":[],"rrset_name":"_acme-challenge.abc.def","rrset_type":"TXT"}`)).
+			stubrouter.RawStringResponse(`{"rrset_ttl":300,"rrset_values":[],"rrset_name":"_acme-challenge.abc.def","rrset_type":"TXT"}`)).
 		Route("PUT /domains/example.com/records/_acme-challenge.abc.def/TXT",
-			clientmock.RawStringResponse(`{"message": "Zone Record Created"}`),
-			clientmock.CheckRequestJSONBody(`{"rrset_ttl":300,"rrset_values":["ezRpBPY8wH8djMLYjX2uCKPwiKDkFZ1SFMJ6ZXGlHrQ"]}`)).
+			stubrouter.RawStringResponse(`{"message": "Zone Record Created"}`),
+			stubrouter.CheckRequestJSONBody(`{"rrset_ttl":300,"rrset_values":["ezRpBPY8wH8djMLYjX2uCKPwiKDkFZ1SFMJ6ZXGlHrQ"]}`)).
 		Route("DELETE /domains/example.com/records/_acme-challenge.abc.def/TXT", nil).
 		Build(t)
 

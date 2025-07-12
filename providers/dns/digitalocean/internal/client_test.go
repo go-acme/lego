@@ -6,29 +6,29 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(OAuthStaticAccessToken(server.Client(), "secret"))
 			client.BaseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer secret"))
 }
 
 func TestClient_AddTxtRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /v2/domains/example.com/records",
-			clientmock.ResponseFromFixture("domains-records_POST.json").
+			stubrouter.ResponseFromFixture("domains-records_POST.json").
 				WithStatusCode(http.StatusCreated),
-			clientmock.CheckRequestJSONBody(`{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`)).
+			stubrouter.CheckRequestJSONBody(`{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`)).
 		Build(t)
 
 	record := Record{
@@ -55,7 +55,7 @@ func TestClient_AddTxtRecord(t *testing.T) {
 func TestClient_RemoveTxtRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v2/domains/example.com/records/1234567",
-			clientmock.ResponseFromFixture("domains-records_POST.json").
+			stubrouter.ResponseFromFixture("domains-records_POST.json").
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 

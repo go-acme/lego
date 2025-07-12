@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,9 +18,9 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_AddTXTRecord(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
-		Route("GET /", clientmock.RawStringResponse("OK"),
-			clientmock.CheckQueryParameter().Strict().
+	client := stubrouter.NewBuilder[*Client](setupClient).
+		Route("GET /", stubrouter.RawStringResponse("OK"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("clear", "false").
 				With("domains", "com").
 				With("token", "secret").
@@ -32,9 +32,9 @@ func TestClient_AddTXTRecord(t *testing.T) {
 }
 
 func TestClient_RemoveTXTRecord(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
-		Route("GET /", clientmock.RawStringResponse("OK"),
-			clientmock.CheckQueryParameter().Strict().
+	client := stubrouter.NewBuilder[*Client](setupClient).
+		Route("GET /", stubrouter.RawStringResponse("OK"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("clear", "true").
 				With("domains", "com").
 				With("token", "secret").

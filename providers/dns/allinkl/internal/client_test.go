@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,9 +18,9 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_GetDNSSettings(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
-		Route("POST /", clientmock.ResponseFromFixture("get_dns_settings.xml"),
-			clientmock.CheckRequestBodyFromFile("get_dns_settings-request.xml").
+	client := stubrouter.NewBuilder[*Client](setupClient).
+		Route("POST /", stubrouter.ResponseFromFixture("get_dns_settings.xml"),
+			stubrouter.CheckRequestBodyFromFile("get_dns_settings-request.xml").
 				IgnoreWhitespace()).
 		Build(t)
 
@@ -97,9 +97,9 @@ func TestClient_GetDNSSettings(t *testing.T) {
 }
 
 func TestClient_AddDNSSettings(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
-		Route("POST /", clientmock.ResponseFromFixture("add_dns_settings.xml"),
-			clientmock.CheckRequestBodyFromFile("add_dns_settings-request.xml").
+	client := stubrouter.NewBuilder[*Client](setupClient).
+		Route("POST /", stubrouter.ResponseFromFixture("add_dns_settings.xml"),
+			stubrouter.CheckRequestBodyFromFile("add_dns_settings-request.xml").
 				IgnoreWhitespace()).
 		Build(t)
 
@@ -117,9 +117,9 @@ func TestClient_AddDNSSettings(t *testing.T) {
 }
 
 func TestClient_DeleteDNSSettings(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
-		Route("POST /", clientmock.ResponseFromFixture("delete_dns_settings.xml"),
-			clientmock.CheckRequestBodyFromFile("delete_dns_settings-request.xml").
+	client := stubrouter.NewBuilder[*Client](setupClient).
+		Route("POST /", stubrouter.ResponseFromFixture("delete_dns_settings.xml"),
+			stubrouter.CheckRequestBodyFromFile("delete_dns_settings-request.xml").
 				IgnoreWhitespace()).
 		Build(t)
 

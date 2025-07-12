@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,8 +18,8 @@ func mockContext(t *testing.T) context.Context {
 
 func TestClient_Login(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /", clientmock.ResponseFromFixture("login.json"),
-			clientmock.CheckRequestJSONBodyFromFile("login-request.json")).
+		Route("POST /", stubrouter.ResponseFromFixture("login.json"),
+			stubrouter.CheckRequestJSONBodyFromFile("login-request.json")).
 		Build(t)
 
 	sessionID, err := client.login(t.Context())
@@ -36,17 +36,17 @@ func TestClient_Login_errors(t *testing.T) {
 	}{
 		{
 			desc:     "HTTP error",
-			handler:  clientmock.Noop().WithStatusCode(http.StatusInternalServerError),
+			handler:  stubrouter.Noop().WithStatusCode(http.StatusInternalServerError),
 			expected: `loging error: unexpected status code: [status code: 500] body: `,
 		},
 		{
 			desc:     "API error",
-			handler:  clientmock.ResponseFromFixture("login_error.json"),
+			handler:  stubrouter.ResponseFromFixture("login_error.json"),
 			expected: `loging error: an error occurred during the action login: [Status=error, StatusCode=4013, ShortMessage=Validation Error., LongMessage=Message is empty.]`,
 		},
 		{
 			desc:     "responsedata marshaling error",
-			handler:  clientmock.ResponseFromFixture("login_error_unmarshal.json"),
+			handler:  stubrouter.ResponseFromFixture("login_error_unmarshal.json"),
 			expected: `loging error: unable to unmarshal response: [status code: 200] body: "" error: json: cannot unmarshal string into Go value of type internal.LoginResponse`,
 		},
 	}
@@ -68,8 +68,8 @@ func TestClient_Login_errors(t *testing.T) {
 
 func TestClient_Logout(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /", clientmock.ResponseFromFixture("logout.json"),
-			clientmock.CheckRequestJSONBodyFromFile("logout-request.json")).
+		Route("POST /", stubrouter.ResponseFromFixture("logout.json"),
+			stubrouter.CheckRequestJSONBodyFromFile("logout-request.json")).
 		Build(t)
 
 	err := client.Logout(mockContext(t))
@@ -84,11 +84,11 @@ func TestClient_Logout_errors(t *testing.T) {
 	}{
 		{
 			desc:    "HTTP error",
-			handler: clientmock.Noop().WithStatusCode(http.StatusInternalServerError),
+			handler: stubrouter.Noop().WithStatusCode(http.StatusInternalServerError),
 		},
 		{
 			desc:    "API error",
-			handler: clientmock.ResponseFromFixture("login_error.json"),
+			handler: stubrouter.ResponseFromFixture("login_error.json"),
 		},
 	}
 

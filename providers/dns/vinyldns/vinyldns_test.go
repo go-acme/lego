@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -156,8 +156,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func mockBuilder() *clientmock.Builder[*DNSProvider] {
-	return clientmock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+func mockBuilder() *stubrouter.Builder[*DNSProvider] {
+	return stubrouter.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 		config := NewDefaultConfig()
 		config.AccessKey = "foo"
 		config.SecretKey = "bar"
@@ -171,44 +171,44 @@ func TestDNSProvider_Present(t *testing.T) {
 	testCases := []struct {
 		desc    string
 		keyAuth string
-		builder *clientmock.Builder[*DNSProvider]
+		builder *stubrouter.Builder[*DNSProvider]
 	}{
 		{
 			desc:    "new record",
 			keyAuth: "123456d==",
 			builder: mockBuilder().
 				Route("GET /zones/name/"+targetRootDomain+".",
-					clientmock.ResponseFromFixture("zoneByName.json")).
+					stubrouter.ResponseFromFixture("zoneByName.json")).
 				Route("GET /zones/"+zoneID+"/recordsets",
-					clientmock.ResponseFromFixture("recordSetsListAll-empty.json")).
+					stubrouter.ResponseFromFixture("recordSetsListAll-empty.json")).
 				Route("POST /zones/"+zoneID+"/recordsets",
-					clientmock.ResponseFromFixture("recordSetUpdate-create.json").
+					stubrouter.ResponseFromFixture("recordSetUpdate-create.json").
 						WithStatusCode(http.StatusAccepted)).
 				Route("GET /zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID,
-					clientmock.ResponseFromFixture("recordSetChange-create.json")),
+					stubrouter.ResponseFromFixture("recordSetChange-create.json")),
 		},
 		{
 			desc:    "existing record",
 			keyAuth: "123456d==",
 			builder: mockBuilder().
 				Route("GET /zones/name/"+targetRootDomain+".",
-					clientmock.ResponseFromFixture("zoneByName.json")).
+					stubrouter.ResponseFromFixture("zoneByName.json")).
 				Route("GET /zones/"+zoneID+"/recordsets",
-					clientmock.ResponseFromFixture("recordSetsListAll.json")),
+					stubrouter.ResponseFromFixture("recordSetsListAll.json")),
 		},
 		{
 			desc:    "duplicate key",
 			keyAuth: "abc123!!",
 			builder: mockBuilder().
 				Route("GET /zones/name/"+targetRootDomain+".",
-					clientmock.ResponseFromFixture("zoneByName.json")).
+					stubrouter.ResponseFromFixture("zoneByName.json")).
 				Route("GET /zones/"+zoneID+"/recordsets",
-					clientmock.ResponseFromFixture("recordSetsListAll.json")).
+					stubrouter.ResponseFromFixture("recordSetsListAll.json")).
 				Route("PUT /zones/"+zoneID+"/recordsets/"+recordID,
-					clientmock.ResponseFromFixture("recordSetUpdate-create.json").
+					stubrouter.ResponseFromFixture("recordSetUpdate-create.json").
 						WithStatusCode(http.StatusAccepted)).
 				Route("GET /zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID,
-					clientmock.ResponseFromFixture("recordSetChange-create.json")),
+					stubrouter.ResponseFromFixture("recordSetChange-create.json")),
 		},
 	}
 
@@ -225,14 +225,14 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /zones/name/"+targetRootDomain+".",
-			clientmock.ResponseFromFixture("zoneByName.json")).
+			stubrouter.ResponseFromFixture("zoneByName.json")).
 		Route("GET /zones/"+zoneID+"/recordsets",
-			clientmock.ResponseFromFixture("recordSetsListAll.json")).
+			stubrouter.ResponseFromFixture("recordSetsListAll.json")).
 		Route("DELETE /zones/"+zoneID+"/recordsets/"+recordID,
-			clientmock.ResponseFromFixture("recordSetDelete.json").
+			stubrouter.ResponseFromFixture("recordSetDelete.json").
 				WithStatusCode(http.StatusAccepted)).
 		Route("GET /zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID,
-			clientmock.ResponseFromFixture("recordSetChange-delete.json")).
+			stubrouter.ResponseFromFixture("recordSetChange-delete.json")).
 		Build(t)
 
 	err := provider.CleanUp(targetDomain, "123456d==", "123456d==")

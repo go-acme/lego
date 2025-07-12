@@ -4,12 +4,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("test", "secret")
 			client.BaseURL = server.URL
@@ -17,15 +17,15 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().
+		stubrouter.CheckHeader().
 			WithContentTypeFromURLEncoded())
 }
 
 func TestClient_Send(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			clientmock.RawStringResponse("OK: 1 inserted, 0 deleted"),
-			clientmock.CheckForm().Strict().
+			stubrouter.RawStringResponse("OK: 1 inserted, 0 deleted"),
+			stubrouter.CheckForm().Strict().
 				With("zone", "example.com").
 				With("label", "_acme-challenge").
 				With("type", "TXT").
@@ -46,8 +46,8 @@ func TestClient_Send(t *testing.T) {
 func TestClient_Send_empty(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			clientmock.RawStringResponse("OK: 1 inserted, 0 deleted"),
-			clientmock.CheckForm().Strict().
+			stubrouter.RawStringResponse("OK: 1 inserted, 0 deleted"),
+			stubrouter.CheckForm().Strict().
 				With("zone", "example.com").
 				With("label", "_acme-challenge").
 				With("type", "TXT").

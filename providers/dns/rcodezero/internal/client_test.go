@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,9 +20,9 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_UpdateRecords_error(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient, clientmock.CheckHeader().WithJSONHeaders()).
+	client := stubrouter.NewBuilder[*Client](setupClient, stubrouter.CheckHeader().WithJSONHeaders()).
 		Route("PATCH /v1/acme/zones/example.org/rrsets",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnprocessableEntity)).
 		Build(t)
 
@@ -39,9 +39,9 @@ func TestClient_UpdateRecords_error(t *testing.T) {
 }
 
 func TestClient_UpdateRecords(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient, clientmock.CheckHeader().WithJSONHeaders()).
+	client := stubrouter.NewBuilder[*Client](setupClient, stubrouter.CheckHeader().WithJSONHeaders()).
 		Route("PATCH /v1/acme/zones/example.org/rrsets",
-			clientmock.ResponseFromFixture("rrsets-response.json")).
+			stubrouter.ResponseFromFixture("rrsets-response.json")).
 		Build(t)
 
 	rrSet := []UpdateRRSet{{

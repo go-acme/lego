@@ -5,32 +5,32 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(OAuthStaticAccessToken(server.Client(), "secret"), "123")
 			client.baseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer secret"))
 }
 
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /v2/domains/example.com/records",
-			clientmock.RawStringResponse(`{
+			stubrouter.RawStringResponse(`{
 			"uid": "9e2eab60-0ba5-4dff-b481-2999c9764b84",
 			"updated": 1
 		}`),
-			clientmock.CheckRequestJSONBody(`{"name":"_acme-challenge.example.com.","type":"TXT","value":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":60}`),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.CheckRequestJSONBody(`{"name":"_acme-challenge.example.com.","type":"TXT","value":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":60}`),
+			stubrouter.CheckQueryParameter().Strict().
 				With("teamId", "123")).
 		Build(t)
 
@@ -55,7 +55,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v2/domains/example.com/records/1234567", nil,
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.CheckQueryParameter().Strict().
 				With("teamId", "123")).
 		Build(t)
 

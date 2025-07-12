@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("secret")
 			if err != nil {
@@ -24,15 +24,15 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			With(tokenHeader, "secret"))
 }
 
 func TestClient_UpdateDNSZone(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /dnszone/example.com",
-			clientmock.ResponseFromFixture("update-dns-zone.json"),
-			clientmock.CheckRequestJSONBody(`{"add":[{"name":"@","type":"TXT","ttl":60,"content":"value"}]}`)).
+			stubrouter.ResponseFromFixture("update-dns-zone.json"),
+			stubrouter.CheckRequestJSONBody(`{"add":[{"name":"@","type":"TXT","ttl":60,"content":"value"}]}`)).
 		Build(t)
 
 	updateRequest := DNSZoneUpdateRequest{
@@ -78,7 +78,7 @@ func TestClient_UpdateDNSZone_error(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := mockBuilder().
 				Route("PATCH /dnszone/example.com",
-					clientmock.ResponseFromFixture(test.filename).
+					stubrouter.ResponseFromFixture(test.filename).
 						WithStatusCode(http.StatusUnprocessableEntity)).
 				Build(t)
 

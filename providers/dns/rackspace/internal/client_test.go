@@ -4,13 +4,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(server.URL, "secret")
 			if err != nil {
@@ -21,15 +21,15 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			With(AuthToken, "secret"))
 }
 
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/1234/records",
-			clientmock.ResponseFromFixture("add-records.json"),
-			clientmock.CheckRequestJSONBody(`{"records":[{"name":"exmaple.com","type":"TXT","data":"value1","ttl":120,"id":"abc"}]}`)).
+			stubrouter.ResponseFromFixture("add-records.json"),
+			stubrouter.CheckRequestJSONBody(`{"records":[{"name":"exmaple.com","type":"TXT","data":"value1","ttl":120,"id":"abc"}]}`)).
 		Build(t)
 
 	record := Record{
@@ -55,7 +55,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 func TestClient_searchRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /domains/1234/records", clientmock.ResponseFromFixture("search-records.json")).
+		Route("GET /domains/1234/records", stubrouter.ResponseFromFixture("search-records.json")).
 		Build(t)
 
 	records, err := client.searchRecords(t.Context(), "1234", "2725233", "A")
@@ -78,7 +78,7 @@ func TestClient_searchRecords(t *testing.T) {
 
 func TestClient_listDomainsByName(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /domains", clientmock.ResponseFromFixture("list-domains-by-name.json")).
+		Route("GET /domains", stubrouter.ResponseFromFixture("list-domains-by-name.json")).
 		Build(t)
 
 	domains, err := client.listDomainsByName(t.Context(), "1234")

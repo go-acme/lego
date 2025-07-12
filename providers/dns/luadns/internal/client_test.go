@@ -5,13 +5,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder(apiToken string) *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder(apiToken string) *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("me", apiToken)
 			client.baseURL, _ = url.Parse(server.URL)
@@ -19,13 +19,13 @@ func mockBuilder(apiToken string) *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithBasicAuth("me", apiToken))
 }
 
 func TestClient_ListZones(t *testing.T) {
 	client := mockBuilder("secretA").
-		Route("GET /v1/zones", clientmock.ResponseFromFixture("list_zones.json")).
+		Route("GET /v1/zones", stubrouter.ResponseFromFixture("list_zones.json")).
 		Build(t)
 
 	zones, err := client.ListZones(t.Context())
@@ -62,8 +62,8 @@ func TestClient_ListZones(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder("secretB").
 		Route("POST /v1/zones/1/records",
-			clientmock.ResponseFromFixture("create_record.json"),
-			clientmock.CheckRequestJSONBody(`{"name":"example.com.","type":"MX","content":"10 mail.example.com.","ttl":300}`)).
+			stubrouter.ResponseFromFixture("create_record.json"),
+			stubrouter.CheckRequestJSONBody(`{"name":"example.com.","type":"MX","content":"10 mail.example.com.","ttl":300}`)).
 		Build(t)
 
 	zone := DNSZone{ID: 1}
@@ -93,8 +93,8 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder("secretC").
 		Route("DELETE /v1/zones/1/records/2",
-			clientmock.ResponseFromFixture("delete_record.json"),
-			clientmock.CheckRequestJSONBody(`{"id":2,"name":"example.com.","type":"MX","content":"10 mail.example.com.","ttl":300,"zone_id":1}`)).
+			stubrouter.ResponseFromFixture("delete_record.json"),
+			stubrouter.CheckRequestJSONBody(`{"id":2,"name":"example.com.","type":"MX","content":"10 mail.example.com.","ttl":300,"zone_id":1}`)).
 		Build(t)
 
 	record := &DNSRecord{

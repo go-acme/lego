@@ -9,7 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/liquidweb/liquidweb-go/network"
 	"github.com/liquidweb/liquidweb-go/types"
 )
@@ -23,7 +23,7 @@ func mockProvider(t *testing.T, initRecs ...network.DNSRecord) *DNSProvider {
 		recs[int(rec.ID)] = rec
 	}
 
-	return clientmock.NewBuilder(
+	return stubrouter.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.Username = "blars"
@@ -32,7 +32,7 @@ func mockProvider(t *testing.T, initRecs ...network.DNSRecord) *DNSProvider {
 
 			return NewDNSProviderConfig(config)
 		},
-		clientmock.CheckHeader().
+		stubrouter.CheckHeader().
 			WithBasicAuth("blars", "tacoman"),
 	).
 		Route("/v1/Network/DNS/Record/delete", mockAPIDelete(recs)).

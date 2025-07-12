@@ -6,20 +6,20 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder(password string) *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder(password string) *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("apiuser", password)
 			client.BaseURL = server.URL + "/"
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithContentType("text/xml"),
+		stubrouter.CheckHeader().WithContentType("text/xml"),
 	)
 }
 
@@ -69,8 +69,8 @@ func TestClient_AddZoneRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := mockBuilder(test.password).
 				Route("POST /",
-					clientmock.RawStringResponse(test.response),
-					clientmock.CheckRequestBody(test.request)).
+					stubrouter.RawStringResponse(test.response),
+					stubrouter.CheckRequestBody(test.request)).
 				Build(t)
 
 			err := client.AddTXTRecord(t.Context(), test.domain, exampleSubDomain, 123, "TXTrecord")
@@ -130,8 +130,8 @@ func TestClient_RemoveSubdomain(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := mockBuilder(test.password).
 				Route("POST /",
-					clientmock.RawStringResponse(test.response),
-					clientmock.CheckRequestBody(test.request)).
+					stubrouter.RawStringResponse(test.response),
+					stubrouter.CheckRequestBody(test.request)).
 				Build(t)
 
 			err := client.RemoveSubdomain(t.Context(), test.domain, exampleSubDomain)
@@ -191,8 +191,8 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := mockBuilder(test.password).
 				Route("POST /",
-					clientmock.RawStringResponse(test.response),
-					clientmock.CheckRequestBody(test.request)).
+					stubrouter.RawStringResponse(test.response),
+					stubrouter.CheckRequestBody(test.request)).
 				Build(t)
 
 			err := client.RemoveTXTRecord(t.Context(), test.domain, exampleSubDomain, 12345678)
@@ -209,8 +209,8 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 func TestClient_GetZoneRecord(t *testing.T) {
 	client := mockBuilder("goodpassword").
 		Route("POST /",
-			clientmock.RawStringResponse(getZoneRecordsResponse),
-			clientmock.CheckRequestBody(getZoneRecords)).
+			stubrouter.RawStringResponse(getZoneRecordsResponse),
+			stubrouter.CheckRequestBody(getZoneRecords)).
 		Build(t)
 
 	recordObjs, err := client.GetTXTRecords(t.Context(), exampleDomain, exampleSubDomain)
@@ -231,7 +231,7 @@ func TestClient_GetZoneRecord(t *testing.T) {
 func TestClient_rpcCall_404(t *testing.T) {
 	client := mockBuilder("apipassword").
 		Route("POST /",
-			clientmock.RawStringResponse("<?xml version='1.0' encoding='UTF-8'?>").
+			stubrouter.RawStringResponse("<?xml version='1.0' encoding='UTF-8'?>").
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
 
@@ -249,7 +249,7 @@ func TestClient_rpcCall_404(t *testing.T) {
 func TestClient_rpcCall_RPCError(t *testing.T) {
 	client := mockBuilder("apipassword").
 		Route("POST /",
-			clientmock.RawStringResponse(responseRPCError)).
+			stubrouter.RawStringResponse(responseRPCError)).
 		Build(t)
 
 	call := &methodCall{

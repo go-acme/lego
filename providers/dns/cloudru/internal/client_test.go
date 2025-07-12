@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 			client.HTTPClient = server.Client()
@@ -26,14 +26,14 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer xxx"))
 }
 
 func TestClient_GetZones(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones",
-			clientmock.ResponseFromFixture("zones.json")).
+			stubrouter.ResponseFromFixture("zones.json")).
 		Build(t)
 
 	ctx := mockContext(t)
@@ -58,7 +58,7 @@ func TestClient_GetZones(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones/zzz/records",
-			clientmock.ResponseFromFixture("records.json")).
+			stubrouter.ResponseFromFixture("records.json")).
 		Build(t)
 
 	ctx := mockContext(t)
@@ -105,8 +105,8 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/zzz/records",
-			clientmock.ResponseFromFixture("record.json"),
-			clientmock.CheckRequestJSONBody(`{"name":"www.example.com.","type":"TXT","values":["text"],"ttl":"3600"}`)).
+			stubrouter.ResponseFromFixture("record.json"),
+			stubrouter.CheckRequestJSONBody(`{"name":"www.example.com.","type":"TXT","values":["text"],"ttl":"3600"}`)).
 		Build(t)
 
 	ctx := mockContext(t)
@@ -137,7 +137,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/zzz/records/example.com/TXT",
-			clientmock.ResponseFromFixture("record.json")).
+			stubrouter.ResponseFromFixture("record.json")).
 		Build(t)
 
 	ctx := mockContext(t)

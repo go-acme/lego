@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 			client.HTTPClient = server.Client()
@@ -25,7 +25,7 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer "+fakeToken),
 	)
 }
@@ -33,8 +33,8 @@ func mockBuilder() *clientmock.Builder[*Client] {
 func TestClient_CreateTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/example.com/records/foo/TXT",
-			clientmock.ResponseFromFixture("post-zoneszonerecords.json"),
-			clientmock.CheckRequestJSONBody(`{"records":[{"host":"foo","ttl":120,"type":"TXT","data":"txt"}]}`)).
+			stubrouter.ResponseFromFixture("post-zoneszonerecords.json"),
+			stubrouter.CheckRequestJSONBody(`{"records":[{"host":"foo","ttl":120,"type":"TXT","data":"txt"}]}`)).
 		Build(t)
 
 	err := client.CreateTXTRecord(mockContext(t), "example.com", "foo", "txt", 120)
@@ -44,8 +44,8 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 func TestClient_RemoveTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/example.com/records/foo/TXT",
-			clientmock.ResponseFromFixture("delete-zoneszonerecords.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("delete-zoneszonerecords.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("data", "txt")).
 		Build(t)
 

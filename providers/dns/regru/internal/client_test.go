@@ -5,19 +5,19 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 			client.baseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
-		clientmock.CheckHeader().
+		stubrouter.CheckHeader().
 			WithContentTypeFromURLEncoded(),
 	)
 }
@@ -25,8 +25,8 @@ func mockBuilder() *clientmock.Builder[*Client] {
 func TestRemoveRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zone/remove_record",
-			clientmock.ResponseFromFixture("remove_record.json"),
-			clientmock.CheckForm().Strict().
+			stubrouter.ResponseFromFixture("remove_record.json"),
+			stubrouter.CheckForm().Strict().
 				With("input_data", `{"domains":[{"dname":"test.ru"}],"subdomain":"_acme-challenge","content":"txttxttxt","record_type":"TXT","output_content_type":"plain"}`).
 				With("username", "user").
 				With("password", "secret").
@@ -63,7 +63,7 @@ func TestRemoveRecord_errors(t *testing.T) {
 			t.Parallel()
 
 			client := mockBuilder().
-				Route("POST /zone/remove_record", clientmock.ResponseFromFixture(test.response)).
+				Route("POST /zone/remove_record", stubrouter.ResponseFromFixture(test.response)).
 				Build(t)
 
 			err := client.RemoveTxtRecord(t.Context(), test.domain, "_acme-challenge", "txttxttxt")
@@ -75,8 +75,8 @@ func TestRemoveRecord_errors(t *testing.T) {
 func TestAddTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zone/add_txt",
-			clientmock.ResponseFromFixture("add_txt_record.json"),
-			clientmock.CheckForm().Strict().
+			stubrouter.ResponseFromFixture("add_txt_record.json"),
+			stubrouter.CheckForm().Strict().
 				With("input_data", `{"domains":[{"dname":"test.ru"}],"subdomain":"_acme-challenge","text":"txttxttxt","output_content_type":"plain"}`).
 				With("username", "user").
 				With("password", "secret").
@@ -113,7 +113,7 @@ func TestAddTXTRecord_errors(t *testing.T) {
 			t.Parallel()
 
 			client := mockBuilder().
-				Route("POST /zone/add_txt", clientmock.ResponseFromFixture(test.response)).
+				Route("POST /zone/add_txt", stubrouter.ResponseFromFixture(test.response)).
 				Build(t)
 
 			err := client.AddTXTRecord(t.Context(), test.domain, "_acme-challenge", "txttxttxt")

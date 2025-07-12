@@ -3,14 +3,14 @@ package internal
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClient_CreateAuthenticationToken(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /auth/token", clientmock.ResponseFromFixture("auth.json")).
+		Route("POST /auth/token", stubrouter.ResponseFromFixture("auth.json")).
 		Build(t)
 
 	token, err := client.CreateAuthenticationToken(t.Context())

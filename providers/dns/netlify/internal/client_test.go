@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,12 +21,12 @@ func setupClient(token string) func(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient("tokenA"),
-		clientmock.CheckHeader().WithJSONHeaders().
+	client := stubrouter.NewBuilder[*Client](setupClient("tokenA"),
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer tokenA"),
 	).
 		Route("GET /dns_zones/zoneID/dns_records",
-			clientmock.ResponseFromFixture("get_records.json")).
+			stubrouter.ResponseFromFixture("get_records.json")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "zoneID")
@@ -41,14 +41,14 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_CreateRecord(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient("tokenB"),
-		clientmock.CheckHeader().
+	client := stubrouter.NewBuilder[*Client](setupClient("tokenB"),
+		stubrouter.CheckHeader().
 			WithAccept("application/json").
 			WithContentType("application/json; charset=utf-8").
 			WithAuthorization("Bearer tokenB"),
 	).
 		Route("POST /dns_zones/zoneID/dns_records",
-			clientmock.ResponseFromFixture("create_record.json").
+			stubrouter.ResponseFromFixture("create_record.json").
 				WithStatusCode(http.StatusCreated)).
 		Build(t)
 
@@ -74,12 +74,12 @@ func TestClient_CreateRecord(t *testing.T) {
 }
 
 func TestClient_RemoveRecord(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient("tokenC"),
-		clientmock.CheckHeader().WithJSONHeaders().
+	client := stubrouter.NewBuilder[*Client](setupClient("tokenC"),
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer tokenC"),
 	).
 		Route("DELETE /dns_zones/zoneID/dns_records/recordID",
-			clientmock.Noop().
+			stubrouter.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 

@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -19,8 +19,8 @@ func mockContext(t *testing.T) context.Context {
 	return context.WithValue(t.Context(), tokenKey, &Token{Token: fakeToken})
 }
 
-func mockBuilderIdentity() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilderIdentity() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 			client.HTTPClient = server.Client()
@@ -28,17 +28,17 @@ func mockBuilderIdentity() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().
+		stubrouter.CheckHeader().
 			WithBasicAuth("user", "secret"),
-		clientmock.CheckHeader().
+		stubrouter.CheckHeader().
 			WithContentTypeFromURLEncoded())
 }
 
 func TestClient_obtainToken(t *testing.T) {
 	client := mockBuilderIdentity().
 		Route("POST /",
-			clientmock.ResponseFromFixture("token.json"),
-			clientmock.CheckForm().Strict().
+			stubrouter.ResponseFromFixture("token.json"),
+			stubrouter.CheckForm().Strict().
 				With("grant_type", "client_credentials")).
 		Build(t)
 
@@ -55,8 +55,8 @@ func TestClient_obtainToken(t *testing.T) {
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
 	client := mockBuilderIdentity().
 		Route("POST /",
-			clientmock.ResponseFromFixture("token.json"),
-			clientmock.CheckForm().Strict().
+			stubrouter.ResponseFromFixture("token.json"),
+			stubrouter.CheckForm().Strict().
 				With("grant_type", "client_credentials")).
 		Build(t)
 

@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,8 +24,8 @@ const (
 	serverErrorUsername = "error"
 )
 
-func mockBuilder(auth AuthInfo) *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder(auth AuthInfo) *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(auth)
 			client.BaseURL = server.URL
@@ -33,7 +33,7 @@ func mockBuilder(auth AuthInfo) *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().
+		stubrouter.CheckHeader().
 			WithContentTypeFromURLEncoded())
 }
 

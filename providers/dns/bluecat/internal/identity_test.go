@@ -3,7 +3,7 @@ package internal
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -11,14 +11,14 @@ import (
 const fakeToken = "BAMAuthToken: dQfuRMTUxNjc3MjcyNDg1ODppcGFybXM="
 
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
+	client := stubrouter.NewBuilder[*Client](setupClient).
 		Route("GET /Services/REST/v1/login",
-			clientmock.RawStringResponse(fakeToken),
-			clientmock.CheckQueryParameter().
+			stubrouter.RawStringResponse(fakeToken),
+			stubrouter.CheckQueryParameter().
 				With("username", "user").
 				With("password", "secret")).
 		Route("DELETE /Services/REST/v1/delete", nil,
-			clientmock.CheckHeader().
+			stubrouter.CheckHeader().
 				WithAuthorization(fakeToken)).
 		Build(t)
 

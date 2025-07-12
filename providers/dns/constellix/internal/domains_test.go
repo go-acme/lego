@@ -4,26 +4,26 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(server.Client())
 			client.BaseURL = server.URL
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders(),
+		stubrouter.CheckHeader().WithJSONHeaders(),
 	)
 }
 
 func TestDomainService_GetAll(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /v1/domains", clientmock.ResponseFromFixture("domains-GetAll.json")).
+		Route("GET /v1/domains", stubrouter.ResponseFromFixture("domains-GetAll.json")).
 		Build(t)
 
 	data, err := client.Domains.GetAll(t.Context(), nil)
@@ -42,8 +42,8 @@ func TestDomainService_GetAll(t *testing.T) {
 func TestDomainService_Search(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/domains/search",
-			clientmock.ResponseFromFixture("domains-Search.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("domains-Search.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("exact", "lego.wtf")).
 		Build(t)
 

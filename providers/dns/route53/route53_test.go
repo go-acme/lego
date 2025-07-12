@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -143,7 +143,7 @@ func TestDNSProvider_Present(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
 
-	provider := clientmock.NewBuilder(
+	provider := stubrouter.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			cfg := aws.Config{
 				Credentials:      credentials.NewStaticCredentialsProvider("abc", "123", " "),
@@ -159,20 +159,20 @@ func TestDNSProvider_Present(t *testing.T) {
 		},
 	).
 		Route("GET /2013-04-01/hostedzonesbyname",
-			clientmock.ResponseFromFixture("listHostedZonesByNameResponse.xml").
+			stubrouter.ResponseFromFixture("listHostedZonesByNameResponse.xml").
 				WithHeader("Content-Type", "application/xml"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.CheckQueryParameter().Strict().
 				With("dnsname", "example.com")).
 		Route("POST /2013-04-01/hostedzone/ABCDEFG/rrset",
-			clientmock.ResponseFromFixture("changeResourceRecordSetsResponse.xml").
+			stubrouter.ResponseFromFixture("changeResourceRecordSetsResponse.xml").
 				WithHeader("Content-Type", "application/xml")).
 		Route("GET /2013-04-01/change/123456",
-			clientmock.ResponseFromFixture("getChangeResponse.xml").
+			stubrouter.ResponseFromFixture("getChangeResponse.xml").
 				WithHeader("Content-Type", "application/xml")).
 		Route("GET /2013-04-01/hostedzone/ABCDEFG/rrset",
-			clientmock.Noop().
+			stubrouter.Noop().
 				WithHeader("Content-Type", "application/xml"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT")).
 		Build(t)

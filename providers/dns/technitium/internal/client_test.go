@@ -4,13 +4,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(server.URL, "secret")
 			if err != nil {
@@ -21,14 +21,14 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithContentTypeFromURLEncoded())
+		stubrouter.CheckHeader().WithContentTypeFromURLEncoded())
 }
 
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/zones/records/add",
-			clientmock.ResponseFromFixture("add-record.json"),
-			clientmock.CheckForm().Strict().
+			stubrouter.ResponseFromFixture("add-record.json"),
+			stubrouter.CheckForm().Strict().
 				With("domain", "_acme-challenge.example.com").
 				With("text", "txtTXTtxt").
 				With("type", "TXT").
@@ -52,7 +52,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/zones/records/add",
-			clientmock.ResponseFromFixture("error.json")).
+			stubrouter.ResponseFromFixture("error.json")).
 		Build(t)
 
 	record := Record{
@@ -70,8 +70,8 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/zones/records/delete",
-			clientmock.ResponseFromFixture("delete-record.json"),
-			clientmock.CheckForm().Strict().
+			stubrouter.ResponseFromFixture("delete-record.json"),
+			stubrouter.CheckForm().Strict().
 				With("domain", "_acme-challenge.example.com").
 				With("text", "txtTXTtxt").
 				With("type", "TXT").
@@ -91,7 +91,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/zones/records/delete",
-			clientmock.ResponseFromFixture("error.json")).
+			stubrouter.ResponseFromFixture("error.json")).
 		Build(t)
 
 	record := Record{

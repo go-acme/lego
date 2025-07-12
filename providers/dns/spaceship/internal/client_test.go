@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("key", "secret")
 			if err != nil {
@@ -24,7 +24,7 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			With("X-Api-Key", "key").
 			With("X-Api-Secret", "secret"),
 	)
@@ -33,7 +33,7 @@ func mockBuilder() *clientmock.Builder[*Client] {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /dns/records/example.com", nil,
-			clientmock.CheckRequestJSONBody(`{"items":[{"type":"TXT","name":"@","ttl":60}]}`)).
+			stubrouter.CheckRequestJSONBody(`{"items":[{"type":"TXT","name":"@","ttl":60}]}`)).
 		Build(t)
 
 	record := Record{
@@ -49,7 +49,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /dns/records/example.com",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnprocessableEntity)).
 		Build(t)
 
@@ -66,7 +66,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns/records/example.com", nil,
-			clientmock.CheckRequestJSONBody(`[{"type":"TXT","name":"@","ttl":60}]`)).
+			stubrouter.CheckRequestJSONBody(`[{"type":"TXT","name":"@","ttl":60}]`)).
 		Build(t)
 
 	record := Record{
@@ -82,7 +82,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns/records/example.com",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnprocessableEntity)).
 		Build(t)
 
@@ -99,7 +99,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/records/example.com",
-			clientmock.ResponseFromFixture("get-records.json")).
+			stubrouter.ResponseFromFixture("get-records.json")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "example.com")
@@ -115,7 +115,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_GetRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/records/example.com",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnprocessableEntity)).
 		Build(t)
 

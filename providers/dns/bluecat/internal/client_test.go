@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -19,7 +19,7 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_LookupParentZoneID(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
+	client := stubrouter.NewBuilder[*Client](setupClient).
 		Route("GET /Services/REST/v1/getEntityByName",
 			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				query := req.URL.Query()

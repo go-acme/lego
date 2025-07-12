@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("key", "secret")
 			if err != nil {
@@ -25,7 +25,7 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			With("x-dnsme-apiKey", "key").
 			WithRegexp("x-dnsme-requestDate", `\w+, \d+ \w+ \d+ \d+:\d+:\d+ UTC`).
 			WithRegexp("x-dnsme-hmac", `[a-z0-9]+`),
@@ -35,8 +35,8 @@ func mockBuilder() *clientmock.Builder[*Client] {
 func TestClient_GetDomain(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/managed/name",
-			clientmock.RawStringResponse(`{"id": 1, "name": "foo"}`),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.RawStringResponse(`{"id": 1, "name": "foo"}`),
+			stubrouter.CheckQueryParameter().Strict().
 				With("domainname", "example.com")).
 		Build(t)
 
@@ -54,8 +54,8 @@ func TestClient_GetDomain(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/managed/1/records",
-			clientmock.ResponseFromFixture("get_records.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("get_records.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("recordName", "foo").
 				With("type", "TXT"),
 		).
@@ -91,7 +91,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/managed/1/records", nil,
-			clientmock.CheckRequestJSONBodyFromFile("create_record-request.json")).
+			stubrouter.CheckRequestJSONBodyFromFile("create_record-request.json")).
 		Build(t)
 
 	domain := &Domain{ID: 1, Name: "foo"}

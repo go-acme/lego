@@ -6,19 +6,19 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, _ := NewClient(server.URL, "user", "secret")
 			client.HTTPClient = server.Client()
 
 			return client, nil
 		},
-		clientmock.CheckHeader().
+		stubrouter.CheckHeader().
 			WithContentTypeFromURLEncoded())
 }
 
@@ -32,10 +32,10 @@ func newAPIError(reason string, a ...any) APIError {
 func TestClient_SetRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /CMD_API_DNS_CONTROL", nil,
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.CheckQueryParameter().Strict().
 				With("domain", "example.com").
 				With("json", "yes"),
-			clientmock.CheckForm().UsePostForm().Strict().
+			stubrouter.CheckForm().UsePostForm().Strict().
 				With("action", "add").
 				With("name", "foo").
 				With("type", "TXT").
@@ -58,7 +58,7 @@ func TestClient_SetRecord(t *testing.T) {
 func TestClient_SetRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /CMD_API_DNS_CONTROL",
-			clientmock.JSONEncode(newAPIError("OOPS")).
+			stubrouter.JSONEncode(newAPIError("OOPS")).
 				WithStatusCode(http.StatusInternalServerError)).
 		Build(t)
 
@@ -76,10 +76,10 @@ func TestClient_SetRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /CMD_API_DNS_CONTROL", nil,
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.CheckQueryParameter().Strict().
 				With("domain", "example.com").
 				With("json", "yes"),
-			clientmock.CheckForm().UsePostForm().Strict().
+			stubrouter.CheckForm().UsePostForm().Strict().
 				With("action", "delete").
 				With("name", "foo").
 				With("type", "TXT").
@@ -100,7 +100,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /CMD_API_DNS_CONTROL",
-			clientmock.JSONEncode(newAPIError("OOPS")).
+			stubrouter.JSONEncode(newAPIError("OOPS")).
 				WithStatusCode(http.StatusInternalServerError)).
 		Build(t)
 

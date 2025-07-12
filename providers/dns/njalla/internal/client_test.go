@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,13 +18,13 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient,
-		clientmock.CheckHeader().WithJSONHeaders().
+	client := stubrouter.NewBuilder[*Client](setupClient,
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Njalla secret"),
 	).
 		Route("POST /",
-			clientmock.ResponseFromFixture("add_record.json"),
-			clientmock.CheckRequestJSONBodyFromFile("add_record-request.json")).
+			stubrouter.ResponseFromFixture("add_record.json"),
+			stubrouter.CheckRequestJSONBodyFromFile("add_record-request.json")).
 		Build(t)
 
 	record := Record{
@@ -50,11 +50,11 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient,
-		clientmock.CheckHeader().WithJSONHeaders().
+	client := stubrouter.NewBuilder[*Client](setupClient,
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Njalla invalid"),
 	).
-		Route("POST /", clientmock.ResponseFromFixture("auth_error.json")).
+		Route("POST /", stubrouter.ResponseFromFixture("auth_error.json")).
 		Build(t)
 
 	client.token = "invalid"
@@ -74,13 +74,13 @@ func TestClient_AddRecord_error(t *testing.T) {
 }
 
 func TestClient_ListRecords(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient,
-		clientmock.CheckHeader().WithJSONHeaders().
+	client := stubrouter.NewBuilder[*Client](setupClient,
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Njalla secret"),
 	).
 		Route("POST /",
-			clientmock.ResponseFromFixture("list_records.json"),
-			clientmock.CheckRequestJSONBodyFromFile("list_records-request.json")).
+			stubrouter.ResponseFromFixture("list_records.json"),
+			stubrouter.CheckRequestJSONBodyFromFile("list_records-request.json")).
 		Build(t)
 
 	records, err := client.ListRecords(t.Context(), "example.com")
@@ -109,11 +109,11 @@ func TestClient_ListRecords(t *testing.T) {
 }
 
 func TestClient_ListRecords_error(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient,
-		clientmock.CheckHeader().WithJSONHeaders().
+	client := stubrouter.NewBuilder[*Client](setupClient,
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Njalla invalid"),
 	).
-		Route("POST /", clientmock.ResponseFromFixture("auth_error.json")).
+		Route("POST /", stubrouter.ResponseFromFixture("auth_error.json")).
 		Build(t)
 
 	client.token = "invalid"
@@ -125,13 +125,13 @@ func TestClient_ListRecords_error(t *testing.T) {
 }
 
 func TestClient_RemoveRecord(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient,
-		clientmock.CheckHeader().WithJSONHeaders().
+	client := stubrouter.NewBuilder[*Client](setupClient,
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Njalla secret"),
 	).
 		Route("POST /",
-			clientmock.RawStringResponse(`{"jsonrpc":"2.0"}`),
-			clientmock.CheckRequestJSONBodyFromFile("remove_record-request.json")).
+			stubrouter.RawStringResponse(`{"jsonrpc":"2.0"}`),
+			stubrouter.CheckRequestJSONBodyFromFile("remove_record-request.json")).
 		Build(t)
 
 	err := client.RemoveRecord(t.Context(), "123", "example.com")
@@ -139,11 +139,11 @@ func TestClient_RemoveRecord(t *testing.T) {
 }
 
 func TestClient_RemoveRecord_error(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient,
-		clientmock.CheckHeader().WithJSONHeaders().
+	client := stubrouter.NewBuilder[*Client](setupClient,
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Njalla secret"),
 	).
-		Route("POST /", clientmock.ResponseFromFixture("remove_record_error_missing_domain.json")).
+		Route("POST /", stubrouter.ResponseFromFixture("remove_record_error_missing_domain.json")).
 		Build(t)
 
 	err := client.RemoveRecord(t.Context(), "123", "example.com")

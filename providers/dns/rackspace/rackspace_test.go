@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -35,13 +35,13 @@ func TestNewDNSProviderConfig_MissingCredErr(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /123456/domains",
-			clientmock.ResponseFromFixture("zone_details.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("zone_details.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("name", "example.com")).
 		Route("POST /123456/domains/112233/records",
-			clientmock.ResponseFromFixture("record.json").
+			stubrouter.ResponseFromFixture("record.json").
 				WithStatusCode(http.StatusAccepted),
-			clientmock.CheckRequestJSONBody(`{"records":[{"name":"_acme-challenge.example.com","type":"TXT","data":"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM","ttl":300}]}`)).
+			stubrouter.CheckRequestJSONBody(`{"records":[{"name":"_acme-challenge.example.com","type":"TXT","data":"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM","ttl":300}]}`)).
 		Build(t)
 
 	err := provider.Present("example.com", "token", "keyAuth")
@@ -51,17 +51,17 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /123456/domains",
-			clientmock.ResponseFromFixture("zone_details.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("zone_details.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("name", "example.com")).
 		Route("GET /123456/domains/112233/records",
-			clientmock.ResponseFromFixture("record_details.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("record_details.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("type", "TXT").
 				With("name", "_acme-challenge.example.com")).
 		Route("DELETE /123456/domains/112233/records",
-			clientmock.ResponseFromFixture("delete.json"),
-			clientmock.CheckQueryParameter().Strict().
+			stubrouter.ResponseFromFixture("delete.json"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("id", "TXT-654321")).
 		Build(t)
 
@@ -109,8 +109,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *clientmock.Builder[*DNSProvider] {
-	return clientmock.NewBuilder(
+func mockBuilder() *stubrouter.Builder[*DNSProvider] {
+	return stubrouter.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.APIUser = "testUser"
@@ -120,7 +120,7 @@ func mockBuilder() *clientmock.Builder[*DNSProvider] {
 
 			return NewDNSProviderConfig(config)
 		},
-		clientmock.CheckHeader().WithJSONHeaders(),
+		stubrouter.CheckHeader().WithJSONHeaders(),
 	).
 		Route("POST /v2.0/tokens",
 			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -163,5 +163,5 @@ func mockBuilder() *clientmock.Builder[*DNSProvider] {
 				rw.WriteHeader(http.StatusOK)
 				_, _ = fmt.Fprint(rw, resp)
 			}),
-			clientmock.CheckRequestJSONBody(`{"auth":{"RAX-KSKEY:apiKeyCredentials":{"username":"testUser","apiKey":"testKey"}}}`))
+			stubrouter.CheckRequestJSONBody(`{"auth":{"RAX-KSKEY:apiKeyCredentials":{"username":"testUser","apiKey":"testKey"}}}`))
 }

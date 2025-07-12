@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("secret")
 			client.HTTPClient = server.Client()
@@ -20,14 +20,14 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer secret"),
 	)
 }
 
 func TestClient_ListDomains(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /domains", clientmock.ResponseFromFixture("domain-list-domains.json")).
+		Route("GET /domains", stubrouter.ResponseFromFixture("domain-list-domains.json")).
 		Build(t)
 
 	domains, err := client.ListDomains(t.Context())
@@ -47,7 +47,7 @@ func TestClient_ListDomains(t *testing.T) {
 func TestClient_ListDomains_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains",
-			clientmock.ResponseFromFixture("error-client.json").
+			stubrouter.ResponseFromFixture("error-client.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -57,7 +57,7 @@ func TestClient_ListDomains_error(t *testing.T) {
 
 func TestClient_ListDNSZones(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /projects/my-project-id/dns-zones", clientmock.ResponseFromFixture("dns-list-dns-zones.json")).
+		Route("GET /projects/my-project-id/dns-zones", stubrouter.ResponseFromFixture("dns-list-dns-zones.json")).
 		Build(t)
 
 	zones, err := client.ListDNSZones(t.Context(), "my-project-id")
@@ -78,7 +78,7 @@ func TestClient_ListDNSZones(t *testing.T) {
 
 func TestClient_GetDNSZone(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /dns-zones/my-zone-id", clientmock.ResponseFromFixture("dns-get-dns-zone.json")).
+		Route("GET /dns-zones/my-zone-id", stubrouter.ResponseFromFixture("dns-get-dns-zone.json")).
 		Build(t)
 
 	zone, err := client.GetDNSZone(t.Context(), "my-zone-id")
@@ -98,8 +98,8 @@ func TestClient_GetDNSZone(t *testing.T) {
 func TestClient_CreateDNSZone(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns-zones",
-			clientmock.ResponseFromFixture("dns-create-dns-zone.json"),
-			clientmock.CheckRequestJSONBody(`{"name":"test","parentZoneId":"my-parent-zone-id"}`)).
+			stubrouter.ResponseFromFixture("dns-create-dns-zone.json"),
+			stubrouter.CheckRequestJSONBody(`{"name":"test","parentZoneId":"my-parent-zone-id"}`)).
 		Build(t)
 
 	request := CreateDNSZoneRequest{
@@ -120,9 +120,9 @@ func TestClient_CreateDNSZone(t *testing.T) {
 func TestClient_UpdateTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /dns-zones/my-zone-id/record-sets/txt",
-			clientmock.Noop().
+			stubrouter.Noop().
 				WithStatusCode(http.StatusNoContent),
-			clientmock.CheckRequestJSONBody(`{"settings":{"ttl":{"auto":true}},"entries":["txt"]}`)).
+			stubrouter.CheckRequestJSONBody(`{"settings":{"ttl":{"auto":true}},"entries":["txt"]}`)).
 		Build(t)
 
 	record := TXTRecord{
@@ -139,7 +139,7 @@ func TestClient_UpdateTXTRecord(t *testing.T) {
 func TestClient_DeleteDNSZone(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns-zones/my-zone-id",
-			clientmock.Noop()).
+			stubrouter.Noop()).
 		Build(t)
 
 	err := client.DeleteDNSZone(t.Context(), "my-zone-id")
@@ -149,7 +149,7 @@ func TestClient_DeleteDNSZone(t *testing.T) {
 func TestClient_DeleteDNSZone_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns-zones/my-zone-id",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusInternalServerError)).
 		Build(t)
 

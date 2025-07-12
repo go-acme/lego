@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,9 +21,9 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestAddTXTRecord(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
-		Route("GET /", clientmock.RawStringResponse("success"),
-			clientmock.CheckQueryParameter().Strict().
+	client := stubrouter.NewBuilder[*Client](setupClient).
+		Route("GET /", stubrouter.RawStringResponse("success"),
+			stubrouter.CheckQueryParameter().Strict().
 				With("add_hostname", "sub.example.com").
 				With("hostname", "example.com").
 				With("password", "secret").
@@ -36,8 +36,8 @@ func TestAddTXTRecord(t *testing.T) {
 }
 
 func TestAddTXTRecord_error(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
-		Route("GET /", clientmock.RawStringResponse("error: authentification failed")).
+	client := stubrouter.NewBuilder[*Client](setupClient).
+		Route("GET /", stubrouter.RawStringResponse("error: authentification failed")).
 		Build(t)
 
 	err := client.AddTXTRecord(t.Context(), "example.com", "sub.example.com", "value")

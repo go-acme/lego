@@ -3,7 +3,7 @@ package internal
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -11,8 +11,8 @@ import (
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /login",
-			clientmock.ResponseFromFixture("login.json"),
-			clientmock.CheckRequestJSONBodyFromFile("login-request.json")).
+			stubrouter.ResponseFromFixture("login.json"),
+			stubrouter.CheckRequestJSONBodyFromFile("login-request.json")).
 		Route("DELETE /api/record/xxx", nil).
 		Build(t)
 

@@ -11,13 +11,13 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("c3j1", "secret")
 			if err != nil {
@@ -29,7 +29,7 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().
+		stubrouter.CheckHeader().
 			WithJSONHeaders().
 			With("X-Auth-Token", "secret"))
 }
@@ -69,7 +69,7 @@ func TestClient_GetDomainID(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			client := mockBuilder().
-				Route("GET /v1/domains", clientmock.ResponseFromFixture(test.response)).
+				Route("GET /v1/domains", stubrouter.ResponseFromFixture(test.response)).
 				Build(t)
 
 			domainID, err := client.GetDomainID(t.Context(), test.domainName)
@@ -149,7 +149,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_GetRecordID(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/domains/89acac79-38e7-497d-807c-a011e1310438/records",
-			clientmock.ResponseFromFixture("domains-records_GET.json")).
+			stubrouter.ResponseFromFixture("domains-records_GET.json")).
 		Build(t)
 
 	recordID, err := client.GetRecordID(t.Context(), "89acac79-38e7-497d-807c-a011e1310438", "www.example.com.", "A", "15.185.172.153")
@@ -161,7 +161,7 @@ func TestClient_GetRecordID(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v1/domains/89acac79-38e7-497d-807c-a011e1310438/records/2e32e609-3a4f-45ba-bdef-e50eacd345ad",
-			clientmock.ResponseFromFixture("domains-records_GET.json")).
+			stubrouter.ResponseFromFixture("domains-records_GET.json")).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "89acac79-38e7-497d-807c-a011e1310438", "2e32e609-3a4f-45ba-bdef-e50eacd345ad")

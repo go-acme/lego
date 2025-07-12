@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,8 +24,8 @@ func mockContext(t *testing.T) context.Context {
 }
 
 func TestIdentifier_Authentication(t *testing.T) {
-	client := clientmock.NewBuilder[*Identifier](setupIdentifierClient).
-		Route("POST /", clientmock.ResponseFromFixture("auth.xml")).
+	client := stubrouter.NewBuilder[*Identifier](setupIdentifierClient).
+		Route("POST /", stubrouter.ResponseFromFixture("auth.xml")).
 		Build(t)
 
 	credentialToken, err := client.Authentication(t.Context(), 60, false)
@@ -35,8 +35,8 @@ func TestIdentifier_Authentication(t *testing.T) {
 }
 
 func TestIdentifier_Authentication_error(t *testing.T) {
-	client := clientmock.NewBuilder[*Identifier](setupIdentifierClient).
-		Route("POST /", clientmock.ResponseFromFixture("auth_fault.xml")).
+	client := stubrouter.NewBuilder[*Identifier](setupIdentifierClient).
+		Route("POST /", stubrouter.ResponseFromFixture("auth_fault.xml")).
 		Build(t)
 
 	_, err := client.Authentication(t.Context(), 60, false)

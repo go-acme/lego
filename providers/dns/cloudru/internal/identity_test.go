@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -26,18 +26,18 @@ func setupIdentityClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_obtainToken(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupIdentityClient,
-		clientmock.CheckHeader().
+	client := stubrouter.NewBuilder[*Client](setupIdentityClient,
+		stubrouter.CheckHeader().
 			WithContentTypeFromURLEncoded(),
 	).
-		Route("POST /", clientmock.JSONEncode(Token{
+		Route("POST /", stubrouter.JSONEncode(Token{
 			AccessToken: "xxx",
 			TokenID:     "yyy",
 			ExpiresIn:   666,
 			TokenType:   "Bearer",
 			Scope:       "openid profile email roles",
 		}),
-			clientmock.CheckForm().Strict().
+			stubrouter.CheckForm().Strict().
 				With("client_id", "user").
 				With("client_secret", "secret").
 				With("grant_type", "access_key"),
@@ -55,18 +55,18 @@ func TestClient_obtainToken(t *testing.T) {
 }
 
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupIdentityClient,
-		clientmock.CheckHeader().
+	client := stubrouter.NewBuilder[*Client](setupIdentityClient,
+		stubrouter.CheckHeader().
 			WithContentTypeFromURLEncoded(),
 	).
-		Route("POST /", clientmock.JSONEncode(Token{
+		Route("POST /", stubrouter.JSONEncode(Token{
 			AccessToken: "xxx",
 			TokenID:     "yyy",
 			ExpiresIn:   666,
 			TokenType:   "Bearer",
 			Scope:       "openid profile email roles",
 		}),
-			clientmock.CheckForm().Strict().
+			stubrouter.CheckForm().Strict().
 				With("client_id", "user").
 				With("client_secret", "secret").
 				With("grant_type", "access_key"),

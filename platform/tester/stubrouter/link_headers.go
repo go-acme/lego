@@ -1,4 +1,4 @@
-package clientmock
+package stubrouter
 
 import (
 	"fmt"

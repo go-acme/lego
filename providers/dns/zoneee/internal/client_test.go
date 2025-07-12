@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 			client.HTTPClient = server.Client()
@@ -20,14 +20,14 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithBasicAuth("user", "secret"),
 	)
 }
 
 func TestClient_GetTxtRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /dns/example.com/txt", clientmock.ResponseFromFixture("get-txt-records.json")).
+		Route("GET /dns/example.com/txt", stubrouter.ResponseFromFixture("get-txt-records.json")).
 		Build(t)
 
 	records, err := client.GetTxtRecords(t.Context(), "example.com")
@@ -43,9 +43,9 @@ func TestClient_GetTxtRecords(t *testing.T) {
 func TestClient_AddTxtRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/example.com/txt",
-			clientmock.ResponseFromFixture("create-txt-record.json").
+			stubrouter.ResponseFromFixture("create-txt-record.json").
 				WithStatusCode(http.StatusCreated),
-			clientmock.CheckRequestJSONBody(`{"name":"prefix.example.com","destination":"server.example.com"}`)).
+			stubrouter.CheckRequestJSONBody(`{"name":"prefix.example.com","destination":"server.example.com"}`)).
 		Build(t)
 
 	records, err := client.AddTxtRecord(t.Context(), "example.com", TXTRecord{Name: "prefix.example.com", Destination: "server.example.com"})
@@ -61,7 +61,7 @@ func TestClient_AddTxtRecord(t *testing.T) {
 func TestClient_RemoveTxtRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns/example.com/txt/123",
-			clientmock.Noop().
+			stubrouter.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 

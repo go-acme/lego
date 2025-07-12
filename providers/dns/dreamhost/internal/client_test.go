@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,9 +18,9 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
-		Route("GET /", clientmock.RawStringResponse(`{}`),
-			clientmock.CheckQueryParameter().Strict().
+	client := stubrouter.NewBuilder[*Client](setupClient).
+		Route("GET /", stubrouter.RawStringResponse(`{}`),
+			stubrouter.CheckQueryParameter().Strict().
 				With("cmd", "dns-add_record").
 				With("comment", "Managed+By+lego").
 				With("format", "json").
@@ -35,9 +35,9 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_RemoveRecord(t *testing.T) {
-	client := clientmock.NewBuilder[*Client](setupClient).
-		Route("GET /", clientmock.RawStringResponse(`{}`),
-			clientmock.CheckQueryParameter().Strict().
+	client := stubrouter.NewBuilder[*Client](setupClient).
+		Route("GET /", stubrouter.RawStringResponse(`{}`),
+			stubrouter.CheckQueryParameter().Strict().
 				With("cmd", "dns-remove_record").
 				With("comment", "Managed+By+lego").
 				With("format", "json").

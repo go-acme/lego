@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/clientmock"
+	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *clientmock.Builder[*Client] {
-	return clientmock.NewBuilder[*Client](
+func mockBuilder() *stubrouter.Builder[*Client] {
+	return stubrouter.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("secret", 123456)
 			if err != nil {
@@ -24,15 +24,15 @@ func mockBuilder() *clientmock.Builder[*Client] {
 
 			return client, nil
 		},
-		clientmock.CheckHeader().WithJSONHeaders().
+		stubrouter.CheckHeader().WithJSONHeaders().
 			WithAuthorization("OAuth secret"))
 }
 
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /directory/v1/org/123456/domains/example.com/dns",
-			clientmock.ResponseFromFixture("add-record.json"),
-			clientmock.CheckRequestJSONBody(`{"name":"_acme-challenge","text":"txtxtxt","ttl":60,"type":"TXT"}`)).
+			stubrouter.ResponseFromFixture("add-record.json"),
+			stubrouter.CheckRequestJSONBody(`{"name":"_acme-challenge","text":"txtxtxt","ttl":60,"type":"TXT"}`)).
 		Build(t)
 
 	record := Record{
@@ -59,7 +59,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /directory/v1/org/123456/domains/example.com/dns",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -79,7 +79,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /directory/v1/org/123456/domains/example.com/dns/789456",
-			clientmock.ResponseFromFixture("delete-record.json")).
+			stubrouter.ResponseFromFixture("delete-record.json")).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "example.com", 789456)
@@ -89,7 +89,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /directory/v1/org/123456/domains/example.com/dns/789456",
-			clientmock.ResponseFromFixture("error.json").
+			stubrouter.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 

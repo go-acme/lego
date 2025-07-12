@@ -1,0 +1,174 @@
+@import "theme-relearn-light.css?1752325864";
+@import "chroma-relearn-light.css?1752325864";
+
+#R-sidebar {
+    display: none;
+}
+#R-body {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+#R-body #navigation {
+    display: none;
+}
+html{
+    font-size: 8.763pt;
+}
+body {
+    background-color: rgba( 255, 255, 255, 1 );
+}
+code.copy-to-clipboard-code {
+    border-start-end-radius: 2px;
+    border-end-end-radius: 2px;
+    border-inline-end-width: 1px;
+}
+pre:not(.mermaid) {
+    border: 1px solid rgba( 204, 204, 204, 1 );
+}
+#R-body #R-topbar{
+    background-color: rgba( 255, 255, 255, 1 ); /* avoid background bleeding*/
+    border-bottom: 1px solid rgba( 221, 221, 221, 1 );
+    border-radius: 0;
+    color: rgba( 119, 119, 119, 1 );
+    padding-left: 0; /* for print, we want to align with the footer to ease the layout */
+    padding-right: 0;
+}
+#R-body .topbar-button {
+    /* we don't need the buttons while printing */
+    /* we need !important to turn off JS topbar button handling setting element styles */
+    display: none !important;
+}
+@media screen and (max-width: 47.999rem) {
+    #R-body .topbar-breadcrumbs {
+        visibility: visible;
+    }
+}
+#R-body .copy-to-clipboard-button {
+    display: none;
+}
+
+#R-body .svg-reset-button {
+    display: none;
+}
+
+#R-body h1, #R-body h2, #R-body h3, #R-body .article-subheading, #R-body h4, #R-body h5, #R-body h6 {
+    /* better contrast for colored elements */
+    color: rgba( 0, 0, 0, 1 );
+}
+#R-body th, #R-body td,
+#R-body code, #R-body strong, #R-body b,
+#R-body li, #R-body dd, #R-body dt,
+#R-body p,
+#R-body a, #R-body button, #R-body .badge .badge-content {
+    /* better contrast for colored elements */
+    color: rgba( 0, 0, 0, 1 );
+}
+#R-body .anchor{
+    display: none;
+}
+#R-body pre:not(.mermaid),
+#R-body code {
+    background-color: rgba( 255, 255, 255, 1 );
+    border-color: rgba( 221, 221, 221, 1 );
+}
+
+hr{
+    border-bottom: 1px solid rgba( 221, 221, 221, 1 );
+}
+#R-body #R-body-inner {
+    overflow: visible; /* turn off limitations for perfect scrollbar */
+    /* reset paddings for chapters in screen */
+    padding: 0 3.25rem 4rem 3.25rem;
+}
+
+#R-body #R-body-inner h1 {
+    border-bottom: 1px solid rgba( 221, 221, 221, 1 );
+    margin-bottom: 2rem;
+    padding-bottom: .75rem;
+}
+#R-body-inner .chapter h3:first-of-type {
+    margin-top: 2rem;
+}
+
+/* Children shortcode */
+.children p,
+.children-li p,
+.children-h2 p,
+.children-h3 p {
+    font-size: 1rem;
+}
+
+.footline {
+    /* in print mode show footer line to signal reader the end of document */
+    border-top: 1px solid rgba( 221, 221, 221, 1 );
+    color: rgba( 119, 119, 119, 1 );
+    margin-top: 1.5rem;
+    padding-top: .75rem;
+}
+
+h1 + .footline{
+    /* if we have no content in the page we remove the footer as it is of no real value in print */
+    display: none;
+}
+
+#R-body #R-body-inner .headline a,
+#R-body #R-body-inner .footline a,
+#R-body #R-body-inner .btn a {
+    text-decoration: none;
+}
+#R-body #R-body-inner a {
+    /* in print we want to distinguish links in our content from
+    normal text even if printed black/white;
+    don't use a.highlight in selector to also get links that are
+    put as HTML into markdown */
+    text-decoration-line: underline;
+}
+#R-topbar{
+    /* the header is sticky which is not suitable for print; */
+    position: initial;
+}
+#R-topbar > .topbar-wrapper {
+    background-color: initial;
+}
+#R-body .topbar-sidebar-divider {
+    border-width: 0;
+}
+.term-list {
+    display: none;
+}
+mark.search {
+    background: inherit;
+    color: inherit;
+}
+.mermaid.zoom:hover {
+    border-color: transparent;
+}
+div.box > .box-content {
+    background-color: rgba( 255, 255, 255, 1 );
+}
+
+.btn,
+#R-body .tab-nav-button {
+    color: rgba( 0, 0, 0, 1 );
+}
+#R-body .tab-nav-button.active {
+    border-bottom-color: rgba( 255, 255, 255, 1 );
+    color: rgba( 0, 0, 0, 1 );
+}
+#R-body .tab-nav-button.active > .tab-nav-text {
+    background-color: rgba( 255, 255, 255, 1 );
+}
+#R-body .tab-content-text {
+    background-color: rgba( 255, 255, 255, 1 ) ;
+    color: rgba( 0, 0, 0, 1 );
+}
+
+article {
+    break-before: page;
+}
+#R-body-inner > * > article:first-of-type {
+    break-before: avoid;
+}

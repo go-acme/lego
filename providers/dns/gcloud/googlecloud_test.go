@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
@@ -144,245 +145,160 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestPresentNoExistingRR(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+	provider := mockBuilder().
+		// getHostedZone
+		Route("GET /dns/v1/projects/manhattan/managedZones",
+			servermock.JSONEncode(&dns.ManagedZonesListResponse{
+				ManagedZones: []*dns.ManagedZone{
+					{Name: "test", Visibility: "public"},
+				},
+			}),
+			servermock.CheckQueryParameter().Strict().
+				With("dnsName", "lego.wtf.").
+				With("prettyPrint", "false").
+				With("alt", "json")).
+		// findTxtRecords
+		Route("GET /dns/v1/projects/manhattan/managedZones/test/rrsets",
+			servermock.JSONEncode(&dns.ResourceRecordSetsListResponse{
+				Rrsets: []*dns.ResourceRecordSet{},
+			}),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "_acme-challenge.lego.wtf.").
+				With("type", "TXT").
+				With("prettyPrint", "false").
+				With("alt", "json")).
+		// applyChanges [Create]
+		Route("POST /dns/v1/projects/manhattan/managedZones/test/changes",
+			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				var chgReq dns.Change
+				if err := json.NewDecoder(req.Body).Decode(&chgReq); err != nil {
+					http.Error(rw, err.Error(), http.StatusBadRequest)
+					return
+				}
 
-	// getHostedZone: /manhattan/managedZones?alt=json&dnsName=lego.wtf.
-	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
+				chgResp := chgReq
+				chgResp.Status = changeStatusDone
 
-		mzlrs := &dns.ManagedZonesListResponse{
-			ManagedZones: []*dns.ManagedZone{
-				{Name: "test", Visibility: "public"},
-			},
-		}
-
-		err := json.NewEncoder(w).Encode(mzlrs)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	// findTxtRecords: /manhattan/managedZones/test/rrsets?alt=json&name=_acme-challenge.lego.wtf.&type=TXT
-	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones/test/rrsets", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		rrslr := &dns.ResourceRecordSetsListResponse{
-			Rrsets: []*dns.ResourceRecordSet{},
-		}
-
-		err := json.NewEncoder(w).Encode(rrslr)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	// applyChanges [Create]: /manhattan/managedZones/test/changes?alt=json
-	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones/test/changes", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		var chgReq dns.Change
-		if err := json.NewDecoder(r.Body).Decode(&chgReq); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		chgResp := chgReq
-		chgResp.Status = changeStatusDone
-
-		if err := json.NewEncoder(w).Encode(chgResp); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	config := NewDefaultConfig()
-	config.HTTPClient = &http.Client{Timeout: 10 * time.Second}
-	config.Project = "manhattan"
-
-	p, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	p.client.BasePath = server.URL
+				if err := json.NewEncoder(rw).Encode(chgResp); err != nil {
+					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			}),
+			servermock.CheckQueryParameter().Strict().
+				With("prettyPrint", "false").
+				With("alt", "json")).
+		Build(t)
 
 	domain := "lego.wtf"
 
-	err = p.Present(domain, "", "")
+	err := provider.Present(domain, "", "")
 	require.NoError(t, err)
 }
 
 func TestPresentWithExistingRR(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	// getHostedZone: /manhattan/managedZones?alt=json&dnsName=lego.wtf.
-	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		mzlrs := &dns.ManagedZonesListResponse{
-			ManagedZones: []*dns.ManagedZone{
-				{Name: "test", Visibility: "public"},
-			},
-		}
-
-		err := json.NewEncoder(w).Encode(mzlrs)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	// findTxtRecords: /manhattan/managedZones/test/rrsets?alt=json&name=_acme-challenge.lego.wtf.&type=TXT
-	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones/test/rrsets", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		rrslr := &dns.ResourceRecordSetsListResponse{
-			Rrsets: []*dns.ResourceRecordSet{{
-				Name:    "_acme-challenge.lego.wtf.",
-				Rrdatas: []string{`"X7DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"huji"`},
-				Ttl:     120,
-				Type:    "TXT",
-			}},
-		}
-
-		err := json.NewEncoder(w).Encode(rrslr)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	// applyChanges [Create]: /manhattan/managedZones/test/changes?alt=json
-	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones/test/changes", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		var chgReq dns.Change
-		if err := json.NewDecoder(r.Body).Decode(&chgReq); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if len(chgReq.Additions) > 0 {
-			sort.Strings(chgReq.Additions[0].Rrdatas)
-		}
-
-		var prevVal string
-		for _, addition := range chgReq.Additions {
-			for _, value := range addition.Rrdatas {
-				if prevVal == value {
-					http.Error(w, fmt.Sprintf("The resource %s already exists", value), http.StatusConflict)
+	provider := mockBuilder().
+		// getHostedZone
+		Route("GET /dns/v1/projects/manhattan/managedZones",
+			servermock.JSONEncode(&dns.ManagedZonesListResponse{
+				ManagedZones: []*dns.ManagedZone{
+					{Name: "test", Visibility: "public"},
+				},
+			}),
+			servermock.CheckQueryParameter().Strict().
+				With("dnsName", "lego.wtf.").
+				With("prettyPrint", "false").
+				With("alt", "json")).
+		// findTxtRecords
+		Route("GET /dns/v1/projects/manhattan/managedZones/test/rrsets",
+			servermock.JSONEncode(&dns.ResourceRecordSetsListResponse{
+				Rrsets: []*dns.ResourceRecordSet{{
+					Name:    "_acme-challenge.lego.wtf.",
+					Rrdatas: []string{`"X7DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"huji"`},
+					Ttl:     120,
+					Type:    "TXT",
+				}},
+			}),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "_acme-challenge.lego.wtf.").
+				With("type", "TXT").
+				With("prettyPrint", "false").
+				With("alt", "json")).
+		// applyChanges [Create]
+		Route("POST /dns/v1/projects/manhattan/managedZones/test/changes",
+			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				var chgReq dns.Change
+				if err := json.NewDecoder(req.Body).Decode(&chgReq); err != nil {
+					http.Error(rw, err.Error(), http.StatusBadRequest)
 					return
 				}
-				prevVal = value
-			}
-		}
 
-		chgResp := chgReq
-		chgResp.Status = changeStatusDone
+				if len(chgReq.Additions) > 0 {
+					sort.Strings(chgReq.Additions[0].Rrdatas)
+				}
 
-		if err := json.NewEncoder(w).Encode(chgResp); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+				var prevVal string
+				for _, addition := range chgReq.Additions {
+					for _, value := range addition.Rrdatas {
+						if prevVal == value {
+							http.Error(rw, fmt.Sprintf("The resource %s already exists", value), http.StatusConflict)
+							return
+						}
+						prevVal = value
+					}
+				}
 
-	config := NewDefaultConfig()
-	config.HTTPClient = &http.Client{Timeout: 10 * time.Second}
-	config.Project = "manhattan"
+				chgResp := chgReq
+				chgResp.Status = changeStatusDone
 
-	p, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	p.client.BasePath = server.URL
+				if err := json.NewEncoder(rw).Encode(chgResp); err != nil {
+					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			}),
+			servermock.CheckQueryParameter().Strict().
+				With("prettyPrint", "false").
+				With("alt", "json")).
+		Build(t)
 
 	domain := "lego.wtf"
 
-	err = p.Present(domain, "", "")
+	err := provider.Present(domain, "", "")
 	require.NoError(t, err)
 }
 
 func TestPresentSkipExistingRR(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	// getHostedZone: /manhattan/managedZones?alt=json&dnsName=lego.wtf.
-	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		mzlrs := &dns.ManagedZonesListResponse{
-			ManagedZones: []*dns.ManagedZone{
-				{Name: "test", Visibility: "public"},
-			},
-		}
-
-		err := json.NewEncoder(w).Encode(mzlrs)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	// findTxtRecords: /manhattan/managedZones/test/rrsets?alt=json&name=_acme-challenge.lego.wtf.&type=TXT
-	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones/test/rrsets", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		rrslr := &dns.ResourceRecordSetsListResponse{
-			Rrsets: []*dns.ResourceRecordSet{{
-				Name:    "_acme-challenge.lego.wtf.",
-				Rrdatas: []string{`"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"X7DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"huji"`},
-				Ttl:     120,
-				Type:    "TXT",
-			}},
-		}
-
-		err := json.NewEncoder(w).Encode(rrslr)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	config := NewDefaultConfig()
-	config.HTTPClient = &http.Client{Timeout: 10 * time.Second}
-	config.Project = "manhattan"
-
-	p, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	p.client.BasePath = server.URL
+	provider := mockBuilder().
+		// getHostedZone
+		Route("GET /dns/v1/projects/manhattan/managedZones",
+			servermock.JSONEncode(&dns.ManagedZonesListResponse{
+				ManagedZones: []*dns.ManagedZone{
+					{Name: "test", Visibility: "public"},
+				},
+			}),
+			servermock.CheckQueryParameter().Strict().
+				With("dnsName", "lego.wtf.").
+				With("prettyPrint", "false").
+				With("alt", "json")).
+		// findTxtRecords
+		Route("GET /dns/v1/projects/manhattan/managedZones/test/rrsets",
+			servermock.JSONEncode(&dns.ResourceRecordSetsListResponse{
+				Rrsets: []*dns.ResourceRecordSet{{
+					Name:    "_acme-challenge.lego.wtf.",
+					Rrdatas: []string{`"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"X7DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"huji"`},
+					Ttl:     120,
+					Type:    "TXT",
+				}},
+			}),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "_acme-challenge.lego.wtf.").
+				With("type", "TXT").
+				With("prettyPrint", "false").
+				With("alt", "json")).
+		Build(t)
 
 	domain := "lego.wtf"
 
-	err = p.Present(domain, "", "")
+	err := provider.Present(domain, "", "")
 	require.NoError(t, err)
 }
 
@@ -431,4 +347,21 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+}
+
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+		config := NewDefaultConfig()
+		config.HTTPClient = &http.Client{Timeout: 10 * time.Second}
+		config.Project = "manhattan"
+
+		p, err := NewDNSProviderConfig(config)
+		if err != nil {
+			return nil, err
+		}
+
+		p.client.BasePath = server.URL
+
+		return p, err
+	})
 }

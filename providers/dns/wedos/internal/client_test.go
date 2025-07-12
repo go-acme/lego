@@ -4,58 +4,33 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"regexp"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupNew(t *testing.T, expectedForm, filename string) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("user", "secret")
+			client.baseURL = server.URL
+			client.HTTPClient = server.Client()
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		err := req.ParseForm()
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		exp := regexp.MustCompile(`"auth":"\w+",`)
-
-		form := req.PostForm.Get("request")
-		form = exp.ReplaceAllString(form, `"auth":"xxx",`)
-
-		if form != expectedForm {
-			t.Logf("invalid form data: %s", req.PostForm.Get("request"))
-			http.Error(rw, fmt.Sprintf("invalid form data: %s", req.PostForm.Get("request")), http.StatusBadRequest)
-			return
-		}
-
-		data, err := os.ReadFile(fmt.Sprintf("./fixtures/%s.json", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		rw.Header().Set("Content-Type", "application/json")
-		_, _ = rw.Write(data)
-	})
-
-	client := NewClient("user", "secret")
-	client.baseURL = server.URL
-
-	return client
+			return client, nil
+		},
+		servermock.CheckHeader().
+			WithContentTypeFromURLEncoded())
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	expectedForm := `{"request":{"user":"user","auth":"xxx","command":"dns-rows-list","data":{"domain":"example.com"}}}`
-	client := setupNew(t, expectedForm, commandDNSRowsList)
+	client := mockBuilder().
+		Route("POST /",
+			servermock.ResponseFromFixture(commandDNSRowsList+".json"),
+			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-rows-list","data":{"domain":"example.com"}}}`)).
+		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "example.com.")
 	require.NoError(t, err)
@@ -94,9 +69,11 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	expectedForm := `{"request":{"user":"user","auth":"xxx","command":"dns-row-add","data":{"domain":"example.com","name":"foo","ttl":1800,"type":"TXT","rdata":"foobar"}}}`
-
-	client := setupNew(t, expectedForm, commandDNSRowAdd)
+	client := mockBuilder().
+		Route("POST /",
+			servermock.ResponseFromFixture(commandDNSRowAdd+".json"),
+			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-add","data":{"domain":"example.com","name":"foo","ttl":1800,"type":"TXT","rdata":"foobar"}}}`)).
+		Build(t)
 
 	record := DNSRow{
 		ID:   "",
@@ -111,9 +88,11 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_update(t *testing.T) {
-	expectedForm := `{"request":{"user":"user","auth":"xxx","command":"dns-row-update","data":{"row_id":"1","domain":"example.com","ttl":1800,"type":"TXT","rdata":"foobar"}}}`
-
-	client := setupNew(t, expectedForm, commandDNSRowUpdate)
+	client := mockBuilder().
+		Route("POST /",
+			servermock.ResponseFromFixture(commandDNSRowUpdate+".json"),
+			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-update","data":{"row_id":"1","domain":"example.com","ttl":1800,"type":"TXT","rdata":"foobar"}}}`)).
+		Build(t)
 
 	record := DNSRow{
 		ID:   "1",
@@ -128,19 +107,45 @@ func TestClient_AddRecord_update(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	expectedForm := `{"request":{"user":"user","auth":"xxx","command":"dns-row-delete","data":{"row_id":"1","domain":"example.com","rdata":""}}}`
-
-	client := setupNew(t, expectedForm, commandDNSRowDelete)
+	client := mockBuilder().
+		Route("POST /",
+			servermock.ResponseFromFixture(commandDNSRowDelete+".json"),
+			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-delete","data":{"row_id":"1","domain":"example.com","rdata":""}}}`)).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "example.com.", "1")
 	require.NoError(t, err)
 }
 
 func TestClient_Commit(t *testing.T) {
-	expectedForm := `{"request":{"user":"user","auth":"xxx","command":"dns-domain-commit","data":{"name":"example.com"}}}`
-
-	client := setupNew(t, expectedForm, commandDNSDomainCommit)
+	client := mockBuilder().
+		Route("POST /",
+			servermock.ResponseFromFixture(commandDNSDomainCommit+".json"),
+			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-domain-commit","data":{"name":"example.com"}}}`)).
+		Build(t)
 
 	err := client.Commit(t.Context(), "example.com.")
 	require.NoError(t, err)
+}
+
+func checkFormRequest(data string) servermock.LinkFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			err := req.ParseForm()
+			if err != nil {
+				http.Error(rw, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			form := regexp.MustCompile(`"auth":"\w+",`).
+				ReplaceAllString(req.PostForm.Get("request"), `"auth":"xxx",`)
+
+			if form != data {
+				http.Error(rw, fmt.Sprintf("invalid form data: %s", req.PostForm.Get("request")), http.StatusBadRequest)
+				return
+			}
+
+			next.ServeHTTP(rw, req)
+		})
+	}
 }

@@ -1,0 +1,7 @@
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+    <Body>
+        <KasApi xmlns="https://kasserver.com/">
+            <Params>{"kas_login":"user","kas_auth_type":"session","kas_auth_data":"593959ca04f0de9689b586c6a647d15d","kas_action":"add_dns_settings","KasRequestParams":{"zone_host":"42cnc.de.","record_type":"TXT","record_name":"lego","record_data":"abcdefgh","record_aux":0}}</Params>
+        </KasApi>
+    </Body>
+</Envelope>

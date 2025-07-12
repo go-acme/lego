@@ -1,0 +1,24 @@
+{
+  "success": "ok",
+  "domain": "example.com",
+  "records": [
+    {
+      "record_id": 1,
+      "domain": "example.com",
+      "subdomain": "foo",
+      "fqdn": "foo.example.com.",
+      "ttl": 300,
+      "type": "TXT",
+      "content": "txtTXTtxtTXTtxtTXT"
+    },
+    {
+      "record_id": 2,
+      "domain": "example.com",
+      "subdomain": "foo",
+      "fqdn": "foo.example.com.",
+      "ttl": 300,
+      "type": "NS",
+      "content": "bar"
+    }
+  ]
+}

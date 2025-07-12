@@ -1,27 +1,28 @@
 package internal
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_GetDNSSettings(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", testHandler("get_dns_settings.xml"))
-
+func setupClient(server *httptest.Server) (*Client, error) {
 	client := NewClient("user")
 	client.baseURL = server.URL
+	client.HTTPClient = server.Client()
+
+	return client, nil
+}
+
+func TestClient_GetDNSSettings(t *testing.T) {
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /", servermock.ResponseFromFixture("get_dns_settings.xml"),
+			servermock.CheckRequestBodyFromFile("get_dns_settings-request.xml").
+				IgnoreWhitespace()).
+		Build(t)
 
 	records, err := client.GetDNSSettings(mockContext(t), "example.com", "")
 	require.NoError(t, err)
@@ -96,14 +97,11 @@ func TestClient_GetDNSSettings(t *testing.T) {
 }
 
 func TestClient_AddDNSSettings(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", testHandler("add_dns_settings.xml"))
-
-	client := NewClient("user")
-	client.baseURL = server.URL
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /", servermock.ResponseFromFixture("add_dns_settings.xml"),
+			servermock.CheckRequestBodyFromFile("add_dns_settings-request.xml").
+				IgnoreWhitespace()).
+		Build(t)
 
 	record := DNSRequest{
 		ZoneHost:   "42cnc.de.",
@@ -119,40 +117,14 @@ func TestClient_AddDNSSettings(t *testing.T) {
 }
 
 func TestClient_DeleteDNSSettings(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", testHandler("delete_dns_settings.xml"))
-
-	client := NewClient("user")
-	client.baseURL = server.URL
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /", servermock.ResponseFromFixture("delete_dns_settings.xml"),
+			servermock.CheckRequestBodyFromFile("delete_dns_settings-request.xml").
+				IgnoreWhitespace()).
+		Build(t)
 
 	r, err := client.DeleteDNSSettings(mockContext(t), "57347450")
 	require.NoError(t, err)
 
 	assert.Equal(t, "TRUE", r)
-}
-
-func testHandler(filename string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
 }

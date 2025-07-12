@@ -1,123 +1,53 @@
 package internal
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
-type formExpectation func(values url.Values) error
-
-func setupTest(t *testing.T, filename string, expectations ...formExpectation) *Client {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("POST /", func(rw http.ResponseWriter, req *http.Request) {
-		err := req.ParseForm()
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		commons := []formExpectation{
-			expectValue("username", "user"),
-			expectNotEmpty("time"),
-			expectNotEmpty("token"),
-		}
-
-		for _, common := range commons {
-			err = common(req.Form)
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client, err := NewClient("user", "secret")
 			if err != nil {
-				http.Error(rw, err.Error(), http.StatusBadRequest)
-				return
+				return nil, err
 			}
-		}
 
-		for _, expectation := range expectations {
-			err = expectation(req.Form)
-			if err != nil {
-				http.Error(rw, err.Error(), http.StatusBadRequest)
-				return
-			}
-		}
+			client.HTTPClient = server.Client()
+			client.baseURL, _ = url.Parse(server.URL)
 
-		rw.Header().Set("Content-Type", "application/json; Charset=gb2312")
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		rw.WriteHeader(http.StatusOK)
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	client, err := NewClient("user", "secret")
-	require.NoError(t, err)
-
-	client.HTTPClient = server.Client()
-	client.baseURL, _ = url.Parse(server.URL)
-
-	return client
-}
-
-func expectValue(key, value string) formExpectation {
-	return func(values url.Values) error {
-		if values.Get(key) != value {
-			return fmt.Errorf("expected %s, got %s", value, values.Get(key))
-		}
-
-		return nil
-	}
-}
-
-func expectNotEmpty(key string) formExpectation {
-	return func(values url.Values) error {
-		if values.Get(key) == "" {
-			return fmt.Errorf("%s missing", key)
-		}
-
-		return nil
-	}
-}
-
-func noop() formExpectation {
-	return func(_ url.Values) error {
-		return nil
-	}
+			return client, nil
+		},
+		servermock.CheckHeader().
+			WithContentTypeFromURLEncoded())
 }
 
 func TestClientAddRecord(t *testing.T) {
-	expectValue("act", "adddnsrecord")
-
-	client := setupTest(t, "adddnsrecord.json",
-		expectValue("act", "adddnsrecord"),
-		expectValue("domain", "example.com"),
-		expectValue("host", "@"),
-		expectValue("type", "TXT"),
-		expectValue("value", "txtTXTtxt"),
-		expectValue("ttl", "60"),
-	)
+	client := mockBuilder().
+		Route("POST /domain/",
+			servermock.ResponseFromFixture("adddnsrecord.json").
+				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
+			servermock.CheckQueryParameter().Strict().
+				With("act", "adddnsrecord"),
+			servermock.CheckForm().UsePostForm().Strict().
+				With("domain", "example.com").
+				With("host", "@").
+				With("ttl", "60").
+				With("type", "TXT").
+				With("value", "txtTXTtxt").
+				// With("act", "adddnsrecord").
+				With("username", "user").
+				WithRegexp("time", `\d+`).
+				WithRegexp("token", `[a-z0-9]{32}`),
+		).
+		Build(t)
 
 	record := Record{
 		Domain: "example.com",
@@ -134,7 +64,13 @@ func TestClientAddRecord(t *testing.T) {
 }
 
 func TestClientAddRecord_error(t *testing.T) {
-	client := setupTest(t, "error.json", noop())
+	client := mockBuilder().
+		Route("POST /domain/",
+			servermock.ResponseFromFixture("error.json").
+				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
+			servermock.CheckQueryParameter().Strict().
+				With("act", "adddnsrecord")).
+		Build(t)
 
 	record := Record{
 		Domain: "example.com",
@@ -151,18 +87,34 @@ func TestClientAddRecord_error(t *testing.T) {
 }
 
 func TestClientDeleteRecord(t *testing.T) {
-	client := setupTest(t, "deldnsrecord.json",
-		expectValue("act", "deldnsrecord"),
-		expectValue("domain", "example.com"),
-	)
+	client := mockBuilder().
+		Route("POST /domain/",
+			servermock.ResponseFromFixture("deldnsrecord.json").
+				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
+			servermock.CheckQueryParameter().Strict().
+				With("act", "deldnsrecord"),
+			servermock.CheckForm().UsePostForm().Strict().
+				With("id", "123").
+				With("domain", "example.com").
+				With("username", "user").
+				WithRegexp("time", `\d+`).
+				WithRegexp("token", `[a-z0-9]{32}`),
+		).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "example.com", 123)
 	require.NoError(t, err)
 }
 
 func TestClientDeleteRecord_error(t *testing.T) {
-	client := setupTest(t, "error.json", noop())
-
+	client := mockBuilder().
+		Route("POST /domain/",
+			servermock.ResponseFromFixture("error.json").
+				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
+			servermock.CheckQueryParameter().Strict().
+				With("act", "deldnsrecord"),
+		).
+		Build(t)
 	err := client.DeleteRecord(t.Context(), "example.com", 123)
 	require.Error(t, err)
 

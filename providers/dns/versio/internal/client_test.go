@@ -1,61 +1,36 @@
 package internal
 
 import (
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern string, h http.HandlerFunc) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("user", "secret")
+			client.HTTPClient = server.Client()
+			client.BaseURL, _ = url.Parse(server.URL)
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc(pattern, h)
-
-	client := NewClient("user", "secret")
-	client.HTTPClient = server.Client()
-	client.BaseURL, _ = url.Parse(server.URL)
-
-	return client
-}
-
-func writeFixture(rw http.ResponseWriter, filename string) {
-	file, err := os.Open(filepath.Join("fixtures", filename))
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer func() { _ = file.Close() }()
-
-	_, _ = io.Copy(rw, file)
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders().
+			WithBasicAuth("user", "secret"))
 }
 
 func TestClient_GetDomain(t *testing.T) {
-	client := setupTest(t, "/domains/example.com", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodGet {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		auth := req.Header.Get("Authorization")
-		if auth != "Basic dXNlcjpzZWNyZXQ=" {
-			http.Error(rw, "invalid credentials: "+auth, http.StatusUnauthorized)
-			return
-		}
-
-		writeFixture(rw, "get-domain.json")
-	})
+	client := mockBuilder().
+		Route("GET /domains/example.com",
+			servermock.ResponseFromFixture("get-domain.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("show_dns_records", "true")).
+		Build(t)
 
 	records, err := client.GetDomain(t.Context(), "example.com")
 	require.NoError(t, err)
@@ -79,36 +54,22 @@ func TestClient_GetDomain(t *testing.T) {
 }
 
 func TestClient_GetDomain_error(t *testing.T) {
-	client := setupTest(t, "/domains/example.com", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodGet {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		rw.WriteHeader(http.StatusUnauthorized)
-
-		writeFixture(rw, "get-domain-error.json")
-	})
+	client := mockBuilder().
+		Route("GET /domains/example.com",
+			servermock.ResponseFromFixture("get-domain-error.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
 
 	_, err := client.GetDomain(t.Context(), "example.com")
 	require.ErrorAs(t, err, &ErrorMessage{})
 }
 
 func TestClient_UpdateDomain(t *testing.T) {
-	client := setupTest(t, "/domains/example.com/update", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		auth := req.Header.Get("Authorization")
-		if auth != "Basic dXNlcjpzZWNyZXQ=" {
-			http.Error(rw, "invalid credentials: "+auth, http.StatusUnauthorized)
-			return
-		}
-
-		writeFixture(rw, "update-domain.json")
-	})
+	client := mockBuilder().
+		Route("POST /domains/example.com/update",
+			servermock.ResponseFromFixture("update-domain.json"),
+			servermock.CheckRequestJSONBodyFromFile("update-domain-request.json")).
+		Build(t)
 
 	msg := &DomainInfo{DNSRecords: []Record{
 		{Type: "MX", Name: "example.com", Value: "fallback.axc.eu", Priority: 20, TTL: 3600},
@@ -147,16 +108,11 @@ func TestClient_UpdateDomain(t *testing.T) {
 }
 
 func TestClient_UpdateDomain_error(t *testing.T) {
-	client := setupTest(t, "/domains/example.com/update", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		rw.WriteHeader(http.StatusUnauthorized)
-
-		writeFixture(rw, "update-domain.json")
-	})
+	client := mockBuilder().
+		Route("POST /domains/example.com/update",
+			servermock.ResponseFromFixture("update-domain-error.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
 
 	msg := &DomainInfo{DNSRecords: []Record{
 		{Type: "MX", Name: "example.com", Value: "fallback.axc.eu", Priority: 20, TTL: 3600},

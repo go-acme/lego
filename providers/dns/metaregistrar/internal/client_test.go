@@ -1,58 +1,39 @@
 package internal
 
 import (
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern string, status int, filename string) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client, err := NewClient("secret")
+			if err != nil {
+				return nil, err
+			}
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+			client.HTTPClient = server.Client()
+			client.baseURL, _ = url.Parse(server.URL)
 
-	mux.HandleFunc(pattern, func(rw http.ResponseWriter, req *http.Request) {
-		if filename == "" {
-			rw.WriteHeader(status)
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		rw.WriteHeader(status)
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	client, err := NewClient("token")
-	require.NoError(t, err)
-
-	client.HTTPClient = server.Client()
-	client.baseURL, _ = url.Parse(server.URL)
-
-	return client
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders().
+			With(tokenHeader, "secret"))
 }
 
 func TestClient_UpdateDNSZone(t *testing.T) {
-	client := setupTest(t, "PATCH /dnszone/example.com", http.StatusOK, "update-dns-zone.json")
+	client := mockBuilder().
+		Route("PATCH /dnszone/example.com",
+			servermock.ResponseFromFixture("update-dns-zone.json"),
+			servermock.CheckRequestJSONBody(`{"add":[{"name":"@","type":"TXT","ttl":60,"content":"value"}]}`)).
+		Build(t)
 
 	updateRequest := DNSZoneUpdateRequest{
 		Add: []Record{{
@@ -95,7 +76,11 @@ func TestClient_UpdateDNSZone_error(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := setupTest(t, "PATCH /dnszone/example.com", http.StatusUnprocessableEntity, test.filename)
+			client := mockBuilder().
+				Route("PATCH /dnszone/example.com",
+					servermock.ResponseFromFixture(test.filename).
+						WithStatusCode(http.StatusUnprocessableEntity)).
+				Build(t)
 
 			updateRequest := DNSZoneUpdateRequest{
 				Add: []Record{{

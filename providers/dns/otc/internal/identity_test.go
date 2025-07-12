@@ -1,24 +1,36 @@
 package internal
 
 import (
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClient_Login(t *testing.T) {
-	mock := NewDNSServerMock(t)
-	mock.HandleAuthSuccessfully()
+	var serverURL *url.URL
 
-	client := NewClient("user", "secret", "example.com", "test")
-	client.IdentityEndpoint, _ = url.JoinPath(mock.GetServerURL(), "/v3/auth/token")
+	client := servermock.NewBuilder(
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("user", "secret", "example.com", "test")
+			client.HTTPClient = server.Client()
+			client.IdentityEndpoint = server.URL + "/v3/auth/token"
+
+			serverURL, _ = url.Parse(server.URL)
+
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders(),
+	).
+		Route("POST /v3/auth/token", IdentityHandlerMock()).
+		Build(t)
 
 	err := client.Login(t.Context())
 	require.NoError(t, err)
 
-	serverURL, _ := url.Parse(mock.GetServerURL())
 	assert.Equal(t, serverURL.JoinPath("v2").String(), client.baseURL.String())
 	assert.Equal(t, fakeOTCToken, client.token)
 }

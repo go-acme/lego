@@ -1,6 +1,7 @@
 package route53
 
 import (
+	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -29,22 +31,6 @@ var envTest = tester.NewEnvTest(
 	EnvWaitForRecordSetsChanged).
 	WithDomain(envDomain).
 	WithLiveTestRequirements(EnvAccessKeyID, EnvSecretAccessKey, EnvRegion, envDomain)
-
-func makeTestProvider(t *testing.T, serverURL string) *DNSProvider {
-	t.Helper()
-
-	cfg := aws.Config{
-		Credentials:      credentials.NewStaticCredentialsProvider("abc", "123", " "),
-		Region:           "mock-region",
-		BaseEndpoint:     aws.String(serverURL),
-		RetryMaxAttempts: 1,
-	}
-
-	return &DNSProvider{
-		client: route53.NewFromConfig(cfg),
-		config: NewDefaultConfig(),
-	}
-}
 
 func Test_loadCredentials_FromEnv(t *testing.T) {
 	defer envTest.RestoreEnv()
@@ -154,21 +140,42 @@ func TestNewDefaultConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	mockResponses := MockResponseMap{
-		"/2013-04-01/hostedzonesbyname":        {StatusCode: 200, Body: ListHostedZonesByNameResponse},
-		"/2013-04-01/hostedzone/ABCDEFG/rrset": {StatusCode: 200, Body: ChangeResourceRecordSetsResponse},
-		"/2013-04-01/change/123456":            {StatusCode: 200, Body: GetChangeResponse},
-		"/2013-04-01/hostedzone/ABCDEFG/rrset?name=_acme-challenge.example.com.&type=TXT": {
-			StatusCode: 200,
-			Body:       "",
-		},
-	}
-
-	serverURL := setupTest(t, mockResponses)
-
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
-	provider := makeTestProvider(t, serverURL)
+
+	provider := servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			cfg := aws.Config{
+				Credentials:      credentials.NewStaticCredentialsProvider("abc", "123", " "),
+				Region:           "mock-region",
+				BaseEndpoint:     aws.String(server.URL),
+				RetryMaxAttempts: 1,
+			}
+
+			return &DNSProvider{
+				client: route53.NewFromConfig(cfg),
+				config: NewDefaultConfig(),
+			}, nil
+		},
+	).
+		Route("GET /2013-04-01/hostedzonesbyname",
+			servermock.ResponseFromFixture("listHostedZonesByNameResponse.xml").
+				WithHeader("Content-Type", "application/xml"),
+			servermock.CheckQueryParameter().Strict().
+				With("dnsname", "example.com")).
+		Route("POST /2013-04-01/hostedzone/ABCDEFG/rrset",
+			servermock.ResponseFromFixture("changeResourceRecordSetsResponse.xml").
+				WithHeader("Content-Type", "application/xml")).
+		Route("GET /2013-04-01/change/123456",
+			servermock.ResponseFromFixture("getChangeResponse.xml").
+				WithHeader("Content-Type", "application/xml")).
+		Route("GET /2013-04-01/hostedzone/ABCDEFG/rrset",
+			servermock.Noop().
+				WithHeader("Content-Type", "application/xml"),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "_acme-challenge.example.com.").
+				With("type", "TXT")).
+		Build(t)
 
 	domain := "example.com"
 	keyAuth := "123456d=="

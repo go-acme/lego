@@ -1,48 +1,22 @@
 package internal
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func writeIdentityFixtureHandler(method, filename string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		if filename == "" {
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer func() { _ = file.Close() }()
-
-		_, _ = io.Copy(rw, file)
-	}
+func setupIdentifier(server *httptest.Server) (*Identifier, error) {
+	return NewIdentifier(server.Client(), server.URL), nil
 }
 
 func TestIdentifier_Login(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	identifier := NewIdentifier(server.Client(), server.URL)
-
-	mux.HandleFunc("/", writeIdentityFixtureHandler(http.MethodPost, "tokens.json"))
+	identifier := servermock.NewBuilder[*Identifier](setupIdentifier, servermock.CheckHeader().WithJSONHeaders()).
+		Route("POST /", servermock.ResponseFromFixture("tokens.json")).
+		Build(t)
 
 	identity, err := identifier.Login(t.Context(), "user", "secret")
 	require.NoError(t, err)

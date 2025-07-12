@@ -1,0 +1,19 @@
+{
+  "rrsets": [
+    {
+      "name": "example.org.",
+      "type": "NS",
+      "kind": "",
+      "changetype": "REPLACE",
+      "records": [
+        {
+          "content": "192.0.2.5",
+          "disabled": false,
+          "name": "ns1.example.org.",
+          "type": "A",
+          "ttl": 86400
+        }
+      ]
+    }
+  ]
+}

@@ -1,15 +1,59 @@
 package internal
 
 import (
+	"net/http/httptest"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-const fakeAPIKey = "asdf1234"
+func setupClient(server *httptest.Server) (*Client, error) {
+	client := NewClient("secret")
+	client.BaseURL = server.URL
+	client.HTTPClient = server.Client()
+
+	return client, nil
+}
+
+func TestClient_AddRecord(t *testing.T) {
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /", servermock.RawStringResponse(`{}`),
+			servermock.CheckQueryParameter().Strict().
+				With("cmd", "dns-add_record").
+				With("comment", "Managed+By+lego").
+				With("format", "json").
+				With("key", "secret").
+				With("record", "example.com").
+				With("type", "TXT").
+				With("value", "aaa")).
+		Build(t)
+
+	err := client.AddRecord(t.Context(), "example.com", "aaa")
+	require.NoError(t, err)
+}
+
+func TestClient_RemoveRecord(t *testing.T) {
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /", servermock.RawStringResponse(`{}`),
+			servermock.CheckQueryParameter().Strict().
+				With("cmd", "dns-remove_record").
+				With("comment", "Managed+By+lego").
+				With("format", "json").
+				With("key", "secret").
+				With("record", "example.com").
+				With("type", "TXT").
+				With("value", "aaa")).
+		Build(t)
+
+	err := client.RemoveRecord(t.Context(), "example.com", "aaa")
+	require.NoError(t, err)
+}
 
 func TestClient_buildQuery(t *testing.T) {
+	const fakeAPIKey = "asdf1234"
+
 	testCases := []struct {
 		desc     string
 		apiKey   string

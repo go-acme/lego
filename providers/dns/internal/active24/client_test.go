@@ -1,59 +1,41 @@
 package active24
 
 import (
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern string, status int, filename string) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client, err := NewClient("example.com", "user", "secret")
+			if err != nil {
+				return nil, err
+			}
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+			client.HTTPClient = server.Client()
+			client.baseURL, _ = url.Parse(server.URL)
 
-	mux.HandleFunc(pattern, func(rw http.ResponseWriter, req *http.Request) {
-		if filename == "" {
-			rw.WriteHeader(status)
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		rw.WriteHeader(status)
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	client, err := NewClient("example.com", "user", "secret")
-	require.NoError(t, err)
-
-	client.HTTPClient = server.Client()
-	client.baseURL, _ = url.Parse(server.URL)
-
-	return client
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders().
+			WithRegexp("Authorization", `Basic .+`).
+			WithRegexp("Date", `\d+-\d+-\d+T\d{2}:\d{2}:\d{2}.*`).
+			With("Accept-Language", "en_us"))
 }
 
 func TestClient_GetServices(t *testing.T) {
-	client := setupTest(t, "GET /v1/user/self/service", http.StatusOK, "services.json")
+	client := mockBuilder().
+		Route("GET /v1/user/self/service",
+			servermock.ResponseFromFixture("services.json")).
+		Build(t)
 
 	services, err := client.GetServices(t.Context())
 	require.NoError(t, err)
@@ -83,14 +65,21 @@ func TestClient_GetServices(t *testing.T) {
 }
 
 func TestClient_GetServices_errors(t *testing.T) {
-	client := setupTest(t, "GET /v1/user/self/service", http.StatusUnauthorized, "error_v1.json")
+	client := mockBuilder().
+		Route("GET /v1/user/self/service",
+			servermock.ResponseFromFixture("error_v1.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
 
 	_, err := client.GetServices(t.Context())
 	require.EqualError(t, err, "401: No username or password.")
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	client := setupTest(t, "GET /v2/service/aaa/dns/record", http.StatusOK, "records.json")
+	client := mockBuilder().
+		Route("GET /v2/service/aaa/dns/record",
+			servermock.ResponseFromFixture("records.json")).
+		Build(t)
 
 	filter := RecordFilter{
 		Name:    "example.com",
@@ -115,7 +104,11 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_GetRecords_errors(t *testing.T) {
-	client := setupTest(t, "GET /v2/service/aaa/dns/record", http.StatusForbidden, "error_403.json")
+	client := mockBuilder().
+		Route("GET /v2/service/aaa/dns/record",
+			servermock.ResponseFromFixture("error_403.json").
+				WithStatusCode(http.StatusForbidden)).
+		Build(t)
 
 	filter := RecordFilter{
 		Name:    "example.com",
@@ -128,28 +121,44 @@ func TestClient_GetRecords_errors(t *testing.T) {
 }
 
 func TestClient_CreateRecord(t *testing.T) {
-	client := setupTest(t, "POST /v2/service/aaa/dns/record", http.StatusNoContent, "")
+	client := mockBuilder().
+		Route("POST /v2/service/aaa/dns/record",
+			servermock.Noop().
+				WithStatusCode(http.StatusNoContent)).
+		Build(t)
 
 	err := client.CreateRecord(t.Context(), "aaa", Record{})
 	require.NoError(t, err)
 }
 
 func TestClient_CreateRecord_errors(t *testing.T) {
-	client := setupTest(t, "POST /v2/service/aaa/dns/record", http.StatusForbidden, "error_403.json")
+	client := mockBuilder().
+		Route("POST /v2/service/aaa/dns/record",
+			servermock.ResponseFromFixture("error_403.json").
+				WithStatusCode(http.StatusForbidden)).
+		Build(t)
 
 	err := client.CreateRecord(t.Context(), "aaa", Record{})
 	require.EqualError(t, err, "403: /errors/httpException: This action is unauthorized.")
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client := setupTest(t, "DELETE /v2/service/aaa/dns/record/123", http.StatusNoContent, "")
+	client := mockBuilder().
+		Route("DELETE /v2/service/aaa/dns/record/123",
+			servermock.Noop().
+				WithStatusCode(http.StatusNoContent)).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "aaa", "123")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
-	client := setupTest(t, "DELETE /v2/service/aaa/dns/record/123", http.StatusForbidden, "error_403.json")
+	client := mockBuilder().
+		Route("DELETE /v2/service/aaa/dns/record/123",
+			servermock.ResponseFromFixture("error_403.json").
+				WithStatusCode(http.StatusForbidden)).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "aaa", "123")
 	require.EqualError(t, err, "403: /errors/httpException: This action is unauthorized.")

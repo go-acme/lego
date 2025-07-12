@@ -18,6 +18,9 @@ import (
 	"github.com/miekg/dns"
 )
 
+// APIKeyHeader API key header.
+const APIKeyHeader = "X-Api-Key"
+
 // Client the PowerDNS API client.
 type Client struct {
 	serverName string
@@ -163,7 +166,7 @@ func (c *Client) joinPath(elem ...string) *url.URL {
 }
 
 func (c *Client) do(req *http.Request) (json.RawMessage, error) {
-	req.Header.Set("X-API-Key", c.apiKey)
+	req.Header.Set(APIKeyHeader, c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

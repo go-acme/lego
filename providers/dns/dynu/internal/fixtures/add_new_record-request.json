@@ -1,0 +1,9 @@
+{
+  "recordType": "TXT",
+  "domainName": "lego.freeddns.org",
+  "nodeName": "_acme-challenge",
+  "hostname": "_acme-challenge.lego.freeddns.org",
+  "state": true,
+  "textData": "txt_txt_txt_txt_txt_txt_txt_2",
+  "ttl": 300
+}

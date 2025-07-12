@@ -1,0 +1,7 @@
+{
+  "jsonrpc": "2.0",
+  "Error": {
+    "code": 403,
+    "message": "Invalid token."
+  }
+}

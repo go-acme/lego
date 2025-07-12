@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,14 +24,17 @@ const (
 	serverErrorUsername = "error"
 )
 
-func setupTest(t *testing.T) (*http.ServeMux, string) {
-	t.Helper()
+func mockBuilder(auth AuthInfo) *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient(auth)
+			client.BaseURL = server.URL
+			client.HTTPClient = server.Client()
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	return mux, server.URL
+			return client, nil
+		},
+		servermock.CheckHeader().
+			WithContentTypeFromURLEncoded())
 }
 
 func TestClient_GetZone(t *testing.T) {
@@ -70,29 +74,24 @@ func TestClient_GetZone(t *testing.T) {
 		},
 	}
 
-	mux, serverURL := setupTest(t)
+	client := mockBuilder(AuthInfo{APIKey: "12345"}).
+		Route("POST /dns-zone-get", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			authSid := req.FormValue("auth-sid")
+			domain := req.FormValue("domain")
 
-	mux.HandleFunc("/dns-zone-get", func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, http.MethodPost, r.Method)
-
-		authSid := r.FormValue("auth-sid")
-		domain := r.FormValue("domain")
-
-		switch {
-		case authSid == correctAPIKey && domain == "known":
-			_, _ = io.WriteString(w, "Status-Code: 0\nStatus-Text: OK\n\n"+testZone)
-		case authSid == incorrectAPIKey || (authSid == correctAPIKey && domain == "unknown"):
-			_, _ = io.WriteString(w, "Status-Code: 2202\nStatus-Text: Authorization error")
-		default:
-			http.NotFound(w, r)
-		}
-	})
+			switch {
+			case authSid == correctAPIKey && domain == "known":
+				_, _ = io.WriteString(rw, "Status-Code: 0\nStatus-Text: OK\n\n"+testZone)
+			case authSid == incorrectAPIKey || (authSid == correctAPIKey && domain == "unknown"):
+				_, _ = io.WriteString(rw, "Status-Code: 2202\nStatus-Text: Authorization error")
+			default:
+				http.NotFound(rw, req)
+			}
+		})).
+		Build(t)
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := NewClient(AuthInfo{APIKey: "12345"})
-			client.BaseURL = serverURL
-
 			response, err := client.GetZone(mockContext(t, test.authSid), test.domain)
 			if test.expectedError {
 				require.Error(t, err)

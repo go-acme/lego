@@ -1,68 +1,53 @@
 package internal
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern string, handler http.HandlerFunc) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("user", "secret")
+			client.HTTPClient = server.Client()
+			client.APIEndpoint, _ = url.Parse(server.URL)
+			client.token = &Token{
+				Token:     "secret",
+				Lifetime:  60,
+				TokenType: "bearer",
+				Deadline:  time.Now().Add(1 * time.Minute),
+			}
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc(pattern, handler)
-
-	client := NewClient("user", "secret")
-	client.HTTPClient = server.Client()
-	client.APIEndpoint, _ = url.Parse(server.URL)
-	client.token = &Token{
-		Token:     "secret",
-		Lifetime:  60,
-		TokenType: "bearer",
-		Deadline:  time.Now().Add(1 * time.Minute),
-	}
-
-	return client
-}
-
-func writeFixtureHandler(method, filename string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer func() { _ = file.Close() }()
-
-		_, _ = io.Copy(rw, file)
-	}
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders().
+			WithAuthorization("Bearer "+fakeToken),
+	)
 }
 
 func TestClient_CreateTXTRecord(t *testing.T) {
-	client := setupTest(t, "/zones/example.com/records/foo/TXT", writeFixtureHandler(http.MethodPost, "post-zoneszonerecords.json"))
+	client := mockBuilder().
+		Route("POST /zones/example.com/records/foo/TXT",
+			servermock.ResponseFromFixture("post-zoneszonerecords.json"),
+			servermock.CheckRequestJSONBody(`{"records":[{"host":"foo","ttl":120,"type":"TXT","data":"txt"}]}`)).
+		Build(t)
 
 	err := client.CreateTXTRecord(mockContext(t), "example.com", "foo", "txt", 120)
 	require.NoError(t, err)
 }
 
 func TestClient_RemoveTXTRecord(t *testing.T) {
-	client := setupTest(t, "/zones/example.com/records/foo/TXT", writeFixtureHandler(http.MethodDelete, "delete-zoneszonerecords.json"))
+	client := mockBuilder().
+		Route("DELETE /zones/example.com/records/foo/TXT",
+			servermock.ResponseFromFixture("delete-zoneszonerecords.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("data", "txt")).
+		Build(t)
 
 	err := client.RemoveTXTRecord(mockContext(t), "example.com", "foo", "txt")
 	require.NoError(t, err)

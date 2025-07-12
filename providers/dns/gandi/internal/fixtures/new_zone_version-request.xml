@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<methodCall>
+    <methodName>domain.zone.version.new</methodName>
+    <param>
+        <value>
+            <string>secret</string>
+        </value>
+    </param>
+    <param>
+        <value>
+            <int>6</int>
+        </value>
+    </param>
+</methodCall>

@@ -1,16 +1,10 @@
 package internal
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,8 +15,32 @@ func (s signerMock) GetJWT() (string, error) {
 	return "", nil
 }
 
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			passport := &Passport{
+				SubjectID: "/iam/project/proj123/sa/xxxxxxx",
+			}
+
+			client, err := NewClient(server.URL, "loc123", passport)
+			if err != nil {
+				return nil, err
+			}
+
+			client.HTTPClient = server.Client()
+			client.signer = signerMock{}
+
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders().
+			WithAuthorization("Bearer"))
+}
+
 func TestClient_FindRecordset(t *testing.T) {
-	client := setupTest(t, http.MethodGet, "/dns/loc123/project/proj123/zone/zone321/recordset", respFromFile("recordset.json"))
+	client := mockBuilder().
+		Route("GET /dns/loc123/project/proj123/zone/zone321/recordset",
+			servermock.ResponseFromFixture("recordset.json")).
+		Build(t)
 
 	recordset, err := client.FindRecordset(t.Context(), "zone321", "SOA", "example.com.")
 	require.NoError(t, err)
@@ -45,8 +63,11 @@ func TestClient_CreateRecordset(t *testing.T) {
 		Record:     &Record{Content: "value"},
 	}
 
-	client := setupTest(t, http.MethodPost, "/dns/loc123/project/proj123/zone/zone123/recordset",
-		hasReqBody(expectedReqBody), respFromFile("createRecordset.json"))
+	client := mockBuilder().
+		Route("POST /dns/loc123/project/proj123/zone/zone123/recordset",
+			servermock.ResponseFromFixture("createRecordset.json"),
+			servermock.CheckRequestJSONBodyFromStruct(expectedReqBody)).
+		Build(t)
 
 	rs, err := client.CreateRecordset(t.Context(), "zone123", "TXT", "test.example.com.", "value", 3600)
 	require.NoError(t, err)
@@ -56,14 +77,19 @@ func TestClient_CreateRecordset(t *testing.T) {
 }
 
 func TestClient_DeleteRecordset(t *testing.T) {
-	client := setupTest(t, http.MethodDelete, "/dns/loc123/project/proj123/zone/zone321/recordset/rs322")
+	client := mockBuilder().
+		Route("DELETE /dns/loc123/project/proj123/zone/zone321/recordset/rs322", nil).
+		Build(t)
 
 	err := client.DeleteRecordset(t.Context(), "zone321", "rs322")
 	require.NoError(t, err)
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	client := setupTest(t, http.MethodGet, "/dns/loc123/project/proj123/zone/321/recordset/322/record", respFromFile("record.json"))
+	client := mockBuilder().
+		Route("GET /dns/loc123/project/proj123/zone/321/recordset/322/record",
+			servermock.ResponseFromFixture("record.json")).
+		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "321", "322")
 	require.NoError(t, err)
@@ -84,8 +110,11 @@ func TestClient_CreateRecord(t *testing.T) {
 		Content: "value",
 	}
 
-	client := setupTest(t, http.MethodPost, "/dns/loc123/project/proj123/zone/z123/recordset/rs325/record",
-		hasReqBody(expectedReqBody), respFromFile("createRecord.json"))
+	client := mockBuilder().
+		Route("POST /dns/loc123/project/proj123/zone/z123/recordset/rs325/record",
+			servermock.ResponseFromFixture("createRecord.json"),
+			servermock.CheckRequestJSONBodyFromStruct(expectedReqBody)).
+		Build(t)
 
 	rs, err := client.CreateRecord(t.Context(), "z123", "rs325", "value")
 	require.NoError(t, err)
@@ -95,14 +124,20 @@ func TestClient_CreateRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client := setupTest(t, http.MethodDelete, "/dns/loc123/project/proj123/zone/321/recordset/322/record/323")
+	client := mockBuilder().
+		Route("DELETE /dns/loc123/project/proj123/zone/321/recordset/322/record/323",
+			servermock.ResponseFromFixture("createRecord.json")).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "321", "322", "323")
 	require.NoError(t, err)
 }
 
 func TestClient_FindZone(t *testing.T) {
-	client := setupTest(t, http.MethodGet, "/dns/loc123/project/proj123/zone", respFromFile("zones.json"))
+	client := mockBuilder().
+		Route("GET /dns/loc123/project/proj123/zone",
+			servermock.ResponseFromFixture("zones.json")).
+		Build(t)
 
 	zone, err := client.FindZone(t.Context(), "example.com")
 	require.NoError(t, err)
@@ -119,7 +154,10 @@ func TestClient_FindZone(t *testing.T) {
 }
 
 func TestClient_GetZones(t *testing.T) {
-	client := setupTest(t, http.MethodGet, "/dns/loc123/project/proj123/zone", respFromFile("zones.json"))
+	client := mockBuilder().
+		Route("GET /dns/loc123/project/proj123/zone",
+			servermock.ResponseFromFixture("zones.json")).
+		Build(t)
 
 	zones, err := client.GetZones(t.Context())
 	require.NoError(t, err)
@@ -142,78 +180,4 @@ func TestClient_GetZones(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, zones)
-}
-
-func setupTest(t *testing.T, method, path string, handlers ...assertHandler) *Client {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.Handle(path, http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		if len(handlers) != 0 {
-			for _, handler := range handlers {
-				code, err := handler(rw, req)
-				if err != nil {
-					http.Error(rw, err.Error(), code)
-					return
-				}
-			}
-		}
-	}))
-
-	passport := &Passport{
-		SubjectID: "/iam/project/proj123/sa/xxxxxxx",
-	}
-
-	client, err := NewClient(server.URL, "loc123", passport)
-	require.NoError(t, err)
-
-	client.signer = signerMock{}
-
-	return client
-}
-
-type assertHandler func(http.ResponseWriter, *http.Request) (int, error)
-
-func hasReqBody(v any) assertHandler {
-	return func(rw http.ResponseWriter, req *http.Request) (int, error) {
-		reqBody, err := io.ReadAll(req.Body)
-		if err != nil {
-			return http.StatusBadRequest, err
-		}
-
-		marshal, err := json.Marshal(v)
-		if err != nil {
-			return http.StatusInternalServerError, err
-		}
-
-		if !bytes.Equal(marshal, bytes.TrimSpace(reqBody)) {
-			return http.StatusBadRequest, fmt.Errorf("invalid request body, got: %s, expect: %s", string(reqBody), string(marshal))
-		}
-
-		return http.StatusOK, nil
-	}
-}
-
-func respFromFile(fixtureName string) assertHandler {
-	return func(rw http.ResponseWriter, req *http.Request) (int, error) {
-		file, err := os.Open(filepath.Join(".", "fixtures", fixtureName))
-		if err != nil {
-			return http.StatusInternalServerError, err
-		}
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			return http.StatusInternalServerError, err
-		}
-
-		return http.StatusOK, nil
-	}
 }

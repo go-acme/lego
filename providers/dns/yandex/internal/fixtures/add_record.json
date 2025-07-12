@@ -1,0 +1,13 @@
+{
+  "success": "ok",
+  "domain": "example.com",
+  "record": {
+    "record_id": 1,
+    "domain": "example.com",
+    "subdomain": "foo",
+    "fqdn": "foo.example.com.",
+    "ttl": 300,
+    "type": "TXT",
+    "content": "txtTXTtxtTXTtxtTXT"
+  }
+}

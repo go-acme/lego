@@ -1,0 +1,6 @@
+{
+  "name": "_acme-challenge.example.com",
+  "type": "TXT",
+  "content": "\"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI\"",
+  "ttl": 120
+}

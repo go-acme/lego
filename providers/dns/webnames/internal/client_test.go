@@ -1,74 +1,25 @@
 package internal
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
-	"net/url"
-	"os"
-	"path"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, filename string, expectedParams url.Values) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("secret")
+			client.baseURL = server.URL
+			client.HTTPClient = server.Client()
 
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		if req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
-			http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
-
-		err := req.ParseForm()
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		for k, v := range expectedParams {
-			val := req.PostForm.Get(k)
-			if len(v) == 0 {
-				http.Error(rw, fmt.Sprintf("%s: no value", k), http.StatusBadRequest)
-				return
-			}
-
-			if val != v[0] {
-				http.Error(rw, fmt.Sprintf("%s: invalid value: %s != %s", k, val, v[0]), http.StatusBadRequest)
-				return
-			}
-		}
-
-		file, err := os.Open(path.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer func() { _ = file.Close() }()
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	server := httptest.NewServer(mux)
-
-	client := NewClient("secret")
-	client.baseURL = server.URL
-	client.HTTPClient = server.Client()
-
-	return client
+			return client, nil
+		},
+		servermock.CheckHeader().
+			WithContentTypeFromURLEncoded(),
+	)
 }
 
 func TestClient_AddTXTRecord(t *testing.T) {
@@ -93,13 +44,17 @@ func TestClient_AddTXTRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			data := url.Values{}
-			data.Set("domain", "example.com")
-			data.Set("type", "TXT")
-			data.Set("record", "foo:txtTXTtxt")
-			data.Set("action", "add")
-
-			client := setupTest(t, test.filename, data)
+			client := mockBuilder().
+				Route("POST /",
+					servermock.ResponseFromFixture(test.filename),
+					servermock.CheckForm().Strict().
+						With("domain", "example.com").
+						With("type", "TXT").
+						With("record", "foo:txtTXTtxt").
+						With("action", "add").
+						With("apikey", "secret"),
+				).
+				Build(t)
 
 			domain := "example.com"
 			subDomain := "foo"
@@ -133,13 +88,17 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			data := url.Values{}
-			data.Set("domain", "example.com")
-			data.Set("type", "TXT")
-			data.Set("record", "foo:txtTXTtxt")
-			data.Set("action", "delete")
-
-			client := setupTest(t, test.filename, data)
+			client := mockBuilder().
+				Route("POST /",
+					servermock.ResponseFromFixture(test.filename),
+					servermock.CheckForm().Strict().
+						With("domain", "example.com").
+						With("type", "TXT").
+						With("record", "foo:txtTXTtxt").
+						With("action", "delete").
+						With("apikey", "secret"),
+				).
+				Build(t)
 
 			domain := "example.com"
 			subDomain := "foo"

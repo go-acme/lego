@@ -1,62 +1,34 @@
 package internal
 
 import (
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, method, pattern string, status int, file string) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("user", "secret")
+			client.HTTPClient = server.Client()
+			client.BaseURL, _ = url.Parse(server.URL)
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc(pattern, func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		if file == "" {
-			rw.WriteHeader(status)
-			return
-		}
-
-		open, err := os.Open(filepath.Join("fixtures", file))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = open.Close() }()
-
-		rw.WriteHeader(status)
-		_, err = io.Copy(rw, open)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	client := NewClient("user", "secret")
-	client.HTTPClient = server.Client()
-	client.BaseURL, _ = url.Parse(server.URL)
-
-	return client
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders().
+			WithBasicAuth("user", "secret"),
+	)
 }
 
 func TestClient_GetTxtRecords(t *testing.T) {
-	client := setupTest(t, http.MethodGet, "/dns/example.com/txt", http.StatusOK, "get-txt-records.json")
+	client := mockBuilder().
+		Route("GET /dns/example.com/txt", servermock.ResponseFromFixture("get-txt-records.json")).
+		Build(t)
 
 	records, err := client.GetTxtRecords(t.Context(), "example.com")
 	require.NoError(t, err)
@@ -69,7 +41,12 @@ func TestClient_GetTxtRecords(t *testing.T) {
 }
 
 func TestClient_AddTxtRecord(t *testing.T) {
-	client := setupTest(t, http.MethodPost, "/dns/example.com/txt", http.StatusCreated, "create-txt-record.json")
+	client := mockBuilder().
+		Route("POST /dns/example.com/txt",
+			servermock.ResponseFromFixture("create-txt-record.json").
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBody(`{"name":"prefix.example.com","destination":"server.example.com"}`)).
+		Build(t)
 
 	records, err := client.AddTxtRecord(t.Context(), "example.com", TXTRecord{Name: "prefix.example.com", Destination: "server.example.com"})
 	require.NoError(t, err)
@@ -82,7 +59,11 @@ func TestClient_AddTxtRecord(t *testing.T) {
 }
 
 func TestClient_RemoveTxtRecord(t *testing.T) {
-	client := setupTest(t, http.MethodDelete, "/dns/example.com/txt/123", http.StatusNoContent, "")
+	client := mockBuilder().
+		Route("DELETE /dns/example.com/txt/123",
+			servermock.Noop().
+				WithStatusCode(http.StatusNoContent)).
+		Build(t)
 
 	err := client.RemoveTxtRecord(t.Context(), "example.com", "123")
 	require.NoError(t, err)

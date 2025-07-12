@@ -1,0 +1,8 @@
+{
+  "id": 1,
+  "type": "TXT",
+  "name": "foo",
+  "value": "aaa",
+  "ttl": 60,
+  "sourceId": 123
+}

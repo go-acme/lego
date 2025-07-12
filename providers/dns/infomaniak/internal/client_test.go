@@ -1,64 +1,34 @@
 package internal
 
 import (
-	"bytes"
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client, err := New(OAuthStaticAccessToken(server.Client(), "token"), server.URL)
+			if err != nil {
+				return nil, err
+			}
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client, err := New(OAuthStaticAccessToken(server.Client(), "token"), server.URL)
-	require.NoError(t, err)
-
-	return client, mux
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders().
+			WithAuthorization("Bearer token"))
 }
 
 func TestClient_CreateDNSRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/1/domain/666/dns/record", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		if req.Header.Get("Authorization") != "Bearer token" {
-			http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-
-		raw, err := io.ReadAll(req.Body)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
-		}
-		defer func() { _ = req.Body.Close() }()
-
-		if string(bytes.TrimSpace(raw)) != `{"source":"foo","type":"TXT","ttl":60,"target":"txtxtxttxt"}` {
-			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
-			return
-		}
-
-		response := `{"result":"success","data": "123"}`
-
-		_, err = rw.Write([]byte(response))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	client := mockBuilder().
+		Route("POST /1/domain/666/dns/record",
+			servermock.RawStringResponse(`{"result":"success","data": "123"}`),
+			servermock.CheckRequestJSONBodyFromFile("create_dns_record-request.json")).
+		Build(t)
 
 	domain := &DNSDomain{
 		ID:           666,
@@ -79,53 +49,13 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 }
 
 func TestClient_GetDomainByName(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/1/product", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodGet {
-			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		if req.Header.Get("Authorization") != "Bearer token" {
-			http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-
-		serviceName := req.URL.Query().Get("service_name")
-		if serviceName != "domain" {
-			http.Error(rw, fmt.Sprintf("invalid service_name: %s", serviceName), http.StatusBadRequest)
-			return
-		}
-
-		customerName := req.URL.Query().Get("customer_name")
-		if customerName == "" {
-			http.Error(rw, fmt.Sprintf("invalid customer_name: %s", customerName), http.StatusBadRequest)
-			return
-		}
-
-		response := `
-	{
-	  "result": "success",
-	  "data": [
-	    {
-	      "id": 123,
-	      "customer_name": "two.three.example.com"
-	    },
-	    {
-	      "id": 456,
-	      "customer_name": "three.example.com"
-	    }
-	  ]
-	}
-	`
-
-		_, err := rw.Write([]byte(response))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	client := mockBuilder().
+		Route("GET /1/product",
+			servermock.ResponseFromFixture("get_domain_name.json"),
+			servermock.CheckQueryParameter().Strict().
+				WithRegexp("customer_name", `.+\.example\.com`).
+				With("service_name", "domain")).
+		Build(t)
 
 	domain, err := client.GetDomainByName(t.Context(), "one.two.three.example.com.")
 	require.NoError(t, err)
@@ -135,25 +65,10 @@ func TestClient_GetDomainByName(t *testing.T) {
 }
 
 func TestClient_DeleteDNSRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/1/domain/123/dns/record/456", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodDelete {
-			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		if req.Header.Get("Authorization") != "Bearer token" {
-			http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-
-		_, err := rw.Write([]byte((`{"result":"success"}`)))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	client := mockBuilder().
+		Route("DELETE /1/domain/123/dns/record/456",
+			servermock.RawStringResponse(`{"result":"success"}`)).
+		Build(t)
 
 	err := client.DeleteDNSRecord(t.Context(), 123, "456")
 	require.NoError(t, err)

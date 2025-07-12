@@ -1,0 +1,13 @@
+{
+  "result": "success",
+  "data": [
+    {
+      "id": 123,
+      "customer_name": "two.three.example.com"
+    },
+    {
+      "id": 456,
+      "customer_name": "three.example.com"
+    }
+  ]
+}

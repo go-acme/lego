@@ -1,0 +1,38 @@
+[
+  {
+    "name": "_acme-challenge",
+    "type": "TXT",
+    "data": " ",
+    "ttl": 600
+  },
+  {
+    "name": "_acme-challenge.example",
+    "type": "TXT",
+    "data": "6rrai7-jm7l3PxL4WGmGoS6VMeefSHx24r-qCvUIOxU",
+    "ttl": 600
+  },
+  {
+    "name": "_acme-challenge.example",
+    "type": "TXT",
+    "data": "8Axt-PXQvjOVD2oi2YXqyyn8U5CDcC8P-BphlCxk3Ek",
+    "ttl": 600
+  },
+  {
+    "name": "_acme-challenge.lego",
+    "type": "TXT",
+    "data": " ",
+    "ttl": 600
+  },
+  {
+    "name": "_acme-challenge.lego",
+    "type": "TXT",
+    "data": "0Ad60wO_yxxJPFPb1deir6lQ37FPLeA02YCobo7Qm8A",
+    "ttl": 600
+  },
+  {
+    "name": "_acme-challenge.lego",
+    "type": "TXT",
+    "data": "acme",
+    "ttl": 600
+  }
+]

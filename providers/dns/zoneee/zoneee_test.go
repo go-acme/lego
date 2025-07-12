@@ -6,16 +6,21 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"path"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/go-acme/lego/v4/providers/dns/zoneee/internal"
 	"github.com/stretchr/testify/require"
 )
 
 const envDomain = envNamespace + "DOMAIN"
+
+const (
+	fakeUsername = "user"
+	fakeAPIKey   = "secret"
+)
 
 var envTest = tester.NewEnvTest(EnvEndpoint, EnvAPIUser, EnvAPIKey).
 	WithLiveTestRequirements(EnvAPIUser, EnvAPIKey).
@@ -94,7 +99,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		desc     string
 		apiUser  string
 		apiKey   string
-		endpoint string
 		expected string
 	}{
 		{
@@ -124,10 +128,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config.APIKey = test.apiKey
 			config.Username = test.apiUser
 
-			if test.endpoint != "" {
-				config.Endpoint = mustParse(test.endpoint)
-			}
-
 			p, err := NewDNSProviderConfig(config)
 
 			if test.expected == "" {
@@ -147,57 +147,33 @@ func TestDNSProvider_Present(t *testing.T) {
 
 	testCases := []struct {
 		desc          string
-		username      string
-		apiKey        string
-		handlers      map[string]http.HandlerFunc
+		builder       *servermock.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
-			desc:     "success",
-			username: "bar",
-			apiKey:   "foo",
-			handlers: map[string]http.HandlerFunc{
-				path.Join("/", "dns", hostedZone, "txt"): mockHandlerCreateRecord,
-			},
+			desc: "success",
+			builder: mockBuilder(fakeUsername, fakeAPIKey).
+				Route("POST /dns/"+hostedZone+"/txt",
+					mockHandlerCreateRecord()),
 		},
 		{
-			desc:     "invalid auth",
-			username: "nope",
-			apiKey:   "foo",
-			handlers: map[string]http.HandlerFunc{
-				path.Join("/", "dns", hostedZone, "txt"): mockHandlerCreateRecord,
-			},
+			desc: "invalid auth",
+			builder: mockBuilder("nope", "nope").
+				Route("POST /dns/"+hostedZone+"/txt", nil),
 			expectedError: "zoneee: unexpected status code: [status code: 401] body: Unauthorized",
 		},
 		{
 			desc:          "error",
-			username:      "bar",
-			apiKey:        "foo",
+			builder:       mockBuilder(fakeUsername, fakeAPIKey),
 			expectedError: "zoneee: unexpected status code: [status code: 404] body: 404 page not found",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
+			provider := test.builder.Build(t)
 
-			mux := http.NewServeMux()
-			server := httptest.NewServer(mux)
-			t.Cleanup(server.Close)
-
-			for uri, handler := range test.handlers {
-				mux.HandleFunc(uri, handler)
-			}
-
-			config := NewDefaultConfig()
-			config.Endpoint = mustParse(server.URL)
-			config.Username = test.username
-			config.APIKey = test.apiKey
-
-			p, err := NewDNSProviderConfig(config)
-			require.NoError(t, err)
-
-			err = p.Present(domain, "token", "key")
+			err := provider.Present(domain, "token", "key")
 			if test.expectedError == "" {
 				require.NoError(t, err)
 			} else {
@@ -213,81 +189,49 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 
 	testCases := []struct {
 		desc          string
-		username      string
-		apiKey        string
-		handlers      map[string]http.HandlerFunc
+		builder       *servermock.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
-			desc:     "success",
-			username: "bar",
-			apiKey:   "foo",
-			handlers: map[string]http.HandlerFunc{
-				path.Join("/", "dns", hostedZone, "txt"): mockHandlerGetRecords([]internal.TXTRecord{{
-					ID:          "1234",
-					Name:        domain,
-					Destination: "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
-					Delete:      true,
-					Modify:      true,
-				}}),
-				path.Join("/", "dns", hostedZone, "txt", "1234"): mockHandlerDeleteRecord,
-			},
+			desc: "success",
+			builder: mockBuilder(fakeUsername, fakeAPIKey).
+				Route("GET /dns/"+hostedZone+"/txt",
+					mockHandlerGetRecords([]internal.TXTRecord{{
+						ID:          "1234",
+						Name:        domain,
+						Destination: "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
+						Delete:      true,
+						Modify:      true,
+					}})).
+				Route("DELETE /dns/"+hostedZone+"/txt/1234",
+					servermock.Noop().
+						WithStatusCode(http.StatusNoContent)),
 		},
 		{
-			desc:     "no txt records",
-			username: "bar",
-			apiKey:   "foo",
-			handlers: map[string]http.HandlerFunc{
-				path.Join("/", "dns", hostedZone, "txt"):         mockHandlerGetRecords([]internal.TXTRecord{}),
-				path.Join("/", "dns", hostedZone, "txt", "1234"): mockHandlerDeleteRecord,
-			},
+			desc: "no txt records",
+			builder: mockBuilder(fakeUsername, fakeAPIKey).
+				Route("GET /dns/"+hostedZone+"/txt",
+					mockHandlerGetRecords([]internal.TXTRecord{})),
 			expectedError: "zoneee: txt record does not exist for LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
 		},
 		{
-			desc:     "invalid auth",
-			username: "nope",
-			apiKey:   "foo",
-			handlers: map[string]http.HandlerFunc{
-				path.Join("/", "dns", hostedZone, "txt"): mockHandlerGetRecords([]internal.TXTRecord{{
-					ID:          "1234",
-					Name:        domain,
-					Destination: "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
-					Delete:      true,
-					Modify:      true,
-				}}),
-				path.Join("/", "dns", hostedZone, "txt", "1234"): mockHandlerDeleteRecord,
-			},
+			desc: "invalid auth",
+			builder: mockBuilder("nope", "nope").
+				Route("GET /dns/"+hostedZone+"/txt", nil),
 			expectedError: "zoneee: unexpected status code: [status code: 401] body: Unauthorized",
 		},
 		{
 			desc:          "error",
-			username:      "bar",
-			apiKey:        "foo",
+			builder:       mockBuilder(fakeUsername, fakeAPIKey),
 			expectedError: "zoneee: unexpected status code: [status code: 404] body: 404 page not found",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
+			provider := test.builder.Build(t)
 
-			mux := http.NewServeMux()
-			server := httptest.NewServer(mux)
-			t.Cleanup(server.Close)
-
-			for uri, handler := range test.handlers {
-				mux.HandleFunc(uri, handler)
-			}
-
-			config := NewDefaultConfig()
-			config.Endpoint = mustParse(server.URL)
-			config.Username = test.username
-			config.APIKey = test.apiKey
-
-			p, err := NewDNSProviderConfig(config)
-			require.NoError(t, err)
-
-			err = p.CleanUp(domain, "token", "key")
+			err := provider.CleanUp(domain, "token", "key")
 			if test.expectedError == "" {
 				require.NoError(t, err)
 			} else {
@@ -325,72 +269,57 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mustParse(rawURL string) *url.URL {
-	uri, err := url.Parse(rawURL)
-	if err != nil {
-		panic(err)
-	}
-	return uri
+func mockBuilder(username, apiKey string) *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.Endpoint, _ = url.Parse(server.URL)
+			config.Username = username
+			config.APIKey = apiKey
+
+			return NewDNSProviderConfig(config)
+		},
+		checkBasicAuth())
 }
 
-func mockHandlerCreateRecord(rw http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodPost {
-		http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
+func mockHandlerCreateRecord() http.HandlerFunc {
+	return encodeJSONHandler(func(req *http.Request, rw http.ResponseWriter) (any, error) {
+		record := internal.TXTRecord{}
+		err := json.NewDecoder(req.Body).Decode(&record)
+		if err != nil {
+			return nil, err
+		}
 
-	username, apiKey, ok := req.BasicAuth()
-	if username != "bar" || apiKey != "foo" || !ok {
-		rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm=%q`, "Please enter your username and API key."))
-		http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		return
-	}
+		record.ID = "1234"
+		record.Delete = true
+		record.Modify = true
+		record.ResourceURL = req.URL.String() + "/1234"
 
-	record := internal.TXTRecord{}
-	err := json.NewDecoder(req.Body).Decode(&record)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	record.ID = "1234"
-	record.Delete = true
-	record.Modify = true
-	record.ResourceURL = req.URL.String() + "/1234"
-
-	bytes, err := json.Marshal([]internal.TXTRecord{record})
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if _, err = rw.Write(bytes); err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		return []internal.TXTRecord{record}, nil
+	})
 }
 
 func mockHandlerGetRecords(records []internal.TXTRecord) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodGet {
-			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		username, apiKey, ok := req.BasicAuth()
-		if username != "bar" || apiKey != "foo" || !ok {
-			rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm=%q`, "Please enter your username and API key."))
-			http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-
-		for _, value := range records {
-			if value.ResourceURL == "" {
-				value.ResourceURL = req.URL.String() + "/" + value.ID
+	return encodeJSONHandler(func(req *http.Request, rw http.ResponseWriter) (any, error) {
+		for _, record := range records {
+			if record.ResourceURL == "" {
+				record.ResourceURL = req.URL.String() + "/" + record.ID
 			}
 		}
 
-		bytes, err := json.Marshal(records)
+		return records, nil
+	})
+}
+
+func encodeJSONHandler(build func(req *http.Request, rw http.ResponseWriter) (any, error)) http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		data, err := build(req, rw)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		bytes, err := json.Marshal(data)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
@@ -403,18 +332,17 @@ func mockHandlerGetRecords(records []internal.TXTRecord) http.HandlerFunc {
 	}
 }
 
-func mockHandlerDeleteRecord(rw http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodDelete {
-		http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
+func checkBasicAuth() servermock.LinkFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			username, apiKey, ok := req.BasicAuth()
+			if username != fakeUsername || apiKey != fakeAPIKey || !ok {
+				rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm=%q`, "Please enter your username and API key."))
+				http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
 
-	username, apiKey, ok := req.BasicAuth()
-	if username != "bar" || apiKey != "foo" || !ok {
-		rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm=%q`, "Please enter your username and API key."))
-		http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		return
+			next.ServeHTTP(rw, req)
+		})
 	}
-
-	rw.WriteHeader(http.StatusNoContent)
 }

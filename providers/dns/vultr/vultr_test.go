@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vultr/govultr/v3"
@@ -159,53 +160,53 @@ func TestDNSProvider_getHostedZone(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			mux := http.NewServeMux()
-			server := httptest.NewServer(mux)
-			t.Cleanup(server.Close)
-
-			client := govultr.NewClient(nil)
-			err := client.SetBaseURL(server.URL)
-			require.NoError(t, err)
-
-			p := &DNSProvider{client: client}
-
 			var pageCount int
 
-			mux.HandleFunc("/v2/domains", func(rw http.ResponseWriter, req *http.Request) {
-				pageCount++
+			provider := servermock.NewBuilder(
+				func(server *httptest.Server) (*DNSProvider, error) {
+					client := govultr.NewClient(nil)
+					err := client.SetBaseURL(server.URL)
+					require.NoError(t, err)
 
-				query := req.URL.Query()
-				cursor, _ := strconv.Atoi(query.Get("cursor"))
-				perPage, _ := strconv.Atoi(query.Get("per_page"))
+					return &DNSProvider{client: client}, nil
+				},
+			).
+				Route("GET /v2/domains", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+					pageCount++
 
-				var next string
-				if len(domains)/perPage > cursor {
-					next = strconv.Itoa(cursor + 1)
-				}
+					query := req.URL.Query()
+					cursor, _ := strconv.Atoi(query.Get("cursor"))
+					perPage, _ := strconv.Atoi(query.Get("per_page"))
 
-				start := cursor * perPage
-				if len(domains) < start {
-					start = cursor * len(domains)
-				}
+					var next string
+					if len(domains)/perPage > cursor {
+						next = strconv.Itoa(cursor + 1)
+					}
 
-				end := min(len(domains), (cursor+1)*perPage)
+					start := cursor * perPage
+					if len(domains) < start {
+						start = cursor * len(domains)
+					}
 
-				db := domainsBase{
-					Domains: domains[start:end],
-					Meta: &govultr.Meta{
-						Total: len(domains),
-						Links: &govultr.Links{Next: next},
-					},
-				}
+					end := min(len(domains), (cursor+1)*perPage)
 
-				err = json.NewEncoder(rw).Encode(db)
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			})
+					db := domainsBase{
+						Domains: domains[start:end],
+						Meta: &govultr.Meta{
+							Total: len(domains),
+							Links: &govultr.Links{Next: next},
+						},
+					}
 
-			zone, err := p.getHostedZone(t.Context(), test.domain)
+					err := json.NewEncoder(rw).Encode(db)
+					if err != nil {
+						http.Error(rw, err.Error(), http.StatusInternalServerError)
+						return
+					}
+				})).
+				Build(t)
+
+			zone, err := provider.getHostedZone(t.Context(), test.domain)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, zone)

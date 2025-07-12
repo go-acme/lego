@@ -1,13 +1,12 @@
 package dreamhost
 
 import (
-	"fmt"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,22 +22,15 @@ const (
 	fakeKeyAuth        = "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"
 )
 
-func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+		config := NewDefaultConfig()
+		config.APIKey = fakeAPIKey
+		config.BaseURL = server.URL
+		config.HTTPClient = server.Client()
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	config := NewDefaultConfig()
-	config.APIKey = fakeAPIKey
-	config.BaseURL = server.URL
-	config.HTTPClient = server.Client()
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	return provider, mux
+		return NewDNSProviderConfig(config)
+	})
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -115,67 +107,48 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider, mux := setupTest(t)
-
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodGet, r.Method, "method")
-
-		q := r.URL.Query()
-		assert.Equal(t, fakeAPIKey, q.Get("key"))
-		assert.Equal(t, "dns-add_record", q.Get("cmd"))
-		assert.Equal(t, "json", q.Get("format"))
-		assert.Equal(t, "_acme-challenge.example.com", q.Get("record"))
-		assert.Equal(t, fakeKeyAuth, q.Get("value"))
-		assert.Equal(t, "Managed+By+lego", q.Get("comment"))
-
-		_, err := fmt.Fprintf(w, `{"data":"record_added","result":"success"}`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	provider := mockBuilder().
+		Route("GET /",
+			servermock.RawStringResponse(`{"data":"record_added","result":"success"}`),
+			servermock.CheckQueryParameter().Strict().
+				With("cmd", "dns-add_record").
+				With("comment", "Managed+By+lego").
+				With("format", "json").
+				With("record", "_acme-challenge.example.com").
+				With("type", "TXT").
+				With("key", fakeAPIKey).
+				With("value", fakeKeyAuth),
+		).
+		Build(t)
 
 	err := provider.Present("example.com", "", fakeChallengeToken)
 	require.NoError(t, err)
 }
 
 func TestDNSProvider_PresentFailed(t *testing.T) {
-	provider, mux := setupTest(t)
-
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodGet, r.Method, "method")
-
-		_, err := fmt.Fprintf(w, `{"data":"record_already_exists_remove_first","result":"error"}`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	provider := mockBuilder().
+		Route("GET /",
+			servermock.RawStringResponse(`{"data":"record_already_exists_remove_first","result":"error"}`)).
+		Build(t)
 
 	err := provider.Present("example.com", "", fakeChallengeToken)
 	require.EqualError(t, err, "dreamhost: add TXT record failed: record_already_exists_remove_first")
 }
 
 func TestDNSProvider_Cleanup(t *testing.T) {
-	provider, mux := setupTest(t)
-
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodGet, r.Method, "method")
-
-		q := r.URL.Query()
-		assert.Equal(t, fakeAPIKey, q.Get("key"), "key mismatch")
-		assert.Equal(t, "dns-remove_record", q.Get("cmd"), "cmd mismatch")
-		assert.Equal(t, "json", q.Get("format"))
-		assert.Equal(t, "_acme-challenge.example.com", q.Get("record"))
-		assert.Equal(t, fakeKeyAuth, q.Get("value"), "value mismatch")
-		assert.Equal(t, "Managed+By+lego", q.Get("comment"))
-
-		_, err := fmt.Fprintf(w, `{"data":"record_removed","result":"success"}`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	provider := mockBuilder().
+		Route("GET /",
+			servermock.RawStringResponse(`{"data":"record_removed","result":"success"}`),
+			servermock.CheckQueryParameter().Strict().
+				With("cmd", "dns-remove_record").
+				With("comment", "Managed+By+lego").
+				With("format", "json").
+				With("record", "_acme-challenge.example.com").
+				With("type", "TXT").
+				With("key", fakeAPIKey).
+				With("value", fakeKeyAuth),
+		).
+		Build(t)
 
 	err := provider.CleanUp("example.com", "", fakeChallengeToken)
 	require.NoError(t, err, "failed to remove TXT record")

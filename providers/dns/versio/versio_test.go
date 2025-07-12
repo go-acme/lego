@@ -1,14 +1,12 @@
 package versio
 
 import (
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -125,21 +123,37 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		handler       http.Handler
+		builder       *servermock.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
-			desc:    "Success",
-			handler: muxSuccess(),
+			desc: "Success",
+			builder: mockBuilder().
+				Route("GET /domains/example.com",
+					servermock.ResponseFromFixture("token.json"),
+					servermock.CheckQueryParameter().Strict().
+						With("show_dns_records", "true")).
+				Route("POST /domains/example.com/update",
+					servermock.ResponseFromFixture("token.json")),
 		},
 		{
-			desc:          "FailToFindZone",
-			handler:       muxFailToFindZone(),
+			desc: "FailToFindZone",
+			builder: mockBuilder().
+				Route("GET /domains/example.com",
+					servermock.ResponseFromFixture("error_failToFindZone.json").
+						WithStatusCode(http.StatusUnauthorized)),
 			expectedError: `versio: [status code: 401] 401: ObjectDoesNotExist|Domain not found`,
 		},
 		{
-			desc:          "FailToCreateTXT",
-			handler:       muxFailToCreateTXT(),
+			desc: "FailToCreateTXT",
+			builder: mockBuilder().
+				Route("GET /domains/example.com",
+					servermock.ResponseFromFixture("token.json"),
+					servermock.CheckQueryParameter().Strict().
+						With("show_dns_records", "true")).
+				Route("POST /domains/example.com/update",
+					servermock.ResponseFromFixture("error_failToCreateTXT.json").
+						WithStatusCode(http.StatusBadRequest)),
 			expectedError: `versio: [status code: 400] 400: ProcessError|DNS record invalid type _acme-challenge.example.eu. TST`,
 		},
 	}
@@ -149,17 +163,9 @@ func TestDNSProvider_Present(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
 
-			baseURL := setupTest(t, test.handler)
+			provider := test.builder.Build(t)
 
-			envTest.Apply(map[string]string{
-				EnvUsername: "me@example.com",
-				EnvPassword: "secret",
-				EnvEndpoint: baseURL,
-			})
-			provider, err := NewDNSProvider()
-			require.NoError(t, err)
-
-			err = provider.Present(testDomain, "token", "keyAuth")
+			err := provider.Present(testDomain, "token", "keyAuth")
 			if test.expectedError == "" {
 				require.NoError(t, err)
 			} else {
@@ -172,16 +178,25 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		handler       http.Handler
+		builder       *servermock.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
-			desc:    "Success",
-			handler: muxSuccess(),
+			desc: "Success",
+			builder: mockBuilder().
+				Route("GET /domains/example.com",
+					servermock.ResponseFromFixture("token.json"),
+					servermock.CheckQueryParameter().Strict().
+						With("show_dns_records", "true")).
+				Route("POST /domains/example.com/update",
+					servermock.ResponseFromFixture("token.json")),
 		},
 		{
-			desc:          "FailToFindZone",
-			handler:       muxFailToFindZone(),
+			desc: "FailToFindZone",
+			builder: mockBuilder().
+				Route("GET /domains/example.com",
+					servermock.ResponseFromFixture("error_failToFindZone.json").
+						WithStatusCode(http.StatusUnauthorized)),
 			expectedError: `versio: [status code: 401] 401: ObjectDoesNotExist|Domain not found`,
 		},
 	}
@@ -191,18 +206,9 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
 
-			baseURL := setupTest(t, test.handler)
+			provider := test.builder.Build(t)
 
-			envTest.Apply(map[string]string{
-				EnvUsername: "me@example.com",
-				EnvPassword: "secret",
-				EnvEndpoint: baseURL,
-			})
-
-			provider, err := NewDNSProvider()
-			require.NoError(t, err)
-
-			err = provider.CleanUp(testDomain, "token", "keyAuth")
+			err := provider.CleanUp(testDomain, "token", "keyAuth")
 			if test.expectedError == "" {
 				require.NoError(t, err)
 			} else {
@@ -210,85 +216,6 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			}
 		})
 	}
-}
-
-func muxSuccess() *http.ServeMux {
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/domains/example.com", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet && r.URL.Query().Get("show_dns_records") == "true" {
-			fmt.Fprint(w, tokenResponseMock)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-	})
-
-	mux.HandleFunc("/domains/example.com/update", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			fmt.Fprint(w, tokenResponseMock)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-	})
-
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("unexpected request: %+v\n\n", r)
-		data, _ := io.ReadAll(r.Body)
-		defer func() { _ = r.Body.Close() }()
-		log.Println(string(data))
-		http.NotFound(w, r)
-	})
-
-	return mux
-}
-
-func muxFailToFindZone() *http.ServeMux {
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/domains/example.com", func(w http.ResponseWriter, _ *http.Request) {
-		http.Error(w, tokenFailToFindZoneMock, http.StatusUnauthorized)
-	})
-
-	return mux
-}
-
-func muxFailToCreateTXT() *http.ServeMux {
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/domains/example.com", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet && r.URL.Query().Get("show_dns_records") == "true" {
-			fmt.Fprint(w, tokenResponseMock)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-	})
-
-	mux.HandleFunc("/domains/example.com/update", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			http.Error(w, tokenFailToCreateTXTMock, http.StatusBadRequest)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-	})
-
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("unexpected request: %+v\n\n", r)
-		data, _ := io.ReadAll(r.Body)
-		defer func() { _ = r.Body.Close() }()
-		log.Println(string(data))
-		http.NotFound(w, r)
-	})
-
-	return mux
-}
-
-func setupTest(t *testing.T, handler http.Handler) string {
-	t.Helper()
-
-	server := httptest.NewServer(handler)
-	t.Cleanup(server.Close)
-
-	return server.URL
 }
 
 func TestLivePresent(t *testing.T) {
@@ -315,4 +242,16 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+}
+
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+		envTest.Apply(map[string]string{
+			EnvUsername: "me@example.com",
+			EnvPassword: "secret",
+			EnvEndpoint: server.URL,
+		})
+
+		return NewDNSProvider()
+	})
 }

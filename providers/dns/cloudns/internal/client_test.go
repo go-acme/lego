@@ -1,43 +1,25 @@
 package internal
 
 import (
-	"fmt"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, subAuthID string, handler http.HandlerFunc) *Client {
-	t.Helper()
-
-	server := httptest.NewServer(handler)
-	t.Cleanup(server.Close)
-
-	client, err := NewClient("myAuthID", subAuthID, "myAuthPassword")
-	require.NoError(t, err)
-
-	client.BaseURL, _ = url.Parse(server.URL)
-	client.HTTPClient = server.Client()
-
-	return client
-}
-
-func handlerMock(method string, jsonData []byte) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, "Incorrect method used", http.StatusBadRequest)
-			return
-		}
-
-		_, err := rw.Write(jsonData)
+func setupClient(subAuthID string) func(server *httptest.Server) (*Client, error) {
+	return func(server *httptest.Server) (*Client, error) {
+		client, err := NewClient("myAuthID", subAuthID, "myAuthPassword")
 		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
+			return nil, err
 		}
+
+		client.BaseURL, _ = url.Parse(server.URL)
+		client.HTTPClient = server.Client()
+		return client, nil
 	}
 }
 
@@ -131,7 +113,15 @@ func TestClient_GetZone(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := setupTest(t, "", handlerMock(http.MethodGet, []byte(test.apiResponse)))
+			client := servermock.NewBuilder[*Client](setupClient("")).
+				Route("GET /get-zone-info.json",
+					servermock.RawStringResponse(test.apiResponse),
+					servermock.CheckQueryParameter().Strict().
+						With("auth-id", "myAuthID").
+						With("auth-password", "myAuthPassword").
+						With("domain-name", "foo.com"),
+				).
+				Build(t)
 
 			zone, err := client.GetZone(t.Context(), test.authFQDN)
 
@@ -238,7 +228,17 @@ func TestClient_FindTxtRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := setupTest(t, "", handlerMock(http.MethodGet, []byte(test.apiResponse)))
+			client := servermock.NewBuilder[*Client](setupClient("")).
+				Route("GET /records.json",
+					servermock.RawStringResponse(test.apiResponse),
+					servermock.CheckQueryParameter().Strict().
+						With("auth-id", "myAuthID").
+						With("auth-password", "myAuthPassword").
+						With("type", "TXT").
+						With("host", "_acme-challenge").
+						With("domain-name", test.zoneName),
+				).
+				Build(t)
 
 			txtRecord, err := client.FindTxtRecord(t.Context(), test.zoneName, test.authFQDN)
 
@@ -347,7 +347,17 @@ func TestClient_ListTxtRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := setupTest(t, "", handlerMock(http.MethodGet, []byte(test.apiResponse)))
+			client := servermock.NewBuilder[*Client](setupClient("")).
+				Route("GET /records.json",
+					servermock.RawStringResponse(test.apiResponse),
+					servermock.CheckQueryParameter().Strict().
+						With("auth-id", "myAuthID").
+						With("auth-password", "myAuthPassword").
+						With("type", "TXT").
+						With("host", "_acme-challenge").
+						With("domain-name", test.zoneName),
+				).
+				Build(t)
 
 			txtRecords, err := client.ListTxtRecords(t.Context(), test.zoneName, test.authFQDN)
 
@@ -363,7 +373,7 @@ func TestClient_ListTxtRecord(t *testing.T) {
 
 func TestClient_AddTxtRecord(t *testing.T) {
 	type expected struct {
-		query    string
+		query    url.Values
 		errorMsg string
 	}
 
@@ -387,7 +397,15 @@ func TestClient_AddTxtRecord(t *testing.T) {
 			ttl:         60,
 			apiResponse: `{"status":"Success","statusDescription":"The record was added successfully."}`,
 			expected: expected{
-				query: `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=example.com&host=_acme-challenge.foo&record=txtTXTtxtTXTtxtTXTtxtTXT&record-type=TXT&ttl=60`,
+				query: url.Values{
+					"auth-id":       {"myAuthID"},
+					"auth-password": {"myAuthPassword"},
+					"domain-name":   {"example.com"},
+					"host":          {"_acme-challenge.foo"},
+					"record":        {"txtTXTtxtTXTtxtTXTtxtTXT"},
+					"record-type":   {"TXT"},
+					"ttl":           {"60"},
+				},
 			},
 		},
 		{
@@ -399,7 +417,15 @@ func TestClient_AddTxtRecord(t *testing.T) {
 			ttl:         60,
 			apiResponse: `{"status":"Success","statusDescription":"The record was added successfully."}`,
 			expected: expected{
-				query: `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=example.com&host=_acme-challenge&record=TXTtxtTXTtxtTXTtxtTXTtxt&record-type=TXT&ttl=60`,
+				query: url.Values{
+					"auth-id":       {"myAuthID"},
+					"auth-password": {"myAuthPassword"},
+					"domain-name":   {"example.com"},
+					"host":          {"_acme-challenge"},
+					"record":        {"TXTtxtTXTtxtTXTtxtTXTtxt"},
+					"record-type":   {"TXT"},
+					"ttl":           {"60"},
+				},
 			},
 		},
 		{
@@ -411,7 +437,15 @@ func TestClient_AddTxtRecord(t *testing.T) {
 			ttl:         60,
 			apiResponse: `{"status":"Success","statusDescription":"The record was added successfully."}`,
 			expected: expected{
-				query: `auth-password=myAuthPassword&domain-name=example.com&host=_acme-challenge&record=TXTtxtTXTtxtTXTtxtTXTtxt&record-type=TXT&sub-auth-id=mySubAuthID&ttl=60`,
+				query: url.Values{
+					"auth-password": {"myAuthPassword"},
+					"domain-name":   {"example.com"},
+					"host":          {"_acme-challenge"},
+					"record":        {"TXTtxtTXTtxtTXTtxtTXTtxt"},
+					"record-type":   {"TXT"},
+					"sub-auth-id":   {"mySubAuthID"},
+					"ttl":           {"60"},
+				},
 			},
 		},
 		{
@@ -423,7 +457,15 @@ func TestClient_AddTxtRecord(t *testing.T) {
 			ttl:         120,
 			apiResponse: `{"status":"Failed","statusDescription":"Invalid TTL. Choose from the list of the values we support."}`,
 			expected: expected{
-				query:    `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=example.com&host=_acme-challenge&record=TXTtxtTXTtxtTXTtxtTXTtxt&record-type=TXT&ttl=300`,
+				query: url.Values{
+					"auth-id":       {"myAuthID"},
+					"auth-password": {"myAuthPassword"},
+					"domain-name":   {"example.com"},
+					"host":          {"_acme-challenge"},
+					"record":        {"TXTtxtTXTtxtTXTtxtTXTtxt"},
+					"record-type":   {"TXT"},
+					"ttl":           {"300"},
+				},
 				errorMsg: "failed to add TXT record: Failed Invalid TTL. Choose from the list of the values we support.",
 			},
 		},
@@ -436,7 +478,15 @@ func TestClient_AddTxtRecord(t *testing.T) {
 			ttl:         120,
 			apiResponse: `[{}]`,
 			expected: expected{
-				query:    `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=example.com&host=_acme-challenge&record=TXTtxtTXTtxtTXTtxtTXTtxt&record-type=TXT&ttl=300`,
+				query: url.Values{
+					"auth-id":       {"myAuthID"},
+					"auth-password": {"myAuthPassword"},
+					"domain-name":   {"example.com"},
+					"host":          {"_acme-challenge"},
+					"record":        {"TXTtxtTXTtxtTXTtxtTXTtxt"},
+					"record-type":   {"TXT"},
+					"ttl":           {"300"},
+				},
 				errorMsg: "unable to unmarshal response: [status code: 200] body: [{}] error: json: cannot unmarshal array into Go value of type internal.apiResponse",
 			},
 		},
@@ -444,15 +494,13 @@ func TestClient_AddTxtRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := setupTest(t, test.subAuthID, func(rw http.ResponseWriter, req *http.Request) {
-				if test.expected.query != req.URL.RawQuery {
-					msg := fmt.Sprintf("got: %s, want: %s", test.expected.query, req.URL.RawQuery)
-					http.Error(rw, msg, http.StatusBadRequest)
-					return
-				}
-
-				handlerMock(http.MethodPost, []byte(test.apiResponse))(rw, req)
-			})
+			client := servermock.NewBuilder[*Client](setupClient(test.subAuthID)).
+				Route("POST /add-record.json",
+					servermock.RawStringResponse(test.apiResponse),
+					servermock.CheckQueryParameter().Strict().
+						WithValues(test.expected.query),
+				).
+				Build(t)
 
 			err := client.AddTxtRecord(t.Context(), test.zoneName, test.authFQDN, test.value, test.ttl)
 
@@ -467,7 +515,7 @@ func TestClient_AddTxtRecord(t *testing.T) {
 
 func TestClient_RemoveTxtRecord(t *testing.T) {
 	type expected struct {
-		query    string
+		query    url.Values
 		errorMsg string
 	}
 
@@ -484,7 +532,12 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 			zoneName:    "foo.com",
 			apiResponse: `{ "status": "Success", "statusDescription": "The record was deleted successfully." }`,
 			expected: expected{
-				query: `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=foo.com&record-id=5769228`,
+				query: url.Values{
+					"auth-id":       {"myAuthID"},
+					"auth-password": {"myAuthPassword"},
+					"domain-name":   {"foo.com"},
+					"record-id":     {"5769228"},
+				},
 			},
 		},
 		{
@@ -493,7 +546,12 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 			zoneName:    "foo.com",
 			apiResponse: `{ "status": "Failed", "statusDescription": "Invalid record-id param." }`,
 			expected: expected{
-				query:    `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=foo.com&record-id=5769000`,
+				query: url.Values{
+					"auth-id":       {"myAuthID"},
+					"auth-password": {"myAuthPassword"},
+					"domain-name":   {"foo.com"},
+					"record-id":     {"5769000"},
+				},
 				errorMsg: "failed to remove TXT record: Failed Invalid record-id param.",
 			},
 		},
@@ -503,7 +561,12 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 			zoneName:    "foo-plus.com",
 			apiResponse: `[{}]`,
 			expected: expected{
-				query:    `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=foo-plus.com&record-id=44`,
+				query: url.Values{
+					"auth-id":       {"myAuthID"},
+					"auth-password": {"myAuthPassword"},
+					"domain-name":   {"foo-plus.com"},
+					"record-id":     {"44"},
+				},
 				errorMsg: "unable to unmarshal response: [status code: 200] body: [{}] error: json: cannot unmarshal array into Go value of type internal.apiResponse",
 			},
 		},
@@ -511,23 +574,15 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-				if test.expected.query != req.URL.RawQuery {
-					msg := fmt.Sprintf("got: %s, want: %s", test.expected.query, req.URL.RawQuery)
-					http.Error(rw, msg, http.StatusBadRequest)
-					return
-				}
+			client := servermock.NewBuilder[*Client](setupClient("")).
+				Route("POST /delete-record.json",
+					servermock.RawStringResponse(test.apiResponse),
+					servermock.CheckQueryParameter().Strict().
+						WithValues(test.expected.query),
+				).
+				Build(t)
 
-				handlerMock(http.MethodPost, []byte(test.apiResponse))(rw, req)
-			}))
-			t.Cleanup(server.Close)
-
-			client, err := NewClient("myAuthID", "", "myAuthPassword")
-			require.NoError(t, err)
-
-			client.BaseURL, _ = url.Parse(server.URL)
-
-			err = client.RemoveTxtRecord(t.Context(), test.id, test.zoneName)
+			err := client.RemoveTxtRecord(t.Context(), test.id, test.zoneName)
 
 			if test.expected.errorMsg != "" {
 				require.EqualError(t, err, test.expected.errorMsg)
@@ -589,13 +644,15 @@ func TestClient_GetUpdateStatus(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			server := httptest.NewServer(handlerMock(http.MethodGet, []byte(test.apiResponse)))
-			t.Cleanup(server.Close)
-
-			client, err := NewClient("myAuthID", "", "myAuthPassword")
-			require.NoError(t, err)
-
-			client.BaseURL, _ = url.Parse(server.URL)
+			client := servermock.NewBuilder[*Client](setupClient("")).
+				Route("GET /update-status.json",
+					servermock.RawStringResponse(test.apiResponse),
+					servermock.CheckQueryParameter().Strict().
+						With("auth-id", "myAuthID").
+						With("auth-password", "myAuthPassword").
+						With("domain-name", test.zoneName),
+				).
+				Build(t)
 
 			syncProgress, err := client.GetUpdateStatus(t.Context(), test.zoneName)
 

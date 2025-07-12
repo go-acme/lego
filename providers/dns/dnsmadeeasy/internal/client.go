@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
@@ -57,10 +58,8 @@ func NewClient(apiKey, apiSecret string) (*Client, error) {
 func (c *Client) GetDomain(ctx context.Context, authZone string) (*Domain, error) {
 	endpoint := c.BaseURL.JoinPath("dns", "managed", "name")
 
-	domainName := authZone[0 : len(authZone)-1]
-
 	query := endpoint.Query()
-	query.Set("domainname", domainName)
+	query.Set("domainname", dns01.UnFqdn(authZone))
 	endpoint.RawQuery = query.Encode()
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)

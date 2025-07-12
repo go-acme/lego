@@ -1,36 +1,30 @@
 package digitalocean
 
 import (
-	"bytes"
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/stretchr/testify/assert"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
 var envTest = tester.NewEnvTest(EnvAuthToken)
 
-func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
-	t.Helper()
+func mockProvider() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.AuthToken = "asdf1234"
+			config.BaseURL = server.URL
+			config.HTTPClient = server.Client()
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	config := NewDefaultConfig()
-	config.AuthToken = "asdf1234"
-	config.BaseURL = server.URL
-	config.HTTPClient = server.Client()
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	return provider, mux
+			return NewDNSProviderConfig(config)
+		},
+		servermock.CheckHeader().
+			WithJSONHeaders().
+			With("Authorization", "Bearer asdf1234"))
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -111,26 +105,9 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider, mux := setupTest(t)
-
-	mux.HandleFunc("/v2/domains/example.com/records", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodPost, r.Method, "method")
-
-		assert.Equal(t, "application/json", r.Header.Get("Accept"), "Accept")
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
-		assert.Equal(t, "Bearer asdf1234", r.Header.Get("Authorization"), "Authorization")
-
-		reqBody, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		expectedReqBody := `{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`
-		assert.Equal(t, expectedReqBody, string(bytes.TrimSpace(reqBody)))
-
-		w.WriteHeader(http.StatusCreated)
-		_, err = fmt.Fprintf(w, `{
+	provider := mockProvider().
+		Route("POST /v2/domains/example.com/records",
+			servermock.RawStringResponse(`{
 			"domain_record": {
 				"id": 1234567,
 				"type": "TXT",
@@ -140,31 +117,21 @@ func TestDNSProvider_Present(t *testing.T) {
 				"port": null,
 				"weight": null
 			}
-		}`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+		}`).
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBody(`{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`)).
+		Build(t)
 
 	err := provider.Present("example.com", "", "foobar")
 	require.NoError(t, err)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	provider, mux := setupTest(t)
-
-	mux.HandleFunc("/v2/domains/example.com/records/1234567", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodDelete, r.Method, "method")
-
-		assert.Equal(t, "/v2/domains/example.com/records/1234567", r.URL.Path, "Path")
-
-		assert.Equal(t, "application/json", r.Header.Get("Accept"), "Accept")
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
-		assert.Equal(t, "Bearer asdf1234", r.Header.Get("Authorization"), "Authorization")
-
-		w.WriteHeader(http.StatusNoContent)
-	})
+	provider := mockProvider().
+		Route("DELETE /v2/domains/example.com/records/1234567",
+			servermock.Noop().
+				WithStatusCode(http.StatusNoContent)).
+		Build(t)
 
 	provider.recordIDsMu.Lock()
 	provider.recordIDs["token"] = 1234567

@@ -2,63 +2,42 @@ package rimuhosting
 
 import (
 	"encoding/xml"
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
+func setupClient(server *httptest.Server) (*Client, error) {
 	client := NewClient("apikeyvaluehere")
 	client.BaseURL = server.URL
 	client.HTTPClient = server.Client()
 
-	return client, mux
+	return client, nil
 }
 
 func TestClient_FindTXTRecords(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		query := req.URL.Query()
-
-		var fixture string
-		switch query.Get("name") {
-		case "example.com":
-			fixture = "./fixtures/find_records.xml"
-		case "**.example.com":
-			fixture = "./fixtures/find_records_pattern.xml"
-		default:
-			fixture = "./fixtures/find_records_empty.xml"
-		}
-
-		err := writeResponse(rw, fixture)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
 	testCases := []struct {
 		desc     string
 		domain   string
+		response string
+		query    url.Values
 		expected []Record
 	}{
 		{
-			desc:   "simple",
-			domain: "example.com",
+			desc:     "simple",
+			domain:   "example.com",
+			response: "find_records.xml",
+			query: url.Values{
+				"name":    []string{"example.com"},
+				"type":    []string{"TXT"},
+				"action":  []string{"QUERY"},
+				"api_key": []string{"apikeyvaluehere"},
+			},
 			expected: []Record{
 				{
 					Name:     "example.org",
@@ -70,8 +49,15 @@ func TestClient_FindTXTRecords(t *testing.T) {
 			},
 		},
 		{
-			desc:   "pattern",
-			domain: "**.example.com",
+			desc:     "pattern",
+			domain:   "**.example.com",
+			response: "find_records_pattern.xml",
+			query: url.Values{
+				"name":    []string{"**.example.com"},
+				"type":    []string{"TXT"},
+				"action":  []string{"QUERY"},
+				"api_key": []string{"apikeyvaluehere"},
+			},
 			expected: []Record{
 				{
 					Name:     "_test.example.org",
@@ -92,12 +78,26 @@ func TestClient_FindTXTRecords(t *testing.T) {
 		{
 			desc:     "empty",
 			domain:   "empty.com",
+			response: "find_records_empty.xml",
+			query: url.Values{
+				"name":    []string{"empty.com"},
+				"type":    []string{"TXT"},
+				"action":  []string{"QUERY"},
+				"api_key": []string{"apikeyvaluehere"},
+			},
 			expected: nil,
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			client := servermock.NewBuilder[*Client](setupClient).
+				Route("GET /",
+					servermock.ResponseFromFixture(test.response),
+					servermock.CheckQueryParameter().Strict().
+						WithValues(test.query)).
+				Build(t)
+
 			records, err := client.FindTXTRecords(t.Context(), test.domain)
 			require.NoError(t, err)
 
@@ -107,54 +107,42 @@ func TestClient_FindTXTRecords(t *testing.T) {
 }
 
 func TestClient_DoActions(t *testing.T) {
-	type expected struct {
-		Query string
-		Resp  *DNSAPIResult
-		Error string
-	}
-
 	testCases := []struct {
 		desc     string
 		actions  []ActionParameter
-		fixture  string
-		expected expected
+		query    url.Values
+		response string
+		expected *DNSAPIResult
 	}{
-		{
-			desc: "SET error",
-			actions: []ActionParameter{
-				NewAddRecordAction("example.com", "txttxtx", 0),
-			},
-			fixture: "./fixtures/add_record_error.xml",
-			expected: expected{
-				Query: "action=SET&api_key=apikeyvaluehere&name=example.com&type=TXT&value=txttxtx",
-				Error: "ERROR: No zone found for example.com",
-			},
-		},
 		{
 			desc: "SET simple",
 			actions: []ActionParameter{
 				NewAddRecordAction("example.org", "txttxtx", 0),
 			},
-			fixture: "./fixtures/add_record.xml",
-			expected: expected{
-				Query: "action=SET&api_key=apikeyvaluehere&name=example.org&type=TXT&value=txttxtx",
-				Resp: &DNSAPIResult{
-					XMLName:      xml.Name{Space: "", Local: "dnsapi_result"},
-					IsOk:         "OK:",
-					ResultCounts: ResultCounts{Added: "1", Changed: "0", Unchanged: "0", Deleted: "0"},
-					Actions: Actions{
-						Action: Action{
-							Action: "SET",
-							Host:   "example.org",
-							Type:   "TXT",
-							Records: []Record{{
-								Name:     "example.org",
-								Type:     "TXT",
-								Content:  "txttxtx",
-								TTL:      "3600 seconds",
-								Priority: "0",
-							}},
-						},
+			response: "add_record.xml",
+			query: url.Values{
+				"action":  []string{"SET"},
+				"name":    []string{"example.org"},
+				"type":    []string{"TXT"},
+				"value":   []string{"txttxtx"},
+				"api_key": []string{"apikeyvaluehere"},
+			},
+			expected: &DNSAPIResult{
+				XMLName:      xml.Name{Space: "", Local: "dnsapi_result"},
+				IsOk:         "OK:",
+				ResultCounts: ResultCounts{Added: "1", Changed: "0", Unchanged: "0", Deleted: "0"},
+				Actions: Actions{
+					Action: Action{
+						Action: "SET",
+						Host:   "example.org",
+						Type:   "TXT",
+						Records: []Record{{
+							Name:     "example.org",
+							Type:     "TXT",
+							Content:  "txttxtx",
+							TTL:      "3600 seconds",
+							Priority: "0",
+						}},
 					},
 				},
 			},
@@ -165,33 +153,43 @@ func TestClient_DoActions(t *testing.T) {
 				NewAddRecordAction("example.org", "txttxtx", 0),
 				NewAddRecordAction("example.org", "sample", 0),
 			},
-			fixture: "./fixtures/add_record_same_domain.xml",
-			expected: expected{
-				Query: "action[0]=SET&action[1]=SET&api_key=apikeyvaluehere&name[0]=example.org&name[1]=example.org&ttl[0]=0&ttl[1]=0&type[0]=TXT&type[1]=TXT&value[0]=txttxtx&value[1]=sample",
-				Resp: &DNSAPIResult{
-					XMLName:      xml.Name{Space: "", Local: "dnsapi_result"},
-					IsOk:         "OK:",
-					ResultCounts: ResultCounts{Added: "2", Changed: "0", Unchanged: "0", Deleted: "0"},
-					Actions: Actions{
-						Action: Action{
-							Action: "SET",
-							Host:   "example.org",
-							Type:   "TXT",
-							Records: []Record{
-								{
-									Name:     "example.org",
-									Type:     "TXT",
-									Content:  "txttxtx",
-									TTL:      "0 seconds",
-									Priority: "0",
-								},
-								{
-									Name:     "example.org",
-									Type:     "TXT",
-									Content:  "sample",
-									TTL:      "0 seconds",
-									Priority: "0",
-								},
+			response: "add_record_same_domain.xml",
+			query: url.Values{
+				"api_key":   []string{"apikeyvaluehere"},
+				"action[0]": []string{"SET"},
+				"name[0]":   []string{"example.org"},
+				"ttl[0]":    []string{"0"},
+				"type[0]":   []string{"TXT"},
+				"value[0]":  []string{"txttxtx"},
+				"action[1]": []string{"SET"},
+				"name[1]":   []string{"example.org"},
+				"ttl[1]":    []string{"0"},
+				"type[1]":   []string{"TXT"},
+				"value[1]":  []string{"sample"},
+			},
+			expected: &DNSAPIResult{
+				XMLName:      xml.Name{Space: "", Local: "dnsapi_result"},
+				IsOk:         "OK:",
+				ResultCounts: ResultCounts{Added: "2", Changed: "0", Unchanged: "0", Deleted: "0"},
+				Actions: Actions{
+					Action: Action{
+						Action: "SET",
+						Host:   "example.org",
+						Type:   "TXT",
+						Records: []Record{
+							{
+								Name:     "example.org",
+								Type:     "TXT",
+								Content:  "txttxtx",
+								TTL:      "0 seconds",
+								Priority: "0",
+							},
+							{
+								Name:     "example.org",
+								Type:     "TXT",
+								Content:  "sample",
+								TTL:      "0 seconds",
+								Priority: "0",
 							},
 						},
 					},
@@ -199,35 +197,28 @@ func TestClient_DoActions(t *testing.T) {
 			},
 		},
 		{
-			desc: "DELETE error",
-			actions: []ActionParameter{
-				NewDeleteRecordAction("example.com", "txttxtx"),
-			},
-			fixture: "./fixtures/delete_record_error.xml",
-			expected: expected{
-				Query: "action=DELETE&api_key=apikeyvaluehere&name=example.com&type=TXT&value=txttxtx",
-				Error: "ERROR: No zone found for example.com",
-			},
-		},
-		{
 			desc: "DELETE nothing",
 			actions: []ActionParameter{
 				NewDeleteRecordAction("example.org", "nothing"),
 			},
-			fixture: "./fixtures/delete_record_nothing.xml",
-			expected: expected{
-				Query: "action=DELETE&api_key=apikeyvaluehere&name=example.org&type=TXT&value=nothing",
-				Resp: &DNSAPIResult{
-					XMLName:      xml.Name{Space: "", Local: "dnsapi_result"},
-					IsOk:         "OK:",
-					ResultCounts: ResultCounts{Added: "0", Changed: "0", Unchanged: "0", Deleted: "0"},
-					Actions: Actions{
-						Action: Action{
-							Action:  "DELETE",
-							Host:    "example.org",
-							Type:    "TXT",
-							Records: nil,
-						},
+			response: "delete_record_nothing.xml",
+			query: url.Values{
+				"action":  []string{"DELETE"},
+				"name":    []string{"example.org"},
+				"type":    []string{"TXT"},
+				"value":   []string{"nothing"},
+				"api_key": []string{"apikeyvaluehere"},
+			},
+			expected: &DNSAPIResult{
+				XMLName:      xml.Name{Space: "", Local: "dnsapi_result"},
+				IsOk:         "OK:",
+				ResultCounts: ResultCounts{Added: "0", Changed: "0", Unchanged: "0", Deleted: "0"},
+				Actions: Actions{
+					Action: Action{
+						Action:  "DELETE",
+						Host:    "example.org",
+						Type:    "TXT",
+						Records: nil,
 					},
 				},
 			},
@@ -237,26 +228,30 @@ func TestClient_DoActions(t *testing.T) {
 			actions: []ActionParameter{
 				NewDeleteRecordAction("example.org", "txttxtx"),
 			},
-			fixture: "./fixtures/delete_record.xml",
-			expected: expected{
-				Query: "action=DELETE&api_key=apikeyvaluehere&name=example.org&type=TXT&value=txttxtx",
-				Resp: &DNSAPIResult{
-					XMLName:      xml.Name{Space: "", Local: "dnsapi_result"},
-					IsOk:         "OK:",
-					ResultCounts: ResultCounts{Added: "0", Changed: "0", Unchanged: "0", Deleted: "1"},
-					Actions: Actions{
-						Action: Action{
-							Action: "DELETE",
-							Host:   "example.org",
-							Type:   "TXT",
-							Records: []Record{{
-								Name:     "example.org",
-								Type:     "TXT",
-								Content:  "txttxtx",
-								TTL:      "3600 seconds",
-								Priority: "0",
-							}},
-						},
+			response: "delete_record.xml",
+			query: url.Values{
+				"action":  []string{"DELETE"},
+				"name":    []string{"example.org"},
+				"type":    []string{"TXT"},
+				"value":   []string{"txttxtx"},
+				"api_key": []string{"apikeyvaluehere"},
+			},
+			expected: &DNSAPIResult{
+				XMLName:      xml.Name{Space: "", Local: "dnsapi_result"},
+				IsOk:         "OK:",
+				ResultCounts: ResultCounts{Added: "0", Changed: "0", Unchanged: "0", Deleted: "1"},
+				Actions: Actions{
+					Action: Action{
+						Action: "DELETE",
+						Host:   "example.org",
+						Type:   "TXT",
+						Records: []Record{{
+							Name:     "example.org",
+							Type:     "TXT",
+							Content:  "txttxtx",
+							TTL:      "3600 seconds",
+							Priority: "0",
+						}},
 					},
 				},
 			},
@@ -265,52 +260,73 @@ func TestClient_DoActions(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client, mux := setupTest(t)
-
-			mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-				query, err := url.QueryUnescape(req.URL.RawQuery)
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-
-				if test.expected.Query != query {
-					http.Error(rw, fmt.Sprintf("invalid query: %s", query), http.StatusBadRequest)
-					return
-				}
-
-				if test.expected.Error != "" {
-					rw.WriteHeader(http.StatusInternalServerError)
-				}
-
-				err = writeResponse(rw, test.fixture)
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			})
+			client := servermock.NewBuilder[*Client](setupClient).
+				Route("GET /",
+					servermock.ResponseFromFixture(test.response),
+					servermock.CheckQueryParameter().Strict().
+						WithValues(test.query)).
+				Build(t)
 
 			resp, err := client.DoActions(t.Context(), test.actions...)
-			if test.expected.Error != "" {
-				require.EqualError(t, err, test.expected.Error)
-				return
-			}
-
 			require.NoError(t, err)
 
-			assert.Equal(t, test.expected.Resp, resp)
+			assert.Equal(t, test.expected, resp)
 		})
 	}
 }
 
-func writeResponse(rw io.Writer, filename string) error {
-	file, err := os.Open(filename)
-	if err != nil {
-		return err
+func TestClient_DoActions_error(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		actions  []ActionParameter
+		query    url.Values
+		response string
+		expected string
+	}{
+		{
+			desc: "SET error",
+			actions: []ActionParameter{
+				NewAddRecordAction("example.com", "txttxtx", 0),
+			},
+			response: "add_record_error.xml",
+			query: url.Values{
+				"action":  []string{"SET"},
+				"name":    []string{"example.com"},
+				"type":    []string{"TXT"},
+				"value":   []string{"txttxtx"},
+				"api_key": []string{"apikeyvaluehere"},
+			},
+			expected: "ERROR: No zone found for example.com",
+		},
+		{
+			desc: "DELETE error",
+			actions: []ActionParameter{
+				NewDeleteRecordAction("example.com", "txttxtx"),
+			},
+			response: "delete_record_error.xml",
+			query: url.Values{
+				"action":  []string{"DELETE"},
+				"name":    []string{"example.com"},
+				"type":    []string{"TXT"},
+				"value":   []string{"txttxtx"},
+				"api_key": []string{"apikeyvaluehere"},
+			},
+			expected: "ERROR: No zone found for example.com",
+		},
 	}
 
-	defer func() { _ = file.Close() }()
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			client := servermock.NewBuilder[*Client](setupClient).
+				Route("GET /",
+					servermock.ResponseFromFixture(test.response).
+						WithStatusCode(http.StatusInternalServerError),
+					servermock.CheckQueryParameter().Strict().
+						WithValues(test.query)).
+				Build(t)
 
-	_, err = io.Copy(rw, file)
-	return err
+			_, err := client.DoActions(t.Context(), test.actions...)
+			require.EqualError(t, err, test.expected)
+		})
+	}
 }

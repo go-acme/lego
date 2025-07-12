@@ -1,57 +1,35 @@
 package internal
 
 import (
-	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/nrdcg/goacmedns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern, filename string, statusCode int) *HTTPStorage {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*HTTPStorage] {
+	return servermock.NewBuilder[*HTTPStorage](
+		func(server *httptest.Server) (*HTTPStorage, error) {
+			storage, err := NewHTTPStorage(server.URL)
+			if err != nil {
+				return nil, err
+			}
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+			storage.client = server.Client()
 
-	mux.HandleFunc(pattern, func(rw http.ResponseWriter, req *http.Request) {
-		if filename == "" {
-			rw.WriteHeader(statusCode)
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		rw.WriteHeader(statusCode)
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	storage, err := NewHTTPStorage(server.URL)
-	require.NoError(t, err)
-
-	storage.client = server.Client()
-
-	return storage
+			return storage, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders())
 }
 
 func TestHTTPStorage_Fetch(t *testing.T) {
-	storage := setupTest(t, "GET /example.com", "fetch.json", http.StatusOK)
+	storage := mockBuilder().
+		Route("GET /example.com", servermock.ResponseFromFixture("fetch.json")).
+		Build(t)
 
 	account, err := storage.Fetch(t.Context(), "example.com")
 	require.NoError(t, err)
@@ -68,14 +46,20 @@ func TestHTTPStorage_Fetch(t *testing.T) {
 }
 
 func TestHTTPStorage_Fetch_error(t *testing.T) {
-	storage := setupTest(t, "GET /example.com", "error.json", http.StatusInternalServerError)
+	storage := mockBuilder().
+		Route("GET /example.com",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusInternalServerError)).
+		Build(t)
 
 	_, err := storage.Fetch(t.Context(), "example.com")
 	require.Error(t, err)
 }
 
 func TestHTTPStorage_FetchAll(t *testing.T) {
-	storage := setupTest(t, "GET /", "fetch-all.json", http.StatusOK)
+	storage := mockBuilder().
+		Route("GET /", servermock.ResponseFromFixture("fetch-all.json")).
+		Build(t)
 
 	account, err := storage.FetchAll(t.Context())
 	require.NoError(t, err)
@@ -101,14 +85,21 @@ func TestHTTPStorage_FetchAll(t *testing.T) {
 }
 
 func TestHTTPStorage_FetchAll_error(t *testing.T) {
-	storage := setupTest(t, "GET /", "error.json", http.StatusInternalServerError)
+	storage := mockBuilder().
+		Route("GET /",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusInternalServerError)).
+		Build(t)
 
 	_, err := storage.FetchAll(t.Context())
 	require.Error(t, err)
 }
 
 func TestHTTPStorage_Put(t *testing.T) {
-	storage := setupTest(t, "POST /example.com", "", http.StatusOK)
+	storage := mockBuilder().
+		Route("POST /example.com", nil,
+			servermock.CheckRequestJSONBodyFromFile("request-body.json")).
+		Build(t)
 
 	account := goacmedns.Account{
 		FullDomain: "foo.example.com",
@@ -123,7 +114,11 @@ func TestHTTPStorage_Put(t *testing.T) {
 }
 
 func TestHTTPStorage_Put_error(t *testing.T) {
-	storage := setupTest(t, "POST /example.com", "error.json", http.StatusInternalServerError)
+	storage := mockBuilder().
+		Route("POST /example.com",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusInternalServerError)).
+		Build(t)
 
 	account := goacmedns.Account{
 		FullDomain: "foo.example.com",
@@ -138,7 +133,12 @@ func TestHTTPStorage_Put_error(t *testing.T) {
 }
 
 func TestHTTPStorage_Put_CNAME_created(t *testing.T) {
-	storage := setupTest(t, "POST /example.com", "", http.StatusCreated)
+	storage := mockBuilder().
+		Route("POST /example.com",
+			servermock.Noop().
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromFile("request-body.json")).
+		Build(t)
 
 	account := goacmedns.Account{
 		FullDomain: "foo.example.com",

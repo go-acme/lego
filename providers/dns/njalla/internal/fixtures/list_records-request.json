@@ -1,0 +1,6 @@
+{
+  "method": "list-records",
+  "params": {
+    "domain": "example.com"
+  }
+}

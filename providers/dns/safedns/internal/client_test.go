@@ -1,74 +1,36 @@
 package internal
 
 import (
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"strings"
 	"testing"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("secret")
+			client.baseURL, _ = url.Parse(server.URL)
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client := NewClient("secret")
-	client.baseURL, _ = url.Parse(server.URL)
-
-	return client, mux
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders(),
+	)
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/zones/example.com/records", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
-			return
-		}
-
-		if req.Header.Get(authorizationHeader) != "secret" {
-			http.Error(rw, `{"message":"Unauthenticated"}`, http.StatusUnauthorized)
-			return
-		}
-
-		reqBody, err := io.ReadAll(req.Body)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		expectedReqBody := `{"name":"_acme-challenge.example.com","type":"TXT","content":"\"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI\"","ttl":120}`
-		if strings.TrimSpace(string(reqBody)) != expectedReqBody {
-			http.Error(rw, `{"message":"invalid request"}`, http.StatusBadRequest)
-			return
-		}
-
-		resp := `{
-				"data": {
-					"id": 1234567
-				},
-				"meta": {
-					"location": "https://api.ukfast.io/safedns/v1/zones/example.com/records/1234567"
-				}
-			}`
-
-		rw.WriteHeader(http.StatusCreated)
-		_, err = fmt.Fprint(rw, resp)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	client := mockBuilder().
+		Route("POST /zones/example.com/records",
+			servermock.ResponseFromFixture("add_record.json").
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromFile("add_record-request.json")).
+		Build(t)
 
 	record := Record{
 		Name:    "_acme-challenge.example.com",
@@ -96,23 +58,42 @@ func TestClient_AddRecord(t *testing.T) {
 	assert.Equal(t, expected, response)
 }
 
+func TestClient_AddRecord_error(t *testing.T) {
+	client := mockBuilder().
+		Route("POST /zones/example.com/records",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
+
+	record := Record{
+		Name:    "_acme-challenge.example.com",
+		Type:    "TXT",
+		Content: `"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"`,
+		TTL:     dns01.DefaultTTL,
+	}
+
+	_, err := client.AddRecord(t.Context(), "example.com", record)
+	require.EqualError(t, err, "add record: [status code: 401] Unauthenticated")
+}
+
 func TestClient_RemoveRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/zones/example.com/records/1234567", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodDelete {
-			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
-			return
-		}
-
-		if req.Header.Get(authorizationHeader) != "secret" {
-			http.Error(rw, `{"message":"Unauthenticated"}`, http.StatusUnauthorized)
-			return
-		}
-
-		rw.WriteHeader(http.StatusNoContent)
-	})
+	client := mockBuilder().
+		Route("DELETE /zones/example.com/records/1234567",
+			servermock.Noop().
+				WithStatusCode(http.StatusNoContent)).
+		Build(t)
 
 	err := client.RemoveRecord(t.Context(), "example.com", 1234567)
 	require.NoError(t, err)
+}
+
+func TestClient_RemoveRecord_error(t *testing.T) {
+	client := mockBuilder().
+		Route("DELETE /zones/example.com/records/1234567",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
+
+	err := client.RemoveRecord(t.Context(), "example.com", 1234567)
+	require.EqualError(t, err, "remove record: [status code: 401] Unauthenticated")
 }

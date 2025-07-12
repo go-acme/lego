@@ -1,40 +1,30 @@
 package internal
 
 import (
-	"bytes"
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest(
-	"NETCUP_CUSTOMER_NUMBER",
-	"NETCUP_API_KEY",
-	"NETCUP_API_PASSWORD").
-	WithDomain("NETCUP_DOMAIN")
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client, err := NewClient("a", "b", "c")
+			if err != nil {
+				return nil, err
+			}
 
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
+			client.baseURL = server.URL
+			client.HTTPClient = server.Client()
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client, err := NewClient("a", "b", "c")
-	require.NoError(t, err)
-
-	client.baseURL = server.URL
-	client.HTTPClient = server.Client()
-
-	return client, mux
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders(),
+	)
 }
 
 func TestGetDNSRecordIdx(t *testing.T) {
@@ -139,59 +129,10 @@ func TestGetDNSRecordIdx(t *testing.T) {
 }
 
 func TestClient_GetDNSRecords(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		raw, err := io.ReadAll(req.Body)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if string(bytes.TrimSpace(raw)) != `{"action":"infoDnsRecords","param":{"domainname":"example.com","customernumber":"a","apikey":"b","apisessionid":""}}` {
-			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
-			return
-		}
-
-		response := `
-			{
-			  "serverrequestid":"srv-request-id",
-			  "clientrequestid":"",
-			  "action":"infoDnsRecords",
-			  "status":"success",
-			  "statuscode":2000,
-			  "shortmessage":"Login successful",
-			  "longmessage":"Session has been created successful.",
-			  "responsedata":{
-			    "apisessionid":"api-session-id",
-			    "dnsrecords":[
-			      {
-			        "id":"1",
-			        "hostname":"example.com",
-			        "type":"TXT",
-			        "priority":"1",
-			        "destination":"bGVnbzE=",
-			        "state":"yes",
-			        "ttl":300
-			      },
-			      {
-			        "id":"2",
-			        "hostname":"example2.com",
-			        "type":"TXT",
-			        "priority":"1",
-			        "destination":"bGVnbw==",
-			        "state":"yes",
-			        "ttl":300
-			      }
-			    ]
-			  }
-			}`
-		_, err = rw.Write([]byte(response))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	client := mockBuilder().
+		Route("POST /", servermock.ResponseFromFixture("get_dns_records.json"),
+			servermock.CheckRequestJSONBodyFromFile("get_dns_records-request.json")).
+		Build(t)
 
 	expected := []DNSRecord{{
 		ID:           1,
@@ -219,67 +160,24 @@ func TestClient_GetDNSRecords(t *testing.T) {
 
 func TestClient_GetDNSRecords_errors(t *testing.T) {
 	testCases := []struct {
-		desc    string
-		handler func(rw http.ResponseWriter, req *http.Request)
+		desc     string
+		handler  http.Handler
+		expected string
 	}{
 		{
-			desc: "HTTP error",
-			handler: func(rw http.ResponseWriter, _ *http.Request) {
-				http.Error(rw, "error message", http.StatusInternalServerError)
-			},
+			desc:     "HTTP error",
+			handler:  servermock.Noop().WithStatusCode(http.StatusInternalServerError),
+			expected: `error when sending the request: unexpected status code: [status code: 500] body: `,
 		},
 		{
-			desc: "API error",
-			handler: func(rw http.ResponseWriter, _ *http.Request) {
-				response := `
-					{
-						"serverrequestid":"YxTr4EzdbJ101T211zR4yzUEMVE",
-						"clientrequestid":"",
-						"action":"infoDnsRecords",
-						"status":"error",
-						"statuscode":4013,
-						"shortmessage":"Validation Error.",
-						"longmessage":"Message is empty.",
-						"responsedata":""
-					}`
-				_, err := rw.Write([]byte(response))
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
+			desc:     "API error",
+			handler:  servermock.ResponseFromFixture("get_dns_records_error.json"),
+			expected: `error when sending the request: an error occurred during the action infoDnsRecords: [Status=error, StatusCode=4013, ShortMessage=Validation Error., LongMessage=Message is empty.]`,
 		},
 		{
-			desc: "responsedata marshaling error",
-			handler: func(rw http.ResponseWriter, req *http.Request) {
-				raw, err := io.ReadAll(req.Body)
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-
-				if string(raw) != `{"action":"infoDnsRecords","param":{"domainname":"example.com","customernumber":"a","apikey":"b","apisessionid":"api-session-id"}}` {
-					http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
-					return
-				}
-
-				response := `
-			{
-			  "serverrequestid":"srv-request-id",
-			  "clientrequestid":"",
-			  "action":"infoDnsRecords",
-			  "status":"success",
-			  "statuscode":2000,
-			  "shortmessage":"Login successful",
-			  "longmessage":"Session has been created successful.",
-			  "responsedata":""
-			}`
-				_, err = rw.Write([]byte(response))
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
+			desc:     "responsedata marshaling error",
+			handler:  servermock.ResponseFromFixture("get_dns_records_error_unmarshal.json"),
+			expected: `error when sending the request: unable to unmarshal response: [status code: 200] body: "" error: json: cannot unmarshal string into Go value of type internal.InfoDNSRecordsResponse`,
 		},
 	}
 
@@ -287,104 +185,13 @@ func TestClient_GetDNSRecords_errors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client, mux := setupTest(t)
-
-			mux.HandleFunc("/", test.handler)
+			client := mockBuilder().
+				Route("POST /", test.handler).
+				Build(t)
 
 			records, err := client.GetDNSRecords(t.Context(), "example.com")
-			require.Error(t, err)
+			require.EqualError(t, err, test.expected)
 			assert.Empty(t, records)
 		})
 	}
-}
-
-func TestClient_GetDNSRecords_Live(t *testing.T) {
-	if !envTest.IsLiveTest() {
-		t.Skip("skipping live test")
-	}
-
-	// Setup
-	envTest.RestoreEnv()
-
-	client, err := NewClient(
-		envTest.GetValue("NETCUP_CUSTOMER_NUMBER"),
-		envTest.GetValue("NETCUP_API_KEY"),
-		envTest.GetValue("NETCUP_API_PASSWORD"))
-	require.NoError(t, err)
-
-	ctx, err := client.CreateSessionContext(t.Context())
-	require.NoError(t, err)
-
-	info := dns01.GetChallengeInfo(envTest.GetDomain(), "123d==")
-
-	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	require.NoError(t, err, "error finding DNSZone")
-
-	zone = dns01.UnFqdn(zone)
-
-	// TestMethod
-	_, err = client.GetDNSRecords(ctx, zone)
-	require.NoError(t, err)
-
-	// Tear down
-	err = client.Logout(ctx)
-	require.NoError(t, err)
-}
-
-func TestClient_UpdateDNSRecord_Live(t *testing.T) {
-	if !envTest.IsLiveTest() {
-		t.Skip("skipping live test")
-	}
-
-	// Setup
-	envTest.RestoreEnv()
-
-	client, err := NewClient(
-		envTest.GetValue("NETCUP_CUSTOMER_NUMBER"),
-		envTest.GetValue("NETCUP_API_KEY"),
-		envTest.GetValue("NETCUP_API_PASSWORD"))
-	require.NoError(t, err)
-
-	ctx, err := client.CreateSessionContext(t.Context())
-	require.NoError(t, err)
-
-	info := dns01.GetChallengeInfo(envTest.GetDomain(), "123d==")
-
-	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	require.NotErrorIs(t, err, fmt.Errorf("error finding DNSZone, %w", err))
-
-	hostname := strings.Replace(info.EffectiveFQDN, "."+zone, "", 1)
-
-	record := DNSRecord{
-		Hostname:     hostname,
-		RecordType:   "TXT",
-		Destination:  "asdf5678",
-		DeleteRecord: false,
-	}
-
-	// test
-	zone = dns01.UnFqdn(zone)
-
-	err = client.UpdateDNSRecord(ctx, zone, []DNSRecord{record})
-	require.NoError(t, err)
-
-	records, err := client.GetDNSRecords(ctx, zone)
-	require.NoError(t, err)
-
-	recordIdx, err := GetDNSRecordIdx(records, record)
-	require.NoError(t, err)
-
-	assert.Equal(t, record.Hostname, records[recordIdx].Hostname)
-	assert.Equal(t, record.RecordType, records[recordIdx].RecordType)
-	assert.Equal(t, record.Destination, records[recordIdx].Destination)
-	assert.Equal(t, record.DeleteRecord, records[recordIdx].DeleteRecord)
-
-	records[recordIdx].DeleteRecord = true
-
-	// Tear down
-	err = client.UpdateDNSRecord(ctx, envTest.GetDomain(), []DNSRecord{records[recordIdx]})
-	require.NoError(t, err, "Did not remove record! Please do so yourself.")
-
-	err = client.Logout(ctx)
-	require.NoError(t, err)
 }

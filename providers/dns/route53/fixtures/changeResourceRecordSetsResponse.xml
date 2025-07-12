@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ChangeResourceRecordSetsResponse xmlns="https://route53.amazonaws.com/doc/2013-04-01/">
+    <ChangeInfo>
+        <Id>/change/123456</Id>
+        <Status>PENDING</Status>
+        <SubmittedAt>2016-02-10T01:36:41.958Z</SubmittedAt>
+    </ChangeInfo>
+</ChangeResourceRecordSetsResponse>

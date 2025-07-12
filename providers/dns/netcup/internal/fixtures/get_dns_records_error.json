@@ -1,0 +1,10 @@
+{
+  "serverrequestid":"YxTr4EzdbJ101T211zR4yzUEMVE",
+  "clientrequestid":"",
+  "action":"infoDnsRecords",
+  "status":"error",
+  "statuscode":4013,
+  "shortmessage":"Validation Error.",
+  "longmessage":"Message is empty.",
+  "responsedata":""
+}

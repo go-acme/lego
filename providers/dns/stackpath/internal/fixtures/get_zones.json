@@ -1,0 +1,30 @@
+{
+  "pageInfo": {
+    "totalCount": "5",
+    "hasPreviousPage": false,
+    "hasNextPage": false,
+    "startCursor": "1",
+    "endCursor": "1"
+  },
+  "zones": [
+    {
+      "stackId": "my_stack",
+      "accountId": "my_account",
+      "id": "A",
+      "domain": "foo.com",
+      "version": "1",
+      "labels": {
+        "property1": "val1",
+        "property2": "val2"
+      },
+      "created": "2018-10-07T02:31:49Z",
+      "updated": "2018-10-07T02:31:49Z",
+      "nameservers": [
+        "1.1.1.1"
+      ],
+      "verified": "2018-10-07T02:31:49Z",
+      "status": "ACTIVE",
+      "disabled": false
+    }
+  ]
+}

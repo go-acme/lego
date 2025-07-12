@@ -1,69 +1,35 @@
 package internal
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 const apiKey = "secret"
 
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient(apiKey)
+			client.baseURL, _ = url.Parse(server.URL)
+			client.HTTPClient = server.Client()
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client := NewClient(apiKey)
-	client.baseURL, _ = url.Parse(server.URL)
-
-	return client, mux
-}
-
-func testHandler(filename, method string, statusCode int) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		auth := req.Header.Get(authorizationHeader)
-		if auth != apiKey {
-			http.Error(rw, "invalid Authorization header", http.StatusUnauthorized)
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		rw.WriteHeader(statusCode)
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders().
+			With(authorizationHeader, apiKey),
+	)
 }
 
 func TestClient_ListDomains(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/domains", testHandler("./list-domains.json", http.MethodGet, http.StatusOK))
+	client := mockBuilder().
+		Route("GET /domains", servermock.ResponseFromFixture("list-domains.json")).
+		Build(t)
 
 	domains, err := client.ListDomains(t.Context())
 	require.NoError(t, err)
@@ -81,9 +47,9 @@ func TestClient_ListDomains(t *testing.T) {
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/domains/example.com/dns", testHandler("./get-dns-records.json", http.MethodGet, http.StatusOK))
+	client := mockBuilder().
+		Route("GET /domains/example.com/dns", servermock.ResponseFromFixture("get-dns-records.json")).
+		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "example.com")
 	require.NoError(t, err)
@@ -119,10 +85,19 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_UpdateRecords(t *testing.T) {
-	client, mux := setupTest(t)
+	client := mockBuilder().
+		Route("PUT /domains/example.com/dns",
+			servermock.ResponseFromFixture("update-dns-records.json"),
+			servermock.CheckRequestJSONBody(`{"records":[{"type":"TXT","name":"foo","value":"value1","ttl":120}]}`)).
+		Build(t)
 
-	mux.HandleFunc("/domains/example.com/dns", testHandler("./update-dns-records.json", http.MethodPut, http.StatusOK))
+	records := []Record{{
+		Type:  "TXT",
+		Name:  "foo",
+		Value: "value1",
+		TTL:   120,
+	}}
 
-	err := client.UpdateRecords(t.Context(), "example.com", nil)
+	err := client.UpdateRecords(t.Context(), "example.com", records)
 	require.NoError(t, err)
 }

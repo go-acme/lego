@@ -1,38 +1,20 @@
 package internal
 
 import (
-	"encoding/json"
-	"net/http"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/login", func(rw http.ResponseWriter, req *http.Request) {
-		response := AuthResponse{
-			Auth: Auth{
-				AccessToken:  "at",
-				RefreshToken: "",
-			},
-		}
-
-		err := json.NewEncoder(rw).Encode(response)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-	mux.HandleFunc("/api/record/xxx", func(rw http.ResponseWriter, req *http.Request) {
-		authorization := req.Header.Get(authorizationHeader)
-		if authorization != "Bearer at" {
-			http.Error(rw, "invalid credential: "+authorization, http.StatusUnauthorized)
-			return
-		}
-	})
+	client := mockBuilder().
+		Route("POST /login",
+			servermock.ResponseFromFixture("login.json"),
+			servermock.CheckRequestJSONBodyFromFile("login-request.json")).
+		Route("DELETE /api/record/xxx", nil).
+		Build(t)
 
 	ctx, err := client.CreateAuthenticatedContext(t.Context())
 	require.NoError(t, err)

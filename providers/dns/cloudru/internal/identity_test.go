@@ -2,13 +2,11 @@ package internal
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -19,46 +17,32 @@ func mockContext(t *testing.T) context.Context {
 	return context.WithValue(t.Context(), tokenKey, &Token{AccessToken: "xxx"})
 }
 
-func tokenHandler(rw http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodPost {
-		http.Error(rw, fmt.Sprintf("invalid method, got %s want %s", req.Method, http.MethodPost), http.StatusMethodNotAllowed)
-		return
-	}
-
-	err := req.ParseForm()
-	if err != nil {
-		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-
-	grantType := req.Form.Get("grant_type")
-	clientID := req.Form.Get("client_id")
-	clientSecret := req.Form.Get("client_secret")
-
-	if clientID != "user" || clientSecret != "secret" || grantType != "access_key" {
-		http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		return
-	}
-
-	_ = json.NewEncoder(rw).Encode(Token{
-		AccessToken: "xxx",
-		TokenID:     "yyy",
-		ExpiresIn:   666,
-		TokenType:   "Bearer",
-		Scope:       "openid profile email roles",
-	})
-}
-
-func TestClient_obtainToken(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", tokenHandler)
-
+func setupIdentityClient(server *httptest.Server) (*Client, error) {
 	client := NewClient("user", "secret")
 	client.HTTPClient = server.Client()
 	client.AuthEndpoint, _ = url.Parse(server.URL)
+
+	return client, nil
+}
+
+func TestClient_obtainToken(t *testing.T) {
+	client := servermock.NewBuilder[*Client](setupIdentityClient,
+		servermock.CheckHeader().
+			WithContentTypeFromURLEncoded(),
+	).
+		Route("POST /", servermock.JSONEncode(Token{
+			AccessToken: "xxx",
+			TokenID:     "yyy",
+			ExpiresIn:   666,
+			TokenType:   "Bearer",
+			Scope:       "openid profile email roles",
+		}),
+			servermock.CheckForm().Strict().
+				With("client_id", "user").
+				With("client_secret", "secret").
+				With("grant_type", "access_key"),
+		).
+		Build(t)
 
 	assert.Nil(t, client.token)
 
@@ -71,15 +55,23 @@ func TestClient_obtainToken(t *testing.T) {
 }
 
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", tokenHandler)
-
-	client := NewClient("user", "secret")
-	client.HTTPClient = server.Client()
-	client.AuthEndpoint, _ = url.Parse(server.URL)
+	client := servermock.NewBuilder[*Client](setupIdentityClient,
+		servermock.CheckHeader().
+			WithContentTypeFromURLEncoded(),
+	).
+		Route("POST /", servermock.JSONEncode(Token{
+			AccessToken: "xxx",
+			TokenID:     "yyy",
+			ExpiresIn:   666,
+			TokenType:   "Bearer",
+			Scope:       "openid profile email roles",
+		}),
+			servermock.CheckForm().Strict().
+				With("client_id", "user").
+				With("client_secret", "secret").
+				With("grant_type", "access_key"),
+		).
+		Build(t)
 
 	assert.Nil(t, client.token)
 

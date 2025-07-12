@@ -1,79 +1,38 @@
 package internal
 
 import (
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, method, pattern string, status int, file string) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			srvURL, _ := url.Parse(server.URL)
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+			client := NewClient(srvURL.Host, "user", "secret")
+			client.HTTPClient = server.Client()
+			client.baseURL, _ = url.Parse(server.URL)
 
-	mux.HandleFunc(pattern, func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		username, password, ok := req.BasicAuth()
-		if !ok {
-			http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-
-		if username != "user" {
-			http.Error(rw, fmt.Sprintf("username: want %s got %s", username, "user"), http.StatusUnauthorized)
-			return
-		}
-
-		if password != "secret" {
-			http.Error(rw, fmt.Sprintf("password: want %s got %s", password, "secret"), http.StatusUnauthorized)
-			return
-		}
-
-		open, err := os.Open(filepath.Join("fixtures", file))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = open.Close() }()
-
-		rw.WriteHeader(status)
-		_, err = io.Copy(rw, open)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	srvURL, _ := url.Parse(server.URL)
-
-	client := NewClient(srvURL.Host, "user", "secret")
-	client.HTTPClient = server.Client()
-	client.baseURL, _ = url.Parse(server.URL)
-
-	return client
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders().
+			WithBasicAuth("user", "secret"),
+	)
 }
 
 func TestListRecords(t *testing.T) {
-	client := setupTest(t, http.MethodGet, "/dns_rr_list", http.StatusOK, "dns_rr_list.json")
+	client := mockBuilder().
+		Route("GET /dns_rr_list", servermock.ResponseFromFixture("dns_rr_list.json")).
+		Build(t)
 
-	ctx := t.Context()
-
-	records, err := client.ListRecords(ctx)
+	records, err := client.ListRecords(t.Context())
 	require.NoError(t, err)
 
 	expected := []ResourceRecord{
@@ -336,11 +295,13 @@ func TestListRecords(t *testing.T) {
 }
 
 func TestGetRecord(t *testing.T) {
-	client := setupTest(t, http.MethodGet, "/dns_rr_info", http.StatusOK, "dns_rr_info.json")
+	client := mockBuilder().
+		Route("GET /dns_rr_info", servermock.ResponseFromFixture("dns_rr_info.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("rr_id", "239")).
+		Build(t)
 
-	ctx := t.Context()
-
-	record, err := client.GetRecord(ctx, "239")
+	record, err := client.GetRecord(t.Context(), "239")
 	require.NoError(t, err)
 
 	expected := &ResourceRecord{
@@ -383,9 +344,11 @@ func TestGetRecord(t *testing.T) {
 }
 
 func TestAddRecord(t *testing.T) {
-	client := setupTest(t, http.MethodPost, "/dns_rr_add", http.StatusCreated, "dns_rr_add.json")
-
-	ctx := t.Context()
+	client := mockBuilder().
+		Route("POST /dns_rr_add",
+			servermock.ResponseFromFixture("dns_rr_add.json").WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBody(`{"dns_name":"dns.smart","dnsview_name":"external","rr_name":"test.example.com","rr_type":"TXT","value1":"test"}`)).
+		Build(t)
 
 	r := ResourceRecord{
 		RRName:      "test.example.com",
@@ -395,7 +358,7 @@ func TestAddRecord(t *testing.T) {
 		DNSViewName: "external",
 	}
 
-	resp, err := client.AddRecord(ctx, r)
+	resp, err := client.AddRecord(t.Context(), r)
 	require.NoError(t, err)
 
 	expected := &BaseOutput{RetOID: "239"}
@@ -404,11 +367,13 @@ func TestAddRecord(t *testing.T) {
 }
 
 func TestDeleteRecord(t *testing.T) {
-	client := setupTest(t, http.MethodDelete, "/dns_rr_delete", http.StatusOK, "dns_rr_delete.json")
+	client := mockBuilder().
+		Route("DELETE /dns_rr_delete", servermock.ResponseFromFixture("dns_rr_delete.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("rr_id", "251")).
+		Build(t)
 
-	ctx := t.Context()
-
-	resp, err := client.DeleteRecord(ctx, DeleteInputParameters{RRID: "251"})
+	resp, err := client.DeleteRecord(t.Context(), DeleteInputParameters{RRID: "251"})
 	require.NoError(t, err)
 
 	expected := &BaseOutput{RetOID: "251"}
@@ -417,10 +382,11 @@ func TestDeleteRecord(t *testing.T) {
 }
 
 func TestDeleteRecord_error(t *testing.T) {
-	client := setupTest(t, http.MethodDelete, "/dns_rr_delete", http.StatusBadRequest, "dns_rr_delete-error.json")
+	client := mockBuilder().
+		Route("DELETE /dns_rr_delete",
+			servermock.ResponseFromFixture("dns_rr_delete-error.json").WithStatusCode(http.StatusBadRequest)).
+		Build(t)
 
-	ctx := t.Context()
-
-	_, err := client.DeleteRecord(ctx, DeleteInputParameters{RRID: "251"})
+	_, err := client.DeleteRecord(t.Context(), DeleteInputParameters{RRID: "251"})
 	require.ErrorAs(t, err, &APIError{})
 }

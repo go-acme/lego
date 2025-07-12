@@ -1,47 +1,41 @@
 package internal
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"reflect"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 const (
-	testToken          = "test"
-	testRecordContent  = "acme"
-	testRecordContent2 = "foo"
-	testTTL            = 10
+	testToken         = "test"
+	testRecordContent = "acme"
+	testTTL           = 10
 )
 
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient(testToken)
+			client.baseURL, _ = url.Parse(server.URL)
+			client.HTTPClient = server.Client()
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client := NewClient(testToken)
-	client.baseURL, _ = url.Parse(server.URL)
-
-	return client, mux
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders())
 }
 
 func TestClient_GetZone(t *testing.T) {
-	client, mux := setupTest(t)
-
 	expected := Zone{Name: "example.com"}
 
-	mux.Handle("/v2/zones/example.com", validationHandler{
-		method: http.MethodGet,
-		next:   handleJSONResponse(expected),
-	})
+	client := mockBuilder().
+		Route("GET /v2/zones/example.com",
+			servermock.JSONEncode(expected)).
+		Build(t)
 
 	zone, err := client.GetZone(t.Context(), "example.com")
 	require.NoError(t, err)
@@ -50,20 +44,16 @@ func TestClient_GetZone(t *testing.T) {
 }
 
 func TestClient_GetZone_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.Handle("/v2/zones/example.com", validationHandler{
-		method: http.MethodGet,
-		next:   handleAPIError(),
-	})
+	client := mockBuilder().
+		Route("GET /v2/zones/example.com",
+			servermock.JSONEncode(APIError{Message: "oops"}).WithStatusCode(http.StatusInternalServerError)).
+		Build(t)
 
 	_, err := client.GetZone(t.Context(), "example.com")
-	require.Error(t, err)
+	require.EqualError(t, err, "get zone example.com: 500: oops")
 }
 
 func TestClient_GetRRSet(t *testing.T) {
-	client, mux := setupTest(t)
-
 	expected := RRSet{
 		TTL: testTTL,
 		Records: []Records{
@@ -71,10 +61,10 @@ func TestClient_GetRRSet(t *testing.T) {
 		},
 	}
 
-	mux.Handle("/v2/zones/example.com/foo.example.com/TXT", validationHandler{
-		method: http.MethodGet,
-		next:   handleJSONResponse(expected),
-	})
+	client := mockBuilder().
+		Route("GET /v2/zones/example.com/foo.example.com/TXT",
+			servermock.JSONEncode(expected)).
+		Build(t)
 
 	rrSet, err := client.GetRRSet(t.Context(), "example.com", "foo.example.com")
 	require.NoError(t, err)
@@ -83,173 +73,93 @@ func TestClient_GetRRSet(t *testing.T) {
 }
 
 func TestClient_GetRRSet_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.Handle("/v2/zones/example.com/foo.example.com/TXT", validationHandler{
-		method: http.MethodGet,
-		next:   handleAPIError(),
-	})
+	client := mockBuilder().
+		Route("GET /v2/zones/example.com/foo.example.com/TXT",
+			servermock.JSONEncode(APIError{Message: "oops"}).WithStatusCode(http.StatusInternalServerError)).
+		Build(t)
 
 	_, err := client.GetRRSet(t.Context(), "example.com", "foo.example.com")
-	require.Error(t, err)
+	require.EqualError(t, err, "get txt records example.com -> foo.example.com: 500: oops")
 }
 
 func TestClient_DeleteRRSet(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.Handle("/v2/zones/test.example.com/my.test.example.com/"+txtRecordType,
-		validationHandler{method: http.MethodDelete})
+	client := mockBuilder().
+		Route("DELETE /v2/zones/test.example.com/my.test.example.com/TXT", nil).
+		Build(t)
 
 	err := client.DeleteRRSet(t.Context(), "test.example.com", "my.test.example.com.")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRRSet_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.Handle("/v2/zones/test.example.com/my.test.example.com/"+txtRecordType, validationHandler{
-		method: http.MethodDelete,
-		next:   handleAPIError(),
-	})
+	client := mockBuilder().
+		Route("DELETE /v2/zones/test.example.com/my.test.example.com/TXT",
+			servermock.JSONEncode(APIError{Message: "oops"}).WithStatusCode(http.StatusInternalServerError)).
+		Build(t)
 
 	err := client.DeleteRRSet(t.Context(), "test.example.com", "my.test.example.com.")
 	require.NoError(t, err)
 }
 
-func TestClient_AddRRSet(t *testing.T) {
-	testCases := []struct {
-		desc          string
-		zone          string
-		recordName    string
-		value         string
-		handledDomain string
-		handlers      map[string]http.Handler
-		wantErr       bool
-	}{
-		{
-			desc:       "success add",
-			zone:       "test.example.com",
-			recordName: "my.test.example.com",
-			value:      testRecordContent,
-			handlers: map[string]http.Handler{
-				// createRRSet
-				"/v2/zones/test.example.com/my.test.example.com/" + txtRecordType: validationHandler{
-					method: http.MethodPost,
-					next:   handleAddRRSet([]Records{{Content: []string{testRecordContent}}}),
-				},
-			},
-		},
-		{
-			desc:       "success update",
-			zone:       "test.example.com",
-			recordName: "my.test.example.com",
-			value:      testRecordContent,
-			handlers: map[string]http.Handler{
-				"/v2/zones/test.example.com/my.test.example.com/" + txtRecordType: http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-					switch req.Method {
-					case http.MethodGet: // GetRRSet
-						data := RRSet{
-							TTL:     testTTL,
-							Records: []Records{{Content: []string{testRecordContent2}}},
-						}
-						handleJSONResponse(data).ServeHTTP(rw, req)
-					case http.MethodPut: // updateRRSet
-						expected := []Records{
-							{Content: []string{testRecordContent}},
-							{Content: []string{testRecordContent2}},
-						}
-						handleAddRRSet(expected).ServeHTTP(rw, req)
-					default:
-						http.Error(rw, "wrong method", http.StatusMethodNotAllowed)
-					}
-				}),
-			},
-		},
-		{
-			desc:       "not in the zone",
-			zone:       "test.example.com",
-			recordName: "notfound.example.com",
-			value:      testRecordContent,
-			wantErr:    true,
-		},
-	}
+func TestClient_AddRRSet_add(t *testing.T) {
+	client := mockBuilder().
+		// GetRRSet
+		Route("GET /v2/zones/test.example.com/my.test.example.com/TXT",
+			servermock.JSONEncode(APIError{Message: "not found"}).WithStatusCode(http.StatusBadRequest)).
+		// createRRSet
+		Route("POST /v2/zones/test.example.com/my.test.example.com/TXT",
+			servermock.JSONEncode([]Records{{Content: []string{testRecordContent}}}),
+			servermock.CheckRequestJSONBody(`{"ttl":10,"resource_records":[{"content":["acme"]}]}`)).
+		Build(t)
 
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			cl, mux := setupTest(t)
-
-			for pattern, handler := range test.handlers {
-				mux.Handle(pattern, handler)
-			}
-
-			err := cl.AddRRSet(t.Context(), test.zone, test.recordName, test.value, testTTL)
-			if test.wantErr {
-				require.Error(t, err)
-				return
-			}
-
-			require.NoError(t, err)
-		})
-	}
+	err := client.AddRRSet(t.Context(), "test.example.com", "my.test.example.com", testRecordContent, testTTL)
+	require.NoError(t, err)
 }
 
-type validationHandler struct {
-	method string
-	next   http.Handler
+func TestClient_AddRRSet_add_error(t *testing.T) {
+	client := mockBuilder().
+		// GetRRSet
+		Route("GET /v2/zones/test.example.com/my.test.example.com/TXT",
+			servermock.JSONEncode(APIError{Message: "not found"}).WithStatusCode(http.StatusBadRequest)).
+		// createRRSet
+		Route("POST /v2/zones/test.example.com/my.test.example.com/TXT",
+			servermock.JSONEncode(APIError{Message: "oops"}).WithStatusCode(http.StatusBadRequest)).
+		Build(t)
+
+	err := client.AddRRSet(t.Context(), "test.example.com", "my.test.example.com", testRecordContent, testTTL)
+	require.EqualError(t, err, "400: oops")
 }
 
-func (v validationHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	if req.Header.Get(authorizationHeader) != fmt.Sprintf("%s %s", tokenTypeHeader, testToken) {
-		rw.WriteHeader(http.StatusForbidden)
-		_ = json.NewEncoder(rw).Encode(APIError{Message: "token up for parsing was not passed through the context"})
-		return
-	}
+func TestClient_AddRRSet_update(t *testing.T) {
+	client := mockBuilder().
+		// GetRRSet
+		Route("GET /v2/zones/test.example.com/my.test.example.com/TXT",
+			servermock.JSONEncode(RRSet{
+				TTL:     testTTL,
+				Records: []Records{{Content: []string{"foo"}}},
+			})).
+		// updateRRSet
+		Route("PUT /v2/zones/test.example.com/my.test.example.com/TXT", nil,
+			servermock.CheckRequestJSONBody(`{"ttl":10,"resource_records":[{"content":["acme"]},{"content":["foo"]}]}`)).
+		Build(t)
 
-	if req.Method != v.method {
-		http.Error(rw, "wrong method", http.StatusMethodNotAllowed)
-		return
-	}
-
-	if v.next != nil {
-		v.next.ServeHTTP(rw, req)
-	}
+	err := client.AddRRSet(t.Context(), "test.example.com", "my.test.example.com", testRecordContent, testTTL)
+	require.NoError(t, err)
 }
 
-func handleAPIError() http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		rw.WriteHeader(http.StatusInternalServerError)
-		_ = json.NewEncoder(rw).Encode(APIError{Message: "oops"})
-	}
-}
+func TestClient_AddRRSet_update_error(t *testing.T) {
+	client := mockBuilder().
+		// GetRRSet
+		Route("GET /v2/zones/test.example.com/my.test.example.com/TXT",
+			servermock.JSONEncode(RRSet{
+				TTL:     testTTL,
+				Records: []Records{{Content: []string{"foo"}}},
+			})).
+		// updateRRSet
+		Route("PUT /v2/zones/test.example.com/my.test.example.com/TXT",
+			servermock.JSONEncode(APIError{Message: "oops"}).WithStatusCode(http.StatusBadRequest)).
+		Build(t)
 
-func handleJSONResponse(data any) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		err := json.NewEncoder(rw).Encode(data)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-func handleAddRRSet(expected []Records) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		body := RRSet{}
-
-		err := json.NewDecoder(req.Body).Decode(&body)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if body.TTL != testTTL {
-			http.Error(rw, "wrong ttl", http.StatusInternalServerError)
-			return
-		}
-
-		if !reflect.DeepEqual(body.Records, expected) {
-			http.Error(rw, "wrong resource records", http.StatusInternalServerError)
-			return
-		}
-	}
+	err := client.AddRRSet(t.Context(), "test.example.com", "my.test.example.com", testRecordContent, testTTL)
+	require.EqualError(t, err, "400: oops")
 }

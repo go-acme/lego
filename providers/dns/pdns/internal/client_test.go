@@ -1,65 +1,27 @@
 package internal
 
 import (
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, method, pattern string, status int, file string) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			serverURL, _ := url.Parse(server.URL)
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+			client := NewClient(serverURL, "server", 0, "secret")
+			client.HTTPClient = server.Client()
 
-	mux.HandleFunc(pattern, func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		apiKey := req.Header.Get("X-API-Key")
-		if apiKey != "secret" {
-			http.Error(rw, fmt.Sprintf("invalid credentials: %s", apiKey), http.StatusBadRequest)
-			return
-		}
-
-		if file == "" {
-			rw.WriteHeader(status)
-			return
-		}
-
-		open, err := os.Open(filepath.Join("fixtures", file))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = open.Close() }()
-
-		rw.WriteHeader(status)
-		_, err = io.Copy(rw, open)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	serverURL, _ := url.Parse(server.URL)
-
-	client := NewClient(serverURL, "server", 0, "secret")
-	client.HTTPClient = server.Client()
-
-	return client
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders().With(APIKeyHeader, "secret"))
 }
 
 func TestClient_joinPath(t *testing.T) {
@@ -159,7 +121,11 @@ func TestClient_joinPath(t *testing.T) {
 }
 
 func TestClient_GetHostedZone(t *testing.T) {
-	client := setupTest(t, http.MethodGet, "/api/v1/servers/server/zones/example.org.", http.StatusOK, "zone.json")
+	client := mockBuilder().
+		Route("GET /api/v1/servers/server/zones/example.org.",
+			servermock.ResponseFromFixture("zone.json")).
+		Build(t)
+
 	client.apiVersion = 1
 
 	zone, err := client.GetHostedZone(t.Context(), "example.org.")
@@ -202,7 +168,12 @@ func TestClient_GetHostedZone(t *testing.T) {
 }
 
 func TestClient_GetHostedZone_error(t *testing.T) {
-	client := setupTest(t, http.MethodGet, "/api/v1/servers/server/zones/example.org.", http.StatusUnprocessableEntity, "error.json")
+	client := mockBuilder().
+		Route("GET /api/v1/servers/server/zones/example.org.",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnprocessableEntity)).
+		Build(t)
+
 	client.apiVersion = 1
 
 	_, err := client.GetHostedZone(t.Context(), "example.org.")
@@ -210,7 +181,11 @@ func TestClient_GetHostedZone_error(t *testing.T) {
 }
 
 func TestClient_GetHostedZone_v0(t *testing.T) {
-	client := setupTest(t, http.MethodGet, "/servers/server/zones/example.org.", http.StatusOK, "zone.json")
+	client := mockBuilder().
+		Route("GET /servers/server/zones/example.org.",
+			servermock.ResponseFromFixture("zone.json")).
+		Build(t)
+
 	client.apiVersion = 0
 
 	zone, err := client.GetHostedZone(t.Context(), "example.org.")
@@ -253,7 +228,12 @@ func TestClient_GetHostedZone_v0(t *testing.T) {
 }
 
 func TestClient_UpdateRecords(t *testing.T) {
-	client := setupTest(t, http.MethodPatch, "/api/v1/servers/localhost/zones/example.org.", http.StatusOK, "zone.json")
+	client := mockBuilder().
+		Route("PATCH /api/v1/servers/localhost/zones/example.org.",
+			servermock.ResponseFromFixture("zone.json"),
+			servermock.CheckRequestJSONBodyFromFile("zone-request.json")).
+		Build(t)
+
 	client.apiVersion = 1
 	client.serverName = "localhost"
 
@@ -283,7 +263,12 @@ func TestClient_UpdateRecords(t *testing.T) {
 }
 
 func TestClient_UpdateRecords_NonRootApi(t *testing.T) {
-	client := setupTest(t, http.MethodPatch, "/some/path/api/v1/servers/localhost/zones/example.org.", http.StatusOK, "zone.json")
+	client := mockBuilder().
+		Route("PATCH /some/path/api/v1/servers/localhost/zones/example.org.",
+			servermock.ResponseFromFixture("zone.json"),
+			servermock.CheckRequestJSONBodyFromFile("zone-request.json")).
+		Build(t)
+
 	client.Host = client.Host.JoinPath("some", "path")
 	client.apiVersion = 1
 	client.serverName = "localhost"
@@ -314,7 +299,12 @@ func TestClient_UpdateRecords_NonRootApi(t *testing.T) {
 }
 
 func TestClient_UpdateRecords_v0(t *testing.T) {
-	client := setupTest(t, http.MethodPatch, "/servers/localhost/zones/example.org.", http.StatusOK, "zone.json")
+	client := mockBuilder().
+		Route("PATCH /servers/localhost/zones/example.org.",
+			servermock.ResponseFromFixture("zone.json"),
+			servermock.CheckRequestJSONBodyFromFile("zone-request.json")).
+		Build(t)
+
 	client.apiVersion = 0
 	client.serverName = "localhost"
 
@@ -344,7 +334,10 @@ func TestClient_UpdateRecords_v0(t *testing.T) {
 }
 
 func TestClient_Notify(t *testing.T) {
-	client := setupTest(t, http.MethodPut, "/api/v1/servers/localhost/zones/example.org./notify", http.StatusOK, "")
+	client := mockBuilder().
+		Route("PUT /api/v1/servers/localhost/zones/example.org./notify", nil).
+		Build(t)
+
 	client.apiVersion = 1
 	client.serverName = "localhost"
 
@@ -360,7 +353,10 @@ func TestClient_Notify(t *testing.T) {
 }
 
 func TestClient_Notify_NonRootApi(t *testing.T) {
-	client := setupTest(t, http.MethodPut, "/some/path/api/v1/servers/localhost/zones/example.org./notify", http.StatusOK, "")
+	client := mockBuilder().
+		Route("PUT /some/path/api/v1/servers/localhost/zones/example.org./notify", nil).
+		Build(t)
+
 	client.Host = client.Host.JoinPath("some", "path")
 	client.apiVersion = 1
 	client.serverName = "localhost"
@@ -377,7 +373,10 @@ func TestClient_Notify_NonRootApi(t *testing.T) {
 }
 
 func TestClient_Notify_v0(t *testing.T) {
-	client := setupTest(t, http.MethodPut, "/api/v1/servers/localhost/zones/example.org./notify", http.StatusOK, "")
+	client := mockBuilder().
+		Route("PUT /some/path/api/v1/servers/localhost/zones/example.org./notify", nil).
+		Build(t)
+
 	client.apiVersion = 0
 
 	zone := &HostedZone{
@@ -392,7 +391,10 @@ func TestClient_Notify_v0(t *testing.T) {
 }
 
 func TestClient_getAPIVersion(t *testing.T) {
-	client := setupTest(t, http.MethodGet, "/api", http.StatusOK, "versions.json")
+	client := mockBuilder().
+		Route("GET /api",
+			servermock.ResponseFromFixture("versions.json")).
+		Build(t)
 
 	version, err := client.getAPIVersion(t.Context())
 	require.NoError(t, err)

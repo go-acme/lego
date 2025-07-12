@@ -1,112 +1,34 @@
 package internal
 
 import (
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("user", "secret")
+			client.baseURL, _ = url.Parse(server.URL)
+			client.HTTPClient = server.Client()
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client := NewClient("user", "secret")
-	client.baseURL, _ = url.Parse(server.URL)
-	client.HTTPClient = server.Client()
-
-	return client, mux
-}
-
-func testHandler(method string, statusCode int, filename string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf(`unsupported method: %s`, req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		rw.WriteHeader(statusCode)
-
-		if statusCode == http.StatusNoContent {
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, fmt.Sprintf(`message %v`, err), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, fmt.Sprintf(`message %v`, err), http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-func testHandlerAuth(method string, statusCode int, filename string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf(`{"message":"unsupported method: %s"}`, req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		rw.WriteHeader(statusCode)
-
-		if statusCode == http.StatusNoContent {
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, fmt.Sprintf(`{"message":"%v"}`, err), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, fmt.Sprintf(`{"message":"%v"}`, err), http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-func TestClient_CreateAuthenticationToken(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/auth/token", testHandlerAuth(http.MethodPost, http.StatusOK, "auth.json"))
-
-	ctx := t.Context()
-
-	token, err := client.CreateAuthenticationToken(ctx)
-	require.NoError(t, err)
-
-	expected := &Token{
-		Token:   "authsecret",
-		Expires: 123,
-	}
-	assert.Equal(t, expected, token)
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders(),
+	)
 }
 
 func TestClient_ListZone(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/dnszones/", testHandler(http.MethodGet, http.StatusOK, "ListZone.json"))
+	client := mockBuilder().
+		Route("GET /dnszones/",
+			servermock.ResponseFromFixture("ListZone.json")).
+		Build(t)
 
 	ctx := t.Context()
 
@@ -122,13 +44,12 @@ func TestClient_ListZone(t *testing.T) {
 }
 
 func TestClient_GetZoneDetails(t *testing.T) {
-	client, mux := setupTest(t)
+	client := mockBuilder().
+		Route("GET /dnszones/example.com",
+			servermock.ResponseFromFixture("GetZoneDetails.json")).
+		Build(t)
 
-	mux.HandleFunc("/dnszones/example.com", testHandler(http.MethodGet, http.StatusOK, "GetZoneDetails.json"))
-
-	ctx := t.Context()
-
-	zone, err := client.GetZoneDetails(ctx, "example.com")
+	zone, err := client.GetZoneDetails(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := &ZoneDetails{
@@ -142,13 +63,12 @@ func TestClient_GetZoneDetails(t *testing.T) {
 }
 
 func TestClient_ListRecords(t *testing.T) {
-	client, mux := setupTest(t)
+	client := mockBuilder().
+		Route("GET /dnszones/example.com/records/",
+			servermock.ResponseFromFixture("ListRecords.json")).
+		Build(t)
 
-	mux.HandleFunc("/dnszones/example.com/records/", testHandler(http.MethodGet, http.StatusOK, "ListRecords.json"))
-
-	ctx := t.Context()
-
-	records, err := client.ListRecords(ctx, "example.com")
+	records, err := client.ListRecords(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -176,38 +96,35 @@ func TestClient_ListRecords(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/dnszones/example.com/records/", testHandler(http.MethodPost, http.StatusNoContent, ""))
-
-	ctx := t.Context()
+	client := mockBuilder().
+		Route("POST /dnszones/example.com/records/",
+			servermock.Noop().WithStatusCode(http.StatusNoContent)).
+		Build(t)
 
 	record := Record{Name: "www", TTL: 3600, Type: "A", Data: "127.0.0.1"}
 
-	err := client.AddRecord(ctx, "example.com", record)
+	err := client.AddRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecords(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/dnszones/example.com/records/delete", testHandler(http.MethodPost, http.StatusNoContent, ""))
-
-	ctx := t.Context()
+	client := mockBuilder().
+		Route("POST /dnszones/example.com/records/delete",
+			servermock.Noop().WithStatusCode(http.StatusNoContent)).
+		Build(t)
 
 	record := Record{Name: "www", Type: "A", Data: "127.0.0.1"}
 
-	err := client.DeleteRecords(ctx, "example.com", record)
+	err := client.DeleteRecords(t.Context(), "example.com", record)
 	require.NoError(t, err)
 }
 
 func TestClient_CommitRecords(t *testing.T) {
-	client, mux := setupTest(t)
+	client := mockBuilder().
+		Route("POST /dnszones/example.com/records/commit",
+			servermock.Noop().WithStatusCode(http.StatusNoContent)).
+		Build(t)
 
-	mux.HandleFunc("/dnszones/example.com/records/commit", testHandler(http.MethodPost, http.StatusNoContent, ""))
-
-	ctx := t.Context()
-
-	err := client.CommitRecords(ctx, "example.com")
+	err := client.CommitRecords(t.Context(), "example.com")
 	require.NoError(t, err)
 }

@@ -1,16 +1,13 @@
 package namecheap
 
 import (
-	"io"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
-	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/providers/dns/namecheap/internal"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +21,6 @@ const (
 type testCase struct {
 	name             string
 	domain           string
-	hosts            []internal.Record
 	errString        string
 	getHostsResponse string
 	setHostsResponse string
@@ -32,26 +28,14 @@ type testCase struct {
 
 var testCases = []testCase{
 	{
-		name:   "Test:Success:1",
-		domain: "test.example.com",
-		hosts: []internal.Record{
-			{Type: "A", Name: "home", Address: "10.0.0.1", MXPref: "10", TTL: "1799"},
-			{Type: "A", Name: "www", Address: "10.0.0.2", MXPref: "10", TTL: "1200"},
-			{Type: "AAAA", Name: "a", Address: "::0", MXPref: "10", TTL: "1799"},
-			{Type: "CNAME", Name: "*", Address: "example.com.", MXPref: "10", TTL: "1799"},
-			{Type: "MXE", Name: "example.com", Address: "10.0.0.5", MXPref: "10", TTL: "1800"},
-			{Type: "URL", Name: "xyz", Address: "https://google.com", MXPref: "10", TTL: "1799"},
-		},
+		name:             "Test:Success:1",
+		domain:           "test.example.com",
 		getHostsResponse: "getHosts_success1.xml",
 		setHostsResponse: "setHosts_success1.xml",
 	},
 	{
-		name:   "Test:Success:2",
-		domain: "example.com",
-		hosts: []internal.Record{
-			{Type: "A", Name: "@", Address: "10.0.0.2", MXPref: "10", TTL: "1200"},
-			{Type: "A", Name: "www", Address: "10.0.0.3", MXPref: "10", TTL: "60"},
-		},
+		name:             "Test:Success:2",
+		domain:           "example.com",
 		getHostsResponse: "getHosts_success2.xml",
 		setHostsResponse: "setHosts_success2.xml",
 	},
@@ -63,96 +47,37 @@ var testCases = []testCase{
 	},
 }
 
-func setupTest(t *testing.T, tc *testCase) *DNSProvider {
-	t.Helper()
-
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			values := r.URL.Query()
-			cmd := values.Get("Command")
-			switch cmd {
-			case "namecheap.domains.dns.getHosts":
-				assertHdr(t, tc, &values)
-				w.WriteHeader(http.StatusOK)
-				writeFixture(w, tc.getHostsResponse)
-			default:
-				t.Errorf("Unexpected GET command: %s", cmd)
-			}
-
-		case http.MethodPost:
-			err := r.ParseForm()
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			values := r.Form
-			cmd := values.Get("Command")
-			switch cmd {
-			case "namecheap.domains.dns.setHosts":
-				assertHdr(t, tc, &values)
-				w.WriteHeader(http.StatusOK)
-				writeFixture(w, tc.setHostsResponse)
-			default:
-				t.Errorf("Unexpected POST command: %s", cmd)
-			}
-
-		default:
-			t.Errorf("Unexpected http method: %s", r.Method)
-		}
-	})
-
-	server := httptest.NewServer(handler)
-	t.Cleanup(server.Close)
-
-	return mockDNSProvider(t, server.URL)
-}
-
-func mockDNSProvider(t *testing.T, baseURL string) *DNSProvider {
-	t.Helper()
-
-	config := NewDefaultConfig()
-	config.BaseURL = baseURL
-	config.APIUser = envTestUser
-	config.APIKey = envTestKey
-	config.ClientIP = envTestClientIP
-	config.HTTPClient = &http.Client{Timeout: 60 * time.Second}
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	return provider
-}
-
-func assertHdr(t *testing.T, tc *testCase, values *url.Values) {
-	t.Helper()
-
-	ch, _ := newPseudoRecord(tc.domain, "")
-	assert.Equal(t, envTestUser, values.Get("ApiUser"), "ApiUser")
-	assert.Equal(t, envTestKey, values.Get("ApiKey"), "ApiKey")
-	assert.Equal(t, envTestUser, values.Get("UserName"), "UserName")
-	assert.Equal(t, envTestClientIP, values.Get("ClientIp"), "ClientIp")
-	assert.Equal(t, ch.sld, values.Get("SLD"), "SLD")
-	assert.Equal(t, ch.tld, values.Get("TLD"), "TLD")
-}
-
-func writeFixture(rw http.ResponseWriter, filename string) {
-	file, err := os.Open(filepath.Join("internal", "fixtures", filename))
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer func() { _ = file.Close() }()
-
-	_, _ = io.Copy(rw, file)
-}
-
 func TestDNSProvider_Present(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			p := setupTest(t, &test)
+			ch, _ := newPseudoRecord(test.domain, "")
 
-			err := p.Present(test.domain, "", "dummyKey")
+			provider := mockBuilder().
+				Route("GET /",
+					servermock.ResponseFromFile(filepath.Join("internal", "fixtures", test.getHostsResponse)),
+					servermock.CheckForm().Strict().
+						With("ClientIp", "10.0.0.1").
+						With("Command", "namecheap.domains.dns.getHosts").
+						With("SLD", ch.sld).
+						With("TLD", ch.tld).
+						With("UserName", "foo").
+						With("ApiKey", "bar").
+						With("ApiUser", "foo"),
+				).
+				Route("POST /",
+					servermock.ResponseFromFile(filepath.Join("internal", "fixtures", test.setHostsResponse)),
+					servermock.CheckForm().
+						With("ClientIp", "10.0.0.1").
+						With("Command", "namecheap.domains.dns.setHosts").
+						With("SLD", ch.sld).
+						With("TLD", ch.tld).
+						With("UserName", "foo").
+						With("ApiKey", "bar").
+						With("ApiUser", "foo"),
+				).
+				Build(t)
+
+			err := provider.Present(test.domain, "", "dummyKey")
 			if test.errString != "" {
 				assert.EqualError(t, err, "namecheap: "+test.errString)
 			} else {
@@ -165,9 +90,34 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			p := setupTest(t, &test)
+			ch, _ := newPseudoRecord(test.domain, "")
 
-			err := p.CleanUp(test.domain, "", "dummyKey")
+			provider := mockBuilder().
+				Route("GET /",
+					servermock.ResponseFromFile(filepath.Join("internal", "fixtures", test.getHostsResponse)),
+					servermock.CheckForm().Strict().
+						With("ClientIp", "10.0.0.1").
+						With("Command", "namecheap.domains.dns.getHosts").
+						With("SLD", ch.sld).
+						With("TLD", ch.tld).
+						With("UserName", "foo").
+						With("ApiKey", "bar").
+						With("ApiUser", "foo"),
+				).
+				Route("POST /",
+					servermock.ResponseFromFile(filepath.Join("internal", "fixtures", test.setHostsResponse)),
+					servermock.CheckForm().
+						With("ClientIp", "10.0.0.1").
+						With("Command", "namecheap.domains.dns.setHosts").
+						With("SLD", ch.sld).
+						With("TLD", ch.tld).
+						With("UserName", "foo").
+						With("ApiKey", "bar").
+						With("ApiUser", "foo"),
+				).
+				Build(t)
+
+			err := provider.CleanUp(test.domain, "", "dummyKey")
 			if test.errString != "" {
 				assert.EqualError(t, err, "namecheap: "+test.errString)
 			} else {
@@ -225,4 +175,17 @@ func Test_newPseudoRecord_domainSplit(t *testing.T) {
 			}
 		})
 	}
+}
+
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+		config := NewDefaultConfig()
+		config.BaseURL = server.URL
+		config.APIUser = envTestUser
+		config.APIKey = envTestKey
+		config.ClientIP = envTestClientIP
+		config.HTTPClient = &http.Client{Timeout: 60 * time.Second}
+
+		return NewDNSProviderConfig(config)
+	})
 }

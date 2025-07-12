@@ -1,24 +1,37 @@
 package internal
 
 import (
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_GetRecords(t *testing.T) {
-	client, mux := setupTest(t)
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client, err := NewClient("accountname", "apikey")
+			if err != nil {
+				return nil, err
+			}
 
-	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records", mockHandler(http.MethodGet, http.StatusOK, "get_records.json"))
+			client.baseURL, _ = url.Parse(server.URL)
+			client.HTTPClient = server.Client()
+
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders())
+}
+
+func TestClient_GetRecords(t *testing.T) {
+	client := mockBuilder().
+		Route("GET /accountname/apikey/my/products/azone01/dns/records",
+			servermock.ResponseFromFixture("get_records.json")).
+		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "azone01")
 	require.NoError(t, err)
@@ -62,9 +75,11 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_GetRecords_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records", mockHandler(http.MethodGet, http.StatusBadRequest, "bad_auth_error.json"))
+	client := mockBuilder().
+		Route("GET /accountname/apikey/my/products/azone01/dns/records",
+			servermock.ResponseFromFixture("bad_auth_error.json").
+				WithStatusCode(http.StatusBadRequest)).
+		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "azone01")
 	require.Error(t, err)
@@ -73,9 +88,10 @@ func TestClient_GetRecords_error(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records", mockHandler(http.MethodPost, http.StatusOK, "add_record.json"))
+	client := mockBuilder().
+		Route("POST /accountname/apikey/my/products/azone01/dns/records",
+			servermock.ResponseFromFixture("add_record.json")).
+		Build(t)
 
 	record := Record{
 		Name:     "arecord01",
@@ -92,9 +108,11 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records", mockHandler(http.MethodPost, http.StatusNotFound, "bad_zone_error.json"))
+	client := mockBuilder().
+		Route("POST /accountname/apikey/my/products/azone01/dns/records",
+			servermock.ResponseFromFixture("bad_zone_error.json").
+				WithStatusCode(http.StatusNotFound)).
+		Build(t)
 
 	record := Record{
 		Name:     "arecord01",
@@ -111,9 +129,10 @@ func TestClient_AddRecord_error(t *testing.T) {
 }
 
 func TestClient_EditRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records/123456789", mockHandler(http.MethodPut, http.StatusOK, "success.json"))
+	client := mockBuilder().
+		Route("PUT /accountname/apikey/my/products/azone01/dns/records/123456789",
+			servermock.ResponseFromFixture("success.json")).
+		Build(t)
 
 	record := Record{
 		Name:     "arecord01",
@@ -128,9 +147,11 @@ func TestClient_EditRecord(t *testing.T) {
 }
 
 func TestClient_EditRecord_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records/123456789", mockHandler(http.MethodPut, http.StatusNotFound, "invalid_record_id.json"))
+	client := mockBuilder().
+		Route("PUT /accountname/apikey/my/products/azone01/dns/records/123456789",
+			servermock.ResponseFromFixture("invalid_record_id.json").
+				WithStatusCode(http.StatusNotFound)).
+		Build(t)
 
 	record := Record{
 		Name:     "arecord01",
@@ -145,63 +166,22 @@ func TestClient_EditRecord_error(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records/123456789", mockHandler(http.MethodDelete, http.StatusOK, "success.json"))
+	client := mockBuilder().
+		Route("DELETE /accountname/apikey/my/products/azone01/dns/records/123456789",
+			servermock.ResponseFromFixture("success.json")).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "azone01", 123456789)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records/123456789", mockHandler(http.MethodDelete, http.StatusNotFound, "invalid_record_id.json"))
+	client := mockBuilder().
+		Route("DELETE /accountname/apikey/my/products/azone01/dns/records/123456789",
+			servermock.ResponseFromFixture("invalid_record_id.json").
+				WithStatusCode(http.StatusNotFound)).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "azone01", 123456789)
 	require.Error(t, err)
-}
-
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client, err := NewClient("accountname", "apikey")
-	require.NoError(t, err)
-
-	client.baseURL, _ = url.Parse(server.URL)
-
-	return client, mux
-}
-
-func mockHandler(method string, statusCode int, filename string) func(http.ResponseWriter, *http.Request) {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		if filename == "" {
-			rw.WriteHeader(statusCode)
-			return
-		}
-
-		file, err := os.Open(filepath.FromSlash(path.Join("./fixtures", filename)))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer func() { _ = file.Close() }()
-
-		rw.WriteHeader(statusCode)
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
 }

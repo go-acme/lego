@@ -1,127 +1,63 @@
 package internal
 
 import (
-	"encoding/json"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("clientID", "email@example.com", "secret", 300)
+			client.HTTPClient = server.Client()
+			client.apiBaseURL, _ = url.Parse(server.URL + "/api")
+			client.loginURL, _ = url.Parse(server.URL + "/login")
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client := NewClient("clientID", "email@example.com", "secret", 300)
-	client.HTTPClient = server.Client()
-	client.apiBaseURL, _ = url.Parse(server.URL + "/api")
-	client.loginURL, _ = url.Parse(server.URL + "/login")
-
-	return client, mux
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders(),
+	)
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client, mux := setupTest(t)
+	client := mockBuilder().
+		Route("POST /api/domain/search",
+			servermock.ResponseFromFixture("domain_search.json"),
+			servermock.CheckRequestJSONBodyFromFile("domain_search-request.json")).
+		Route("POST /api/record-txt", nil,
+			servermock.CheckRequestJSONBodyFromFile("record_txt-request.json")).
+		Route("PUT /api/domain/A/publish", nil,
+			servermock.CheckRequestJSONBodyFromFile("publish-request.json")).
+		Route("POST /login",
+			servermock.ResponseFromFixture("login.json"),
+			servermock.CheckRequestJSONBodyFromFile("login-request.json")).
+		Build(t)
 
-	mux.HandleFunc("/api/domain/search", func(rw http.ResponseWriter, req *http.Request) {
-		response := SearchResponse{
-			Items: []Domain{
-				{
-					ID:         "A",
-					DomainName: "example.com",
-				},
-			},
-		}
+	ctx, err := client.CreateAuthenticatedContext(t.Context())
+	require.NoError(t, err)
 
-		err := json.NewEncoder(rw).Encode(response)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-	mux.HandleFunc("/api/record-txt", func(rw http.ResponseWriter, req *http.Request) {})
-	mux.HandleFunc("/api/domain/A/publish", func(rw http.ResponseWriter, req *http.Request) {})
-	mux.HandleFunc("/login", func(rw http.ResponseWriter, req *http.Request) {
-		response := AuthResponse{
-			Auth: Auth{
-				AccessToken:  "at",
-				RefreshToken: "",
-			},
-		}
-
-		err := json.NewEncoder(rw).Encode(response)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	err := client.AddRecord(t.Context(), "example.com", "_acme-challenge.example.com", "txt")
+	err = client.AddRecord(ctx, "example.com", "_acme-challenge.example.com", "txt")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/api/domain/search", func(rw http.ResponseWriter, req *http.Request) {
-		response := SearchResponse{
-			Items: []Domain{
-				{
-					ID:         "A",
-					DomainName: "example.com",
-				},
-			},
-		}
-
-		err := json.NewEncoder(rw).Encode(response)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-	mux.HandleFunc("/api/domain/A", func(rw http.ResponseWriter, req *http.Request) {
-		response := DomainInfo{
-			ID:         "Z",
-			DomainName: "example.com",
-			LastDomainRecordList: []Record{
-				{
-					ID:       "R01",
-					DomainID: "A",
-					Name:     "_acme-challenge.example.com",
-					Value:    "txt",
-					Type:     "TXT",
-				},
-			},
-			SoaTTL: 300,
-		}
-
-		err := json.NewEncoder(rw).Encode(response)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-	mux.HandleFunc("/api/record/R01", func(rw http.ResponseWriter, req *http.Request) {})
-	mux.HandleFunc("/api/domain/A/publish", func(rw http.ResponseWriter, req *http.Request) {})
-	mux.HandleFunc("/login", func(rw http.ResponseWriter, req *http.Request) {
-		response := AuthResponse{
-			Auth: Auth{
-				AccessToken:  "at",
-				RefreshToken: "",
-			},
-		}
-
-		err := json.NewEncoder(rw).Encode(response)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	client := mockBuilder().
+		Route("POST /api/domain/search",
+			servermock.ResponseFromFixture("domain_search.json"),
+			servermock.CheckRequestJSONBodyFromFile("domain_search-request.json")).
+		Route("GET /api/domain/A",
+			servermock.ResponseFromFixture("domain-request.json")).
+		Route("DELETE /api/record/R01", nil).
+		Route("PUT /api/domain/A/publish", nil,
+			servermock.CheckRequestJSONBodyFromFile("publish-request.json")).
+		Route("POST /login",
+			servermock.ResponseFromFixture("login.json"),
+			servermock.CheckRequestJSONBodyFromFile("login-request.json")).
+		Build(t)
 
 	ctx, err := client.CreateAuthenticatedContext(t.Context())
 	require.NoError(t, err)

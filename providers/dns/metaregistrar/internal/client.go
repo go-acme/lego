@@ -16,6 +16,8 @@ import (
 
 const defaultBaseURL = "https://api.metaregistrar.com"
 
+const tokenHeader = "token"
+
 // Client is a client to interact with the Metaregistrar API.
 type Client struct {
 	token string
@@ -61,7 +63,7 @@ func (c Client) UpdateDNSZone(ctx context.Context, domain string, updateRequest 
 }
 
 func (c Client) do(req *http.Request, result any) error {
-	req.Header.Add("token", c.token)
+	req.Header.Add(tokenHeader, c.token)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

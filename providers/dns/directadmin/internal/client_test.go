@@ -1,88 +1,48 @@
 package internal
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client, _ := NewClient(server.URL, "user", "secret")
+			client.HTTPClient = server.Client()
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client, _ := NewClient(server.URL, "user", "secret")
-	client.HTTPClient = server.Client()
-
-	return client, mux
+			return client, nil
+		},
+		servermock.CheckHeader().
+			WithContentTypeFromURLEncoded())
 }
 
-func newJSONErrorf(reason string, a ...any) string {
-	err := APIError{
+func newAPIError(reason string, a ...any) APIError {
+	return APIError{
 		Message: "Cannot View Dns Record",
 		Result:  fmt.Sprintf(reason, a...),
-	}
-
-	data, _ := json.Marshal(err)
-
-	return string(data)
-}
-
-func testHandler(kv map[string]string) func(rw http.ResponseWriter, req *http.Request) {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		domain := req.URL.Query().Get("domain")
-		if domain != "example.com" {
-			http.Error(rw, newJSONErrorf("invalid domain: %s", domain), http.StatusUnauthorized)
-			return
-		}
-
-		data, err := io.ReadAll(req.Body)
-		if err != nil {
-			http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-		values, err := url.ParseQuery(string(data))
-		if err != nil {
-			http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-		for k, v := range kv {
-			actual := values.Get(k)
-			if v != actual {
-				http.Error(rw, newJSONErrorf("invalid %q: %s", k, actual), http.StatusBadRequest)
-				return
-			}
-		}
 	}
 }
 
 func TestClient_SetRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	kv := map[string]string{
-		"action": "add",
-		"name":   "foo",
-		"type":   "TXT",
-		"value":  "txtTXTtxt",
-		"ttl":    "123",
-	}
-
-	mux.HandleFunc("/CMD_API_DNS_CONTROL", testHandler(kv))
+	client := mockBuilder().
+		Route("POST /CMD_API_DNS_CONTROL", nil,
+			servermock.CheckQueryParameter().Strict().
+				With("domain", "example.com").
+				With("json", "yes"),
+			servermock.CheckForm().UsePostForm().Strict().
+				With("action", "add").
+				With("name", "foo").
+				With("type", "TXT").
+				With("value", "txtTXTtxt").
+				With("ttl", "123"),
+		).
+		Build(t)
 
 	record := Record{
 		Name:  "foo",
@@ -96,11 +56,11 @@ func TestClient_SetRecord(t *testing.T) {
 }
 
 func TestClient_SetRecord_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/CMD_API_DNS_CONTROL", func(rw http.ResponseWriter, req *http.Request) {
-		http.Error(rw, newJSONErrorf("OOPS"), http.StatusInternalServerError)
-	})
+	client := mockBuilder().
+		Route("POST /CMD_API_DNS_CONTROL",
+			servermock.JSONEncode(newAPIError("OOPS")).
+				WithStatusCode(http.StatusInternalServerError)).
+		Build(t)
 
 	record := Record{
 		Name:  "foo",
@@ -114,17 +74,18 @@ func TestClient_SetRecord_error(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	kv := map[string]string{
-		"action": "delete",
-		"name":   "foo",
-		"type":   "TXT",
-		"value":  "txtTXTtxt",
-		"ttl":    "",
-	}
-
-	mux.HandleFunc("/CMD_API_DNS_CONTROL", testHandler(kv))
+	client := mockBuilder().
+		Route("POST /CMD_API_DNS_CONTROL", nil,
+			servermock.CheckQueryParameter().Strict().
+				With("domain", "example.com").
+				With("json", "yes"),
+			servermock.CheckForm().UsePostForm().Strict().
+				With("action", "delete").
+				With("name", "foo").
+				With("type", "TXT").
+				With("value", "txtTXTtxt"),
+		).
+		Build(t)
 
 	record := Record{
 		Name:  "foo",
@@ -137,11 +98,11 @@ func TestClient_DeleteRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/CMD_API_DNS_CONTROL", func(rw http.ResponseWriter, req *http.Request) {
-		http.Error(rw, newJSONErrorf("OOPS"), http.StatusInternalServerError)
-	})
+	client := mockBuilder().
+		Route("POST /CMD_API_DNS_CONTROL",
+			servermock.JSONEncode(newAPIError("OOPS")).
+				WithStatusCode(http.StatusInternalServerError)).
+		Build(t)
 
 	record := Record{
 		Name:  "foo",

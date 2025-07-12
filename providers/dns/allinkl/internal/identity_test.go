@@ -2,13 +2,20 @@ package internal
 
 import (
 	"context"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func setupIdentifierClient(server *httptest.Server) (*Identifier, error) {
+	client := NewIdentifier("user", "secret")
+	client.authEndpoint = server.URL
+
+	return client, nil
+}
 
 func mockContext(t *testing.T) context.Context {
 	t.Helper()
@@ -17,14 +24,9 @@ func mockContext(t *testing.T) context.Context {
 }
 
 func TestIdentifier_Authentication(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", testHandler("auth.xml"))
-
-	client := NewIdentifier("user", "secret")
-	client.authEndpoint = server.URL
+	client := servermock.NewBuilder[*Identifier](setupIdentifierClient).
+		Route("POST /", servermock.ResponseFromFixture("auth.xml")).
+		Build(t)
 
 	credentialToken, err := client.Authentication(t.Context(), 60, false)
 	require.NoError(t, err)
@@ -33,14 +35,9 @@ func TestIdentifier_Authentication(t *testing.T) {
 }
 
 func TestIdentifier_Authentication_error(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", testHandler("auth_fault.xml"))
-
-	client := NewIdentifier("user", "secret")
-	client.authEndpoint = server.URL
+	client := servermock.NewBuilder[*Identifier](setupIdentifierClient).
+		Route("POST /", servermock.ResponseFromFixture("auth_fault.xml")).
+		Build(t)
 
 	_, err := client.Authentication(t.Context(), 60, false)
 	require.Error(t, err)

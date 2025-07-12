@@ -1,0 +1,14 @@
+{
+  "search": [
+    {
+      "name": "clientId",
+      "operator": "eq",
+      "value": "clientID"
+    },
+    {
+      "name": "domainName",
+      "operator": "eq",
+      "value": "example.com"
+    }
+  ]
+}

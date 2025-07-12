@@ -1,0 +1,8 @@
+{
+  "data": {
+    "id": 1234567
+  },
+  "meta": {
+    "location": "https://api.ukfast.io/safedns/v1/zones/example.com/records/1234567"
+  }
+}

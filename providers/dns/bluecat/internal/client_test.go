@@ -6,33 +6,37 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_LookupParentZoneID(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
+func setupClient(server *httptest.Server) (*Client, error) {
 	client := NewClient(server.URL, "user", "secret")
 	client.HTTPClient = server.Client()
 
-	mux.HandleFunc("/Services/REST/v1/getEntityByName", func(rw http.ResponseWriter, req *http.Request) {
-		query := req.URL.Query()
+	return client, nil
+}
 
-		if query.Get("name") == "com" {
-			_ = json.NewEncoder(rw).Encode(EntityResponse{
-				ID:         2,
-				Name:       "com",
-				Type:       ZoneType,
-				Properties: "test",
-			})
-			return
-		}
+func TestClient_LookupParentZoneID(t *testing.T) {
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /Services/REST/v1/getEntityByName",
+			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				query := req.URL.Query()
 
-		http.Error(rw, "{}", http.StatusOK)
-	})
+				if query.Get("name") == "com" {
+					_ = json.NewEncoder(rw).Encode(EntityResponse{
+						ID:         2,
+						Name:       "com",
+						Type:       ZoneType,
+						Properties: "test",
+					})
+					return
+				}
+
+				_, _ = rw.Write([]byte(`{}`))
+			})).
+		Build(t)
 
 	parentID, name, err := client.LookupParentZoneID(t.Context(), 2, "foo.example.com")
 	require.NoError(t, err)

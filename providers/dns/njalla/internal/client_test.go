@@ -1,75 +1,31 @@
 package internal
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, handler func(http.ResponseWriter, *http.Request)) *Client {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		token := req.Header.Get(authorizationHeader)
-		if token != "Njalla secret" {
-			_, _ = rw.Write([]byte(`{"jsonrpc":"2.0", "Error": {"code": 403, "message": "Invalid token."}}`))
-			return
-		}
-
-		if handler != nil {
-			handler(rw, req)
-		} else {
-			_, _ = rw.Write([]byte(`{"jsonrpc":"2.0"}`))
-		}
-	})
-
+func setupClient(server *httptest.Server) (*Client, error) {
 	client := NewClient("secret")
 	client.apiEndpoint = server.URL
+	client.HTTPClient = server.Client()
 
-	return client
+	return client, nil
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := setupTest(t, func(rw http.ResponseWriter, req *http.Request) {
-		apiReq := struct {
-			Method string `json:"method"`
-			Params Record `json:"params"`
-		}{}
-
-		err := json.NewDecoder(req.Body).Decode(&apiReq)
-		if err != nil {
-			http.Error(rw, "failed to marshal test request body", http.StatusInternalServerError)
-			return
-		}
-
-		apiReq.Params.ID = "123"
-
-		resp := map[string]any{
-			"jsonrpc": "2.0",
-			"id":      "897",
-			"result":  apiReq.Params,
-		}
-
-		err = json.NewEncoder(rw).Encode(resp)
-		if err != nil {
-			http.Error(rw, "failed to marshal test response", http.StatusInternalServerError)
-			return
-		}
-	})
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
+			WithAuthorization("Njalla secret"),
+	).
+		Route("POST /",
+			servermock.ResponseFromFixture("add_record.json"),
+			servermock.CheckRequestJSONBodyFromFile("add_record-request.json")).
+		Build(t)
 
 	record := Record{
 		Content: "foobar",
@@ -94,7 +50,13 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client := setupTest(t, nil)
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
+			WithAuthorization("Njalla invalid"),
+	).
+		Route("POST /", servermock.ResponseFromFixture("auth_error.json")).
+		Build(t)
+
 	client.token = "invalid"
 
 	record := Record{
@@ -106,55 +68,20 @@ func TestClient_AddRecord_error(t *testing.T) {
 	}
 
 	result, err := client.AddRecord(t.Context(), record)
-	require.Error(t, err)
+	require.EqualError(t, err, "code: 403, message: Invalid token.")
 
 	assert.Nil(t, result)
 }
 
 func TestClient_ListRecords(t *testing.T) {
-	client := setupTest(t, func(rw http.ResponseWriter, req *http.Request) {
-		apiReq := struct {
-			Method string `json:"method"`
-			Params Record `json:"params"`
-		}{}
-
-		err := json.NewDecoder(req.Body).Decode(&apiReq)
-		if err != nil {
-			http.Error(rw, "failed to marshal test request body", http.StatusInternalServerError)
-			return
-		}
-
-		resp := map[string]any{
-			"jsonrpc": "2.0",
-			"id":      "897",
-			"result": Records{
-				Records: []Record{
-					{
-						ID:      "1",
-						Domain:  apiReq.Params.Domain,
-						Content: "test",
-						Name:    "test01",
-						TTL:     300,
-						Type:    "TXT",
-					},
-					{
-						ID:      "2",
-						Domain:  apiReq.Params.Domain,
-						Content: "txtTxt",
-						Name:    "test02",
-						TTL:     120,
-						Type:    "TXT",
-					},
-				},
-			},
-		}
-
-		err = json.NewEncoder(rw).Encode(resp)
-		if err != nil {
-			http.Error(rw, "failed to marshal test response", http.StatusInternalServerError)
-			return
-		}
-	})
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
+			WithAuthorization("Njalla secret"),
+	).
+		Route("POST /",
+			servermock.ResponseFromFixture("list_records.json"),
+			servermock.CheckRequestJSONBodyFromFile("list_records-request.json")).
+		Build(t)
 
 	records, err := client.ListRecords(t.Context(), "example.com")
 	require.NoError(t, err)
@@ -182,49 +109,43 @@ func TestClient_ListRecords(t *testing.T) {
 }
 
 func TestClient_ListRecords_error(t *testing.T) {
-	client := setupTest(t, nil)
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
+			WithAuthorization("Njalla invalid"),
+	).
+		Route("POST /", servermock.ResponseFromFixture("auth_error.json")).
+		Build(t)
+
 	client.token = "invalid"
 
 	records, err := client.ListRecords(t.Context(), "example.com")
-	require.Error(t, err)
+	require.EqualError(t, err, "code: 403, message: Invalid token.")
 
 	assert.Empty(t, records)
 }
 
 func TestClient_RemoveRecord(t *testing.T) {
-	client := setupTest(t, func(rw http.ResponseWriter, req *http.Request) {
-		apiReq := struct {
-			Method string `json:"method"`
-			Params Record `json:"params"`
-		}{}
-
-		err := json.NewDecoder(req.Body).Decode(&apiReq)
-		if err != nil {
-			http.Error(rw, "failed to marshal test request body", http.StatusInternalServerError)
-			return
-		}
-
-		if apiReq.Params.ID == "" {
-			_, _ = rw.Write([]byte(`{"jsonrpc":"2.0", "Error": {"code": 400, "message": ""missing ID"}}`))
-			return
-		}
-
-		if apiReq.Params.Domain == "" {
-			_, _ = rw.Write([]byte(`{"jsonrpc":"2.0", "Error": {"code": 400, "message": ""missing domain"}}`))
-			return
-		}
-
-		_, _ = rw.Write([]byte(`{"jsonrpc":"2.0"}`))
-	})
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
+			WithAuthorization("Njalla secret"),
+	).
+		Route("POST /",
+			servermock.RawStringResponse(`{"jsonrpc":"2.0"}`),
+			servermock.CheckRequestJSONBodyFromFile("remove_record-request.json")).
+		Build(t)
 
 	err := client.RemoveRecord(t.Context(), "123", "example.com")
 	require.NoError(t, err)
 }
 
 func TestClient_RemoveRecord_error(t *testing.T) {
-	client := setupTest(t, nil)
-	client.token = "invalid"
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
+			WithAuthorization("Njalla secret"),
+	).
+		Route("POST /", servermock.ResponseFromFixture("remove_record_error_missing_domain.json")).
+		Build(t)
 
 	err := client.RemoveRecord(t.Context(), "123", "example.com")
-	require.Error(t, err)
+	require.EqualError(t, err, "code: 400, message: missing domain")
 }

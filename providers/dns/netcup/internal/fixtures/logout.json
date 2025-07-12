@@ -1,0 +1,10 @@
+{
+  "serverrequestid": "request-id",
+  "clientrequestid": "",
+  "action": "logout",
+  "status": "success",
+  "statuscode": 2000,
+  "shortmessage": "Logout successful",
+  "longmessage": "Session has been terminated successful.",
+  "responsedata": ""
+}

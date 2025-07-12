@@ -1,14 +1,11 @@
 package internal
 
 import (
-	"bytes"
 	"context"
-	"fmt"
-	"io"
 	"net/http"
-	"strconv"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,40 +17,10 @@ func mockContext(t *testing.T) context.Context {
 }
 
 func TestClient_Login(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		raw, err := io.ReadAll(req.Body)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if string(bytes.TrimSpace(raw)) != `{"action":"login","param":{"customernumber":"a","apikey":"b","apipassword":"c"}}` {
-			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
-			return
-		}
-
-		response := `
-		{
-		    "serverrequestid": "srv-request-id",
-		    "clientrequestid": "",
-		    "action": "login",
-		    "status": "success",
-		    "statuscode": 2000,
-		    "shortmessage": "Login successful",
-		    "longmessage": "Session has been created successful.",
-		    "responsedata": {
-		        "apisessionid": "api-session-id"
-		    }
-		}
-		`
-		_, err = rw.Write([]byte(response))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	client := mockBuilder().
+		Route("POST /", servermock.ResponseFromFixture("login.json"),
+			servermock.CheckRequestJSONBodyFromFile("login-request.json")).
+		Build(t)
 
 	sessionID, err := client.login(t.Context())
 	require.NoError(t, err)
@@ -63,56 +30,24 @@ func TestClient_Login(t *testing.T) {
 
 func TestClient_Login_errors(t *testing.T) {
 	testCases := []struct {
-		desc    string
-		handler func(rw http.ResponseWriter, req *http.Request)
+		desc     string
+		handler  http.Handler
+		expected string
 	}{
 		{
-			desc: "HTTP error",
-			handler: func(rw http.ResponseWriter, _ *http.Request) {
-				http.Error(rw, "error message", http.StatusInternalServerError)
-			},
+			desc:     "HTTP error",
+			handler:  servermock.Noop().WithStatusCode(http.StatusInternalServerError),
+			expected: `loging error: unexpected status code: [status code: 500] body: `,
 		},
 		{
-			desc: "API error",
-			handler: func(rw http.ResponseWriter, _ *http.Request) {
-				response := `
-					{
-						"serverrequestid":"YxTr4EzdbJ101T211zR4yzUEMVE",
-						"clientrequestid":"",
-						"action":"login",
-						"status":"error",
-						"statuscode":4013,
-						"shortmessage":"Validation Error.",
-						"longmessage":"Message is empty.",
-						"responsedata":""
-					}`
-				_, err := rw.Write([]byte(response))
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
+			desc:     "API error",
+			handler:  servermock.ResponseFromFixture("login_error.json"),
+			expected: `loging error: an error occurred during the action login: [Status=error, StatusCode=4013, ShortMessage=Validation Error., LongMessage=Message is empty.]`,
 		},
 		{
-			desc: "responsedata marshaling error",
-			handler: func(rw http.ResponseWriter, _ *http.Request) {
-				response := `
-							{
-								"serverrequestid": "srv-request-id",
-								"clientrequestid": "",
-								"action": "login",
-								"status": "success",
-								"statuscode": 2000,
-								"shortmessage": "Login successful",
-								"longmessage": "Session has been created successful.",
-								"responsedata": ""
-							}`
-				_, err := rw.Write([]byte(response))
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
+			desc:     "responsedata marshaling error",
+			handler:  servermock.ResponseFromFixture("login_error_unmarshal.json"),
+			expected: `loging error: unable to unmarshal response: [status code: 200] body: "" error: json: cannot unmarshal string into Go value of type internal.LoginResponse`,
 		},
 	}
 
@@ -120,49 +55,22 @@ func TestClient_Login_errors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client, mux := setupTest(t)
-
-			mux.HandleFunc("/", test.handler)
+			client := mockBuilder().
+				Route("POST /", test.handler).
+				Build(t)
 
 			sessionID, err := client.login(t.Context())
-			assert.Error(t, err)
+			assert.EqualError(t, err, test.expected)
 			assert.Empty(t, sessionID)
 		})
 	}
 }
 
 func TestClient_Logout(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		raw, err := io.ReadAll(req.Body)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if string(bytes.TrimSpace(raw)) != `{"action":"logout","param":{"customernumber":"a","apikey":"b","apisessionid":"session-id"}}` {
-			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
-			return
-		}
-
-		response := `
-			{
-				"serverrequestid": "request-id",
-				"clientrequestid": "",
-				"action": "logout",
-				"status": "success",
-				"statuscode": 2000,
-				"shortmessage": "Logout successful",
-				"longmessage": "Session has been terminated successful.",
-				"responsedata": ""
-			}`
-		_, err = rw.Write([]byte(response))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	client := mockBuilder().
+		Route("POST /", servermock.ResponseFromFixture("logout.json"),
+			servermock.CheckRequestJSONBodyFromFile("logout-request.json")).
+		Build(t)
 
 	err := client.Logout(mockContext(t))
 	require.NoError(t, err)
@@ -170,35 +78,17 @@ func TestClient_Logout(t *testing.T) {
 
 func TestClient_Logout_errors(t *testing.T) {
 	testCases := []struct {
-		desc    string
-		handler func(rw http.ResponseWriter, req *http.Request)
+		desc     string
+		handler  http.Handler
+		expected string
 	}{
 		{
-			desc: "HTTP error",
-			handler: func(rw http.ResponseWriter, _ *http.Request) {
-				http.Error(rw, "error message", http.StatusInternalServerError)
-			},
+			desc:    "HTTP error",
+			handler: servermock.Noop().WithStatusCode(http.StatusInternalServerError),
 		},
 		{
-			desc: "API error",
-			handler: func(rw http.ResponseWriter, _ *http.Request) {
-				response := `
-					{
-						"serverrequestid":"YxTr4EzdbJ101T211zR4yzUEMVE",
-						"clientrequestid":"",
-						"action":"logout",
-						"status":"error",
-						"statuscode":4013,
-						"shortmessage":"Validation Error.",
-						"longmessage":"Message is empty.",
-						"responsedata":""
-					}`
-				_, err := rw.Write([]byte(response))
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
+			desc:    "API error",
+			handler: servermock.ResponseFromFixture("login_error.json"),
 		},
 	}
 
@@ -206,39 +96,12 @@ func TestClient_Logout_errors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client, mux := setupTest(t)
-
-			mux.HandleFunc("/", test.handler)
+			client := mockBuilder().
+				Route("POST /", test.handler).
+				Build(t)
 
 			err := client.Logout(t.Context())
 			require.Error(t, err)
-		})
-	}
-}
-
-func TestLiveClientAuth(t *testing.T) {
-	if !envTest.IsLiveTest() {
-		t.Skip("skipping live test")
-	}
-
-	// Setup
-	envTest.RestoreEnv()
-
-	client, err := NewClient(
-		envTest.GetValue("NETCUP_CUSTOMER_NUMBER"),
-		envTest.GetValue("NETCUP_API_KEY"),
-		envTest.GetValue("NETCUP_API_PASSWORD"))
-	require.NoError(t, err)
-
-	for i := range 4 {
-		t.Run("Test_"+strconv.Itoa(i+1), func(t *testing.T) {
-			t.Parallel()
-
-			ctx, err := client.CreateSessionContext(t.Context())
-			require.NoError(t, err)
-
-			err = client.Logout(ctx)
-			require.NoError(t, err)
 		})
 	}
 }

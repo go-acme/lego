@@ -1,57 +1,35 @@
 package internal
 
 import (
-	"io"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern string, status int, filename string) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient(context.Background(), "abc", "secret")
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+			client.httpClient = server.Client()
+			client.baseURL, _ = url.Parse(server.URL)
 
-	mux.HandleFunc(pattern, func(rw http.ResponseWriter, req *http.Request) {
-		if filename == "" {
-			rw.WriteHeader(status)
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		rw.WriteHeader(status)
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	client := NewClient(t.Context(), "abc", "secret")
-
-	client.httpClient = server.Client()
-	client.baseURL, _ = url.Parse(server.URL)
-
-	return client
+			return client, nil
+		},
+		servermock.CheckHeader().
+			WithAccept("application/json"))
 }
 
 func TestClient_GetAllZones(t *testing.T) {
-	client := setupTest(t, "GET /dns/domain", http.StatusOK, "zone_domains_all.json")
+	client := mockBuilder().
+		Route("GET /dns/domain", servermock.ResponseFromFixture("zone_domains_all.json")).
+		Build(t)
 
 	groups, err := client.GetAllZones(t.Context())
 	require.NoError(t, err)
@@ -132,7 +110,11 @@ func TestClient_GetAllZones(t *testing.T) {
 }
 
 func TestClient_GetAllZones_error(t *testing.T) {
-	client := setupTest(t, "GET /dns/domain", http.StatusUnauthorized, "error.json")
+	client := mockBuilder().
+		Route("GET /dns/domain",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
 
 	_, err := client.GetAllZones(t.Context())
 	require.Error(t, err)
@@ -141,7 +123,9 @@ func TestClient_GetAllZones_error(t *testing.T) {
 }
 
 func TestClient_GetAllZoneRecords(t *testing.T) {
-	client := setupTest(t, "GET /dns/domain/4/records/SPF_TXT", http.StatusOK, "zone_records_all.json")
+	client := mockBuilder().
+		Route("GET /dns/domain/4/records/SPF_TXT", servermock.ResponseFromFixture("zone_records_all.json")).
+		Build(t)
 
 	groups, err := client.GetAllZoneRecords(t.Context(), 4)
 	require.NoError(t, err)
@@ -179,7 +163,11 @@ func TestClient_GetAllZoneRecords(t *testing.T) {
 }
 
 func TestClient_GetAllZoneRecords_error(t *testing.T) {
-	client := setupTest(t, "GET /dns/domain/4/records/SPF_TXT", http.StatusUnauthorized, "error.json")
+	client := mockBuilder().
+		Route("GET /dns/domain/4/records/SPF_TXT",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
 
 	_, err := client.GetAllZoneRecords(t.Context(), 4)
 	require.Error(t, err)
@@ -188,14 +176,20 @@ func TestClient_GetAllZoneRecords_error(t *testing.T) {
 }
 
 func TestClient_DeleteZoneRecord(t *testing.T) {
-	client := setupTest(t, "DELETE /dns/domain/4/records/SPF_TXT/6", http.StatusOK, "zone_record_delete.json")
+	client := mockBuilder().
+		Route("DELETE /dns/domain/4/records/SPF_TXT/6", servermock.ResponseFromFixture("zone_record_delete.json")).
+		Build(t)
 
 	err := client.DeleteZoneRecord(t.Context(), 4, 6)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteZoneRecord_error(t *testing.T) {
-	client := setupTest(t, "DELETE /dns/domain/4/records/SPF_TXT/6", http.StatusUnauthorized, "error.json")
+	client := mockBuilder().
+		Route("DELETE /dns/domain/4/records/SPF_TXT/6",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
 
 	err := client.DeleteZoneRecord(t.Context(), 4, 6)
 	require.Error(t, err)
@@ -204,16 +198,45 @@ func TestClient_DeleteZoneRecord_error(t *testing.T) {
 }
 
 func TestClient_CreateZoneRecord(t *testing.T) {
-	client := setupTest(t, "POST /dns/domain/4/records/SPF_TXT/", http.StatusOK, "zone_record_create.json")
+	client := mockBuilder().
+		Route("POST /dns/domain/4/records/SPF_TXT/",
+			servermock.ResponseFromFixture("zone_record_create.json"),
+			servermock.CheckHeader().
+				WithContentTypeFromURLEncoded(),
+			servermock.CheckForm().Strict().
+				With("config", `[{"zone_id":1,"spf_txt_domain_id":2,"domain_name":"example.com","domain_ttl":120,"domain_location_id":3,"record_type":"TXT","records":[{"record_id":123,"value":["value1"],"domain_id":1}]}]
+`)).
+		Build(t)
 
-	record := ZoneRecord{}
+	record := ZoneRecord{
+		ZoneID:           1,
+		SpfTxtDomainID:   2,
+		DomainName:       "example.com",
+		DomainTTL:        120,
+		DomainLocationID: 3,
+		RecordType:       "TXT",
+		Records: []Record{
+			{
+				ID:       123,
+				Values:   []string{"value1"},
+				Disabled: false,
+				DomainID: 1,
+			},
+		},
+	}
 
 	err := client.CreateZoneRecord(t.Context(), 4, record)
 	require.NoError(t, err)
 }
 
 func TestClient_CreateZoneRecord_error(t *testing.T) {
-	client := setupTest(t, "POST /dns/domain/4/records/SPF_TXT/", http.StatusUnauthorized, "error.json")
+	client := mockBuilder().
+		Route("POST /dns/domain/4/records/SPF_TXT/",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized),
+			servermock.CheckHeader().
+				WithContentTypeFromURLEncoded()).
+		Build(t)
 
 	record := ZoneRecord{}
 
@@ -224,7 +247,13 @@ func TestClient_CreateZoneRecord_error(t *testing.T) {
 }
 
 func TestClient_CreateZoneRecord_error_bad_request(t *testing.T) {
-	client := setupTest(t, "POST /dns/domain/4/records/SPF_TXT/", http.StatusBadRequest, "error_bad_request.json")
+	client := mockBuilder().
+		Route("POST /dns/domain/4/records/SPF_TXT/",
+			servermock.ResponseFromFixture("error_bad_request.json").
+				WithStatusCode(http.StatusBadRequest),
+			servermock.CheckHeader().
+				WithContentTypeFromURLEncoded()).
+		Build(t)
 
 	record := ZoneRecord{}
 
@@ -235,7 +264,15 @@ func TestClient_CreateZoneRecord_error_bad_request(t *testing.T) {
 }
 
 func TestClient_UpdateZoneRecord(t *testing.T) {
-	client := setupTest(t, "PUT /dns/domain/4/records/SPF_TXT/6/", http.StatusOK, "zone_record_update.json")
+	client := mockBuilder().
+		Route("PUT /dns/domain/4/records/SPF_TXT/6/",
+			servermock.ResponseFromFixture("zone_record_update.json"),
+			servermock.CheckHeader().
+				WithContentTypeFromURLEncoded(),
+			servermock.CheckForm().Strict().
+				With("config", `[{"zone_id":4,"spf_txt_domain_id":6,"records":null}]
+`)).
+		Build(t)
 
 	record := ZoneRecord{
 		SpfTxtDomainID: 6,
@@ -247,7 +284,13 @@ func TestClient_UpdateZoneRecord(t *testing.T) {
 }
 
 func TestClient_UpdateZoneRecord_error(t *testing.T) {
-	client := setupTest(t, "PUT /dns/domain/4/records/SPF_TXT/6/", http.StatusUnauthorized, "error.json")
+	client := mockBuilder().
+		Route("PUT /dns/domain/4/records/SPF_TXT/6/",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized),
+			servermock.CheckHeader().
+				WithContentTypeFromURLEncoded()).
+		Build(t)
 
 	record := ZoneRecord{
 		SpfTxtDomainID: 6,

@@ -1,58 +1,37 @@
 package internal
 
 import (
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern string, status int, filename string) *Client {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc(pattern, func(rw http.ResponseWriter, req *http.Request) {
-		if filename == "" {
-			rw.WriteHeader(status)
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		rw.WriteHeader(status)
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
+func setupClient(server *httptest.Server) (*Client, error) {
 	client, err := NewClient("user", "secret")
-	require.NoError(t, err)
+	if err != nil {
+		return nil, err
+	}
 
 	client.HTTPClient = server.Client()
 	client.baseURL, _ = url.Parse(server.URL)
 
-	return client
+	return client, nil
 }
 
 func TestClient_ListRecords(t *testing.T) {
-	client := setupTest(t, "GET /dns_list", http.StatusOK, "dns_list.json")
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /dns_list",
+			servermock.ResponseFromFixture("dns_list.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("domain", "example.com").
+				With("nichdl", "user").
+				With("token", "secret")).
+		Build(t)
 
 	records, err := client.ListRecords(t.Context(), "example.com")
 	require.NoError(t, err)
@@ -68,14 +47,26 @@ func TestClient_ListRecords(t *testing.T) {
 }
 
 func TestClient_ListRecords_error(t *testing.T) {
-	client := setupTest(t, "GET /dns_list", http.StatusNotFound, "dns_list_error.json")
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /dns_list",
+			servermock.ResponseFromFixture("dns_list_error.json").
+				WithStatusCode(http.StatusNotFound)).
+		Build(t)
 
 	_, err := client.ListRecords(t.Context(), "example.com")
 	require.EqualError(t, err, "error: Domain not found (1)")
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client := setupTest(t, "GET /dns_delete", http.StatusOK, "dns_delete.json")
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /dns_delete",
+			servermock.ResponseFromFixture("dns_delete.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("id", "74749").
+				With("domain", "example.com").
+				With("nichdl", "user").
+				With("token", "secret")).
+		Build(t)
 
 	record := Record{ID: "74749"}
 
@@ -84,7 +75,11 @@ func TestClient_DeleteRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
-	client := setupTest(t, "GET /dns_delete", http.StatusNotFound, "dns_delete_error.json")
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /dns_delete",
+			servermock.ResponseFromFixture("dns_delete_error.json").
+				WithStatusCode(http.StatusNotFound)).
+		Build(t)
 
 	record := Record{ID: "74749"}
 
@@ -93,7 +88,15 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := setupTest(t, "GET /dns_add", http.StatusOK, "dns_add.json")
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /dns_add",
+			servermock.ResponseFromFixture("dns_add.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("id", "74749").
+				With("domain", "example.com").
+				With("nichdl", "user").
+				With("token", "secret")).
+		Build(t)
 
 	record := Record{ID: "74749"}
 
@@ -102,7 +105,11 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client := setupTest(t, "GET /dns_add", http.StatusNotFound, "dns_add_error.json")
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /dns_add",
+			servermock.ResponseFromFixture("dns_add_error.json").
+				WithStatusCode(http.StatusNotFound)).
+		Build(t)
 
 	record := Record{ID: "74749"}
 

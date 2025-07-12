@@ -2,15 +2,12 @@ package azion
 
 import (
 	"context"
-	"io"
-	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/aziontech/azionapi-go-sdk/idns"
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -123,8 +120,9 @@ func TestLiveCleanUp(t *testing.T) {
 }
 
 func TestDNSProvider_findZone(t *testing.T) {
-	provider, mux := setupTest(t)
-	mux.HandleFunc("GET /intelligent_dns", writeFixtureHandler("zones.json"))
+	provider := mockBuilder().
+		Route("GET /intelligent_dns", servermock.ResponseFromFixture("zones.json")).
+		Build(t)
 
 	testCases := []struct {
 		desc     string
@@ -198,8 +196,9 @@ func TestDNSProvider_findZone_error(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			provider, mux := setupTest(t)
-			mux.HandleFunc("GET /intelligent_dns", writeFixtureHandler(test.response))
+			provider := mockBuilder().
+				Route("GET /intelligent_dns", servermock.ResponseFromFixture(test.response)).
+				Build(t)
 
 			zone, err := provider.findZone(context.Background(), test.fqdn)
 			require.EqualError(t, err, test.expected)
@@ -209,41 +208,25 @@ func TestDNSProvider_findZone_error(t *testing.T) {
 	}
 }
 
-func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.PersonalToken = "secret"
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
+			provider, err := NewDNSProviderConfig(config)
+			if err != nil {
+				return nil, err
+			}
 
-	config := NewDefaultConfig()
-	config.PersonalToken = "secret"
+			clientConfig := provider.client.GetConfig()
+			clientConfig.HTTPClient = server.Client()
+			clientConfig.Servers = idns.ServerConfigurations{{
+				URL:         server.URL,
+				Description: "Production",
+			}}
 
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	clientConfig := provider.client.GetConfig()
-	clientConfig.HTTPClient = server.Client()
-	clientConfig.Servers = idns.ServerConfigurations{
-		{
-			URL:         server.URL,
-			Description: "Production",
+			return provider, nil
 		},
-	}
-
-	return provider, mux
-}
-
-func writeFixtureHandler(filename string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		rw.Header().Set("Content-Type", "application/json")
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer func() { _ = file.Close() }()
-
-		_, _ = io.Copy(rw, file)
-	}
+	)
 }

@@ -1,63 +1,36 @@
 package internal
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern string, handler http.HandlerFunc) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client, err := NewClient(server.Client())
+			if err != nil {
+				return nil, err
+			}
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+			client.baseURL, _ = url.Parse(server.URL)
 
-	mux.HandleFunc(pattern, handler)
-
-	client, err := NewClient(server.Client())
-	require.NoError(t, err)
-
-	client.baseURL, _ = url.Parse(server.URL)
-
-	return client
-}
-
-func writeFixtures(method, filename string, status int) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		rw.WriteHeader(status)
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
+			return client, nil
+		},
+		servermock.CheckHeader().
+			WithAccept("text/xml"),
+	)
 }
 
 func TestClient_GetServices(t *testing.T) {
-	client := setupTest(t, "/services",
-		writeFixtures(http.MethodGet, "services_GET.xml", http.StatusOK))
+	client := mockBuilder().
+		Route("GET /services", servermock.ResponseFromFixture("services_GET.xml")).
+		Build(t)
 
 	zones, err := client.GetServices(t.Context())
 	require.NoError(t, err)
@@ -91,8 +64,9 @@ func TestClient_GetServices(t *testing.T) {
 }
 
 func TestClient_ListZones(t *testing.T) {
-	client := setupTest(t, "/zones",
-		writeFixtures(http.MethodGet, "zones_all_GET.xml", http.StatusOK))
+	client := mockBuilder().
+		Route("GET /zones", servermock.ResponseFromFixture("zones_all_GET.xml")).
+		Build(t)
 
 	zones, err := client.ListZones(t.Context())
 	require.NoError(t, err)
@@ -137,8 +111,9 @@ func TestClient_ListZones(t *testing.T) {
 }
 
 func TestClient_ListZones_error(t *testing.T) {
-	client := setupTest(t, "/zones",
-		writeFixtures(http.MethodGet, "errors.xml", http.StatusOK))
+	client := mockBuilder().
+		Route("GET /zones", servermock.ResponseFromFixture("errors.xml")).
+		Build(t)
 
 	_, err := client.ListZones(t.Context())
 	require.ErrorIs(t, err, Error{
@@ -148,8 +123,10 @@ func TestClient_ListZones_error(t *testing.T) {
 }
 
 func TestClient_GetZonesByService(t *testing.T) {
-	client := setupTest(t, "/services/test/zones",
-		writeFixtures(http.MethodGet, "zones_GET.xml", http.StatusOK))
+	client := mockBuilder().
+		Route("GET /services/test/zones",
+			servermock.ResponseFromFixture("zones_GET.xml")).
+		Build(t)
 
 	zones, err := client.GetZonesByService(t.Context(), "test")
 	require.NoError(t, err)
@@ -194,8 +171,10 @@ func TestClient_GetZonesByService(t *testing.T) {
 }
 
 func TestClient_GetZonesByService_error(t *testing.T) {
-	client := setupTest(t, "/services/test/zones",
-		writeFixtures(http.MethodGet, "errors.xml", http.StatusOK))
+	client := mockBuilder().
+		Route("GET /services/test/zones",
+			servermock.ResponseFromFixture("errors.xml")).
+		Build(t)
 
 	_, err := client.GetZonesByService(t.Context(), "test")
 	require.ErrorIs(t, err, Error{
@@ -205,8 +184,10 @@ func TestClient_GetZonesByService_error(t *testing.T) {
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	client := setupTest(t, "/services/test/zones/example.com./records",
-		writeFixtures(http.MethodGet, "records_GET.xml", http.StatusOK))
+	client := mockBuilder().
+		Route("GET /services/test/zones/example.com./records",
+			servermock.ResponseFromFixture("records_GET.xml")).
+		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "test", "example.com.")
 	require.NoError(t, err)
@@ -270,8 +251,10 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_GetRecords_error(t *testing.T) {
-	client := setupTest(t, "/services/test/zones/example.com./records",
-		writeFixtures(http.MethodGet, "errors.xml", http.StatusOK))
+	client := mockBuilder().
+		Route("GET /services/test/zones/example.com./records",
+			servermock.ResponseFromFixture("errors.xml")).
+		Build(t)
 
 	_, err := client.GetRecords(t.Context(), "test", "example.com.")
 	require.ErrorIs(t, err, Error{
@@ -281,8 +264,12 @@ func TestClient_GetRecords_error(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := setupTest(t, "/services/test/zones/example.com./records",
-		writeFixtures(http.MethodPut, "records_PUT.xml", http.StatusOK))
+	client := mockBuilder().
+		Route("PUT /services/test/zones/example.com./records",
+			servermock.ResponseFromFixture("records_PUT.xml"),
+			servermock.CheckHeader().
+				WithContentType("text/xml")).
+		Build(t)
 
 	rrs := []RR{
 		{
@@ -337,8 +324,12 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client := setupTest(t, "/services/test/zones/example.com./records",
-		writeFixtures(http.MethodPut, "errors.xml", http.StatusOK))
+	client := mockBuilder().
+		Route("PUT /services/test/zones/example.com./records",
+			servermock.ResponseFromFixture("errors.xml"),
+			servermock.CheckHeader().
+				WithContentType("text/xml")).
+		Build(t)
 
 	rrs := []RR{
 		{
@@ -361,16 +352,20 @@ func TestClient_AddRecord_error(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client := setupTest(t, "/services/test/zones/example.com./records/123",
-		writeFixtures(http.MethodDelete, "record_DELETE.xml", http.StatusUnauthorized))
+	client := mockBuilder().
+		Route("DELETE /services/test/zones/example.com./records/123",
+			servermock.ResponseFromFixture("record_DELETE.xml")).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "test", "example.com.", "123")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
-	client := setupTest(t, "/services/test/zones/example.com./records/123",
-		writeFixtures(http.MethodDelete, "errors.xml", http.StatusUnauthorized))
+	client := mockBuilder().
+		Route("DELETE /services/test/zones/example.com./records/123",
+			servermock.ResponseFromFixture("errors.xml")).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "test", "example.com.", "123")
 	require.ErrorIs(t, err, Error{
@@ -380,14 +375,20 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 }
 
 func TestClient_CommitZone(t *testing.T) {
-	client := setupTest(t, "/services/test/zones/example.com./commit", writeFixtures(http.MethodPost, "commit_POST.xml", http.StatusOK))
+	client := mockBuilder().
+		Route("POST /services/test/zones/example.com./commit",
+			servermock.ResponseFromFixture("commit_POST.xml")).
+		Build(t)
 
 	err := client.CommitZone(t.Context(), "test", "example.com.")
 	require.NoError(t, err)
 }
 
 func TestClient_CommitZone_error(t *testing.T) {
-	client := setupTest(t, "/services/test/zones/example.com./commit", writeFixtures(http.MethodPost, "errors.xml", http.StatusOK))
+	client := mockBuilder().
+		Route("POST /services/test/zones/example.com./commit",
+			servermock.ResponseFromFixture("errors.xml")).
+		Build(t)
 
 	err := client.CommitZone(t.Context(), "test", "example.com.")
 	require.ErrorIs(t, err, Error{

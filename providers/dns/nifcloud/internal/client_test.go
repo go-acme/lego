@@ -1,37 +1,35 @@
 package internal
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, responseBody string, statusCode int) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client, err := NewClient("A", "B")
+			if err != nil {
+				return nil, err
+			}
 
-	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(statusCode)
-		_, _ = fmt.Fprintln(w, responseBody)
-	})
+			client.HTTPClient = server.Client()
+			client.BaseURL, _ = url.Parse(server.URL)
 
-	server := httptest.NewServer(handler)
-	t.Cleanup(server.Close)
-
-	client, err := NewClient("A", "B")
-	require.NoError(t, err)
-
-	client.HTTPClient = server.Client()
-	client.BaseURL, _ = url.Parse(server.URL)
-
-	return client
+			return client, nil
+		},
+		servermock.CheckHeader().
+			WithRegexp("X-Nifty-Authorization", "NIFTY3-HTTPS NiftyAccessKeyId=A,Algorithm=HmacSHA1,Signature=.+"),
+	)
 }
 
-func TestChangeResourceRecordSets(t *testing.T) {
+func TestClient_ChangeResourceRecordSets(t *testing.T) {
 	responseBody := `<?xml version="1.0" encoding="UTF-8"?>
 <ChangeResourceRecordSetsResponse xmlns="https://route53.amazonaws.com/doc/2012-12-12/">
   <ChangeInfo>
@@ -42,7 +40,10 @@ func TestChangeResourceRecordSets(t *testing.T) {
 </ChangeResourceRecordSetsResponse>
 `
 
-	client := setupTest(t, responseBody, http.StatusOK)
+	client := mockBuilder().
+		Route("POST /", servermock.RawStringResponse(responseBody),
+			servermock.CheckHeader().WithContentType("text/xml; charset=utf-8")).
+		Build(t)
 
 	res, err := client.ChangeResourceRecordSets(t.Context(), "example.com", ChangeResourceRecordSetsRequest{})
 	require.NoError(t, err)
@@ -52,7 +53,7 @@ func TestChangeResourceRecordSets(t *testing.T) {
 	assert.Equal(t, "2015-08-05T00:00:00.000Z", res.ChangeInfo.SubmittedAt)
 }
 
-func TestChangeResourceRecordSetsErrors(t *testing.T) {
+func TestClient_ChangeResourceRecordSets_errors(t *testing.T) {
 	testCases := []struct {
 		desc         string
 		responseBody string
@@ -89,7 +90,13 @@ func TestChangeResourceRecordSetsErrors(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := setupTest(t, test.responseBody, test.statusCode)
+			client := mockBuilder().
+				Route("POST /",
+					servermock.RawStringResponse(test.responseBody).
+						WithStatusCode(test.statusCode),
+					servermock.CheckHeader().
+						WithContentType("text/xml; charset=utf-8")).
+				Build(t)
 
 			res, err := client.ChangeResourceRecordSets(t.Context(), "example.com", ChangeResourceRecordSetsRequest{})
 			assert.Nil(t, res)
@@ -98,7 +105,7 @@ func TestChangeResourceRecordSetsErrors(t *testing.T) {
 	}
 }
 
-func TestGetChange(t *testing.T) {
+func TestClient_GetChange(t *testing.T) {
 	responseBody := `<?xml version="1.0" encoding="UTF-8"?>
 <GetChangeResponse xmlns="https://route53.amazonaws.com/doc/2012-12-12/">
   <ChangeInfo>
@@ -109,7 +116,9 @@ func TestGetChange(t *testing.T) {
 </GetChangeResponse>
 `
 
-	client := setupTest(t, responseBody, http.StatusOK)
+	client := mockBuilder().
+		Route("GET /", servermock.RawStringResponse(responseBody)).
+		Build(t)
 
 	res, err := client.GetChange(t.Context(), "12345")
 	require.NoError(t, err)
@@ -119,7 +128,7 @@ func TestGetChange(t *testing.T) {
 	assert.Equal(t, "2015-08-05T00:00:00.000Z", res.ChangeInfo.SubmittedAt)
 }
 
-func TestGetChangeErrors(t *testing.T) {
+func TestClient_GetChange_errors(t *testing.T) {
 	testCases := []struct {
 		desc         string
 		responseBody string
@@ -156,7 +165,10 @@ func TestGetChangeErrors(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := setupTest(t, test.responseBody, test.statusCode)
+			client := mockBuilder().
+				Route("GET /",
+					servermock.RawStringResponse(test.responseBody).WithStatusCode(test.statusCode)).
+				Build(t)
 
 			res, err := client.GetChange(t.Context(), "12345")
 			assert.Nil(t, res)

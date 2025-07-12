@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": 400,
+    "message": "ProcessError|DNS record invalid type _acme-challenge.example.eu. TST"
+  }
+}

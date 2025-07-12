@@ -2,33 +2,32 @@ package internal
 
 import (
 	"fmt"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, credentials map[string]string, handler http.HandlerFunc) *Client {
-	t.Helper()
+func setupClient(credentials map[string]string) func(server *httptest.Server) (*Client, error) {
+	return func(server *httptest.Server) (*Client, error) {
+		client := NewClient(credentials)
+		client.HTTPClient = server.Client()
+		client.baseURL = server.URL
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", handler)
-
-	client := NewClient(credentials)
-	client.HTTPClient = server.Client()
-	client.baseURL = server.URL
-
-	return client
+		return client, nil
+	}
 }
 
 func TestClient_Add(t *testing.T) {
 	txtValue := "123456789012"
 
-	client := setupTest(t, map[string]string{"example.org": "secret"}, handlerMock(addAction, txtValue))
+	client := servermock.NewBuilder[*Client](setupClient(map[string]string{"example.org": "secret"})).
+		Route("POST /",
+			servermock.RawStringResponse(fmt.Sprintf("%s %s", successCode, txtValue)),
+			servermock.CheckQueryParameter().Strict().
+				With("acme", addAction).With("txt", txtValue)).
+		Build(t)
 
 	err := client.Add(t.Context(), "example.org", txtValue)
 	require.NoError(t, err)
@@ -37,16 +36,27 @@ func TestClient_Add(t *testing.T) {
 func TestClient_Add_error(t *testing.T) {
 	txtValue := "123456789012"
 
-	client := setupTest(t, map[string]string{"example.com": "secret"}, handlerMock(addAction, txtValue))
+	client := servermock.NewBuilder[*Client](setupClient(map[string]string{"example.com": "secret"})).
+		Route("POST /",
+			servermock.RawStringResponse(fmt.Sprintf("%s %s", successCode, txtValue)),
+			servermock.CheckQueryParameter().Strict().
+				With("acme", addAction).With("txt", txtValue)).
+		Build(t)
 
 	err := client.Add(t.Context(), "example.org", txtValue)
-	require.Error(t, err)
+
+	require.EqualError(t, err, "domain example.org not found in credentials, check your credentials map")
 }
 
 func TestClient_Remove(t *testing.T) {
 	txtValue := "ABCDEFGHIJKL"
 
-	client := setupTest(t, map[string]string{"example.org": "secret"}, handlerMock(removeAction, txtValue))
+	client := servermock.NewBuilder[*Client](setupClient(map[string]string{"example.org": "secret"})).
+		Route("POST /",
+			servermock.RawStringResponse(fmt.Sprintf("%s %s", successCode, txtValue)),
+			servermock.CheckQueryParameter().Strict().
+				With("acme", removeAction).With("txt", txtValue)).
+		Build(t)
 
 	err := client.Remove(t.Context(), "example.org", txtValue)
 	require.NoError(t, err)
@@ -55,34 +65,45 @@ func TestClient_Remove(t *testing.T) {
 func TestClient_Remove_error(t *testing.T) {
 	txtValue := "ABCDEFGHIJKL"
 
-	client := setupTest(t, map[string]string{"example.com": "secret"}, handlerMock(removeAction, txtValue))
+	testCases := []struct {
+		desc     string
+		hostname string
+		response string
+		expected string
+	}{
+		{
+			desc:     "response error - txt",
+			hostname: "example.com",
+			response: "error - no valid acme txt record",
+			expected: "error - no valid acme txt record",
+		},
+		{
+			desc:     "response error - acme",
+			hostname: "example.com",
+			response: "nochg 1234:1234:1234:1234:1234:1234:1234:1234",
+			expected: "nochg 1234:1234:1234:1234:1234:1234:1234:1234",
+		},
+		{
+			desc:     "credential error",
+			hostname: "example.org",
+			response: fmt.Sprintf("%s %s", successCode, txtValue),
+			expected: "domain example.org not found in credentials, check your credentials map",
+		},
+	}
 
-	err := client.Remove(t.Context(), "example.org", txtValue)
-	require.Error(t, err)
-}
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
 
-func handlerMock(action, value string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		rw.WriteHeader(http.StatusOK)
+			client := servermock.NewBuilder[*Client](setupClient(map[string]string{"example.com": "secret"})).
+				Route("POST /",
+					servermock.RawStringResponse(test.response),
+					servermock.CheckQueryParameter().Strict().
+						With("acme", removeAction).With("txt", txtValue)).
+				Build(t)
 
-		query := req.URL.Query()
-
-		if query.Get("acme") != action {
-			_, _ = rw.Write([]byte("nochg 1234:1234:1234:1234:1234:1234:1234:1234"))
-			return
-		}
-
-		txtValue := query.Get("txt")
-		if len(txtValue) < 12 {
-			_, _ = rw.Write([]byte("error - no valid acme txt record"))
-			return
-		}
-
-		if txtValue != value {
-			http.Error(rw, fmt.Sprintf("got: %q, expected: %q", txtValue, value), http.StatusBadRequest)
-			return
-		}
-
-		_, _ = fmt.Fprintf(rw, "%s %s", successCode, txtValue)
+			err := client.Remove(t.Context(), test.hostname, txtValue)
+			require.EqualError(t, err, test.expected)
+		})
 	}
 }

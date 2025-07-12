@@ -1,37 +1,33 @@
 package internal
 
 import (
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("key", "secret")
+			client.HTTPClient = server.Client()
+			client.baseURL, _ = url.Parse(server.URL)
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client := NewClient("key", "secret")
-	client.HTTPClient = server.Client()
-	client.baseURL, _ = url.Parse(server.URL)
-
-	return client, mux
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders().
+			WithAuthorization("sso-key key:secret"))
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/v1/domains/example.com/records/TXT/", testHandler(http.MethodGet, http.StatusOK, "getrecords.json"))
+	client := mockBuilder().
+		Route("GET /v1/domains/example.com/records/TXT/", servermock.ResponseFromFixture("getrecords.json")).
+		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "example.com", "TXT", "")
 	require.NoError(t, err)
@@ -49,9 +45,10 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_GetRecords_errors(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/v1/domains/example.com/records/TXT/", testHandler(http.MethodGet, http.StatusUnprocessableEntity, "errors.json"))
+	client := mockBuilder().
+		Route("GET /v1/domains/example.com/records/TXT/",
+			servermock.ResponseFromFixture("errors.json").WithStatusCode(http.StatusUnprocessableEntity)).
+		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "example.com", "TXT", "")
 	require.EqualError(t, err, "[status code: 422] INVALID_BODY: Request body doesn't fulfill schema, see details in `fields`")
@@ -59,20 +56,10 @@ func TestClient_GetRecords_errors(t *testing.T) {
 }
 
 func TestClient_UpdateTxtRecords(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/v1/domains/example.com/records/TXT/lego", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPut {
-			http.Error(rw, fmt.Sprintf(`{"message":"unsupported method: %s"}`, req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		auth := req.Header.Get(authorizationHeader)
-		if auth != "sso-key key:secret" {
-			http.Error(rw, fmt.Sprintf("invalid API key or secret: %s", auth), http.StatusUnauthorized)
-			return
-		}
-	})
+	client := mockBuilder().
+		Route("PUT /v1/domains/example.com/records/TXT/lego", nil,
+			servermock.CheckRequestJSONBodyFromFile("update_records-request.json")).
+		Build(t)
 
 	records := []DNSRecord{
 		{Name: "_acme-challenge", Type: "TXT", Data: " ", TTL: 600},
@@ -88,10 +75,11 @@ func TestClient_UpdateTxtRecords(t *testing.T) {
 }
 
 func TestClient_UpdateTxtRecords_errors(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/v1/domains/example.com/records/TXT/lego",
-		testHandler(http.MethodPut, http.StatusUnprocessableEntity, "errors.json"))
+	client := mockBuilder().
+		Route("PUT /v1/domains/example.com/records/TXT/lego",
+			servermock.ResponseFromFixture("errors.json").WithStatusCode(http.StatusUnprocessableEntity),
+			servermock.CheckRequestJSONBodyFromFile("update_records-request.json")).
+		Build(t)
 
 	records := []DNSRecord{
 		{Name: "_acme-challenge", Type: "TXT", Data: " ", TTL: 600},
@@ -107,54 +95,21 @@ func TestClient_UpdateTxtRecords_errors(t *testing.T) {
 }
 
 func TestClient_DeleteTxtRecords(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/v1/domains/example.com/records/TXT/foo", testHandler(http.MethodDelete, http.StatusNoContent, ""))
+	client := mockBuilder().
+		Route("DELETE /v1/domains/example.com/records/TXT/foo",
+			servermock.Noop().WithStatusCode(http.StatusNoContent)).
+		Build(t)
 
 	err := client.DeleteTxtRecords(t.Context(), "example.com", "foo")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteTxtRecords_errors(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/v1/domains/example.com/records/TXT/foo", testHandler(http.MethodDelete, http.StatusConflict, "error-extended.json"))
+	client := mockBuilder().
+		Route("DELETE /v1/domains/example.com/records/TXT/foo",
+			servermock.ResponseFromFixture("error-extended.json").WithStatusCode(http.StatusConflict)).
+		Build(t)
 
 	err := client.DeleteTxtRecords(t.Context(), "example.com", "foo")
 	require.EqualError(t, err, "[status code: 409] ACCESS_DENIED: Authenticated user is not allowed access [test: content (path=/foo) (pathRelated=/bar)]")
-}
-
-func testHandler(method string, statusCode int, filename string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf(`{"message":"unsupported method: %s"}`, req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		auth := req.Header.Get(authorizationHeader)
-		if auth != "sso-key key:secret" {
-			http.Error(rw, fmt.Sprintf("invalid API key or secret: %s", auth), http.StatusUnauthorized)
-			return
-		}
-
-		rw.WriteHeader(statusCode)
-
-		if statusCode == http.StatusNoContent {
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, fmt.Sprintf(`{"message":"%v"}`, err), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, fmt.Sprintf(`{"message":"%v"}`, err), http.StatusInternalServerError)
-			return
-		}
-	}
 }

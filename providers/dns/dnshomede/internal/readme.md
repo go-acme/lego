@@ -16,7 +16,7 @@ Always returns StatusOK (200)
 
 If the API call works the first word of the response body is `successfully`.
 
-If an error encoured the response body is `error - <ERRMSG>`.
+If an error occurs the response body is `error - <ERRMSG>`.
 
 Can be a POST or a GET.
 
@@ -35,6 +35,6 @@ Always returns StatusOK (200)
 
 If the API call works the first word of the response body is `successfully`.
 
-If an error encoured the response body is `error - <ERRMSG>`.
+If an error occurs the response body is `error - <ERRMSG>`.
 
 Can be a POST or a GET.

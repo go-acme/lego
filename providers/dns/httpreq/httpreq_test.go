@@ -1,15 +1,12 @@
 package httpreq
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"path"
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -102,75 +99,60 @@ func TestNewDNSProvider_Present(t *testing.T) {
 
 	testCases := []struct {
 		desc          string
-		mode          string
-		username      string
-		password      string
-		pathPrefix    string
-		handler       http.HandlerFunc
+		builder       *servermock.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
-			desc:    "success",
-			handler: successHandler,
+			desc: "success",
+			builder: mockBuilder("").
+				Route("/present",
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
 		},
 		{
-			desc:       "success with path prefix",
-			handler:    successHandler,
-			pathPrefix: "/api/acme/",
+			desc: "success with path prefix",
+			builder: mockBuilderWithPathPrefix("", "/api/acme/").
+				Route("/api/acme/present",
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
 		},
 		{
 			desc:          "error",
-			handler:       http.NotFound,
+			builder:       mockBuilder(""),
 			expectedError: "httpreq: unexpected status code: [status code: 404] body: 404 page not found",
 		},
 		{
-			desc:    "success raw mode",
-			mode:    "RAW",
-			handler: successRawModeHandler,
+			desc: "success raw mode",
+			builder: mockBuilder("RAW").
+				Route("/present",
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestBody(`{"domain":"domain","token":"token","keyAuth":"key"}`)),
 		},
 		{
 			desc:          "error raw mode",
-			mode:          "RAW",
-			handler:       http.NotFound,
+			builder:       mockBuilder("RAW"),
 			expectedError: "httpreq: unexpected status code: [status code: 404] body: 404 page not found",
 		},
 		{
-			desc:     "basic auth",
-			username: "bar",
-			password: "foo",
-			handler: func(rw http.ResponseWriter, req *http.Request) {
-				username, password, ok := req.BasicAuth()
-				if username != "bar" || password != "foo" || !ok {
-					rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm=%q`, "Please enter your username and password."))
-					http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-					return
-				}
-
-				fmt.Fprint(rw, "lego")
-			},
+			desc: "basic auth fail",
+			builder: mockBuilderWithBasicAuth("nope", "nope").
+				Route("/present", servermock.Noop()),
+			expectedError: `httpreq: unexpected status code: [status code: 400] body: invalid credentials: got [username: "nope", password: "nope"], want [username: "user", password: "secret"]`,
+		},
+		{
+			desc: "basic auth success",
+			builder: mockBuilderWithBasicAuth("user", "secret").
+				Route("/present",
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
+			p := test.builder.Build(t)
 
-			mux := http.NewServeMux()
-			server := httptest.NewServer(mux)
-			t.Cleanup(server.Close)
-
-			mux.HandleFunc(path.Join("/", test.pathPrefix, "present"), test.handler)
-
-			config := NewDefaultConfig()
-			config.Endpoint = mustParse(server.URL + test.pathPrefix)
-			config.Mode = test.mode
-			config.Username = test.username
-			config.Password = test.password
-
-			p, err := NewDNSProviderConfig(config)
-			require.NoError(t, err)
-
-			err = p.Present("domain", "token", "key")
+			err := p.Present("domain", "token", "key")
 			if test.expectedError == "" {
 				require.NoError(t, err)
 			} else {
@@ -185,68 +167,53 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 
 	testCases := []struct {
 		desc          string
-		mode          string
-		username      string
-		password      string
-		handler       http.HandlerFunc
+		builder       *servermock.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
-			desc:    "success",
-			handler: successHandler,
+			desc: "success",
+			builder: mockBuilder("").
+				Route("/cleanup",
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
 		},
 		{
 			desc:          "error",
-			handler:       http.NotFound,
+			builder:       mockBuilder(""),
 			expectedError: "httpreq: unexpected status code: [status code: 404] body: 404 page not found",
 		},
 		{
-			desc:    "success raw mode",
-			mode:    "RAW",
-			handler: successRawModeHandler,
+			desc: "success raw mode",
+			builder: mockBuilder("RAW").
+				Route("/cleanup",
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestBody(`{"domain":"domain","token":"token","keyAuth":"key"}`)),
 		},
 		{
 			desc:          "error raw mode",
-			mode:          "RAW",
-			handler:       http.NotFound,
+			builder:       mockBuilder("RAW"),
 			expectedError: "httpreq: unexpected status code: [status code: 404] body: 404 page not found",
 		},
 		{
-			desc:     "basic auth",
-			username: "bar",
-			password: "foo",
-			handler: func(rw http.ResponseWriter, req *http.Request) {
-				username, password, ok := req.BasicAuth()
-				if username != "bar" || password != "foo" || !ok {
-					rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm=%q`, "Please enter your username and password."))
-					http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-					return
-				}
-				fmt.Fprint(rw, "lego")
-			},
+			desc: "basic auth fail",
+			builder: mockBuilderWithBasicAuth("test", "example").
+				Route("/cleanup", servermock.Noop()),
+			expectedError: `httpreq: unexpected status code: [status code: 400] body: invalid credentials: got [username: "test", password: "example"], want [username: "user", password: "secret"]`,
+		},
+		{
+			desc: "basic auth success",
+			builder: mockBuilderWithBasicAuth("user", "secret").
+				Route("/cleanup",
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
+			p := test.builder.Build(t)
 
-			mux := http.NewServeMux()
-			server := httptest.NewServer(mux)
-			t.Cleanup(server.Close)
-
-			mux.HandleFunc("/cleanup", test.handler)
-
-			config := NewDefaultConfig()
-			config.Endpoint = mustParse(server.URL)
-			config.Mode = test.mode
-			config.Username = test.username
-			config.Password = test.password
-
-			p, err := NewDNSProviderConfig(config)
-			require.NoError(t, err)
-
-			err = p.CleanUp("domain", "token", "key")
+			err := p.CleanUp("domain", "token", "key")
 			if test.expectedError == "" {
 				require.NoError(t, err)
 			} else {
@@ -256,36 +223,39 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 	}
 }
 
-func successHandler(rw http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodPost {
-		http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
+func mockBuilder(mode string) *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.Endpoint, _ = url.Parse(server.URL)
+			config.Mode = mode
 
-	msg := &message{}
-	err := json.NewDecoder(req.Body).Decode(msg)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	fmt.Fprint(rw, "lego")
+			return NewDNSProviderConfig(config)
+		})
 }
 
-func successRawModeHandler(rw http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodPost {
-		http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
+func mockBuilderWithPathPrefix(mode, prefix string) *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.Endpoint, _ = url.Parse(server.URL + prefix)
+			config.Mode = mode
 
-	msg := &messageRaw{}
-	err := json.NewDecoder(req.Body).Decode(msg)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
+			return NewDNSProviderConfig(config)
+		})
+}
 
-	fmt.Fprint(rw, "lego")
+func mockBuilderWithBasicAuth(username, password string) *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.Endpoint, _ = url.Parse(server.URL)
+			config.Username = username
+			config.Password = password
+
+			return NewDNSProviderConfig(config)
+		},
+		servermock.CheckHeader().WithBasicAuth("user", "secret"))
 }
 
 func mustParse(rawURL string) *url.URL {

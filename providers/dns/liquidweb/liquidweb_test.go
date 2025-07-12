@@ -18,22 +18,6 @@ var envTest = tester.NewEnvTest(
 	EnvZone).
 	WithDomain(envDomain)
 
-func setupTest(t *testing.T, initRecs ...network.DNSRecord) *DNSProvider {
-	t.Helper()
-
-	serverURL := mockAPIServer(t, initRecs)
-
-	config := NewDefaultConfig()
-	config.Username = "blars"
-	config.Password = "tacoman"
-	config.BaseURL = serverURL
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	return provider
-}
-
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
 		desc     string
@@ -161,14 +145,14 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider := setupTest(t)
+	provider := mockProvider(t)
 
 	err := provider.Present("tacoman.com", "", "")
 	require.NoError(t, err)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	provider := setupTest(t, network.DNSRecord{
+	provider := mockProvider(t, network.DNSRecord{
 		Name:   "_acme-challenge.tacoman.com",
 		RData:  "123d==",
 		Type:   "TXT",
@@ -239,7 +223,7 @@ func TestDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			provider := setupTest(t, test.initRecs...)
+			provider := mockProvider(t, test.initRecs...)
 
 			if test.present {
 				err := provider.Present(test.domain, test.token, test.keyAuth)

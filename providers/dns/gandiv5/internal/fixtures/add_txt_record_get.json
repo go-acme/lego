@@ -1,0 +1,8 @@
+{
+  "rrset_ttl": 120,
+  "rrset_values": [
+    "value1"
+  ],
+  "rrset_name": "foo",
+  "rrset_type": "TXT"
+}

@@ -1,120 +1,58 @@
 package internal
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern string, handlerFunc http.HandlerFunc) *Client {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc(pattern, handlerFunc)
-
+func setupClient(server *httptest.Server) (*Client, error) {
 	client := NewClient("bob", "user", "secret")
 	client.HTTPClient = server.Client()
 	client.baseURL, _ = url.Parse(server.URL)
 
-	return client
+	return client, nil
 }
 
-func authenticatedHandler(method string, status int, file string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusBadRequest)
-			return
-		}
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("bob", "user", "secret")
+			client.HTTPClient = server.Client()
+			client.baseURL, _ = url.Parse(server.URL)
 
-		token := req.Header.Get(authTokenHeader)
-		if token != "tok" {
-			http.Error(rw, fmt.Sprintf("invalid credentials: %q", token), http.StatusUnauthorized)
-			return
-		}
-
-		if file == "" {
-			rw.WriteHeader(status)
-			return
-		}
-
-		open, err := os.Open(filepath.Join("fixtures", file))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = open.Close() }()
-
-		rw.WriteHeader(status)
-		_, err = io.Copy(rw, open)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-func unauthenticatedHandler(method string, status int, file string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		token := req.Header.Get(authTokenHeader)
-		if token != "" {
-			http.Error(rw, fmt.Sprintf("invalid credentials: %q", token), http.StatusUnauthorized)
-			return
-		}
-
-		if file == "" {
-			rw.WriteHeader(status)
-			return
-		}
-
-		open, err := os.Open(filepath.Join("fixtures", file))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = open.Close() }()
-
-		rw.WriteHeader(status)
-		_, err = io.Copy(rw, open)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders())
 }
 
 func TestClient_Publish(t *testing.T) {
-	client := setupTest(t, "/Zone/example.com", unauthenticatedHandler(http.MethodPut, http.StatusOK, "publish.json"))
+	client := mockBuilder().
+		Route("PUT /Zone/example.com", servermock.ResponseFromFixture("publish.json"),
+			servermock.CheckRequestJSONBody(`{"publish":true,"notes":"my message"}`)).
+		Build(t)
 
 	err := client.Publish(t.Context(), "example.com", "my message")
 	require.NoError(t, err)
 }
 
 func TestClient_AddTXTRecord(t *testing.T) {
-	client := setupTest(t, "/TXTRecord/example.com/example.com.", unauthenticatedHandler(http.MethodPost, http.StatusCreated, "create-txt-record.json"))
+	client := mockBuilder().
+		Route("POST /TXTRecord/example.com/example.com.", servermock.ResponseFromFixture("create-txt-record.json"),
+			servermock.CheckRequestJSONBody(`{"rdata":{"txtdata":"txt"},"ttl":"120"}`)).
+		Build(t)
 
 	err := client.AddTXTRecord(t.Context(), "example.com", "example.com.", "txt", 120)
 	require.NoError(t, err)
 }
 
 func TestClient_RemoveTXTRecord(t *testing.T) {
-	client := setupTest(t, "/TXTRecord/example.com/example.com.", unauthenticatedHandler(http.MethodDelete, http.StatusOK, ""))
+	client := mockBuilder().
+		Route("DELETE /TXTRecord/example.com/example.com.", nil).
+		Build(t)
 
 	err := client.RemoveTXTRecord(t.Context(), "example.com", "example.com.")
 	require.NoError(t, err)

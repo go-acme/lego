@@ -1,327 +1,133 @@
 package internal
 
 import (
-	"encoding/json"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
+func setupClient(server *httptest.Server) (*Client, error) {
 	client, err := NewClient("lego")
-	require.NoError(t, err)
+	if err != nil {
+		return nil, err
+	}
 
 	client.HTTPClient = server.Client()
 	client.baseURL, _ = url.Parse(server.URL)
 
-	return client, mux
+	return client, nil
 }
 
 func TestAddRecord(t *testing.T) {
-	testCases := []struct {
-		desc        string
-		handler     http.HandlerFunc
-		data        Record
-		expectError bool
-	}{
-		{
-			desc: "success",
-			handler: func(w http.ResponseWriter, r *http.Request) {
-				require.Equal(t, http.MethodPost, r.Method)
-				assert.Equal(t, "lego", r.Header.Get(pddTokenHeader))
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /add",
+			servermock.ResponseFromFixture("add_record.json"),
+			servermock.CheckHeader().
+				WithContentTypeFromURLEncoded(),
+			servermock.CheckForm().Strict().
+				With("domain", "example.com").
+				With("subdomain", "foo").
+				With("ttl", "300").
+				With("content", "txtTXTtxtTXTtxtTXT").
+				With("type", "TXT")).
+		Build(t)
 
-				err := r.ParseForm()
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
-				}
-
-				assert.Equal(t, `content=txtTXTtxtTXTtxtTXT&domain=example.com&subdomain=foo&ttl=300&type=TXT`, r.PostForm.Encode())
-
-				response := AddResponse{
-					Domain: "example.com",
-					Record: &Record{
-						ID:        1,
-						Type:      "TXT",
-						Domain:    "example.com",
-						SubDomain: "foo",
-						FQDN:      "foo.example.com.",
-						Content:   "txtTXTtxtTXTtxtTXT",
-						TTL:       300,
-					},
-					BaseResponse: BaseResponse{
-						Success: "ok",
-					},
-				}
-
-				err = json.NewEncoder(w).Encode(response)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
-			data: Record{
-				Domain:    "example.com",
-				Type:      "TXT",
-				Content:   "txtTXTtxtTXTtxtTXT",
-				SubDomain: "foo",
-				TTL:       300,
-			},
-		},
-		{
-			desc: "error",
-			handler: func(w http.ResponseWriter, r *http.Request) {
-				require.Equal(t, http.MethodPost, r.Method)
-				assert.Equal(t, "lego", r.Header.Get(pddTokenHeader))
-
-				err := r.ParseForm()
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
-				}
-
-				assert.Equal(t, `content=txtTXTtxtTXTtxtTXT&domain=example.com&subdomain=foo&ttl=300&type=TXT`, r.PostForm.Encode())
-
-				response := AddResponse{
-					Domain: "example.com",
-					BaseResponse: BaseResponse{
-						Success: "error",
-						Error:   "bad things",
-					},
-				}
-
-				err = json.NewEncoder(w).Encode(response)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
-			data: Record{
-				Domain:    "example.com",
-				Type:      "TXT",
-				Content:   "txtTXTtxtTXTtxtTXT",
-				SubDomain: "foo",
-				TTL:       300,
-			},
-			expectError: true,
-		},
+	data := Record{
+		Domain:    "example.com",
+		Type:      "TXT",
+		Content:   "txtTXTtxtTXTtxtTXT",
+		SubDomain: "foo",
+		TTL:       300,
 	}
 
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			client, mux := setupTest(t)
+	record, err := client.AddRecord(t.Context(), data)
+	require.NoError(t, err)
+	require.NotNil(t, record)
+}
 
-			mux.HandleFunc("/add", test.handler)
+func TestAddRecord_error(t *testing.T) {
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /add",
+			servermock.ResponseFromFixture("add_record_error.json"),
+			servermock.CheckHeader().
+				WithContentTypeFromURLEncoded()).
+		Build(t)
 
-			record, err := client.AddRecord(t.Context(), test.data)
-			if test.expectError {
-				require.Error(t, err)
-				require.Nil(t, record)
-			} else {
-				require.NoError(t, err)
-				require.NotNil(t, record)
-			}
-		})
+	data := Record{
+		Domain:    "example.com",
+		Type:      "TXT",
+		Content:   "txtTXTtxtTXTtxtTXT",
+		SubDomain: "foo",
+		TTL:       300,
 	}
+
+	_, err := client.AddRecord(t.Context(), data)
+	require.EqualError(t, err, "error during operation: error bad things")
 }
 
 func TestRemoveRecord(t *testing.T) {
-	testCases := []struct {
-		desc        string
-		handler     http.HandlerFunc
-		data        Record
-		expectError bool
-	}{
-		{
-			desc: "success",
-			handler: func(w http.ResponseWriter, r *http.Request) {
-				require.Equal(t, http.MethodPost, r.Method)
-				assert.Equal(t, "lego", r.Header.Get(pddTokenHeader))
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /del",
+			servermock.ResponseFromFixture("remove_record.json"),
+			servermock.CheckHeader().
+				WithContentTypeFromURLEncoded(),
+			servermock.CheckForm().Strict().
+				With("domain", "example.com").
+				With("record_id", "6")).
+		Build(t)
 
-				err := r.ParseForm()
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
-				}
-
-				assert.Equal(t, `domain=example.com&record_id=6`, r.PostForm.Encode())
-
-				response := RemoveResponse{
-					Domain:   "example.com",
-					RecordID: 6,
-					BaseResponse: BaseResponse{
-						Success: "ok",
-					},
-				}
-
-				err = json.NewEncoder(w).Encode(response)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
-			data: Record{
-				ID:     6,
-				Domain: "example.com",
-			},
-		},
-		{
-			desc: "error",
-			handler: func(w http.ResponseWriter, r *http.Request) {
-				require.Equal(t, http.MethodPost, r.Method)
-				assert.Equal(t, "lego", r.Header.Get(pddTokenHeader))
-
-				err := r.ParseForm()
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
-				}
-
-				assert.Equal(t, `domain=example.com&record_id=6`, r.PostForm.Encode())
-
-				response := RemoveResponse{
-					Domain:   "example.com",
-					RecordID: 6,
-					BaseResponse: BaseResponse{
-						Success: "error",
-						Error:   "bad things",
-					},
-				}
-
-				err = json.NewEncoder(w).Encode(response)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
-			data: Record{
-				ID:     6,
-				Domain: "example.com",
-			},
-			expectError: true,
-		},
+	data := Record{
+		ID:     6,
+		Domain: "example.com",
 	}
 
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			client, mux := setupTest(t)
+	id, err := client.RemoveRecord(t.Context(), data)
+	require.NoError(t, err)
 
-			mux.HandleFunc("/del", test.handler)
+	assert.Equal(t, 6, id)
+}
 
-			id, err := client.RemoveRecord(t.Context(), test.data)
-			if test.expectError {
-				require.Error(t, err)
-				require.Equal(t, 0, id)
-			} else {
-				require.NoError(t, err)
-				require.Equal(t, 6, id)
-			}
-		})
+func TestRemoveRecord_error(t *testing.T) {
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /del",
+			servermock.ResponseFromFixture("remove_record_error.json"),
+			servermock.CheckHeader().
+				WithContentTypeFromURLEncoded()).
+		Build(t)
+
+	data := Record{
+		ID:     6,
+		Domain: "example.com",
 	}
+
+	_, err := client.RemoveRecord(t.Context(), data)
+	require.EqualError(t, err, "error during operation: error bad things")
 }
 
 func TestGetRecords(t *testing.T) {
-	testCases := []struct {
-		desc        string
-		handler     http.HandlerFunc
-		domain      string
-		expectError bool
-	}{
-		{
-			desc: "success",
-			handler: func(w http.ResponseWriter, r *http.Request) {
-				require.Equal(t, http.MethodGet, r.Method)
-				assert.Equal(t, "lego", r.Header.Get(pddTokenHeader))
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /list",
+			servermock.ResponseFromFixture("get_records.json"),
+			servermock.CheckForm().Strict().
+				With("domain", "example.com")).
+		Build(t)
 
-				assert.Equal(t, "domain=example.com", r.URL.RawQuery)
+	records, err := client.GetRecords(t.Context(), "example.com")
+	require.NoError(t, err)
 
-				response := ListResponse{
-					Domain: "example.com",
-					Records: []Record{
-						{
-							ID:        1,
-							Type:      "TXT",
-							Domain:    "example.com",
-							SubDomain: "foo",
-							FQDN:      "foo.example.com.",
-							Content:   "txtTXTtxtTXTtxtTXT",
-							TTL:       300,
-						},
-						{
-							ID:        2,
-							Type:      "NS",
-							Domain:    "example.com",
-							SubDomain: "foo",
-							FQDN:      "foo.example.com.",
-							Content:   "bar",
-							TTL:       300,
-						},
-					},
-					BaseResponse: BaseResponse{
-						Success: "ok",
-					},
-				}
+	require.Len(t, records, 2)
+}
 
-				err := json.NewEncoder(w).Encode(response)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
-			domain: "example.com",
-		},
-		{
-			desc: "error",
-			handler: func(w http.ResponseWriter, r *http.Request) {
-				require.Equal(t, http.MethodGet, r.Method)
-				assert.Equal(t, "lego", r.Header.Get(pddTokenHeader))
+func TestGetRecords_error(t *testing.T) {
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /list",
+			servermock.ResponseFromFixture("get_records_error.json")).
+		Build(t)
 
-				assert.Equal(t, "domain=example.com", r.URL.RawQuery)
-
-				response := ListResponse{
-					Domain: "example.com",
-					BaseResponse: BaseResponse{
-						Success: "error",
-						Error:   "bad things",
-					},
-				}
-
-				err := json.NewEncoder(w).Encode(response)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
-			domain:      "example.com",
-			expectError: true,
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-			client, mux := setupTest(t)
-
-			mux.HandleFunc("/list", test.handler)
-
-			records, err := client.GetRecords(t.Context(), test.domain)
-			if test.expectError {
-				require.Error(t, err)
-				require.Empty(t, records)
-			} else {
-				require.NoError(t, err)
-				require.Len(t, records, 2)
-			}
-		})
-	}
+	_, err := client.GetRecords(t.Context(), "example.com")
+	require.EqualError(t, err, "error during operation: error bad things")
 }

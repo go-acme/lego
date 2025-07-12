@@ -1,0 +1,7 @@
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+    <Body>
+        <KasApi xmlns="https://kasserver.com/">
+            <Params>{"kas_login":"user","kas_auth_type":"session","kas_auth_data":"593959ca04f0de9689b586c6a647d15d","kas_action":"delete_dns_settings","KasRequestParams":{"record_id":"57347450"}}</Params>
+        </KasApi>
+    </Body>
+</Envelope>

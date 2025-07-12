@@ -1,56 +1,44 @@
 package internal
 
 import (
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, message string) *Client {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
+func setupClient(server *httptest.Server) (*Client, error) {
 	client, err := NewClient("user", "secret")
-	require.NoError(t, err)
+	if err != nil {
+		return nil, err
+	}
 
-	client.HTTPClient = server.Client()
 	client.baseURL = server.URL
+	client.HTTPClient = server.Client()
 
-	mux.HandleFunc("GET /", func(rw http.ResponseWriter, req *http.Request) {
-		query := req.URL.Query()
-
-		username := query.Get("username")
-		if username != "user" {
-			http.Error(rw, "invalid username: "+username, http.StatusUnauthorized)
-			return
-		}
-
-		password := query.Get("password")
-		if password != "secret" {
-			http.Error(rw, "invalid password: "+password, http.StatusUnauthorized)
-			return
-		}
-
-		_, _ = rw.Write([]byte(message))
-	})
-
-	return client
+	return client, nil
 }
 
 func TestAddTXTRecord(t *testing.T) {
-	client := setupTest(t, "success")
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /", servermock.RawStringResponse("success"),
+			servermock.CheckQueryParameter().Strict().
+				With("add_hostname", "sub.example.com").
+				With("hostname", "example.com").
+				With("password", "secret").
+				With("txt", "value").
+				With("username", "user")).
+		Build(t)
 
 	err := client.AddTXTRecord(t.Context(), "example.com", "sub.example.com", "value")
 	require.NoError(t, err)
 }
 
 func TestAddTXTRecord_error(t *testing.T) {
-	client := setupTest(t, "error: authentification failed")
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /", servermock.RawStringResponse("error: authentification failed")).
+		Build(t)
 
 	err := client.AddTXTRecord(t.Context(), "example.com", "sub.example.com", "value")
 	require.EqualError(t, err, "error: authentification failed")

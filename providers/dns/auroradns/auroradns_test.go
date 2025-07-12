@@ -1,35 +1,32 @@
 package auroradns
 
 import (
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/stretchr/testify/assert"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/nrdcg/auroradns"
 	"github.com/stretchr/testify/require"
 )
 
 var envTest = tester.NewEnvTest(EnvAPIKey, EnvSecret)
 
-func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.APIKey = "asdf1234"
+			config.Secret = "key"
+			config.BaseURL = server.URL
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	config := NewDefaultConfig()
-	config.APIKey = "asdf1234"
-	config.Secret = "key"
-	config.BaseURL = server.URL
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	return provider, mux
+			return NewDNSProviderConfig(config)
+		},
+		servermock.CheckHeader().
+			WithContentType("application/json").
+			WithRegexp("Authorization", `AuroraDNSv1 .+`).
+			WithRegexp("X-Auroradns-Date", `[0-9TZ]+`))
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -145,72 +142,47 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider, mux := setupTest(t)
-
-	mux.HandleFunc("/zones", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodGet, r.Method, "method")
-
-		w.WriteHeader(http.StatusCreated)
-		fmt.Fprintf(w, `[{
-			        "id":   "c56a4180-65aa-42ec-a945-5fd21dec0538",
-			        "name": "example.com"
-			      }]`)
-	})
-
-	mux.HandleFunc("/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodPost, r.Method)
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
-
-		reqBody, err := io.ReadAll(r.Body)
-		require.NoError(t, err)
-		assert.JSONEq(t, `{"type":"TXT","name":"_acme-challenge","content":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":300}`, string(reqBody))
-
-		w.WriteHeader(http.StatusCreated)
-		fmt.Fprintf(w, `{
-		      "id":   "c56a4180-65aa-42ec-a945-5fd21dec0538",
-		      "type": "TXT",
-		      "name": "_acme-challenge",
-		      "ttl":  300
-		    }`)
-	})
+	provider := mockBuilder().
+		Route("GET /zones",
+			servermock.JSONEncode([]auroradns.Zone{{
+				ID:   "c56a4180-65aa-42ec-a945-5fd21dec0538",
+				Name: "example.com",
+			}}).
+				WithStatusCode(http.StatusCreated)).
+		Route("POST /zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records",
+			servermock.JSONEncode(auroradns.Record{
+				ID:         "ec56a4180-65aa-42ec-a945-5fd21dec0538",
+				RecordType: "TXT",
+				Name:       "_acme-challenge",
+				TTL:        300,
+			}).
+				WithStatusCode(http.StatusCreated)).
+		Build(t)
 
 	err := provider.Present("example.com", "", "foobar")
 	require.NoError(t, err, "fail to create TXT record")
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	provider, mux := setupTest(t)
-
-	mux.HandleFunc("/zones", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodGet, r.Method)
-
-		w.WriteHeader(http.StatusCreated)
-		fmt.Fprintf(w, `[{
-			        "id":   "c56a4180-65aa-42ec-a945-5fd21dec0538",
-			        "name": "example.com"
-			      }]`)
-	})
-
-	mux.HandleFunc("/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodPost, r.Method)
-
-		w.WriteHeader(http.StatusCreated)
-		fmt.Fprintf(w, `{
-			        "id":   "ec56a4180-65aa-42ec-a945-5fd21dec0538",
-			        "type": "TXT",
-			        "name": "_acme-challenge",
-			        "ttl":  300
-			      }`)
-	})
-
-	mux.HandleFunc("/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records/ec56a4180-65aa-42ec-a945-5fd21dec0538", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodDelete, r.Method)
-
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
-
-		w.WriteHeader(http.StatusCreated)
-		fmt.Fprintf(w, `{}`)
-	})
+	provider := mockBuilder().
+		Route("GET /zones",
+			servermock.JSONEncode([]auroradns.Zone{{
+				ID:   "c56a4180-65aa-42ec-a945-5fd21dec0538",
+				Name: "example.com",
+			}}).
+				WithStatusCode(http.StatusCreated)).
+		Route("POST /zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records",
+			servermock.JSONEncode(auroradns.Record{
+				ID:         "ec56a4180-65aa-42ec-a945-5fd21dec0538",
+				RecordType: "TXT",
+				Name:       "_acme-challenge",
+				TTL:        300,
+			}).
+				WithStatusCode(http.StatusCreated)).
+		Route("DELETE /zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records/ec56a4180-65aa-42ec-a945-5fd21dec0538",
+			servermock.RawStringResponse("{}").
+				WithStatusCode(http.StatusCreated)).
+		Build(t)
 
 	err := provider.Present("example.com", "", "foobar")
 	require.NoError(t, err, "fail to create TXT record")

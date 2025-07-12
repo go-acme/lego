@@ -2,52 +2,45 @@ package internal
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+const fakeToken = "xxx"
+
 func mockContext(t *testing.T) context.Context {
 	t.Helper()
 
-	return context.WithValue(t.Context(), tokenKey, &Token{Token: "xxx"})
+	return context.WithValue(t.Context(), tokenKey, &Token{Token: fakeToken})
 }
 
-func tokenHandler(rw http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodPost {
-		http.Error(rw, fmt.Sprintf("invalid method, got %s want %s", req.Method, http.MethodPost), http.StatusMethodNotAllowed)
-		return
-	}
+func mockBuilderIdentity() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("user", "secret")
+			client.HTTPClient = server.Client()
+			client.AuthEndpoint, _ = url.Parse(server.URL)
 
-	username, password, ok := req.BasicAuth()
-	if !ok || username != "user" || password != "secret" {
-		http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		return
-	}
-
-	_ = json.NewEncoder(rw).Encode(Token{
-		Token:     "xxx",
-		Lifetime:  666,
-		TokenType: "bearer",
-	})
+			return client, nil
+		},
+		servermock.CheckHeader().
+			WithBasicAuth("user", "secret"),
+		servermock.CheckHeader().
+			WithContentTypeFromURLEncoded())
 }
 
 func TestClient_obtainToken(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", tokenHandler)
-
-	client := NewClient("user", "secret")
-	client.HTTPClient = server.Client()
-	client.AuthEndpoint, _ = url.Parse(server.URL)
+	client := mockBuilderIdentity().
+		Route("POST /",
+			servermock.ResponseFromFixture("token.json"),
+			servermock.CheckForm().Strict().
+				With("grant_type", "client_credentials")).
+		Build(t)
 
 	assert.Nil(t, client.token)
 
@@ -56,19 +49,16 @@ func TestClient_obtainToken(t *testing.T) {
 
 	assert.NotNil(t, tok)
 	assert.NotZero(t, tok.Deadline)
-	assert.Equal(t, "xxx", tok.Token)
+	assert.Equal(t, fakeToken, tok.Token)
 }
 
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", tokenHandler)
-
-	client := NewClient("user", "secret")
-	client.HTTPClient = server.Client()
-	client.AuthEndpoint, _ = url.Parse(server.URL)
+	client := mockBuilderIdentity().
+		Route("POST /",
+			servermock.ResponseFromFixture("token.json"),
+			servermock.CheckForm().Strict().
+				With("grant_type", "client_credentials")).
+		Build(t)
 
 	assert.Nil(t, client.token)
 
@@ -79,5 +69,5 @@ func TestClient_CreateAuthenticatedContext(t *testing.T) {
 
 	assert.NotNil(t, tok)
 	assert.NotZero(t, tok.Deadline)
-	assert.Equal(t, "xxx", tok.Token)
+	assert.Equal(t, fakeToken, tok.Token)
 }

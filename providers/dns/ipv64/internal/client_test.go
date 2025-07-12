@@ -1,66 +1,33 @@
 package internal
 
 import (
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 const testAPIKey = "secret"
 
-func setupTest(t *testing.T, handler http.HandlerFunc) *Client {
-	t.Helper()
-
-	server := httptest.NewServer(handler)
-
+func setupClient(server *httptest.Server) (*Client, error) {
 	client := NewClient(OAuthStaticAccessToken(server.Client(), testAPIKey))
 	client.HTTPClient = server.Client()
 	client.baseURL, _ = url.Parse(server.URL)
 
-	return client
-}
-
-func testHandler(method, filename string, statusCode int) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		auth := req.Header.Get("Authorization")
-		if auth != "Bearer "+testAPIKey {
-			http.Error(rw, fmt.Sprintf("invalid API key: %s", auth), http.StatusUnauthorized)
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		rw.WriteHeader(statusCode)
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
+	return client, nil
 }
 
 func TestClient_GetDomains(t *testing.T) {
-	client := setupTest(t, testHandler(http.MethodGet, "get_domains.json", http.StatusOK))
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /api",
+			servermock.ResponseFromFixture("get_domains.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("get_domains", "")).
+		Build(t)
 
 	domains, err := client.GetDomains(t.Context())
 	require.NoError(t, err)
@@ -111,7 +78,11 @@ func TestClient_GetDomains(t *testing.T) {
 }
 
 func TestClient_GetDomains_error(t *testing.T) {
-	client := setupTest(t, testHandler(http.MethodGet, "error.json", http.StatusUnauthorized))
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("GET /api",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
 
 	domains, err := client.GetDomains(t.Context())
 	require.Error(t, err)
@@ -120,28 +91,53 @@ func TestClient_GetDomains_error(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := setupTest(t, testHandler(http.MethodPost, "add_record.json", http.StatusCreated))
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithContentTypeFromURLEncoded()).
+		Route("POST /api",
+			servermock.ResponseFromFixture("add_record.json").
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckForm().Strict().
+				With("add_record", "lego.ipv64.net").
+				With("content", "value").
+				With("praefix", "_acme-challenge").
+				With("type", "TXT"),
+		).
+		Build(t)
 
 	err := client.AddRecord(t.Context(), "lego.ipv64.net", "_acme-challenge", "TXT", "value")
 	require.NoError(t, err)
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client := setupTest(t, testHandler(http.MethodPost, "add_record-error.json", http.StatusBadRequest))
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /api",
+			servermock.ResponseFromFixture("add_record-error.json").
+				WithStatusCode(http.StatusBadRequest)).
+		Build(t)
 
 	err := client.AddRecord(t.Context(), "lego.ipv64.net", "_acme-challenge", "TXT", "value")
 	require.Error(t, err)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client := setupTest(t, testHandler(http.MethodDelete, "del_record.json", http.StatusAccepted))
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithContentTypeFromURLEncoded()).
+		Route("DELETE /api",
+			// the query parameters can be checked because the Go server ignores the body of a DELETE request.
+			servermock.ResponseFromFixture("del_record.json").
+				WithStatusCode(http.StatusAccepted)).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "lego.ipv64.net", "_acme-challenge", "TXT", "value")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
-	client := setupTest(t, testHandler(http.MethodDelete, "del_record-error.json", http.StatusBadRequest))
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("DELETE /api",
+			servermock.ResponseFromFixture("del_record-error.json").
+				WithStatusCode(http.StatusBadRequest)).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "lego.ipv64.net", "_acme-challenge", "TXT", "value")
 	require.Error(t, err)

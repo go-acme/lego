@@ -1,78 +1,62 @@
 package internal
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern string, handler http.HandlerFunc) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client, err := NewClient(server.URL, "secret")
+			if err != nil {
+				return nil, err
+			}
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+			client.HTTPClient = server.Client()
 
-	client, err := NewClient(server.URL, "secret")
-	require.NoError(t, err)
-
-	client.HTTPClient = server.Client()
-
-	mux.HandleFunc(pattern, handler)
-
-	return client
-}
-
-func writeFixtureHandler(method, filename string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		if req.Header.Get("X-Auth-Token") != "secret" {
-			http.Error(rw, fmt.Sprintf("invalid token: %q", req.Header.Get("X-Auth-Token")), http.StatusUnauthorized)
-			return
-		}
-
-		if filename == "" {
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer func() { _ = file.Close() }()
-
-		_, _ = io.Copy(rw, file)
-	}
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders().
+			With(AuthToken, "secret"))
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := setupTest(t, "/domains/1234/records", writeFixtureHandler(http.MethodPost, "add-records.json"))
+	client := mockBuilder().
+		Route("POST /domains/1234/records",
+			servermock.ResponseFromFixture("add-records.json"),
+			servermock.CheckRequestJSONBody(`{"records":[{"name":"exmaple.com","type":"TXT","data":"value1","ttl":120,"id":"abc"}]}`)).
+		Build(t)
 
-	err := client.AddRecord(t.Context(), "1234", Record{})
+	record := Record{
+		Name: "exmaple.com",
+		Type: "TXT",
+		Data: "value1",
+		TTL:  120,
+		ID:   "abc",
+	}
+
+	err := client.AddRecord(t.Context(), "1234", record)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client := setupTest(t, "/domains/1234/records", writeFixtureHandler(http.MethodDelete, ""))
+	client := mockBuilder().
+		Route("DELETE /domains/1234/records", nil).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "1234", "2725233")
 	require.NoError(t, err)
 }
 
 func TestClient_searchRecords(t *testing.T) {
-	client := setupTest(t, "/domains/1234/records", writeFixtureHandler(http.MethodGet, "search-records.json"))
+	client := mockBuilder().
+		Route("GET /domains/1234/records", servermock.ResponseFromFixture("search-records.json")).
+		Build(t)
 
 	records, err := client.searchRecords(t.Context(), "1234", "2725233", "A")
 	require.NoError(t, err)
@@ -93,7 +77,9 @@ func TestClient_searchRecords(t *testing.T) {
 }
 
 func TestClient_listDomainsByName(t *testing.T) {
-	client := setupTest(t, "/domains", writeFixtureHandler(http.MethodGet, "list-domains-by-name.json"))
+	client := mockBuilder().
+		Route("GET /domains", servermock.ResponseFromFixture("list-domains-by-name.json")).
+		Build(t)
 
 	domains, err := client.listDomainsByName(t.Context(), "1234")
 	require.NoError(t, err)

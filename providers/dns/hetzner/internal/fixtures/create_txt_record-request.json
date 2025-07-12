@@ -1,0 +1,7 @@
+{
+  "name": "test",
+  "type": "TXT",
+  "value": "txttxttxt",
+  "ttl": 600,
+  "zone_id": "zoneA"
+}

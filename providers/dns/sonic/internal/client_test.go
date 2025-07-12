@@ -1,31 +1,23 @@
 package internal
 
 import (
-	"fmt"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, body string) *Client {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/host", func(rw http.ResponseWriter, req *http.Request) {
-		_, _ = fmt.Fprintln(rw, body)
-	})
-
+func setupClient(server *httptest.Server) (*Client, error) {
 	client, err := NewClient("foo", "secret")
-	require.NoError(t, err)
+	if err != nil {
+		return nil, err
+	}
 
 	client.baseURL = server.URL
+	client.HTTPClient = server.Client()
 
-	return client
+	return client, nil
 }
 
 func TestClient_SetRecord(t *testing.T) {
@@ -50,7 +42,11 @@ func TestClient_SetRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client := setupTest(t, test.response)
+			client := servermock.NewBuilder[*Client](setupClient, servermock.CheckHeader().WithJSONHeaders()).
+				Route("PUT /host",
+					servermock.RawStringResponse(test.response),
+					servermock.CheckRequestJSONBody(`{"userid":"foo","apikey":"secret","hostname":"example.com","value":"txttxttxt","ttl":10,"type":"TXT"}`)).
+				Build(t)
 
 			err := client.SetRecord(t.Context(), "example.com", "txttxttxt", 10)
 			test.assert(t, err)

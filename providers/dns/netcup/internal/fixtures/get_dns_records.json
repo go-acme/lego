@@ -1,0 +1,32 @@
+{
+  "serverrequestid": "srv-request-id",
+  "clientrequestid": "",
+  "action": "infoDnsRecords",
+  "status": "success",
+  "statuscode": 2000,
+  "shortmessage": "Login successful",
+  "longmessage": "Session has been created successful.",
+  "responsedata": {
+    "apisessionid": "api-session-id",
+    "dnsrecords": [
+      {
+        "id": "1",
+        "hostname": "example.com",
+        "type": "TXT",
+        "priority": "1",
+        "destination": "bGVnbzE=",
+        "state": "yes",
+        "ttl": 300
+      },
+      {
+        "id": "2",
+        "hostname": "example2.com",
+        "type": "TXT",
+        "priority": "1",
+        "destination": "bGVnbw==",
+        "state": "yes",
+        "ttl": 300
+      }
+    ]
+  }
+}

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -119,37 +120,40 @@ func TestDNSProvider(t *testing.T) {
 		cleanupDeleteZoneRequestMock: cleanupDeleteZoneResponseMock,
 	}
 
-	fakeKeyAuth := "XXXX"
-
 	regexpDate := regexp.MustCompile(`\[ACME Challenge [^\]:]*:[^\]]*\]`)
 
-	// start fake RPC server
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, "text/xml", r.Header.Get("Content-Type"), "invalid content type")
+	provider := servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.BaseURL = server.URL + "/"
+			config.APIKey = "123412341234123412341234"
 
-		req, errS := io.ReadAll(r.Body)
-		require.NoError(t, errS)
+			return NewDNSProviderConfig(config)
+		},
+		servermock.CheckHeader().WithContentType("text/xml"),
+	).
+		Route("POST /", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			require.Equal(t, "text/xml", req.Header.Get("Content-Type"), "invalid content type")
 
-		req = regexpDate.ReplaceAllLiteral(req, []byte(`[ACME Challenge 01 Jan 16 00:00 +0000]`))
-		resp, ok := serverResponses[string(req)]
-		require.Truef(t, ok, "Server response for request not found: %s", string(req))
+			body, errS := io.ReadAll(req.Body)
+			require.NoError(t, errS)
 
-		_, errS = io.Copy(w, strings.NewReader(resp))
-		require.NoError(t, errS)
-	}))
-	t.Cleanup(server.Close)
+			body = regexpDate.ReplaceAllLiteral(body, []byte(`[ACME Challenge 01 Jan 16 00:00 +0000]`))
+			resp, ok := serverResponses[string(body)]
+			require.Truef(t, ok, "Server response for request not found: %s", string(body))
+
+			_, errS = io.Copy(rw, strings.NewReader(resp))
+			require.NoError(t, errS)
+		})).
+		Route("/", servermock.DumpRequest()).
+		Build(t)
+
+	fakeKeyAuth := "XXXX"
 
 	// define function to override findZoneByFqdn with
 	fakeFindZoneByFqdn := func(fqdn string) (string, error) {
 		return "example.com.", nil
 	}
-
-	config := NewDefaultConfig()
-	config.BaseURL = server.URL + "/"
-	config.APIKey = "123412341234123412341234"
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
 
 	// override findZoneByFqdn function
 	savedFindZoneByFqdn := provider.findZoneByFqdn
@@ -159,7 +163,7 @@ func TestDNSProvider(t *testing.T) {
 	provider.findZoneByFqdn = fakeFindZoneByFqdn
 
 	// run Present
-	err = provider.Present("abc.def.example.com", "", fakeKeyAuth)
+	err := provider.Present("abc.def.example.com", "", fakeKeyAuth)
 	require.NoError(t, err)
 
 	// run CleanUp

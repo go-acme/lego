@@ -21,6 +21,7 @@ const defaultBaseURL = "https://www.duckdns.org/update"
 type Client struct {
 	token string
 
+	baseURL    string
 	HTTPClient *http.Client
 }
 
@@ -28,6 +29,7 @@ type Client struct {
 func NewClient(token string) *Client {
 	return &Client{
 		token:      token,
+		baseURL:    defaultBaseURL,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
@@ -44,7 +46,7 @@ func (c Client) RemoveTXTRecord(ctx context.Context, domain string) error {
 // To update the TXT record we just need to make one simple get request.
 // In DuckDNS you only have one TXT record shared with the domain and all subdomains.
 func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clearRecord bool) error {
-	endpoint, _ := url.Parse(defaultBaseURL)
+	endpoint, _ := url.Parse(c.baseURL)
 
 	mainDomain := getMainDomain(domain)
 	if mainDomain == "" {

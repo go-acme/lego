@@ -1,67 +1,37 @@
 package internal
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("secret")
+			client.baseURL, _ = url.Parse(server.URL)
+			client.HTTPClient = server.Client()
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client := NewClient("secret")
-	client.baseURL, _ = url.Parse(server.URL)
-
-	return client, mux
-}
-
-func mockHandler(method, filename string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("invalid method, got %s want %s", req.Method, method), http.StatusBadRequest)
-			return
-		}
-
-		filename = "./fixtures/" + filename
-		statusCode := http.StatusOK
-
-		if req.Header.Get(authorizationHeader) != "token secret" {
-			statusCode = http.StatusUnauthorized
-			filename = "./fixtures/error.json"
-		}
-
-		rw.WriteHeader(statusCode)
-
-		file, err := os.Open(filename)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer func() { _ = file.Close() }()
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
+			return client, nil
+		},
+		servermock.CheckHeader().
+			WithAccept("application/vnd.variomedia.v1+json").
+			WithAuthorization("token secret"))
 }
 
 func TestClient_CreateDNSRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/dns-records", mockHandler(http.MethodPost, "POST_dns-records.json"))
+	client := mockBuilder().
+		Route("POST /dns-records",
+			servermock.ResponseFromFixture("POST_dns-records.json"),
+			servermock.CheckHeader().
+				WithContentType("application/vnd.api+json"),
+			servermock.CheckRequestJSONBody(`{"data":{"type":"dns-record","attributes":{"record_type":"TXT","name":"_acme-challenge","domain":"example.com","data":"test","ttl":300}}}`)).
+		Build(t)
 
 	record := DNSRecord{
 		RecordType: "TXT",
@@ -107,9 +77,10 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 }
 
 func TestClient_DeleteDNSRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/dns-records/test", mockHandler(http.MethodDelete, "DELETE_dns-records_pending.json"))
+	client := mockBuilder().
+		Route("DELETE /dns-records/test",
+			servermock.ResponseFromFixture("DELETE_dns-records_pending.json")).
+		Build(t)
 
 	resp, err := client.DeleteDNSRecord(t.Context(), "test")
 	require.NoError(t, err)
@@ -142,9 +113,10 @@ func TestClient_DeleteDNSRecord(t *testing.T) {
 }
 
 func TestClient_GetJob(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/queue-jobs/test", mockHandler(http.MethodGet, "GET_queue-jobs.json"))
+	client := mockBuilder().
+		Route("GET /queue-jobs/test",
+			servermock.ResponseFromFixture("GET_queue-jobs.json")).
+		Build(t)
 
 	resp, err := client.GetJob(t.Context(), "test")
 	require.NoError(t, err)

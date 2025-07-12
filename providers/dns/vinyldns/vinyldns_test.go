@@ -2,10 +2,12 @@ package vinyldns
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -154,63 +156,86 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+		config := NewDefaultConfig()
+		config.AccessKey = "foo"
+		config.SecretKey = "bar"
+		config.Host = server.URL
+
+		return NewDNSProviderConfig(config)
+	})
+}
+
 func TestDNSProvider_Present(t *testing.T) {
 	testCases := []struct {
 		desc    string
 		keyAuth string
-		handler http.Handler
+		builder *servermock.Builder[*DNSProvider]
 	}{
 		{
 			desc:    "new record",
 			keyAuth: "123456d==",
-			handler: newMockRouter().
-				Get("/zones/name/"+targetRootDomain+".", http.StatusOK, "zoneByName").
-				Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll-empty").
-				Post("/zones/"+zoneID+"/recordsets", http.StatusAccepted, "recordSetUpdate-create").
-				Get("/zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID, http.StatusOK, "recordSetChange-create"),
+			builder: mockBuilder().
+				Route("GET /zones/name/"+targetRootDomain+".",
+					servermock.ResponseFromFixture("zoneByName.json")).
+				Route("GET /zones/"+zoneID+"/recordsets",
+					servermock.ResponseFromFixture("recordSetsListAll-empty.json")).
+				Route("POST /zones/"+zoneID+"/recordsets",
+					servermock.ResponseFromFixture("recordSetUpdate-create.json").
+						WithStatusCode(http.StatusAccepted)).
+				Route("GET /zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID,
+					servermock.ResponseFromFixture("recordSetChange-create.json")),
 		},
 		{
 			desc:    "existing record",
 			keyAuth: "123456d==",
-			handler: newMockRouter().
-				Get("/zones/name/"+targetRootDomain+".", http.StatusOK, "zoneByName").
-				Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll"),
+			builder: mockBuilder().
+				Route("GET /zones/name/"+targetRootDomain+".",
+					servermock.ResponseFromFixture("zoneByName.json")).
+				Route("GET /zones/"+zoneID+"/recordsets",
+					servermock.ResponseFromFixture("recordSetsListAll.json")),
 		},
 		{
 			desc:    "duplicate key",
 			keyAuth: "abc123!!",
-			handler: newMockRouter().
-				Get("/zones/name/"+targetRootDomain+".", http.StatusOK, "zoneByName").
-				Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll").
-				Put("/zones/"+zoneID+"/recordsets/"+recordID, http.StatusAccepted, "recordSetUpdate-create").
-				Get("/zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID, http.StatusOK, "recordSetChange-create"),
+			builder: mockBuilder().
+				Route("GET /zones/name/"+targetRootDomain+".",
+					servermock.ResponseFromFixture("zoneByName.json")).
+				Route("GET /zones/"+zoneID+"/recordsets",
+					servermock.ResponseFromFixture("recordSetsListAll.json")).
+				Route("PUT /zones/"+zoneID+"/recordsets/"+recordID,
+					servermock.ResponseFromFixture("recordSetUpdate-create.json").
+						WithStatusCode(http.StatusAccepted)).
+				Route("GET /zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID,
+					servermock.ResponseFromFixture("recordSetChange-create.json")),
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
+			provider := test.builder.Build(t)
 
-			mux, p := setupTest(t)
-			mux.Handle("/", test.handler)
-
-			err := p.Present(targetDomain, "token"+test.keyAuth, test.keyAuth)
+			err := provider.Present(targetDomain, "token"+test.keyAuth, test.keyAuth)
 			require.NoError(t, err)
 		})
 	}
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	mux, p := setupTest(t)
+	provider := mockBuilder().
+		Route("GET /zones/name/"+targetRootDomain+".",
+			servermock.ResponseFromFixture("zoneByName.json")).
+		Route("GET /zones/"+zoneID+"/recordsets",
+			servermock.ResponseFromFixture("recordSetsListAll.json")).
+		Route("DELETE /zones/"+zoneID+"/recordsets/"+recordID,
+			servermock.ResponseFromFixture("recordSetDelete.json").
+				WithStatusCode(http.StatusAccepted)).
+		Route("GET /zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID,
+			servermock.ResponseFromFixture("recordSetChange-delete.json")).
+		Build(t)
 
-	mux.Handle("/", newMockRouter().
-		Get("/zones/name/"+targetRootDomain+".", http.StatusOK, "zoneByName").
-		Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll").
-		Delete("/zones/"+zoneID+"/recordsets/"+recordID, http.StatusAccepted, "recordSetDelete").
-		Get("/zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID, http.StatusOK, "recordSetChange-delete"),
-	)
-
-	err := p.CleanUp(targetDomain, "123456d==", "123456d==")
+	err := provider.CleanUp(targetDomain, "123456d==", "123456d==")
 	require.NoError(t, err)
 }
 

@@ -1,0 +1,9 @@
+{
+  "authToken": "secret",
+  "filter": {
+    "field": "zoneName",
+    "value": "example.com"
+  },
+  "limit": 1,
+  "page": 1
+}

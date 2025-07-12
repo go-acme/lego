@@ -1,58 +1,42 @@
 package internal
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, filename string) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client, err := NewClient("user", "secret")
+			if err != nil {
+				return nil, err
+			}
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+			client.HTTPClient = server.Client()
+			client.baseURL = server.URL
 
-	mux.HandleFunc("GET /", func(rw http.ResponseWriter, req *http.Request) {
-		username, password, ok := req.BasicAuth()
-		if username != "user" || password != "secret" || !ok {
-			http.Error(rw, fmt.Sprintf("auth: user %s, password %s, malformed", username, password), http.StatusOK)
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = file.Close() }()
-
-		rw.WriteHeader(http.StatusOK)
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	client, err := NewClient("user", "secret")
-	require.NoError(t, err)
-
-	client.HTTPClient = server.Client()
-	client.baseURL = server.URL
-
-	return client
+			return client, nil
+		},
+		servermock.CheckHeader().
+			WithBasicAuth("user", "secret"))
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := setupTest(t, "add_success.txt")
+	client := mockBuilder().
+		Route("GET /",
+			servermock.ResponseFromFixture("add_success.txt"),
+			servermock.CheckQueryParameter().Strict().
+				With("do", "add").
+				With("hostname", "_acme-challenge.sub.example.com.").
+				With("type", "txt").
+				With("value", "test").
+				With("ttl", "300"),
+		).
+		Build(t)
 
 	record := Record{
 		Hostname: "_acme-challenge.sub.example.com.",
@@ -66,7 +50,12 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client := setupTest(t, "error.txt")
+	client := mockBuilder().
+		Route("GET /",
+			servermock.ResponseFromFixture("error.txt"),
+			servermock.CheckQueryParameter().
+				With("do", "add")).
+		Build(t)
 
 	record := Record{
 		Hostname: "_acme-challenge.sub.example.com.",
@@ -82,7 +71,17 @@ func TestClient_AddRecord_error(t *testing.T) {
 }
 
 func TestClient_RemoveRecord(t *testing.T) {
-	client := setupTest(t, "remove_success.txt")
+	client := mockBuilder().
+		Route("GET /",
+			servermock.ResponseFromFixture("remove_success.txt"),
+			servermock.CheckQueryParameter().Strict().
+				With("do", "remove").
+				With("hostname", "_acme-challenge.sub.example.com.").
+				With("type", "txt").
+				With("value", "test").
+				With("ttl", "300"),
+		).
+		Build(t)
 
 	record := Record{
 		Hostname: "_acme-challenge.sub.example.com.",
@@ -96,7 +95,12 @@ func TestClient_RemoveRecord(t *testing.T) {
 }
 
 func TestClient_RemoveRecord_error(t *testing.T) {
-	client := setupTest(t, "error.txt")
+	client := mockBuilder().
+		Route("GET /",
+			servermock.ResponseFromFixture("error.txt"),
+			servermock.CheckQueryParameter().
+				With("do", "remove")).
+		Build(t)
 
 	record := Record{
 		Hostname: "_acme-challenge.sub.example.com.",

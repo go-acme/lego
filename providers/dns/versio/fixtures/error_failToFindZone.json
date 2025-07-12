@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": 401,
+    "message": "ObjectDoesNotExist|Domain not found"
+  }
+}

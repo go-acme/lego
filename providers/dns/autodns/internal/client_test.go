@@ -1,68 +1,37 @@
 package internal
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, method, pattern string, status int, file string) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("user", "secret", 123)
+			client.HTTPClient = server.Client()
+			client.BaseURL, _ = url.Parse(server.URL)
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc(pattern, func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		apiUser, apiKey, ok := req.BasicAuth()
-		if apiUser != "user" || apiKey != "secret" || !ok {
-			http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-
-		if file == "" {
-			rw.WriteHeader(status)
-			return
-		}
-
-		open, err := os.Open(filepath.Join("fixtures", file))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		defer func() { _ = open.Close() }()
-
-		rw.WriteHeader(status)
-		_, err = io.Copy(rw, open)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	client := NewClient("user", "secret", 123)
-	client.HTTPClient = server.Client()
-	client.BaseURL, _ = url.Parse(server.URL)
-
-	return client
+			return client, nil
+		},
+		servermock.CheckHeader().
+			WithBasicAuth("user", "secret").
+			WithJSONHeaders())
 }
 
 func TestClient_AddTxtRecords(t *testing.T) {
-	client := setupTest(t, http.MethodPost, "/zone/example.com/_stream", http.StatusOK, "add-record.json")
+	client := mockBuilder().
+		Route("POST /zone/example.com/_stream",
+			servermock.ResponseFromFixture("add_record.json"),
+			servermock.CheckRequestJSONBodyFromFile("add_record-request.json"),
+			servermock.CheckHeader().
+				With("X-Domainrobot-Context", "123")).
+		Build(t)
 
 	records := []*ResourceRecord{{}}
 
@@ -86,7 +55,13 @@ func TestClient_AddTxtRecords(t *testing.T) {
 }
 
 func TestClient_RemoveTXTRecords(t *testing.T) {
-	client := setupTest(t, http.MethodPost, "/zone/example.com/_stream", http.StatusOK, "add-record.json")
+	client := mockBuilder().
+		Route("POST /zone/example.com/_stream",
+			servermock.ResponseFromFixture("remove_record.json"),
+			servermock.CheckRequestJSONBodyFromFile("remove_record-request.json"),
+			servermock.CheckHeader().
+				With("X-Domainrobot-Context", "123")).
+		Build(t)
 
 	records := []*ResourceRecord{{}}
 

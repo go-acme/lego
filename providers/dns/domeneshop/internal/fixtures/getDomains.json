@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "domain": "example.com",
+    "expiry_date": "2019-08-24",
+    "registered_date": "2019-08-24",
+    "renew": true,
+    "registrant": "Ola Nordmann",
+    "status": "active",
+    "nameservers": [
+      "ns1.hyp.net",
+      "ns2.hyp.net",
+      "ns3.hyp.net"
+    ],
+    "services": {
+      "registrar": true,
+      "dns": true,
+      "email": true,
+      "webhotel": "none"
+    }
+  }
+]

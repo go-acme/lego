@@ -1,0 +1,78 @@
+{
+  "dns_records": [
+    {
+      "type": "MX",
+      "name": "example.com",
+      "value": "fallback.axc.eu",
+      "prio": 20,
+      "ttl": 3600
+    },
+    {
+      "type": "TXT",
+      "name": "example.com",
+      "value": "\"v=spf1 a mx ip4:127.0.0.1 a:spf.spamexperts.axc.nl ~all\"",
+      "ttl": 3600
+    },
+    {
+      "type": "A",
+      "name": "example.com",
+      "value": "185.13.227.159",
+      "ttl": 14400
+    },
+    {
+      "type": "A",
+      "name": "ftp.example.com",
+      "value": "185.13.227.159",
+      "ttl": 14400
+    },
+    {
+      "type": "A",
+      "name": "localhost.example.com",
+      "value": "185.13.227.159",
+      "ttl": 14400
+    },
+    {
+      "type": "A",
+      "name": "pop.example.com",
+      "value": "185.13.227.159",
+      "ttl": 14400
+    },
+    {
+      "type": "A",
+      "name": "smtp.example.com",
+      "value": "185.13.227.159",
+      "ttl": 14400
+    },
+    {
+      "type": "A",
+      "name": "www.example.com",
+      "value": "185.13.227.159",
+      "ttl": 14400
+    },
+    {
+      "type": "A",
+      "name": "dev.example.com",
+      "value": "185.13.227.159",
+      "ttl": 14400
+    },
+    {
+      "type": "A",
+      "name": "_domainkey.domain.com.example.com",
+      "value": "185.13.227.159",
+      "ttl": 14400
+    },
+    {
+      "type": "MX",
+      "name": "example.com",
+      "value": "spamfilter2.axc.eu",
+      "ttl": 3600
+    },
+    {
+      "type": "A",
+      "name": "redirect.example.com",
+      "value": "localhost",
+      "prio": 10,
+      "ttl": 14400
+    }
+  ]
+}

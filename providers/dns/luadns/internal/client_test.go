@@ -1,60 +1,32 @@
 package internal
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, apiToken string) (*Client, *http.ServeMux) {
-	t.Helper()
+func mockBuilder(apiToken string) *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("me", apiToken)
+			client.baseURL, _ = url.Parse(server.URL)
+			client.HTTPClient = server.Client()
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client := NewClient("me", apiToken)
-	client.baseURL, _ = url.Parse(server.URL)
-	client.HTTPClient = server.Client()
-
-	return client, mux
+			return client, nil
+		},
+		servermock.CheckHeader().WithJSONHeaders().
+			WithBasicAuth("me", apiToken))
 }
 
 func TestClient_ListZones(t *testing.T) {
-	client, mux := setupTest(t, "secretA")
-
-	mux.HandleFunc("/v1/zones", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodGet {
-			http.Error(rw, fmt.Sprintf("invalid method: %s", req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		auth := req.Header.Get("Authorization")
-		if auth != "Basic bWU6c2VjcmV0QQ==" {
-			http.Error(rw, fmt.Sprintf("invalid authentication: %s", auth), http.StatusUnauthorized)
-			return
-		}
-
-		file, err := os.Open("./fixtures/list_zones.json")
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer func() { _ = file.Close() }()
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	client := mockBuilder("secretA").
+		Route("GET /v1/zones", servermock.ResponseFromFixture("list_zones.json")).
+		Build(t)
 
 	zones, err := client.ListZones(t.Context())
 	require.NoError(t, err)
@@ -88,33 +60,11 @@ func TestClient_ListZones(t *testing.T) {
 }
 
 func TestClient_CreateRecord(t *testing.T) {
-	client, mux := setupTest(t, "secretB")
-
-	mux.HandleFunc("/v1/zones/1/records", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, fmt.Sprintf("invalid method: %s", req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		auth := req.Header.Get("Authorization")
-		if auth != "Basic bWU6c2VjcmV0Qg==" {
-			http.Error(rw, fmt.Sprintf("invalid authentication: %s", auth), http.StatusUnauthorized)
-			return
-		}
-
-		file, err := os.Open("./fixtures/create_record.json")
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer func() { _ = file.Close() }()
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	client := mockBuilder("secretB").
+		Route("POST /v1/zones/1/records",
+			servermock.ResponseFromFixture("create_record.json"),
+			servermock.CheckRequestJSONBody(`{"name":"example.com.","type":"MX","content":"10 mail.example.com.","ttl":300}`)).
+		Build(t)
 
 	zone := DNSZone{ID: 1}
 
@@ -141,33 +91,11 @@ func TestClient_CreateRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client, mux := setupTest(t, "secretC")
-
-	mux.HandleFunc("/v1/zones/1/records/2", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodDelete {
-			http.Error(rw, fmt.Sprintf("invalid method: %s", req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-
-		auth := req.Header.Get("Authorization")
-		if auth != "Basic bWU6c2VjcmV0Qw==" {
-			http.Error(rw, fmt.Sprintf("invalid authentication: %s", auth), http.StatusUnauthorized)
-			return
-		}
-
-		file, err := os.Open("./fixtures/delete_record.json")
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer func() { _ = file.Close() }()
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	client := mockBuilder("secretC").
+		Route("DELETE /v1/zones/1/records/2",
+			servermock.ResponseFromFixture("delete_record.json"),
+			servermock.CheckRequestJSONBody(`{"id":2,"name":"example.com.","type":"MX","content":"10 mail.example.com.","ttl":300,"zone_id":1}`)).
+		Build(t)
 
 	record := &DNSRecord{
 		ID:      2,

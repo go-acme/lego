@@ -1,9 +1,7 @@
 package rackspace
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -11,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,11 +22,7 @@ var envTest = tester.NewEnvTest(
 	WithDomain(envDomain)
 
 func TestNewDNSProviderConfig(t *testing.T) {
-	config := setupTest(t)
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-	assert.NotNil(t, provider.config)
+	provider := mockBuilder().Build(t)
 
 	assert.Equal(t, "testToken", provider.token, "The token should match")
 }
@@ -38,25 +33,40 @@ func TestNewDNSProviderConfig_MissingCredErr(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	config := setupTest(t)
+	provider := mockBuilder().
+		Route("GET /123456/domains",
+			servermock.ResponseFromFixture("zone_details.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "example.com")).
+		Route("POST /123456/domains/112233/records",
+			servermock.ResponseFromFixture("record.json").
+				WithStatusCode(http.StatusAccepted),
+			servermock.CheckRequestJSONBody(`{"records":[{"name":"_acme-challenge.example.com","type":"TXT","data":"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM","ttl":300}]}`)).
+		Build(t)
 
-	provider, err := NewDNSProviderConfig(config)
-
-	if assert.NoError(t, err) {
-		err = provider.Present("example.com", "token", "keyAuth")
-		require.NoError(t, err)
-	}
+	err := provider.Present("example.com", "token", "keyAuth")
+	require.NoError(t, err)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	config := setupTest(t)
+	provider := mockBuilder().
+		Route("GET /123456/domains",
+			servermock.ResponseFromFixture("zone_details.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "example.com")).
+		Route("GET /123456/domains/112233/records",
+			servermock.ResponseFromFixture("record_details.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("type", "TXT").
+				With("name", "_acme-challenge.example.com")).
+		Route("DELETE /123456/domains/112233/records",
+			servermock.ResponseFromFixture("delete.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("id", "TXT-654321")).
+		Build(t)
 
-	provider, err := NewDNSProviderConfig(config)
-
-	if assert.NoError(t, err) {
-		err = provider.CleanUp("example.com", "token", "keyAuth")
-		require.NoError(t, err)
-	}
+	err := provider.CleanUp("example.com", "token", "keyAuth")
+	require.NoError(t, err)
 }
 
 func TestLiveNewDNSProvider_ValidEnv(t *testing.T) {
@@ -99,99 +109,59 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func setupTest(t *testing.T) *Config {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.APIUser = "testUser"
+			config.APIKey = "testKey"
+			config.HTTPClient = server.Client()
+			config.BaseURL = server.URL + "/v2.0/tokens"
 
-	dnsAPI := httptest.NewServer(dnsHandler())
-	t.Cleanup(dnsAPI.Close)
+			return NewDNSProviderConfig(config)
+		},
+		servermock.CheckHeader().WithJSONHeaders(),
+	).
+		Route("POST /v2.0/tokens",
+			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				apiURL := fmt.Sprintf("http://%s/123456", req.Context().Value(http.LocalAddrContextKey))
 
-	identityAPI := httptest.NewServer(identityHandler(dnsAPI.URL + "/123456"))
-	t.Cleanup(identityAPI.Close)
-
-	config := NewDefaultConfig()
-	config.APIUser = "testUser"
-	config.APIKey = "testKey"
-	config.HTTPClient = identityAPI.Client()
-	config.BaseURL = identityAPI.URL + "/"
-
-	return config
+				resp := strings.Replace(`
+{
+  "access": {
+    "token": {
+      "id": "testToken",
+      "expires": "1970-01-01T00:00:00.000Z",
+      "tenant": {
+        "id": "123456",
+        "name": "123456"
+      },
+      "RAX-AUTH:authenticatedBy": [
+        "APIKEY"
+      ]
+    },
+    "serviceCatalog": [
+      {
+        "type": "rax:dns",
+        "endpoints": [
+          {
+            "publicURL": "https://dns.api.rackspacecloud.com/v1.0/123456",
+            "tenantId": "123456"
+          }
+        ],
+        "name": "cloudDNS"
+      }
+    ],
+    "user": {
+      "id": "fakeUseID",
+      "name": "testUser"
+    }
+  }
 }
+`, "https://dns.api.rackspacecloud.com/v1.0/123456", apiURL, 1)
 
-func identityHandler(dnsEndpoint string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		reqBody, err := io.ReadAll(r.Body)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		if string(bytes.TrimSpace(reqBody)) != `{"auth":{"RAX-KSKEY:apiKeyCredentials":{"username":"testUser","apiKey":"testKey"}}}` {
-			http.Error(w, fmt.Sprintf("invalid body: %s", string(reqBody)), http.StatusBadRequest)
-			return
-		}
-
-		resp := strings.Replace(identityResponseMock, "https://dns.api.rackspacecloud.com/v1.0/123456", dnsEndpoint, 1)
-		w.WriteHeader(http.StatusOK)
-		_, _ = fmt.Fprint(w, resp)
-	})
-}
-
-func dnsHandler() *http.ServeMux {
-	mux := http.NewServeMux()
-
-	// Used by `getHostedZoneID()` finding `zoneID` "?name=example.com"
-	mux.HandleFunc("/123456/domains", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Query().Get("name") == "example.com" {
-			w.WriteHeader(http.StatusOK)
-			_, _ = fmt.Fprint(w, zoneDetailsMock)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-	})
-
-	mux.HandleFunc("/123456/domains/112233/records", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		// Used by `Present()` creating the TXT record
-		case http.MethodPost:
-			reqBody, err := io.ReadAll(r.Body)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			if string(bytes.TrimSpace(reqBody)) != `{"records":[{"name":"_acme-challenge.example.com","type":"TXT","data":"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM","ttl":300}]}` {
-				http.Error(w, fmt.Sprintf("invalid body: %s", string(reqBody)), http.StatusBadRequest)
-				return
-			}
-
-			w.WriteHeader(http.StatusAccepted)
-			_, _ = fmt.Fprint(w, recordResponseMock)
-
-		// Used by `findTxtRecord()` finding `record.ID` "?type=TXT&name=_acme-challenge.example.com"
-		case http.MethodGet:
-			if r.URL.Query().Get("type") == "TXT" && r.URL.Query().Get("name") == "_acme-challenge.example.com" {
-				w.WriteHeader(http.StatusOK)
-				_, _ = fmt.Fprint(w, recordDetailsMock)
-				return
-			}
-
-			w.WriteHeader(http.StatusBadRequest)
-			return
-
-		// Used by `CleanUp()` deleting the TXT record "?id=445566"
-		case http.MethodDelete:
-			if r.URL.Query().Get("id") == "TXT-654321" {
-				w.WriteHeader(http.StatusOK)
-				_, _ = fmt.Fprint(w, recordDeleteMock)
-				return
-			}
-			w.WriteHeader(http.StatusBadRequest)
-		}
-	})
-
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, fmt.Sprintf("Not Found for Request: (%+v)", r), http.StatusNotFound)
-	})
-
-	return mux
+				rw.WriteHeader(http.StatusOK)
+				_, _ = fmt.Fprint(rw, resp)
+			}),
+			servermock.CheckRequestJSONBody(`{"auth":{"RAX-KSKEY:apiKeyCredentials":{"username":"testUser","apiKey":"testKey"}}}`))
 }

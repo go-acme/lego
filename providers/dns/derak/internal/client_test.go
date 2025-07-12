@@ -1,80 +1,37 @@
 package internal
 
 import (
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*Client, *http.ServeMux) {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
+func setupClient(server *httptest.Server) (*Client, error) {
 	client := NewClient("secret")
 	client.baseURL, _ = url.Parse(server.URL)
 	client.zoneEndpoint = server.URL
 	client.HTTPClient = server.Client()
 
-	return client, mux
+	return client, nil
 }
 
-func testHandler(method string, statusCode int, filename string) func(rw http.ResponseWriter, req *http.Request) {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != method {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		username, password, ok := req.BasicAuth()
-		if !ok {
-			http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-
-		if username != "api" {
-			http.Error(rw, fmt.Sprintf("username: want %s got %s", username, "user"), http.StatusUnauthorized)
-			return
-		}
-
-		if password != "secret" {
-			http.Error(rw, fmt.Sprintf("password: want %s got %s", password, "secret"), http.StatusUnauthorized)
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer func() { _ = file.Close() }()
-
-		rw.WriteHeader(statusCode)
-
-		_, err = io.Copy(rw, file)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
+			WithBasicAuth("api", "secret"))
 }
 
 func TestGetRecords(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
-		testHandler(http.MethodGet, http.StatusOK, "records-GET.json"))
+	client := mockBuilder().
+		Route("GET /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
+			servermock.ResponseFromFixture("records-GET.json")).
+		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", &GetRecordsParameters{DNSType: "TXT", Content: `"test"'`})
 	require.NoError(t, err)
@@ -134,20 +91,21 @@ func TestGetRecords(t *testing.T) {
 }
 
 func TestGetRecords_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
-		testHandler(http.MethodGet, http.StatusUnauthorized, "error.json"))
+	client := mockBuilder().
+		Route("GET /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
 
 	_, err := client.GetRecords(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", &GetRecordsParameters{DNSType: "TXT", Content: `"test"'`})
 	require.Error(t, err)
 }
 
 func TestGetRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/812bee17a0b440b0bd5ee099a78b839c",
-		testHandler(http.MethodGet, http.StatusOK, "record-GET.json"))
+	client := mockBuilder().
+		Route("GET /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/812bee17a0b440b0bd5ee099a78b839c",
+			servermock.ResponseFromFixture("record-GET.json")).
+		Build(t)
 
 	record, err := client.GetRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "812bee17a0b440b0bd5ee099a78b839c")
 	require.NoError(t, err)
@@ -163,20 +121,22 @@ func TestGetRecord(t *testing.T) {
 }
 
 func TestGetRecord_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/812bee17a0b440b0bd5ee099a78b839c",
-		testHandler(http.MethodGet, http.StatusUnauthorized, "error.json"))
+	client := mockBuilder().
+		Route("GET /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
 
 	_, err := client.GetRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "812bee17a0b440b0bd5ee099a78b839c")
 	require.Error(t, err)
 }
 
 func TestCreateRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
-		testHandler(http.MethodPut, http.StatusCreated, "record-PUT.json"))
+	client := mockBuilder().
+		Route("PUT /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
+			servermock.ResponseFromFixture("record-PUT.json").
+				WithStatusCode(http.StatusCreated)).
+		Build(t)
 
 	r := Record{
 		Type:    "TXT",
@@ -199,10 +159,11 @@ func TestCreateRecord(t *testing.T) {
 }
 
 func TestCreateRecord_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
-		testHandler(http.MethodPut, http.StatusUnauthorized, "error.json"))
+	client := mockBuilder().
+		Route("PUT /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
 
 	r := Record{
 		Type:    "TXT",
@@ -216,10 +177,10 @@ func TestCreateRecord_error(t *testing.T) {
 }
 
 func TestEditRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/eebc813de2f94d67b09d91e10e2d65c2",
-		testHandler(http.MethodPatch, http.StatusOK, "record-PATCH.json"))
+	client := mockBuilder().
+		Route("PATCH /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/eebc813de2f94d67b09d91e10e2d65c2",
+			servermock.ResponseFromFixture("record-PATCH.json")).
+		Build(t)
 
 	record, err := client.EditRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "eebc813de2f94d67b09d91e10e2d65c2", Record{
 		Content: "foo",
@@ -237,10 +198,11 @@ func TestEditRecord(t *testing.T) {
 }
 
 func TestEditRecord_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/eebc813de2f94d67b09d91e10e2d65c2",
-		testHandler(http.MethodPatch, http.StatusUnauthorized, "error.json"))
+	client := mockBuilder().
+		Route("PATCH /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/eebc813de2f94d67b09d91e10e2d65c2",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
 
 	_, err := client.EditRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "eebc813de2f94d67b09d91e10e2d65c2", Record{
 		Content: "foo",
@@ -249,29 +211,33 @@ func TestEditRecord_error(t *testing.T) {
 }
 
 func TestDeleteRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/653464211b7447a1bee6b8fcb9fb86df",
-		testHandler(http.MethodDelete, http.StatusOK, "record-DELETE.json"))
+	client := mockBuilder().
+		Route("DELETE /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/653464211b7447a1bee6b8fcb9fb86df",
+			servermock.ResponseFromFixture("record-DELETE.json")).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "653464211b7447a1bee6b8fcb9fb86df")
 	require.NoError(t, err)
 }
 
 func TestDeleteRecord_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/653464211b7447a1bee6b8fcb9fb86df",
-		testHandler(http.MethodDelete, http.StatusUnauthorized, "error.json"))
+	client := mockBuilder().
+		Route("DELETE /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/653464211b7447a1bee6b8fcb9fb86df",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "653464211b7447a1bee6b8fcb9fb86df")
 	require.Error(t, err)
 }
 
 func TestGetZones(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/", testHandler(http.MethodGet, http.StatusOK, "service-cdn-zones.json"))
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().
+			WithBasicAuth("api", "secret"),
+	).
+		Route("GET /", servermock.ResponseFromFixture("service-cdn-zones.json")).
+		Build(t)
 
 	zones, err := client.GetZones(t.Context())
 	require.NoError(t, err)
@@ -302,9 +268,10 @@ func TestGetZones(t *testing.T) {
 }
 
 func TestGetZones_error(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/", testHandler(http.MethodGet, http.StatusUnauthorized, "error.json"))
+	client := mockBuilder().
+		Route("GET /", servermock.ResponseFromFixture("error.json").
+			WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
 
 	_, err := client.GetZones(t.Context())
 	require.Error(t, err)

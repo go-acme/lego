@@ -1,69 +1,30 @@
 package hostingde
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, pattern string, handler http.HandlerFunc) *Client {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
+func setupClient(server *httptest.Server) (*Client, error) {
 	client := NewClient("secret")
 	client.HTTPClient = server.Client()
 	client.BaseURL, _ = url.Parse(server.URL)
 
-	mux.HandleFunc(pattern, handler)
-
-	return client
-}
-
-func writeFixture(rw http.ResponseWriter, filename string) {
-	file, err := os.Open(filepath.Join("fixtures", filename))
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer func() { _ = file.Close() }()
-
-	_, _ = io.Copy(rw, file)
+	return client, nil
 }
 
 func TestClient_ListZoneConfigs(t *testing.T) {
-	client := setupTest(t, "/zoneConfigsFind", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		raw, err := io.ReadAll(req.Body)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		body := string(bytes.TrimSpace(raw))
-		if body != `{"authToken":"secret","filter":{"field":"zoneName","value":"example.com"},"limit":1,"page":1}` {
-			http.Error(rw, fmt.Sprintf("unexpected body: got %s", body), http.StatusBadRequest)
-			return
-		}
-
-		writeFixture(rw, "zoneConfigsFind.json")
-	})
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /zoneConfigsFind",
+			servermock.ResponseFromFixture("zoneConfigsFind.json"),
+			servermock.CheckRequestJSONBodyFromFile("zoneConfigsFind-request.json")).
+		Build(t)
 
 	zonesFind := ZoneConfigsFindRequest{
 		Filter: Filter{Field: "zoneName", Value: "example.com"},
@@ -108,14 +69,10 @@ func TestClient_ListZoneConfigs(t *testing.T) {
 }
 
 func TestClient_ListZoneConfigs_error(t *testing.T) {
-	client := setupTest(t, "/zoneConfigsFind", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		writeFixture(rw, "zoneConfigsFind_error.json")
-	})
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /zoneConfigsFind",
+			servermock.ResponseFromFixture("zoneConfigsFind_error.json")).
+		Build(t)
 
 	zonesFind := ZoneConfigsFindRequest{
 		Filter: Filter{Field: "zoneName", Value: "example.com"},
@@ -128,26 +85,11 @@ func TestClient_ListZoneConfigs_error(t *testing.T) {
 }
 
 func TestClient_UpdateZone(t *testing.T) {
-	client := setupTest(t, "/zoneUpdate", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		raw, err := io.ReadAll(req.Body)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		body := string(bytes.TrimSpace(raw))
-		if body != `{"authToken":"secret","zoneConfig":{"id":"123","accountId":"456","status":"s","name":"n","nameUnicode":"u","masterIp":"m","type":"t","emailAddress":"e","zoneTransferWhitelist":["a","b"],"lastChangeDate":"l","dnsServerGroupId":"g","dnsSecMode":"m","soaValues":{"refresh":1,"retry":2,"expire":3,"ttl":4,"negativeTtl":5}},"recordsToAdd":null,"recordsToDelete":[{"name":"_acme-challenge.example.com","type":"TXT","content":"\"txt\""}]}` {
-			http.Error(rw, fmt.Sprintf("unexpected body: got %s", body), http.StatusBadRequest)
-			return
-		}
-
-		writeFixture(rw, "zoneUpdate.json")
-	})
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /zoneUpdate",
+			servermock.ResponseFromFixture("zoneUpdate.json"),
+			servermock.CheckRequestJSONBodyFromFile("zoneUpdate-request.json")).
+		Build(t)
 
 	request := ZoneUpdateRequest{
 		ZoneConfig: ZoneConfig{
@@ -220,14 +162,10 @@ func TestClient_UpdateZone(t *testing.T) {
 }
 
 func TestClient_UpdateZone_error(t *testing.T) {
-	client := setupTest(t, "/zoneUpdate", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		writeFixture(rw, "zoneUpdate_error.json")
-	})
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /zoneUpdate",
+			servermock.ResponseFromFixture("zoneUpdate_error.json")).
+		Build(t)
 
 	request := ZoneUpdateRequest{
 		ZoneConfig: ZoneConfig{

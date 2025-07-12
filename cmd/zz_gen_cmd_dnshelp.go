@@ -167,6 +167,7 @@ func allDNSCodes() string {
 		"yandex",
 		"yandex360",
 		"yandexcloud",
+		"zoneedit",
 		"zoneee",
 		"zonomi",
 	}
@@ -3487,6 +3488,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/yandexcloud`)
+
+	case "zoneedit":
+		// generated from: providers/dns/zoneedit/zoneedit.toml
+		ew.writeln(`Configuration for ZoneEdit.`)
+		ew.writeln(`Code:	'zoneedit'`)
+		ew.writeln(`Since:	'v4.25.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ZONEEDIT_PASSWORD":	Password`)
+		ew.writeln(`	- "ZONEEDIT_USER_ID":	User ID`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ZONEEDIT_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "ZONEEDIT_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "ZONEEDIT_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/zoneedit`)
 
 	case "zoneee":
 		// generated from: providers/dns/zoneee/zoneee.toml

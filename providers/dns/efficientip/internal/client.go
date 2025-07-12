@@ -33,7 +33,7 @@ func NewClient(hostname, username, password string) *Client {
 	}
 }
 
-func (c Client) ListRecords(ctx context.Context) ([]ResourceRecord, error) {
+func (c *Client) ListRecords(ctx context.Context) ([]ResourceRecord, error) {
 	endpoint := c.baseURL.JoinPath("dns_rr_list")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
@@ -51,7 +51,7 @@ func (c Client) ListRecords(ctx context.Context) ([]ResourceRecord, error) {
 	return result, nil
 }
 
-func (c Client) GetRecord(ctx context.Context, id string) (*ResourceRecord, error) {
+func (c *Client) GetRecord(ctx context.Context, id string) (*ResourceRecord, error) {
 	endpoint := c.baseURL.JoinPath("dns_rr_info")
 
 	query := endpoint.Query()
@@ -77,7 +77,7 @@ func (c Client) GetRecord(ctx context.Context, id string) (*ResourceRecord, erro
 	return &result[0], nil
 }
 
-func (c Client) AddRecord(ctx context.Context, record ResourceRecord) (*BaseOutput, error) {
+func (c *Client) AddRecord(ctx context.Context, record ResourceRecord) (*BaseOutput, error) {
 	endpoint := c.baseURL.JoinPath("dns_rr_add")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
@@ -99,7 +99,7 @@ func (c Client) AddRecord(ctx context.Context, record ResourceRecord) (*BaseOutp
 	return &result[0], nil
 }
 
-func (c Client) DeleteRecord(ctx context.Context, params DeleteInputParameters) (*BaseOutput, error) {
+func (c *Client) DeleteRecord(ctx context.Context, params DeleteInputParameters) (*BaseOutput, error) {
 	endpoint := c.baseURL.JoinPath("dns_rr_delete")
 
 	// (rr_id || (rr_name && (dns_id || dns_name || hostaddr)))
@@ -129,7 +129,7 @@ func (c Client) DeleteRecord(ctx context.Context, params DeleteInputParameters) 
 	return &result[0], nil
 }
 
-func (c Client) do(req *http.Request, result any) error {
+func (c *Client) do(req *http.Request, result any) error {
 	req.SetBasicAuth(c.username, c.password)
 	req.Header.Set("cache-control", "no-cache")
 

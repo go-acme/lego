@@ -42,7 +42,7 @@ func NewClient(username, token string) *Client {
 
 // ListServices lists service IDs.
 // https://api.shellrent.com/elenco-dei-servizi-acquistati
-func (c Client) ListServices(ctx context.Context) ([]int, error) {
+func (c *Client) ListServices(ctx context.Context) ([]int, error) {
 	endpoint := c.baseURL.JoinPath("purchase")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
@@ -72,7 +72,7 @@ func (c Client) ListServices(ctx context.Context) ([]int, error) {
 
 // GetServiceDetails gets service details.
 // https://api.shellrent.com/dettagli-servizio-acquistato
-func (c Client) GetServiceDetails(ctx context.Context, serviceID int) (*ServiceDetails, error) {
+func (c *Client) GetServiceDetails(ctx context.Context, serviceID int) (*ServiceDetails, error) {
 	endpoint := c.baseURL.JoinPath("purchase", "details", strconv.Itoa(serviceID))
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
@@ -96,7 +96,7 @@ func (c Client) GetServiceDetails(ctx context.Context, serviceID int) (*ServiceD
 
 // GetDomainDetails gets domain details.
 // https://api.shellrent.com/dettagli-dominio
-func (c Client) GetDomainDetails(ctx context.Context, domainID int) (*DomainDetails, error) {
+func (c *Client) GetDomainDetails(ctx context.Context, domainID int) (*DomainDetails, error) {
 	endpoint := c.baseURL.JoinPath("domain", "details", strconv.Itoa(domainID))
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
@@ -119,7 +119,7 @@ func (c Client) GetDomainDetails(ctx context.Context, domainID int) (*DomainDeta
 
 // CreateRecord created a record.
 // https://api.shellrent.com/creazione-record-dns-di-un-dominio
-func (c Client) CreateRecord(ctx context.Context, domainID int, record Record) (int, error) {
+func (c *Client) CreateRecord(ctx context.Context, domainID int, record Record) (int, error) {
 	endpoint := c.baseURL.JoinPath("dns_record", "store", strconv.Itoa(domainID))
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
@@ -142,7 +142,7 @@ func (c Client) CreateRecord(ctx context.Context, domainID int, record Record) (
 
 // DeleteRecord deletes a record.
 // https://api.shellrent.com/eliminazione-record-dns-di-un-dominio
-func (c Client) DeleteRecord(ctx context.Context, domainID, recordID int) error {
+func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int) error {
 	endpoint := c.baseURL.JoinPath("dns_record", "remove", strconv.Itoa(domainID), strconv.Itoa(recordID))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
@@ -164,7 +164,7 @@ func (c Client) DeleteRecord(ctx context.Context, domainID, recordID int) error 
 	return nil
 }
 
-func (c Client) do(req *http.Request, result any) error {
+func (c *Client) do(req *http.Request, result any) error {
 	req.Header.Set(authorizationHeader, c.username+"."+c.token)
 
 	resp, err := c.HTTPClient.Do(req)

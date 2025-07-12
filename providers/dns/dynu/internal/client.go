@@ -34,7 +34,7 @@ func NewClient() *Client {
 }
 
 // GetRecords Get DNS records based on a hostname and resource record type.
-func (c Client) GetRecords(ctx context.Context, hostname, recordType string) ([]DNSRecord, error) {
+func (c *Client) GetRecords(ctx context.Context, hostname, recordType string) ([]DNSRecord, error) {
 	endpoint := c.baseURL.JoinPath("dns", "record", hostname)
 
 	query := endpoint.Query()
@@ -55,7 +55,7 @@ func (c Client) GetRecords(ctx context.Context, hostname, recordType string) ([]
 }
 
 // AddNewRecord Add a new DNS record for DNS service.
-func (c Client) AddNewRecord(ctx context.Context, domainID int64, record DNSRecord) error {
+func (c *Client) AddNewRecord(ctx context.Context, domainID int64, record DNSRecord) error {
 	endpoint := c.baseURL.JoinPath("dns", strconv.FormatInt(domainID, 10), "record")
 
 	reqBody, err := json.Marshal(record)
@@ -77,7 +77,7 @@ func (c Client) AddNewRecord(ctx context.Context, domainID int64, record DNSReco
 }
 
 // DeleteRecord Remove a DNS record from DNS service.
-func (c Client) DeleteRecord(ctx context.Context, domainID, recordID int64) error {
+func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int64) error {
 	endpoint := c.baseURL.JoinPath("dns", strconv.FormatInt(domainID, 10), "record", strconv.FormatInt(recordID, 10))
 
 	apiResp := APIException{}
@@ -94,7 +94,7 @@ func (c Client) DeleteRecord(ctx context.Context, domainID, recordID int64) erro
 }
 
 // GetRootDomain Get the root domain name based on a hostname.
-func (c Client) GetRootDomain(ctx context.Context, hostname string) (*DNSHostname, error) {
+func (c *Client) GetRootDomain(ctx context.Context, hostname string) (*DNSHostname, error) {
 	endpoint := c.baseURL.JoinPath("dns", "getroot", hostname)
 
 	apiResp := DNSHostname{}
@@ -111,7 +111,7 @@ func (c Client) GetRootDomain(ctx context.Context, hostname string) (*DNSHostnam
 }
 
 // doRetry the API is really unstable, so we need to retry on EOF.
-func (c Client) doRetry(ctx context.Context, method, uri string, body []byte, result any) error {
+func (c *Client) doRetry(ctx context.Context, method, uri string, body []byte, result any) error {
 	operation := func() error {
 		return c.do(ctx, method, uri, body, result)
 	}
@@ -131,7 +131,7 @@ func (c Client) doRetry(ctx context.Context, method, uri string, body []byte, re
 	return nil
 }
 
-func (c Client) do(ctx context.Context, method, uri string, body []byte, result any) error {
+func (c *Client) do(ctx context.Context, method, uri string, body []byte, result any) error {
 	var reqBody io.Reader
 	if len(body) > 0 {
 		reqBody = bytes.NewReader(body)

@@ -34,7 +34,7 @@ func NewClient(hc *http.Client) *Client {
 	}
 }
 
-func (c Client) GetDomains(ctx context.Context) (*Domains, error) {
+func (c *Client) GetDomains(ctx context.Context) (*Domains, error) {
 	endpoint := c.baseURL.JoinPath("api")
 
 	query := endpoint.Query()
@@ -56,7 +56,7 @@ func (c Client) GetDomains(ctx context.Context) (*Domains, error) {
 	return results, nil
 }
 
-func (c Client) AddRecord(ctx context.Context, domain, prefix, recordType, content string) error {
+func (c *Client) AddRecord(ctx context.Context, domain, prefix, recordType, content string) error {
 	endpoint := c.baseURL.JoinPath("api")
 
 	data := make(url.Values)
@@ -73,7 +73,7 @@ func (c Client) AddRecord(ctx context.Context, domain, prefix, recordType, conte
 	return c.do(req, nil)
 }
 
-func (c Client) DeleteRecord(ctx context.Context, domain, prefix, recordType, content string) error {
+func (c *Client) DeleteRecord(ctx context.Context, domain, prefix, recordType, content string) error {
 	endpoint := c.baseURL.JoinPath("api")
 
 	data := make(url.Values)
@@ -90,7 +90,7 @@ func (c Client) DeleteRecord(ctx context.Context, domain, prefix, recordType, co
 	return c.do(req, nil)
 }
 
-func (c Client) do(req *http.Request, result any) error {
+func (c *Client) do(req *http.Request, result any) error {
 	if req.Method != http.MethodGet {
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}

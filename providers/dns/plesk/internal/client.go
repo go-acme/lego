@@ -35,7 +35,7 @@ func NewClient(baseURL *url.URL, login, password string) *Client {
 
 // GetSite gets a site.
 // https://docs.plesk.com/en-US/obsidian/api-rpc/about-xml-api/reference/managing-sites-domains/getting-information-about-sites.66583/
-func (c Client) GetSite(ctx context.Context, domain string) (int, error) {
+func (c *Client) GetSite(ctx context.Context, domain string) (int, error) {
 	payload := RequestPacketType{Site: &SiteTypeRequest{Get: SiteGetRequest{Filter: &SiteFilterType{
 		Name: domain,
 	}}}}
@@ -62,7 +62,7 @@ func (c Client) GetSite(ctx context.Context, domain string) (int, error) {
 
 // AddRecord adds a TXT record.
 // https://docs.plesk.com/en-US/obsidian/api-rpc/about-xml-api/reference/managing-dns/managing-dns-records/adding-dns-record.34798/
-func (c Client) AddRecord(ctx context.Context, siteID int, host, value string) (int, error) {
+func (c *Client) AddRecord(ctx context.Context, siteID int, host, value string) (int, error) {
 	payload := RequestPacketType{DNS: &DNSInputType{AddRec: []AddRecRequest{{
 		SiteID: siteID,
 		Type:   "TXT",
@@ -92,7 +92,7 @@ func (c Client) AddRecord(ctx context.Context, siteID int, host, value string) (
 
 // DeleteRecord Deletes a TXT record.
 // https://docs.plesk.com/en-US/obsidian/api-rpc/about-xml-api/reference/managing-dns/managing-dns-records/deleting-dns-records.34864/
-func (c Client) DeleteRecord(ctx context.Context, recordID int) (int, error) {
+func (c *Client) DeleteRecord(ctx context.Context, recordID int) (int, error) {
 	payload := RequestPacketType{DNS: &DNSInputType{DelRec: []DelRecRequest{{Filter: DNSSelectionFilterType{
 		ID: recordID,
 	}}}}}
@@ -117,7 +117,7 @@ func (c Client) DeleteRecord(ctx context.Context, recordID int) (int, error) {
 	return response.DNS.DelRec[0].Result.ID, nil
 }
 
-func (c Client) doRequest(ctx context.Context, payload RequestPacketType) (*ResponsePacketType, error) {
+func (c *Client) doRequest(ctx context.Context, payload RequestPacketType) (*ResponsePacketType, error) {
 	endpoint := c.baseURL.JoinPath("/enterprise/control/agent.php")
 
 	body := new(bytes.Buffer)

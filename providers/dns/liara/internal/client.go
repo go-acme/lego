@@ -35,7 +35,7 @@ func NewClient(hc *http.Client) *Client {
 
 // GetRecords gets the records of a domain.
 // https://openapi.liara.ir/?urls.primaryName=DNS
-func (c Client) GetRecords(ctx context.Context, domainName string) ([]Record, error) {
+func (c *Client) GetRecords(ctx context.Context, domainName string) ([]Record, error) {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
@@ -69,7 +69,7 @@ func (c Client) GetRecords(ctx context.Context, domainName string) ([]Record, er
 }
 
 // CreateRecord creates a record.
-func (c Client) CreateRecord(ctx context.Context, domainName string, record Record) (*Record, error) {
+func (c *Client) CreateRecord(ctx context.Context, domainName string, record Record) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
@@ -103,7 +103,7 @@ func (c Client) CreateRecord(ctx context.Context, domainName string, record Reco
 }
 
 // GetRecord gets a specific record.
-func (c Client) GetRecord(ctx context.Context, domainName, recordID string) (*Record, error) {
+func (c *Client) GetRecord(ctx context.Context, domainName, recordID string) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records", recordID)
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
@@ -137,7 +137,7 @@ func (c Client) GetRecord(ctx context.Context, domainName, recordID string) (*Re
 }
 
 // DeleteRecord deletes a record.
-func (c Client) DeleteRecord(ctx context.Context, domainName, recordID string) error {
+func (c *Client) DeleteRecord(ctx context.Context, domainName, recordID string) error {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records", recordID)
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)

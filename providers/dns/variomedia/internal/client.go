@@ -38,7 +38,7 @@ func NewClient(apiToken string) *Client {
 
 // CreateDNSRecord creates a new DNS entry.
 // https://api.variomedia.de/docs/dns-records.html#erstellen
-func (c Client) CreateDNSRecord(ctx context.Context, record DNSRecord) (*CreateDNSRecordResponse, error) {
+func (c *Client) CreateDNSRecord(ctx context.Context, record DNSRecord) (*CreateDNSRecordResponse, error) {
 	endpoint := c.baseURL.JoinPath("dns-records")
 
 	data := CreateDNSRecordRequest{Data: Data{
@@ -62,7 +62,7 @@ func (c Client) CreateDNSRecord(ctx context.Context, record DNSRecord) (*CreateD
 
 // DeleteDNSRecord deletes a DNS record.
 // https://api.variomedia.de/docs/dns-records.html#l%C3%B6schen
-func (c Client) DeleteDNSRecord(ctx context.Context, id string) (*DeleteRecordResponse, error) {
+func (c *Client) DeleteDNSRecord(ctx context.Context, id string) (*DeleteRecordResponse, error) {
 	endpoint := c.baseURL.JoinPath("dns-records", id)
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
@@ -81,7 +81,7 @@ func (c Client) DeleteDNSRecord(ctx context.Context, id string) (*DeleteRecordRe
 
 // GetJob returns a single job based on its ID.
 // https://api.variomedia.de/docs/job-queue.html
-func (c Client) GetJob(ctx context.Context, id string) (*GetJobResponse, error) {
+func (c *Client) GetJob(ctx context.Context, id string) (*GetJobResponse, error) {
 	endpoint := c.baseURL.JoinPath("queue-jobs", id)
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
@@ -98,7 +98,7 @@ func (c Client) GetJob(ctx context.Context, id string) (*GetJobResponse, error) 
 	return &result, nil
 }
 
-func (c Client) do(req *http.Request, data any) error {
+func (c *Client) do(req *http.Request, data any) error {
 	req.Header.Set(authorizationHeader, "token "+c.apiToken)
 
 	resp, err := c.HTTPClient.Do(req)

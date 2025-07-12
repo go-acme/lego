@@ -36,7 +36,7 @@ func NewClient(hc *http.Client) *Client {
 
 // GetZones Get a list of all zones.
 // https://api.ns1.hosttech.eu/api/documentation/#/Zones/get_api_user_v1_zones
-func (c Client) GetZones(ctx context.Context, query string, limit, offset int) ([]Zone, error) {
+func (c *Client) GetZones(ctx context.Context, query string, limit, offset int) ([]Zone, error) {
 	endpoint := c.baseURL.JoinPath("user", "v1", "zones")
 
 	values := endpoint.Query()
@@ -68,7 +68,7 @@ func (c Client) GetZones(ctx context.Context, query string, limit, offset int) (
 
 // GetZone Get a single zone.
 // https://api.ns1.hosttech.eu/api/documentation/#/Zones/get_api_user_v1_zones__zoneId_
-func (c Client) GetZone(ctx context.Context, zoneID string) (*Zone, error) {
+func (c *Client) GetZone(ctx context.Context, zoneID string) (*Zone, error) {
 	endpoint := c.baseURL.JoinPath("user", "v1", "zones", zoneID)
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
@@ -87,7 +87,7 @@ func (c Client) GetZone(ctx context.Context, zoneID string) (*Zone, error) {
 
 // GetRecords Returns a list of all records for the given zone.
 // https://api.ns1.hosttech.eu/api/documentation/#/Records/get_api_user_v1_zones__zoneId__records
-func (c Client) GetRecords(ctx context.Context, zoneID, recordType string) ([]Record, error) {
+func (c *Client) GetRecords(ctx context.Context, zoneID, recordType string) ([]Record, error) {
 	endpoint := c.baseURL.JoinPath("user", "v1", "zones", zoneID, "records")
 
 	values := endpoint.Query()
@@ -114,7 +114,7 @@ func (c Client) GetRecords(ctx context.Context, zoneID, recordType string) ([]Re
 
 // AddRecord Adds a new record to the zone and returns the newly created record.
 // https://api.ns1.hosttech.eu/api/documentation/#/Records/post_api_user_v1_zones__zoneId__records
-func (c Client) AddRecord(ctx context.Context, zoneID string, record Record) (*Record, error) {
+func (c *Client) AddRecord(ctx context.Context, zoneID string, record Record) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("user", "v1", "zones", zoneID, "records")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
@@ -133,7 +133,7 @@ func (c Client) AddRecord(ctx context.Context, zoneID string, record Record) (*R
 
 // DeleteRecord Deletes a single record for the given id.
 // https://api.ns1.hosttech.eu/api/documentation/#/Records/delete_api_user_v1_zones__zoneId__records__recordId_
-func (c Client) DeleteRecord(ctx context.Context, zoneID, recordID string) error {
+func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID string) error {
 	endpoint := c.baseURL.JoinPath("user", "v1", "zones", zoneID, "records", recordID)
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
@@ -144,7 +144,7 @@ func (c Client) DeleteRecord(ctx context.Context, zoneID, recordID string) error
 	return c.do(req, nil)
 }
 
-func (c Client) do(req *http.Request, result any) error {
+func (c *Client) do(req *http.Request, result any) error {
 	resp, errD := c.httpClient.Do(req)
 	if errD != nil {
 		return errutils.NewHTTPDoError(req, errD)

@@ -34,18 +34,18 @@ func NewClient(token string) *Client {
 	}
 }
 
-func (c Client) AddTXTRecord(ctx context.Context, domain, value string) error {
+func (c *Client) AddTXTRecord(ctx context.Context, domain, value string) error {
 	return c.UpdateTxtRecord(ctx, domain, value, false)
 }
 
-func (c Client) RemoveTXTRecord(ctx context.Context, domain string) error {
+func (c *Client) RemoveTXTRecord(ctx context.Context, domain string) error {
 	return c.UpdateTxtRecord(ctx, domain, "", true)
 }
 
 // UpdateTxtRecord Update the domains TXT record
 // To update the TXT record we just need to make one simple get request.
 // In DuckDNS you only have one TXT record shared with the domain and all subdomains.
-func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clearRecord bool) error {
+func (c *Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clearRecord bool) error {
 	endpoint, _ := url.Parse(c.baseURL)
 
 	mainDomain := getMainDomain(domain)

@@ -1,6 +1,7 @@
 package tencentcloud
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -11,13 +12,13 @@ import (
 	"golang.org/x/net/idna"
 )
 
-func (d *DNSProvider) getHostedZone(domain string) (*dnspod.DomainListItem, error) {
+func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*dnspod.DomainListItem, error) {
 	request := dnspod.NewDescribeDomainListRequest()
 
 	var domains []*dnspod.DomainListItem
 
 	for {
-		response, err := d.client.DescribeDomainList(request)
+		response, err := d.client.DescribeDomainListWithContext(ctx, request)
 		if err != nil {
 			return nil, fmt.Errorf("API call failed: %w", err)
 		}
@@ -51,7 +52,7 @@ func (d *DNSProvider) getHostedZone(domain string) (*dnspod.DomainListItem, erro
 	return hostedZone, nil
 }
 
-func (d *DNSProvider) findTxtRecords(zone *dnspod.DomainListItem, fqdn string) ([]*dnspod.RecordListItem, error) {
+func (d *DNSProvider) findTxtRecords(ctx context.Context, zone *dnspod.DomainListItem, fqdn string) ([]*dnspod.RecordListItem, error) {
 	recordName, err := extractRecordName(fqdn, *zone.Name)
 	if err != nil {
 		return nil, err
@@ -64,7 +65,7 @@ func (d *DNSProvider) findTxtRecords(zone *dnspod.DomainListItem, fqdn string) (
 	request.RecordType = common.StringPtr("TXT")
 	request.RecordLine = common.StringPtr("默认")
 
-	response, err := d.client.DescribeRecordList(request)
+	response, err := d.client.DescribeRecordListWithContext(ctx, request)
 	if err != nil {
 		var sdkError *errorsdk.TencentCloudSDKError
 		if errors.As(err, &sdkError) {

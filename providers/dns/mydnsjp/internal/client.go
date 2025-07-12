@@ -34,15 +34,15 @@ func NewClient(masterID, password string) *Client {
 	}
 }
 
-func (c Client) AddTXTRecord(ctx context.Context, domain, value string) error {
+func (c *Client) AddTXTRecord(ctx context.Context, domain, value string) error {
 	return c.doRequest(ctx, domain, value, "REGIST")
 }
 
-func (c Client) DeleteTXTRecord(ctx context.Context, domain, value string) error {
+func (c *Client) DeleteTXTRecord(ctx context.Context, domain, value string) error {
 	return c.doRequest(ctx, domain, value, "DELETE")
 }
 
-func (c Client) buildRequest(ctx context.Context, domain, value, cmd string) (*http.Request, error) {
+func (c *Client) buildRequest(ctx context.Context, domain, value, cmd string) (*http.Request, error) {
 	params := url.Values{}
 	params.Set("CERTBOT_DOMAIN", domain)
 	params.Set("CERTBOT_VALIDATION", value)
@@ -58,7 +58,7 @@ func (c Client) buildRequest(ctx context.Context, domain, value, cmd string) (*h
 	return req, nil
 }
 
-func (c Client) doRequest(ctx context.Context, domain, value, cmd string) error {
+func (c *Client) doRequest(ctx context.Context, domain, value, cmd string) error {
 	req, err := c.buildRequest(ctx, domain, value, cmd)
 	if err != nil {
 		return err

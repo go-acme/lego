@@ -47,7 +47,7 @@ func NewClient(oauthToken string, orgID int64) (*Client, error) {
 // AddRecord Adds a DNS record.
 // POST https://api30.yandex.net/directory/v1/org/{orgId}/domains/{domain}/dns
 // https://yandex.ru/dev/api360/doc/ref/DomainDNSService/DomainDNSService_Create.html
-func (c Client) AddRecord(ctx context.Context, domain string, record Record) (*Record, error) {
+func (c *Client) AddRecord(ctx context.Context, domain string, record Record) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("directory", "v1", "org", strconv.FormatInt(c.orgID, 10), "domains", domain, "dns")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
@@ -68,7 +68,7 @@ func (c Client) AddRecord(ctx context.Context, domain string, record Record) (*R
 // DeleteRecord Deletes a DNS record.
 // DELETE https://api360.yandex.net/directory/v1/org/{orgId}/domains/{domain}/dns/{recordId}
 // https://yandex.ru/dev/api360/doc/ref/DomainDNSService/DomainDNSService_Delete.html
-func (c Client) DeleteRecord(ctx context.Context, domain string, recordID int64) error {
+func (c *Client) DeleteRecord(ctx context.Context, domain string, recordID int64) error {
 	endpoint := c.baseURL.JoinPath("directory", "v1", "org", strconv.FormatInt(c.orgID, 10), "domains", domain, "dns", strconv.FormatInt(recordID, 10))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
@@ -79,7 +79,7 @@ func (c Client) DeleteRecord(ctx context.Context, domain string, recordID int64)
 	return c.do(req, nil)
 }
 
-func (c Client) do(req *http.Request, result any) error {
+func (c *Client) do(req *http.Request, result any) error {
 	req.Header.Set("Authorization", "OAuth "+c.oauthToken)
 
 	resp, err := c.HTTPClient.Do(req)

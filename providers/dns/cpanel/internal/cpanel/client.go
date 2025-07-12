@@ -40,7 +40,7 @@ func NewClient(baseURL, username, token string) (*Client, error) {
 
 // FetchZoneInformation fetches zone information.
 // https://api.docs.cpanel.net/openapi/cpanel/operation/dns-parse_zone/
-func (c Client) FetchZoneInformation(ctx context.Context, domain string) ([]shared.ZoneRecord, error) {
+func (c *Client) FetchZoneInformation(ctx context.Context, domain string) ([]shared.ZoneRecord, error) {
 	endpoint := c.baseURL.JoinPath("DNS", "parse_zone")
 
 	query := endpoint.Query()
@@ -64,7 +64,7 @@ func (c Client) FetchZoneInformation(ctx context.Context, domain string) ([]shar
 // AddRecord adds a new record.
 //
 //	add='{"dname":"example", "ttl":14400, "record_type":"TXT", "data":["string1", "string2"]}'
-func (c Client) AddRecord(ctx context.Context, serial uint32, domain string, record shared.Record) (*shared.ZoneSerial, error) {
+func (c *Client) AddRecord(ctx context.Context, serial uint32, domain string, record shared.Record) (*shared.ZoneSerial, error) {
 	data, err := json.Marshal(record)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request JSON data: %w", err)
@@ -76,7 +76,7 @@ func (c Client) AddRecord(ctx context.Context, serial uint32, domain string, rec
 // EditRecord edits an existing record.
 //
 //	edit='{"line_index": 9, "dname":"example", "ttl":14400, "record_type":"TXT", "data":["string1", "string2"]}'
-func (c Client) EditRecord(ctx context.Context, serial uint32, domain string, record shared.Record) (*shared.ZoneSerial, error) {
+func (c *Client) EditRecord(ctx context.Context, serial uint32, domain string, record shared.Record) (*shared.ZoneSerial, error) {
 	data, err := json.Marshal(record)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request JSON data: %w", err)
@@ -88,12 +88,12 @@ func (c Client) EditRecord(ctx context.Context, serial uint32, domain string, re
 // DeleteRecord deletes an existing record.
 //
 //	remove=22
-func (c Client) DeleteRecord(ctx context.Context, serial uint32, domain string, lineIndex int) (*shared.ZoneSerial, error) {
+func (c *Client) DeleteRecord(ctx context.Context, serial uint32, domain string, lineIndex int) (*shared.ZoneSerial, error) {
 	return c.updateZone(ctx, serial, domain, "remove", strconv.Itoa(lineIndex))
 }
 
 // https://api.docs.cpanel.net/openapi/cpanel/operation/dns-mass_edit_zone/
-func (c Client) updateZone(ctx context.Context, serial uint32, domain, action, data string) (*shared.ZoneSerial, error) {
+func (c *Client) updateZone(ctx context.Context, serial uint32, domain, action, data string) (*shared.ZoneSerial, error) {
 	endpoint := c.baseURL.JoinPath("DNS", "mass_edit_zone")
 
 	query := endpoint.Query()
@@ -116,7 +116,7 @@ func (c Client) updateZone(ctx context.Context, serial uint32, domain, action, d
 	return &result.Data, nil
 }
 
-func (c Client) doRequest(ctx context.Context, endpoint *url.URL, result any) error {
+func (c *Client) doRequest(ctx context.Context, endpoint *url.URL, result any) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), http.NoBody)
 	if err != nil {
 		return fmt.Errorf("unable to create request: %w", err)

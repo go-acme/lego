@@ -7,7 +7,7 @@ import (
 
 	"github.com/aziontech/azionapi-go-sdk/idns"
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -121,7 +121,7 @@ func TestLiveCleanUp(t *testing.T) {
 
 func TestDNSProvider_findZone(t *testing.T) {
 	provider := mockBuilder().
-		Route("GET /intelligent_dns", stubrouter.ResponseFromFixture("zones.json")).
+		Route("GET /intelligent_dns", servermock.ResponseFromFixture("zones.json")).
 		Build(t)
 
 	testCases := []struct {
@@ -197,7 +197,7 @@ func TestDNSProvider_findZone_error(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			provider := mockBuilder().
-				Route("GET /intelligent_dns", stubrouter.ResponseFromFixture(test.response)).
+				Route("GET /intelligent_dns", servermock.ResponseFromFixture(test.response)).
 				Build(t)
 
 			zone, err := provider.findZone(context.Background(), test.fqdn)
@@ -208,8 +208,8 @@ func TestDNSProvider_findZone_error(t *testing.T) {
 	}
 }
 
-func mockBuilder() *stubrouter.Builder[*DNSProvider] {
-	return stubrouter.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.PersonalToken = "secret"

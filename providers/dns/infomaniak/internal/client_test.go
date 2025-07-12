@@ -4,13 +4,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := New(OAuthStaticAccessToken(server.Client(), "token"), server.URL)
 			if err != nil {
@@ -19,15 +19,15 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer token"))
 }
 
 func TestClient_CreateDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /1/domain/666/dns/record",
-			stubrouter.RawStringResponse(`{"result":"success","data": "123"}`),
-			stubrouter.CheckRequestJSONBodyFromFile("create_dns_record-request.json")).
+			servermock.RawStringResponse(`{"result":"success","data": "123"}`),
+			servermock.CheckRequestJSONBodyFromFile("create_dns_record-request.json")).
 		Build(t)
 
 	domain := &DNSDomain{
@@ -51,8 +51,8 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 func TestClient_GetDomainByName(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /1/product",
-			stubrouter.ResponseFromFixture("get_domain_name.json"),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("get_domain_name.json"),
+			servermock.CheckQueryParameter().Strict().
 				WithRegexp("customer_name", `.+\.example\.com`).
 				With("service_name", "domain")).
 		Build(t)
@@ -67,7 +67,7 @@ func TestClient_GetDomainByName(t *testing.T) {
 func TestClient_DeleteDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /1/domain/123/dns/record/456",
-			stubrouter.RawStringResponse(`{"result":"success"}`)).
+			servermock.RawStringResponse(`{"result":"success"}`)).
 		Build(t)
 
 	err := client.DeleteDNSRecord(t.Context(), 123, "456")

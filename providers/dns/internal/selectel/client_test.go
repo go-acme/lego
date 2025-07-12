@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,9 +20,9 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_ListRecords(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient,
-		stubrouter.CheckHeader().WithJSONHeaders()).
-		Route("GET /123/records/", stubrouter.ResponseFromFixture("list_records.json")).
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders()).
+		Route("GET /123/records/", servermock.ResponseFromFixture("list_records.json")).
 		Build(t)
 
 	records, err := client.ListRecords(t.Context(), 123)
@@ -38,11 +38,11 @@ func TestClient_ListRecords(t *testing.T) {
 }
 
 func TestClient_ListRecords_error(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient,
-		stubrouter.CheckHeader().WithJSONHeaders().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
 			With(tokenHeader, "token")).
 		Route("GET /123/records/",
-			stubrouter.ResponseFromFixture("error.json").WithStatusCode(http.StatusUnauthorized)).
+			servermock.ResponseFromFixture("error.json").WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
 	records, err := client.ListRecords(t.Context(), 123)
@@ -52,15 +52,15 @@ func TestClient_ListRecords_error(t *testing.T) {
 }
 
 func TestClient_GetDomainByName(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient,
-		stubrouter.CheckHeader().WithJSONHeaders().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
 			With(tokenHeader, "token")).
 		Route("GET /sub.sub.example.org",
-			stubrouter.Noop().WithStatusCode(http.StatusNotFound)).
+			servermock.Noop().WithStatusCode(http.StatusNotFound)).
 		Route("GET /sub.example.org",
-			stubrouter.Noop().WithStatusCode(http.StatusNotFound)).
+			servermock.Noop().WithStatusCode(http.StatusNotFound)).
 		Route("GET /example.org",
-			stubrouter.ResponseFromFixture("domains.json")).
+			servermock.ResponseFromFixture("domains.json")).
 		Build(t)
 
 	domain, err := client.GetDomainByName(t.Context(), "sub.sub.example.org")
@@ -75,12 +75,12 @@ func TestClient_GetDomainByName(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient,
-		stubrouter.CheckHeader().WithJSONHeaders().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
 			With(tokenHeader, "token")).
 		Route("POST /123/records/",
-			stubrouter.ResponseFromFixture("add_record.json"),
-			stubrouter.CheckRequestJSONBodyFromFile("add_record-request.json")).
+			servermock.ResponseFromFixture("add_record.json"),
+			servermock.CheckRequestJSONBodyFromFile("add_record-request.json")).
 		Build(t)
 
 	record, err := client.AddRecord(t.Context(), 123, Record{
@@ -106,8 +106,8 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient,
-		stubrouter.CheckHeader().WithJSONHeaders().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
 			With(tokenHeader, "token")).
 		Route("DELETE /123/records/456", nil).
 		Build(t)

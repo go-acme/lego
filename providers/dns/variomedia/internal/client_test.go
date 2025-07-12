@@ -5,13 +5,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("secret")
 			client.baseURL, _ = url.Parse(server.URL)
@@ -19,7 +19,7 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().
+		servermock.CheckHeader().
 			WithAccept("application/vnd.variomedia.v1+json").
 			WithAuthorization("token secret"))
 }
@@ -27,10 +27,10 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 func TestClient_CreateDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns-records",
-			stubrouter.ResponseFromFixture("POST_dns-records.json"),
-			stubrouter.CheckHeader().
+			servermock.ResponseFromFixture("POST_dns-records.json"),
+			servermock.CheckHeader().
 				WithContentType("application/vnd.api+json"),
-			stubrouter.CheckRequestJSONBody(`{"data":{"type":"dns-record","attributes":{"record_type":"TXT","name":"_acme-challenge","domain":"example.com","data":"test","ttl":300}}}`)).
+			servermock.CheckRequestJSONBody(`{"data":{"type":"dns-record","attributes":{"record_type":"TXT","name":"_acme-challenge","domain":"example.com","data":"test","ttl":300}}}`)).
 		Build(t)
 
 	record := DNSRecord{
@@ -79,7 +79,7 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 func TestClient_DeleteDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns-records/test",
-			stubrouter.ResponseFromFixture("DELETE_dns-records_pending.json")).
+			servermock.ResponseFromFixture("DELETE_dns-records_pending.json")).
 		Build(t)
 
 	resp, err := client.DeleteDNSRecord(t.Context(), "test")
@@ -115,7 +115,7 @@ func TestClient_DeleteDNSRecord(t *testing.T) {
 func TestClient_GetJob(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /queue-jobs/test",
-			stubrouter.ResponseFromFixture("GET_queue-jobs.json")).
+			servermock.ResponseFromFixture("GET_queue-jobs.json")).
 		Build(t)
 
 	resp, err := client.GetJob(t.Context(), "test")

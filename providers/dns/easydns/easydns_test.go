@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,8 +21,8 @@ var envTest = tester.NewEnvTest(
 	EnvKey).
 	WithDomain(envDomain)
 
-func mockBuilder() *stubrouter.Builder[*DNSProvider] {
-	return stubrouter.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			endpoint, err := url.Parse(server.URL)
 			if err != nil {
@@ -37,10 +37,10 @@ func mockBuilder() *stubrouter.Builder[*DNSProvider] {
 
 			return NewDNSProviderConfig(config)
 		},
-		stubrouter.CheckHeader().
+		servermock.CheckHeader().
 			WithJSONHeaders().
 			WithAuthorization("Basic VE9LRU46U0VDUkVU"),
-		stubrouter.CheckQueryParameter().Strict().
+		servermock.CheckQueryParameter().Strict().
 			With("format", "json"))
 }
 
@@ -145,7 +145,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /zones/records/all/example.com",
-			stubrouter.RawStringResponse(`{
+			servermock.RawStringResponse(`{
 		  "msg": "string",
 		  "status": 200,
 		  "tm": 0,
@@ -166,10 +166,10 @@ func TestDNSProvider_Present(t *testing.T) {
 		  "max": 0
 		}
 		`),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("format", "json")).
 		Route("PUT /zones/records/add/example.com/TXT",
-			stubrouter.RawStringResponse(`{
+			servermock.RawStringResponse(`{
 				"msg": "OK",
 				"tm": 1554681934,
 				"data": {
@@ -184,7 +184,7 @@ func TestDNSProvider_Present(t *testing.T) {
 				},
 				"status": 201
 			}`),
-			stubrouter.CheckRequestJSONBody(`{"domain":"example.com","host":"_acme-challenge","ttl":"120","prio":"0","type":"TXT","rdata":"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM"}
+			servermock.CheckRequestJSONBody(`{"domain":"example.com","host":"_acme-challenge","ttl":"120","prio":"0","type":"TXT","rdata":"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM"}
 `)).
 		Build(t)
 
@@ -196,7 +196,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /zones/records/all/_acme-challenge.example.com",
-			stubrouter.RawStringResponse(`{
+			servermock.RawStringResponse(`{
 	  "msg": "string",
 	  "status": 200,
 	  "tm": 0,
@@ -226,7 +226,7 @@ func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
 func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /zones/records/all/_acme-challenge.example.com",
-			stubrouter.RawStringResponse(`{
+			servermock.RawStringResponse(`{
 	  "msg": "string",
 	  "status": 200,
 	  "tm": 0,
@@ -248,7 +248,7 @@ func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 	}
 	`)).
 		Route("DELETE /zones/records/_acme-challenge.example.com/123456",
-			stubrouter.RawStringResponse(`{
+			servermock.RawStringResponse(`{
 				"msg": "OK",
 				"data": {
 					"domain": "example.com",
@@ -274,7 +274,7 @@ func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
 
 	provider := mockBuilder().
 		Route("GET /zones/records/all/example.com",
-			stubrouter.RawStringResponse(`{
+			servermock.RawStringResponse(`{
   "msg": "string",
   "status": 200,
   "tm": 0,
@@ -296,7 +296,7 @@ func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
 }
 `)).
 		Route("DELETE /zones/records/example.com/123456",
-			stubrouter.RawStringResponse(errorMessage).
+			servermock.RawStringResponse(errorMessage).
 				WithStatusCode(http.StatusNotAcceptable)).
 		Build(t)
 

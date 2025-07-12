@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("secret")
 			client.HTTPClient = server.Client()
@@ -20,15 +20,15 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().WithJSONHeaders(),
+		servermock.CheckHeader().WithJSONHeaders(),
 	)
 }
 
 func TestClient_GetDNSRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains/example.com/records",
-			stubrouter.ResponseFromFixture("getDnsRecord.json"),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("getDnsRecord.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("SIGNATURE", "secret")).
 		Build(t)
 
@@ -89,9 +89,9 @@ func TestClient_GetDNSRecords(t *testing.T) {
 func TestClient_GetDNSRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains/example.com/records",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("SIGNATURE", "secret")).
 		Build(t)
 
@@ -102,8 +102,8 @@ func TestClient_GetDNSRecords_error(t *testing.T) {
 func TestClient_CreateHostRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/records",
-			stubrouter.ResponseFromFixture("createHostRecord.json"),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("createHostRecord.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("SIGNATURE", "secret")).
 		Build(t)
 
@@ -129,9 +129,9 @@ func TestClient_CreateHostRecord(t *testing.T) {
 func TestClient_CreateHostRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/records",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("SIGNATURE", "secret")).
 		Build(t)
 
@@ -150,8 +150,8 @@ func TestClient_CreateHostRecord_error(t *testing.T) {
 func TestClient_RemoveHostRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/records",
-			stubrouter.ResponseFromFixture("removeHostRecord.json"),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("removeHostRecord.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("ID", "abc123").
 				With("SIGNATURE", "secret")).
 		Build(t)
@@ -170,7 +170,7 @@ func TestClient_RemoveHostRecord(t *testing.T) {
 func TestClient_RemoveHostRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/records",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/go-acme/lego/v4/providers/dns/otc/internal"
 	"github.com/stretchr/testify/require"
 )
@@ -217,9 +217,9 @@ func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /v2/zones",
 			responseFromFixture("zones_GET.json"),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
-		Route("/", stubrouter.DumpRequest()).
+		Route("/", servermock.DumpRequest()).
 		Build(t)
 
 	err := provider.Present("example.com", "", "123d==")
@@ -230,9 +230,9 @@ func TestDNSProvider_Present_emptyZone(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /v2/zones",
 			responseFromFixture("zones_GET_empty.json"),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
-		Route("/", stubrouter.DumpRequest()).
+		Route("/", servermock.DumpRequest()).
 		Build(t)
 
 	err := provider.Present("example.com", "", "123d==")
@@ -243,11 +243,11 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /v2/zones",
 			responseFromFixture("zones_GET.json"),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Route("GET /v2/zones/123123/recordsets",
 			responseFromFixture("zones-recordsets_GET.json"),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT")).
 		Route("DELETE /v2/zones/123123/recordsets/321321",
@@ -262,11 +262,11 @@ func TestDNSProvider_Cleanup_emptyRecordset(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /v2/zones",
 			responseFromFixture("zones_GET.json"),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Route("GET /v2/zones/123123/recordsets",
 			responseFromFixture("zones-recordsets_GET_empty.json"),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT")).
 		Build(t)
@@ -275,8 +275,8 @@ func TestDNSProvider_Cleanup_emptyRecordset(t *testing.T) {
 	require.EqualError(t, err, "otc: unable to get record _acme-challenge.example.com. for zone example.com: record not found")
 }
 
-func mockBuilder() *stubrouter.Builder[*DNSProvider] {
-	return stubrouter.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.UserName = "user"
@@ -287,11 +287,11 @@ func mockBuilder() *stubrouter.Builder[*DNSProvider] {
 
 			return NewDNSProviderConfig(config)
 		},
-		stubrouter.CheckHeader().WithJSONHeaders(),
+		servermock.CheckHeader().WithJSONHeaders(),
 	).
 		Route("POST /v3/auth/token", internal.IdentityHandlerMock())
 }
 
-func responseFromFixture(filename string) *stubrouter.ResponseFromFileHandler {
-	return stubrouter.ResponseFromFile(path.Join("internal", "fixtures", filename))
+func responseFromFixture(filename string) *servermock.ResponseFromFileHandler {
+	return servermock.ResponseFromFile(path.Join("internal", "fixtures", filename))
 }

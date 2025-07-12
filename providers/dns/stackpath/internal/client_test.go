@@ -7,13 +7,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(context.Background(), "STACK_ID", "CLIENT_ID", "CLIENT_SECRET")
 			client.httpClient = server.Client()
@@ -21,15 +21,15 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().WithJSONHeaders(),
+		servermock.CheckHeader().WithJSONHeaders(),
 	)
 }
 
 func TestClient_GetZoneRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /STACK_ID/zones/A/records",
-			stubrouter.ResponseFromFixture("get_zone_records.json"),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("get_zone_records.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("page_request.filter", "name='foo1' and type='TXT'")).
 		Build(t)
 
@@ -47,7 +47,7 @@ func TestClient_GetZoneRecords(t *testing.T) {
 func TestClient_GetZoneRecords_apiError(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /STACK_ID/zones/A/records",
-			stubrouter.RawStringResponse(`
+			servermock.RawStringResponse(`
 {
 	"code": 401,
 	"error": "an unauthorized request is attempted."
@@ -63,8 +63,8 @@ func TestClient_GetZoneRecords_apiError(t *testing.T) {
 func TestClient_GetZones(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /STACK_ID/zones",
-			stubrouter.ResponseFromFixture("get_zones.json"),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("get_zones.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("page_request.filter", "domain='foo.com'")).
 		Build(t)
 

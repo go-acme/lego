@@ -7,13 +7,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(context.Background(), "abc", "secret")
 
@@ -22,13 +22,13 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().
+		servermock.CheckHeader().
 			WithAccept("application/json"))
 }
 
 func TestClient_GetAllZones(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /dns/domain", stubrouter.ResponseFromFixture("zone_domains_all.json")).
+		Route("GET /dns/domain", servermock.ResponseFromFixture("zone_domains_all.json")).
 		Build(t)
 
 	groups, err := client.GetAllZones(t.Context())
@@ -112,7 +112,7 @@ func TestClient_GetAllZones(t *testing.T) {
 func TestClient_GetAllZones_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/domain",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -124,7 +124,7 @@ func TestClient_GetAllZones_error(t *testing.T) {
 
 func TestClient_GetAllZoneRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /dns/domain/4/records/SPF_TXT", stubrouter.ResponseFromFixture("zone_records_all.json")).
+		Route("GET /dns/domain/4/records/SPF_TXT", servermock.ResponseFromFixture("zone_records_all.json")).
 		Build(t)
 
 	groups, err := client.GetAllZoneRecords(t.Context(), 4)
@@ -165,7 +165,7 @@ func TestClient_GetAllZoneRecords(t *testing.T) {
 func TestClient_GetAllZoneRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/domain/4/records/SPF_TXT",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -177,7 +177,7 @@ func TestClient_GetAllZoneRecords_error(t *testing.T) {
 
 func TestClient_DeleteZoneRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /dns/domain/4/records/SPF_TXT/6", stubrouter.ResponseFromFixture("zone_record_delete.json")).
+		Route("DELETE /dns/domain/4/records/SPF_TXT/6", servermock.ResponseFromFixture("zone_record_delete.json")).
 		Build(t)
 
 	err := client.DeleteZoneRecord(t.Context(), 4, 6)
@@ -187,7 +187,7 @@ func TestClient_DeleteZoneRecord(t *testing.T) {
 func TestClient_DeleteZoneRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns/domain/4/records/SPF_TXT/6",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -200,10 +200,10 @@ func TestClient_DeleteZoneRecord_error(t *testing.T) {
 func TestClient_CreateZoneRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/domain/4/records/SPF_TXT/",
-			stubrouter.ResponseFromFixture("zone_record_create.json"),
-			stubrouter.CheckHeader().
+			servermock.ResponseFromFixture("zone_record_create.json"),
+			servermock.CheckHeader().
 				WithContentTypeFromURLEncoded(),
-			stubrouter.CheckForm().Strict().
+			servermock.CheckForm().Strict().
 				With("config", `[{"zone_id":1,"spf_txt_domain_id":2,"domain_name":"example.com","domain_ttl":120,"domain_location_id":3,"record_type":"TXT","records":[{"record_id":123,"value":["value1"],"domain_id":1}]}]
 `)).
 		Build(t)
@@ -232,9 +232,9 @@ func TestClient_CreateZoneRecord(t *testing.T) {
 func TestClient_CreateZoneRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/domain/4/records/SPF_TXT/",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized),
-			stubrouter.CheckHeader().
+			servermock.CheckHeader().
 				WithContentTypeFromURLEncoded()).
 		Build(t)
 
@@ -249,9 +249,9 @@ func TestClient_CreateZoneRecord_error(t *testing.T) {
 func TestClient_CreateZoneRecord_error_bad_request(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/domain/4/records/SPF_TXT/",
-			stubrouter.ResponseFromFixture("error_bad_request.json").
+			servermock.ResponseFromFixture("error_bad_request.json").
 				WithStatusCode(http.StatusBadRequest),
-			stubrouter.CheckHeader().
+			servermock.CheckHeader().
 				WithContentTypeFromURLEncoded()).
 		Build(t)
 
@@ -266,10 +266,10 @@ func TestClient_CreateZoneRecord_error_bad_request(t *testing.T) {
 func TestClient_UpdateZoneRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /dns/domain/4/records/SPF_TXT/6/",
-			stubrouter.ResponseFromFixture("zone_record_update.json"),
-			stubrouter.CheckHeader().
+			servermock.ResponseFromFixture("zone_record_update.json"),
+			servermock.CheckHeader().
 				WithContentTypeFromURLEncoded(),
-			stubrouter.CheckForm().Strict().
+			servermock.CheckForm().Strict().
 				With("config", `[{"zone_id":4,"spf_txt_domain_id":6,"records":null}]
 `)).
 		Build(t)
@@ -286,9 +286,9 @@ func TestClient_UpdateZoneRecord(t *testing.T) {
 func TestClient_UpdateZoneRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /dns/domain/4/records/SPF_TXT/6/",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized),
-			stubrouter.CheckHeader().
+			servermock.CheckHeader().
 				WithContentTypeFromURLEncoded()).
 		Build(t)
 

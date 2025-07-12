@@ -5,13 +5,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret", 123)
 			client.HTTPClient = server.Client()
@@ -19,7 +19,7 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().
+		servermock.CheckHeader().
 			WithBasicAuth("user", "secret").
 			WithJSONHeaders())
 }
@@ -27,9 +27,9 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 func TestClient_AddTxtRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zone/example.com/_stream",
-			stubrouter.ResponseFromFixture("add_record.json"),
-			stubrouter.CheckRequestJSONBodyFromFile("add_record-request.json"),
-			stubrouter.CheckHeader().
+			servermock.ResponseFromFixture("add_record.json"),
+			servermock.CheckRequestJSONBodyFromFile("add_record-request.json"),
+			servermock.CheckHeader().
 				With("X-Domainrobot-Context", "123")).
 		Build(t)
 
@@ -57,9 +57,9 @@ func TestClient_AddTxtRecords(t *testing.T) {
 func TestClient_RemoveTXTRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zone/example.com/_stream",
-			stubrouter.ResponseFromFixture("remove_record.json"),
-			stubrouter.CheckRequestJSONBodyFromFile("remove_record-request.json"),
-			stubrouter.CheckHeader().
+			servermock.ResponseFromFixture("remove_record.json"),
+			servermock.CheckRequestJSONBodyFromFile("remove_record-request.json"),
+			servermock.CheckHeader().
 				With("X-Domainrobot-Context", "123")).
 		Build(t)
 

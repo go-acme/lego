@@ -7,13 +7,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 			client.HTTPClient = server.Client()
@@ -21,7 +21,7 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			With("X-Auth-Username", "user").
 			With("X-Auth-Password", "secret"),
 	)
@@ -29,7 +29,7 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /lego.wtf", stubrouter.ResponseFromFixture("records-01.json")).
+		Route("GET /lego.wtf", servermock.ResponseFromFixture("records-01.json")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "lego.wtf")
@@ -46,7 +46,7 @@ func TestClient_GetRecords(t *testing.T) {
 
 func TestClient_GetRecords_error(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /lego.wtf", stubrouter.JSONEncode(Message{ErrorMsg: "authentication failed"})).
+		Route("GET /lego.wtf", servermock.JSONEncode(Message{ErrorMsg: "authentication failed"})).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "lego.wtf")
@@ -58,8 +58,8 @@ func TestClient_GetRecords_error(t *testing.T) {
 func TestClient_CreateUpdateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /lego.wtf",
-			stubrouter.JSONEncode(Message{Message: "ok"}),
-			stubrouter.CheckRequestJSONBody(`{"name":"_acme-challenge.www","type":"TXT","ttl":30,"content":["aaa","bbb"]}`)).
+			servermock.JSONEncode(Message{Message: "ok"}),
+			servermock.CheckRequestJSONBody(`{"name":"_acme-challenge.www","type":"TXT","ttl":30,"content":["aaa","bbb"]}`)).
 		Build(t)
 
 	record := Record{
@@ -79,7 +79,7 @@ func TestClient_CreateUpdateRecord(t *testing.T) {
 func TestClient_CreateUpdateRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /lego.wtf",
-			stubrouter.JSONEncode(Message{ErrorMsg: "parameter type must be cname, txt, tlsa, caa, a or aaaa"})).
+			servermock.JSONEncode(Message{ErrorMsg: "parameter type must be cname, txt, tlsa, caa, a or aaaa"})).
 		Build(t)
 
 	record := Record{
@@ -95,8 +95,8 @@ func TestClient_CreateUpdateRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /lego.wtf",
-			stubrouter.JSONEncode(Message{Message: "ok"}),
-			stubrouter.CheckRequestJSONBody(`{"name":"_acme-challenge.www","type":"TXT"}`)).
+			servermock.JSONEncode(Message{Message: "ok"}),
+			servermock.CheckRequestJSONBody(`{"name":"_acme-challenge.www","type":"TXT"}`)).
 		Build(t)
 
 	record := Record{
@@ -114,7 +114,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /lego.wtf",
-			stubrouter.JSONEncode(Message{ErrorMsg: "parameter type must be cname, txt, tlsa, caa, a or aaaa"})).
+			servermock.JSONEncode(Message{ErrorMsg: "parameter type must be cname, txt, tlsa, caa, a or aaaa"})).
 		Build(t)
 
 	record := Record{

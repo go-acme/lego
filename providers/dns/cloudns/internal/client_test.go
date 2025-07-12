@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -113,10 +113,10 @@ func TestClient_GetZone(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := stubrouter.NewBuilder[*Client](setupClient("")).
+			client := servermock.NewBuilder[*Client](setupClient("")).
 				Route("GET /get-zone-info.json",
-					stubrouter.RawStringResponse(test.apiResponse),
-					stubrouter.CheckQueryParameter().Strict().
+					servermock.RawStringResponse(test.apiResponse),
+					servermock.CheckQueryParameter().Strict().
 						With("auth-id", "myAuthID").
 						With("auth-password", "myAuthPassword").
 						With("domain-name", "foo.com"),
@@ -228,10 +228,10 @@ func TestClient_FindTxtRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := stubrouter.NewBuilder[*Client](setupClient("")).
+			client := servermock.NewBuilder[*Client](setupClient("")).
 				Route("GET /records.json",
-					stubrouter.RawStringResponse(test.apiResponse),
-					stubrouter.CheckQueryParameter().Strict().
+					servermock.RawStringResponse(test.apiResponse),
+					servermock.CheckQueryParameter().Strict().
 						With("auth-id", "myAuthID").
 						With("auth-password", "myAuthPassword").
 						With("type", "TXT").
@@ -347,10 +347,10 @@ func TestClient_ListTxtRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := stubrouter.NewBuilder[*Client](setupClient("")).
+			client := servermock.NewBuilder[*Client](setupClient("")).
 				Route("GET /records.json",
-					stubrouter.RawStringResponse(test.apiResponse),
-					stubrouter.CheckQueryParameter().Strict().
+					servermock.RawStringResponse(test.apiResponse),
+					servermock.CheckQueryParameter().Strict().
 						With("auth-id", "myAuthID").
 						With("auth-password", "myAuthPassword").
 						With("type", "TXT").
@@ -494,10 +494,10 @@ func TestClient_AddTxtRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := stubrouter.NewBuilder[*Client](setupClient(test.subAuthID)).
+			client := servermock.NewBuilder[*Client](setupClient(test.subAuthID)).
 				Route("POST /add-record.json",
-					stubrouter.RawStringResponse(test.apiResponse),
-					stubrouter.CheckQueryParameter().Strict().
+					servermock.RawStringResponse(test.apiResponse),
+					servermock.CheckQueryParameter().Strict().
 						WithValues(test.expected.query),
 				).
 				Build(t)
@@ -574,10 +574,10 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := stubrouter.NewBuilder[*Client](setupClient("")).
+			client := servermock.NewBuilder[*Client](setupClient("")).
 				Route("POST /delete-record.json",
-					stubrouter.RawStringResponse(test.apiResponse),
-					stubrouter.CheckQueryParameter().Strict().
+					servermock.RawStringResponse(test.apiResponse),
+					servermock.CheckQueryParameter().Strict().
 						WithValues(test.expected.query),
 				).
 				Build(t)
@@ -644,10 +644,10 @@ func TestClient_GetUpdateStatus(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := stubrouter.NewBuilder[*Client](setupClient("")).
+			client := servermock.NewBuilder[*Client](setupClient("")).
 				Route("GET /update-status.json",
-					stubrouter.RawStringResponse(test.apiResponse),
-					stubrouter.CheckQueryParameter().Strict().
+					servermock.RawStringResponse(test.apiResponse),
+					servermock.CheckQueryParameter().Strict().
 						With("auth-id", "myAuthID").
 						With("auth-password", "myAuthPassword").
 						With("domain-name", test.zoneName),

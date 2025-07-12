@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("key", "secret")
 			client.HTTPClient = server.Client()
@@ -20,13 +20,13 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("sso-key key:secret"))
 }
 
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /v1/domains/example.com/records/TXT/", stubrouter.ResponseFromFixture("getrecords.json")).
+		Route("GET /v1/domains/example.com/records/TXT/", servermock.ResponseFromFixture("getrecords.json")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "example.com", "TXT", "")
@@ -47,7 +47,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_GetRecords_errors(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/domains/example.com/records/TXT/",
-			stubrouter.ResponseFromFixture("errors.json").WithStatusCode(http.StatusUnprocessableEntity)).
+			servermock.ResponseFromFixture("errors.json").WithStatusCode(http.StatusUnprocessableEntity)).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "example.com", "TXT", "")
@@ -58,7 +58,7 @@ func TestClient_GetRecords_errors(t *testing.T) {
 func TestClient_UpdateTxtRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /v1/domains/example.com/records/TXT/lego", nil,
-			stubrouter.CheckRequestJSONBodyFromFile("update_records-request.json")).
+			servermock.CheckRequestJSONBodyFromFile("update_records-request.json")).
 		Build(t)
 
 	records := []DNSRecord{
@@ -77,8 +77,8 @@ func TestClient_UpdateTxtRecords(t *testing.T) {
 func TestClient_UpdateTxtRecords_errors(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /v1/domains/example.com/records/TXT/lego",
-			stubrouter.ResponseFromFixture("errors.json").WithStatusCode(http.StatusUnprocessableEntity),
-			stubrouter.CheckRequestJSONBodyFromFile("update_records-request.json")).
+			servermock.ResponseFromFixture("errors.json").WithStatusCode(http.StatusUnprocessableEntity),
+			servermock.CheckRequestJSONBodyFromFile("update_records-request.json")).
 		Build(t)
 
 	records := []DNSRecord{
@@ -97,7 +97,7 @@ func TestClient_UpdateTxtRecords_errors(t *testing.T) {
 func TestClient_DeleteTxtRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v1/domains/example.com/records/TXT/foo",
-			stubrouter.Noop().WithStatusCode(http.StatusNoContent)).
+			servermock.Noop().WithStatusCode(http.StatusNoContent)).
 		Build(t)
 
 	err := client.DeleteTxtRecords(t.Context(), "example.com", "foo")
@@ -107,7 +107,7 @@ func TestClient_DeleteTxtRecords(t *testing.T) {
 func TestClient_DeleteTxtRecords_errors(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v1/domains/example.com/records/TXT/foo",
-			stubrouter.ResponseFromFixture("error-extended.json").WithStatusCode(http.StatusConflict)).
+			servermock.ResponseFromFixture("error-extended.json").WithStatusCode(http.StatusConflict)).
 		Build(t)
 
 	err := client.DeleteTxtRecords(t.Context(), "example.com", "foo")

@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/nrdcg/goacmedns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -167,16 +167,16 @@ func TestPresent_httpStorage(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := stubrouter.NewBuilder(func(server *httptest.Server) (*Config, error) {
+			config := servermock.NewBuilder(func(server *httptest.Server) (*Config, error) {
 				cfg := NewDefaultConfig()
 				cfg.StorageBaseURL = server.URL
 
 				return cfg, nil
 			}).
 				// Fetch
-				Route("GET /example.com", stubrouter.Noop().WithStatusCode(http.StatusNotFound)).
+				Route("GET /example.com", servermock.Noop().WithStatusCode(http.StatusNotFound)).
 				// Put
-				Route("POST /example.com", stubrouter.Noop().WithStatusCode(test.StatusCode)).
+				Route("POST /example.com", servermock.Noop().WithStatusCode(test.StatusCode)).
 				Build(t)
 
 			p, err := NewDNSProviderConfig(config)
@@ -222,14 +222,14 @@ func TestRegister_httpStorage(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.Name, func(t *testing.T) {
-			config := stubrouter.NewBuilder(func(server *httptest.Server) (*Config, error) {
+			config := servermock.NewBuilder(func(server *httptest.Server) (*Config, error) {
 				cfg := NewDefaultConfig()
 				cfg.StorageBaseURL = server.URL
 
 				return cfg, nil
 			}).
 				// Put
-				Route("POST /example.com", stubrouter.Noop().WithStatusCode(test.StatusCode)).
+				Route("POST /example.com", servermock.Noop().WithStatusCode(test.StatusCode)).
 				Build(t)
 
 			p, err := NewDNSProviderConfig(config)

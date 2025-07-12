@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -122,7 +122,7 @@ func TestDNSProvider(t *testing.T) {
 
 	regexpDate := regexp.MustCompile(`\[ACME Challenge [^\]:]*:[^\]]*\]`)
 
-	provider := stubrouter.NewBuilder(
+	provider := servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.BaseURL = server.URL + "/"
@@ -130,7 +130,7 @@ func TestDNSProvider(t *testing.T) {
 
 			return NewDNSProviderConfig(config)
 		},
-		stubrouter.CheckHeader().WithContentType("text/xml"),
+		servermock.CheckHeader().WithContentType("text/xml"),
 	).
 		Route("POST /", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			require.Equal(t, "text/xml", req.Header.Get("Content-Type"), "invalid content type")
@@ -145,7 +145,7 @@ func TestDNSProvider(t *testing.T) {
 			_, errS = io.Copy(rw, strings.NewReader(resp))
 			require.NoError(t, errS)
 		})).
-		Route("/", stubrouter.DumpRequest()).
+		Route("/", servermock.DumpRequest()).
 		Build(t)
 
 	fakeKeyAuth := "XXXX"

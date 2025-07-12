@@ -4,13 +4,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("user", "secret")
 			if err != nil {
@@ -22,14 +22,14 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().
+		servermock.CheckHeader().
 			WithContentTypeFromURLEncoded())
 }
 
 func TestClient_StatusDomain(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /", stubrouter.ResponseFromFixture("status-domain.json"),
-			stubrouter.CheckForm().Strict().
+		Route("POST /", servermock.ResponseFromFixture("status-domain.json"),
+			servermock.CheckForm().Strict().
 				WithRegexp("signature", "[a-z0-9]+").
 				WithRegexp("timestamp", `\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z`).
 				With("command", "statusDomain").
@@ -73,7 +73,7 @@ func TestClient_StatusDomain(t *testing.T) {
 
 func TestClient_StatusDomain_error(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /", stubrouter.ResponseFromFixture("error.json")).
+		Route("POST /", servermock.ResponseFromFixture("error.json")).
 		Build(t)
 
 	_, err := client.StatusDomain(t.Context(), "example.com")
@@ -82,8 +82,8 @@ func TestClient_StatusDomain_error(t *testing.T) {
 
 func TestClient_ListRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /", stubrouter.ResponseFromFixture("list-records.json"),
-			stubrouter.CheckForm().Strict().
+		Route("POST /", servermock.ResponseFromFixture("list-records.json"),
+			servermock.CheckForm().Strict().
 				WithRegexp("signature", "[a-z0-9]+").
 				WithRegexp("timestamp", `\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z`).
 				With("account", "example").
@@ -111,7 +111,7 @@ func TestClient_ListRecords(t *testing.T) {
 
 func TestClient_ListRecords_error(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /", stubrouter.ResponseFromFixture("error.json")).
+		Route("POST /", servermock.ResponseFromFixture("error.json")).
 		Build(t)
 
 	_, err := client.ListRecords(t.Context(), "example", "example.com")
@@ -120,8 +120,8 @@ func TestClient_ListRecords_error(t *testing.T) {
 
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /", stubrouter.ResponseFromFixture("add-record.json"),
-			stubrouter.CheckForm().Strict().
+		Route("POST /", servermock.ResponseFromFixture("add-record.json"),
+			servermock.CheckForm().Strict().
 				WithRegexp("signature", "[a-z0-9]+").
 				WithRegexp("timestamp", `\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z`).
 				With("account", "test").
@@ -159,7 +159,7 @@ func TestClient_AddRecord(t *testing.T) {
 
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /", stubrouter.ResponseFromFixture("error.json")).
+		Route("POST /", servermock.ResponseFromFixture("error.json")).
 		Build(t)
 
 	testRecord := Record{
@@ -176,8 +176,8 @@ func TestClient_AddRecord_error(t *testing.T) {
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /", stubrouter.ResponseFromFixture("delete-record.json"),
-			stubrouter.CheckForm().Strict().
+		Route("POST /", servermock.ResponseFromFixture("delete-record.json"),
+			servermock.CheckForm().Strict().
 				WithRegexp("signature", "[a-z0-9]+").
 				WithRegexp("timestamp", `\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z`).
 				With("account", "test").
@@ -195,7 +195,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /", stubrouter.ResponseFromFixture("error.json")).
+		Route("POST /", servermock.ResponseFromFixture("error.json")).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "example.com", "test", "example.com 600 IN TXT txttxttxt", "2374")

@@ -5,15 +5,15 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestTxtRecordService_Create(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /v1/domains/12345/records/txt", stubrouter.ResponseFromFixture("records-Create.json"),
-			stubrouter.CheckRequestJSONBody(`{"name":""}`)).
+		Route("POST /v1/domains/12345/records/txt", servermock.ResponseFromFixture("records-Create.json"),
+			servermock.CheckRequestJSONBody(`{"name":""}`)).
 		Build(t)
 
 	records, err := client.TxtRecords.Create(t.Context(), 12345, RecordRequest{})
@@ -30,7 +30,7 @@ func TestTxtRecordService_Create(t *testing.T) {
 
 func TestTxtRecordService_GetAll(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /v1/domains/12345/records/txt", stubrouter.ResponseFromFixture("records-GetAll.json")).
+		Route("GET /v1/domains/12345/records/txt", servermock.ResponseFromFixture("records-GetAll.json")).
 		Build(t)
 
 	records, err := client.TxtRecords.GetAll(t.Context(), 12345)
@@ -47,7 +47,7 @@ func TestTxtRecordService_GetAll(t *testing.T) {
 
 func TestTxtRecordService_Get(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /v1/domains/12345/records/txt/6789", stubrouter.ResponseFromFixture("records-Get.json")).
+		Route("GET /v1/domains/12345/records/txt/6789", servermock.ResponseFromFixture("records-Get.json")).
 		Build(t)
 
 	record, err := client.TxtRecords.Get(t.Context(), 12345, 6789)
@@ -78,7 +78,7 @@ func TestTxtRecordService_Get(t *testing.T) {
 func TestTxtRecordService_Update(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /v1/domains/12345/records/txt/6789",
-			stubrouter.RawStringResponse(`{"success":"Record  updated successfully"}`)).
+			servermock.RawStringResponse(`{"success":"Record  updated successfully"}`)).
 		Build(t)
 
 	msg, err := client.TxtRecords.Update(t.Context(), 12345, 6789, RecordRequest{})
@@ -91,7 +91,7 @@ func TestTxtRecordService_Update(t *testing.T) {
 func TestTxtRecordService_Delete(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v1/domains/12345/records/txt/6789",
-			stubrouter.RawStringResponse(`{"success":"Record  deleted successfully"}`)).
+			servermock.RawStringResponse(`{"success":"Record  deleted successfully"}`)).
 		Build(t)
 
 	msg, err := client.TxtRecords.Delete(t.Context(), 12345, 6789)
@@ -103,7 +103,7 @@ func TestTxtRecordService_Delete(t *testing.T) {
 
 func TestTxtRecordService_Search(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /v1/domains/12345/records/txt/search", stubrouter.ResponseFromFixture("records-Search.json")).
+		Route("GET /v1/domains/12345/records/txt/search", servermock.ResponseFromFixture("records-Search.json")).
 		Build(t)
 
 	records, err := client.TxtRecords.Search(t.Context(), 12345, Exact, "test")

@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			opts := Options{
 				Login:    "l",
@@ -27,7 +27,7 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithBasicAuth("l.u", "p").
 			WithRegexp(headerTOTPToken, `\d{6}`))
 }
@@ -35,7 +35,7 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 func TestClient_GetZone(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /anycast/nicmanager-anycastdns4.net",
-			stubrouter.ResponseFromFixture("zone.json")).
+			servermock.ResponseFromFixture("zone.json")).
 		Build(t)
 
 	zone, err := client.GetZone(t.Context(), "nicmanager-anycastdns4.net")
@@ -61,7 +61,7 @@ func TestClient_GetZone(t *testing.T) {
 func TestClient_GetZone_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /anycast/foo",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
 
@@ -72,7 +72,7 @@ func TestClient_GetZone_error(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /anycast/zonedomain.tld/records",
-			stubrouter.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusAccepted)).
 		Build(t)
 
@@ -90,7 +90,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /anycast/zonedomain.tld/records",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -108,7 +108,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /anycast/zonedomain.tld/records/6",
-			stubrouter.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusAccepted)).
 		Build(t)
 
@@ -119,7 +119,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /anycast/zonedomain.tld/records/6",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
 

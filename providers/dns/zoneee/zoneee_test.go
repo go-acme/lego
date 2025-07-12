@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/go-acme/lego/v4/providers/dns/zoneee/internal"
 	"github.com/stretchr/testify/require"
 )
@@ -147,7 +147,7 @@ func TestDNSProvider_Present(t *testing.T) {
 
 	testCases := []struct {
 		desc          string
-		builder       *stubrouter.Builder[*DNSProvider]
+		builder       *servermock.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
@@ -189,7 +189,7 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 
 	testCases := []struct {
 		desc          string
-		builder       *stubrouter.Builder[*DNSProvider]
+		builder       *servermock.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
@@ -204,7 +204,7 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 						Modify:      true,
 					}})).
 				Route("DELETE /dns/"+hostedZone+"/txt/1234",
-					stubrouter.Noop().
+					servermock.Noop().
 						WithStatusCode(http.StatusNoContent)),
 		},
 		{
@@ -269,8 +269,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder(username, apiKey string) *stubrouter.Builder[*DNSProvider] {
-	return stubrouter.NewBuilder(
+func mockBuilder(username, apiKey string) *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.Endpoint, _ = url.Parse(server.URL)
@@ -332,7 +332,7 @@ func encodeJSONHandler(build func(req *http.Request, rw http.ResponseWriter) (an
 	}
 }
 
-func checkBasicAuth() stubrouter.LinkFunc {
+func checkBasicAuth() servermock.LinkFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			username, apiKey, ok := req.BasicAuth()

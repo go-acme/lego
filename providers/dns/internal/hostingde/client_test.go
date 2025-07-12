@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,10 +20,10 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_ListZoneConfigs(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /zoneConfigsFind",
-			stubrouter.ResponseFromFixture("zoneConfigsFind.json"),
-			stubrouter.CheckRequestJSONBodyFromFile("zoneConfigsFind-request.json")).
+			servermock.ResponseFromFixture("zoneConfigsFind.json"),
+			servermock.CheckRequestJSONBodyFromFile("zoneConfigsFind-request.json")).
 		Build(t)
 
 	zonesFind := ZoneConfigsFindRequest{
@@ -69,9 +69,9 @@ func TestClient_ListZoneConfigs(t *testing.T) {
 }
 
 func TestClient_ListZoneConfigs_error(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /zoneConfigsFind",
-			stubrouter.ResponseFromFixture("zoneConfigsFind_error.json")).
+			servermock.ResponseFromFixture("zoneConfigsFind_error.json")).
 		Build(t)
 
 	zonesFind := ZoneConfigsFindRequest{
@@ -85,10 +85,10 @@ func TestClient_ListZoneConfigs_error(t *testing.T) {
 }
 
 func TestClient_UpdateZone(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /zoneUpdate",
-			stubrouter.ResponseFromFixture("zoneUpdate.json"),
-			stubrouter.CheckRequestJSONBodyFromFile("zoneUpdate-request.json")).
+			servermock.ResponseFromFixture("zoneUpdate.json"),
+			servermock.CheckRequestJSONBodyFromFile("zoneUpdate-request.json")).
 		Build(t)
 
 	request := ZoneUpdateRequest{
@@ -162,9 +162,9 @@ func TestClient_UpdateZone(t *testing.T) {
 }
 
 func TestClient_UpdateZone_error(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /zoneUpdate",
-			stubrouter.ResponseFromFixture("zoneUpdate_error.json")).
+			servermock.ResponseFromFixture("zoneUpdate_error.json")).
 		Build(t)
 
 	request := ZoneUpdateRequest{

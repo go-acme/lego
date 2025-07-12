@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder(apiKey string) *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder(apiKey string) *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(apiKey)
 			client.baseURL, _ = url.Parse(server.URL)
@@ -20,7 +20,7 @@ func mockBuilder(apiKey string) *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization(apiKey))
 }
 
@@ -31,8 +31,8 @@ func TestClient_GetTxtRecord(t *testing.T) {
 
 	client := mockBuilder(apiKey).
 		Route("GET /cdn/4.0/domains/"+domain+"/dns-records",
-			stubrouter.ResponseFromFixture("get_txt_record.json"),
-			stubrouter.CheckQueryParameter().With("search", "acme-challenge")).
+			servermock.ResponseFromFixture("get_txt_record.json"),
+			servermock.CheckQueryParameter().With("search", "acme-challenge")).
 		Build(t)
 
 	_, err := client.GetTxtRecord(t.Context(), domain, "_acme-challenge", "txtxtxt")
@@ -46,9 +46,9 @@ func TestClient_CreateRecord(t *testing.T) {
 
 	client := mockBuilder(apiKey).
 		Route("POST /cdn/4.0/domains/"+domain+"/dns-records",
-			stubrouter.ResponseFromFixture("create_txt_record.json").
+			servermock.ResponseFromFixture("create_txt_record.json").
 				WithStatusCode(http.StatusCreated),
-			stubrouter.CheckRequestJSONBodyFromFile("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFile("create_record-request.json")).
 		Build(t)
 
 	record := DNSRecord{

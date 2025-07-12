@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("A", "B")
 			if err != nil {
@@ -24,7 +24,7 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().
+		servermock.CheckHeader().
 			WithRegexp("X-Nifty-Authorization", "NIFTY3-HTTPS NiftyAccessKeyId=A,Algorithm=HmacSHA1,Signature=.+"),
 	)
 }
@@ -41,8 +41,8 @@ func TestClient_ChangeResourceRecordSets(t *testing.T) {
 `
 
 	client := mockBuilder().
-		Route("POST /", stubrouter.RawStringResponse(responseBody),
-			stubrouter.CheckHeader().WithContentType("text/xml; charset=utf-8")).
+		Route("POST /", servermock.RawStringResponse(responseBody),
+			servermock.CheckHeader().WithContentType("text/xml; charset=utf-8")).
 		Build(t)
 
 	res, err := client.ChangeResourceRecordSets(t.Context(), "example.com", ChangeResourceRecordSetsRequest{})
@@ -92,9 +92,9 @@ func TestClient_ChangeResourceRecordSets_errors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := mockBuilder().
 				Route("POST /",
-					stubrouter.RawStringResponse(test.responseBody).
+					servermock.RawStringResponse(test.responseBody).
 						WithStatusCode(test.statusCode),
-					stubrouter.CheckHeader().
+					servermock.CheckHeader().
 						WithContentType("text/xml; charset=utf-8")).
 				Build(t)
 
@@ -117,7 +117,7 @@ func TestClient_GetChange(t *testing.T) {
 `
 
 	client := mockBuilder().
-		Route("GET /", stubrouter.RawStringResponse(responseBody)).
+		Route("GET /", servermock.RawStringResponse(responseBody)).
 		Build(t)
 
 	res, err := client.GetChange(t.Context(), "12345")
@@ -167,7 +167,7 @@ func TestClient_GetChange_errors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := mockBuilder().
 				Route("GET /",
-					stubrouter.RawStringResponse(test.responseBody).WithStatusCode(test.statusCode)).
+					servermock.RawStringResponse(test.responseBody).WithStatusCode(test.statusCode)).
 				Build(t)
 
 			res, err := client.GetChange(t.Context(), "12345")

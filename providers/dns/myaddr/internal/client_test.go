@@ -6,12 +6,12 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			credentials := map[string]string{
 				"example": "secret",
@@ -27,14 +27,14 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().WithJSONHeaders(),
+		servermock.CheckHeader().WithJSONHeaders(),
 	)
 }
 
 func TestClient_AddTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /update", nil,
-			stubrouter.CheckRequestJSONBody(`{"key":"secret","acme_challenge":"txt"}`)).
+			servermock.CheckRequestJSONBody(`{"key":"secret","acme_challenge":"txt"}`)).
 		Build(t)
 
 	err := client.AddTXTRecord(t.Context(), "example", "txt")
@@ -44,7 +44,7 @@ func TestClient_AddTXTRecord(t *testing.T) {
 func TestClient_AddTXTRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /update",
-			stubrouter.ResponseFromFixture("error.txt").
+			servermock.ResponseFromFixture("error.txt").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 

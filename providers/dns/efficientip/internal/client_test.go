@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			srvURL, _ := url.Parse(server.URL)
 
@@ -22,14 +22,14 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithBasicAuth("user", "secret"),
 	)
 }
 
 func TestListRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /dns_rr_list", stubrouter.ResponseFromFixture("dns_rr_list.json")).
+		Route("GET /dns_rr_list", servermock.ResponseFromFixture("dns_rr_list.json")).
 		Build(t)
 
 	records, err := client.ListRecords(t.Context())
@@ -296,8 +296,8 @@ func TestListRecords(t *testing.T) {
 
 func TestGetRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /dns_rr_info", stubrouter.ResponseFromFixture("dns_rr_info.json"),
-			stubrouter.CheckQueryParameter().Strict().
+		Route("GET /dns_rr_info", servermock.ResponseFromFixture("dns_rr_info.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("rr_id", "239")).
 		Build(t)
 
@@ -346,8 +346,8 @@ func TestGetRecord(t *testing.T) {
 func TestAddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns_rr_add",
-			stubrouter.ResponseFromFixture("dns_rr_add.json").WithStatusCode(http.StatusCreated),
-			stubrouter.CheckRequestJSONBody(`{"dns_name":"dns.smart","dnsview_name":"external","rr_name":"test.example.com","rr_type":"TXT","value1":"test"}`)).
+			servermock.ResponseFromFixture("dns_rr_add.json").WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBody(`{"dns_name":"dns.smart","dnsview_name":"external","rr_name":"test.example.com","rr_type":"TXT","value1":"test"}`)).
 		Build(t)
 
 	r := ResourceRecord{
@@ -368,8 +368,8 @@ func TestAddRecord(t *testing.T) {
 
 func TestDeleteRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /dns_rr_delete", stubrouter.ResponseFromFixture("dns_rr_delete.json"),
-			stubrouter.CheckQueryParameter().Strict().
+		Route("DELETE /dns_rr_delete", servermock.ResponseFromFixture("dns_rr_delete.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("rr_id", "251")).
 		Build(t)
 
@@ -384,7 +384,7 @@ func TestDeleteRecord(t *testing.T) {
 func TestDeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns_rr_delete",
-			stubrouter.ResponseFromFixture("dns_rr_delete-error.json").WithStatusCode(http.StatusBadRequest)).
+			servermock.ResponseFromFixture("dns_rr_delete-error.json").WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
 	_, err := client.DeleteRecord(t.Context(), DeleteInputParameters{RRID: "251"})

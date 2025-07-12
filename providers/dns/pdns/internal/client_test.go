@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			serverURL, _ := url.Parse(server.URL)
 
@@ -21,7 +21,7 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().WithJSONHeaders().With(APIKeyHeader, "secret"))
+		servermock.CheckHeader().WithJSONHeaders().With(APIKeyHeader, "secret"))
 }
 
 func TestClient_joinPath(t *testing.T) {
@@ -123,7 +123,7 @@ func TestClient_joinPath(t *testing.T) {
 func TestClient_GetHostedZone(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/v1/servers/server/zones/example.org.",
-			stubrouter.ResponseFromFixture("zone.json")).
+			servermock.ResponseFromFixture("zone.json")).
 		Build(t)
 
 	client.apiVersion = 1
@@ -170,7 +170,7 @@ func TestClient_GetHostedZone(t *testing.T) {
 func TestClient_GetHostedZone_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/v1/servers/server/zones/example.org.",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnprocessableEntity)).
 		Build(t)
 
@@ -183,7 +183,7 @@ func TestClient_GetHostedZone_error(t *testing.T) {
 func TestClient_GetHostedZone_v0(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /servers/server/zones/example.org.",
-			stubrouter.ResponseFromFixture("zone.json")).
+			servermock.ResponseFromFixture("zone.json")).
 		Build(t)
 
 	client.apiVersion = 0
@@ -230,8 +230,8 @@ func TestClient_GetHostedZone_v0(t *testing.T) {
 func TestClient_UpdateRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /api/v1/servers/localhost/zones/example.org.",
-			stubrouter.ResponseFromFixture("zone.json"),
-			stubrouter.CheckRequestJSONBodyFromFile("zone-request.json")).
+			servermock.ResponseFromFixture("zone.json"),
+			servermock.CheckRequestJSONBodyFromFile("zone-request.json")).
 		Build(t)
 
 	client.apiVersion = 1
@@ -265,8 +265,8 @@ func TestClient_UpdateRecords(t *testing.T) {
 func TestClient_UpdateRecords_NonRootApi(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /some/path/api/v1/servers/localhost/zones/example.org.",
-			stubrouter.ResponseFromFixture("zone.json"),
-			stubrouter.CheckRequestJSONBodyFromFile("zone-request.json")).
+			servermock.ResponseFromFixture("zone.json"),
+			servermock.CheckRequestJSONBodyFromFile("zone-request.json")).
 		Build(t)
 
 	client.Host = client.Host.JoinPath("some", "path")
@@ -301,8 +301,8 @@ func TestClient_UpdateRecords_NonRootApi(t *testing.T) {
 func TestClient_UpdateRecords_v0(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /servers/localhost/zones/example.org.",
-			stubrouter.ResponseFromFixture("zone.json"),
-			stubrouter.CheckRequestJSONBodyFromFile("zone-request.json")).
+			servermock.ResponseFromFixture("zone.json"),
+			servermock.CheckRequestJSONBodyFromFile("zone-request.json")).
 		Build(t)
 
 	client.apiVersion = 0
@@ -393,7 +393,7 @@ func TestClient_Notify_v0(t *testing.T) {
 func TestClient_getAPIVersion(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api",
-			stubrouter.ResponseFromFixture("versions.json")).
+			servermock.ResponseFromFixture("versions.json")).
 		Build(t)
 
 	version, err := client.getAPIVersion(t.Context())

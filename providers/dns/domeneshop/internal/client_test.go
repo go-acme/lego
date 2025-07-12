@@ -5,13 +5,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("token", "secret")
 			client.HTTPClient = server.Client()
@@ -19,7 +19,7 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithBasicAuth("token", "secret"),
 	)
 }
@@ -27,8 +27,8 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 func TestClient_CreateTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/1/dns",
-			stubrouter.ResponseFromFixture("create_record.json"),
-			stubrouter.CheckRequestJSONBodyFromFile("create_record-request.json")).
+			servermock.ResponseFromFixture("create_record.json"),
+			servermock.CheckRequestJSONBodyFromFile("create_record-request.json")).
 		Build(t)
 
 	err := client.CreateTXTRecord(t.Context(), &Domain{ID: 1}, "example.com", "txtTXTtxt")
@@ -38,7 +38,7 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 func TestClient_DeleteTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains/1/dns",
-			stubrouter.ResponseFromFixture("delete_record.json")).
+			servermock.ResponseFromFixture("delete_record.json")).
 		Route("DELETE /domains/1/dns/1", nil).
 		Build(t)
 
@@ -49,7 +49,7 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 func TestClient_getDNSRecordByHostData(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains/1/dns",
-			stubrouter.ResponseFromFixture("getDnsRecords.json")).
+			servermock.ResponseFromFixture("getDnsRecords.json")).
 		Build(t)
 
 	record, err := client.getDNSRecordByHostData(t.Context(), Domain{ID: 1}, "example.com", "txtTXTtxt")
@@ -69,7 +69,7 @@ func TestClient_getDNSRecordByHostData(t *testing.T) {
 func TestClient_GetDomainByName(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains/",
-			stubrouter.ResponseFromFixture("getDomains.json")).
+			servermock.ResponseFromFixture("getDomains.json")).
 		Build(t)
 
 	domain, err := client.GetDomainByName(t.Context(), "example.com")

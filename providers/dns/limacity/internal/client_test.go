@@ -6,15 +6,15 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 const apiKey = "secret"
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(apiKey)
 			client.baseURL, _ = url.Parse(server.URL)
@@ -22,14 +22,14 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithBasicAuth("api", apiKey),
 	)
 }
 
 func TestClient_GetDomains(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /domains.json", stubrouter.ResponseFromFixture("get-domains.json")).
+		Route("GET /domains.json", servermock.ResponseFromFixture("get-domains.json")).
 		Build(t)
 
 	domains, err := client.GetDomains(t.Context())
@@ -48,7 +48,7 @@ func TestClient_GetDomains(t *testing.T) {
 func TestClient_GetDomains_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains.json",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -58,7 +58,7 @@ func TestClient_GetDomains_error(t *testing.T) {
 
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /domains/123/records.json", stubrouter.ResponseFromFixture("get-records.json")).
+		Route("GET /domains/123/records.json", servermock.ResponseFromFixture("get-records.json")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), 123)
@@ -86,7 +86,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_GetRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains/123/records.json",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -97,8 +97,8 @@ func TestClient_GetRecords_error(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/123/records.json",
-			stubrouter.ResponseFromFixture("ok.json"),
-			stubrouter.CheckRequestJSONBody(`{"nameserver_record":{"name":"foo","content":"bar","ttl":12,"type":"TXT"}}`)).
+			servermock.ResponseFromFixture("ok.json"),
+			servermock.CheckRequestJSONBody(`{"nameserver_record":{"name":"foo","content":"bar","ttl":12,"type":"TXT"}}`)).
 		Build(t)
 
 	record := Record{
@@ -115,7 +115,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/123/records.json",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -133,8 +133,8 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_UpdateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /domains/123/records/456",
-			stubrouter.ResponseFromFixture("ok.json"),
-			stubrouter.CheckRequestJSONBody(`{"nameserver_record":{}}`)).
+			servermock.ResponseFromFixture("ok.json"),
+			servermock.CheckRequestJSONBody(`{"nameserver_record":{}}`)).
 		Build(t)
 
 	err := client.UpdateRecord(t.Context(), 123, 456, Record{})
@@ -144,7 +144,7 @@ func TestClient_UpdateRecord(t *testing.T) {
 func TestClient_UpdateRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /domains/123/records/456",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -155,7 +155,7 @@ func TestClient_UpdateRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/123/records/456",
-			stubrouter.ResponseFromFixture("ok.json")).
+			servermock.ResponseFromFixture("ok.json")).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), 123, 456)
@@ -165,7 +165,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/123/records/456",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 

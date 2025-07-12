@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -101,14 +101,14 @@ func TestDNSProvider_Present(t *testing.T) {
 
 	testCases := []struct {
 		desc          string
-		builder       *stubrouter.Builder[*DNSProvider]
+		builder       *servermock.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
 			desc: "Success",
 			builder: mockBuilder().
 				Route("GET /v4/domains",
-					stubrouter.JSONEncode(linodego.DomainsPagedResponse{
+					servermock.JSONEncode(linodego.DomainsPagedResponse{
 						PageOptions: &linodego.PageOptions{
 							Pages:   1,
 							Results: 1,
@@ -119,7 +119,7 @@ func TestDNSProvider_Present(t *testing.T) {
 							ID:     1234,
 						}},
 					})).
-				Route("POST /v4/domains/1234/records", stubrouter.JSONEncode(linodego.DomainRecord{
+				Route("POST /v4/domains/1234/records", servermock.JSONEncode(linodego.DomainRecord{
 					ID: 1234,
 				})),
 		},
@@ -127,7 +127,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			desc: "NoDomain",
 			builder: mockBuilder().
 				Route("GET /v4/domains",
-					stubrouter.JSONEncode(linodego.APIError{
+					servermock.JSONEncode(linodego.APIError{
 						Errors: []linodego.APIErrorReason{{
 							Reason: "Not found",
 						}},
@@ -139,7 +139,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			desc: "CreateFailed",
 			builder: mockBuilder().
 				Route("GET /v4/domains",
-					stubrouter.JSONEncode(&linodego.DomainsPagedResponse{
+					servermock.JSONEncode(&linodego.DomainsPagedResponse{
 						PageOptions: &linodego.PageOptions{
 							Pages:   1,
 							Results: 1,
@@ -151,7 +151,7 @@ func TestDNSProvider_Present(t *testing.T) {
 						}},
 					})).
 				Route("POST /v4/domains/1234/records",
-					stubrouter.JSONEncode(linodego.APIError{
+					servermock.JSONEncode(linodego.APIError{
 						Errors: []linodego.APIErrorReason{{
 							Reason: "Failed to create domain resource",
 							Field:  "somefield",
@@ -185,14 +185,14 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	testCases := []struct {
 		desc          string
-		builder       *stubrouter.Builder[*DNSProvider]
+		builder       *servermock.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
 			desc: "Success",
 			builder: mockBuilder().
 				Route("GET /v4/domains",
-					stubrouter.JSONEncode(&linodego.DomainsPagedResponse{
+					servermock.JSONEncode(&linodego.DomainsPagedResponse{
 						PageOptions: &linodego.PageOptions{
 							Pages:   1,
 							Results: 1,
@@ -204,7 +204,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 						}},
 					})).
 				Route("GET /v4/domains/1234/records",
-					stubrouter.JSONEncode(&linodego.DomainRecordsPagedResponse{
+					servermock.JSONEncode(&linodego.DomainRecordsPagedResponse{
 						PageOptions: &linodego.PageOptions{
 							Pages:   1,
 							Results: 1,
@@ -218,20 +218,20 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 						}},
 					})).
 				Route("DELETE /v4/domains/1234/records/1234",
-					stubrouter.RawStringResponse("{}").WithHeader("Content-Type", "application/json")),
+					servermock.RawStringResponse("{}").WithHeader("Content-Type", "application/json")),
 		},
 		{
 			desc: "NoDomain",
 			builder: mockBuilder().
 				Route("GET /v4/domains",
-					stubrouter.JSONEncode(linodego.APIError{
+					servermock.JSONEncode(linodego.APIError{
 						Errors: []linodego.APIErrorReason{{
 							Reason: "Not found",
 						}},
 					}).
 						WithStatusCode(http.StatusNotFound)).
 				Route("GET /v4/domains/1234/records",
-					stubrouter.JSONEncode(linodego.APIError{
+					servermock.JSONEncode(linodego.APIError{
 						Errors: []linodego.APIErrorReason{{
 							Reason: "Not found",
 						}},
@@ -244,7 +244,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			desc: "DeleteFailed",
 			builder: mockBuilder().
 				Route("GET /v4/domains",
-					stubrouter.JSONEncode(linodego.DomainsPagedResponse{
+					servermock.JSONEncode(linodego.DomainsPagedResponse{
 						PageOptions: &linodego.PageOptions{
 							Pages:   1,
 							Results: 1,
@@ -256,7 +256,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 						}},
 					})).
 				Route("GET /v4/domains/1234/records",
-					stubrouter.JSONEncode(linodego.DomainRecordsPagedResponse{
+					servermock.JSONEncode(linodego.DomainRecordsPagedResponse{
 						PageOptions: &linodego.PageOptions{
 							Pages:   1,
 							Results: 1,
@@ -270,7 +270,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 						}},
 					})).
 				Route("DELETE /v4/domains/1234/records/1234",
-					stubrouter.JSONEncode(linodego.APIError{
+					servermock.JSONEncode(linodego.APIError{
 						Errors: []linodego.APIErrorReason{{
 							Reason: "Failed to delete domain resource",
 						}},
@@ -308,8 +308,8 @@ func TestLiveCleanUp(t *testing.T) {
 	// TODO implement this test
 }
 
-func mockBuilder() *stubrouter.Builder[*DNSProvider] {
-	return stubrouter.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 		p, err := NewDNSProvider()
 		if err != nil {
 			return nil, err

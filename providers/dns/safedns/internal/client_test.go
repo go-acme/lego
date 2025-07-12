@@ -7,29 +7,29 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("secret")
 			client.baseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().WithJSONHeaders(),
+		servermock.CheckHeader().WithJSONHeaders(),
 	)
 }
 
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/example.com/records",
-			stubrouter.ResponseFromFixture("add_record.json").
+			servermock.ResponseFromFixture("add_record.json").
 				WithStatusCode(http.StatusCreated),
-			stubrouter.CheckRequestJSONBodyFromFile("add_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFile("add_record-request.json")).
 		Build(t)
 
 	record := Record{
@@ -61,7 +61,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/example.com/records",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -79,7 +79,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_RemoveRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/example.com/records/1234567",
-			stubrouter.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 
@@ -90,7 +90,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 func TestClient_RemoveRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/example.com/records/1234567",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 

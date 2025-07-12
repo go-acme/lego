@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -22,8 +22,8 @@ const (
 	fakeKeyAuth        = "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"
 )
 
-func mockBuilder() *stubrouter.Builder[*DNSProvider] {
-	return stubrouter.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 		config := NewDefaultConfig()
 		config.APIKey = fakeAPIKey
 		config.BaseURL = server.URL
@@ -109,8 +109,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /",
-			stubrouter.RawStringResponse(`{"data":"record_added","result":"success"}`),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.RawStringResponse(`{"data":"record_added","result":"success"}`),
+			servermock.CheckQueryParameter().Strict().
 				With("cmd", "dns-add_record").
 				With("comment", "Managed+By+lego").
 				With("format", "json").
@@ -128,7 +128,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_PresentFailed(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /",
-			stubrouter.RawStringResponse(`{"data":"record_already_exists_remove_first","result":"error"}`)).
+			servermock.RawStringResponse(`{"data":"record_already_exists_remove_first","result":"error"}`)).
 		Build(t)
 
 	err := provider.Present("example.com", "", fakeChallengeToken)
@@ -138,8 +138,8 @@ func TestDNSProvider_PresentFailed(t *testing.T) {
 func TestDNSProvider_Cleanup(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /",
-			stubrouter.RawStringResponse(`{"data":"record_removed","result":"success"}`),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.RawStringResponse(`{"data":"record_removed","result":"success"}`),
+			servermock.CheckQueryParameter().Strict().
 				With("cmd", "dns-remove_record").
 				With("comment", "Managed+By+lego").
 				With("format", "json").

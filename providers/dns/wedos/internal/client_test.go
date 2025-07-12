@@ -7,13 +7,13 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *stubrouter.Builder[*Client] {
-	return stubrouter.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 			client.baseURL = server.URL
@@ -21,14 +21,14 @@ func mockBuilder() *stubrouter.Builder[*Client] {
 
 			return client, nil
 		},
-		stubrouter.CheckHeader().
+		servermock.CheckHeader().
 			WithContentTypeFromURLEncoded())
 }
 
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			stubrouter.ResponseFromFixture(commandDNSRowsList+".json"),
+			servermock.ResponseFromFixture(commandDNSRowsList+".json"),
 			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-rows-list","data":{"domain":"example.com"}}}`)).
 		Build(t)
 
@@ -71,7 +71,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			stubrouter.ResponseFromFixture(commandDNSRowAdd+".json"),
+			servermock.ResponseFromFixture(commandDNSRowAdd+".json"),
 			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-add","data":{"domain":"example.com","name":"foo","ttl":1800,"type":"TXT","rdata":"foobar"}}}`)).
 		Build(t)
 
@@ -90,7 +90,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_update(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			stubrouter.ResponseFromFixture(commandDNSRowUpdate+".json"),
+			servermock.ResponseFromFixture(commandDNSRowUpdate+".json"),
 			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-update","data":{"row_id":"1","domain":"example.com","ttl":1800,"type":"TXT","rdata":"foobar"}}}`)).
 		Build(t)
 
@@ -109,7 +109,7 @@ func TestClient_AddRecord_update(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			stubrouter.ResponseFromFixture(commandDNSRowDelete+".json"),
+			servermock.ResponseFromFixture(commandDNSRowDelete+".json"),
 			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-delete","data":{"row_id":"1","domain":"example.com","rdata":""}}}`)).
 		Build(t)
 
@@ -120,7 +120,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_Commit(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			stubrouter.ResponseFromFixture(commandDNSDomainCommit+".json"),
+			servermock.ResponseFromFixture(commandDNSDomainCommit+".json"),
 			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-domain-commit","data":{"name":"example.com"}}}`)).
 		Build(t)
 
@@ -128,7 +128,7 @@ func TestClient_Commit(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func checkFormRequest(data string) stubrouter.LinkFunc {
+func checkFormRequest(data string) servermock.LinkFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			err := req.ParseForm()

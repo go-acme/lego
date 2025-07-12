@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -99,22 +99,22 @@ func TestNewDNSProvider_Present(t *testing.T) {
 
 	testCases := []struct {
 		desc          string
-		builder       *stubrouter.Builder[*DNSProvider]
+		builder       *servermock.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
 			desc: "success",
 			builder: mockBuilder("").
 				Route("/present",
-					stubrouter.RawStringResponse("lego"),
-					stubrouter.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
 		},
 		{
 			desc: "success with path prefix",
 			builder: mockBuilderWithPathPrefix("", "/api/acme/").
 				Route("/api/acme/present",
-					stubrouter.RawStringResponse("lego"),
-					stubrouter.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
 		},
 		{
 			desc:          "error",
@@ -125,8 +125,8 @@ func TestNewDNSProvider_Present(t *testing.T) {
 			desc: "success raw mode",
 			builder: mockBuilder("RAW").
 				Route("/present",
-					stubrouter.RawStringResponse("lego"),
-					stubrouter.CheckRequestBody(`{"domain":"domain","token":"token","keyAuth":"key"}`)),
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestBody(`{"domain":"domain","token":"token","keyAuth":"key"}`)),
 		},
 		{
 			desc:          "error raw mode",
@@ -136,15 +136,15 @@ func TestNewDNSProvider_Present(t *testing.T) {
 		{
 			desc: "basic auth fail",
 			builder: mockBuilderWithBasicAuth("nope", "nope").
-				Route("/present", stubrouter.Noop()),
+				Route("/present", servermock.Noop()),
 			expectedError: `httpreq: unexpected status code: [status code: 400] body: invalid credentials: got [username: "nope", password: "nope"], want [username: "user", password: "secret"]`,
 		},
 		{
 			desc: "basic auth success",
 			builder: mockBuilderWithBasicAuth("user", "secret").
 				Route("/present",
-					stubrouter.RawStringResponse("lego"),
-					stubrouter.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
 		},
 	}
 
@@ -167,15 +167,15 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 
 	testCases := []struct {
 		desc          string
-		builder       *stubrouter.Builder[*DNSProvider]
+		builder       *servermock.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
 			desc: "success",
 			builder: mockBuilder("").
 				Route("/cleanup",
-					stubrouter.RawStringResponse("lego"),
-					stubrouter.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
 		},
 		{
 			desc:          "error",
@@ -186,8 +186,8 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 			desc: "success raw mode",
 			builder: mockBuilder("RAW").
 				Route("/cleanup",
-					stubrouter.RawStringResponse("lego"),
-					stubrouter.CheckRequestBody(`{"domain":"domain","token":"token","keyAuth":"key"}`)),
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestBody(`{"domain":"domain","token":"token","keyAuth":"key"}`)),
 		},
 		{
 			desc:          "error raw mode",
@@ -197,15 +197,15 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 		{
 			desc: "basic auth fail",
 			builder: mockBuilderWithBasicAuth("test", "example").
-				Route("/cleanup", stubrouter.Noop()),
+				Route("/cleanup", servermock.Noop()),
 			expectedError: `httpreq: unexpected status code: [status code: 400] body: invalid credentials: got [username: "test", password: "example"], want [username: "user", password: "secret"]`,
 		},
 		{
 			desc: "basic auth success",
 			builder: mockBuilderWithBasicAuth("user", "secret").
 				Route("/cleanup",
-					stubrouter.RawStringResponse("lego"),
-					stubrouter.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
+					servermock.RawStringResponse("lego"),
+					servermock.CheckRequestJSONBody(`{"fqdn":"_acme-challenge.domain.","value":"LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"}`)),
 		},
 	}
 
@@ -223,8 +223,8 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 	}
 }
 
-func mockBuilder(mode string) *stubrouter.Builder[*DNSProvider] {
-	return stubrouter.NewBuilder(
+func mockBuilder(mode string) *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.Endpoint, _ = url.Parse(server.URL)
@@ -234,8 +234,8 @@ func mockBuilder(mode string) *stubrouter.Builder[*DNSProvider] {
 		})
 }
 
-func mockBuilderWithPathPrefix(mode, prefix string) *stubrouter.Builder[*DNSProvider] {
-	return stubrouter.NewBuilder(
+func mockBuilderWithPathPrefix(mode, prefix string) *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.Endpoint, _ = url.Parse(server.URL + prefix)
@@ -245,8 +245,8 @@ func mockBuilderWithPathPrefix(mode, prefix string) *stubrouter.Builder[*DNSProv
 		})
 }
 
-func mockBuilderWithBasicAuth(username, password string) *stubrouter.Builder[*DNSProvider] {
-	return stubrouter.NewBuilder(
+func mockBuilderWithBasicAuth(username, password string) *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.Endpoint, _ = url.Parse(server.URL)
@@ -255,7 +255,7 @@ func mockBuilderWithBasicAuth(username, password string) *stubrouter.Builder[*DN
 
 			return NewDNSProviderConfig(config)
 		},
-		stubrouter.CheckHeader().WithBasicAuth("user", "secret"))
+		servermock.CheckHeader().WithBasicAuth("user", "secret"))
 }
 
 func mustParse(rawURL string) *url.URL {

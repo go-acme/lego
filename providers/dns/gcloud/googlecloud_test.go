@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
@@ -148,21 +148,21 @@ func TestPresentNoExistingRR(t *testing.T) {
 	provider := mockBuilder().
 		// getHostedZone
 		Route("GET /dns/v1/projects/manhattan/managedZones",
-			stubrouter.JSONEncode(&dns.ManagedZonesListResponse{
+			servermock.JSONEncode(&dns.ManagedZonesListResponse{
 				ManagedZones: []*dns.ManagedZone{
 					{Name: "test", Visibility: "public"},
 				},
 			}),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("dnsName", "lego.wtf.").
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		// findTxtRecords
 		Route("GET /dns/v1/projects/manhattan/managedZones/test/rrsets",
-			stubrouter.JSONEncode(&dns.ResourceRecordSetsListResponse{
+			servermock.JSONEncode(&dns.ResourceRecordSetsListResponse{
 				Rrsets: []*dns.ResourceRecordSet{},
 			}),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.lego.wtf.").
 				With("type", "TXT").
 				With("prettyPrint", "false").
@@ -184,7 +184,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 					return
 				}
 			}),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		Build(t)
@@ -199,18 +199,18 @@ func TestPresentWithExistingRR(t *testing.T) {
 	provider := mockBuilder().
 		// getHostedZone
 		Route("GET /dns/v1/projects/manhattan/managedZones",
-			stubrouter.JSONEncode(&dns.ManagedZonesListResponse{
+			servermock.JSONEncode(&dns.ManagedZonesListResponse{
 				ManagedZones: []*dns.ManagedZone{
 					{Name: "test", Visibility: "public"},
 				},
 			}),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("dnsName", "lego.wtf.").
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		// findTxtRecords
 		Route("GET /dns/v1/projects/manhattan/managedZones/test/rrsets",
-			stubrouter.JSONEncode(&dns.ResourceRecordSetsListResponse{
+			servermock.JSONEncode(&dns.ResourceRecordSetsListResponse{
 				Rrsets: []*dns.ResourceRecordSet{{
 					Name:    "_acme-challenge.lego.wtf.",
 					Rrdatas: []string{`"X7DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"huji"`},
@@ -218,7 +218,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 					Type:    "TXT",
 				}},
 			}),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.lego.wtf.").
 				With("type", "TXT").
 				With("prettyPrint", "false").
@@ -255,7 +255,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 					return
 				}
 			}),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		Build(t)
@@ -270,18 +270,18 @@ func TestPresentSkipExistingRR(t *testing.T) {
 	provider := mockBuilder().
 		// getHostedZone
 		Route("GET /dns/v1/projects/manhattan/managedZones",
-			stubrouter.JSONEncode(&dns.ManagedZonesListResponse{
+			servermock.JSONEncode(&dns.ManagedZonesListResponse{
 				ManagedZones: []*dns.ManagedZone{
 					{Name: "test", Visibility: "public"},
 				},
 			}),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("dnsName", "lego.wtf.").
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		// findTxtRecords
 		Route("GET /dns/v1/projects/manhattan/managedZones/test/rrsets",
-			stubrouter.JSONEncode(&dns.ResourceRecordSetsListResponse{
+			servermock.JSONEncode(&dns.ResourceRecordSetsListResponse{
 				Rrsets: []*dns.ResourceRecordSet{{
 					Name:    "_acme-challenge.lego.wtf.",
 					Rrdatas: []string{`"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"X7DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"huji"`},
@@ -289,7 +289,7 @@ func TestPresentSkipExistingRR(t *testing.T) {
 					Type:    "TXT",
 				}},
 			}),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.lego.wtf.").
 				With("type", "TXT").
 				With("prettyPrint", "false").
@@ -349,8 +349,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *stubrouter.Builder[*DNSProvider] {
-	return stubrouter.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 		config := NewDefaultConfig()
 		config.HTTPClient = &http.Client{Timeout: 10 * time.Second}
 		config.Project = "manhattan"

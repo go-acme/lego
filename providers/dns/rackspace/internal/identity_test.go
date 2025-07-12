@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,8 +14,8 @@ func setupIdentifier(server *httptest.Server) (*Identifier, error) {
 }
 
 func TestIdentifier_Login(t *testing.T) {
-	identifier := stubrouter.NewBuilder[*Identifier](setupIdentifier, stubrouter.CheckHeader().WithJSONHeaders()).
-		Route("POST /", stubrouter.ResponseFromFixture("tokens.json")).
+	identifier := servermock.NewBuilder[*Identifier](setupIdentifier, servermock.CheckHeader().WithJSONHeaders()).
+		Route("POST /", servermock.ResponseFromFixture("tokens.json")).
 		Build(t)
 
 	identity, err := identifier.Login(t.Context(), "user", "secret")

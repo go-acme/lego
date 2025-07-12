@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vultr/govultr/v3"
@@ -162,7 +162,7 @@ func TestDNSProvider_getHostedZone(t *testing.T) {
 
 			var pageCount int
 
-			provider := stubrouter.NewBuilder(
+			provider := servermock.NewBuilder(
 				func(server *httptest.Server) (*DNSProvider, error) {
 					client := govultr.NewClient(nil)
 					err := client.SetBaseURL(server.URL)

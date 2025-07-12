@@ -1,4 +1,4 @@
-package stubrouter
+package servermock
 
 import (
 	"encoding/json"

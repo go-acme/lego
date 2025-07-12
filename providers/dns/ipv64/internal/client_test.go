@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -22,10 +22,10 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_GetDomains(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("GET /api",
-			stubrouter.ResponseFromFixture("get_domains.json"),
-			stubrouter.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("get_domains.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("get_domains", "")).
 		Build(t)
 
@@ -78,9 +78,9 @@ func TestClient_GetDomains(t *testing.T) {
 }
 
 func TestClient_GetDomains_error(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("GET /api",
-			stubrouter.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -91,12 +91,12 @@ func TestClient_GetDomains_error(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient,
-		stubrouter.CheckHeader().WithContentTypeFromURLEncoded()).
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithContentTypeFromURLEncoded()).
 		Route("POST /api",
-			stubrouter.ResponseFromFixture("add_record.json").
+			servermock.ResponseFromFixture("add_record.json").
 				WithStatusCode(http.StatusCreated),
-			stubrouter.CheckForm().Strict().
+			servermock.CheckForm().Strict().
 				With("add_record", "lego.ipv64.net").
 				With("content", "value").
 				With("praefix", "_acme-challenge").
@@ -109,9 +109,9 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /api",
-			stubrouter.ResponseFromFixture("add_record-error.json").
+			servermock.ResponseFromFixture("add_record-error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -120,11 +120,11 @@ func TestClient_AddRecord_error(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient,
-		stubrouter.CheckHeader().WithContentTypeFromURLEncoded()).
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithContentTypeFromURLEncoded()).
 		Route("DELETE /api",
 			// the query parameters can be checked because the Go server ignores the body of a DELETE request.
-			stubrouter.ResponseFromFixture("del_record.json").
+			servermock.ResponseFromFixture("del_record.json").
 				WithStatusCode(http.StatusAccepted)).
 		Build(t)
 
@@ -133,9 +133,9 @@ func TestClient_DeleteRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("DELETE /api",
-			stubrouter.ResponseFromFixture("del_record-error.json").
+			servermock.ResponseFromFixture("del_record-error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 

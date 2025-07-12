@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/stubrouter"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,12 +23,12 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestAddRecord(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /add",
-			stubrouter.ResponseFromFixture("add_record.json"),
-			stubrouter.CheckHeader().
+			servermock.ResponseFromFixture("add_record.json"),
+			servermock.CheckHeader().
 				WithContentTypeFromURLEncoded(),
-			stubrouter.CheckForm().Strict().
+			servermock.CheckForm().Strict().
 				With("domain", "example.com").
 				With("subdomain", "foo").
 				With("ttl", "300").
@@ -50,10 +50,10 @@ func TestAddRecord(t *testing.T) {
 }
 
 func TestAddRecord_error(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /add",
-			stubrouter.ResponseFromFixture("add_record_error.json"),
-			stubrouter.CheckHeader().
+			servermock.ResponseFromFixture("add_record_error.json"),
+			servermock.CheckHeader().
 				WithContentTypeFromURLEncoded()).
 		Build(t)
 
@@ -70,12 +70,12 @@ func TestAddRecord_error(t *testing.T) {
 }
 
 func TestRemoveRecord(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /del",
-			stubrouter.ResponseFromFixture("remove_record.json"),
-			stubrouter.CheckHeader().
+			servermock.ResponseFromFixture("remove_record.json"),
+			servermock.CheckHeader().
 				WithContentTypeFromURLEncoded(),
-			stubrouter.CheckForm().Strict().
+			servermock.CheckForm().Strict().
 				With("domain", "example.com").
 				With("record_id", "6")).
 		Build(t)
@@ -92,10 +92,10 @@ func TestRemoveRecord(t *testing.T) {
 }
 
 func TestRemoveRecord_error(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /del",
-			stubrouter.ResponseFromFixture("remove_record_error.json"),
-			stubrouter.CheckHeader().
+			servermock.ResponseFromFixture("remove_record_error.json"),
+			servermock.CheckHeader().
 				WithContentTypeFromURLEncoded()).
 		Build(t)
 
@@ -109,10 +109,10 @@ func TestRemoveRecord_error(t *testing.T) {
 }
 
 func TestGetRecords(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("GET /list",
-			stubrouter.ResponseFromFixture("get_records.json"),
-			stubrouter.CheckForm().Strict().
+			servermock.ResponseFromFixture("get_records.json"),
+			servermock.CheckForm().Strict().
 				With("domain", "example.com")).
 		Build(t)
 
@@ -123,9 +123,9 @@ func TestGetRecords(t *testing.T) {
 }
 
 func TestGetRecords_error(t *testing.T) {
-	client := stubrouter.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("GET /list",
-			stubrouter.ResponseFromFixture("get_records_error.json")).
+			servermock.ResponseFromFixture("get_records_error.json")).
 		Build(t)
 
 	_, err := client.GetRecords(t.Context(), "example.com")

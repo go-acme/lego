@@ -26,8 +26,8 @@ Configuration for [ZoneEdit](https://www.zoneedit.com).
 Here is an example bash command using the ZoneEdit provider:
 
 ```bash
-ZONEEDIT_USER_ID="xxxxxxxxxxxxxxxxxxxxx" \
-ZONEEDIT_PASSWORD="xxxxxxxxxxxxxxxxxxxxx" \
+ZONEEDIT_USER="xxxxxxxxxxxxxxxxxxxxx" \
+ZONEEDIT_AUTH_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
 lego --email you@example.com --dns zoneedit -d '*.example.com' -d example.com run
 ```
 
@@ -38,8 +38,8 @@ lego --email you@example.com --dns zoneedit -d '*.example.com' -d example.com ru
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `ZONEEDIT_PASSWORD` | Password |
-| `ZONEEDIT_USER_ID` | User ID |
+| `ZONEEDIT_AUTH_TOKEN` | Authentication token |
+| `ZONEEDIT_USER` | User ID |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

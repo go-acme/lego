@@ -1032,7 +1032,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "DODE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "DODE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
 		ew.writeln(`	- "DODE_SEQUENCE_INTERVAL":	Time between sequential requests in seconds (Default: 60)`)
-		ew.writeln(`	- "DODE_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dode`)
@@ -1092,7 +1091,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "DUCKDNS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "DUCKDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
 		ew.writeln(`	- "DUCKDNS_SEQUENCE_INTERVAL":	Time between sequential requests in seconds (Default: 60)`)
-		ew.writeln(`	- "DUCKDNS_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/duckdns`)

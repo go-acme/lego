@@ -3495,8 +3495,8 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "ZONEEDIT_PASSWORD":	Password`)
-		ew.writeln(`	- "ZONEEDIT_USER_ID":	User ID`)
+		ew.writeln(`	- "ZONEEDIT_AUTH_TOKEN":	Authentication token`)
+		ew.writeln(`	- "ZONEEDIT_USER":	User ID`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

@@ -145,20 +145,20 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 		},
 		servermock.CheckHeader().
 			WithJSONHeaders().
-			With("Authorization", "bearer secret").
-			With("User-Agent", "civogo/0.2.21"),
+			With("Authorization", "Bearer secret").
+			WithRegexp("User-Agent", `goacme-lego/[0-9.]+ \(.+\)`),
 	)
 }
 
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		// https://www.civo.com/api/dns#list-domain-names
-		Route("GET /v2/dns",
+		Route("GET /dns",
 			servermock.ResponseFromFixture("list_domain_names.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("region", "LON1")).
 		// https://www.civo.com/api/dns#create-a-new-dns-record
-		Route("POST /v2/dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
+		Route("POST /dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
 			servermock.ResponseFromFixture("create_dns_record.json"),
 			servermock.CheckRequestJSONBodyFromFile("create_dns_record-request.json")).
 		Build(t)
@@ -170,17 +170,17 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		// https://www.civo.com/api/dns#list-domain-names
-		Route("GET /v2/dns",
+		Route("GET /dns",
 			servermock.ResponseFromFixture("list_domain_names.json"),
 			servermock.CheckQueryParameter().
 				With("region", "LON1")).
 		// https://www.civo.com/api/dns#list-dns-records
-		Route("GET /v2/dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
+		Route("GET /dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
 			servermock.ResponseFromFixture("list_dns_records.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("region", "LON1")).
 		// https://www.civo.com/api/dns#deleting-a-dns-record
-		Route("DELETE /v2/dns/edc5dacf-a2ad-4757-41ee-c12f06259c70/records/76cc107f-fbef-4e2b-b97f-f5d34f4075d3",
+		Route("DELETE /dns/edc5dacf-a2ad-4757-41ee-c12f06259c70/records/76cc107f-fbef-4e2b-b97f-f5d34f4075d3",
 			servermock.ResponseFromFixture("delete_dns_record.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("region", "LON1")).

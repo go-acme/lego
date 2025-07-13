@@ -29,7 +29,6 @@ require (
 	github.com/aziontech/azionapi-go-sdk v0.142.0
 	github.com/baidubce/bce-sdk-go v0.9.223
 	github.com/cenkalti/backoff/v4 v4.3.0
-	github.com/civo/civogo v0.3.11
 	github.com/dnsimple/dnsimple-go/v4 v4.0.0
 	github.com/exoscale/egoscale/v3 v3.1.13
 	github.com/go-jose/go-jose/v4 v4.0.5

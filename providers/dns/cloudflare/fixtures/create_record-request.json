@@ -1,9 +1,6 @@
 {
-  "created_on": "0001-01-01T00:00:00Z",
-  "modified_on": "0001-01-01T00:00:00Z",
   "type": "TXT",
   "name": "_acme-challenge.example.com",
   "content": "\"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY\"",
-  "ttl": 120,
-  "settings": {}
+  "ttl": 120
 }

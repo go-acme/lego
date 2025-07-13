@@ -234,22 +234,17 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "cloudflare: invalid credentials: key & email must not be empty",
+			expected: "cloudflare: invalid credentials: authEmail, authKey or authToken must be set",
 		},
 		{
 			desc:     "missing email",
 			authKey:  "123",
-			expected: "cloudflare: invalid credentials: key & email must not be empty",
+			expected: "cloudflare: invalid credentials: authEmail and authKey must be set together",
 		},
 		{
 			desc:      "missing api key",
 			authEmail: "test@example.com",
-			expected:  "cloudflare: invalid credentials: key & email must not be empty",
-		},
-		{
-			desc:      "missing api token, fallback to api key/email",
-			authToken: "",
-			expected:  "cloudflare: invalid credentials: key & email must not be empty",
+			expected:  "cloudflare: invalid credentials: authEmail and authKey must be set together",
 		},
 	}
 
@@ -313,7 +308,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 			return NewDNSProviderConfig(config)
 		},
 		servermock.CheckHeader().
-			With("User-Agent", "cloudflare-go/v4").
+			WithRegexp("User-Agent", `goacme-lego/[0-9.]+ \(.+\)`).
 			With("X-Auth-Email", "foo@example.com").
 			With("X-Auth-Key", "secret"),
 	)

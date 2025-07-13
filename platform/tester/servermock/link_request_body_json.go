@@ -14,9 +14,10 @@ import (
 
 // RequestBodyJSONLink validates JSON request bodies.
 type RequestBodyJSONLink struct {
-	body     []byte
-	filename string
-	data     any
+	body      []byte
+	filename  string
+	directory string
+	data      any
 }
 
 // CheckRequestJSONBody creates a [RequestBodyJSONLink] initialized with a string.
@@ -31,7 +32,10 @@ func CheckRequestJSONBodyFromStruct(data any) *RequestBodyJSONLink {
 
 // CheckRequestJSONBodyFromFile creates a [RequestBodyJSONLink] initialized with the provided request body file.
 func CheckRequestJSONBodyFromFile(filename string) *RequestBodyJSONLink {
-	return &RequestBodyJSONLink{filename: filename}
+	return &RequestBodyJSONLink{
+		filename:  filename,
+		directory: "fixtures",
+	}
 }
 
 func (l *RequestBodyJSONLink) Bind(next http.Handler) http.Handler {
@@ -55,7 +59,7 @@ func (l *RequestBodyJSONLink) Bind(next http.Handler) http.Handler {
 
 		switch {
 		case l.filename != "":
-			expectedRaw, err = os.ReadFile(filepath.Join("fixtures", l.filename))
+			expectedRaw, err = os.ReadFile(filepath.Join(l.directory, l.filename))
 			if err != nil {
 				http.Error(rw, err.Error(), http.StatusInternalServerError)
 				return
@@ -96,4 +100,10 @@ func (l *RequestBodyJSONLink) Bind(next http.Handler) http.Handler {
 
 		next.ServeHTTP(rw, req)
 	})
+}
+
+func (l *RequestBodyJSONLink) WithDirectory(directory string) *RequestBodyJSONLink {
+	l.directory = directory
+
+	return l
 }

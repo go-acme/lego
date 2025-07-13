@@ -30,7 +30,6 @@ require (
 	github.com/baidubce/bce-sdk-go v0.9.223
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/civo/civogo v0.3.11
-	github.com/cloudflare/cloudflare-go v0.115.0
 	github.com/dnsimple/dnsimple-go/v4 v4.0.0
 	github.com/exoscale/egoscale/v3 v3.1.13
 	github.com/go-jose/go-jose/v4 v4.0.5
@@ -148,7 +147,6 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.16.0 // indirect
 	github.com/go-resty/resty/v2 v2.16.5 // indirect
-	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/gofrs/flock v0.12.1 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect

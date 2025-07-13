@@ -11,11 +11,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/cloudflare/internal"
 )
 
 // Environment variables names.
@@ -156,24 +156,26 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
+	ctx := context.Background()
+
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("cloudflare: could not find zone for domain %q: %w", domain, err)
 	}
 
-	zoneID, err := d.client.ZoneIDByName(authZone)
+	zoneID, err := d.client.ZoneIDByName(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("cloudflare: failed to find zone %s: %w", authZone, err)
 	}
 
-	dnsRecord := cloudflare.CreateDNSRecordParams{
+	dnsRecord := internal.Record{
 		Type:    "TXT",
 		Name:    dns01.UnFqdn(info.EffectiveFQDN),
 		Content: `"` + info.Value + `"`,
 		TTL:     d.config.TTL,
 	}
 
-	response, err := d.client.CreateDNSRecord(context.Background(), zoneID, dnsRecord)
+	response, err := d.client.CreateDNSRecord(ctx, zoneID, dnsRecord)
 	if err != nil {
 		return fmt.Errorf("cloudflare: failed to create TXT record: %w", err)
 	}
@@ -196,7 +198,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("cloudflare: could not find zone for domain %q: %w", domain, err)
 	}
 
-	zoneID, err := d.client.ZoneIDByName(authZone)
+	zoneID, err := d.client.ZoneIDByName(context.Background(), authZone)
 	if err != nil {
 		return fmt.Errorf("cloudflare: failed to find zone %s: %w", authZone, err)
 	}

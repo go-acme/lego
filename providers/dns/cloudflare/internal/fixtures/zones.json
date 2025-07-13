@@ -1,0 +1,83 @@
+{
+  "errors": [
+    {
+      "code": 1000,
+      "message": "message",
+      "documentation_url": "documentation_url",
+      "source": {
+        "pointer": "pointer"
+      }
+    }
+  ],
+  "messages": [
+    {
+      "code": 1000,
+      "message": "message",
+      "documentation_url": "documentation_url",
+      "source": {
+        "pointer": "pointer"
+      }
+    }
+  ],
+  "success": true,
+  "result": [
+    {
+      "id": "023e105f4ecef8ad9ca31a8372d0c353",
+      "account": {
+        "id": "023e105f4ecef8ad9ca31a8372d0c353",
+        "name": "Example Account Name"
+      },
+      "meta": {
+        "cdn_only": true,
+        "custom_certificate_quota": 1,
+        "dns_only": true,
+        "foundation_dns": true,
+        "page_rule_quota": 100,
+        "phishing_detected": false,
+        "step": 2
+      },
+      "name": "example.com",
+      "owner": {
+        "id": "023e105f4ecef8ad9ca31a8372d0c353",
+        "name": "Example Org",
+        "type": "organization"
+      },
+      "plan": {
+        "id": "023e105f4ecef8ad9ca31a8372d0c353",
+        "can_subscribe": false,
+        "currency": "USD",
+        "externally_managed": false,
+        "frequency": "monthly",
+        "is_subscribed": false,
+        "legacy_discount": false,
+        "legacy_id": "free",
+        "price": 10,
+        "name": "Example Org"
+      },
+      "cname_suffix": "cdn.cloudflare.com",
+      "paused": true,
+      "permissions": [
+        "#worker:read"
+      ],
+      "tenant": {
+        "id": "023e105f4ecef8ad9ca31a8372d0c353",
+        "name": "Example Account Name"
+      },
+      "tenant_unit": {
+        "id": "023e105f4ecef8ad9ca31a8372d0c353"
+      },
+      "type": "full",
+      "vanity_name_servers": [
+        "ns1.example.com",
+        "ns2.example.com"
+      ]
+    }
+  ],
+  "result_info": {
+    "count": 1,
+    "page": 1,
+    "per_page": 20,
+    "total_count": 1,
+    "total_pages": 1
+  }
+}

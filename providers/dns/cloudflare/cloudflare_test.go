@@ -1,10 +1,12 @@
 package cloudflare
 
 import (
+	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -297,5 +299,65 @@ func TestLiveCleanUp(t *testing.T) {
 	time.Sleep(2 * time.Second)
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.AuthEmail = "foo@example.com"
+			config.AuthKey = "secret"
+			config.BaseURL = server.URL
+
+			return NewDNSProviderConfig(config)
+		},
+		servermock.CheckHeader().
+			With("User-Agent", "cloudflare-go/v4").
+			With("X-Auth-Email", "foo@example.com").
+			With("X-Auth-Key", "secret"),
+	)
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider := mockBuilder().
+		// https://developers.cloudflare.com/api/resources/zones/methods/list/
+		Route("GET /zones",
+			servermock.ResponseFromFixture("zones.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "example.com").
+				With("per_page", "50")).
+		// https://developers.cloudflare.com/api/resources/dns/subresources/records/methods/create/
+		Route("POST /zones/023e105f4ecef8ad9ca31a8372d0c353/dns_records",
+			servermock.ResponseFromFixture("create_record.json"),
+			servermock.CheckHeader().
+				WithContentType("application/json"),
+			servermock.CheckRequestJSONBodyFromFile("create_record-request.json")).
+		Build(t)
+
+	err := provider.Present("example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp(t *testing.T) {
+	provider := mockBuilder().
+		// https://developers.cloudflare.com/api/resources/zones/methods/list/
+		Route("GET /zones",
+			servermock.ResponseFromFixture("zones.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "example.com").
+				With("per_page", "50")).
+		// https://developers.cloudflare.com/api/resources/dns/subresources/records/methods/delete/
+		Route("DELETE /zones/023e105f4ecef8ad9ca31a8372d0c353/dns_records/xxx",
+			servermock.ResponseFromFixture("delete_record.json")).
+		Build(t)
+
+	token := "abc"
+
+	provider.recordIDsMu.Lock()
+	provider.recordIDs["abc"] = "xxx"
+	provider.recordIDsMu.Unlock()
+
+	err := provider.CleanUp("example.com", token, "123d==")
 	require.NoError(t, err)
 }

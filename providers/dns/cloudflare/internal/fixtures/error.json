@@ -1,0 +1,17 @@
+{
+  "success": false,
+  "errors": [
+    {
+      "code": 6003,
+      "message": "Invalid request headers",
+      "error_chain": [
+        {
+          "code": 6103,
+          "message": "Invalid format for X-Auth-Key header"
+        }
+      ]
+    }
+  ],
+  "messages": [],
+  "result": null
+}

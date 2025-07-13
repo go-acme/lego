@@ -2,14 +2,16 @@
 package civo
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
-	"github.com/civo/civogo"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/civo/internal"
 )
 
 // Environment variables names.
@@ -21,6 +23,7 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 const (
@@ -33,11 +36,12 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	ProjectID          string
-	Token              string
+	Token string
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -46,13 +50,16 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollingInterval),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
 	}
 }
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *civogo.Client
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for CIVO.
@@ -84,7 +91,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	// Create a Civo client - DNS is region independent, we can use any region
-	client, err := civogo.NewClient(config.Token, "LON1")
+	client, err := internal.NewClient(internal.OAuthStaticAccessToken(config.HTTPClient, config.Token), "LON1")
 	if err != nil {
 		return nil, fmt.Errorf("civo: %w", err)
 	}
@@ -96,6 +103,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
+	ctx := context.Background()
+
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("civo: could not find zone for domain %q: %w", domain, err)
@@ -103,7 +112,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone := dns01.UnFqdn(authZone)
 
-	dnsDomain, err := d.client.GetDNSDomain(zone)
+	domainID, err := d.getDomainIDByName(ctx, zone)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
@@ -113,10 +122,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("civo: %w", err)
 	}
 
-	_, err = d.client.CreateDNSRecord(dnsDomain.ID, &civogo.DNSRecordConfig{
+	_, err = d.client.CreateDNSRecord(ctx, domainID, internal.Record{
 		Name:  subDomain,
 		Value: info.Value,
-		Type:  civogo.DNSRecordTypeTXT,
+		Type:  "TXT",
 		TTL:   d.config.TTL,
 	})
 	if err != nil {
@@ -130,6 +139,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
+	ctx := context.Background()
+
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("civo: could not find zone for domain %q: %w", domain, err)
@@ -137,12 +148,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zone := dns01.UnFqdn(authZone)
 
-	dnsDomain, err := d.client.GetDNSDomain(zone)
+	domainID, err := d.getDomainIDByName(ctx, zone)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
 
-	dnsRecords, err := d.client.ListDNSRecords(dnsDomain.ID)
+	dnsRecords, err := d.client.ListDNSRecords(ctx, domainID)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
@@ -152,7 +163,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("civo: %w", err)
 	}
 
-	var dnsRecord civogo.DNSRecord
+	var dnsRecord internal.Record
 	for _, entry := range dnsRecords {
 		if entry.Name == subDomain && entry.Value == info.Value {
 			dnsRecord = entry
@@ -160,7 +171,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 	}
 
-	_, err = d.client.DeleteDNSRecord(&dnsRecord)
+	err = d.client.DeleteDNSRecord(ctx, dnsRecord)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
@@ -172,4 +183,19 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) getDomainIDByName(ctx context.Context, domain string) (string, error) {
+	domains, err := d.client.ListDomains(ctx)
+	if err != nil {
+		return "", fmt.Errorf("list domains: %w", err)
+	}
+
+	for _, d := range domains {
+		if d.Name == domain {
+			return d.ID, nil
+		}
+	}
+
+	return "", fmt.Errorf("domain %q not found", domain)
 }

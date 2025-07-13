@@ -1,0 +1,4 @@
+{
+  "code": "database_account_not_found",
+  "reason": "Failed to find the account within the internal database"
+}

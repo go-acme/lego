@@ -53,7 +53,7 @@ func TestClient_CreateRecord(t *testing.T) {
 
 	client := mockBuilder("myKeyB").
 		Route("POST /api/v1/records", servermock.ResponseFromFixture("create_txt_record.json"),
-			servermock.CheckRequestJSONBodyFromFile("create_txt_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create_txt_record-request.json")).
 		Build(t)
 
 	record := DNSRecord{

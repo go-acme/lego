@@ -48,7 +48,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		Route("POST /cdn/4.0/domains/"+domain+"/dns-records",
 			servermock.ResponseFromFixture("create_txt_record.json").
 				WithStatusCode(http.StatusCreated),
-			servermock.CheckRequestJSONBodyFromFile("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
 		Build(t)
 
 	record := DNSRecord{

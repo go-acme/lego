@@ -215,7 +215,7 @@ func TestAddNewRecord(t *testing.T) {
 
 			client := mockBuilder().
 				Route(test.pattern, servermock.ResponseFromFixture(test.file).WithStatusCode(test.status),
-					servermock.CheckRequestJSONBodyFromFile("add_new_record-request.json")).
+					servermock.CheckRequestJSONBodyFromFixture("add_new_record-request.json")).
 				Build(t)
 
 			record := DNSRecord{

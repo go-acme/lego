@@ -20,7 +20,7 @@ func setupClient(server *httptest.Server) (*Client, error) {
 func TestClient_GetDNSSettings(t *testing.T) {
 	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /", servermock.ResponseFromFixture("get_dns_settings.xml"),
-			servermock.CheckRequestBodyFromFile("get_dns_settings-request.xml").
+			servermock.CheckRequestBodyFromFixture("get_dns_settings-request.xml").
 				IgnoreWhitespace()).
 		Build(t)
 
@@ -99,7 +99,7 @@ func TestClient_GetDNSSettings(t *testing.T) {
 func TestClient_AddDNSSettings(t *testing.T) {
 	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /", servermock.ResponseFromFixture("add_dns_settings.xml"),
-			servermock.CheckRequestBodyFromFile("add_dns_settings-request.xml").
+			servermock.CheckRequestBodyFromFixture("add_dns_settings-request.xml").
 				IgnoreWhitespace()).
 		Build(t)
 
@@ -119,7 +119,7 @@ func TestClient_AddDNSSettings(t *testing.T) {
 func TestClient_DeleteDNSSettings(t *testing.T) {
 	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /", servermock.ResponseFromFixture("delete_dns_settings.xml"),
-			servermock.CheckRequestBodyFromFile("delete_dns_settings-request.xml").
+			servermock.CheckRequestBodyFromFixture("delete_dns_settings-request.xml").
 				IgnoreWhitespace()).
 		Build(t)
 

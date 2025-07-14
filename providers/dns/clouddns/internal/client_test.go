@@ -27,14 +27,14 @@ func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/domain/search",
 			servermock.ResponseFromFixture("domain_search.json"),
-			servermock.CheckRequestJSONBodyFromFile("domain_search-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("domain_search-request.json")).
 		Route("POST /api/record-txt", nil,
-			servermock.CheckRequestJSONBodyFromFile("record_txt-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("record_txt-request.json")).
 		Route("PUT /api/domain/A/publish", nil,
-			servermock.CheckRequestJSONBodyFromFile("publish-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("publish-request.json")).
 		Route("POST /login",
 			servermock.ResponseFromFixture("login.json"),
-			servermock.CheckRequestJSONBodyFromFile("login-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("login-request.json")).
 		Build(t)
 
 	ctx, err := client.CreateAuthenticatedContext(t.Context())
@@ -48,15 +48,15 @@ func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/domain/search",
 			servermock.ResponseFromFixture("domain_search.json"),
-			servermock.CheckRequestJSONBodyFromFile("domain_search-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("domain_search-request.json")).
 		Route("GET /api/domain/A",
 			servermock.ResponseFromFixture("domain-request.json")).
 		Route("DELETE /api/record/R01", nil).
 		Route("PUT /api/domain/A/publish", nil,
-			servermock.CheckRequestJSONBodyFromFile("publish-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("publish-request.json")).
 		Route("POST /login",
 			servermock.ResponseFromFixture("login.json"),
-			servermock.CheckRequestJSONBodyFromFile("login-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("login-request.json")).
 		Build(t)
 
 	ctx, err := client.CreateAuthenticatedContext(t.Context())

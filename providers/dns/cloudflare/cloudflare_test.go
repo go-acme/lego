@@ -2,7 +2,6 @@ package cloudflare
 
 import (
 	"net/http/httptest"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -319,17 +318,16 @@ func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		// https://developers.cloudflare.com/api/resources/zones/methods/list/
 		Route("GET /zones",
-			responseFromFixture("zones.json"),
+			servermock.ResponseFromInternal("zones.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com").
 				With("per_page", "50")).
 		// https://developers.cloudflare.com/api/resources/dns/subresources/records/methods/create/
 		Route("POST /zones/023e105f4ecef8ad9ca31a8372d0c353/dns_records",
-			responseFromFixture("create_record.json"),
+			servermock.ResponseFromInternal("create_record.json"),
 			servermock.CheckHeader().
 				WithContentType("application/json"),
-			servermock.CheckRequestJSONBodyFromFile("create_record-request.json").
-				WithDirectory(filepath.Join("internal", "fixtures"))).
+			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json")).
 		Build(t)
 
 	err := provider.Present("example.com", "abc", "123d==")
@@ -340,13 +338,13 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		// https://developers.cloudflare.com/api/resources/zones/methods/list/
 		Route("GET /zones",
-			responseFromFixture("zones.json"),
+			servermock.ResponseFromInternal("zones.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com").
 				With("per_page", "50")).
 		// https://developers.cloudflare.com/api/resources/dns/subresources/records/methods/delete/
 		Route("DELETE /zones/023e105f4ecef8ad9ca31a8372d0c353/dns_records/xxx",
-			responseFromFixture("delete_record.json")).
+			servermock.ResponseFromInternal("delete_record.json")).
 		Build(t)
 
 	token := "abc"
@@ -357,8 +355,4 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	err := provider.CleanUp("example.com", token, "123d==")
 	require.NoError(t, err)
-}
-
-func responseFromFixture(filename string) *servermock.ResponseFromFileHandler {
-	return servermock.ResponseFromFile(filepath.Join("internal", "fixtures", filename))
 }

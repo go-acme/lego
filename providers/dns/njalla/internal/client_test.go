@@ -24,7 +24,7 @@ func TestClient_AddRecord(t *testing.T) {
 	).
 		Route("POST /",
 			servermock.ResponseFromFixture("add_record.json"),
-			servermock.CheckRequestJSONBodyFromFile("add_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("add_record-request.json")).
 		Build(t)
 
 	record := Record{
@@ -80,7 +80,7 @@ func TestClient_ListRecords(t *testing.T) {
 	).
 		Route("POST /",
 			servermock.ResponseFromFixture("list_records.json"),
-			servermock.CheckRequestJSONBodyFromFile("list_records-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("list_records-request.json")).
 		Build(t)
 
 	records, err := client.ListRecords(t.Context(), "example.com")
@@ -131,7 +131,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 	).
 		Route("POST /",
 			servermock.RawStringResponse(`{"jsonrpc":"2.0"}`),
-			servermock.CheckRequestJSONBodyFromFile("remove_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("remove_record-request.json")).
 		Build(t)
 
 	err := client.RemoveRecord(t.Context(), "123", "example.com")

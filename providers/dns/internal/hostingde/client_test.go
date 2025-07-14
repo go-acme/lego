@@ -23,7 +23,7 @@ func TestClient_ListZoneConfigs(t *testing.T) {
 	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /zoneConfigsFind",
 			servermock.ResponseFromFixture("zoneConfigsFind.json"),
-			servermock.CheckRequestJSONBodyFromFile("zoneConfigsFind-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("zoneConfigsFind-request.json")).
 		Build(t)
 
 	zonesFind := ZoneConfigsFindRequest{
@@ -88,7 +88,7 @@ func TestClient_UpdateZone(t *testing.T) {
 	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /zoneUpdate",
 			servermock.ResponseFromFixture("zoneUpdate.json"),
-			servermock.CheckRequestJSONBodyFromFile("zoneUpdate-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("zoneUpdate-request.json")).
 		Build(t)
 
 	request := ZoneUpdateRequest{

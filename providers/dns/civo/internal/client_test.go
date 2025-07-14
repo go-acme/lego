@@ -108,7 +108,7 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
 			servermock.ResponseFromFixture("create_dns_record.json"),
-			servermock.CheckRequestJSONBodyFromFile("create_dns_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create_dns_record-request.json")).
 		Build(t)
 
 	record := Record{

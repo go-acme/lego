@@ -91,7 +91,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/managed/1/records", nil,
-			servermock.CheckRequestJSONBodyFromFile("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
 		Build(t)
 
 	domain := &Domain{ID: 1, Name: "foo"}

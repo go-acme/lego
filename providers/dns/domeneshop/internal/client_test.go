@@ -28,7 +28,7 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/1/dns",
 			servermock.ResponseFromFixture("create_record.json"),
-			servermock.CheckRequestJSONBodyFromFile("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
 		Build(t)
 
 	err := client.CreateTXTRecord(t.Context(), &Domain{ID: 1}, "example.com", "txtTXTtxt")

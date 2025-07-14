@@ -131,7 +131,7 @@ func TestGetDNSRecordIdx(t *testing.T) {
 func TestClient_GetDNSRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /", servermock.ResponseFromFixture("get_dns_records.json"),
-			servermock.CheckRequestJSONBodyFromFile("get_dns_records-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("get_dns_records-request.json")).
 		Build(t)
 
 	expected := []DNSRecord{{

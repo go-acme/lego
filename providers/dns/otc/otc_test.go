@@ -3,7 +3,6 @@ package otc
 import (
 	"fmt"
 	"net/http/httptest"
-	"path"
 	"testing"
 	"time"
 
@@ -216,7 +215,7 @@ func TestLiveCleanUp(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /v2/zones",
-			responseFromFixture("zones_GET.json"),
+			servermock.ResponseFromInternal("zones_GET.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Route("/", servermock.DumpRequest()).
@@ -229,7 +228,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_Present_emptyZone(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /v2/zones",
-			responseFromFixture("zones_GET_empty.json"),
+			servermock.ResponseFromInternal("zones_GET_empty.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Route("/", servermock.DumpRequest()).
@@ -242,16 +241,16 @@ func TestDNSProvider_Present_emptyZone(t *testing.T) {
 func TestDNSProvider_Cleanup(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /v2/zones",
-			responseFromFixture("zones_GET.json"),
+			servermock.ResponseFromInternal("zones_GET.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Route("GET /v2/zones/123123/recordsets",
-			responseFromFixture("zones-recordsets_GET.json"),
+			servermock.ResponseFromInternal("zones-recordsets_GET.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT")).
 		Route("DELETE /v2/zones/123123/recordsets/321321",
-			responseFromFixture("zones-recordsets_DELETE.json")).
+			servermock.ResponseFromInternal("zones-recordsets_DELETE.json")).
 		Build(t)
 
 	err := provider.CleanUp("example.com", "", "123d==")
@@ -261,11 +260,11 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 func TestDNSProvider_Cleanup_emptyRecordset(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /v2/zones",
-			responseFromFixture("zones_GET.json"),
+			servermock.ResponseFromInternal("zones_GET.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Route("GET /v2/zones/123123/recordsets",
-			responseFromFixture("zones-recordsets_GET_empty.json"),
+			servermock.ResponseFromInternal("zones-recordsets_GET_empty.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT")).
@@ -290,8 +289,4 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 		servermock.CheckHeader().WithJSONHeaders(),
 	).
 		Route("POST /v3/auth/token", internal.IdentityHandlerMock())
-}
-
-func responseFromFixture(filename string) *servermock.ResponseFromFileHandler {
-	return servermock.ResponseFromFile(path.Join("internal", "fixtures", filename))
 }

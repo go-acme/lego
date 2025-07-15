@@ -59,7 +59,7 @@ func TestClient_CheckNameservers(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /v1/domains/1/nameservers/records", nil,
-			servermock.CheckRequestJSONBodyFromFile("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
 		Build(t)
 
 	record := &Record{
@@ -110,7 +110,7 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 				},
 			})).
 		Route("PUT /v1/domains/1/nameservers/records", nil,
-			servermock.CheckRequestJSONBodyFromFile("delete_txt_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("delete_txt_record-request.json")).
 		Build(t)
 
 	info := dns01.GetChallengeInfo(domainName, "abc")

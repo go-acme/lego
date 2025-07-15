@@ -231,7 +231,7 @@ func TestClient_UpdateRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /api/v1/servers/localhost/zones/example.org.",
 			servermock.ResponseFromFixture("zone.json"),
-			servermock.CheckRequestJSONBodyFromFile("zone-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("zone-request.json")).
 		Build(t)
 
 	client.apiVersion = 1
@@ -266,7 +266,7 @@ func TestClient_UpdateRecords_NonRootApi(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /some/path/api/v1/servers/localhost/zones/example.org.",
 			servermock.ResponseFromFixture("zone.json"),
-			servermock.CheckRequestJSONBodyFromFile("zone-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("zone-request.json")).
 		Build(t)
 
 	client.Host = client.Host.JoinPath("some", "path")
@@ -302,7 +302,7 @@ func TestClient_UpdateRecords_v0(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /servers/localhost/zones/example.org.",
 			servermock.ResponseFromFixture("zone.json"),
-			servermock.CheckRequestJSONBodyFromFile("zone-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("zone-request.json")).
 		Build(t)
 
 	client.apiVersion = 0

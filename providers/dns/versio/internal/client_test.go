@@ -68,7 +68,7 @@ func TestClient_UpdateDomain(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/update",
 			servermock.ResponseFromFixture("update-domain.json"),
-			servermock.CheckRequestJSONBodyFromFile("update-domain-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("update-domain-request.json")).
 		Build(t)
 
 	msg := &DomainInfo{DNSRecords: []Record{

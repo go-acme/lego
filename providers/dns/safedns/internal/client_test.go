@@ -29,7 +29,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Route("POST /zones/example.com/records",
 			servermock.ResponseFromFixture("add_record.json").
 				WithStatusCode(http.StatusCreated),
-			servermock.CheckRequestJSONBodyFromFile("add_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("add_record-request.json")).
 		Build(t)
 
 	record := Record{

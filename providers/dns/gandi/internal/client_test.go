@@ -25,7 +25,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_GetZoneID(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /", servermock.ResponseFromFixture("get_zone_id.xml"),
-			servermock.CheckRequestBodyFromFile("get_zone_id-request.xml").IgnoreWhitespace()).
+			servermock.CheckRequestBodyFromFixture("get_zone_id-request.xml").IgnoreWhitespace()).
 		Build(t)
 
 	zoneID, err := client.GetZoneID(t.Context(), "example.com")
@@ -37,7 +37,7 @@ func TestClient_GetZoneID(t *testing.T) {
 func TestClient_CloneZone(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /", servermock.ResponseFromFixture("clone_zone.xml"),
-			servermock.CheckRequestBodyFromFile("clone_zone-request.xml").IgnoreWhitespace()).
+			servermock.CheckRequestBodyFromFixture("clone_zone-request.xml").IgnoreWhitespace()).
 		Build(t)
 
 	zoneID, err := client.CloneZone(t.Context(), 6, "foo")
@@ -49,7 +49,7 @@ func TestClient_CloneZone(t *testing.T) {
 func TestClient_NewZoneVersion(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /", servermock.ResponseFromFixture("new_zone_version.xml"),
-			servermock.CheckRequestBodyFromFile("new_zone_version-request.xml").IgnoreWhitespace()).
+			servermock.CheckRequestBodyFromFixture("new_zone_version-request.xml").IgnoreWhitespace()).
 		Build(t)
 
 	zoneID, err := client.NewZoneVersion(t.Context(), 6)
@@ -61,7 +61,7 @@ func TestClient_NewZoneVersion(t *testing.T) {
 func TestClient_AddTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /", servermock.ResponseFromFixture("empty.xml"),
-			servermock.CheckRequestBodyFromFile("add_txt_record-request.xml").IgnoreWhitespace()).
+			servermock.CheckRequestBodyFromFixture("add_txt_record-request.xml").IgnoreWhitespace()).
 		Build(t)
 
 	err := client.AddTXTRecord(t.Context(), 1, 123, "foo", "content", 120)
@@ -71,7 +71,7 @@ func TestClient_AddTXTRecord(t *testing.T) {
 func TestClient_SetZoneVersion(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /", servermock.ResponseFromFixture("set_zone_version.xml"),
-			servermock.CheckRequestBodyFromFile("set_zone_version-request.xml").IgnoreWhitespace()).
+			servermock.CheckRequestBodyFromFixture("set_zone_version-request.xml").IgnoreWhitespace()).
 		Build(t)
 
 	err := client.SetZoneVersion(t.Context(), 1, 123)
@@ -81,7 +81,7 @@ func TestClient_SetZoneVersion(t *testing.T) {
 func TestClient_SetZone(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /", servermock.ResponseFromFixture("set_zone.xml"),
-			servermock.CheckRequestBodyFromFile("set_zone-request.xml").IgnoreWhitespace()).
+			servermock.CheckRequestBodyFromFixture("set_zone-request.xml").IgnoreWhitespace()).
 		Build(t)
 
 	err := client.SetZone(t.Context(), "example.com", 1)
@@ -91,7 +91,7 @@ func TestClient_SetZone(t *testing.T) {
 func TestClient_DeleteZone(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /", servermock.ResponseFromFixture("delete_zone.xml"),
-			servermock.CheckRequestBodyFromFile("delete_zone-request.xml").IgnoreWhitespace()).
+			servermock.CheckRequestBodyFromFixture("delete_zone-request.xml").IgnoreWhitespace()).
 		Build(t)
 
 	err := client.DeleteZone(t.Context(), 1)

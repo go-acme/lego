@@ -28,7 +28,7 @@ func TestClient_AddTxtRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zone/example.com/_stream",
 			servermock.ResponseFromFixture("add_record.json"),
-			servermock.CheckRequestJSONBodyFromFile("add_record-request.json"),
+			servermock.CheckRequestJSONBodyFromFixture("add_record-request.json"),
 			servermock.CheckHeader().
 				With("X-Domainrobot-Context", "123")).
 		Build(t)
@@ -58,7 +58,7 @@ func TestClient_RemoveTXTRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zone/example.com/_stream",
 			servermock.ResponseFromFixture("remove_record.json"),
-			servermock.CheckRequestJSONBodyFromFile("remove_record-request.json"),
+			servermock.CheckRequestJSONBodyFromFixture("remove_record-request.json"),
 			servermock.CheckHeader().
 				With("X-Domainrobot-Context", "123")).
 		Build(t)

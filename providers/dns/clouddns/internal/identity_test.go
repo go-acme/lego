@@ -12,7 +12,7 @@ func TestClient_CreateAuthenticatedContext(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /login",
 			servermock.ResponseFromFixture("login.json"),
-			servermock.CheckRequestJSONBodyFromFile("login-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("login-request.json")).
 		Route("DELETE /api/record/xxx", nil).
 		Build(t)
 

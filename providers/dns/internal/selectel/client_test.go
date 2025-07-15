@@ -80,7 +80,7 @@ func TestClient_AddRecord(t *testing.T) {
 			With(tokenHeader, "token")).
 		Route("POST /123/records/",
 			servermock.ResponseFromFixture("add_record.json"),
-			servermock.CheckRequestJSONBodyFromFile("add_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("add_record-request.json")).
 		Build(t)
 
 	record, err := client.AddRecord(t.Context(), 123, Record{

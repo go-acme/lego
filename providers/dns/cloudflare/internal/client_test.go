@@ -39,7 +39,7 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 			servermock.ResponseFromFixture("create_record.json"),
 			servermock.CheckHeader().
 				WithContentType("application/json"),
-			servermock.CheckRequestJSONBodyFromFile("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
 		Build(t)
 
 	record := Record{

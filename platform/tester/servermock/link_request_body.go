@@ -27,6 +27,16 @@ func CheckRequestBodyFromFile(filename string) *RequestBodyLink {
 	return &RequestBodyLink{filename: filename}
 }
 
+// CheckRequestBodyFromFixture creates a [RequestBodyLink] initialized with the provided request body file from the `fixtures` directory.
+func CheckRequestBodyFromFixture(filename string) *RequestBodyLink {
+	return CheckRequestBodyFromFile(filepath.Join("fixtures", filename))
+}
+
+// CheckRequestBodyFromInternal creates a [RequestBodyLink] initialized with the provided request body file from the `internal/fixtures directory.
+func CheckRequestBodyFromInternal(filename string) *RequestBodyLink {
+	return CheckRequestBodyFromFile(filepath.Join("internal", "fixtures", filename))
+}
+
 func (l *RequestBodyLink) Bind(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.ContentLength == 0 {
@@ -45,7 +55,7 @@ func (l *RequestBodyLink) Bind(next http.Handler) http.Handler {
 		expectedRaw := slices.Clone(l.body)
 
 		if l.filename != "" {
-			expectedRaw, err = os.ReadFile(filepath.Join("fixtures", l.filename))
+			expectedRaw, err = os.ReadFile(l.filename)
 			if err != nil {
 				http.Error(rw, err.Error(), http.StatusInternalServerError)
 				return

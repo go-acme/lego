@@ -19,7 +19,7 @@ func mockContext(t *testing.T) context.Context {
 func TestClient_Login(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /", servermock.ResponseFromFixture("login.json"),
-			servermock.CheckRequestJSONBodyFromFile("login-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("login-request.json")).
 		Build(t)
 
 	sessionID, err := client.login(t.Context())
@@ -69,7 +69,7 @@ func TestClient_Login_errors(t *testing.T) {
 func TestClient_Logout(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /", servermock.ResponseFromFixture("logout.json"),
-			servermock.CheckRequestJSONBodyFromFile("logout-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("logout-request.json")).
 		Build(t)
 
 	err := client.Logout(mockContext(t))

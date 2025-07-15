@@ -3,7 +3,6 @@ package namecheap
 import (
 	"net/http"
 	"net/http/httptest"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -54,7 +53,7 @@ func TestDNSProvider_Present(t *testing.T) {
 
 			provider := mockBuilder().
 				Route("GET /",
-					servermock.ResponseFromFile(filepath.Join("internal", "fixtures", test.getHostsResponse)),
+					servermock.ResponseFromInternal(test.getHostsResponse),
 					servermock.CheckForm().Strict().
 						With("ClientIp", "10.0.0.1").
 						With("Command", "namecheap.domains.dns.getHosts").
@@ -65,7 +64,7 @@ func TestDNSProvider_Present(t *testing.T) {
 						With("ApiUser", "foo"),
 				).
 				Route("POST /",
-					servermock.ResponseFromFile(filepath.Join("internal", "fixtures", test.setHostsResponse)),
+					servermock.ResponseFromInternal(test.setHostsResponse),
 					servermock.CheckForm().
 						With("ClientIp", "10.0.0.1").
 						With("Command", "namecheap.domains.dns.setHosts").
@@ -94,7 +93,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 			provider := mockBuilder().
 				Route("GET /",
-					servermock.ResponseFromFile(filepath.Join("internal", "fixtures", test.getHostsResponse)),
+					servermock.ResponseFromInternal(test.getHostsResponse),
 					servermock.CheckForm().Strict().
 						With("ClientIp", "10.0.0.1").
 						With("Command", "namecheap.domains.dns.getHosts").
@@ -105,7 +104,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 						With("ApiUser", "foo"),
 				).
 				Route("POST /",
-					servermock.ResponseFromFile(filepath.Join("internal", "fixtures", test.setHostsResponse)),
+					servermock.ResponseFromInternal(test.setHostsResponse),
 					servermock.CheckForm().
 						With("ClientIp", "10.0.0.1").
 						With("Command", "namecheap.domains.dns.setHosts").

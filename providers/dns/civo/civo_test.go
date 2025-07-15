@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http/httptest"
 	"net/url"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -155,14 +154,13 @@ func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		// https://www.civo.com/api/dns#list-domain-names
 		Route("GET /dns",
-			responseFromFixture("list_domain_names.json"),
+			servermock.ResponseFromInternal("list_domain_names.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("region", "LON1")).
 		// https://www.civo.com/api/dns#create-a-new-dns-record
 		Route("POST /dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
-			responseFromFixture("create_dns_record.json"),
-			servermock.CheckRequestJSONBodyFromFile("create_dns_record-request.json").
-				WithDirectory(filepath.Join("internal", "fixtures"))).
+			servermock.ResponseFromInternal("create_dns_record.json"),
+			servermock.CheckRequestJSONBodyFromInternal("create_dns_record-request.json")).
 		Build(t)
 
 	err := provider.Present("example.com", "abd", "123d==")
@@ -173,25 +171,21 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		// https://www.civo.com/api/dns#list-domain-names
 		Route("GET /dns",
-			responseFromFixture("list_domain_names.json"),
+			servermock.ResponseFromInternal("list_domain_names.json"),
 			servermock.CheckQueryParameter().
 				With("region", "LON1")).
 		// https://www.civo.com/api/dns#list-dns-records
 		Route("GET /dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
-			responseFromFixture("list_dns_records.json"),
+			servermock.ResponseFromInternal("list_dns_records.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("region", "LON1")).
 		// https://www.civo.com/api/dns#deleting-a-dns-record
 		Route("DELETE /dns/edc5dacf-a2ad-4757-41ee-c12f06259c70/records/76cc107f-fbef-4e2b-b97f-f5d34f4075d3",
-			responseFromFixture("delete_dns_record.json"),
+			servermock.ResponseFromInternal("delete_dns_record.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("region", "LON1")).
 		Build(t)
 
 	err := provider.CleanUp("example.com", "abd", "123d==")
 	require.NoError(t, err)
-}
-
-func responseFromFixture(filename string) *servermock.ResponseFromFileHandler {
-	return servermock.ResponseFromFile(filepath.Join("internal", "fixtures", filename))
 }

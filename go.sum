@@ -118,8 +118,6 @@ github.com/alibabacloud-go/alibabacloud-gateway-pop v0.0.6/go.mod h1:4EUIoxs/do2
 github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.4/go.mod h1:sCavSAvdzOjul4cEqeVtvlSaSScfNsTQ+46HwlTL1hc=
 github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.5 h1:zE8vH9C7JiZLNJJQ5OwjU9mSi4T9ef9u3BURT6LCLC8=
 github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.5/go.mod h1:tWnyE9AjF8J8qqLk645oUmVUnFybApTQWklQmi5tY6g=
-github.com/alibabacloud-go/alidns-20150109/v4 v4.5.10 h1:lEYfSDh8puQigWN2pyOxE1gaI6o2bxFhJSSeX+ZJSf4=
-github.com/alibabacloud-go/alidns-20150109/v4 v4.5.10/go.mod h1:EdHRU3Y2j8OXc2ljp00A0zMLQ8sORHxI4yPnODNztRc=
 github.com/alibabacloud-go/darabonba-array v0.1.0 h1:vR8s7b1fWAQIjEjWnuF0JiKsCvclSRTfDzZHTYqfufY=
 github.com/alibabacloud-go/darabonba-array v0.1.0/go.mod h1:BLKxr0brnggqOJPqT09DFJ8g3fsDshapUD3C3aOEFaI=
 github.com/alibabacloud-go/darabonba-encode-util v0.0.2 h1:1uJGrbsGEVqWcWxrS9MyC2NG0Ax+GpOM5gtupki31XE=
@@ -313,6 +311,8 @@ github.com/gabriel-vasile/mimetype v1.4.2 h1:w5qFW6JKBz9Y393Y4q372O9A7cUSequkh1Q
 github.com/gabriel-vasile/mimetype v1.4.2/go.mod h1:zApsH/mKG4w07erKIaJPFiX0Tsq9BFQgN3qGY5GnNgA=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
+github.com/go-acme/alidns-20150109/v4 v4.5.10 h1:epLD0VaHR5XUpiM6mjm4MzQFICrk+zpuqDz2aO1/R/k=
+github.com/go-acme/alidns-20150109/v4 v4.5.10/go.mod h1:qGRq8kD0xVgn82qRSQmhHwh/oWxKRjF4Db5OI4ScV5g=
 github.com/go-acme/tencentclouddnspod v1.0.1208 h1:xAVy1lmg2KcKKeYmFSBQUttwc1o1S++9QTjAotGC+BM=
 github.com/go-acme/tencentclouddnspod v1.0.1208/go.mod h1:yxG02mkbbVd7lTb97nOn7oj09djhm7hAwxNQw4B9dpQ=
 github.com/go-cmd/cmd v1.0.5/go.mod h1:y8q8qlK5wQibcw63djSl/ntiHUHXHGdCkPk0j4QeW4s=

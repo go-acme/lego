@@ -16,7 +16,6 @@ require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
-	github.com/alibabacloud-go/alidns-20150109/v4 v4.5.10
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.11
 	github.com/aliyun/credentials-go v1.4.5
 	github.com/aws/aws-sdk-go-v2 v1.36.3
@@ -31,6 +30,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/dnsimple/dnsimple-go/v4 v4.0.0
 	github.com/exoscale/egoscale/v3 v3.1.13
+	github.com/go-acme/alidns-20150109/v4 v4.5.10
 	github.com/go-acme/tencentclouddnspod v1.0.1208
 	github.com/go-jose/go-jose/v4 v4.0.5
 	github.com/go-viper/mapstructure/v2 v2.2.1

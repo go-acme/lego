@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	alidns "github.com/alibabacloud-go/alidns-20150109/v4/client"
 	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
 	"github.com/aliyun/credentials-go/credentials"
+	alidns "github.com/go-acme/alidns-20150109/v4/client"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -162,7 +162,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	_, err = d.client.AddDomainRecord(recordRequest)
+	_, err = alidns.AddDomainRecord(d.client, recordRequest)
 	if err != nil {
 		return fmt.Errorf("alicloud: API call failed: %w", err)
 	}
@@ -188,7 +188,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			RecordId: rec.RecordId,
 		}
 
-		_, err = d.client.DeleteDomainRecord(request)
+		_, err = alidns.DeleteDomainRecord(d.client, request)
 		if err != nil {
 			return fmt.Errorf("alicloud: %w", err)
 		}
@@ -206,7 +206,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	for {
 		request.SetPageNumber(startPage)
 
-		response, err := d.client.DescribeDomains(request)
+		response, err := alidns.DescribeDomains(d.client, request)
 		if err != nil {
 			return "", fmt.Errorf("API call failed: %w", err)
 		}
@@ -265,7 +265,7 @@ func (d *DNSProvider) findTxtRecords(fqdn string) ([]*alidns.DescribeDomainRecor
 
 	var records []*alidns.DescribeDomainRecordsResponseBodyDomainRecordsRecord
 
-	result, err := d.client.DescribeDomainRecords(request)
+	result, err := alidns.DescribeDomainRecords(d.client, request)
 	if err != nil {
 		return records, fmt.Errorf("API call has failed: %w", err)
 	}

@@ -313,6 +313,8 @@ github.com/gabriel-vasile/mimetype v1.4.2 h1:w5qFW6JKBz9Y393Y4q372O9A7cUSequkh1Q
 github.com/gabriel-vasile/mimetype v1.4.2/go.mod h1:zApsH/mKG4w07erKIaJPFiX0Tsq9BFQgN3qGY5GnNgA=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
+github.com/go-acme/tencentclouddnspod v1.0.1208 h1:xAVy1lmg2KcKKeYmFSBQUttwc1o1S++9QTjAotGC+BM=
+github.com/go-acme/tencentclouddnspod v1.0.1208/go.mod h1:yxG02mkbbVd7lTb97nOn7oj09djhm7hAwxNQw4B9dpQ=
 github.com/go-cmd/cmd v1.0.5/go.mod h1:y8q8qlK5wQibcw63djSl/ntiHUHXHGdCkPk0j4QeW4s=
 github.com/go-errors/errors v1.0.1 h1:LUHzmkK3GUKUrL/1gfBUxAHzcev3apQlezX/+O7ma6w=
 github.com/go-errors/errors v1.0.1/go.mod h1:f4zRHt4oKfwPJE5k8C9vpYG+aDHdBFUsgrm6/TyX73Q=
@@ -891,10 +893,8 @@ github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/subosito/gotenv v1.6.0 h1:9NlTDc1FTs4qu0DDq7AEtTPNw6SVm7uBMsUCUjABIf8=
 github.com/subosito/gotenv v1.6.0/go.mod h1:Dk4QP5c2W3ibzajGcXpNraDfq2IrhjMIvMSWPKKo0FU=
-github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1128 h1:NGnqDc8FQL0YdiCHgTO4Wkso6ToD8rE3JW9VOzoPBNA=
-github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1128/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
-github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.1128 h1:mrJ5Fbkd7sZIJ5F6oRfh5zebPQaudPH9Y0+GUmFytYU=
-github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.1128/go.mod h1:zbsYIBT+VTX4z4ocjTAdLBIWyNYj3z0BRqd0iPdnjsk=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1208 h1:hE2rM9GoqISu4lgQVbx9+bTlPOB000pdUfbT9lwrC50=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1208/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tjfoc/gmsm v1.3.2/go.mod h1:HaUcFuY0auTiaHB9MHFGCPx5IaLhTUd2atbCFBQXn9w=
 github.com/tjfoc/gmsm v1.4.1 h1:aMe1GlZb+0bLjn+cKTPEvvn9oUEBlJitaZiiBwsbgho=
 github.com/tjfoc/gmsm v1.4.1/go.mod h1:j4INPkHWMrhJb38G+J6W4Tw0AbuN8Thu3PbdVYhVcTE=

@@ -6,9 +6,9 @@ import (
 	"fmt"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	dnspod "github.com/go-acme/tencentclouddnspod/v20210323"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	errorsdk "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
-	dnspod "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod/v20210323"
 	"golang.org/x/net/idna"
 )
 
@@ -18,7 +18,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*dnspod
 	var domains []*dnspod.DomainListItem
 
 	for {
-		response, err := d.client.DescribeDomainListWithContext(ctx, request)
+		response, err := dnspod.DescribeDomainListWithContext(ctx, d.client, request)
 		if err != nil {
 			return nil, fmt.Errorf("API call failed: %w", err)
 		}
@@ -65,7 +65,7 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, zone *dnspod.DomainLis
 	request.RecordType = common.StringPtr("TXT")
 	request.RecordLine = common.StringPtr("默认")
 
-	response, err := d.client.DescribeRecordListWithContext(ctx, request)
+	response, err := dnspod.DescribeRecordListWithContext(ctx, d.client, request)
 	if err != nil {
 		var sdkError *errorsdk.TencentCloudSDKError
 		if errors.As(err, &sdkError) {

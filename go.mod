@@ -31,6 +31,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/dnsimple/dnsimple-go/v4 v4.0.0
 	github.com/exoscale/egoscale/v3 v3.1.13
+	github.com/go-acme/tencentclouddnspod v1.0.1208
 	github.com/go-jose/go-jose/v4 v4.0.5
 	github.com/go-viper/mapstructure/v2 v2.2.1
 	github.com/google/go-cmp v0.7.0
@@ -75,8 +76,7 @@ require (
 	github.com/selectel/go-selvpcclient/v4 v4.1.0
 	github.com/softlayer/softlayer-go v1.1.7
 	github.com/stretchr/testify v1.10.0
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1128
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.1128
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1208
 	github.com/transip/gotransip/v6 v6.26.0
 	github.com/ultradns/ultradns-go-sdk v1.8.0-20241010134910-243eeec
 	github.com/urfave/cli/v2 v2.27.6

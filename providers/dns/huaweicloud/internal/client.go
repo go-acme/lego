@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package internal partial copy of https://github.com/huaweicloud/huaweicloud-sdk-go-v3/blob/v0.1.159/services/dns/v2/dns_client.go
+// Package internal is a partial copy of https://github.com/huaweicloud/huaweicloud-sdk-go-v3/blob/v0.1.159/services/dns/v2/dns_client.go
 package internal
 
 import (

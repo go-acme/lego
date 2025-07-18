@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/platform/wait"
+	"github.com/go-acme/lego/v4/providers/dns/huaweicloud/internal"
 	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
 	hwauthbasic "github.com/huaweicloud/huaweicloud-sdk-go-v3/core/auth/basic"
 	hwconfig "github.com/huaweicloud/huaweicloud-sdk-go-v3/core/config"
@@ -62,7 +63,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *hwdns.DnsClient
+	client *internal.DnsClient
 
 	recordIDs   map[string]string
 	recordIDsMu sync.Mutex
@@ -119,7 +120,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	return &DNSProvider{
 		config:    config,
-		client:    hwdns.NewDnsClient(client),
+		client:    internal.NewDnsClient(client),
 		recordIDs: map[string]string{},
 	}, nil
 }

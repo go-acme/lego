@@ -170,6 +170,9 @@ linters:
     presets:
       - comments
       - std-error-handling
+    paths:
+      # Those elements are related to code borrowed from the official HuaweiCloud API client.
+      - providers/dns/huaweicloud/internal
     rules:
       - path: (.+)_test.go
         linters:

@@ -42,7 +42,7 @@ require (
 	github.com/hashicorp/go-version v1.7.0
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.159
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
-	github.com/infobloxopen/infoblox-go-client/v2 v2.9.0
+	github.com/infobloxopen/infoblox-go-client/v2 v2.10.0
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/ldez/grignotin v0.9.0
 	github.com/linode/linodego v1.48.1

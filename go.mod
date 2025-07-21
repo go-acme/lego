@@ -19,7 +19,7 @@ require (
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.11
 	github.com/aliyun/credentials-go v1.4.5
 	github.com/aws/aws-sdk-go-v2 v1.36.6
-	github.com/aws/aws-sdk-go-v2/config v1.29.9
+	github.com/aws/aws-sdk-go-v2/config v1.29.18
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.71
 	github.com/aws/aws-sdk-go-v2/service/lightsail v1.43.1
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.50.0

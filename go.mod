@@ -71,7 +71,7 @@ require (
 	github.com/regfish/regfish-dnsapi-go v0.1.1
 	github.com/sacloud/api-client-go v0.3.2
 	github.com/sacloud/iaas-api-go v1.16.1
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.32
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.34
 	github.com/selectel/domains-go v1.1.0
 	github.com/selectel/go-selvpcclient/v4 v4.1.0
 	github.com/softlayer/softlayer-go v1.1.7

@@ -57,7 +57,7 @@ require (
 	github.com/nrdcg/dnspod-go v0.4.0
 	github.com/nrdcg/freemyip v0.3.0
 	github.com/nrdcg/goacmedns v0.2.0
-	github.com/nrdcg/goinwx v0.10.0
+	github.com/nrdcg/goinwx v0.11.0
 	github.com/nrdcg/mailinabox v0.2.0
 	github.com/nrdcg/namesilo v0.2.1
 	github.com/nrdcg/nodion v0.1.0

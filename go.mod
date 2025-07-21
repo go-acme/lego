@@ -79,7 +79,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1210
 	github.com/transip/gotransip/v6 v6.26.0
 	github.com/ultradns/ultradns-go-sdk v1.8.0-20241010134910-243eeec
-	github.com/urfave/cli/v2 v2.27.6
+	github.com/urfave/cli/v2 v2.27.7
 	github.com/vinyldns/go-vinyldns v0.9.16
 	github.com/volcengine/volc-sdk-golang v1.0.199
 	github.com/vultr/govultr/v3 v3.17.0
@@ -131,7 +131,7 @@ require (
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
 	github.com/clbanning/mxj/v2 v2.7.0 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect

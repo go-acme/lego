@@ -22,7 +22,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.18
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.71
 	github.com/aws/aws-sdk-go-v2/service/lightsail v1.43.5
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.50.0
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.53.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.78.2
 	github.com/aws/aws-sdk-go-v2/service/sts v1.34.1
 	github.com/aziontech/azionapi-go-sdk v0.142.0

@@ -201,12 +201,11 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			consumerKey:       "D",
 		},
 		{
-			desc:              "application key: missing api endpoint",
+			desc:              "application key: default api endpoint",
 			apiEndpoint:       "",
 			applicationKey:    "B",
 			applicationSecret: "C",
 			consumerKey:       "D",
-			expected:          "ovh: new client: unknown endpoint '', consider checking 'Endpoints' list or using an URL",
 		},
 		{
 			desc:              "application key: invalid api endpoint",
@@ -239,11 +238,10 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			clientSecret: "C",
 		},
 		{
-			desc:         "oauth2: missing api endpoint",
+			desc:         "oauth2: default api endpoint",
 			apiEndpoint:  "",
 			clientID:     "B",
 			clientSecret: "C",
-			expected:     "ovh: new client: unknown endpoint '', consider checking 'Endpoints' list or using an URL",
 		},
 		{
 			desc:         "oauth2: invalid api endpoint",

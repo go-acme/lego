@@ -929,8 +929,8 @@ github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 h1:gEOO8jv9F4OT7lGC
 github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1/go.mod h1:Ohn+xnUBiLI6FVj/9LpzZWtj1/D6lUovWYBkxHVV3aM=
 github.com/yandex-cloud/go-genproto v0.14.0 h1:yDqD260mICkjodXyAaDhESfrLr6gIGwwRc9MYE0jvW0=
 github.com/yandex-cloud/go-genproto v0.14.0/go.mod h1:0LDD/IZLIUIV4iPH+YcF+jysO3jkSvADFGm4dCAuwQo=
-github.com/yandex-cloud/go-sdk/services/dns v0.0.2 h1:NgnRRqTT/vnbwsiaZjtRBZaDDa6lIP3dFyCHCgclgYg=
-github.com/yandex-cloud/go-sdk/services/dns v0.0.2/go.mod h1:IfuJXXIz7bkQIVD1HS6UinfffzpXexJUPMvffVUsPOU=
+github.com/yandex-cloud/go-sdk/services/dns v0.0.3 h1:erphTBXKSpm/tETa6FXrw4niSHjhySzAKHUc2/BZKx0=
+github.com/yandex-cloud/go-sdk/services/dns v0.0.3/go.mod h1:lbBaFJVouETfVnd3YzNF5vW6vgYR2FVfGLUzLexyGlI=
 github.com/yandex-cloud/go-sdk/v2 v2.0.8 h1:wQNIzEZYnClSQyo2fjEgnGEErWjJNBpSAinaKcP+VSg=
 github.com/yandex-cloud/go-sdk/v2 v2.0.8/go.mod h1:9Gqpq7d0EUAS+H2OunILtMi3hmMPav+fYoy9rmydM4s=
 github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d/go.mod h1:rHwXgn7JulP+udvsHwJoVG1YGAP6VLg4y9I5dyZdqmA=

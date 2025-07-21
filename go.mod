@@ -70,7 +70,7 @@ require (
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/regfish/regfish-dnsapi-go v0.1.1
 	github.com/sacloud/api-client-go v0.3.2
-	github.com/sacloud/iaas-api-go v1.14.0
+	github.com/sacloud/iaas-api-go v1.16.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.32
 	github.com/selectel/domains-go v1.1.0
 	github.com/selectel/go-selvpcclient/v4 v4.1.0
@@ -136,7 +136,7 @@ require (
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/fsnotify/fsnotify v1.8.0 // indirect
+	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect

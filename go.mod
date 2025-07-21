@@ -17,7 +17,7 @@ require (
 	github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.11
-	github.com/aliyun/credentials-go v1.4.5
+	github.com/aliyun/credentials-go v1.4.6
 	github.com/aws/aws-sdk-go-v2 v1.36.6
 	github.com/aws/aws-sdk-go-v2/config v1.29.18
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.71

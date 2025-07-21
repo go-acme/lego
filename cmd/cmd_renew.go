@@ -356,16 +356,15 @@ func needRenewal(x509Cert *x509.Certificate, domain string, days int, dynamic bo
 		log.Fatalf("[%s] Certificate bundle starts with a CA certificate", domain)
 	}
 
+	if dynamic {
+		return needRenewalDynamic(x509Cert, domain, time.Now())
+	}
+
 	if days < 0 {
 		return true
 	}
 
 	notAfter := int(time.Until(x509Cert.NotAfter).Hours() / 24.0)
-
-	if dynamic {
-		return needRenewalDynamic(x509Cert, time.Now(), domain, notAfter)
-	}
-
 	if notAfter <= days {
 		return true
 	}
@@ -376,7 +375,7 @@ func needRenewal(x509Cert *x509.Certificate, domain string, days int, dynamic bo
 	return false
 }
 
-func needRenewalDynamic(x509Cert *x509.Certificate, now time.Time, domain string, notAfter int) bool {
+func needRenewalDynamic(x509Cert *x509.Certificate, domain string, now time.Time) bool {
 	lifetime := x509Cert.NotAfter.Sub(x509Cert.NotBefore)
 
 	var divisor int64 = 3
@@ -386,11 +385,14 @@ func needRenewalDynamic(x509Cert *x509.Certificate, now time.Time, domain string
 
 	dueDate := x509Cert.NotAfter.Add(-1 * time.Duration(lifetime.Nanoseconds()/divisor))
 
-	if !(dueDate.Before(now)) {
-		log.Printf("[%s] The certificate expires in %d days; will dynamically renew when 1/%d of the lifetime remains, in %d days: no renewal",
-			domain, notAfter, divisor, int(dueDate.Sub(now).Round(24*time.Hour).Hours()/24.0))
+	if dueDate.Before(now) {
+		return true
 	}
-	return dueDate.Before(now)
+
+	log.Infof("[%s] The certificate expires at %s, the renewal can be performed in %s: no renewal.",
+		domain, x509Cert.NotAfter.Format(time.RFC3339), dueDate.Sub(now))
+
+	return false
 }
 
 // getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.

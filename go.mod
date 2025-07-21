@@ -29,7 +29,7 @@ require (
 	github.com/baidubce/bce-sdk-go v0.9.235
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/dnsimple/dnsimple-go/v4 v4.0.0
-	github.com/exoscale/egoscale/v3 v3.1.13
+	github.com/exoscale/egoscale/v3 v3.1.24
 	github.com/go-acme/alidns-20150109/v4 v4.5.10
 	github.com/go-acme/tencentclouddnspod v1.0.1208
 	github.com/go-jose/go-jose/v4 v4.0.5

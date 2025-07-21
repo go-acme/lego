@@ -1,5 +1,26 @@
 # Changelog
 
+## [v4.25.0](https://github.com/go-acme/lego/releases/tag/v4.25.0) (2025-07-21)
+
+The binary size of this release is about ~50% smaller compared to previous releases.
+
+This will also reduce the module cache usage by 320 MB (this will only affect users of lego as a library or who build lego themselves).
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for ZoneEdit
+- **[cli]** Add an option to define dynamically the renew date
+- **[lib,cli]** Add an option to disable common name in CSR
+
+### Changed
+- 
+- **[dnsprovider]** vinyldns: add an option to add quotes around the TXT record value
+- **[dnsprovider]** ionos: increase default propagation timeout
+
+### Fixed
+
+- **[cli]** fix: enforce domain into renewal command
+
 ## [v4.24.0](https://github.com/go-acme/lego/releases/tag/v4.24.0) (2025-07-07)
 
 ### Added

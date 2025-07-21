@@ -48,7 +48,7 @@ require (
 	github.com/linode/linodego v1.53.0
 	github.com/liquidweb/liquidweb-go v1.6.4
 	github.com/mattn/go-isatty v0.0.20
-	github.com/miekg/dns v1.1.64
+	github.com/miekg/dns v1.1.67
 	github.com/mimuret/golang-iij-dpf v0.9.1
 	github.com/namedotcom/go/v4 v4.0.2
 	github.com/nrdcg/auroradns v1.1.0

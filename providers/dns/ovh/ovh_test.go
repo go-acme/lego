@@ -238,7 +238,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			clientSecret: "C",
 		},
 		{
-			desc:         "oauth2: default api endpointt",
+			desc:         "oauth2: default api endpoint",
 			apiEndpoint:  "",
 			clientID:     "B",
 			clientSecret: "C",

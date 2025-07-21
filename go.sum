@@ -682,8 +682,8 @@ github.com/nrdcg/auroradns v1.1.0 h1:KekGh8kmf2MNwqZVVYo/fw/ZONt8QMEmbMFOeljteWo
 github.com/nrdcg/auroradns v1.1.0/go.mod h1:O7tViUZbAcnykVnrGkXzIJTHoQCHcgalgAe6X1mzHfk=
 github.com/nrdcg/bunny-go v0.0.0-20250327222614-988a091fc7ea h1:OSgRS4kqOs/WuxuFOObP2gwrenL4/qiKXQbQugr/Two=
 github.com/nrdcg/bunny-go v0.0.0-20250327222614-988a091fc7ea/go.mod h1:IDRRngAngb2eTEaWgpO0hukQFI/vJId46fT1KErMytA=
-github.com/nrdcg/desec v0.10.0 h1:qrEDiqnsvNU9QE7lXIXi/tIHAfyaFXKxF2/8/52O8uM=
-github.com/nrdcg/desec v0.10.0/go.mod h1:5+4vyhMRTs49V9CNoODF/HwT8Mwxv9DJ6j+7NekUnBs=
+github.com/nrdcg/desec v0.11.0 h1:XZVHy07sg12y8FozMp+l7XvzPsdzog0AYXuQMaHBsfs=
+github.com/nrdcg/desec v0.11.0/go.mod h1:5+4vyhMRTs49V9CNoODF/HwT8Mwxv9DJ6j+7NekUnBs=
 github.com/nrdcg/dnspod-go v0.4.0 h1:c/jn1mLZNKF3/osJ6mz3QPxTudvPArXTjpkmYj0uK6U=
 github.com/nrdcg/dnspod-go v0.4.0/go.mod h1:vZSoFSFeQVm2gWLMkyX61LZ8HI3BaqtHZWgPTGKr6KQ=
 github.com/nrdcg/freemyip v0.3.0 h1:0D2rXgvLwe2RRaVIjyUcQ4S26+cIS2iFwnhzDsEuuwc=

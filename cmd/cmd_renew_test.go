@@ -161,7 +161,8 @@ func Test_needRenewalDynamic(t *testing.T) {
 				NotAfter:  test.notAfter,
 			}
 
-			ok := needRenewalDynamic(x509Cert, test.now)
+			notAfter := int(test.notAfter.Sub(test.now).Hours() / 24.0)
+			ok := needRenewalDynamic(x509Cert, test.now, "foo.com", notAfter)
 
 			test.expected(t, ok)
 		})

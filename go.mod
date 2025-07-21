@@ -65,7 +65,7 @@ require (
 	github.com/nrdcg/oci-go-sdk/dns/v1065 v1065.95.0
 	github.com/nrdcg/porkbun v0.4.0
 	github.com/nzdjb/go-metaname v1.0.0
-	github.com/ovh/go-ovh v1.7.0
+	github.com/ovh/go-ovh v1.9.0
 	github.com/pquerna/otp v1.4.0
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/regfish/regfish-dnsapi-go v0.1.1

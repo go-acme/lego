@@ -5,8 +5,7 @@ import (
 	"testing"
 	"time"
 
-	configdns "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v2"
-	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/edgegrid"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/stretchr/testify/require"
@@ -50,13 +49,13 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				EnvClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 				EnvAccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
 			},
-			expectedConfig: &edgegrid.Config{
-				Host:         "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net",
-				ClientToken:  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
-				ClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-				AccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
-				MaxBody:      maxBody,
-			},
+			expectedConfig: newConfig(func(config *edgegrid.Config) {
+				config.Host = "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net"
+				config.ClientToken = "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx"
+				config.ClientSecret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+				config.AccessToken = "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx"
+				config.MaxBody = maxBody
+			}, edgegrid.WithEnv(true), edgegrid.WithFile("/dev/null")),
 		},
 		{
 			desc: "with account switch key",
@@ -67,14 +66,14 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				EnvAccessToken:      "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
 				EnvAccountSwitchKey: "F-AC-1234",
 			},
-			expectedConfig: &edgegrid.Config{
-				Host:         "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net",
-				ClientToken:  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
-				ClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-				AccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
-				MaxBody:      maxBody,
-				AccountKey:   "F-AC-1234",
-			},
+			expectedConfig: newConfig(func(config *edgegrid.Config) {
+				config.Host = "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net"
+				config.ClientToken = "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx"
+				config.ClientSecret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+				config.AccessToken = "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx"
+				config.MaxBody = maxBody
+				config.AccountKey = "F-AC-1234"
+			}, edgegrid.WithEnv(true), edgegrid.WithFile("/dev/null")),
 		},
 		{
 			desc: "with section",
@@ -85,17 +84,17 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				envTestClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 				envTestAccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
 			},
-			expectedConfig: &edgegrid.Config{
-				Host:         "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net",
-				ClientToken:  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
-				ClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-				AccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
-				MaxBody:      maxBody,
-			},
+			expectedConfig: newConfig(func(config *edgegrid.Config) {
+				config.Host = "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net"
+				config.ClientToken = "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx"
+				config.ClientSecret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+				config.AccessToken = "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx"
+				config.MaxBody = maxBody
+			}, edgegrid.WithEnv(true), edgegrid.WithFile("/dev/null"), edgegrid.WithSection("test")),
 		},
 		{
 			desc:        "missing credentials",
-			expectedErr: "edgedns: Unable to create instance using environment or .edgerc file",
+			expectedErr: `edgedns: unable to load config from environment or .edgerc file: provided config section does not exist: section "default" does not exist`,
 		},
 		{
 			desc: "missing host",
@@ -105,7 +104,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				EnvClientSecret: "C",
 				EnvAccessToken:  "D",
 			},
-			expectedErr: "edgedns: Unable to create instance using environment or .edgerc file",
+			expectedErr: `edgedns: unable to load config from environment or .edgerc file: provided config section does not exist: section "default" does not exist`,
 		},
 		{
 			desc: "missing client token",
@@ -115,7 +114,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				EnvClientSecret: "C",
 				EnvAccessToken:  "D",
 			},
-			expectedErr: "edgedns: Fatal missing required environment variables: [AKAMAI_CLIENT_TOKEN]",
+			expectedErr: `edgedns: unable to load config from environment or .edgerc file: provided config section does not exist: section "default" does not exist`,
 		},
 		{
 			desc: "missing client secret",
@@ -125,7 +124,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				EnvClientSecret: "",
 				EnvAccessToken:  "D",
 			},
-			expectedErr: "edgedns: Fatal missing required environment variables: [AKAMAI_CLIENT_SECRET]",
+			expectedErr: `edgedns: unable to load config from environment or .edgerc file: provided config section does not exist: section "default" does not exist`,
 		},
 		{
 			desc: "missing access token",
@@ -135,7 +134,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				EnvClientSecret: "C",
 				EnvAccessToken:  "",
 			},
-			expectedErr: "edgedns: Fatal missing required environment variables: [AKAMAI_ACCESS_TOKEN]",
+			expectedErr: `edgedns: unable to load config from environment or .edgerc file: provided config section does not exist: section "default" does not exist`,
 		},
 	}
 
@@ -147,6 +146,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 			if test.envVars == nil {
 				test.envVars = map[string]string{}
 			}
+
 			test.envVars[EnvEdgeRc] = "/dev/null"
 
 			envTest.Apply(test.envVars)
@@ -163,10 +163,15 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 			require.NotNil(t, p.config)
 
 			if test.expectedConfig != nil {
-				require.Equal(t, *test.expectedConfig, configdns.Config)
+				require.Equal(t, test.expectedConfig, p.config.Config)
 			}
 		})
 	}
+}
+
+func newConfig(opts ...edgegrid.Option) *edgegrid.Config {
+	config, _ := edgegrid.New(opts...)
+	return config
 }
 
 func TestDNSProvider_findZone(t *testing.T) {
@@ -212,7 +217,7 @@ func TestNewDefaultConfig(t *testing.T) {
 				TTL:                dns01.DefaultTTL,
 				PropagationTimeout: 3 * time.Minute,
 				PollingInterval:    15 * time.Second,
-				Config: edgegrid.Config{
+				Config: &edgegrid.Config{
 					MaxBody: maxBody,
 				},
 			},
@@ -228,7 +233,7 @@ func TestNewDefaultConfig(t *testing.T) {
 				TTL:                99,
 				PropagationTimeout: 60 * time.Second,
 				PollingInterval:    60 * time.Second,
-				Config: edgegrid.Config{
+				Config: &edgegrid.Config{
 					MaxBody: maxBody,
 				},
 			},

@@ -20,8 +20,10 @@ import (
 const (
 	envNamespace = "OCI_"
 
-	EnvAuthType        = envNamespace + "AUTH_TYPE"
+	EnvAuthType = envNamespace + "AUTH_TYPE"
+
 	EnvCompartmentOCID = envNamespace + "COMPARTMENT_OCID"
+	EnvRegion          = envNamespace + "REGION"
 
 	envPrivKey           = envNamespace + "PRIVKEY"
 	EnvPrivKeyFile       = envPrivKey + "_FILE"
@@ -29,7 +31,6 @@ const (
 	EnvTenancyOCID       = envNamespace + "TENANCY_OCID"
 	EnvUserOCID          = envNamespace + "USER_OCID"
 	EnvPubKeyFingerprint = envNamespace + "PUBKEY_FINGERPRINT"
-	EnvRegion            = envNamespace + "REGION"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"

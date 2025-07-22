@@ -26,12 +26,18 @@ Configuration for [Oracle Cloud](https://cloud.oracle.com/home).
 Here is an example bash command using the Oracle Cloud provider:
 
 ```bash
+# Using API Key authentication:
 OCI_PRIVKEY_FILE="~/.oci/oci_api_key.pem" \
 OCI_PRIVKEY_PASS="secret" \
 OCI_TENANCY_OCID="ocid1.tenancy.oc1..secret" \
 OCI_USER_OCID="ocid1.user.oc1..secret" \
 OCI_PUBKEY_FINGERPRINT="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" \
 OCI_REGION="us-phoenix-1" \
+OCI_COMPARTMENT_OCID="ocid1.tenancy.oc1..secret" \
+lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com run
+
+# Using Instance Principal authentication (when running on OCI compute instances):
+OCI_AUTH_TYPE="instance_principal" \
 OCI_COMPARTMENT_OCID="ocid1.tenancy.oc1..secret" \
 lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com run
 ```

@@ -68,6 +68,12 @@ func (p *configProvider) Region() (string, error) {
 }
 
 func (p *configProvider) AuthType() (common.AuthConfig, error) {
+	if authType := p.values[EnvAuthType]; authType != "" {
+		if authType == "user_principal" {
+			return common.AuthConfig{AuthType: common.UserPrincipal, IsFromConfigFile: true}, nil
+		}
+	}
+
 	// Inspired by https://github.com/oracle/oci-go-sdk/blob/e7635c292e60d0a9dcdd3a1e7de180d7c99b1eee/common/configuration.go#L231-L234
 	return common.AuthConfig{AuthType: common.UnknownAuthenticationType}, errors.New("unsupported, keep the interface")
 }

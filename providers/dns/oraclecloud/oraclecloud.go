@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/oraclecloud/internal"
 	"github.com/nrdcg/oci-go-sdk/common/v1065"
 	"github.com/nrdcg/oci-go-sdk/dns/v1065"
 )
@@ -19,9 +20,9 @@ import (
 const (
 	envNamespace = "OCI_"
 
-	EnvAuthType = envNamespace + "AUTH_TYPE"
+	EnvAuthType        = envNamespace + "AUTH_TYPE"
+	EnvCompartmentOCID = envNamespace + "COMPARTMENT_OCID"
 
-	EnvCompartmentOCID   = envNamespace + "COMPARTMENT_OCID"
 	envPrivKey           = envNamespace + "PRIVKEY"
 	EnvPrivKeyFile       = envPrivKey + "_FILE"
 	EnvPrivKeyPass       = envPrivKey + "_PASS"
@@ -40,8 +41,9 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	CompartmentID      string
-	OCIConfigProvider  common.ConfigurationProvider
+	CompartmentID     string
+	OCIConfigProvider common.ConfigurationProvider
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -68,23 +70,27 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for OracleCloud.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvCompartmentOCID)
-	if err != nil {
-		return nil, fmt.Errorf("oraclecloud: %w", err)
-	}
-
-	values[envPrivKey] = env.GetOrFile(envPrivKey)
-	values[EnvPrivKeyFile] = env.GetOrFile(envPrivKey)
-	values[EnvPrivKeyPass] = env.GetOrFile(EnvPrivKeyPass)
-	values[EnvTenancyOCID] = env.GetOrFile(EnvTenancyOCID)
-	values[EnvUserOCID] = env.GetOrFile(EnvUserOCID)
-	values[EnvPubKeyFingerprint] = env.GetOrFile(EnvPubKeyFingerprint)
-	values[EnvRegion] = env.GetOrFile(EnvRegion)
-	values[EnvAuthType] = env.GetOrFile(EnvAuthType)
-
 	config := NewDefaultConfig()
-	config.CompartmentID = values[EnvCompartmentOCID]
-	config.OCIConfigProvider = newConfigProvider(values)
+
+	switch env.GetOrFile(EnvAuthType) {
+	case string(common.InstancePrincipal):
+		values, err := env.Get(EnvCompartmentOCID)
+		if err != nil {
+			return nil, fmt.Errorf("oraclecloud: %w", err)
+		}
+
+		config.CompartmentID = values[EnvCompartmentOCID]
+		config.OCIConfigProvider = &internal.InstancePrincipalConfigurationProvider{}
+
+	default:
+		values, err := env.Get(envPrivKey, EnvTenancyOCID, EnvUserOCID, EnvPubKeyFingerprint, EnvRegion, EnvCompartmentOCID)
+		if err != nil {
+			return nil, fmt.Errorf("oraclecloud: %w", err)
+		}
+
+		config.CompartmentID = values[EnvCompartmentOCID]
+		config.OCIConfigProvider = newEnvironmentConfigurationProvider(values)
+	}
 
 	return NewDNSProviderConfig(config)
 }

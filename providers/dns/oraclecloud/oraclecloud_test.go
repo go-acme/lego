@@ -273,12 +273,12 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockConfigurationProvider(keyPassphrase string) *configProvider {
+func mockConfigurationProvider(keyPassphrase string) *environmentConfigurationProvider {
 	envTest.Apply(map[string]string{
 		envPrivKey: mustGeneratePrivateKey("secret"),
 	})
 
-	return &configProvider{
+	return &environmentConfigurationProvider{
 		values: map[string]string{
 			EnvCompartmentOCID:   "test",
 			EnvPrivKeyPass:       "test",

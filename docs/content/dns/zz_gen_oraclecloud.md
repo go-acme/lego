@@ -44,12 +44,12 @@ lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `OCI_COMPARTMENT_OCID` | Compartment OCID |
-| `OCI_PRIVKEY_FILE` | Private key file |
-| `OCI_PRIVKEY_PASS` | Private key password |
-| `OCI_PUBKEY_FINGERPRINT` | Public key fingerprint |
-| `OCI_REGION` | Region |
-| `OCI_TENANCY_OCID` | Tenancy OCID |
-| `OCI_USER_OCID` | User OCID |
+| `OCI_PRIVKEY_FILE` | Private key file (ignored if OCI_AUTH_TYPE=instance_principal) |
+| `OCI_PRIVKEY_PASS` | Private key password (ignored if OCI_AUTH_TYPE=instance_principal) |
+| `OCI_PUBKEY_FINGERPRINT` | Public key fingerprint (ignored if OCI_AUTH_TYPE=instance_principal) |
+| `OCI_REGION` | Region (ignored if OCI_AUTH_TYPE=instance_principal) |
+| `OCI_TENANCY_OCID` | Tenancy OCID (ignored if OCI_AUTH_TYPE=instance_principal) |
+| `OCI_USER_OCID` | User OCID (ignored if OCI_AUTH_TYPE=instance_principal) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
@@ -59,6 +59,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `OCI_AUTH_TYPE` | Authorization type. Possible values: 'instance_principal', ''  (Default: '') |
 | `OCI_HTTP_TIMEOUT` | API request timeout in seconds (Default: 60) |
 | `OCI_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
 | `OCI_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |

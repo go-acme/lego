@@ -5,6 +5,7 @@ Code = "oraclecloud"
 Since = "v2.3.0"
 
 Example = '''
+# Using API Key authentication:
 OCI_PRIVKEY_FILE="~/.oci/oci_api_key.pem" \
 OCI_PRIVKEY_PASS="secret" \
 OCI_TENANCY_OCID="ocid1.tenancy.oc1..secret" \
@@ -13,18 +14,25 @@ OCI_PUBKEY_FINGERPRINT="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" \
 OCI_REGION="us-phoenix-1" \
 OCI_COMPARTMENT_OCID="ocid1.tenancy.oc1..secret" \
 lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com run
+
+# Using Instance Principal authentication (when running on OCI compute instances):
+# https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
+OCI_AUTH_TYPE="instance_principal" \
+OCI_COMPARTMENT_OCID="ocid1.tenancy.oc1..secret" \
+lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com run
 '''
 
 [Configuration]
   [Configuration.Credentials]
-    OCI_PRIVKEY_FILE = "Private key file"
-    OCI_PRIVKEY_PASS = "Private key password"
-    OCI_TENANCY_OCID = "Tenancy OCID"
-    OCI_USER_OCID = "User OCID"
-    OCI_PUBKEY_FINGERPRINT = "Public key fingerprint"
-    OCI_REGION = "Region"
     OCI_COMPARTMENT_OCID = "Compartment OCID"
+    OCI_REGION = "Region (can be empty if OCI_AUTH_TYPE=instance_principal)"
+    OCI_PRIVKEY_FILE = "Private key file (ignored if OCI_AUTH_TYPE=instance_principal)"
+    OCI_PRIVKEY_PASS = "Private key password (ignored if OCI_AUTH_TYPE=instance_principal)"
+    OCI_TENANCY_OCID = "Tenancy OCID (ignored if OCI_AUTH_TYPE=instance_principal)"
+    OCI_USER_OCID = "User OCID (ignored if OCI_AUTH_TYPE=instance_principal)"
+    OCI_PUBKEY_FINGERPRINT = "Public key fingerprint (ignored if OCI_AUTH_TYPE=instance_principal)"
   [Configuration.Additional]
+    OCI_AUTH_TYPE = "Authorization type. Possible values: 'instance_principal', ''  (Default: '')"
     OCI_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     OCI_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
     OCI_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"

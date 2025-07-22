@@ -1,5 +1,11 @@
 # Changelog
 
+## [v4.25.1](https://github.com/go-acme/lego/releases/tag/v4.25.1) (2025-07-21)
+
+### Fixed
+
+- **[cli]** fix: wrong CLI flag type
+
 ## [v4.25.0](https://github.com/go-acme/lego/releases/tag/v4.25.0) (2025-07-21)
 
 The binary size of this release is about ~50% smaller compared to previous releases.

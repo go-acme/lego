@@ -89,7 +89,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			EnvVars: []string{envEmail},
 			Usage:   "Email used for registration and recovery contact.",
 		},
-		&cli.StringFlag{
+		&cli.BoolFlag{
 			Name:    flgDisableCommonName,
 			EnvVars: []string{flgDisableCommonName},
 			Usage:   "Disable the use of the common name in the CSR.",

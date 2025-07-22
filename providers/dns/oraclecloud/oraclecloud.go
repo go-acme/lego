@@ -19,6 +19,8 @@ import (
 const (
 	envNamespace = "OCI_"
 
+	EnvAuthType = envNamespace + "AUTH_TYPE"
+
 	EnvCompartmentOCID   = envNamespace + "COMPARTMENT_OCID"
 	envPrivKey           = envNamespace + "PRIVKEY"
 	EnvPrivKeyFile       = envPrivKey + "_FILE"
@@ -66,10 +68,19 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for OracleCloud.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(envPrivKey, EnvTenancyOCID, EnvUserOCID, EnvPubKeyFingerprint, EnvRegion, EnvCompartmentOCID)
+	values, err := env.Get(EnvCompartmentOCID)
 	if err != nil {
 		return nil, fmt.Errorf("oraclecloud: %w", err)
 	}
+
+	values[envPrivKey] = env.GetOrFile(envPrivKey)
+	values[EnvPrivKeyFile] = env.GetOrFile(envPrivKey)
+	values[EnvPrivKeyPass] = env.GetOrFile(EnvPrivKeyPass)
+	values[EnvTenancyOCID] = env.GetOrFile(EnvTenancyOCID)
+	values[EnvUserOCID] = env.GetOrFile(EnvUserOCID)
+	values[EnvPubKeyFingerprint] = env.GetOrFile(EnvPubKeyFingerprint)
+	values[EnvRegion] = env.GetOrFile(EnvRegion)
+	values[EnvAuthType] = env.GetOrFile(EnvAuthType)
 
 	config := NewDefaultConfig()
 	config.CompartmentID = values[EnvCompartmentOCID]

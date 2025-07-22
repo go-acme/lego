@@ -11,8 +11,8 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/oraclecloud/internal"
 	"github.com/nrdcg/oci-go-sdk/common/v1065"
+	"github.com/nrdcg/oci-go-sdk/common/v1065/auth"
 	"github.com/nrdcg/oci-go-sdk/dns/v1065"
 )
 
@@ -80,7 +80,13 @@ func NewDNSProvider() (*DNSProvider, error) {
 		}
 
 		config.CompartmentID = values[EnvCompartmentOCID]
-		config.OCIConfigProvider = &internal.InstancePrincipalConfigurationProvider{}
+
+		configurationProvider, err := auth.InstancePrincipalConfigurationProviderForRegion(common.Region(env.GetOrFile(EnvRegion)))
+		if err != nil {
+			return nil, fmt.Errorf("oraclecloud: %w", err)
+		}
+
+		config.OCIConfigProvider = configurationProvider
 
 	default:
 		values, err := env.Get(envPrivKey, EnvTenancyOCID, EnvUserOCID, EnvPubKeyFingerprint, EnvRegion, EnvCompartmentOCID)

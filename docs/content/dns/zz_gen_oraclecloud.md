@@ -37,6 +37,7 @@ OCI_COMPARTMENT_OCID="ocid1.tenancy.oc1..secret" \
 lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com run
 
 # Using Instance Principal authentication (when running on OCI compute instances):
+# https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
 OCI_AUTH_TYPE="instance_principal" \
 OCI_COMPARTMENT_OCID="ocid1.tenancy.oc1..secret" \
 lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com run
@@ -53,7 +54,7 @@ lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com
 | `OCI_PRIVKEY_FILE` | Private key file (ignored if OCI_AUTH_TYPE=instance_principal) |
 | `OCI_PRIVKEY_PASS` | Private key password (ignored if OCI_AUTH_TYPE=instance_principal) |
 | `OCI_PUBKEY_FINGERPRINT` | Public key fingerprint (ignored if OCI_AUTH_TYPE=instance_principal) |
-| `OCI_REGION` | Region (ignored if OCI_AUTH_TYPE=instance_principal) |
+| `OCI_REGION` | Region |
 | `OCI_TENANCY_OCID` | Tenancy OCID (ignored if OCI_AUTH_TYPE=instance_principal) |
 | `OCI_USER_OCID` | User OCID (ignored if OCI_AUTH_TYPE=instance_principal) |
 

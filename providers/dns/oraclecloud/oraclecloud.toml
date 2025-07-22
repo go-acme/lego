@@ -17,14 +17,15 @@ lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com
 
 [Configuration]
   [Configuration.Credentials]
-    OCI_PRIVKEY_FILE = "Private key file"
-    OCI_PRIVKEY_PASS = "Private key password"
-    OCI_TENANCY_OCID = "Tenancy OCID"
-    OCI_USER_OCID = "User OCID"
-    OCI_PUBKEY_FINGERPRINT = "Public key fingerprint"
-    OCI_REGION = "Region"
     OCI_COMPARTMENT_OCID = "Compartment OCID"
+    OCI_PRIVKEY_FILE = "Private key file (ignored if OCI_AUTH_TYPE=instance_principal)"
+    OCI_PRIVKEY_PASS = "Private key password (ignored if OCI_AUTH_TYPE=instance_principal)"
+    OCI_TENANCY_OCID = "Tenancy OCID (ignored if OCI_AUTH_TYPE=instance_principal)"
+    OCI_USER_OCID = "User OCID (ignored if OCI_AUTH_TYPE=instance_principal)"
+    OCI_PUBKEY_FINGERPRINT = "Public key fingerprint (ignored if OCI_AUTH_TYPE=instance_principal)"
+    OCI_REGION = "Region (ignored if OCI_AUTH_TYPE=instance_principal)"
   [Configuration.Additional]
+    OCI_AUTH_TYPE = "Authorization type. Possible values: 'instance_principal', ''  (Default: '')"
     OCI_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     OCI_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
     OCI_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"

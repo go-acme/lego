@@ -2476,7 +2476,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "OCI_PRIVKEY_FILE":	Private key file (ignored if OCI_AUTH_TYPE=instance_principal)`)
 		ew.writeln(`	- "OCI_PRIVKEY_PASS":	Private key password (ignored if OCI_AUTH_TYPE=instance_principal)`)
 		ew.writeln(`	- "OCI_PUBKEY_FINGERPRINT":	Public key fingerprint (ignored if OCI_AUTH_TYPE=instance_principal)`)
-		ew.writeln(`	- "OCI_REGION":	Region`)
+		ew.writeln(`	- "OCI_REGION":	Region (can be empty if OCI_AUTH_TYPE=instance_principal)`)
 		ew.writeln(`	- "OCI_TENANCY_OCID":	Tenancy OCID (ignored if OCI_AUTH_TYPE=instance_principal)`)
 		ew.writeln(`	- "OCI_USER_OCID":	User OCID (ignored if OCI_AUTH_TYPE=instance_principal)`)
 		ew.writeln()

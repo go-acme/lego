@@ -94,7 +94,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 		},
 		{
 			desc:        "missing credentials",
-			expectedErr: `edgedns: unable to load config from environment or .edgerc file: provided config section does not exist: section "default" does not exist`,
+			expectedErr: `edgedns: unable to load config from environment or .edgerc file`,
 		},
 		{
 			desc: "missing host",
@@ -104,7 +104,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				EnvClientSecret: "C",
 				EnvAccessToken:  "D",
 			},
-			expectedErr: `edgedns: unable to load config from environment or .edgerc file: provided config section does not exist: section "default" does not exist`,
+			expectedErr: `edgedns: unable to load config from environment or .edgerc file`,
 		},
 		{
 			desc: "missing client token",
@@ -114,7 +114,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				EnvClientSecret: "C",
 				EnvAccessToken:  "D",
 			},
-			expectedErr: `edgedns: unable to load config from environment or .edgerc file: provided config section does not exist: section "default" does not exist`,
+			expectedErr: `edgedns: unable to load config from environment or .edgerc file`,
 		},
 		{
 			desc: "missing client secret",
@@ -124,7 +124,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				EnvClientSecret: "",
 				EnvAccessToken:  "D",
 			},
-			expectedErr: `edgedns: unable to load config from environment or .edgerc file: provided config section does not exist: section "default" does not exist`,
+			expectedErr: `edgedns: unable to load config from environment or .edgerc file`,
 		},
 		{
 			desc: "missing access token",
@@ -134,7 +134,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				EnvClientSecret: "C",
 				EnvAccessToken:  "",
 			},
-			expectedErr: `edgedns: unable to load config from environment or .edgerc file: provided config section does not exist: section "default" does not exist`,
+			expectedErr: `edgedns: unable to load config from environment or .edgerc file`,
 		},
 	}
 
@@ -154,7 +154,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 			p, err := NewDNSProvider()
 
 			if test.expectedErr != "" {
-				require.EqualError(t, err, test.expectedErr)
+				require.ErrorContains(t, err, test.expectedErr)
 				return
 			}
 

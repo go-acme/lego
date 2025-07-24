@@ -1,7 +1,6 @@
 package edgedns
 
 import (
-	"os"
 	"testing"
 	"time"
 
@@ -20,6 +19,9 @@ const (
 )
 
 var envTest = tester.NewEnvTest(
+	EnvTTL,
+	EnvPollingInterval,
+	EnvPropagationTimeout,
 	EnvHost,
 	EnvClientToken,
 	EnvClientSecret,
@@ -34,7 +36,7 @@ var envTest = tester.NewEnvTest(
 	WithDomain(envDomain).
 	WithLiveTestRequirements(EnvHost, EnvClientToken, EnvClientSecret, EnvAccessToken, envDomain)
 
-func TestNewDNSProvider_FromEnv(t *testing.T) {
+func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
 		desc           string
 		envVars        map[string]string
@@ -49,7 +51,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				EnvClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 				EnvAccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
 			},
-			expectedConfig: newConfig(func(config *edgegrid.Config) {
+			expectedConfig: newEdgeConfig(func(config *edgegrid.Config) {
 				config.Host = "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net"
 				config.ClientToken = "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx"
 				config.ClientSecret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -66,7 +68,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				EnvAccessToken:      "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
 				EnvAccountSwitchKey: "F-AC-1234",
 			},
-			expectedConfig: newConfig(func(config *edgegrid.Config) {
+			expectedConfig: newEdgeConfig(func(config *edgegrid.Config) {
 				config.Host = "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net"
 				config.ClientToken = "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx"
 				config.ClientSecret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -84,7 +86,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				envTestClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 				envTestAccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
 			},
-			expectedConfig: newConfig(func(config *edgegrid.Config) {
+			expectedConfig: newEdgeConfig(func(config *edgegrid.Config) {
 				config.Host = "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net"
 				config.ClientToken = "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx"
 				config.ClientSecret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -169,43 +171,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 	}
 }
 
-func newConfig(opts ...edgegrid.Option) *edgegrid.Config {
-	config, _ := edgegrid.New(opts...)
-	return config
-}
-
-func TestDNSProvider_findZone(t *testing.T) {
-	testCases := []struct {
-		desc     string
-		domain   string
-		expected string
-	}{
-		{
-			desc:     "Extract root record name",
-			domain:   "example.com.",
-			expected: "example.com",
-		},
-		{
-			desc:     "Extract sub record name",
-			domain:   "foo.example.com.",
-			expected: "example.com",
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			zone, err := getZone(test.domain)
-			require.NoError(t, err)
-			require.Equal(t, test.expected, zone)
-		})
-	}
-}
-
 func TestNewDefaultConfig(t *testing.T) {
-	defer envTest.RestoreEnv()
-
 	testCases := []struct {
 		desc     string
 		envVars  map[string]string
@@ -242,14 +208,48 @@ func TestNewDefaultConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
-			for key, value := range test.envVars {
-				os.Setenv(key, value)
-			}
+
+			envTest.Apply(test.envVars)
 
 			config := NewDefaultConfig()
 
 			require.Equal(t, test.expected, config)
 		})
 	}
+}
+
+func Test_findZone(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		domain   string
+		expected string
+	}{
+		{
+			desc:     "Extract root record name",
+			domain:   "example.com.",
+			expected: "example.com",
+		},
+		{
+			desc:     "Extract sub record name",
+			domain:   "foo.example.com.",
+			expected: "example.com",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			zone, err := getZone(test.domain)
+			require.NoError(t, err)
+			require.Equal(t, test.expected, zone)
+		})
+	}
+}
+
+func newEdgeConfig(opts ...edgegrid.Option) *edgegrid.Config {
+	config, _ := edgegrid.New(opts...)
+	return config
 }

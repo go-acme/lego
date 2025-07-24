@@ -243,14 +243,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	var newRData []string
-	for _, val := range existingRec.Target {
-		val = strings.Trim(val, `"`)
-		if val == info.Value {
-			continue
-		}
-		newRData = append(newRData, val)
-	}
+	newRData := filterRData(existingRec, info)
 
 	if len(newRData) > 0 {
 		existingRec.Target = newRData
@@ -307,4 +300,17 @@ func isNotFound(err error) bool {
 
 	var e *edgegriddns.Error
 	return errors.As(err, &e) && e.StatusCode == http.StatusNotFound
+}
+
+func filterRData(existingRec *edgegriddns.GetRecordResponse, info dns01.ChallengeInfo) []string {
+	var newRData []string
+	for _, val := range existingRec.Target {
+		val = strings.Trim(val, `"`)
+		if val == info.Value {
+			continue
+		}
+		newRData = append(newRData, val)
+	}
+
+	return newRData
 }

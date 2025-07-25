@@ -52,7 +52,7 @@ func TestNewDNSProvider(t *testing.T) {
 				envServiceAccountFile: "",
 				// as Travis run on GCE, we have to alter env
 				envGoogleApplicationCredentials: "not-a-secret-file",
-				envMetadataHost:                 "http://lego.wtf", // defined here to avoid the client cache.
+				envMetadataHost:                 "http://example.com", // defined here to avoid the client cache.
 			},
 			// the error message varies according to the OS used.
 			expected: "googlecloud: unable to get Google Cloud client: google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: ",
@@ -63,7 +63,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvProject:            "",
 				envServiceAccountFile: "",
 				// as Travis run on GCE, we have to alter env
-				envMetadataHost: "http://lego.wtf",
+				envMetadataHost: "http://example.com",
 			},
 			expected: "googlecloud: project name missing",
 		},
@@ -154,7 +154,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 				},
 			}),
 			servermock.CheckQueryParameter().Strict().
-				With("dnsName", "lego.wtf.").
+				With("dnsName", "example.com.").
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		// findTxtRecords
@@ -163,7 +163,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 				Rrsets: []*dns.ResourceRecordSet{},
 			}),
 			servermock.CheckQueryParameter().Strict().
-				With("name", "_acme-challenge.lego.wtf.").
+				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT").
 				With("prettyPrint", "false").
 				With("alt", "json")).
@@ -189,7 +189,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 				With("alt", "json")).
 		Build(t)
 
-	domain := "lego.wtf"
+	domain := "example.com"
 
 	err := provider.Present(domain, "", "")
 	require.NoError(t, err)
@@ -205,21 +205,21 @@ func TestPresentWithExistingRR(t *testing.T) {
 				},
 			}),
 			servermock.CheckQueryParameter().Strict().
-				With("dnsName", "lego.wtf.").
+				With("dnsName", "example.com.").
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		// findTxtRecords
 		Route("GET /dns/v1/projects/manhattan/managedZones/test/rrsets",
 			servermock.JSONEncode(&dns.ResourceRecordSetsListResponse{
 				Rrsets: []*dns.ResourceRecordSet{{
-					Name:    "_acme-challenge.lego.wtf.",
+					Name:    "_acme-challenge.example.com.",
 					Rrdatas: []string{`"X7DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"huji"`},
 					Ttl:     120,
 					Type:    "TXT",
 				}},
 			}),
 			servermock.CheckQueryParameter().Strict().
-				With("name", "_acme-challenge.lego.wtf.").
+				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT").
 				With("prettyPrint", "false").
 				With("alt", "json")).
@@ -260,7 +260,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 				With("alt", "json")).
 		Build(t)
 
-	domain := "lego.wtf"
+	domain := "example.com"
 
 	err := provider.Present(domain, "", "")
 	require.NoError(t, err)
@@ -276,27 +276,27 @@ func TestPresentSkipExistingRR(t *testing.T) {
 				},
 			}),
 			servermock.CheckQueryParameter().Strict().
-				With("dnsName", "lego.wtf.").
+				With("dnsName", "example.com.").
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		// findTxtRecords
 		Route("GET /dns/v1/projects/manhattan/managedZones/test/rrsets",
 			servermock.JSONEncode(&dns.ResourceRecordSetsListResponse{
 				Rrsets: []*dns.ResourceRecordSet{{
-					Name:    "_acme-challenge.lego.wtf.",
+					Name:    "_acme-challenge.example.com.",
 					Rrdatas: []string{`"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"X7DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"huji"`},
 					Ttl:     120,
 					Type:    "TXT",
 				}},
 			}),
 			servermock.CheckQueryParameter().Strict().
-				With("name", "_acme-challenge.lego.wtf.").
+				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT").
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		Build(t)
 
-	domain := "lego.wtf"
+	domain := "example.com"
 
 	err := provider.Present(domain, "", "")
 	require.NoError(t, err)

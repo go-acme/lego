@@ -1,7 +1,7 @@
 [
   {
     "id": 273301,
-    "name": "aaa.wtf",
+    "name": "aaa.example",
     "soa": {
       "primaryNameserver": "ns11.constellix.com.",
       "email": "dns.constellix.com.",
@@ -36,7 +36,7 @@
   },
   {
     "id": 273302,
-    "name": "bbb.wtf",
+    "name": "bbb.example",
     "soa": {
       "primaryNameserver": "ns11.constellix.com.",
       "email": "dns.constellix.com.",
@@ -71,7 +71,7 @@
   },
   {
     "id": 273303,
-    "name": "ccc.wtf",
+    "name": "ccc.example",
     "soa": {
       "primaryNameserver": "ns11.constellix.com.",
       "email": "dns.constellix.com.",
@@ -106,7 +106,7 @@
   },
   {
     "id": 273304,
-    "name": "ddd.wtf",
+    "name": "ddd.example",
     "soa": {
       "primaryNameserver": "ns11.constellix.com.",
       "email": "dns.constellix.com.",

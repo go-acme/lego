@@ -96,6 +96,8 @@ func (c *CertificateService) getCertificateChain(cert []byte, headers http.Heade
 		return &acme.RawCertificate{Cert: cert, Issuer: issuer}
 	}
 
+	// TODO(ldez) remove all this section.
+
 	// The issuer certificate link may be supplied via an "up" link
 	// in the response headers of a new certificate.
 	// See https://www.rfc-editor.org/rfc/rfc8555.html#section-7.4.2

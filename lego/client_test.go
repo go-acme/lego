@@ -13,7 +13,7 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
-	_, apiURL := tester.SetupFakeAPI(t)
+	apiURL := tester.MockACMEServer().Build(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Could not generate test key")

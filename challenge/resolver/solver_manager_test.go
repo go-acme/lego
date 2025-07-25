@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/go-jose/go-jose/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -32,64 +33,48 @@ func TestByType(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	mux, apiURL := tester.SetupFakeAPI(t)
-
 	var statuses []string
 
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 
-	mux.HandleFunc("/chlg", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
+	apiURL := tester.MockACMEServer().
+		Route("POST /chlg",
+			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				if err := validateNoBody(privateKey, req); err != nil {
+					http.Error(rw, err.Error(), http.StatusBadRequest)
+					return
+				}
 
-		if err := validateNoBody(privateKey, r); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+				rw.Header().Set("Link",
+					fmt.Sprintf(`<http://%s/my-authz>; rel="up"`, req.Context().Value(http.LocalAddrContextKey)))
 
-		w.Header().Set("Link", "<"+apiURL+`/my-authz>; rel="up"`)
+				st := statuses[0]
+				statuses = statuses[1:]
 
-		st := statuses[0]
-		statuses = statuses[1:]
+				chlg := &acme.Challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"}
 
-		chlg := &acme.Challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"}
+				servermock.JSONEncode(chlg).ServeHTTP(rw, req)
+			})).
+		Route("POST /my-authz",
+			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				st := statuses[0]
+				statuses = statuses[1:]
 
-		err := tester.WriteJSONResponse(w, chlg)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+				authorization := acme.Authorization{
+					Status:     st,
+					Challenges: []acme.Challenge{},
+				}
 
-	mux.HandleFunc("/my-authz", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
+				if st == acme.StatusInvalid {
+					chlg := acme.Challenge{
+						Status: acme.StatusInvalid,
+					}
+					authorization.Challenges = append(authorization.Challenges, chlg)
+				}
 
-		st := statuses[0]
-		statuses = statuses[1:]
-
-		authorization := acme.Authorization{
-			Status:     st,
-			Challenges: []acme.Challenge{},
-		}
-
-		if st == acme.StatusInvalid {
-			chlg := acme.Challenge{
-				Status: acme.StatusInvalid,
-			}
-			authorization.Challenges = append(authorization.Challenges, chlg)
-		}
-
-		err := tester.WriteJSONResponse(w, authorization)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+				servermock.JSONEncode(authorization).ServeHTTP(rw, req)
+			})).
+		Build(t)
 
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)

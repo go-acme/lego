@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -42,26 +43,19 @@ func TestCertifier_GetRenewalInfo(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test with a fake API.
-	mux, apiURL := tester.SetupFakeAPI(t)
-	mux.HandleFunc("/renewalInfo/"+ariLeafCertID, func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Retry-After", "21600")
-		w.WriteHeader(http.StatusOK)
-		_, wErr := w.Write([]byte(`{
+	apiURL := tester.MockACMEServer().
+		Route("GET /renewalInfo/"+ariLeafCertID,
+			servermock.RawStringResponse(`{
 				"suggestedWindow": {
 					"start": "2020-03-17T17:51:09Z",
 					"end": "2020-03-17T18:21:09Z"
 				},
-				"explanationUrl": "https://aricapable.ca/docs/renewal-advice/"
+				"explanationUrl": "https://aricapable.ca.example/docs/renewal-advice/"
 			}
-		}`))
-		require.NoError(t, wErr)
-	})
+		}`).
+				WithHeader("Content-Type", "application/json").
+				WithHeader("Retry-After", "21600")).
+		Build(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
@@ -76,7 +70,7 @@ func TestCertifier_GetRenewalInfo(t *testing.T) {
 	require.NotNil(t, ri)
 	assert.Equal(t, "2020-03-17T17:51:09Z", ri.SuggestedWindow.Start.Format(time.RFC3339))
 	assert.Equal(t, "2020-03-17T18:21:09Z", ri.SuggestedWindow.End.Format(time.RFC3339))
-	assert.Equal(t, "https://aricapable.ca/docs/renewal-advice/", ri.ExplanationURL)
+	assert.Equal(t, "https://aricapable.ca.example/docs/renewal-advice/", ri.ExplanationURL)
 	assert.Equal(t, time.Duration(21600000000000), ri.RetryAfter)
 }
 
@@ -117,8 +111,9 @@ func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			mux, apiURL := tester.SetupFakeAPI(t)
-			mux.HandleFunc("/renewalInfo/"+ariLeafCertID, test.handler)
+			apiURL := tester.MockACMEServer().
+				Route("GET /renewalInfo/"+ariLeafCertID, test.handler).
+				Build(t)
 
 			core, err := api.New(test.httpClient, "lego-test", apiURL+"/dir", "", key)
 			require.NoError(t, err)

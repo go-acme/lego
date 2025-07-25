@@ -32,7 +32,7 @@ func (p *providerTimeoutMock) CleanUp(domain, token, keyAuth string) error { ret
 func (p *providerTimeoutMock) Timeout() (time.Duration, time.Duration)     { return p.timeout, p.interval }
 
 func TestChallenge_PreSolve(t *testing.T) {
-	_, apiURL := tester.SetupFakeAPI(t)
+	apiURL := tester.MockACMEServer().Build(t)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err)
@@ -114,7 +114,7 @@ func TestChallenge_PreSolve(t *testing.T) {
 }
 
 func TestChallenge_Solve(t *testing.T) {
-	_, apiURL := tester.SetupFakeAPI(t)
+	apiURL := tester.MockACMEServer().Build(t)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err)
@@ -201,7 +201,7 @@ func TestChallenge_Solve(t *testing.T) {
 }
 
 func TestChallenge_CleanUp(t *testing.T) {
-	_, apiURL := tester.SetupFakeAPI(t)
+	apiURL := tester.MockACMEServer().Build(t)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err)

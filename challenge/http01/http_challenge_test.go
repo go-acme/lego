@@ -67,7 +67,7 @@ func TestProviderServer_GetAddress(t *testing.T) {
 }
 
 func TestChallenge(t *testing.T) {
-	_, apiURL := tester.SetupFakeAPI(t)
+	apiURL := tester.MockACMEServer().Build(t)
 
 	providerServer := NewProviderServer("", "23457")
 
@@ -123,7 +123,7 @@ func TestChallengeUnix(t *testing.T) {
 		t.Skip("only for UNIX systems")
 	}
 
-	_, apiURL := tester.SetupFakeAPI(t)
+	apiURL := tester.MockACMEServer().Build(t)
 
 	dir := t.TempDir()
 	t.Cleanup(func() { _ = os.RemoveAll(dir) })
@@ -188,7 +188,7 @@ func TestChallengeUnix(t *testing.T) {
 }
 
 func TestChallengeInvalidPort(t *testing.T) {
-	_, apiURL := tester.SetupFakeAPI(t)
+	apiURL := tester.MockACMEServer().Build(t)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Could not generate test key")
@@ -371,7 +371,7 @@ func TestChallengeWithProxy(t *testing.T) {
 func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectError bool) {
 	t.Helper()
 
-	_, apiURL := tester.SetupFakeAPI(t)
+	apiURL := tester.MockACMEServer().Build(t)
 
 	providerServer := NewProviderServer("localhost", "23457")
 	if header != nil {

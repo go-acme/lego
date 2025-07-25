@@ -11,55 +11,48 @@ import (
 
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/go-jose/go-jose/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestOrderService_NewWithOptions(t *testing.T) {
-	mux, apiURL := tester.SetupFakeAPI(t)
-
 	// small value keeps test fast
 	privateKey, errK := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, errK, "Could not generate test key")
 
-	mux.HandleFunc("/newOrder", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
+	apiURL := tester.MockACMEServer().
+		Route("POST /newOrder",
+			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				body, err := readSignedBody(req, privateKey)
+				if err != nil {
+					http.Error(rw, err.Error(), http.StatusBadRequest)
+					return
+				}
 
-		body, err := readSignedBody(r, privateKey)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+				order := acme.Order{}
+				err = json.Unmarshal(body, &order)
+				if err != nil {
+					http.Error(rw, err.Error(), http.StatusBadRequest)
+					return
+				}
 
-		order := acme.Order{}
-		err = json.Unmarshal(body, &order)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		err = tester.WriteJSONResponse(w, acme.Order{
-			Status:         acme.StatusValid,
-			Expires:        order.Expires,
-			Identifiers:    order.Identifiers,
-			Profile:        order.Profile,
-			NotBefore:      order.NotBefore,
-			NotAfter:       order.NotAfter,
-			Error:          order.Error,
-			Authorizations: order.Authorizations,
-			Finalize:       order.Finalize,
-			Certificate:    order.Certificate,
-			Replaces:       order.Replaces,
-		})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+				servermock.JSONEncode(acme.Order{
+					Status:         acme.StatusValid,
+					Expires:        order.Expires,
+					Identifiers:    order.Identifiers,
+					Profile:        order.Profile,
+					NotBefore:      order.NotBefore,
+					NotAfter:       order.NotAfter,
+					Error:          order.Error,
+					Authorizations: order.Authorizations,
+					Finalize:       order.Finalize,
+					Certificate:    order.Certificate,
+					Replaces:       order.Replaces,
+				}).ServeHTTP(rw, req)
+			})).
+		Build(t)
 
 	core, err := New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)

@@ -3,8 +3,6 @@ package api
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"encoding/pem"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -77,21 +75,7 @@ rzFL1KZfz+HZdnFwFW2T2gVW8L3ii1l9AJDuKzlvjUH3p6bgihVq02sjT8mx+GM2
 
 func TestCertificateService_Get_issuerRelUp(t *testing.T) {
 	apiURL := tester.MockACMEServer().
-		Route("POST /certificate",
-			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-				// TODO(ldez) remove up link.
-				rw.Header().Set("Link",
-					fmt.Sprintf(`<http://%s/issuer>; rel="up"`, req.Context().Value(http.LocalAddrContextKey)))
-
-				servermock.RawStringResponse(certResponseMock).ServeHTTP(rw, req)
-			})).
-		// TODO(ldez) remove this call.
-		Route("POST /issuer",
-			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-				p, _ := pem.Decode([]byte(issuerMock))
-
-				servermock.RawResponse(p.Bytes).ServeHTTP(rw, req)
-			})).
+		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
 		Build(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)

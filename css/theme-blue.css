@@ -1,0 +1,41 @@
+:root {
+    --MAIN-TEXT-color: rgba( 50, 50, 50, 1 ); /* Color of text by default */
+    --MAIN-TITLES-TEXT-color: rgba( 94, 94, 94, 1 ); /* Color of titles h2-h3-h4-h5-h6 */
+    --MAIN-TITLES-H1-color: rgba( 34, 34, 34, 1 ); /* text color of h1 titles */
+    --MAIN-LINK-color: rgba( 28, 144, 243, 1 ); /* Color of links */
+    --MAIN-LINK-HOVER-color: rgba( 22, 122, 208, 1 ); /* Color of hovered links */
+    --MAIN-BG-color: rgba( 255, 255, 255, 1 ); /* color of text by default */
+
+    --CODE-theme: learn; /* name of the chroma stylesheet file */
+    --CODE-BLOCK-color: rgba( 226, 228, 229, 1 ); /* fallback color for code text */
+    --CODE-BLOCK-BG-color: rgba( 40, 42, 54, 1 ); /* fallback color for code background */
+    --CODE-BLOCK-BORDER-color: rgba( 40, 42, 54, 1 ); /* color of block code border */
+    --CODE-INLINE-color: rgba( 94, 94, 94, 1 ); /* color for inline code text */
+    --CODE-INLINE-BG-color: rgba( 255, 250, 233, 1 ); /* color for inline code background */
+    --CODE-INLINE-BORDER-color: rgba( 248, 232, 200, 1 ); /* color of inline code border */
+
+    --MENU-HOME-LINK-color: rgba( 45, 54, 63, 1 ); /* Color of the home button text */
+    --MENU-HOME-LINK-HOVER-color: rgba( 0, 0, 0, 1 ); /* Color of the hovered home button text */
+
+    --MENU-HEADER-BG-color: rgba( 28, 144, 243, 1 ); /* Background color of menu header */
+    --MENU-HEADER-BORDER-color: rgba( 51, 161, 255, 1 ); /*Color of menu header border */
+
+    --MENU-SEARCH-color: rgba( 255, 255, 255, 1 ); /* Color of search field text */
+    --MENU-SEARCH-BG-color: rgba( 22, 122, 208, 1 ); /* Search field background color (by default borders + icons) */
+    --MENU-SEARCH-BORDER-color: rgba( 51, 161, 255, 1 ); /* Override search field border color */
+
+    --MENU-SECTIONS-ACTIVE-BG-color: rgba( 32, 39, 43, 1 ); /* Background color of the active section and its children */
+    --MENU-SECTIONS-BG-color: rgba( 37, 44, 49, 1 ); /* Background color of other sections */
+    --MENU-SECTIONS-LINK-color: rgba( 204, 204, 204, 1 ); /* Color of links in menu */
+    --MENU-SECTIONS-LINK-HOVER-color: rgba( 230, 230, 230, 1 );  /* Color of links in menu, when hovered */
+    --MENU-SECTION-ACTIVE-CATEGORY-color: rgba( 119, 119, 119, 1 ); /* Color of active category text */
+    --MENU-SECTION-ACTIVE-CATEGORY-BG-color: rgba( 255, 255, 255, 1 ); /* Color of background for the active category (only) */
+
+    --MENU-VISITED-color: rgba( 28, 144, 243, 1 ); /* Color of 'page visited' icons in menu */
+    --MENU-SECTION-SEPARATOR-color: rgba( 32, 39, 43, 1 ); /* Color of <hr> separator in menu */
+
+    /* base styling for boxes */
+    --BOX-CAPTION-color: rgba( 255, 255, 255, 1 ); /* color of the title text */
+    --BOX-BG-color: rgba( 255, 255, 255, .833 ); /* color of the content background */
+    --BOX-TEXT-color: rgba( 16, 16, 16, 1 ); /* fixed color of the content text */
+}

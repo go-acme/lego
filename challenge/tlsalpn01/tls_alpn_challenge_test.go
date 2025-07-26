@@ -21,7 +21,7 @@ import (
 )
 
 func TestChallenge(t *testing.T) {
-	_, apiURL := tester.SetupFakeAPI(t)
+	apiURL := tester.MockACMEServer().Build(t)
 
 	domain := "localhost"
 	port := "24457"
@@ -93,7 +93,7 @@ func TestChallenge(t *testing.T) {
 }
 
 func TestChallengeInvalidPort(t *testing.T) {
-	_, apiURL := tester.SetupFakeAPI(t)
+	apiURL := tester.MockACMEServer().Build(t)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Could not generate test key")
@@ -123,7 +123,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 }
 
 func TestChallengeIPaddress(t *testing.T) {
-	_, apiURL := tester.SetupFakeAPI(t)
+	apiURL := tester.MockACMEServer().Build(t)
 
 	domain := "127.0.0.1"
 	port := "24457"

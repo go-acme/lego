@@ -3,7 +3,6 @@ package certificate
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"encoding/pem"
 	"fmt"
 	"net/http"
 	"testing"
@@ -12,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -175,15 +175,9 @@ Ob8VZRzI9neWagqNdwvYkQsEjgfbKbYK7p2CNTUQ
 `
 
 func Test_checkResponse(t *testing.T) {
-	mux, apiURL := tester.SetupFakeAPI(t)
-
-	mux.HandleFunc("/certificate", func(w http.ResponseWriter, _ *http.Request) {
-		_, err := w.Write([]byte(certResponseMock))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	apiURL := tester.MockACMEServer().
+		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
+		Build(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
@@ -215,25 +209,9 @@ func Test_checkResponse(t *testing.T) {
 }
 
 func Test_checkResponse_issuerRelUp(t *testing.T) {
-	mux, apiURL := tester.SetupFakeAPI(t)
-
-	mux.HandleFunc("/certificate", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Link", "<"+apiURL+`/issuer>; rel="up"`)
-		_, err := w.Write([]byte(certResponseMock))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	mux.HandleFunc("/issuer", func(w http.ResponseWriter, _ *http.Request) {
-		p, _ := pem.Decode([]byte(issuerMock))
-		_, err := w.Write(p.Bytes)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	apiURL := tester.MockACMEServer().
+		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
+		Build(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
@@ -265,15 +243,9 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 }
 
 func Test_checkResponse_no_bundle(t *testing.T) {
-	mux, apiURL := tester.SetupFakeAPI(t)
-
-	mux.HandleFunc("/certificate", func(w http.ResponseWriter, _ *http.Request) {
-		_, err := w.Write([]byte(certResponseMock))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	apiURL := tester.MockACMEServer().
+		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
+		Build(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
@@ -305,25 +277,16 @@ func Test_checkResponse_no_bundle(t *testing.T) {
 }
 
 func Test_checkResponse_alternate(t *testing.T) {
-	mux, apiURL := tester.SetupFakeAPI(t)
+	apiURL := tester.MockACMEServer().
+		Route("POST /certificate",
+			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				rw.Header().Add("Link",
+					fmt.Sprintf(`<http://%s/certificate/1>;title="foo";rel="alternate"`, req.Context().Value(http.LocalAddrContextKey)))
 
-	mux.HandleFunc("/certificate", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Add("Link", fmt.Sprintf(`<%s/certificate/1>;title="foo";rel="alternate"`, apiURL))
-
-		_, err := w.Write([]byte(certResponseMock))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	mux.HandleFunc("/certificate/1", func(w http.ResponseWriter, _ *http.Request) {
-		_, err := w.Write([]byte(certResponseMock2))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+				servermock.RawStringResponse(certResponseMock).ServeHTTP(rw, req)
+			})).
+		Route("/certificate/1", servermock.RawStringResponse(certResponseMock2)).
+		Build(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
@@ -358,15 +321,9 @@ func Test_checkResponse_alternate(t *testing.T) {
 }
 
 func Test_Get(t *testing.T) {
-	mux, apiURL := tester.SetupFakeAPI(t)
-
-	mux.HandleFunc("/acme/cert/test-cert", func(w http.ResponseWriter, _ *http.Request) {
-		_, err := w.Write([]byte(certResponseMock))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	apiURL := tester.MockACMEServer().
+		Route("POST /acme/cert/test-cert", servermock.RawStringResponse(certResponseMock)).
+		Build(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")

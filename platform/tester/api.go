@@ -2,53 +2,36 @@ package tester
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 
 	"github.com/go-acme/lego/v4/acme"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 )
 
-// SetupFakeAPI Minimal stub ACME server for validation.
-func SetupFakeAPI(t *testing.T) (*http.ServeMux, string) {
-	t.Helper()
+// MockACMEServer Minimal stub ACME server for validation.
+func MockACMEServer() *servermock.Builder[string] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (string, error) {
+			return server.URL, nil
+		}).
+		Route("GET /dir", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			serverURL := fmt.Sprintf("http://%s", req.Context().Value(http.LocalAddrContextKey))
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/dir", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		err := WriteJSONResponse(w, acme.Directory{
-			NewNonceURL:   server.URL + "/nonce",
-			NewAccountURL: server.URL + "/account",
-			NewOrderURL:   server.URL + "/newOrder",
-			RevokeCertURL: server.URL + "/revokeCert",
-			KeyChangeURL:  server.URL + "/keyChange",
-			RenewalInfo:   server.URL + "/renewalInfo",
-		})
-
-		mux.HandleFunc("/nonce", func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != http.MethodHead {
-				http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-				return
-			}
-
-			w.Header().Set("Replay-Nonce", "12345")
-			w.Header().Set("Retry-After", "0")
-		})
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	return mux, server.URL
+			servermock.JSONEncode(acme.Directory{
+				NewNonceURL:   serverURL + "/nonce",
+				NewAccountURL: serverURL + "/account",
+				NewOrderURL:   serverURL + "/newOrder",
+				RevokeCertURL: serverURL + "/revokeCert",
+				KeyChangeURL:  serverURL + "/keyChange",
+				RenewalInfo:   serverURL + "/renewalInfo",
+			}).ServeHTTP(rw, req)
+		})).
+		Route("HEAD /nonce", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			rw.Header().Set("Replay-Nonce", "12345")
+			rw.Header().Set("Retry-After", "0")
+		}))
 }
 
 // WriteJSONResponse marshals the body as JSON and writes it to the response.

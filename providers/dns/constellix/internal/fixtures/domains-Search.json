@@ -1,7 +1,7 @@
 [
   {
     "id": 273302,
-    "name": "lego.wtf",
+    "name": "example.com",
     "soa": {
       "primaryNameserver": "ns11.constellix.com.",
       "email": "dns.constellix.com.",

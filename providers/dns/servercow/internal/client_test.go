@@ -29,10 +29,10 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /lego.wtf", servermock.ResponseFromFixture("records-01.json")).
+		Route("GET /example.com", servermock.ResponseFromFixture("records-01.json")).
 		Build(t)
 
-	records, err := client.GetRecords(t.Context(), "lego.wtf")
+	records, err := client.GetRecords(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	recordsJSON, err := json.Marshal(records)
@@ -46,10 +46,10 @@ func TestClient_GetRecords(t *testing.T) {
 
 func TestClient_GetRecords_error(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /lego.wtf", servermock.JSONEncode(Message{ErrorMsg: "authentication failed"})).
+		Route("GET /example.com", servermock.JSONEncode(Message{ErrorMsg: "authentication failed"})).
 		Build(t)
 
-	records, err := client.GetRecords(t.Context(), "lego.wtf")
+	records, err := client.GetRecords(t.Context(), "example.com")
 	require.Error(t, err)
 
 	assert.Nil(t, records)
@@ -57,7 +57,7 @@ func TestClient_GetRecords_error(t *testing.T) {
 
 func TestClient_CreateUpdateRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /lego.wtf",
+		Route("POST /example.com",
 			servermock.JSONEncode(Message{Message: "ok"}),
 			servermock.CheckRequestJSONBody(`{"name":"_acme-challenge.www","type":"TXT","ttl":30,"content":["aaa","bbb"]}`)).
 		Build(t)
@@ -69,7 +69,7 @@ func TestClient_CreateUpdateRecord(t *testing.T) {
 		Content: Value{"aaa", "bbb"},
 	}
 
-	msg, err := client.CreateUpdateRecord(t.Context(), "lego.wtf", record)
+	msg, err := client.CreateUpdateRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 
 	expected := &Message{Message: "ok"}
@@ -78,7 +78,7 @@ func TestClient_CreateUpdateRecord(t *testing.T) {
 
 func TestClient_CreateUpdateRecord_error(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /lego.wtf",
+		Route("POST /example.com",
 			servermock.JSONEncode(Message{ErrorMsg: "parameter type must be cname, txt, tlsa, caa, a or aaaa"})).
 		Build(t)
 
@@ -86,7 +86,7 @@ func TestClient_CreateUpdateRecord_error(t *testing.T) {
 		Name: "_acme-challenge.www",
 	}
 
-	msg, err := client.CreateUpdateRecord(t.Context(), "lego.wtf", record)
+	msg, err := client.CreateUpdateRecord(t.Context(), "example.com", record)
 	require.Error(t, err)
 
 	assert.Nil(t, msg)
@@ -94,7 +94,7 @@ func TestClient_CreateUpdateRecord_error(t *testing.T) {
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /lego.wtf",
+		Route("DELETE /example.com",
 			servermock.JSONEncode(Message{Message: "ok"}),
 			servermock.CheckRequestJSONBody(`{"name":"_acme-challenge.www","type":"TXT"}`)).
 		Build(t)
@@ -104,7 +104,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		Type: "TXT",
 	}
 
-	msg, err := client.DeleteRecord(t.Context(), "lego.wtf", record)
+	msg, err := client.DeleteRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 
 	expected := &Message{Message: "ok"}
@@ -113,7 +113,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /lego.wtf",
+		Route("DELETE /example.com",
 			servermock.JSONEncode(Message{ErrorMsg: "parameter type must be cname, txt, tlsa, caa, a or aaaa"})).
 		Build(t)
 
@@ -121,7 +121,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 		Name: "_acme-challenge.www",
 	}
 
-	msg, err := client.DeleteRecord(t.Context(), "lego.wtf", record)
+	msg, err := client.DeleteRecord(t.Context(), "example.com", record)
 	require.Error(t, err)
 
 	assert.Nil(t, msg)

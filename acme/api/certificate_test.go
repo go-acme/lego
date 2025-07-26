@@ -3,11 +3,11 @@ package api
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"encoding/pem"
 	"net/http"
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -74,25 +74,9 @@ rzFL1KZfz+HZdnFwFW2T2gVW8L3ii1l9AJDuKzlvjUH3p6bgihVq02sjT8mx+GM2
 `
 
 func TestCertificateService_Get_issuerRelUp(t *testing.T) {
-	mux, apiURL := tester.SetupFakeAPI(t)
-
-	mux.HandleFunc("/certificate", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Link", "<"+apiURL+`/issuer>; rel="up"`)
-		_, err := w.Write([]byte(certResponseMock))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	mux.HandleFunc("/issuer", func(w http.ResponseWriter, _ *http.Request) {
-		p, _ := pem.Decode([]byte(issuerMock))
-		_, err := w.Write(p.Bytes)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	apiURL := tester.MockACMEServer().
+		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
+		Build(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
@@ -107,15 +91,9 @@ func TestCertificateService_Get_issuerRelUp(t *testing.T) {
 }
 
 func TestCertificateService_Get_embeddedIssuer(t *testing.T) {
-	mux, apiURL := tester.SetupFakeAPI(t)
-
-	mux.HandleFunc("/certificate", func(w http.ResponseWriter, _ *http.Request) {
-		_, err := w.Write([]byte(certResponseMock))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	apiURL := tester.MockACMEServer().
+		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
+		Build(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")

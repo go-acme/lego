@@ -26,9 +26,9 @@ func TestProber_Solve(t *testing.T) {
 				},
 			},
 			authz: []acme.Authorization{
-				createStubAuthorizationHTTP01("acme.wtf", acme.StatusProcessing),
-				createStubAuthorizationHTTP01("lego.wtf", acme.StatusProcessing),
-				createStubAuthorizationHTTP01("mydomain.wtf", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("example.com", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("example.org", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("example.net", acme.StatusProcessing),
 			},
 		},
 		{
@@ -41,9 +41,9 @@ func TestProber_Solve(t *testing.T) {
 				},
 			},
 			authz: []acme.Authorization{
-				createStubAuthorizationHTTP01("acme.wtf", acme.StatusValid),
-				createStubAuthorizationHTTP01("lego.wtf", acme.StatusValid),
-				createStubAuthorizationHTTP01("mydomain.wtf", acme.StatusValid),
+				createStubAuthorizationHTTP01("example.com", acme.StatusValid),
+				createStubAuthorizationHTTP01("example.org", acme.StatusValid),
+				createStubAuthorizationHTTP01("example.net", acme.StatusValid),
 			},
 		},
 		{
@@ -51,23 +51,23 @@ func TestProber_Solve(t *testing.T) {
 			solvers: map[challenge.Type]solver{
 				challenge.HTTP01: &preSolverMock{
 					preSolve: map[string]error{
-						"acme.wtf": errors.New("preSolve error acme.wtf"),
+						"example.com": errors.New("preSolve error example.com"),
 					},
 					solve: map[string]error{
-						"acme.wtf": errors.New("solve error acme.wtf"),
+						"example.com": errors.New("solve error example.com"),
 					},
 					cleanUp: map[string]error{
-						"acme.wtf": errors.New("clean error acme.wtf"),
+						"example.com": errors.New("clean error example.com"),
 					},
 				},
 			},
 			authz: []acme.Authorization{
-				createStubAuthorizationHTTP01("acme.wtf", acme.StatusProcessing),
-				createStubAuthorizationHTTP01("lego.wtf", acme.StatusProcessing),
-				createStubAuthorizationHTTP01("mydomain.wtf", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("example.com", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("example.org", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("example.net", acme.StatusProcessing),
 			},
 			expectedError: `error: one or more domains had a problem:
-[acme.wtf] preSolve error acme.wtf
+[example.com] preSolve error example.com
 `,
 		},
 		{
@@ -75,25 +75,25 @@ func TestProber_Solve(t *testing.T) {
 			solvers: map[challenge.Type]solver{
 				challenge.HTTP01: &preSolverMock{
 					preSolve: map[string]error{
-						"acme.wtf": errors.New("preSolve error acme.wtf"),
+						"example.com": errors.New("preSolve error example.com"),
 					},
 					solve: map[string]error{
-						"acme.wtf": errors.New("solve error acme.wtf"),
-						"lego.wtf": errors.New("solve error lego.wtf"),
+						"example.com": errors.New("solve error example.com"),
+						"example.org": errors.New("solve error example.org"),
 					},
 					cleanUp: map[string]error{
-						"mydomain.wtf": errors.New("clean error mydomain.wtf"),
+						"example.net": errors.New("clean error example.net"),
 					},
 				},
 			},
 			authz: []acme.Authorization{
-				createStubAuthorizationHTTP01("acme.wtf", acme.StatusProcessing),
-				createStubAuthorizationHTTP01("lego.wtf", acme.StatusProcessing),
-				createStubAuthorizationHTTP01("mydomain.wtf", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("example.com", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("example.org", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("example.net", acme.StatusProcessing),
 			},
 			expectedError: `error: one or more domains had a problem:
-[acme.wtf] preSolve error acme.wtf
-[lego.wtf] solve error lego.wtf
+[example.com] preSolve error example.com
+[example.org] solve error example.org
 `,
 		},
 	}

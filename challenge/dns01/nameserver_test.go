@@ -52,7 +52,7 @@ func TestLookupNameserversErr(t *testing.T) {
 	}{
 		{
 			desc:  "invalid tld",
-			fqdn:  "_null.n0n0.",
+			fqdn:  "example.invalid.",
 			error: "could not find zone",
 		},
 	}
@@ -106,10 +106,10 @@ var findXByFqdnTestCases = []struct {
 	},
 	{
 		desc:          "NXDOMAIN",
-		fqdn:          "test.lego.zz.",
-		zone:          "lego.zz.",
+		fqdn:          "test.lego.invalid.",
+		zone:          "lego.invalid.",
 		nameservers:   []string{"8.8.8.8:53"},
-		expectedError: "[fqdn=test.lego.zz.] could not find the start of authority for 'test.lego.zz.' [question='zz. IN  SOA', code=NXDOMAIN]",
+		expectedError: `[fqdn=test.lego.invalid.] could not find the start of authority for 'test.lego.invalid.' [question='invalid. IN  SOA', code=NXDOMAIN]`,
 	},
 	{
 		desc:        "several non existent nameservers",
@@ -128,10 +128,10 @@ var findXByFqdnTestCases = []struct {
 	},
 	{
 		desc:          "no nameservers",
-		fqdn:          "test.ldez.com.",
-		zone:          "ldez.com.",
+		fqdn:          "test.example.com.",
+		zone:          "example.com.",
 		nameservers:   []string{},
-		expectedError: "[fqdn=test.ldez.com.] could not find the start of authority for 'test.ldez.com.': empty list of nameservers",
+		expectedError: "[fqdn=test.example.com.] could not find the start of authority for 'test.example.com.': empty list of nameservers",
 	},
 }
 

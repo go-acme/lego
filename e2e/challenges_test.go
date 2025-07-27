@@ -22,13 +22,16 @@ import (
 )
 
 const (
-	testDomain1 = "acme.wtf"
-	testDomain2 = "lego.wtf"
-	testDomain3 = "acme.lego.wtf"
-	testDomain4 = "légô.wtf"
+	testDomain1 = "acme.localhost"
+	testDomain2 = "lego.localhost"
+	testDomain3 = "acme.lego.localhost"
+	testDomain4 = "légô.localhost"
 )
 
-const testEmail = "lego@example.com"
+const (
+	testEmail1 = "lego@example.com"
+	testEmail2 = "acme@example.com"
+)
 
 var load = loader.EnvLoader{
 	PebbleOptions: &loader.CmdOption{
@@ -60,7 +63,7 @@ func TestChallengeHTTP_Run(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", testEmail,
+		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", testDomain1,
@@ -76,7 +79,7 @@ func TestChallengeTLS_Run_Domains(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", testEmail,
+		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", testDomain1,
@@ -92,7 +95,7 @@ func TestChallengeTLS_Run_IP(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", testEmail,
+		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", "127.0.0.1",
@@ -108,7 +111,7 @@ func TestChallengeTLS_Run_CSR(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", testEmail,
+		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-csr", "./fixtures/csr.raw",
@@ -124,7 +127,7 @@ func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", testEmail,
+		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-csr", "./fixtures/csr.cert",
@@ -140,7 +143,7 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", testEmail,
+		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", testDomain2,
@@ -153,7 +156,7 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 	}
 
 	err = load.RunLego(
-		"-m", testEmail,
+		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", testDomain2,
@@ -169,7 +172,7 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", testEmail,
+		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", testDomain4,
@@ -181,7 +184,7 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 	}
 
 	err = load.RunLego(
-		"-m", testEmail,
+		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", testDomain4,
@@ -295,7 +298,7 @@ func TestChallengeHTTP_Client_Obtain_emails_csr(t *testing.T) {
 	request := certificate.ObtainRequest{
 		Domains:        []string{testDomain1},
 		Bundle:         true,
-		EmailAddresses: []string{"foo@example.com"},
+		EmailAddresses: []string{testEmail1},
 	}
 	resource, err := client.Certificate.Obtain(request)
 	require.NoError(t, err)
@@ -528,7 +531,7 @@ func TestRegistrar_UpdateAccount(t *testing.T) {
 
 	user := &fakeUser{
 		privateKey: privateKey,
-		email:      "foo@example.com",
+		email:      testEmail1,
 	}
 	config := lego.NewConfig(user)
 	config.CADirURL = load.PebbleOptions.HealthCheckURL
@@ -539,13 +542,13 @@ func TestRegistrar_UpdateAccount(t *testing.T) {
 	regOptions := registration.RegisterOptions{TermsOfServiceAgreed: true}
 	reg, err := client.Registration.Register(regOptions)
 	require.NoError(t, err)
-	require.Equal(t, []string{"mailto:foo@example.com"}, reg.Body.Contact)
+	require.Equal(t, []string{"mailto:" + testEmail1}, reg.Body.Contact)
 	user.registration = reg
 
-	user.email = "bar@example.com"
+	user.email = testEmail2
 	resource, err := client.Registration.UpdateRegistration(regOptions)
 	require.NoError(t, err)
-	require.Equal(t, []string{"mailto:bar@example.com"}, resource.Body.Contact)
+	require.Equal(t, []string{"mailto:" + testEmail2}, resource.Body.Contact)
 	require.Equal(t, reg.URI, resource.URI)
 }
 

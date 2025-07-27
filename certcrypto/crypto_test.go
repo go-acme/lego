@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	testDomain1 = "lego.acme"
-	testDomain2 = "a.lego.acme"
-	testDomain3 = "b.lego.acme"
-	testDomain4 = "c.lego.acme"
+	testDomain1 = "lego.example"
+	testDomain2 = "a.lego.example"
+	testDomain3 = "b.lego.example"
+	testDomain4 = "c.lego.example"
 )
 
 func TestGeneratePrivateKey(t *testing.T) {
@@ -49,7 +49,7 @@ func TestGenerateCSR(t *testing.T) {
 				Domain:     testDomain1,
 				MustStaple: true,
 			},
-			expected: expected{len: 379},
+			expected: expected{len: 382},
 		},
 		{
 			desc:       "without SAN (empty)",
@@ -59,7 +59,7 @@ func TestGenerateCSR(t *testing.T) {
 				SAN:        []string{},
 				MustStaple: true,
 			},
-			expected: expected{len: 379},
+			expected: expected{len: 382},
 		},
 		{
 			desc:       "with SAN",
@@ -69,7 +69,7 @@ func TestGenerateCSR(t *testing.T) {
 				SAN:        []string{testDomain2, testDomain3, testDomain4},
 				MustStaple: true,
 			},
-			expected: expected{len: 430},
+			expected: expected{len: 442},
 		},
 		{
 			desc:       "no domain",
@@ -88,7 +88,7 @@ func TestGenerateCSR(t *testing.T) {
 				SAN:        []string{testDomain2, testDomain3, testDomain4},
 				MustStaple: true,
 			},
-			expected: expected{len: 409},
+			expected: expected{len: 419},
 		},
 		{
 			desc:       "private key nil",

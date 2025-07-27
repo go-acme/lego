@@ -21,6 +21,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	testDomain1 = "acme.wtf"
+	testDomain2 = "lego.wtf"
+	testDomain3 = "acme.lego.wtf"
+	testDomain4 = "légô.wtf"
+)
+
+const testEmail = "lego@example.com"
+
 var load = loader.EnvLoader{
 	PebbleOptions: &loader.CmdOption{
 		HealthCheckURL: "https://localhost:14000/dir",
@@ -51,10 +60,10 @@ func TestChallengeHTTP_Run(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", "hubert@hubert.com",
+		"-m", testEmail,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
-		"-d", "acme.wtf",
+		"-d", testDomain1,
 		"--http",
 		"--http.port", ":5002",
 		"run")
@@ -67,10 +76,10 @@ func TestChallengeTLS_Run_Domains(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", "hubert@hubert.com",
+		"-m", testEmail,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
-		"-d", "acme.wtf",
+		"-d", testDomain1,
 		"--tls",
 		"--tls.port", ":5001",
 		"run")
@@ -83,7 +92,7 @@ func TestChallengeTLS_Run_IP(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", "hubert@hubert.com",
+		"-m", testEmail,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", "127.0.0.1",
@@ -99,7 +108,7 @@ func TestChallengeTLS_Run_CSR(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", "hubert@hubert.com",
+		"-m", testEmail,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-csr", "./fixtures/csr.raw",
@@ -115,7 +124,7 @@ func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", "hubert@hubert.com",
+		"-m", testEmail,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-csr", "./fixtures/csr.cert",
@@ -131,11 +140,11 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", "hubert@hubert.com",
+		"-m", testEmail,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
-		"-d", "lego.wtf",
-		"-d", "acme.lego.wtf",
+		"-d", testDomain2,
+		"-d", testDomain3,
 		"--tls",
 		"--tls.port", ":5001",
 		"run")
@@ -144,10 +153,10 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 	}
 
 	err = load.RunLego(
-		"-m", "hubert@hubert.com",
+		"-m", testEmail,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
-		"-d", "lego.wtf",
+		"-d", testDomain2,
 		"--tls",
 		"--tls.port", ":5001",
 		"revoke")
@@ -160,10 +169,10 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", "hubert@hubert.com",
+		"-m", testEmail,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
-		"-d", "légô.wtf",
+		"-d", testDomain4,
 		"--tls",
 		"--tls.port", ":5001",
 		"run")
@@ -172,10 +181,10 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 	}
 
 	err = load.RunLego(
-		"-m", "hubert@hubert.com",
+		"-m", testEmail,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
-		"-d", "légô.wtf",
+		"-d", testDomain4,
 		"--tls",
 		"--tls.port", ":5001",
 		"revoke")
@@ -207,14 +216,14 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	user.registration = reg
 
 	request := certificate.ObtainRequest{
-		Domains: []string{"acme.wtf"},
+		Domains: []string{testDomain1},
 		Bundle:  true,
 	}
 	resource, err := client.Certificate.Obtain(request)
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, "acme.wtf", resource.Domain)
+	assert.Equal(t, testDomain1, resource.Domain)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -245,7 +254,7 @@ func TestChallengeHTTP_Client_Obtain_profile(t *testing.T) {
 	user.registration = reg
 
 	request := certificate.ObtainRequest{
-		Domains: []string{"acme.wtf"},
+		Domains: []string{testDomain1},
 		Bundle:  true,
 		Profile: "shortlived",
 	}
@@ -253,7 +262,7 @@ func TestChallengeHTTP_Client_Obtain_profile(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, "acme.wtf", resource.Domain)
+	assert.Equal(t, testDomain1, resource.Domain)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -284,7 +293,7 @@ func TestChallengeHTTP_Client_Obtain_emails_csr(t *testing.T) {
 	user.registration = reg
 
 	request := certificate.ObtainRequest{
-		Domains:        []string{"acme.wtf"},
+		Domains:        []string{testDomain1},
 		Bundle:         true,
 		EmailAddresses: []string{"foo@example.com"},
 	}
@@ -292,7 +301,7 @@ func TestChallengeHTTP_Client_Obtain_emails_csr(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, "acme.wtf", resource.Domain)
+	assert.Equal(t, testDomain1, resource.Domain)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -325,7 +334,7 @@ func TestChallengeHTTP_Client_Obtain_notBefore_notAfter(t *testing.T) {
 	now := time.Now().UTC()
 
 	request := certificate.ObtainRequest{
-		Domains:   []string{"acme.wtf"},
+		Domains:   []string{testDomain1},
 		NotBefore: now.Add(1 * time.Hour),
 		NotAfter:  now.Add(2 * time.Hour),
 		Bundle:    true,
@@ -334,7 +343,7 @@ func TestChallengeHTTP_Client_Obtain_notBefore_notAfter(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, "acme.wtf", resource.Domain)
+	assert.Equal(t, testDomain1, resource.Domain)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -406,7 +415,7 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	require.NoError(t, err, "Could not generate test key")
 
 	request := certificate.ObtainRequest{
-		Domains:    []string{"acme.wtf"},
+		Domains:    []string{testDomain1},
 		Bundle:     true,
 		PrivateKey: privateKeyCSR,
 	}
@@ -414,7 +423,7 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, "acme.wtf", resource.Domain)
+	assert.Equal(t, testDomain1, resource.Domain)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -457,7 +466,7 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, "acme.wtf", resource.Domain)
+	assert.Equal(t, testDomain1, resource.Domain)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -501,7 +510,7 @@ func TestChallengeTLS_Client_ObtainForCSR_profile(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, "acme.wtf", resource.Domain)
+	assert.Equal(t, testDomain1, resource.Domain)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)

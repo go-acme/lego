@@ -18,6 +18,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	testDomain1 = "légo.acme"
+	testDomain2 = "*.légo.acme"
+)
+
 var load = loader.EnvLoader{
 	PebbleOptions: &loader.CmdOption{
 		HealthCheckURL: "https://localhost:15000/dir",
@@ -59,8 +64,8 @@ func TestChallengeDNS_Run(t *testing.T) {
 		"--dns.resolvers", ":8053",
 		"--dns.disable-cp",
 		"-s", "https://localhost:15000/dir",
-		"-d", "*.légo.acme",
-		"-d", "légo.acme",
+		"-d", testDomain2,
+		"-d", testDomain1,
 		"run")
 	if err != nil {
 		t.Fatal(err)
@@ -98,7 +103,7 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 	require.NoError(t, err)
 	user.registration = reg
 
-	domains := []string{"*.légo.acme", "légo.acme"}
+	domains := []string{testDomain2, testDomain1}
 
 	// https://github.com/letsencrypt/pebble/issues/285
 	privateKeyCSR, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -152,7 +157,7 @@ func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
 	require.NoError(t, err)
 	user.registration = reg
 
-	domains := []string{"*.légo.acme", "légo.acme"}
+	domains := []string{testDomain2, testDomain1}
 
 	// https://github.com/letsencrypt/pebble/issues/285
 	privateKeyCSR, err := rsa.GenerateKey(rand.Reader, 2048)

@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	testDomain1 = "légo.acme"
-	testDomain2 = "*.légo.acme"
+	testDomain1 = "légo.localhost"
+	testDomain2 = "*.légo.localhost"
 )
 
 var load = loader.EnvLoader{
@@ -118,7 +118,7 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, "*.xn--lgo-bma.acme", resource.Domain)
+	assert.Equal(t, "*.xn--lgo-bma.localhost", resource.Domain)
 	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -173,7 +173,7 @@ func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, "*.xn--lgo-bma.acme", resource.Domain)
+	assert.Equal(t, "*.xn--lgo-bma.localhost", resource.Domain)
 	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)

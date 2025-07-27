@@ -5,8 +5,10 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -110,11 +112,13 @@ func TestChallengeTLS_Run_IP(t *testing.T) {
 func TestChallengeTLS_Run_CSR(t *testing.T) {
 	loader.CleanLegoFiles()
 
+	csrPath := createTestCSRFile(t, true)
+
 	err := load.RunLego(
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
-		"-csr", "./fixtures/csr.raw",
+		"-csr", csrPath,
 		"--tls",
 		"--tls.port", ":5001",
 		"run")
@@ -126,11 +130,13 @@ func TestChallengeTLS_Run_CSR(t *testing.T) {
 func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
 	loader.CleanLegoFiles()
 
+	csrPath := createTestCSRFile(t, false)
+
 	err := load.RunLego(
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
-		"-csr", "./fixtures/csr.cert",
+		"-csr", csrPath,
 		"--tls",
 		"--tls.port", ":5001",
 		"run")
@@ -456,10 +462,7 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	require.NoError(t, err)
 	user.registration = reg
 
-	csrRaw, err := os.ReadFile("./fixtures/csr.raw")
-	require.NoError(t, err)
-
-	csr, err := x509.ParseCertificateRequest(csrRaw)
+	csr, err := x509.ParseCertificateRequest(createTestCSR(t))
 	require.NoError(t, err)
 
 	resource, err := client.Certificate.ObtainForCSR(certificate.ObtainForCSRRequest{
@@ -499,10 +502,7 @@ func TestChallengeTLS_Client_ObtainForCSR_profile(t *testing.T) {
 	require.NoError(t, err)
 	user.registration = reg
 
-	csrRaw, err := os.ReadFile("./fixtures/csr.raw")
-	require.NoError(t, err)
-
-	csr, err := x509.ParseCertificateRequest(csrRaw)
+	csr, err := x509.ParseCertificateRequest(createTestCSR(t))
 	require.NoError(t, err)
 
 	resource, err := client.Certificate.ObtainForCSR(certificate.ObtainForCSRRequest{
@@ -561,3 +561,53 @@ type fakeUser struct {
 func (f *fakeUser) GetEmail() string                        { return f.email }
 func (f *fakeUser) GetRegistration() *registration.Resource { return f.registration }
 func (f *fakeUser) GetPrivateKey() crypto.PrivateKey        { return f.privateKey }
+
+func createTestCSRFile(t *testing.T, raw bool) string {
+	t.Helper()
+
+	csr := createTestCSR(t)
+
+	if raw {
+		filename := filepath.Join(t.TempDir(), "csr.raw")
+
+		fileRaw, err := os.Create(filename)
+		require.NoError(t, err)
+
+		defer fileRaw.Close()
+
+		_, err = fileRaw.Write(csr)
+		require.NoError(t, err)
+
+		return filename
+	}
+
+	filename := filepath.Join(t.TempDir(), "csr.cert")
+
+	file, err := os.Create(filename)
+	require.NoError(t, err)
+
+	defer file.Close()
+
+	_, err = file.Write(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csr}))
+	require.NoError(t, err)
+
+	return filename
+}
+
+func createTestCSR(t *testing.T) []byte {
+	t.Helper()
+
+	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
+	require.NoError(t, err)
+
+	csr, err := certcrypto.CreateCSR(privateKey, certcrypto.CSROptions{
+		Domain: testDomain1,
+		SAN: []string{
+			testDomain1,
+			testDomain2,
+		},
+	})
+	require.NoError(t, err)
+
+	return csr
+}

@@ -3,7 +3,6 @@ package rfc2136
 import (
 	"bytes"
 	"fmt"
-	"net"
 	"strings"
 	"sync"
 	"testing"
@@ -165,12 +164,9 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 func TestCanaryLocalTestServer(t *testing.T) {
 	dns01.ClearFqdnCache()
-	dns.HandleFunc("example.com.", serverHandlerHello)
-	defer dns.HandleRemove("example.com.")
 
-	server, addr, err := runLocalDNSTestServer(false)
-	require.NoError(t, err, "Failed to start test server")
-	defer func() { _ = server.Shutdown() }()
+	mux, addr := runLocalDNSTestServer(t, false)
+	mux.HandleFunc("example.com.", serverHandlerHello)
 
 	c := new(dns.Client)
 	m := new(dns.Msg)
@@ -187,12 +183,9 @@ func TestCanaryLocalTestServer(t *testing.T) {
 
 func TestServerSuccess(t *testing.T) {
 	dns01.ClearFqdnCache()
-	dns.HandleFunc(fakeZone, serverHandlerReturnSuccess)
-	defer dns.HandleRemove(fakeZone)
 
-	server, addr, err := runLocalDNSTestServer(false)
-	require.NoError(t, err, "Failed to start test server")
-	defer func() { _ = server.Shutdown() }()
+	mux, addr := runLocalDNSTestServer(t, false)
+	mux.HandleFunc(fakeZone, serverHandlerReturnSuccess)
 
 	config := NewDefaultConfig()
 	config.Nameserver = addr
@@ -206,12 +199,9 @@ func TestServerSuccess(t *testing.T) {
 
 func TestServerError(t *testing.T) {
 	dns01.ClearFqdnCache()
-	dns.HandleFunc(fakeZone, serverHandlerReturnErr)
-	defer dns.HandleRemove(fakeZone)
 
-	server, addr, err := runLocalDNSTestServer(false)
-	require.NoError(t, err, "Failed to start test server")
-	defer func() { _ = server.Shutdown() }()
+	mux, addr := runLocalDNSTestServer(t, false)
+	mux.HandleFunc(fakeZone, serverHandlerReturnErr)
 
 	config := NewDefaultConfig()
 	config.Nameserver = addr
@@ -228,12 +218,9 @@ func TestServerError(t *testing.T) {
 
 func TestTsigClient(t *testing.T) {
 	dns01.ClearFqdnCache()
-	dns.HandleFunc(fakeZone, serverHandlerReturnSuccess)
-	defer dns.HandleRemove(fakeZone)
 
-	server, addr, err := runLocalDNSTestServer(true)
-	require.NoError(t, err, "Failed to start test server")
-	defer func() { _ = server.Shutdown() }()
+	mux, addr := runLocalDNSTestServer(t, true)
+	mux.HandleFunc(fakeZone, serverHandlerReturnSuccess)
 
 	config := NewDefaultConfig()
 	config.Nameserver = addr
@@ -251,19 +238,17 @@ func TestValidUpdatePacket(t *testing.T) {
 	reqChan := make(chan *dns.Msg, 10)
 
 	dns01.ClearFqdnCache()
-	dns.HandleFunc(fakeZone, serverHandlerPassBackRequest(reqChan))
-	defer dns.HandleRemove(fakeZone)
 
-	server, addr, err := runLocalDNSTestServer(false)
-	require.NoError(t, err, "Failed to start test server")
-	defer func() { _ = server.Shutdown() }()
+	mux, addr := runLocalDNSTestServer(t, false)
+	mux.HandleFunc(fakeZone, serverHandlerPassBackRequest(reqChan))
 
 	txtRR, _ := dns.NewRR(fmt.Sprintf("%s %d IN TXT %s", fakeFqdn, fakeTTL, fakeValue))
-	rrs := []dns.RR{txtRR}
+
 	m := new(dns.Msg)
 	m.SetUpdate(fakeZone)
-	m.RemoveRRset(rrs)
-	m.Insert(rrs)
+	m.RemoveRRset([]dns.RR{txtRR})
+	m.Insert([]dns.RR{txtRR})
+
 	expectStr := m.String()
 
 	expect, err := m.Pack()
@@ -294,21 +279,26 @@ func TestValidUpdatePacket(t *testing.T) {
 	}
 }
 
-func runLocalDNSTestServer(tsig bool) (*dns.Server, string, error) {
-	pc, err := net.ListenPacket("udp", "127.0.0.1:0")
-	if err != nil {
-		return nil, "", err
-	}
+func runLocalDNSTestServer(t *testing.T, tsig bool) (*dns.ServeMux, string) {
+	t.Helper()
+
+	mux := dns.NewServeMux()
 
 	server := &dns.Server{
-		PacketConn:   pc,
+		Addr:         "127.0.0.1:0",
+		Net:          "udp",
 		ReadTimeout:  time.Hour,
 		WriteTimeout: time.Hour,
 		MsgAcceptFunc: func(dh dns.Header) dns.MsgAcceptAction {
 			// bypass defaultMsgAcceptFunc to allow dynamic update (https://github.com/miekg/dns/pull/830)
 			return dns.MsgAccept
 		},
+		Handler: mux,
 	}
+
+	t.Cleanup(func() {
+		_ = server.Shutdown()
+	})
 
 	if tsig {
 		server.TsigSecret = map[string]string{fakeTsigKey: fakeTsigSecret}
@@ -316,35 +306,41 @@ func runLocalDNSTestServer(tsig bool) (*dns.Server, string, error) {
 
 	waitLock := sync.Mutex{}
 	waitLock.Lock()
+
 	server.NotifyStartedFunc = waitLock.Unlock
 
 	go func() {
-		_ = server.ActivateAndServe()
-		pc.Close()
+		err := server.ListenAndServe()
+		if err != nil {
+			t.Log(err)
+		}
 	}()
 
 	waitLock.Lock()
-	return server, pc.LocalAddr().String(), nil
+
+	return mux, server.PacketConn.LocalAddr().String()
 }
 
 func serverHandlerHello(w dns.ResponseWriter, req *dns.Msg) {
 	m := new(dns.Msg)
 	m.SetReply(req)
+
 	m.Extra = make([]dns.RR, 1)
 	m.Extra[0] = &dns.TXT{
 		Hdr: dns.RR_Header{Name: m.Question[0].Name, Rrtype: dns.TypeTXT, Class: dns.ClassINET, Ttl: 0},
 		Txt: []string{"Hello world"},
 	}
+
 	_ = w.WriteMsg(m)
 }
 
 func serverHandlerReturnSuccess(w dns.ResponseWriter, req *dns.Msg) {
 	m := new(dns.Msg)
 	m.SetReply(req)
+
 	if req.Opcode == dns.OpcodeQuery && req.Question[0].Qtype == dns.TypeSOA && req.Question[0].Qclass == dns.ClassINET {
 		// Return SOA to appease findZoneByFqdn()
-		soaRR, _ := dns.NewRR(fmt.Sprintf("%s %d IN SOA ns1.%s admin.%s 2016022801 28800 7200 2419200 1200", fakeZone, fakeTTL, fakeZone, fakeZone))
-		m.Answer = []dns.RR{soaRR}
+		m.Answer = []dns.RR{fakeSOAAnswer()}
 	}
 
 	if t := req.IsTsig(); t != nil {
@@ -360,6 +356,7 @@ func serverHandlerReturnSuccess(w dns.ResponseWriter, req *dns.Msg) {
 func serverHandlerReturnErr(w dns.ResponseWriter, req *dns.Msg) {
 	m := new(dns.Msg)
 	m.SetRcode(req, dns.RcodeNotZone)
+
 	_ = w.WriteMsg(m)
 }
 
@@ -367,10 +364,10 @@ func serverHandlerPassBackRequest(reqChan chan *dns.Msg) func(w dns.ResponseWrit
 	return func(w dns.ResponseWriter, req *dns.Msg) {
 		m := new(dns.Msg)
 		m.SetReply(req)
+
 		if req.Opcode == dns.OpcodeQuery && req.Question[0].Qtype == dns.TypeSOA && req.Question[0].Qclass == dns.ClassINET {
 			// Return SOA to appease findZoneByFqdn()
-			soaRR, _ := dns.NewRR(fmt.Sprintf("%s %d IN SOA ns1.%s admin.%s 2016022801 28800 7200 2419200 1200", fakeZone, fakeTTL, fakeZone, fakeZone))
-			m.Answer = []dns.RR{soaRR}
+			m.Answer = []dns.RR{fakeSOAAnswer()}
 		}
 
 		if t := req.IsTsig(); t != nil {
@@ -381,9 +378,23 @@ func serverHandlerPassBackRequest(reqChan chan *dns.Msg) func(w dns.ResponseWrit
 		}
 
 		_ = w.WriteMsg(m)
+
 		if req.Opcode != dns.OpcodeQuery || req.Question[0].Qtype != dns.TypeSOA || req.Question[0].Qclass != dns.ClassINET {
 			// Only talk back when it is not the SOA RR.
 			reqChan <- req
 		}
+	}
+}
+
+func fakeSOAAnswer() *dns.SOA {
+	return &dns.SOA{
+		Hdr:     dns.RR_Header{Name: fakeZone, Rrtype: dns.TypeSOA, Class: dns.ClassINET, Ttl: fakeTTL},
+		Ns:      "ns1." + fakeZone,
+		Mbox:    "admin." + fakeZone,
+		Serial:  2016022801,
+		Refresh: 28800,
+		Retry:   7200,
+		Expire:  2419200,
+		Minttl:  1200,
 	}
 }

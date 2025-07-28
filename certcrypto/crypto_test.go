@@ -13,6 +13,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	testDomain1 = "lego.example"
+	testDomain2 = "a.lego.example"
+	testDomain3 = "b.lego.example"
+	testDomain4 = "c.lego.example"
+)
+
 func TestGeneratePrivateKey(t *testing.T) {
 	key, err := GeneratePrivateKey(RSA2048)
 	require.NoError(t, err, "Error generating private key")
@@ -39,30 +46,30 @@ func TestGenerateCSR(t *testing.T) {
 			desc:       "without SAN (nil)",
 			privateKey: privateKey,
 			opts: CSROptions{
-				Domain:     "lego.acme",
+				Domain:     testDomain1,
 				MustStaple: true,
 			},
-			expected: expected{len: 379},
+			expected: expected{len: 382},
 		},
 		{
 			desc:       "without SAN (empty)",
 			privateKey: privateKey,
 			opts: CSROptions{
-				Domain:     "lego.acme",
+				Domain:     testDomain1,
 				SAN:        []string{},
 				MustStaple: true,
 			},
-			expected: expected{len: 379},
+			expected: expected{len: 382},
 		},
 		{
 			desc:       "with SAN",
 			privateKey: privateKey,
 			opts: CSROptions{
-				Domain:     "lego.acme",
-				SAN:        []string{"a.lego.acme", "b.lego.acme", "c.lego.acme"},
+				Domain:     testDomain1,
+				SAN:        []string{testDomain2, testDomain3, testDomain4},
 				MustStaple: true,
 			},
-			expected: expected{len: 430},
+			expected: expected{len: 442},
 		},
 		{
 			desc:       "no domain",
@@ -78,16 +85,16 @@ func TestGenerateCSR(t *testing.T) {
 			privateKey: privateKey,
 			opts: CSROptions{
 				Domain:     "",
-				SAN:        []string{"a.lego.acme", "b.lego.acme", "c.lego.acme"},
+				SAN:        []string{testDomain2, testDomain3, testDomain4},
 				MustStaple: true,
 			},
-			expected: expected{len: 409},
+			expected: expected{len: 419},
 		},
 		{
 			desc:       "private key nil",
 			privateKey: nil,
 			opts: CSROptions{
-				Domain:     "fizz.buzz",
+				Domain:     testDomain1,
 				MustStaple: true,
 			},
 			expected: expected{error: true},

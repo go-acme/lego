@@ -59,14 +59,6 @@ jobs:
       - name: Set up a Memcached server
         uses: niden/actions-memcached@v7
 
-      - name: Setup /etc/hosts
-        run: |
-          echo "127.0.0.1 acme.wtf" | sudo tee -a /etc/hosts
-          echo "127.0.0.1 lego.wtf" | sudo tee -a /etc/hosts
-          echo "127.0.0.1 acme.lego.wtf" | sudo tee -a /etc/hosts
-          echo "127.0.0.1 légô.wtf" | sudo tee -a /etc/hosts
-          echo "127.0.0.1 xn--lg-bja9b.wtf" | sudo tee -a /etc/hosts
-
       - name: Make
         run: |
           make

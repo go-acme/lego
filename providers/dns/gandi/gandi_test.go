@@ -145,7 +145,6 @@ func TestDNSProvider(t *testing.T) {
 			_, errS = io.Copy(rw, strings.NewReader(resp))
 			require.NoError(t, errS)
 		})).
-		Route("/", servermock.DumpRequest()).
 		Build(t)
 
 	fakeKeyAuth := "XXXX"

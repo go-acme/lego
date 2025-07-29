@@ -54,6 +54,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/dynu"
 	"github.com/go-acme/lego/v4/providers/dns/easydns"
 	"github.com/go-acme/lego/v4/providers/dns/edgedns"
+	"github.com/go-acme/lego/v4/providers/dns/edgeone"
 	"github.com/go-acme/lego/v4/providers/dns/efficientip"
 	"github.com/go-acme/lego/v4/providers/dns/epik"
 	"github.com/go-acme/lego/v4/providers/dns/exec"
@@ -265,6 +266,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return easydns.NewDNSProvider()
 	case "edgedns", "fastdns":
 		return edgedns.NewDNSProvider()
+	case "edgeone":
+		return edgeone.NewDNSProvider()
 	case "efficientip":
 		return efficientip.NewDNSProvider()
 	case "epik":

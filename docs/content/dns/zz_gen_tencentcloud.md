@@ -6,7 +6,7 @@ slug: tencentcloud
 dnsprovider:
   since:    "v4.6.0"
   code:     "tencentcloud"
-  url:      "https://cloud.tencent.com/product/cns"
+  url:      "https://cloud.tencent.com/product/dns"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [Tencent Cloud DNS](https://cloud.tencent.com/product/cns).
+Configuration for [Tencent Cloud DNS](https://cloud.tencent.com/product/dns).
 
 
 <!--more-->

@@ -7,7 +7,6 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
 	teo "github.com/go-acme/tencentedgdeone/v20220901"
-	"golang.org/x/net/idna"
 )
 
 func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*teo.Zone, error) {
@@ -48,18 +47,4 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*teo.Zo
 	}
 
 	return hostedZone, nil
-}
-
-func extractRecordName(fqdn, zone string) (string, error) {
-	asciiDomain, err := idna.ToASCII(zone)
-	if err != nil {
-		return "", fmt.Errorf("fail to convert punycode: %w", err)
-	}
-
-	subDomain, err := dns01.ExtractSubDomain(fqdn, asciiDomain)
-	if err != nil {
-		return "", err
-	}
-
-	return subDomain, nil
 }

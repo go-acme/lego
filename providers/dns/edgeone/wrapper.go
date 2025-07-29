@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
-	teo "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/teo/v20220901"
+	teo "github.com/go-acme/tencentedgdeone/v20220901"
 	"golang.org/x/net/idna"
 )
 
@@ -16,7 +16,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*teo.Zo
 	var domains []*teo.Zone
 
 	for {
-		response, err := d.client.DescribeZonesWithContext(ctx, request)
+		response, err := teo.DescribeZonesWithContext(ctx, d.client, request)
 		if err != nil {
 			return nil, fmt.Errorf("API call failed: %w", err)
 		}

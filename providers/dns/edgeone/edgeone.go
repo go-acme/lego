@@ -15,6 +15,7 @@ import (
 	teo "github.com/go-acme/tencentedgdeone/v20220901"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
+	"golang.org/x/net/idna"
 )
 
 // Environment variables names.
@@ -120,13 +121,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("edgeone: failed to get hosted zone: %w", err)
 	}
 
-	recordName, err := extractRecordName(info.EffectiveFQDN, ptr.Deref(zone.ZoneName))
+	punnyCoded, err := idna.ToASCII(dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("edgeone: failed to extract record name: %w", err)
+		return fmt.Errorf("edgeone: fail to convert punycode: %w", err)
 	}
 
 	request := teo.NewCreateDnsRecordRequest()
-	request.Name = ptr.Pointer(recordName)
+	request.Name = ptr.Pointer(punnyCoded)
 	request.ZoneId = zone.ZoneId
 	request.Type = ptr.Pointer("TXT")
 	request.Content = ptr.Pointer(info.Value)

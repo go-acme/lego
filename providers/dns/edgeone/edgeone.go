@@ -107,7 +107,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("edgeone: %w", err)
 	}
 
-	return &DNSProvider{config: config, client: client}, nil
+	return &DNSProvider{
+		config:      config,
+		client:      client,
+		recordIDs:   map[string]*string{},
+		recordIDsMu: sync.Mutex{},
+	}, nil
 }
 
 // Present creates a TXT record using the specified parameters.

@@ -12,9 +12,9 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
+	teo "github.com/go-acme/tencentedgdeone/v20220901"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
-	teo "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/teo/v20220901"
 )
 
 // Environment variables names.
@@ -132,7 +132,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	request.Content = ptr.Pointer(info.Value)
 	request.TTL = ptr.Pointer(int64(d.config.TTL))
 
-	nr, err := d.client.CreateDnsRecordWithContext(ctx, request)
+	nr, err := teo.CreateDnsRecordWithContext(ctx, d.client, request)
 	if err != nil {
 		return fmt.Errorf("edgeone: API call failed: %w", err)
 	}
@@ -167,7 +167,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	request.ZoneId = zone.ZoneId
 	request.RecordIds = []*string{recordID}
 
-	_, err = d.client.DeleteDnsRecordsWithContext(ctx, request)
+	_, err = teo.DeleteDnsRecordsWithContext(ctx, d.client, request)
 	if err != nil {
 		return fmt.Errorf("edgeone: delete record failed: %w", err)
 	}

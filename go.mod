@@ -32,6 +32,7 @@ require (
 	github.com/exoscale/egoscale/v3 v3.1.24
 	github.com/go-acme/alidns-20150109/v4 v4.5.10
 	github.com/go-acme/tencentclouddnspod v1.0.1208
+	github.com/go-acme/tencentedgdeone v1.0.1212
 	github.com/go-jose/go-jose/v4 v4.1.1
 	github.com/go-viper/mapstructure/v2 v2.4.0
 	github.com/google/go-cmp v0.7.0
@@ -76,8 +77,7 @@ require (
 	github.com/selectel/go-selvpcclient/v4 v4.1.0
 	github.com/softlayer/softlayer-go v1.1.7
 	github.com/stretchr/testify v1.10.0
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1210
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/teo v1.0.1208
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1212
 	github.com/transip/gotransip/v6 v6.26.0
 	github.com/ultradns/ultradns-go-sdk v1.8.0-20241010134910-243eeec
 	github.com/urfave/cli/v2 v2.27.7

@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
+	"github.com/miekg/dns"
 	selectelapi "github.com/selectel/domains-go/pkg/v2"
 	"github.com/selectel/go-selvpcclient/v4/selvpcclient"
 	"golang.org/x/net/idna"
@@ -266,7 +267,7 @@ func (w *clientWrapper) getZone(ctx context.Context, name string) (*selectelapi.
 	}
 
 	for _, zone := range zones.GetItems() {
-		if zone.Name == dns01.ToFqdn(unicodeName) {
+		if zone.Name == dns.Fqdn(unicodeName) {
 			return zone, nil
 		}
 	}
@@ -295,7 +296,7 @@ func (w *clientWrapper) getRRset(ctx context.Context, name, zoneID string) (*sel
 	}
 
 	for _, rrset := range resp.GetItems() {
-		if rrset.Name == dns01.ToFqdn(unicodeName) {
+		if rrset.Name == dns.Fqdn(unicodeName) {
 			return rrset, nil
 		}
 	}

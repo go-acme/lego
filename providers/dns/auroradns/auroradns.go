@@ -10,6 +10,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/miekg/dns"
 	"github.com/nrdcg/auroradns"
 )
 
@@ -161,7 +162,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("aurora: unknown recordID for %q", info.EffectiveFQDN)
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(info.EffectiveFQDN))
+	authZone, err := dns01.FindZoneByFqdn(dns.Fqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("aurora: could not find zone for domain %q: %w", domain, err)
 	}

@@ -65,3 +65,13 @@ func TestDo_CustomUserAgent(t *testing.T) {
 	}
 	assert.Len(t, strings.Split(ua, " "), 5)
 }
+
+func TestDo_failWithHTTP(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}))
+	t.Cleanup(server.Close)
+
+	sender := NewDoer(server.Client(), "test")
+
+	_, err := sender.Post(server.URL, strings.NewReader("data"), "text/plain", nil)
+	require.ErrorContains(t, err, "HTTPS is required: http://")
+}

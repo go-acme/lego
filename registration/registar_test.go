@@ -16,7 +16,7 @@ import (
 )
 
 func TestRegistrar_ResolveAccountByKey(t *testing.T) {
-	apiURL := tester.MockACMEServer().
+	apiURL, client := tester.MockACMEServer().
 		Route("/account",
 			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				rw.Header().Set("Location",
@@ -24,7 +24,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 
 				servermock.JSONEncode(acme.Account{Status: "valid"}).ServeHTTP(rw, req)
 			})).
-		Build(t)
+		BuildHTTPS(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Could not generate test key")
@@ -35,7 +35,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 		privatekey: key,
 	}
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
+	core, err := api.New(client, "lego-test", apiURL+"/dir", "", key)
 	require.NoError(t, err)
 
 	registrar := NewRegistrar(core, user)

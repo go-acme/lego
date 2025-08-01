@@ -12,13 +12,13 @@ import (
 
 func TestDo_UserAgentOnAllHTTPMethod(t *testing.T) {
 	var ua, method string
-	server := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
+	server := httptest.NewTLSServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
 		ua = r.Header.Get("User-Agent")
 		method = r.Method
 	}))
 	t.Cleanup(server.Close)
 
-	doer := NewDoer(http.DefaultClient, "")
+	doer := NewDoer(server.Client(), "")
 
 	testCases := []struct {
 		method string

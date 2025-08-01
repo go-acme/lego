@@ -43,7 +43,7 @@ func TestCertifier_GetRenewalInfo(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test with a fake API.
-	apiURL := tester.MockACMEServer().
+	apiURL, client := tester.MockACMEServer().
 		Route("GET /renewalInfo/"+ariLeafCertID,
 			servermock.RawStringResponse(`{
 				"suggestedWindow": {
@@ -55,12 +55,12 @@ func TestCertifier_GetRenewalInfo(t *testing.T) {
 		}`).
 				WithHeader("Content-Type", "application/json").
 				WithHeader("Retry-After", "21600")).
-		Build(t)
+		BuildHTTPS(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
+	core, err := api.New(client, "lego-test", apiURL+"/dir", "", key)
 	require.NoError(t, err)
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
@@ -82,24 +82,23 @@ func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
 	require.NoError(t, err, "Could not generate test key")
 
 	testCases := []struct {
-		desc       string
-		httpClient *http.Client
-		request    RenewalInfoRequest
-		handler    http.HandlerFunc
+		desc    string
+		timeout time.Duration
+		request RenewalInfoRequest
+		handler http.HandlerFunc
 	}{
 		{
-			desc:       "API timeout",
-			httpClient: &http.Client{Timeout: 500 * time.Millisecond}, // HTTP client that times out after 500ms.
-			request:    RenewalInfoRequest{leaf},
+			desc:    "API timeout",
+			timeout: 500 * time.Millisecond, // HTTP client that times out after 500ms.
+			request: RenewalInfoRequest{leaf},
 			handler: func(w http.ResponseWriter, r *http.Request) {
 				// API that takes 2ms to respond.
 				time.Sleep(2 * time.Millisecond)
 			},
 		},
 		{
-			desc:       "API error",
-			httpClient: http.DefaultClient,
-			request:    RenewalInfoRequest{leaf},
+			desc:    "API error",
+			request: RenewalInfoRequest{leaf},
 			handler: func(w http.ResponseWriter, r *http.Request) {
 				// API that responds with error instead of renewal info.
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -111,11 +110,15 @@ func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			apiURL := tester.MockACMEServer().
+			apiURL, client := tester.MockACMEServer().
 				Route("GET /renewalInfo/"+ariLeafCertID, test.handler).
-				Build(t)
+				BuildHTTPS(t)
 
-			core, err := api.New(test.httpClient, "lego-test", apiURL+"/dir", "", key)
+			if test.timeout != 0 {
+				client.Timeout = test.timeout
+			}
+
+			core, err := api.New(client, "lego-test", apiURL+"/dir", "", key)
 			require.NoError(t, err)
 
 			certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})

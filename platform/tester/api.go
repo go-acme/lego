@@ -17,7 +17,7 @@ func MockACMEServer() *servermock.Builder[string] {
 			return server.URL, nil
 		}).
 		Route("GET /dir", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-			serverURL := fmt.Sprintf("http://%s", req.Context().Value(http.LocalAddrContextKey))
+			serverURL := fmt.Sprintf("https://%s", req.Context().Value(http.LocalAddrContextKey))
 
 			servermock.JSONEncode(acme.Directory{
 				NewNonceURL:   serverURL + "/nonce",

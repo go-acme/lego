@@ -84,7 +84,8 @@ func TestClient_GetRecordSetID_error(t *testing.T) {
 func TestClient_CreateRecordSet(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/123123/recordsets",
-			servermock.ResponseFromFixture("zones-recordsets_POST.json")).
+			servermock.ResponseFromFixture("zones-recordsets_POST.json"),
+			servermock.CheckRequestJSONBodyFromFixture("zones-recordsets_POST-request.json")).
 		Build(t)
 
 	rs := RecordSets{
@@ -92,7 +93,7 @@ func TestClient_CreateRecordSet(t *testing.T) {
 		Description: "Added TXT record for ACME dns-01 challenge using lego client",
 		Type:        "TXT",
 		TTL:         300,
-		Records:     []string{strconv.Quote("w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI")},
+		Records:     []string{strconv.Quote("ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")},
 	}
 	err := client.CreateRecordSet(context.Background(), "123123", rs)
 	require.NoError(t, err)

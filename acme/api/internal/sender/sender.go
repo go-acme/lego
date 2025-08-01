@@ -27,6 +27,8 @@ type Doer struct {
 
 // NewDoer Creates a new Doer.
 func NewDoer(client *http.Client, userAgent string) *Doer {
+	client.Transport = newHTTPSOnly(client)
+
 	return &Doer{
 		httpClient: client,
 		userAgent:  userAgent,
@@ -149,4 +151,29 @@ func checkError(req *http.Request, resp *http.Response) error {
 		return errorDetails
 	}
 	return nil
+}
+
+type httpsOnly struct {
+	rt http.RoundTripper
+}
+
+func newHTTPSOnly(client *http.Client) *httpsOnly {
+	if client.Transport == nil {
+		return &httpsOnly{rt: http.DefaultTransport}
+	}
+
+	return &httpsOnly{rt: client.Transport}
+}
+
+// RoundTrip ensure HTTPS is used.
+// Each ACME function is accomplished by the client sending a sequence of HTTPS requests to the server [RFC2818],
+// carrying JSON messages [RFC8259].
+// Use of HTTPS is REQUIRED.
+// https://datatracker.ietf.org/doc/html/rfc8555#section-6.1
+func (r *httpsOnly) RoundTrip(req *http.Request) (*http.Response, error) {
+	if req.URL.Scheme != "https" {
+		return nil, fmt.Errorf("HTTPS is required: %s", req.URL)
+	}
+
+	return r.rt.RoundTrip(req)
 }

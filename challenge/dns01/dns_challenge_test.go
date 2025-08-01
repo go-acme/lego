@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"errors"
-	"net/http"
 	"testing"
 	"time"
 
@@ -32,12 +31,12 @@ func (p *providerTimeoutMock) CleanUp(domain, token, keyAuth string) error { ret
 func (p *providerTimeoutMock) Timeout() (time.Duration, time.Duration)     { return p.timeout, p.interval }
 
 func TestChallenge_PreSolve(t *testing.T) {
-	apiURL := tester.MockACMEServer().Build(t)
+	apiURL, client := tester.MockACMEServer().BuildHTTPS(t)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err)
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	core, err := api.New(client, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -114,12 +113,12 @@ func TestChallenge_PreSolve(t *testing.T) {
 }
 
 func TestChallenge_Solve(t *testing.T) {
-	apiURL := tester.MockACMEServer().Build(t)
+	apiURL, client := tester.MockACMEServer().BuildHTTPS(t)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err)
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	core, err := api.New(client, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -201,12 +200,12 @@ func TestChallenge_Solve(t *testing.T) {
 }
 
 func TestChallenge_CleanUp(t *testing.T) {
-	apiURL := tester.MockACMEServer().Build(t)
+	apiURL, client := tester.MockACMEServer().BuildHTTPS(t)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err)
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	core, err := api.New(client, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	testCases := []struct {

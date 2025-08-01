@@ -12,13 +12,13 @@ import (
 
 func TestDo_UserAgentOnAllHTTPMethod(t *testing.T) {
 	var ua, method string
-	server := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
+	server := httptest.NewTLSServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
 		ua = r.Header.Get("User-Agent")
 		method = r.Method
 	}))
 	t.Cleanup(server.Close)
 
-	doer := NewDoer(http.DefaultClient, "")
+	doer := NewDoer(server.Client(), "")
 
 	testCases := []struct {
 		method string
@@ -64,4 +64,14 @@ func TestDo_CustomUserAgent(t *testing.T) {
 		t.Errorf("UA should not have trailing spaces; got '%s'", ua)
 	}
 	assert.Len(t, strings.Split(ua, " "), 5)
+}
+
+func TestDo_failWithHTTP(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}))
+	t.Cleanup(server.Close)
+
+	sender := NewDoer(server.Client(), "test")
+
+	_, err := sender.Post(server.URL, strings.NewReader("data"), "text/plain", nil)
+	require.ErrorContains(t, err, "HTTPS is required: http://")
 }

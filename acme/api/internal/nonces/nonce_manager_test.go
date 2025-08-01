@@ -8,35 +8,37 @@ import (
 
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/acme/api/internal/sender"
-	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 )
 
 func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		time.Sleep(250 * time.Millisecond)
-		w.Header().Set("Replay-Nonce", "12345")
-		w.Header().Set("Retry-After", "0")
-		err := tester.WriteJSONResponse(w, &acme.Challenge{Type: "http-01", Status: "Valid", URL: "http://example.com/", Token: "token"})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}))
-	t.Cleanup(server.Close)
+	manager, _ := servermock.NewBuilder(
+		func(server *httptest.Server) (*Manager, error) {
+			doer := sender.NewDoer(server.Client(), "lego-test")
 
-	doer := sender.NewDoer(http.DefaultClient, "lego-test")
-	j := NewManager(doer, server.URL)
+			return NewManager(doer, server.URL), nil
+		}).
+		Route("HEAD /", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			time.Sleep(250 * time.Millisecond)
+
+			rw.Header().Set("Replay-Nonce", "12345")
+			rw.Header().Set("Retry-After", "0")
+
+			servermock.JSONEncode(&acme.Challenge{Type: "http-01", Status: "Valid", URL: "https://example.com/", Token: "token"}).ServeHTTP(rw, req)
+		})).
+		BuildHTTPS(t)
+
 	ch := make(chan bool)
 	resultCh := make(chan bool)
 	go func() {
-		_, errN := j.Nonce()
+		_, errN := manager.Nonce()
 		if errN != nil {
 			t.Log(errN)
 		}
 		ch <- true
 	}()
 	go func() {
-		_, errN := j.Nonce()
+		_, errN := manager.Nonce()
 		if errN != nil {
 			t.Log(errN)
 		}

@@ -37,7 +37,7 @@ func TestValidate(t *testing.T) {
 
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 
-	apiURL := tester.MockACMEServer().
+	apiURL, client := tester.MockACMEServer().
 		Route("POST /chlg",
 			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				if err := validateNoBody(privateKey, req); err != nil {
@@ -46,7 +46,7 @@ func TestValidate(t *testing.T) {
 				}
 
 				rw.Header().Set("Link",
-					fmt.Sprintf(`<http://%s/my-authz>; rel="up"`, req.Context().Value(http.LocalAddrContextKey)))
+					fmt.Sprintf(`<https://%s/my-authz>; rel="up"`, req.Context().Value(http.LocalAddrContextKey)))
 
 				st := statuses[0]
 				statuses = statuses[1:]
@@ -74,9 +74,9 @@ func TestValidate(t *testing.T) {
 
 				servermock.JSONEncode(authorization).ServeHTTP(rw, req)
 			})).
-		Build(t)
+		BuildHTTPS(t)
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	core, err := api.New(client, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	testCases := []struct {

@@ -2,13 +2,13 @@
 package bindman
 
 import (
-	"errors"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	bindmanClient "github.com/labbsr0x/bindman-dns-webhook/src/client"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -106,10 +106,24 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.BaseURL = server.URL
+			config.HTTPClient = server.Client()
+
+			return NewDNSProviderConfig(config)
+		},
+		servermock.CheckHeader().
+			WithJSONHeaders().
+			With("User-Agent", "bindman-dns-webhook-client"))
+}
+
 func TestDNSProvider_Present(t *testing.T) {
 	testCases := []struct {
 		name        string
-		client      *bindmanClient.DNSWebhookClient
+		mock        *servermock.Builder[*DNSProvider]
 		domain      string
 		token       string
 		keyAuth     string
@@ -117,28 +131,31 @@ func TestDNSProvider_Present(t *testing.T) {
 	}{
 		{
 			name: "success when add record function return no error",
-			client: &bindmanClient.DNSWebhookClient{
-				ClientAPI: &MockHTTPClientAPI{Status: http.StatusNoContent},
-			},
-			domain:      "hello.test.com",
+			mock: mockBuilder().
+				Route("POST /records",
+					servermock.Noop().WithStatusCode(http.StatusNoContent),
+					servermock.CheckRequestJSONBodyFromFixture("add_record-request.json"),
+				),
+			domain:      "example.com",
 			keyAuth:     "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
 			expectError: false,
 		},
 		{
 			name: "error when add record function return an error",
-			client: &bindmanClient.DNSWebhookClient{
-				ClientAPI: &MockHTTPClientAPI{Error: errors.New("error adding record")},
-			},
-			domain:      "hello.test.com",
+			mock: mockBuilder().
+				Route("POST /records",
+					servermock.ResponseFromFixture("error.json"),
+				),
+			domain:      "example.com",
 			keyAuth:     "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
 			expectError: true,
 		},
 	}
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			d := &DNSProvider{client: test.client}
+			provider := test.mock.Build(t)
 
-			err := d.Present(test.domain, test.token, test.keyAuth)
+			err := provider.Present(test.domain, test.token, test.keyAuth)
 			if test.expectError {
 				require.Error(t, err)
 			} else {
@@ -151,7 +168,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	testCases := []struct {
 		name        string
-		client      *bindmanClient.DNSWebhookClient
+		mock        *servermock.Builder[*DNSProvider]
 		domain      string
 		token       string
 		keyAuth     string
@@ -159,30 +176,33 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	}{
 		{
 			name: "success when remove record function return no error",
-			client: &bindmanClient.DNSWebhookClient{
-				ClientAPI: &MockHTTPClientAPI{Status: http.StatusNoContent},
-			},
-			domain:      "hello.test.com",
+			mock: mockBuilder().
+				Route("DELETE /records/_acme-challenge.example.com./TXT",
+					servermock.Noop().WithStatusCode(http.StatusNoContent),
+				),
+			domain:      "example.com",
 			keyAuth:     "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
 			expectError: false,
 		},
 		{
 			name: "error when remove record function return an error",
-			client: &bindmanClient.DNSWebhookClient{
-				ClientAPI: &MockHTTPClientAPI{Error: errors.New("error adding record")},
-			},
-			domain:      "hello.test.com",
+			mock: mockBuilder().
+				Route("DELETE /records/_acme-challenge.example.com./TXT",
+					servermock.ResponseFromFixture("error.json"),
+				),
+			domain:      "example.com",
 			keyAuth:     "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
 			expectError: true,
 		},
 	}
+
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			d := &DNSProvider{client: test.client}
+			provider := test.mock.Build(t)
 
-			err := d.CleanUp(test.domain, test.token, test.keyAuth)
+			err := provider.CleanUp(test.domain, test.token, test.keyAuth)
 			if test.expectError {
-				require.Error(t, err)
+				require.ErrorContains(t, err, "bindman: ERROR (400): bar; ")
 			} else {
 				require.NoError(t, err)
 			}
@@ -216,26 +236,4 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
-}
-
-type MockHTTPClientAPI struct {
-	Data   []byte
-	Status int
-	Error  error
-}
-
-func (m *MockHTTPClientAPI) Put(url string, data []byte) (*http.Response, []byte, error) {
-	return &http.Response{StatusCode: m.Status}, m.Data, m.Error
-}
-
-func (m *MockHTTPClientAPI) Post(url string, data []byte) (*http.Response, []byte, error) {
-	return &http.Response{StatusCode: m.Status}, m.Data, m.Error
-}
-
-func (m *MockHTTPClientAPI) Get(url string) (*http.Response, []byte, error) {
-	return &http.Response{StatusCode: m.Status}, m.Data, m.Error
-}
-
-func (m *MockHTTPClientAPI) Delete(url string) (*http.Response, []byte, error) {
-	return &http.Response{StatusCode: m.Status}, m.Data, m.Error
 }

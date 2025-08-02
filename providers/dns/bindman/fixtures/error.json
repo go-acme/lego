@@ -1,0 +1,5 @@
+{
+  "message": "bar",
+  "code": 400,
+  "details": ["foo"]
+}

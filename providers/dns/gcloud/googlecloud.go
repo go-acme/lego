@@ -16,10 +16,11 @@ import (
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/platform/wait"
+	"github.com/miekg/dns"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/dns/v1"
+	gdns "google.golang.org/api/dns/v1"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/impersonate"
 	"google.golang.org/api/option"
@@ -74,7 +75,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *dns.Service
+	client *gdns.Service
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Google Cloud DNS.
@@ -170,7 +171,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("googlecloud: unable to create Google Cloud DNS service: client is nil")
 	}
 
-	svc, err := dns.NewService(context.Background(), option.WithHTTPClient(config.HTTPClient))
+	svc, err := gdns.NewService(context.Background(), option.WithHTTPClient(config.HTTPClient))
 	if err != nil {
 		return nil, fmt.Errorf("googlecloud: unable to create Google Cloud DNS service: %w", err)
 	}
@@ -209,12 +210,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// Attempt to delete the existing records before adding the new one.
 	if len(existingRrSet) > 0 {
-		if err = d.applyChanges(zone, &dns.Change{Deletions: existingRrSet}); err != nil {
+		if err = d.applyChanges(zone, &gdns.Change{Deletions: existingRrSet}); err != nil {
 			return fmt.Errorf("googlecloud: %w", err)
 		}
 	}
 
-	rec := &dns.ResourceRecordSet{
+	rec := &gdns.ResourceRecordSet{
 		Name:    info.EffectiveFQDN,
 		Rrdatas: []string{info.Value},
 		Ttl:     int64(d.config.TTL),
@@ -230,8 +231,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}
 	}
 
-	change := &dns.Change{
-		Additions: []*dns.ResourceRecordSet{rec},
+	change := &gdns.Change{
+		Additions: []*gdns.ResourceRecordSet{rec},
 	}
 
 	if err = d.applyChanges(zone, change); err != nil {
@@ -241,7 +242,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) applyChanges(zone string, change *dns.Change) error {
+func (d *DNSProvider) applyChanges(zone string, change *gdns.Change) error {
 	if d.config.Debug {
 		data, _ := json.Marshal(change)
 		log.Printf("change (Create): %s", string(data))
@@ -303,7 +304,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	_, err = d.client.Changes.Create(d.config.Project, zone, &dns.Change{Deletions: records}).Do()
+	_, err = d.client.Changes.Create(d.config.Project, zone, &gdns.Change{Deletions: records}).Do()
 	if err != nil {
 		return fmt.Errorf("googlecloud: %w", err)
 	}
@@ -352,7 +353,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 //	(gcloud projects get-iam-policy $project_id) (a role with permission dns.managedZones.list)
 //
 // If we force a zone list to succeed, we demand more permissions than needed.
-func (d *DNSProvider) lookupHostedZoneID(domain string) (string, []*dns.ManagedZone, error) {
+func (d *DNSProvider) lookupHostedZoneID(domain string) (string, []*gdns.ManagedZone, error) {
 	// GCE_ZONE_ID override for service accounts to avoid needing zones-list permission
 	if d.config.ZoneID != "" {
 		zone, err := d.client.ManagedZones.Get(d.config.Project, d.config.ZoneID).Do()
@@ -360,10 +361,10 @@ func (d *DNSProvider) lookupHostedZoneID(domain string) (string, []*dns.ManagedZ
 			return "", nil, fmt.Errorf("API call ManagedZones.Get for explicit zone ID %q in project %q failed: %w", d.config.ZoneID, d.config.Project, err)
 		}
 
-		return zone.DnsName, []*dns.ManagedZone{zone}, nil
+		return zone.DnsName, []*gdns.ManagedZone{zone}, nil
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(dns.Fqdn(domain))
 	if err != nil {
 		return "", nil, fmt.Errorf("could not find zone: %w", err)
 	}
@@ -379,7 +380,7 @@ func (d *DNSProvider) lookupHostedZoneID(domain string) (string, []*dns.ManagedZ
 	return authZone, zones.ManagedZones, nil
 }
 
-func (d *DNSProvider) findTxtRecords(zone, fqdn string) ([]*dns.ResourceRecordSet, error) {
+func (d *DNSProvider) findTxtRecords(zone, fqdn string) ([]*gdns.ResourceRecordSet, error) {
 	recs, err := d.client.ResourceRecordSets.List(d.config.Project, zone).Name(fqdn).Type("TXT").Do()
 	if err != nil {
 		return nil, err
@@ -398,7 +399,7 @@ func newClientFromCredentials(ctx context.Context, config *Config) (*http.Client
 		return newImpersonateClient(ctx, config.ImpersonateServiceAccount, ts)
 	}
 
-	client, err := google.DefaultClient(ctx, dns.NdevClouddnsReadwriteScope)
+	client, err := google.DefaultClient(ctx, gdns.NdevClouddnsReadwriteScope)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get Google Cloud client: %w", err)
 	}
@@ -416,7 +417,7 @@ func newClientFromServiceAccountKey(ctx context.Context, config *Config, saKey [
 		return newImpersonateClient(ctx, config.ImpersonateServiceAccount, conf.TokenSource(ctx))
 	}
 
-	conf, err := google.JWTConfigFromJSON(saKey, dns.NdevClouddnsReadwriteScope)
+	conf, err := google.JWTConfigFromJSON(saKey, gdns.NdevClouddnsReadwriteScope)
 	if err != nil {
 		return nil, fmt.Errorf("unable to acquire config: %w", err)
 	}
@@ -427,7 +428,7 @@ func newClientFromServiceAccountKey(ctx context.Context, config *Config, saKey [
 func newImpersonateClient(ctx context.Context, impersonateServiceAccount string, ts oauth2.TokenSource) (*http.Client, error) {
 	impersonatedTS, err := impersonate.CredentialsTokenSource(ctx, impersonate.CredentialsConfig{
 		TargetPrincipal: impersonateServiceAccount,
-		Scopes:          []string{dns.NdevClouddnsReadwriteScope},
+		Scopes:          []string{gdns.NdevClouddnsReadwriteScope},
 	}, option.WithTokenSource(ts))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create impersonated credentials: %w", err)

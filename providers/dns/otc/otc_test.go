@@ -218,7 +218,9 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.ResponseFromInternal("zones_GET.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
-		Route("/", servermock.DumpRequest()).
+		Route("POST /v2/zones/123123/recordsets",
+			servermock.Noop(),
+			servermock.CheckRequestJSONBodyFromInternal("zones-recordsets_POST-request.json")).
 		Build(t)
 
 	err := provider.Present("example.com", "", "123d==")
@@ -231,7 +233,6 @@ func TestDNSProvider_Present_emptyZone(t *testing.T) {
 			servermock.ResponseFromInternal("zones_GET_empty.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
-		Route("/", servermock.DumpRequest()).
 		Build(t)
 
 	err := provider.Present("example.com", "", "123d==")

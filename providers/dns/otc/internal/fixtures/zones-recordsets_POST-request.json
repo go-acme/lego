@@ -1,0 +1,9 @@
+{
+  "name": "_acme-challenge.example.com.",
+  "description": "Added TXT record for ACME dns-01 challenge using lego client",
+  "type": "TXT",
+  "ttl": 300,
+  "records": [
+    "\"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY\""
+  ]
+}

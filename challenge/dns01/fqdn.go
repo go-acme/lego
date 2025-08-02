@@ -7,12 +7,10 @@ import (
 )
 
 // ToFqdn converts the name into a fqdn appending a trailing dot.
+//
+// Deprecated: Use [github.com/miekg/dns.Fqdn] directly.
 func ToFqdn(name string) string {
-	n := len(name)
-	if n == 0 || name[n-1] == '.' {
-		return name
-	}
-	return name + "."
+	return dns.Fqdn(name)
 }
 
 // UnFqdn converts the fqdn into a name removing the trailing dot.

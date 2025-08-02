@@ -1,0 +1,116 @@
+:root {
+    /* initially use section background to avoid flickering on load when a non default variant is active;
+    this is only possible because every color variant defines this variable, otherwise we would have been lost */
+    --INTERNAL-PRIMARY-color: var(--PRIMARY-color, var(--MENU-HEADER-BG-color, rgba( 0, 0, 0, 0 ))); /* not --INTERNAL-MENU-HEADER-BG-color */
+    --INTERNAL-SECONDARY-color: var(--SECONDARY-color, var(--MAIN-LINK-color, rgba( 72, 106, 201, 1 ))); /* not --INTERNAL-MAIN-LINK-color */
+    --INTERNAL-ACCENT-color: var(--ACCENT-color, rgba( 255, 255, 0, 1 ));
+
+    --INTERNAL-MAIN-TOPBAR-BORDER-color: var(--MAIN-TOPBAR-BORDER-color, transparent);
+    --INTERNAL-MAIN-LINK-color: var(--MAIN-LINK-color, var(--SECONDARY-color, rgba( 72, 106, 201, 1 ))); /* not --INTERNAL-SECONDARY-color */
+    --INTERNAL-MAIN-LINK-HOVER-color: var(--MAIN-LINK-HOVER-color, var(--INTERNAL-MAIN-LINK-color));
+    --INTERNAL-MAIN-BG-color: var(--MAIN-BG-color, rgba( 255, 255, 255, 1 ));
+
+    --INTERNAL-MAIN-TEXT-color: var(--MAIN-TEXT-color, rgba( 16, 16, 16, 1 ));
+    --INTERNAL-MAIN-TITLES-TEXT-color: var(--MAIN-TITLES-TEXT-color, var(--INTERNAL-MAIN-TEXT-color));
+
+    --INTERNAL-MAIN-TITLES-H1-color: var(--MAIN-TITLES-H1-color, var(--INTERNAL-MAIN-TEXT-color));
+    --INTERNAL-MAIN-TITLES-H2-color: var(--MAIN-TITLES-H2-color, var(--INTERNAL-MAIN-TITLES-TEXT-color));
+    --INTERNAL-MAIN-TITLES-H3-color: var(--MAIN-TITLES-H3-color, var(--INTERNAL-MAIN-TITLES-H2-color));
+    --INTERNAL-MAIN-TITLES-H4-color: var(--MAIN-TITLES-H4-color, var(--INTERNAL-MAIN-TITLES-H3-color));
+    --INTERNAL-MAIN-TITLES-H5-color: var(--MAIN-TITLES-H5-color, var(--INTERNAL-MAIN-TITLES-H4-color));
+    --INTERNAL-MAIN-TITLES-H6-color: var(--MAIN-TITLES-H6-color, var(--INTERNAL-MAIN-TITLES-H5-color));
+
+    --INTERNAL-MAIN-font: var(--MAIN-font, "Work Sans", "Helvetica", "Tahoma", "Geneva", "Arial", sans-serif);
+    --INTERNAL-MAIN-TITLES-TEXT-font: var(--MAIN-TITLES-TEXT-font, var(--INTERNAL-MAIN-font));
+
+    --INTERNAL-MAIN-TITLES-H1-font: var(--MAIN-TITLES-H1-font, var(--INTERNAL-MAIN-font));
+    --INTERNAL-MAIN-TITLES-H2-font: var(--MAIN-TITLES-H2-font, var(--INTERNAL-MAIN-TITLES-TEXT-font));
+    --INTERNAL-MAIN-TITLES-H3-font: var(--MAIN-TITLES-H3-font, var(--INTERNAL-MAIN-TITLES-H2-font));
+    --INTERNAL-MAIN-TITLES-H4-font: var(--MAIN-TITLES-H4-font, var(--INTERNAL-MAIN-TITLES-H3-font));
+    --INTERNAL-MAIN-TITLES-H5-font: var(--MAIN-TITLES-H5-font, var(--INTERNAL-MAIN-TITLES-H4-font));
+    --INTERNAL-MAIN-TITLES-H6-font: var(--MAIN-TITLES-H6-font, var(--INTERNAL-MAIN-TITLES-H5-font));
+
+    --INTERNAL-CODE-theme: var(--CODE-theme, relearn-light);
+    --INTERNAL-CODE-font: var(--CODE-font, "Consolas", menlo, monospace);
+    --INTERNAL-CODE-BLOCK-color: var(--CODE-BLOCK-color, var(--MAIN-CODE-color, rgba( 39, 40, 34, 1 )));
+    --INTERNAL-CODE-BLOCK-BG-color: var(--CODE-BLOCK-BG-color, var(--MAIN-CODE-BG-color, rgba( 250, 250, 250, 1 )));
+    --INTERNAL-CODE-BLOCK-BORDER-color: var(--CODE-BLOCK-BORDER-color, var(--MAIN-CODE-BG-color, var(--INTERNAL-CODE-BLOCK-BG-color)));
+    --INTERNAL-CODE-INLINE-color: var(--CODE-INLINE-color, rgba( 94, 94, 94, 1 ));
+    --INTERNAL-CODE-INLINE-BG-color: var(--CODE-INLINE-BG-color, rgba( 255, 250, 233, 1 ));
+    --INTERNAL-CODE-INLINE-BORDER-color: var(--CODE-INLINE-BORDER-color, rgba( 251, 240, 203, 1 ));
+
+    --INTERNAL-BROWSER-theme: var(--BROWSER-theme, light);
+    --INTERNAL-MERMAID-theme: var(--CONFIG-MERMAID-theme, var(--MERMAID-theme, var(--INTERNAL-PRINT-MERMAID-theme)));
+    --INTERNAL-OPENAPI-theme: var(--CONFIG-OPENAPI-theme, var(--OPENAPI-theme, var(--SWAGGER-theme, var(--INTERNAL-PRINT-OPENAPI-theme))));
+    --INTERNAL-OPENAPI-CODE-theme: var(--CONFIG-OPENAPI-CODE-theme, var(--OPENAPI-CODE-theme, --INTERNAL-PRINT-OPENAPI-CODE-theme));
+
+    --INTERNAL-TAG-BG-color: var(--TAG-BG-color, var(--INTERNAL-PRIMARY-color));
+
+    --INTERNAL-MENU-BORDER-color: var(--MENU-BORDER-color, transparent);
+    --INTERNAL-MENU-TOPBAR-BORDER-color: var(--MENU-TOPBAR-BORDER-color, var(--INTERNAL-MENU-HEADER-BG-color));
+    --INTERNAL-MENU-TOPBAR-SEPARATOR-color: var(--MENU-TOPBAR-SEPARATOR-color, transparent);
+    --INTERNAL-MENU-HEADER-BG-color: var(--MENU-HEADER-BG-color, var(--PRIMARY-color, rgba( 0, 0, 0, 0 ))); /* not --INTERNAL-PRIMARY-color */
+    --INTERNAL-MENU-HEADER-BORDER-color: var(--MENU-HEADER-BORDER-color, var(--INTERNAL-MENU-HEADER-BG-color));
+    --INTERNAL-MENU-HEADER-SEPARATOR-color: var(--MENU-HEADER-SEPARATOR-color, var(--INTERNAL-MENU-HEADER-BORDER-color));
+
+    --INTERNAL-MENU-HOME-LINK-color: var(--MENU-HOME-LINK-color, rgba( 50, 50, 50, 1 ));
+    --INTERNAL-MENU-HOME-LINK-HOVER-color: var(--MENU-HOME-LINK-HOVER-color, var(--MENU-HOME-LINK-HOVERED-color, rgba( 128, 128, 128, 1 )));
+
+    --INTERNAL-MENU-SEARCH-color: var(--MENU-SEARCH-color, var(--MENU-SEARCH-BOX-ICONS-color, rgba( 224, 224, 224, 1 )));
+    --INTERNAL-MENU-SEARCH-BG-color: var(--MENU-SEARCH-BG-color, rgba( 50, 50, 50, 1 ));
+    --INTERNAL-MENU-SEARCH-BORDER-color: var(--MENU-SEARCH-BORDER-color, var(--MENU-SEARCH-BOX-color, var(--INTERNAL-MENU-SEARCH-BG-color)));
+
+    --INTERNAL-MENU-SECTIONS-ACTIVE-BG-color: var(--MENU-SECTIONS-ACTIVE-BG-color, rgba( 0, 0, 0, .166 ));
+    --INTERNAL-MENU-SECTIONS-BG-color: var(--MENU-SECTIONS-BG-color, rgba( 40, 40, 40, 1 ));
+    --INTERNAL-MENU-SECTIONS-LINK-color: var(--MENU-SECTIONS-LINK-color, rgba( 186, 186, 186, 1 ));
+    --INTERNAL-MENU-SECTIONS-LINK-HOVER-color: var(--MENU-SECTIONS-LINK-HOVER-color, var(--INTERNAL-MENU-SECTIONS-LINK-color));
+    --INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-color: var(--MENU-SECTION-ACTIVE-CATEGORY-color, rgba( 68, 68, 68, 1 ));
+    --INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-BG-color: var(--MENU-SECTION-ACTIVE-CATEGORY-BG-color, var(--INTERNAL-MAIN-BG-color));
+    --INTERNAL-MENU-SECTION-ACTIVE-CATEGORY-BORDER-color: var(--MENU-SECTION-ACTIVE-CATEGORY-BORDER-color, transparent);
+
+    --INTERNAL-MENU-VISITED-color: var(--MENU-VISITED-color, var(--INTERNAL-SECONDARY-color));
+    --INTERNAL-MENU-SECTION-SEPARATOR-color: var(--MENU-SECTION-SEPARATOR-color, var(--MENU-SECTION-HR-color, rgba( 96, 96, 96, 1 )));
+
+    --INTERNAL-BOX-CAPTION-color: var(--BOX-CAPTION-color, rgba( 255, 255, 255, 1 ));
+    --INTERNAL-BOX-BG-color: var(--BOX-BG-color, rgba( 255, 255, 255, .833 ));
+    --INTERNAL-BOX-TEXT-color: var(--BOX-TEXT-color, var(--INTERNAL-MAIN-TEXT-color));
+
+    --INTERNAL-BOX-BLUE-color: var(--BOX-BLUE-color, rgba( 48, 117, 229, 1 ));
+    --INTERNAL-BOX-GREEN-color: var(--BOX-GREEN-color, rgba( 42, 178, 24, 1 ));
+    --INTERNAL-BOX-GREY-color: var(--BOX-GREY-color, rgba( 160, 160, 160, 1 ));
+    --INTERNAL-BOX-ORANGE-color: var(--BOX-ORANGE-color, rgba( 237, 153, 9, 1 ));
+    --INTERNAL-BOX-RED-color: var(--BOX-RED-color, rgba( 224, 62, 62, 1 ));
+
+    --INTERNAL-BOX-INFO-color: var(--BOX-INFO-color, var(--INTERNAL-BOX-BLUE-color));
+    --INTERNAL-BOX-NEUTRAL-color: var(--BOX-NEUTRAL-color, var(--INTERNAL-BOX-GREY-color));
+    --INTERNAL-BOX-NOTE-color: var(--BOX-NOTE-color, var(--INTERNAL-BOX-ORANGE-color));
+    --INTERNAL-BOX-TIP-color: var(--BOX-TIP-color, var(--INTERNAL-BOX-GREEN-color));
+    --INTERNAL-BOX-WARNING-color: var(--BOX-WARNING-color, var(--INTERNAL-BOX-RED-color));
+
+    --INTERNAL-BOX-BLUE-TEXT-color: var(--BOX-BLUE-TEXT-color, var(--INTERNAL-BOX-TEXT-color));
+    --INTERNAL-BOX-GREEN-TEXT-color: var(--BOX-GREEN-TEXT-color, var(--INTERNAL-BOX-TEXT-color));
+    --INTERNAL-BOX-GREY-TEXT-color: var(--BOX-GREY-TEXT-color, var(--INTERNAL-BOX-TEXT-color));
+    --INTERNAL-BOX-ORANGE-TEXT-color: var(--BOX-ORANGE-TEXT-color, var(--INTERNAL-BOX-TEXT-color));
+    --INTERNAL-BOX-RED-TEXT-color: var(--BOX-RED-TEXT-color, var(--INTERNAL-BOX-TEXT-color));
+
+    --INTERNAL-BOX-INFO-TEXT-color: var(--BOX-INFO-TEXT-color, var(--INTERNAL-BOX-BLUE-TEXT-color));
+    --INTERNAL-BOX-NEUTRAL-TEXT-color: var(--BOX-NEUTRAL-TEXT-color, var(--INTERNAL-BOX-GREY-TEXT-color));
+    --INTERNAL-BOX-NOTE-TEXT-color: var(--BOX-NOTE-TEXT-color, var(--INTERNAL-BOX-ORANGE-TEXT-color));
+    --INTERNAL-BOX-TIP-TEXT-color: var(--BOX-TIP-TEXT-color, var(--INTERNAL-BOX-GREEN-TEXT-color));
+    --INTERNAL-BOX-WARNING-TEXT-color: var(--BOX-WARNING-TEXT-color, var(--INTERNAL-BOX-RED-TEXT-color));
+
+    /* print style, values taken from relearn-light as it is used as a default print style */
+    --INTERNAL-PRINT-MAIN-BG-color: var(--PRINT-MAIN-BG-color, rgba( 255, 255, 255, 1 ));
+    --INTERNAL-PRINT-CODE-font: var(--PRINT-CODE-font, "Consolas", menlo, monospace);
+    --INTERNAL-PRINT-TAG-BG-color: var(--PRINT-TAG-BG-color, rgba( 125, 201, 3, 1 ));
+    --INTERNAL-PRINT-MAIN-font: var(--PRINT-MAIN-font, "Work Sans", "Helvetica", "Tahoma", "Geneva", "Arial", sans-serif);
+    --INTERNAL-PRINT-MAIN-TEXT-color: var(--PRINT-MAIN-TEXT-color, rgba( 16, 16, 16, 1 ));
+    --INTERNAL-PRINT-MERMAID-theme: var(--PRINT-MERMAID-theme, default);
+    --INTERNAL-PRINT-OPENAPI-theme: var(--PRINT-OPENAPI-theme, var(--PRINT-SWAGGER-theme, light));
+    --INTERNAL-PRINT-OPENAPI-CODE-theme: var(--PRINT-OPENAPI-CODE-theme, idea);
+
+    --INTERNAL-MENU-WIDTH-S: var(--MENU-WIDTH-S, 14.375rem);
+    --INTERNAL-MENU-WIDTH-M: var(--MENU-WIDTH-M, 14.375rem);
+    --INTERNAL-MENU-WIDTH-L: var(--MENU-WIDTH-L, 18.75rem);
+    --INTERNAL-MAIN-WIDTH-MAX: var(--MAIN-WIDTH-MAX, 81.25rem);
+}

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLookupNameserversOK(t *testing.T) {
+func Test_lookupNameserversOK(t *testing.T) {
 	testCases := []struct {
 		fqdn string
 		nss  []string
@@ -44,7 +44,7 @@ func TestLookupNameserversOK(t *testing.T) {
 	}
 }
 
-func TestLookupNameserversErr(t *testing.T) {
+func Test_lookupNameserversErr(t *testing.T) {
 	testCases := []struct {
 		desc  string
 		fqdn  string
@@ -169,7 +169,7 @@ func TestFindPrimaryNsByFqdnCustom(t *testing.T) {
 	}
 }
 
-func TestResolveConfServers(t *testing.T) {
+func Test_getNameservers_ResolveConfServers(t *testing.T) {
 	testCases := []struct {
 		fixture  string
 		expected []string

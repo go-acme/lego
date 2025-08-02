@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCheckDNSPropagation(t *testing.T) {
+func Test_preCheck_checkDNSPropagation(t *testing.T) {
 	testCases := []struct {
 		desc        string
 		fqdn        string
@@ -46,7 +46,7 @@ func TestCheckDNSPropagation(t *testing.T) {
 	}
 }
 
-func TestCheckAuthoritativeNss(t *testing.T) {
+func Test_checkNameserversPropagation_authoritativeNss(t *testing.T) {
 	testCases := []struct {
 		desc        string
 		fqdn, value string
@@ -78,7 +78,7 @@ func TestCheckAuthoritativeNss(t *testing.T) {
 	}
 }
 
-func TestCheckAuthoritativeNssErr(t *testing.T) {
+func Test_checkNameserversPropagation_authoritativeNssErr(t *testing.T) {
 	testCases := []struct {
 		desc        string
 		fqdn, value string

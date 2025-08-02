@@ -1,6 +1,6 @@
 Name = "Tencent Cloud DNS"
 Description = ''''''
-URL = "https://cloud.tencent.com/product/cns"
+URL = "https://cloud.tencent.com/product/dns"
 Code = "tencentcloud"
 Since = "v4.6.0"
 

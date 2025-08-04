@@ -58,7 +58,7 @@ func TestHTTPStorage_Fetch_error(t *testing.T) {
 
 func TestHTTPStorage_FetchAll(t *testing.T) {
 	storage := mockBuilder().
-		Route("GET /", servermock.ResponseFromFixture("fetch-all.json")).
+		Route("GET /", servermock.ResponseFromFixture("fetch_all.json")).
 		Build(t)
 
 	account, err := storage.FetchAll(t.Context())
@@ -98,7 +98,7 @@ func TestHTTPStorage_FetchAll_error(t *testing.T) {
 func TestHTTPStorage_Put(t *testing.T) {
 	storage := mockBuilder().
 		Route("POST /example.com", nil,
-			servermock.CheckRequestJSONBodyFromFixture("request-body.json")).
+			servermock.CheckRequestJSONBodyFromFixture("fetch-request.json")).
 		Build(t)
 
 	account := goacmedns.Account{
@@ -137,7 +137,7 @@ func TestHTTPStorage_Put_CNAME_created(t *testing.T) {
 		Route("POST /example.com",
 			servermock.Noop().
 				WithStatusCode(http.StatusCreated),
-			servermock.CheckRequestJSONBodyFromFixture("request-body.json")).
+			servermock.CheckRequestJSONBodyFromFixture("fetch-request.json")).
 		Build(t)
 
 	account := goacmedns.Account{

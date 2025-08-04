@@ -352,7 +352,7 @@ func TestLiveCleanUp(t *testing.T) {
 func mockBuilder() *servermock.Builder[*DNSProvider] {
 	return servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 		config := NewDefaultConfig()
-		config.HTTPClient = &http.Client{Timeout: 10 * time.Second}
+		config.HTTPClient = server.Client()
 		config.Project = "manhattan"
 
 		p, err := NewDNSProviderConfig(config)

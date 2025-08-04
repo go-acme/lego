@@ -113,6 +113,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
+			config.HTTPClient = server.Client()
 			config.APIUser = "testUser"
 			config.APIKey = "testKey"
 			config.HTTPClient = server.Client()

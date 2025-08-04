@@ -252,6 +252,13 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 			EnvEndpoint: server.URL,
 		})
 
-		return NewDNSProvider()
+		provider, err := NewDNSProvider()
+		if err != nil {
+			return nil, err
+		}
+
+		provider.client.HTTPClient = server.Client()
+
+		return provider, nil
 	})
 }

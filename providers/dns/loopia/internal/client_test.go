@@ -15,6 +15,7 @@ func mockBuilder(password string) *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("apiuser", password)
+			client.HTTPClient = server.Client()
 			client.BaseURL = server.URL + "/"
 
 			return client, nil

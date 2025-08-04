@@ -146,6 +146,7 @@ func TestDNSProvider_Present(t *testing.T) {
 	provider := servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			cfg := aws.Config{
+				HTTPClient:       server.Client(),
 				Credentials:      credentials.NewStaticCredentialsProvider("abc", "123", " "),
 				Region:           "mock-region",
 				BaseEndpoint:     aws.String(server.URL),

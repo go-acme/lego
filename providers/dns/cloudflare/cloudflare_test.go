@@ -304,6 +304,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 			config.AuthEmail = "foo@example.com"
 			config.AuthKey = "secret"
 			config.BaseURL = server.URL
+			config.HTTPClient = server.Client()
 
 			return NewDNSProviderConfig(config)
 		},

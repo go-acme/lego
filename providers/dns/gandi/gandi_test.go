@@ -126,6 +126,7 @@ func TestDNSProvider(t *testing.T) {
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.BaseURL = server.URL + "/"
+			config.HTTPClient = server.Client()
 			config.APIKey = "123412341234123412341234"
 
 			return NewDNSProviderConfig(config)

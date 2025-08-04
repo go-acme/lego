@@ -22,7 +22,7 @@ func TestOrderService_NewWithOptions(t *testing.T) {
 	privateKey, errK := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, errK, "Could not generate test key")
 
-	apiURL, client := tester.MockACMEServer().
+	server := tester.MockACMEServer().
 		Route("POST /newOrder",
 			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				body, err := readSignedBody(req, privateKey)
@@ -54,7 +54,7 @@ func TestOrderService_NewWithOptions(t *testing.T) {
 			})).
 		BuildHTTPS(t)
 
-	core, err := New(client, "lego-test", apiURL+"/dir", "", privateKey)
+	core, err := New(server.Client(), "lego-test", server.URL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	testCases := []struct {

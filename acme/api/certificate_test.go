@@ -73,34 +73,34 @@ rzFL1KZfz+HZdnFwFW2T2gVW8L3ii1l9AJDuKzlvjUH3p6bgihVq02sjT8mx+GM2
 `
 
 func TestCertificateService_Get_issuerRelUp(t *testing.T) {
-	apiURL, client := tester.MockACMEServer().
+	server := tester.MockACMEServer().
 		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
 		BuildHTTPS(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := New(client, "lego-test", apiURL+"/dir", "", key)
+	core, err := New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
-	cert, issuer, err := core.Certificates.Get(apiURL+"/certificate", true)
+	cert, issuer, err := core.Certificates.Get(server.URL+"/certificate", true)
 	require.NoError(t, err)
 	assert.Equal(t, certResponseMock, string(cert), "Certificate")
 	assert.Equal(t, issuerMock, string(issuer), "IssuerCertificate")
 }
 
 func TestCertificateService_Get_embeddedIssuer(t *testing.T) {
-	apiURL, client := tester.MockACMEServer().
+	server := tester.MockACMEServer().
 		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
 		BuildHTTPS(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := New(client, "lego-test", apiURL+"/dir", "", key)
+	core, err := New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
-	cert, issuer, err := core.Certificates.Get(apiURL+"/certificate", true)
+	cert, issuer, err := core.Certificates.Get(server.URL+"/certificate", true)
 	require.NoError(t, err)
 	assert.Equal(t, certResponseMock, string(cert), "Certificate")
 	assert.Equal(t, issuerMock, string(issuer), "IssuerCertificate")

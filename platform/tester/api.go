@@ -11,10 +11,10 @@ import (
 )
 
 // MockACMEServer Minimal stub ACME server for validation.
-func MockACMEServer() *servermock.Builder[string] {
+func MockACMEServer() *servermock.Builder[*httptest.Server] {
 	return servermock.NewBuilder(
-		func(server *httptest.Server) (string, error) {
-			return server.URL, nil
+		func(server *httptest.Server) (*httptest.Server, error) {
+			return server, nil
 		}).
 		Route("GET /dir", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			serverURL := fmt.Sprintf("https://%s", req.Context().Value(http.LocalAddrContextKey))

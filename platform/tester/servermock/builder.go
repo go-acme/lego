@@ -71,7 +71,7 @@ func (b *Builder[T]) Build(t *testing.T) T {
 	return client
 }
 
-func (b *Builder[T]) BuildHTTPS(t *testing.T) (T, *http.Client) {
+func (b *Builder[T]) BuildHTTPS(t *testing.T) T {
 	t.Helper()
 
 	server := httptest.NewTLSServer(b.mux)
@@ -80,5 +80,5 @@ func (b *Builder[T]) BuildHTTPS(t *testing.T) (T, *http.Client) {
 	client, err := b.clientBuilder(server)
 	require.NoError(t, err)
 
-	return client, server.Client()
+	return client
 }

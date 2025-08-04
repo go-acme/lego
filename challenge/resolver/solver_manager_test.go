@@ -37,7 +37,7 @@ func TestValidate(t *testing.T) {
 
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 
-	apiURL, client := tester.MockACMEServer().
+	server := tester.MockACMEServer().
 		Route("POST /chlg",
 			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				if err := validateNoBody(privateKey, req); err != nil {
@@ -76,7 +76,7 @@ func TestValidate(t *testing.T) {
 			})).
 		BuildHTTPS(t)
 
-	core, err := api.New(client, "lego-test", apiURL+"/dir", "", privateKey)
+	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -118,7 +118,7 @@ func TestValidate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			statuses = test.statuses
 
-			err := validate(core, "example.com", acme.Challenge{Type: "http-01", Token: "token", URL: apiURL + "/chlg"})
+			err := validate(core, "example.com", acme.Challenge{Type: "http-01", Token: "token", URL: server.URL + "/chlg"})
 			if test.want == "" {
 				require.NoError(t, err)
 			} else {

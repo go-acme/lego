@@ -12,7 +12,7 @@ import (
 )
 
 func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
-	manager, _ := servermock.NewBuilder(
+	manager := servermock.NewBuilder(
 		func(server *httptest.Server) (*Manager, error) {
 			doer := sender.NewDoer(server.Client(), "lego-test")
 

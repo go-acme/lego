@@ -16,7 +16,7 @@ import (
 )
 
 func TestRegistrar_ResolveAccountByKey(t *testing.T) {
-	apiURL, client := tester.MockACMEServer().
+	server := tester.MockACMEServer().
 		Route("/account",
 			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				rw.Header().Set("Location",
@@ -35,7 +35,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 		privatekey: key,
 	}
 
-	core, err := api.New(client, "lego-test", apiURL+"/dir", "", key)
+	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
 	registrar := NewRegistrar(core, user)

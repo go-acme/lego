@@ -175,14 +175,14 @@ Ob8VZRzI9neWagqNdwvYkQsEjgfbKbYK7p2CNTUQ
 `
 
 func Test_checkResponse(t *testing.T) {
-	apiURL, client := tester.MockACMEServer().
+	server := tester.MockACMEServer().
 		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
 		BuildHTTPS(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(client, "lego-test", apiURL+"/dir", "", key)
+	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
@@ -190,7 +190,7 @@ func Test_checkResponse(t *testing.T) {
 	order := acme.ExtendedOrder{
 		Order: acme.Order{
 			Status:      acme.StatusValid,
-			Certificate: apiURL + "/certificate",
+			Certificate: server.URL + "/certificate",
 		},
 	}
 	certRes := &Resource{}
@@ -209,14 +209,14 @@ func Test_checkResponse(t *testing.T) {
 }
 
 func Test_checkResponse_issuerRelUp(t *testing.T) {
-	apiURL, client := tester.MockACMEServer().
+	server := tester.MockACMEServer().
 		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
 		BuildHTTPS(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(client, "lego-test", apiURL+"/dir", "", key)
+	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
@@ -224,7 +224,7 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 	order := acme.ExtendedOrder{
 		Order: acme.Order{
 			Status:      acme.StatusValid,
-			Certificate: apiURL + "/certificate",
+			Certificate: server.URL + "/certificate",
 		},
 	}
 	certRes := &Resource{}
@@ -243,14 +243,14 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 }
 
 func Test_checkResponse_no_bundle(t *testing.T) {
-	apiURL, client := tester.MockACMEServer().
+	server := tester.MockACMEServer().
 		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
 		BuildHTTPS(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(client, "lego-test", apiURL+"/dir", "", key)
+	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
@@ -258,7 +258,7 @@ func Test_checkResponse_no_bundle(t *testing.T) {
 	order := acme.ExtendedOrder{
 		Order: acme.Order{
 			Status:      acme.StatusValid,
-			Certificate: apiURL + "/certificate",
+			Certificate: server.URL + "/certificate",
 		},
 	}
 	certRes := &Resource{}
@@ -277,7 +277,7 @@ func Test_checkResponse_no_bundle(t *testing.T) {
 }
 
 func Test_checkResponse_alternate(t *testing.T) {
-	apiURL, client := tester.MockACMEServer().
+	server := tester.MockACMEServer().
 		Route("POST /certificate",
 			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				rw.Header().Add("Link",
@@ -291,7 +291,7 @@ func Test_checkResponse_alternate(t *testing.T) {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(client, "lego-test", apiURL+"/dir", "", key)
+	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
@@ -299,7 +299,7 @@ func Test_checkResponse_alternate(t *testing.T) {
 	order := acme.ExtendedOrder{
 		Order: acme.Order{
 			Status:      acme.StatusValid,
-			Certificate: apiURL + "/certificate",
+			Certificate: server.URL + "/certificate",
 		},
 	}
 	certRes := &Resource{
@@ -321,25 +321,25 @@ func Test_checkResponse_alternate(t *testing.T) {
 }
 
 func Test_Get(t *testing.T) {
-	apiURL, client := tester.MockACMEServer().
+	server := tester.MockACMEServer().
 		Route("POST /acme/cert/test-cert", servermock.RawStringResponse(certResponseMock)).
 		BuildHTTPS(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(client, "lego-test", apiURL+"/dir", "", key)
+	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	certRes, err := certifier.Get(apiURL+"/acme/cert/test-cert", true)
+	certRes, err := certifier.Get(server.URL+"/acme/cert/test-cert", true)
 	require.NoError(t, err)
 
 	assert.NotNil(t, certRes)
 	assert.Equal(t, "acme.wtf", certRes.Domain)
-	assert.Equal(t, apiURL+"/acme/cert/test-cert", certRes.CertStableURL)
-	assert.Equal(t, apiURL+"/acme/cert/test-cert", certRes.CertURL)
+	assert.Equal(t, server.URL+"/acme/cert/test-cert", certRes.CertStableURL)
+	assert.Equal(t, server.URL+"/acme/cert/test-cert", certRes.CertURL)
 	assert.Nil(t, certRes.CSR)
 	assert.Nil(t, certRes.PrivateKey)
 	assert.Equal(t, certResponseMock, string(certRes.Certificate), "Certificate")

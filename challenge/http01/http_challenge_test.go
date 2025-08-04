@@ -67,7 +67,7 @@ func TestProviderServer_GetAddress(t *testing.T) {
 }
 
 func TestChallenge(t *testing.T) {
-	apiURL, client := tester.MockACMEServer().BuildHTTPS(t)
+	server := tester.MockACMEServer().BuildHTTPS(t)
 
 	providerServer := NewProviderServer("", "23457")
 
@@ -100,7 +100,7 @@ func TestChallenge(t *testing.T) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(client, "lego-test", apiURL+"/dir", "", privateKey)
+	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	solver := NewChallenge(core, validate, providerServer)
@@ -123,7 +123,7 @@ func TestChallengeUnix(t *testing.T) {
 		t.Skip("only for UNIX systems")
 	}
 
-	apiURL, httpsClient := tester.MockACMEServer().BuildHTTPS(t)
+	server := tester.MockACMEServer().BuildHTTPS(t)
 
 	dir := t.TempDir()
 	t.Cleanup(func() { _ = os.RemoveAll(dir) })
@@ -169,7 +169,7 @@ func TestChallengeUnix(t *testing.T) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(httpsClient, "lego-test", apiURL+"/dir", "", privateKey)
+	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	solver := NewChallenge(core, validate, providerServer)
@@ -188,12 +188,12 @@ func TestChallengeUnix(t *testing.T) {
 }
 
 func TestChallengeInvalidPort(t *testing.T) {
-	apiURL, client := tester.MockACMEServer().BuildHTTPS(t)
+	server := tester.MockACMEServer().BuildHTTPS(t)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(client, "lego-test", apiURL+"/dir", "", privateKey)
+	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	validate := func(_ *api.Core, _ string, _ acme.Challenge) error { return nil }
@@ -371,7 +371,7 @@ func TestChallengeWithProxy(t *testing.T) {
 func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectError bool) {
 	t.Helper()
 
-	apiURL, client := tester.MockACMEServer().BuildHTTPS(t)
+	server := tester.MockACMEServer().BuildHTTPS(t)
 
 	providerServer := NewProviderServer("localhost", "23457")
 	if header != nil {
@@ -414,7 +414,7 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(client, "lego-test", apiURL+"/dir", "", privateKey)
+	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	solver := NewChallenge(core, validate, providerServer)

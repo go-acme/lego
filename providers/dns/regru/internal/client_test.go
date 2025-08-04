@@ -13,6 +13,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
+			client.HTTPClient = server.Client()
 			client.baseURL, _ = url.Parse(server.URL)
 
 			return client, nil

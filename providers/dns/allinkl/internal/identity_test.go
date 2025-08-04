@@ -13,6 +13,7 @@ import (
 func setupIdentifierClient(server *httptest.Server) (*Identifier, error) {
 	client := NewIdentifier("user", "secret")
 	client.authEndpoint = server.URL
+	client.HTTPClient = server.Client()
 
 	return client, nil
 }

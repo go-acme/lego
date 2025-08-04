@@ -164,7 +164,7 @@ func TestDNSProvider_getHostedZone(t *testing.T) {
 
 			provider := servermock.NewBuilder(
 				func(server *httptest.Server) (*DNSProvider, error) {
-					client := govultr.NewClient(nil)
+					client := govultr.NewClient(server.Client())
 					err := client.SetBaseURL(server.URL)
 					require.NoError(t, err)
 

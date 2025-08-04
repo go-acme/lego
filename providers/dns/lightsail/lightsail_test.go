@@ -60,6 +60,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		func(server *httptest.Server) (*DNSProvider, error) {
 			return &DNSProvider{
 				client: lightsail.NewFromConfig(aws.Config{
+					HTTPClient:       server.Client(),
 					Credentials:      credentials.NewStaticCredentialsProvider("abc", "123", " "),
 					Region:           "mock-region",
 					BaseEndpoint:     aws.String(server.URL),

@@ -96,6 +96,7 @@ func TestDNSProvider(t *testing.T) {
 			config := NewDefaultConfig()
 			config.PersonalAccessToken = "123412341234123412341234"
 			config.BaseURL = server.URL
+			config.HTTPClient = server.Client()
 
 			return NewDNSProviderConfig(config)
 		},

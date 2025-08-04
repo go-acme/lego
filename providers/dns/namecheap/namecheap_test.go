@@ -1,10 +1,8 @@
 package namecheap
 
 import (
-	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
@@ -179,11 +177,11 @@ func Test_newPseudoRecord_domainSplit(t *testing.T) {
 func mockBuilder() *servermock.Builder[*DNSProvider] {
 	return servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 		config := NewDefaultConfig()
+		config.HTTPClient = server.Client()
 		config.BaseURL = server.URL
 		config.APIUser = envTestUser
 		config.APIKey = envTestKey
 		config.ClientIP = envTestClientIP
-		config.HTTPClient = &http.Client{Timeout: 60 * time.Second}
 
 		return NewDNSProviderConfig(config)
 	})

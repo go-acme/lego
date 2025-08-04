@@ -5,10 +5,18 @@ import (
 	"os"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/dnsmock"
+	"github.com/miekg/dns"
 	"github.com/stretchr/testify/require"
 )
 
 func TestDNSProviderManual(t *testing.T) {
+	useAsNameserver(t, dnsmock.NewServer().
+		Query("_acme-challenge.example.com. CNAME", dnsmock.Noop).
+		Query("_acme-challenge.example.com. SOA", dnsmock.Error(dns.RcodeNameError)).
+		Query("example.com. SOA", dnsmock.SOA("")).
+		Build(t))
+
 	backupStdin := os.Stdin
 	defer func() { os.Stdin = backupStdin }()
 

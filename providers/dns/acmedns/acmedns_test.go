@@ -167,11 +167,11 @@ func TestPresent_httpStorage(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := servermock.NewBuilder(func(server *httptest.Server) (*Config, error) {
-				cfg := NewDefaultConfig()
-				cfg.StorageBaseURL = server.URL
+			provider := servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+				config := NewDefaultConfig()
+				config.StorageBaseURL = server.URL
 
-				return cfg, nil
+				return NewDNSProviderConfig(config)
 			}).
 				// Fetch
 				Route("GET /example.com", servermock.Noop().WithStatusCode(http.StatusNotFound)).
@@ -179,15 +179,12 @@ func TestPresent_httpStorage(t *testing.T) {
 				Route("POST /example.com", servermock.Noop().WithStatusCode(test.StatusCode)).
 				Build(t)
 
-			p, err := NewDNSProviderConfig(config)
-			require.NoError(t, err)
-
 			client := newMockClient().WithRegisterAccount(egTestAccount)
-			p.client = client
+			provider.client = client
 
-			err = p.Present(egDomain, "foo", egKeyAuth)
+			err := provider.Present(egDomain, "foo", egKeyAuth)
 			if test.ExpectedError != nil {
-				assert.Equal(t, test.ExpectedError, err)
+				assert.EqualError(t, err, test.ExpectedError.Error())
 				assert.True(t, client.registerAccountCalled)
 				assert.False(t, client.updateTXTRecordCalled)
 			} else {
@@ -222,22 +219,19 @@ func TestRegister_httpStorage(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.Name, func(t *testing.T) {
-			config := servermock.NewBuilder(func(server *httptest.Server) (*Config, error) {
-				cfg := NewDefaultConfig()
-				cfg.StorageBaseURL = server.URL
+			provider := servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+				config := NewDefaultConfig()
+				config.StorageBaseURL = server.URL
 
-				return cfg, nil
+				return NewDNSProviderConfig(config)
 			}).
 				// Put
 				Route("POST /example.com", servermock.Noop().WithStatusCode(test.StatusCode)).
 				Build(t)
 
-			p, err := NewDNSProviderConfig(config)
-			require.NoError(t, err)
+			provider.client = newMockClient().WithRegisterAccount(egTestAccount)
 
-			p.client = newMockClient().WithRegisterAccount(egTestAccount)
-
-			acc, err := p.register(t.Context(), egDomain, egFQDN)
+			acc, err := provider.register(t.Context(), egDomain, egFQDN)
 			if test.ExpectedError != nil {
 				assert.Equal(t, test.ExpectedError, err)
 			} else {

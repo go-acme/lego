@@ -221,36 +221,36 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
   <td><a href="https://go-acme.github.io/lego/dns/stackpath/">Stackpath</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/technitium/">Technitium</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/tencentcloud/">Tencent Cloud DNS</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/timewebcloud/">Timeweb Cloud</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/edgeone/">Tencent EdgeOne</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/timewebcloud/">Timeweb Cloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/transip/">TransIP</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/safedns/">UKFast SafeDNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/ultradns/">Ultradns</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/variomedia/">Variomedia</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/variomedia/">Variomedia</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/vegadns/">VegaDNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/vercel/">Vercel</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/versio/">Versio.[nl|eu|uk]</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/vinyldns/">VinylDNS</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/vinyldns/">VinylDNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/vkcloud/">VK Cloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/volcengine/">Volcano Engine/火山引擎</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/vscale/">Vscale</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/vultr/">Vultr</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/vultr/">Vultr</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/webnames/">Webnames</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/websupport/">Websupport</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/wedos/">WEDOS</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/westcn/">West.cn/西部数码</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/westcn/">West.cn/西部数码</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/yandex360/">Yandex 360</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/yandexcloud/">Yandex Cloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/yandex/">Yandex PDD</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/zoneee/">Zone.ee</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/zoneee/">Zone.ee</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/zoneedit/">ZoneEdit</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/zonomi/">Zonomi</a></td>
-  <td></td>
   <td></td>
 </tr></table>
 

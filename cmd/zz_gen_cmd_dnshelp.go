@@ -60,6 +60,7 @@ func allDNSCodes() string {
 		"dynu",
 		"easydns",
 		"edgedns",
+		"edgeone",
 		"efficientip",
 		"epik",
 		"exec",
@@ -1205,6 +1206,29 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/edgedns`)
+
+	case "edgeone":
+		// generated from: providers/dns/edgeone/edgeone.toml
+		ew.writeln(`Configuration for Tencent EdgeOne.`)
+		ew.writeln(`Code:	'edgeone'`)
+		ew.writeln(`Since:	'v4.26.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "EDGEONE_SECRET_ID":	Access key ID`)
+		ew.writeln(`	- "EDGEONE_SECRET_KEY":	Access Key secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "EDGEONE_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "EDGEONE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 30)`)
+		ew.writeln(`	- "EDGEONE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 1200)`)
+		ew.writeln(`	- "EDGEONE_REGION":	Region`)
+		ew.writeln(`	- "EDGEONE_SESSION_TOKEN":	Access Key token`)
+		ew.writeln(`	- "EDGEONE_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/edgeone`)
 
 	case "efficientip":
 		// generated from: providers/dns/efficientip/efficientip.toml

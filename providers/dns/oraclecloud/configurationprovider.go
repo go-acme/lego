@@ -11,19 +11,19 @@ import (
 	"github.com/nrdcg/oci-go-sdk/common/v1065"
 )
 
-type configProvider struct {
+type environmentConfigurationProvider struct {
 	values               map[string]string
 	privateKeyPassphrase string
 }
 
-func newConfigProvider(values map[string]string) *configProvider {
-	return &configProvider{
+func newEnvironmentConfigurationProvider(values map[string]string) *environmentConfigurationProvider {
+	return &environmentConfigurationProvider{
 		values:               values,
 		privateKeyPassphrase: env.GetOrFile(EnvPrivKeyPass),
 	}
 }
 
-func (p *configProvider) PrivateRSAKey() (*rsa.PrivateKey, error) {
+func (p *environmentConfigurationProvider) PrivateRSAKey() (*rsa.PrivateKey, error) {
 	privateKey, err := getPrivateKey(envPrivKey)
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func (p *configProvider) PrivateRSAKey() (*rsa.PrivateKey, error) {
 	return common.PrivateKeyFromBytesWithPassword(privateKey, []byte(p.privateKeyPassphrase))
 }
 
-func (p *configProvider) KeyID() (string, error) {
+func (p *environmentConfigurationProvider) KeyID() (string, error) {
 	tenancy, err := p.TenancyOCID()
 	if err != nil {
 		return "", err
@@ -51,23 +51,23 @@ func (p *configProvider) KeyID() (string, error) {
 	return fmt.Sprintf("%s/%s/%s", tenancy, user, fingerprint), nil
 }
 
-func (p *configProvider) TenancyOCID() (value string, err error) {
+func (p *environmentConfigurationProvider) TenancyOCID() (value string, err error) {
 	return p.values[EnvTenancyOCID], nil
 }
 
-func (p *configProvider) UserOCID() (string, error) {
+func (p *environmentConfigurationProvider) UserOCID() (string, error) {
 	return p.values[EnvUserOCID], nil
 }
 
-func (p *configProvider) KeyFingerprint() (string, error) {
+func (p *environmentConfigurationProvider) KeyFingerprint() (string, error) {
 	return p.values[EnvPubKeyFingerprint], nil
 }
 
-func (p *configProvider) Region() (string, error) {
+func (p *environmentConfigurationProvider) Region() (string, error) {
 	return p.values[EnvRegion], nil
 }
 
-func (p *configProvider) AuthType() (common.AuthConfig, error) {
+func (p *environmentConfigurationProvider) AuthType() (common.AuthConfig, error) {
 	// Inspired by https://github.com/oracle/oci-go-sdk/blob/e7635c292e60d0a9dcdd3a1e7de180d7c99b1eee/common/configuration.go#L231-L234
 	return common.AuthConfig{AuthType: common.UnknownAuthenticationType}, errors.New("unsupported, keep the interface")
 }

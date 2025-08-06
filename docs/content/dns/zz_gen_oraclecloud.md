@@ -26,12 +26,19 @@ Configuration for [Oracle Cloud](https://cloud.oracle.com/home).
 Here is an example bash command using the Oracle Cloud provider:
 
 ```bash
+# Using API Key authentication:
 OCI_PRIVKEY_FILE="~/.oci/oci_api_key.pem" \
 OCI_PRIVKEY_PASS="secret" \
 OCI_TENANCY_OCID="ocid1.tenancy.oc1..secret" \
 OCI_USER_OCID="ocid1.user.oc1..secret" \
 OCI_PUBKEY_FINGERPRINT="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" \
 OCI_REGION="us-phoenix-1" \
+OCI_COMPARTMENT_OCID="ocid1.tenancy.oc1..secret" \
+lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com run
+
+# Using Instance Principal authentication (when running on OCI compute instances):
+# https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
+OCI_AUTH_TYPE="instance_principal" \
 OCI_COMPARTMENT_OCID="ocid1.tenancy.oc1..secret" \
 lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com run
 ```
@@ -44,12 +51,12 @@ lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `OCI_COMPARTMENT_OCID` | Compartment OCID |
-| `OCI_PRIVKEY_FILE` | Private key file |
-| `OCI_PRIVKEY_PASS` | Private key password |
-| `OCI_PUBKEY_FINGERPRINT` | Public key fingerprint |
-| `OCI_REGION` | Region |
-| `OCI_TENANCY_OCID` | Tenancy OCID |
-| `OCI_USER_OCID` | User OCID |
+| `OCI_PRIVKEY_FILE` | Private key file (ignored if OCI_AUTH_TYPE=instance_principal) |
+| `OCI_PRIVKEY_PASS` | Private key password (ignored if OCI_AUTH_TYPE=instance_principal) |
+| `OCI_PUBKEY_FINGERPRINT` | Public key fingerprint (ignored if OCI_AUTH_TYPE=instance_principal) |
+| `OCI_REGION` | Region (can be empty if OCI_AUTH_TYPE=instance_principal) |
+| `OCI_TENANCY_OCID` | Tenancy OCID (ignored if OCI_AUTH_TYPE=instance_principal) |
+| `OCI_USER_OCID` | User OCID (ignored if OCI_AUTH_TYPE=instance_principal) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
@@ -59,6 +66,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `OCI_AUTH_TYPE` | Authorization type. Possible values: 'instance_principal', ''  (Default: '') |
 | `OCI_HTTP_TIMEOUT` | API request timeout in seconds (Default: 60) |
 | `OCI_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
 | `OCI_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |

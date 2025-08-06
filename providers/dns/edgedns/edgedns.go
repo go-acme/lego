@@ -2,14 +2,17 @@
 package edgedns
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"slices"
 	"strings"
 	"time"
 
-	configdns "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v2"
-	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
+	edgegriddns "github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/dns"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/edgegrid"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/session"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
@@ -20,19 +23,22 @@ import (
 const (
 	envNamespace = "AKAMAI_"
 
-	EnvEdgeRc        = envNamespace + "EDGERC"
-	EnvEdgeRcSection = envNamespace + "EDGERC_SECTION"
-
-	EnvHost         = envNamespace + "HOST"
-	EnvClientToken  = envNamespace + "CLIENT_TOKEN"
-	EnvClientSecret = envNamespace + "CLIENT_SECRET"
-	EnvAccessToken  = envNamespace + "ACCESS_TOKEN"
-
+	EnvEdgeRc           = envNamespace + "EDGERC"
+	EnvEdgeRcSection    = envNamespace + "EDGERC_SECTION"
 	EnvAccountSwitchKey = envNamespace + "ACCOUNT_SWITCH_KEY"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
+// Test Environment variables names (unused).
+// TODO(ldez): must be moved into test files.
+const (
+	EnvHost         = envNamespace + "HOST"
+	EnvClientToken  = envNamespace + "CLIENT_TOKEN"
+	EnvClientSecret = envNamespace + "CLIENT_SECRET"
+	EnvAccessToken  = envNamespace + "ACCESS_TOKEN"
 )
 
 const (
@@ -46,7 +52,7 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	edgegrid.Config
+	*edgegrid.Config
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -58,7 +64,7 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollInterval),
-		Config:             edgegrid.Config{MaxBody: maxBody},
+		Config:             &edgegrid.Config{MaxBody: maxBody},
 	}
 }
 
@@ -73,27 +79,27 @@ type DNSProvider struct {
 // 1. Section-specific environment variables `AKAMAI_{SECTION}_HOST`, `AKAMAI_{SECTION}_ACCESS_TOKEN`, `AKAMAI_{SECTION}_CLIENT_TOKEN`, `AKAMAI_{SECTION}_CLIENT_SECRET` where `{SECTION}` is specified using `AKAMAI_EDGERC_SECTION`
 // 2. If `AKAMAI_EDGERC_SECTION` is not defined or is set to `default`: Environment variables `AKAMAI_HOST`, `AKAMAI_ACCESS_TOKEN`, `AKAMAI_CLIENT_TOKEN`, `AKAMAI_CLIENT_SECRET`
 // 3. .edgerc file located at `AKAMAI_EDGERC` (defaults to `~/.edgerc`, sections can be specified using `AKAMAI_EDGERC_SECTION`)
-// 4. Default environment variables: `AKAMAI_HOST`, `AKAMAI_ACCESS_TOKEN`, `AKAMAI_CLIENT_TOKEN`, `AKAMAI_CLIENT_SECRET`
 //
 // See also: https://developer.akamai.com/api/getting-started
 func NewDNSProvider() (*DNSProvider, error) {
-	config := NewDefaultConfig()
-
-	rcPath := env.GetOrDefaultString(EnvEdgeRc, "")
-	rcSection := env.GetOrDefaultString(EnvEdgeRcSection, "")
-	accountSwitchKey := env.GetOrDefaultString(EnvAccountSwitchKey, "")
-
-	conf, err := edgegrid.Init(rcPath, rcSection)
+	conf, err := edgegrid.New(
+		edgegrid.WithEnv(true),
+		edgegrid.WithFile(env.GetOrDefaultString(EnvEdgeRc, "~/.edgerc")),
+		edgegrid.WithSection(env.GetOrDefaultString(EnvEdgeRcSection, "default")),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("edgedns: %w", err)
 	}
 
 	conf.MaxBody = maxBody
 
+	accountSwitchKey := env.GetOrDefaultString(EnvAccountSwitchKey, "")
+
 	if accountSwitchKey != "" {
 		conf.AccountKey = accountSwitchKey
 	}
 
+	config := NewDefaultConfig()
 	config.Config = conf
 
 	return NewDNSProviderConfig(config)
@@ -105,7 +111,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("edgedns: the configuration of the DNS provider is nil")
 	}
 
-	configdns.Init(config.Config)
+	err := config.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("edgedns: %w", err)
+	}
 
 	return &DNSProvider{config: config}, nil
 }
@@ -118,14 +127,27 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	sess, err := session.New(session.WithSigner(d.config))
+	if err != nil {
+		return fmt.Errorf("edgedns: %w", err)
+	}
+
+	client := edgegriddns.Client(sess)
 
 	zone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
 
-	record, err := configdns.GetRecord(zone, info.EffectiveFQDN, "TXT")
+	record, err := client.GetRecord(ctx, edgegriddns.GetRecordRequest{
+		Zone:       zone,
+		Name:       info.EffectiveFQDN,
+		RecordType: "TXT",
+	})
 	if err != nil && !isNotFound(err) {
 		return fmt.Errorf("edgedns: %w", err)
 	}
@@ -145,7 +167,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		record.Target = append(record.Target, `"`+info.Value+`"`)
 		record.TTL = d.config.TTL
 
-		err = record.Update(zone)
+		err = client.UpdateRecord(ctx, edgegriddns.UpdateRecordRequest{
+			Record: &edgegriddns.RecordBody{
+				Name:       record.Name,
+				RecordType: record.RecordType,
+				TTL:        record.TTL,
+				Active:     record.Active,
+				Target:     record.Target,
+			},
+			Zone: zone,
+		})
 		if err != nil {
 			return fmt.Errorf("edgedns: %w", err)
 		}
@@ -153,14 +184,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	record = &configdns.RecordBody{
-		Name:       info.EffectiveFQDN,
-		RecordType: "TXT",
-		TTL:        d.config.TTL,
-		Target:     []string{`"` + info.Value + `"`},
-	}
-
-	err = record.Save(zone)
+	err = client.CreateRecord(ctx, edgegriddns.CreateRecordRequest{
+		Record: &edgegriddns.RecordBody{
+			Name:       info.EffectiveFQDN,
+			RecordType: "TXT",
+			TTL:        d.config.TTL,
+			Target:     []string{`"` + info.Value + `"`},
+		},
+		Zone:    zone,
+		RecLock: nil,
+	})
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
@@ -170,14 +203,27 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	sess, err := session.New(session.WithSigner(d.config))
+	if err != nil {
+		return fmt.Errorf("edgedns: %w", err)
+	}
+
+	client := edgegriddns.Client(sess)
 
 	zone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
 
-	existingRec, err := configdns.GetRecord(zone, info.EffectiveFQDN, "TXT")
+	existingRec, err := client.GetRecord(ctx, edgegriddns.GetRecordRequest{
+		Zone:       zone,
+		Name:       info.EffectiveFQDN,
+		RecordType: "TXT",
+	})
 	if err != nil {
 		if isNotFound(err) {
 			return nil
@@ -197,19 +243,21 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	var newRData []string
-	for _, val := range existingRec.Target {
-		val = strings.Trim(val, `"`)
-		if val == info.Value {
-			continue
-		}
-		newRData = append(newRData, val)
-	}
+	newRData := filterRData(existingRec, info)
 
 	if len(newRData) > 0 {
 		existingRec.Target = newRData
 
-		err = existingRec.Update(zone)
+		err = client.UpdateRecord(ctx, edgegriddns.UpdateRecordRequest{
+			Record: &edgegriddns.RecordBody{
+				Name:       existingRec.Name,
+				RecordType: existingRec.RecordType,
+				TTL:        existingRec.TTL,
+				Active:     existingRec.Active,
+				Target:     existingRec.Target,
+			},
+			Zone: zone,
+		})
 		if err != nil {
 			return fmt.Errorf("edgedns: %w", err)
 		}
@@ -217,7 +265,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	err = existingRec.Delete(zone)
+	err = client.DeleteRecord(ctx, edgegriddns.DeleteRecordRequest{
+		Zone:       zone,
+		Name:       existingRec.Name,
+		RecordType: "TXT",
+		RecLock:    nil,
+	})
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
@@ -245,6 +298,19 @@ func isNotFound(err error) bool {
 		return false
 	}
 
-	var e configdns.ConfigDNSError
-	return errors.As(err, &e) && e.NotFound()
+	var e *edgegriddns.Error
+	return errors.As(err, &e) && e.StatusCode == http.StatusNotFound
+}
+
+func filterRData(existingRec *edgegriddns.GetRecordResponse, info dns01.ChallengeInfo) []string {
+	var newRData []string
+	for _, val := range existingRec.Target {
+		val = strings.Trim(val, `"`)
+		if val == info.Value {
+			continue
+		}
+		newRData = append(newRData, val)
+	}
+
+	return newRData
 }

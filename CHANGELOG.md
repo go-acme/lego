@@ -1,5 +1,16 @@
 # Changelog
 
+## [v4.25.2](https://github.com/go-acme/lego/releases/tag/v4.25.2) (2025-08-06)
+
+### Changed
+- 
+- **[cli,log]** log when dynamic renew date not yet reached
+
+### Fixed
+
+- **[cli]** fix: remove wrong env var
+- **[lib,cli]** fix: enforce HTTPS to the ACME server
+
 ## [v4.25.1](https://github.com/go-acme/lego/releases/tag/v4.25.1) (2025-07-21)
 
 ### Fixed

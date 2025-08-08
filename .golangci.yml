@@ -195,8 +195,8 @@ linters:
         text: dnsTimeout is a global variable
         linters:
           - gochecknoglobals
-      - path: challenge/dns01/nameserver_test.go
-        text: findXByFqdnTestCases is a global variable
+      - path: challenge/dns01/precheck.go
+        text: defaultNameserverPort is a global variable
         linters:
           - gochecknoglobals
       - path: challenge/http01/domain_matcher.go

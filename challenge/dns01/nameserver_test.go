@@ -5,138 +5,237 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/dnsmock"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestLookupNameserversOK(t *testing.T) {
+func Test_lookupNameserversOK(t *testing.T) {
 	testCases := []struct {
-		fqdn string
-		nss  []string
+		desc          string
+		fakeDNSServer *dnsmock.Builder
+		fqdn          string
+		expected      []string
 	}{
 		{
-			fqdn: "en.wikipedia.org.",
-			nss:  []string{"ns0.wikimedia.org.", "ns1.wikimedia.org.", "ns2.wikimedia.org."},
+			fqdn: "en.wikipedia.org.localhost.",
+			fakeDNSServer: dnsmock.NewServer().
+				Query("en.wikipedia.org.localhost SOA", dnsmock.CNAME("dyna.wikimedia.org.localhost")).
+				Query("wikipedia.org.localhost SOA", dnsmock.SOA("")).
+				Query("wikipedia.org.localhost NS",
+					dnsmock.Answer(
+						fakeNS("wikipedia.org.localhost.", "ns0.wikimedia.org.localhost."),
+						fakeNS("wikipedia.org.localhost.", "ns1.wikimedia.org.localhost."),
+						fakeNS("wikipedia.org.localhost.", "ns2.wikimedia.org.localhost."),
+					),
+				),
+			expected: []string{"ns0.wikimedia.org.localhost.", "ns1.wikimedia.org.localhost.", "ns2.wikimedia.org.localhost."},
 		},
 		{
-			fqdn: "www.google.com.",
-			nss:  []string{"ns1.google.com.", "ns2.google.com.", "ns3.google.com.", "ns4.google.com."},
+			fqdn: "www.google.com.localhost.",
+			fakeDNSServer: dnsmock.NewServer().
+				Query("www.google.com.localhost. SOA", dnsmock.Noop).
+				Query("google.com.localhost. SOA", dnsmock.SOA("")).
+				Query("google.com.localhost. NS",
+					dnsmock.Answer(
+						fakeNS("google.com.localhost.", "ns1.google.com.localhost."),
+						fakeNS("google.com.localhost.", "ns2.google.com.localhost."),
+						fakeNS("google.com.localhost.", "ns3.google.com.localhost."),
+						fakeNS("google.com.localhost.", "ns4.google.com.localhost."),
+					),
+				),
+			expected: []string{"ns1.google.com.localhost.", "ns2.google.com.localhost.", "ns3.google.com.localhost.", "ns4.google.com.localhost."},
 		},
 		{
-			fqdn: "mail.proton.me.",
-			nss:  []string{"ns1.proton.me.", "ns2.proton.me.", "ns3.proton.me."},
+			fqdn: "mail.proton.me.localhost.",
+			fakeDNSServer: dnsmock.NewServer().
+				Query("mail.proton.me.localhost. SOA", dnsmock.Noop).
+				Query("proton.me.localhost. SOA", dnsmock.SOA("")).
+				Query("proton.me.localhost. NS",
+					dnsmock.Answer(
+						fakeNS("proton.me.localhost.", "ns1.proton.me.localhost."),
+						fakeNS("proton.me.localhost.", "ns2.proton.me.localhost."),
+						fakeNS("proton.me.localhost.", "ns3.proton.me.localhost."),
+					),
+				),
+			expected: []string{"ns1.proton.me.localhost.", "ns2.proton.me.localhost.", "ns3.proton.me.localhost."},
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.fqdn, func(t *testing.T) {
-			t.Parallel()
+			useAsNameserver(t, test.fakeDNSServer.Build(t))
 
 			nss, err := lookupNameservers(test.fqdn)
 			require.NoError(t, err)
 
 			sort.Strings(nss)
-			sort.Strings(test.nss)
+			sort.Strings(test.expected)
 
-			assert.Equal(t, test.nss, nss)
+			assert.Equal(t, test.expected, nss)
 		})
 	}
 }
 
-func TestLookupNameserversErr(t *testing.T) {
+func Test_lookupNameserversErr(t *testing.T) {
 	testCases := []struct {
-		desc  string
-		fqdn  string
-		error string
+		desc          string
+		fqdn          string
+		fakeDNSServer *dnsmock.Builder
+		error         string
 	}{
 		{
-			desc:  "invalid tld",
-			fqdn:  "example.invalid.",
-			error: "could not find zone",
+			desc: "NXDOMAIN",
+			fqdn: "example.invalid.",
+			fakeDNSServer: dnsmock.NewServer().
+				Query(". SOA", dnsmock.Error(dns.RcodeNameError)),
+			error: "could not find zone: [fqdn=example.invalid.] could not find the start of authority for 'example.invalid.' [question='invalid. IN  SOA', code=NXDOMAIN]",
+		},
+		{
+			desc: "NS error",
+			fqdn: "example.com.",
+			fakeDNSServer: dnsmock.NewServer().
+				Query("example.com. SOA", dnsmock.SOA("")).
+				Query("example.com. NS", dnsmock.Error(dns.RcodeServerFailure)),
+			error: "[zone=example.com.] could not determine authoritative nameservers",
+		},
+		{
+			desc: "empty NS",
+			fqdn: "example.com.",
+			fakeDNSServer: dnsmock.NewServer().
+				Query("example.com. SOA", dnsmock.SOA("")).
+				Query("example.me NS", dnsmock.Noop),
+			error: "[zone=example.com.] could not determine authoritative nameservers",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
+			useAsNameserver(t, test.fakeDNSServer.Build(t))
 
 			_, err := lookupNameservers(test.fqdn)
 			require.Error(t, err)
-			assert.Contains(t, err.Error(), test.error)
+			assert.EqualError(t, err, test.error)
 		})
 	}
 }
 
-var findXByFqdnTestCases = []struct {
+type lookupSoaByFqdnTestCase struct {
 	desc          string
 	fqdn          string
 	zone          string
 	primaryNs     string
 	nameservers   []string
 	expectedError string
-}{
-	{
-		desc:        "domain is a CNAME",
-		fqdn:        "mail.google.com.",
-		zone:        "google.com.",
-		primaryNs:   "ns1.google.com.",
-		nameservers: recursiveNameservers,
-	},
-	{
-		desc:        "domain is a non-existent subdomain",
-		fqdn:        "foo.google.com.",
-		zone:        "google.com.",
-		primaryNs:   "ns1.google.com.",
-		nameservers: recursiveNameservers,
-	},
-	{
-		desc:        "domain is a eTLD",
-		fqdn:        "example.com.ac.",
-		zone:        "ac.",
-		primaryNs:   "a0.nic.ac.",
-		nameservers: recursiveNameservers,
-	},
-	{
-		desc:        "domain is a cross-zone CNAME",
-		fqdn:        "cross-zone-example.assets.sh.",
-		zone:        "assets.sh.",
-		primaryNs:   "gina.ns.cloudflare.com.",
-		nameservers: recursiveNameservers,
-	},
-	{
-		desc:          "NXDOMAIN",
-		fqdn:          "test.lego.invalid.",
-		zone:          "lego.invalid.",
-		nameservers:   []string{"8.8.8.8:53"},
-		expectedError: `[fqdn=test.lego.invalid.] could not find the start of authority for 'test.lego.invalid.' [question='invalid. IN  SOA', code=NXDOMAIN]`,
-	},
-	{
-		desc:        "several non existent nameservers",
-		fqdn:        "mail.google.com.",
-		zone:        "google.com.",
-		primaryNs:   "ns1.google.com.",
-		nameservers: []string{":7053", ":8053", "8.8.8.8:53"},
-	},
-	{
-		desc:        "only non-existent nameservers",
-		fqdn:        "mail.google.com.",
-		zone:        "google.com.",
-		nameservers: []string{":7053", ":8053", ":9053"},
-		// use only the start of the message because the port changes with each call: 127.0.0.1:XXXXX->127.0.0.1:7053.
-		expectedError: "[fqdn=mail.google.com.] could not find the start of authority for 'mail.google.com.': DNS call error: read udp ",
-	},
-	{
-		desc:          "no nameservers",
-		fqdn:          "test.example.com.",
-		zone:          "example.com.",
-		nameservers:   []string{},
-		expectedError: "[fqdn=test.example.com.] could not find the start of authority for 'test.example.com.': empty list of nameservers",
-	},
+}
+
+func lookupSoaByFqdnTestCases(t *testing.T) []lookupSoaByFqdnTestCase {
+	t.Helper()
+
+	return []lookupSoaByFqdnTestCase{
+		{
+			desc:      "domain is a CNAME",
+			fqdn:      "mail.example.com.",
+			zone:      "example.com.",
+			primaryNs: "ns1.example.com.",
+			nameservers: []string{
+				dnsmock.NewServer().
+					Query("mail.example.com. SOA", dnsmock.CNAME("example.com.")).
+					Query("example.com. SOA", dnsmock.SOA("")).
+					Build(t).
+					String(),
+			},
+		},
+		{
+			desc:      "domain is a non-existent subdomain",
+			fqdn:      "foo.example.com.",
+			zone:      "example.com.",
+			primaryNs: "ns1.example.com.",
+			nameservers: []string{
+				dnsmock.NewServer().
+					Query("foo.example.com. SOA", dnsmock.Error(dns.RcodeNameError)).
+					Query("example.com. SOA", dnsmock.SOA("")).
+					Build(t).
+					String(),
+			},
+		},
+		{
+			desc:      "domain is a eTLD",
+			fqdn:      "example.com.ac.",
+			zone:      "ac.",
+			primaryNs: "ns1.nic.ac.",
+			nameservers: []string{
+				dnsmock.NewServer().
+					Query("example.com.ac. SOA", dnsmock.Error(dns.RcodeNameError)).
+					Query("com.ac. SOA", dnsmock.Error(dns.RcodeNameError)).
+					Query("ac. SOA", dnsmock.SOA("")).
+					Build(t).
+					String(),
+			},
+		},
+		{
+			desc:      "domain is a cross-zone CNAME",
+			fqdn:      "cross-zone-example.example.com.",
+			zone:      "example.com.",
+			primaryNs: "ns1.example.com.",
+			nameservers: []string{
+				dnsmock.NewServer().
+					Query("cross-zone-example.example.com. SOA", dnsmock.CNAME("example.org.")).
+					Query("example.com. SOA", dnsmock.SOA("")).
+					Build(t).
+					String(),
+			},
+		},
+		{
+			desc: "NXDOMAIN",
+			fqdn: "test.lego.invalid.",
+			zone: "lego.invalid.",
+			nameservers: []string{
+				dnsmock.NewServer().
+					Query("test.lego.invalid. SOA", dnsmock.Error(dns.RcodeNameError)).
+					Query("lego.invalid. SOA", dnsmock.Error(dns.RcodeNameError)).
+					Query("invalid. SOA", dnsmock.Error(dns.RcodeNameError)).
+					Build(t).
+					String(),
+			},
+			expectedError: `[fqdn=test.lego.invalid.] could not find the start of authority for 'test.lego.invalid.' [question='invalid. IN  SOA', code=NXDOMAIN]`,
+		},
+		{
+			desc:      "several non existent nameservers",
+			fqdn:      "mail.example.com.",
+			zone:      "example.com.",
+			primaryNs: "ns1.example.com.",
+			nameservers: []string{
+				":7053",
+				":8053",
+				dnsmock.NewServer().
+					Query("mail.example.com. SOA", dnsmock.CNAME("example.com.")).
+					Query("example.com. SOA", dnsmock.SOA("")).
+					Build(t).
+					String(),
+			},
+		},
+		{
+			desc:        "only non-existent nameservers",
+			fqdn:        "mail.example.com.",
+			zone:        "example.com.",
+			nameservers: []string{":7053", ":8053", ":9053"},
+			// use only the start of the message because the port changes with each call: 127.0.0.1:XXXXX->127.0.0.1:7053.
+			expectedError: "[fqdn=mail.example.com.] could not find the start of authority for 'mail.example.com.': DNS call error: read udp ",
+		},
+		{
+			desc:          "no nameservers",
+			fqdn:          "test.example.com.",
+			zone:          "example.com.",
+			nameservers:   []string{},
+			expectedError: "[fqdn=test.example.com.] could not find the start of authority for 'test.example.com.': empty list of nameservers",
+		},
+	}
 }
 
 func TestFindZoneByFqdnCustom(t *testing.T) {
-	for _, test := range findXByFqdnTestCases {
+	for _, test := range lookupSoaByFqdnTestCases(t) {
 		t.Run(test.desc, func(t *testing.T) {
 			ClearFqdnCache()
 
@@ -153,7 +252,7 @@ func TestFindZoneByFqdnCustom(t *testing.T) {
 }
 
 func TestFindPrimaryNsByFqdnCustom(t *testing.T) {
-	for _, test := range findXByFqdnTestCases {
+	for _, test := range lookupSoaByFqdnTestCases(t) {
 		t.Run(test.desc, func(t *testing.T) {
 			ClearFqdnCache()
 
@@ -169,7 +268,7 @@ func TestFindPrimaryNsByFqdnCustom(t *testing.T) {
 	}
 }
 
-func TestResolveConfServers(t *testing.T) {
+func Test_getNameservers_ResolveConfServers(t *testing.T) {
 	testCases := []struct {
 		fixture  string
 		expected []string

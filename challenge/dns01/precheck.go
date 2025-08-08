@@ -9,6 +9,10 @@ import (
 	"github.com/miekg/dns"
 )
 
+// defaultNameserverPort used by authoritative NS.
+// This is for tests only.
+var defaultNameserverPort = "53"
+
 // PreCheckFunc checks DNS propagation before notifying ACME that the DNS challenge is ready.
 type PreCheckFunc func(fqdn, value string) (bool, error)
 
@@ -121,7 +125,7 @@ func (p preCheck) checkDNSPropagation(fqdn, value string) (bool, error) {
 func checkNameserversPropagation(fqdn, value string, nameservers []string, addPort bool) (bool, error) {
 	for _, ns := range nameservers {
 		if addPort {
-			ns = net.JoinHostPort(ns, "53")
+			ns = net.JoinHostPort(ns, defaultNameserverPort)
 		}
 
 		r, err := dnsQuery(fqdn, dns.TypeTXT, []string{ns}, false)

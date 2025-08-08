@@ -131,7 +131,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config.TSIGSecret = ""
 	} else {
 		// zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2)
-		config.TSIGKey = strings.ToLower(dns.Fqdn(config.TSIGKey))
+		config.TSIGKey = dns.CanonicalName(config.TSIGKey)
 	}
 
 	if config.TSIGAlgorithm == "" {
@@ -193,14 +193,14 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	}
 
 	// Create RR
-	rr := new(dns.TXT)
-	rr.Hdr = dns.RR_Header{Name: fqdn, Rrtype: dns.TypeTXT, Class: dns.ClassINET, Ttl: uint32(ttl)}
-	rr.Txt = []string{value}
-	rrs := []dns.RR{rr}
+	rrs := []dns.RR{&dns.TXT{
+		Hdr: dns.RR_Header{Name: fqdn, Rrtype: dns.TypeTXT, Class: dns.ClassINET, Ttl: uint32(ttl)},
+		Txt: []string{value},
+	}}
 
 	// Create dynamic update packet
-	m := new(dns.Msg)
-	m.SetUpdate(zone)
+	m := new(dns.Msg).SetUpdate(zone)
+
 	switch action {
 	case "INSERT":
 		// Always remove old challenge left over from who knows what.

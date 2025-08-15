@@ -31,8 +31,10 @@ const (
 	EnvOIDCTokenFilePath      = envNamespace + "OIDC_TOKEN_FILE_PATH"
 	EnvOIDCRequestURL         = envNamespace + "OIDC_REQUEST_URL"
 	EnvGitHubOIDCRequestURL   = "ACTIONS_ID_TOKEN_REQUEST_URL"
+	altEnvArmOIDCRequestURL   = "ARM_OIDC_REQUEST_URL"
 	EnvOIDCRequestToken       = envNamespace + "OIDC_REQUEST_TOKEN"
 	EnvGitHubOIDCRequestToken = "ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+	altEnvArmOIDCRequestToken = "ARM_OIDC_REQUEST_TOKEN"
 
 	EnvServiceConnectionID                  = envNamespace + "SERVICE_CONNECTION_ID"
 	altEnvServiceConnectionID               = "SERVICE_CONNECTION_ID"
@@ -40,7 +42,6 @@ const (
 	altEnvArmOIDCAzureServiceConnectionID   = "ARM_OIDC_AZURE_SERVICE_CONNECTION_ID"
 	EnvSystemAccessToken                    = envNamespace + "SYSTEM_ACCESS_TOKEN"
 	altEnvSystemAccessToken                 = "SYSTEM_ACCESSTOKEN"
-	altEnvArmOIDCRequestToken               = "ARM_OIDC_REQUEST_TOKEN"
 
 	EnvAuthMethod     = envNamespace + "AUTH_METHOD"
 	EnvAuthMSITimeout = envNamespace + "AUTH_MSI_TIMEOUT"
@@ -138,8 +139,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.ServiceDiscoveryFilter = env.GetOrFile(EnvServiceDiscoveryFilter)
 
 	oidcValues, _ := env.GetWithFallback(
-		[]string{EnvOIDCRequestURL, EnvGitHubOIDCRequestURL},
-		[]string{EnvOIDCRequestToken, EnvGitHubOIDCRequestToken},
+		[]string{EnvOIDCRequestURL, EnvGitHubOIDCRequestURL, altEnvArmOIDCRequestURL},
+		[]string{EnvOIDCRequestToken, EnvGitHubOIDCRequestToken, altEnvArmOIDCRequestToken},
 	)
 
 	config.OIDCRequestURL = oidcValues[EnvOIDCRequestURL]

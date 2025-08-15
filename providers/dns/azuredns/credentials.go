@@ -13,11 +13,21 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 )
 
+const (
+	authMethodEnv      = "env"
+	authMethodWLI      = "wli"
+	authMethodMSI      = "msi"
+	authMethodCLI      = "cli"
+	authMethodOIDC     = "oidc"
+	authMethodPipeline = "pipeline"
+)
+
+//nolint:gocyclo // The complexity is related to the number of possible configurations.
 func getCredentials(config *Config) (azcore.TokenCredential, error) {
 	clientOptions := azcore.ClientOptions{Cloud: config.Environment}
 
 	switch strings.ToLower(config.AuthMethod) {
-	case "env":
+	case authMethodEnv:
 		if config.ClientID != "" && config.ClientSecret != "" && config.TenantID != "" {
 			return azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret,
 				&azidentity.ClientSecretCredentialOptions{ClientOptions: clientOptions})
@@ -25,10 +35,10 @@ func getCredentials(config *Config) (azcore.TokenCredential, error) {
 
 		return azidentity.NewEnvironmentCredential(&azidentity.EnvironmentCredentialOptions{ClientOptions: clientOptions})
 
-	case "wli":
+	case authMethodWLI:
 		return azidentity.NewWorkloadIdentityCredential(&azidentity.WorkloadIdentityCredentialOptions{ClientOptions: clientOptions})
 
-	case "msi":
+	case authMethodMSI:
 		cred, err := azidentity.NewManagedIdentityCredential(&azidentity.ManagedIdentityCredentialOptions{ClientOptions: clientOptions})
 		if err != nil {
 			return nil, err
@@ -36,20 +46,34 @@ func getCredentials(config *Config) (azcore.TokenCredential, error) {
 
 		return &timeoutTokenCredential{cred: cred, timeout: config.AuthMSITimeout}, nil
 
-	case "cli":
+	case authMethodCLI:
 		var credOptions *azidentity.AzureCLICredentialOptions
 		if config.TenantID != "" {
 			credOptions = &azidentity.AzureCLICredentialOptions{TenantID: config.TenantID}
 		}
 		return azidentity.NewAzureCLICredential(credOptions)
 
-	case "oidc":
+	case authMethodOIDC:
 		err := checkOIDCConfig(config)
 		if err != nil {
 			return nil, err
 		}
 
 		return azidentity.NewClientAssertionCredential(config.TenantID, config.ClientID, getOIDCAssertion(config), &azidentity.ClientAssertionCredentialOptions{ClientOptions: clientOptions})
+
+	case authMethodPipeline:
+		err := checkPipelineConfig(config)
+		if err != nil {
+			return nil, err
+		}
+
+		// Uses the env var `SYSTEM_OIDCREQUESTURI`,
+		// but the constant is not exported,
+		// and there is no way to set it programmatically.
+		// https://github.com/Azure/azure-sdk-for-go/blob/aae2fb75ffccafc669db72bebc3c1a66332f48d7/sdk/azidentity/azure_pipelines_credential.go#L22
+		// https://github.com/Azure/azure-sdk-for-go/blob/aae2fb75ffccafc669db72bebc3c1a66332f48d7/sdk/azidentity/azure_pipelines_credential.go#L79
+
+		return azidentity.NewAzurePipelinesCredential(config.TenantID, config.ClientID, config.ServiceConnectionID, config.SystemAccessToken, &azidentity.AzurePipelinesCredentialOptions{ClientOptions: clientOptions})
 
 	default:
 		return azidentity.NewDefaultAzureCredential(&azidentity.DefaultAzureCredentialOptions{ClientOptions: clientOptions})
@@ -96,4 +120,16 @@ func getZoneName(config *Config, fqdn string) (string, error) {
 	}
 
 	return authZone, nil
+}
+
+func checkPipelineConfig(config *Config) error {
+	if config.ServiceConnectionID == "" {
+		return errors.New("azuredns: ServiceConnectionID is missing")
+	}
+
+	if config.SystemAccessToken == "" {
+		return errors.New("azuredns: SystemAccessToken is missing")
+	}
+
+	return nil
 }

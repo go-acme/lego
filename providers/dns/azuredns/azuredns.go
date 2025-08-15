@@ -34,6 +34,14 @@ const (
 	EnvOIDCRequestToken       = envNamespace + "OIDC_REQUEST_TOKEN"
 	EnvGitHubOIDCRequestToken = "ACTIONS_ID_TOKEN_REQUEST_TOKEN"
 
+	EnvServiceConnectionID                  = envNamespace + "SERVICE_CONNECTION_ID"
+	altEnvServiceConnectionID               = "SERVICE_CONNECTION_ID"
+	altEnvArmAdoPipelineServiceConnectionID = "ARM_ADO_PIPELINE_SERVICE_CONNECTION_ID"
+	altEnvArmOIDCAzureServiceConnectionID   = "ARM_OIDC_AZURE_SERVICE_CONNECTION_ID"
+	EnvSystemAccessToken                    = envNamespace + "SYSTEM_ACCESS_TOKEN"
+	altEnvSystemAccessToken                 = "SYSTEM_ACCESSTOKEN"
+	altEnvArmOIDCRequestToken               = "ARM_OIDC_REQUEST_TOKEN"
+
 	EnvAuthMethod     = envNamespace + "AUTH_METHOD"
 	EnvAuthMSITimeout = envNamespace + "AUTH_MSI_TIMEOUT"
 
@@ -65,6 +73,9 @@ type Config struct {
 	OIDCTokenFilePath string
 	OIDCRequestURL    string
 	OIDCRequestToken  string
+
+	ServiceConnectionID string
+	SystemAccessToken   string
 
 	AuthMethod     string
 	AuthMSITimeout time.Duration
@@ -133,6 +144,15 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config.OIDCRequestURL = oidcValues[EnvOIDCRequestURL]
 	config.OIDCRequestToken = oidcValues[EnvOIDCRequestToken]
+
+	// https://registry.terraform.io/providers/hashicorp/Azurerm/latest/docs/guides/service_principal_oidc
+	pipelineValues, _ := env.GetWithFallback(
+		[]string{EnvServiceConnectionID, altEnvServiceConnectionID, altEnvArmAdoPipelineServiceConnectionID, altEnvArmOIDCAzureServiceConnectionID},
+		[]string{EnvSystemAccessToken, altEnvArmOIDCRequestToken, altEnvSystemAccessToken},
+	)
+
+	config.ServiceConnectionID = pipelineValues[EnvServiceConnectionID]
+	config.SystemAccessToken = pipelineValues[EnvSystemAccessToken]
 
 	config.AuthMethod = env.GetOrFile(EnvAuthMethod)
 	config.AuthMSITimeout = env.GetOrDefaultSecond(EnvAuthMSITimeout, 2*time.Second)

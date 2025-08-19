@@ -3,19 +3,13 @@
 package azuredns
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
 
@@ -33,10 +27,21 @@ const (
 	EnvClientID     = envNamespace + "CLIENT_ID"
 	EnvClientSecret = envNamespace + "CLIENT_SECRET"
 
-	EnvOIDCToken         = envNamespace + "OIDC_TOKEN"
-	EnvOIDCTokenFilePath = envNamespace + "OIDC_TOKEN_FILE_PATH"
-	EnvOIDCRequestURL    = envNamespace + "OIDC_REQUEST_URL"
-	EnvOIDCRequestToken  = envNamespace + "OIDC_REQUEST_TOKEN"
+	EnvOIDCToken              = envNamespace + "OIDC_TOKEN"
+	EnvOIDCTokenFilePath      = envNamespace + "OIDC_TOKEN_FILE_PATH"
+	EnvOIDCRequestURL         = envNamespace + "OIDC_REQUEST_URL"
+	EnvGitHubOIDCRequestURL   = "ACTIONS_ID_TOKEN_REQUEST_URL"
+	altEnvArmOIDCRequestURL   = "ARM_OIDC_REQUEST_URL"
+	EnvOIDCRequestToken       = envNamespace + "OIDC_REQUEST_TOKEN"
+	EnvGitHubOIDCRequestToken = "ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+	altEnvArmOIDCRequestToken = "ARM_OIDC_REQUEST_TOKEN"
+
+	EnvServiceConnectionID                  = envNamespace + "SERVICE_CONNECTION_ID"
+	altEnvServiceConnectionID               = "SERVICE_CONNECTION_ID"
+	altEnvArmAdoPipelineServiceConnectionID = "ARM_ADO_PIPELINE_SERVICE_CONNECTION_ID"
+	altEnvArmOIDCAzureServiceConnectionID   = "ARM_OIDC_AZURE_SERVICE_CONNECTION_ID"
+	EnvSystemAccessToken                    = envNamespace + "SYSTEM_ACCESS_TOKEN"
+	altEnvSystemAccessToken                 = "SYSTEM_ACCESSTOKEN"
 
 	EnvAuthMethod     = envNamespace + "AUTH_METHOD"
 	EnvAuthMSITimeout = envNamespace + "AUTH_MSI_TIMEOUT"
@@ -46,9 +51,6 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-
-	EnvGitHubOIDCRequestURL   = "ACTIONS_ID_TOKEN_REQUEST_URL"
-	EnvGitHubOIDCRequestToken = "ACTIONS_ID_TOKEN_REQUEST_TOKEN"
 )
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
@@ -72,6 +74,9 @@ type Config struct {
 	OIDCTokenFilePath string
 	OIDCRequestURL    string
 	OIDCRequestToken  string
+
+	ServiceConnectionID string
+	SystemAccessToken   string
 
 	AuthMethod     string
 	AuthMSITimeout time.Duration
@@ -134,12 +139,21 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.ServiceDiscoveryFilter = env.GetOrFile(EnvServiceDiscoveryFilter)
 
 	oidcValues, _ := env.GetWithFallback(
-		[]string{EnvOIDCRequestURL, EnvGitHubOIDCRequestURL},
-		[]string{EnvOIDCRequestToken, EnvGitHubOIDCRequestToken},
+		[]string{EnvOIDCRequestURL, EnvGitHubOIDCRequestURL, altEnvArmOIDCRequestURL},
+		[]string{EnvOIDCRequestToken, EnvGitHubOIDCRequestToken, altEnvArmOIDCRequestToken},
 	)
 
 	config.OIDCRequestURL = oidcValues[EnvOIDCRequestURL]
 	config.OIDCRequestToken = oidcValues[EnvOIDCRequestToken]
+
+	// https://registry.terraform.io/providers/hashicorp/Azurerm/latest/docs/guides/service_principal_oidc
+	pipelineValues, _ := env.GetWithFallback(
+		[]string{EnvServiceConnectionID, altEnvServiceConnectionID, altEnvArmAdoPipelineServiceConnectionID, altEnvArmOIDCAzureServiceConnectionID},
+		[]string{EnvSystemAccessToken, altEnvArmOIDCRequestToken, altEnvSystemAccessToken},
+	)
+
+	config.ServiceConnectionID = pipelineValues[EnvServiceConnectionID]
+	config.SystemAccessToken = pipelineValues[EnvSystemAccessToken]
 
 	config.AuthMethod = env.GetOrFile(EnvAuthMethod)
 	config.AuthMSITimeout = env.GetOrDefaultSecond(EnvAuthMSITimeout, 2*time.Second)
@@ -192,89 +206,4 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return d.provider.CleanUp(domain, token, keyAuth)
-}
-
-func getCredentials(config *Config) (azcore.TokenCredential, error) {
-	clientOptions := azcore.ClientOptions{Cloud: config.Environment}
-
-	switch strings.ToLower(config.AuthMethod) {
-	case "env":
-		if config.ClientID != "" && config.ClientSecret != "" && config.TenantID != "" {
-			return azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret,
-				&azidentity.ClientSecretCredentialOptions{ClientOptions: clientOptions})
-		}
-
-		return azidentity.NewEnvironmentCredential(&azidentity.EnvironmentCredentialOptions{ClientOptions: clientOptions})
-
-	case "wli":
-		return azidentity.NewWorkloadIdentityCredential(&azidentity.WorkloadIdentityCredentialOptions{ClientOptions: clientOptions})
-
-	case "msi":
-		cred, err := azidentity.NewManagedIdentityCredential(&azidentity.ManagedIdentityCredentialOptions{ClientOptions: clientOptions})
-		if err != nil {
-			return nil, err
-		}
-
-		return &timeoutTokenCredential{cred: cred, timeout: config.AuthMSITimeout}, nil
-
-	case "cli":
-		var credOptions *azidentity.AzureCLICredentialOptions
-		if config.TenantID != "" {
-			credOptions = &azidentity.AzureCLICredentialOptions{TenantID: config.TenantID}
-		}
-		return azidentity.NewAzureCLICredential(credOptions)
-
-	case "oidc":
-		err := checkOIDCConfig(config)
-		if err != nil {
-			return nil, err
-		}
-
-		return azidentity.NewClientAssertionCredential(config.TenantID, config.ClientID, getOIDCAssertion(config), &azidentity.ClientAssertionCredentialOptions{ClientOptions: clientOptions})
-
-	default:
-		return azidentity.NewDefaultAzureCredential(&azidentity.DefaultAzureCredentialOptions{ClientOptions: clientOptions})
-	}
-}
-
-// timeoutTokenCredential wraps a TokenCredential to add a timeout.
-type timeoutTokenCredential struct {
-	cred    azcore.TokenCredential
-	timeout time.Duration
-}
-
-// GetToken implements the azcore.TokenCredential interface.
-func (w *timeoutTokenCredential) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
-	if w.timeout <= 0 {
-		return w.cred.GetToken(ctx, opts)
-	}
-
-	ctxTimeout, cancel := context.WithTimeout(ctx, w.timeout)
-	defer cancel()
-
-	tk, err := w.cred.GetToken(ctxTimeout, opts)
-	if ce := ctxTimeout.Err(); errors.Is(ce, context.DeadlineExceeded) {
-		return tk, azidentity.NewCredentialUnavailableError("managed identity timed out")
-	}
-
-	w.timeout = 0
-
-	return tk, err
-}
-
-func getZoneName(config *Config, fqdn string) (string, error) {
-	if config.ZoneName != "" {
-		return config.ZoneName, nil
-	}
-
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return "", fmt.Errorf("could not find zone for %s: %w", fqdn, err)
-	}
-
-	if authZone == "" {
-		return "", errors.New("empty zone name")
-	}
-
-	return authZone, nil
 }

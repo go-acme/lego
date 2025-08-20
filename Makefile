@@ -54,10 +54,10 @@ detach:
 .PHONY: docs-build docs-serve docs-themes
 
 docs-build: generate-dns
-	@make -C ./docs hugo-build
+	@make -C ./docs build
 
 docs-serve: generate-dns
-	@make -C ./docs hugo
+	@make -C ./docs serve
 
 docs-themes:
 	@make -C ./docs hugo-themes

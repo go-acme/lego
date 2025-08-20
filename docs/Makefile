@@ -1,14 +1,14 @@
-.PHONY: default clean hugo hugo-build
+.PHONY: default clean serve build
 
-default: clean hugo
+default: clean serve
 
 clean:
 	rm -rf public/
 
 
-hugo-build: clean
+build: clean
 	hugo --enableGitInfo --source .
 
-hugo:
+serve:
 	hugo server --disableFastRender --enableGitInfo --watch --source .
 	# hugo server -D

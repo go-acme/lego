@@ -71,7 +71,7 @@ pygmentsUseClasses = true
   weight = 12
 
 [outputs]
-  home = [ "html", "rss", "search", "searchpage"]
+  home = ['html', 'rss', 'print']
 
 [module]
 [[module.imports]]

@@ -2,14 +2,6 @@ baseURL = "https://go-acme.github.io/lego/"
 languageCode = "en-us"
 title = "Lego"
 
-# Code highlighting settings
-pygmentsCodefences = true
-pygmentsCodeFencesGuesSsyntax = false
-pygmentsOptions = ""
-pygmentsStyle = "monokai"
-# The monokai stylesheet is included in the base template.
-pygmentsUseClasses = true
-
 [permalinks]
   dns = "/dns/:slug/"
 

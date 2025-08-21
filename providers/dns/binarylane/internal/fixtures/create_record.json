@@ -1,0 +1,9 @@
+{
+  "domain_record": {
+    "id": 123,
+    "type": "TXT",
+    "name": "foo",
+    "data": "txtTXTtxt",
+    "ttl": 300
+  }
+}

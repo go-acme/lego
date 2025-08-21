@@ -1,0 +1,14 @@
+{
+  "type": "type",
+  "title": "title",
+  "status": 400,
+  "detail": "detail",
+  "instance": "instance",
+  "errors": {
+    "property1": [
+      "a"
+    ]
+  },
+  "property1": null,
+  "property2": null
+}

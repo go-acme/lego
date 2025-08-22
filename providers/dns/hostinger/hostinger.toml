@@ -1,0 +1,22 @@
+Name = "Hostinger"
+Description = ''''''
+URL = "https://www.hostinger.com/"
+Code = "hostinger"
+Since = "v4.27.0"
+
+Example = '''
+HOSTINGER_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
+lego --email you@example.com --dns hostinger -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    HOSTINGER_API_TOKEN = "API Token"
+  [Configuration.Additional]
+    HOSTINGER_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    HOSTINGER_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    HOSTINGER_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    HOSTINGER_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://developers.hostinger.com/#tag/dns-zone"

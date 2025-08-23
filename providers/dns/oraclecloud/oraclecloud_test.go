@@ -72,7 +72,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "oraclecloud: some credentials information are missing: OCI_PRIVKEY,OCI_TENANCY_OCID,OCI_USER_OCID,OCI_PUBKEY_FINGERPRINT,OCI_REGION,OCI_COMPARTMENT_OCID",
+			expected: "oraclecloud: some credentials information are missing: OCI_COMPARTMENT_OCID",
 		},
 		{
 			desc: "missing CompartmentID",
@@ -98,7 +98,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvRegion:            "us-phoenix-1",
 				EnvCompartmentOCID:   "123",
 			},
-			expected: "oraclecloud: some credentials information are missing: OCI_PRIVKEY",
+			expected: "oraclecloud: can not create client, bad configuration: no value provided for: OCI_PRIVKEY or OCI_PRIVATE_KEY or OCI_PRIVKEY_FILE or OCI_PRIVATE_KEY_PATH or TF_VAR_private_key_path",
 		},
 		{
 			desc: "missing OCI_PRIVKEY_PASS",
@@ -362,13 +362,12 @@ func mockConfigurationProvider(keyPassphrase string) *environmentConfigurationPr
 	return &environmentConfigurationProvider{
 		values: map[string]string{
 			EnvCompartmentOCID:   "test",
-			EnvPrivKeyPass:       "test",
+			EnvPrivKeyPass:       keyPassphrase,
 			EnvTenancyOCID:       "test",
 			EnvUserOCID:          "test",
 			EnvPubKeyFingerprint: "test",
 			EnvRegion:            "test",
 		},
-		privateKeyPassphrase: keyPassphrase,
 	}
 }
 

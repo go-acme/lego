@@ -32,10 +32,27 @@ const (
 	EnvUserOCID          = envNamespace + "USER_OCID"
 	EnvPubKeyFingerprint = envNamespace + "PUBKEY_FINGERPRINT"
 
+	altEnvPrivateKey         = envNamespace + "PRIVATE_KEY"   // alias on OCI_PRIVKEY
+	altEnvPrivateKeyPath     = altEnvPrivateKey + "_PATH"     // alias on OCI_PRIVKEY_FILE
+	altEnvPrivateKeyPassword = altEnvPrivateKey + "_PASSWORD" // alias on OCI_PRIVKEY_PASS
+	altEnvFingerprint        = envNamespace + "FINGERPRINT"   // alias on OCI_PUBKEY_FINGERPRINT
+
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
+// https://github.com/oracle/oci-go-sdk/blob/7f425f74c74fd0c6a5acb74466c85eb5346e0092/common/client.go#L350
+// https://github.com/oracle/oci-go-sdk/blob/7f425f74c74fd0c6a5acb74466c85eb5346e0092/common/configuration.go#L174-L175
+const (
+	altEnvTFVarNamespace          = "TF_VAR_"
+	altEnvTFVarRegion             = altEnvTFVarNamespace + "region"               // alias on OCI_REGION
+	altEnvTFVarFingerprint        = altEnvTFVarNamespace + "fingerprint"          // alias on OCI_PUBKEY_FINGERPRINT
+	altEnvTFVarUserOCID           = altEnvTFVarNamespace + "user_ocid"            // alias on OCI_USER_OCID
+	altEnvTFVarTenancyOCID        = altEnvTFVarNamespace + "tenancy_ocid"         // alias on OCI_TENANCY_OCID
+	altEnvTFVarPrivateKeyPath     = altEnvTFVarNamespace + "private_key_path"     // alias on OCI_PRIVKEY_FILE
+	altEnvTFVarPrivateKeyPassword = altEnvTFVarNamespace + "private_key_password" // alias on OCI_PRIVKEY_PASS
 )
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
@@ -82,7 +99,9 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 		config.CompartmentID = values[EnvCompartmentOCID]
 
-		configurationProvider, err := auth.InstancePrincipalConfigurationProviderForRegion(common.Region(env.GetOrFile(EnvRegion)))
+		region := env.GetOneWithFallback(EnvRegion, "", env.ParseString, altEnvTFVarRegion)
+
+		configurationProvider, err := auth.InstancePrincipalConfigurationProviderForRegion(common.Region(region))
 		if err != nil {
 			return nil, fmt.Errorf("oraclecloud: %w", err)
 		}
@@ -90,13 +109,19 @@ func NewDNSProvider() (*DNSProvider, error) {
 		config.OCIConfigProvider = configurationProvider
 
 	default:
-		values, err := env.Get(envPrivKey, EnvTenancyOCID, EnvUserOCID, EnvPubKeyFingerprint, EnvRegion, EnvCompartmentOCID)
+		values, err := env.Get(EnvCompartmentOCID)
 		if err != nil {
 			return nil, fmt.Errorf("oraclecloud: %w", err)
 		}
 
 		config.CompartmentID = values[EnvCompartmentOCID]
-		config.OCIConfigProvider = newEnvironmentConfigurationProvider(values)
+
+		ecp, err := newEnvironmentConfigurationProvider()
+		if err != nil {
+			return nil, fmt.Errorf("oraclecloud: %w", err)
+		}
+
+		config.OCIConfigProvider = ecp
 	}
 
 	return NewDNSProviderConfig(config)

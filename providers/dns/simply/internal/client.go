@@ -16,7 +16,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-const defaultBaseURL = "https://api.simply.com/1/"
+const defaultBaseURL = "https://api.simply.com/2/"
 
 // Client is a Simply.com API client.
 type Client struct {
@@ -111,10 +111,12 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneName string, id int64) er
 }
 
 func (c *Client) createEndpoint(zoneName, uri string) *url.URL {
-	return c.baseURL.JoinPath(c.accountName, c.apiKey, "my", "products", zoneName, "dns", "records", strings.TrimSuffix(uri, "/"))
+	return c.baseURL.JoinPath("my", "products", zoneName, "dns", "records", strings.TrimSuffix(uri, "/"))
 }
 
 func (c *Client) do(req *http.Request, result Response) error {
+	req.SetBasicAuth(c.accountName, c.apiKey)
+
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)

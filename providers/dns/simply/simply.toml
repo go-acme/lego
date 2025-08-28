@@ -22,3 +22,4 @@ lego --email you@example.com --dns simply -d '*.example.com' -d example.com run
 
 [Links]
   API = "https://www.simply.com/en/docs/api/"
+  Spec = "https://generator.swagger.io/?url=https://api.simply.com/2/openapi.json#/"

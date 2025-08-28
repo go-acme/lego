@@ -24,12 +24,13 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders())
+		servermock.CheckHeader().WithJSONHeaders().
+			WithBasicAuth("accountname", "apikey"))
 }
 
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /accountname/apikey/my/products/azone01/dns/records",
+		Route("GET /my/products/azone01/dns/records",
 			servermock.ResponseFromFixture("get_records.json")).
 		Build(t)
 
@@ -76,7 +77,7 @@ func TestClient_GetRecords(t *testing.T) {
 
 func TestClient_GetRecords_error(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /accountname/apikey/my/products/azone01/dns/records",
+		Route("GET /my/products/azone01/dns/records",
 			servermock.ResponseFromFixture("bad_auth_error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
@@ -89,7 +90,7 @@ func TestClient_GetRecords_error(t *testing.T) {
 
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /accountname/apikey/my/products/azone01/dns/records",
+		Route("POST /my/products/azone01/dns/records",
 			servermock.ResponseFromFixture("add_record.json")).
 		Build(t)
 
@@ -109,7 +110,7 @@ func TestClient_AddRecord(t *testing.T) {
 
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /accountname/apikey/my/products/azone01/dns/records",
+		Route("POST /my/products/azone01/dns/records",
 			servermock.ResponseFromFixture("bad_zone_error.json").
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
@@ -130,7 +131,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 
 func TestClient_EditRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("PUT /accountname/apikey/my/products/azone01/dns/records/123456789",
+		Route("PUT /my/products/azone01/dns/records/123456789",
 			servermock.ResponseFromFixture("success.json")).
 		Build(t)
 
@@ -148,7 +149,7 @@ func TestClient_EditRecord(t *testing.T) {
 
 func TestClient_EditRecord_error(t *testing.T) {
 	client := mockBuilder().
-		Route("PUT /accountname/apikey/my/products/azone01/dns/records/123456789",
+		Route("PUT /my/products/azone01/dns/records/123456789",
 			servermock.ResponseFromFixture("invalid_record_id.json").
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
@@ -167,7 +168,7 @@ func TestClient_EditRecord_error(t *testing.T) {
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /accountname/apikey/my/products/azone01/dns/records/123456789",
+		Route("DELETE /my/products/azone01/dns/records/123456789",
 			servermock.ResponseFromFixture("success.json")).
 		Build(t)
 
@@ -177,7 +178,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /accountname/apikey/my/products/azone01/dns/records/123456789",
+		Route("DELETE /my/products/azone01/dns/records/123456789",
 			servermock.ResponseFromFixture("invalid_record_id.json").
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)

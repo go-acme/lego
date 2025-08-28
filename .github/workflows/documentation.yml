@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GO_VERSION: stable
-      HUGO_VERSION: 0.131.0
+      HUGO_VERSION: 0.148.2
       CGO_ENABLED: 0
 
     steps:

@@ -12,7 +12,7 @@ lego --email you@example.com --dns ibmcloud -d '*.example.com' -d example.com ru
 
 [Configuration]
   [Configuration.Credentials]
-    SOFTLAYER_USERNAME = "Username (IBM Cloud is <accountID>_<emailAddress>)"
+    SOFTLAYER_USERNAME = "Username (IBM Cloud is {accountID}_{emailAddress})"
     SOFTLAYER_API_KEY = "Classic Infrastructure API key"
   [Configuration.Additional]
     SOFTLAYER_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"

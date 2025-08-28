@@ -1692,7 +1692,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "SOFTLAYER_API_KEY":	Classic Infrastructure API key`)
-		ew.writeln(`	- "SOFTLAYER_USERNAME":	Username (IBM Cloud is <accountID>_<emailAddress>)`)
+		ew.writeln(`	- "SOFTLAYER_USERNAME":	Username (IBM Cloud is {accountID}_{emailAddress})`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

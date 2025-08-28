@@ -14,7 +14,7 @@ jobs:
     env:
       GO_VERSION: stable
       GOLANGCI_LINT_VERSION: v2.2.1
-      HUGO_VERSION: 0.131.0
+      HUGO_VERSION: 0.148.2
       CGO_ENABLED: 0
       LEGO_E2E_TESTS: CI
       MEMCACHED_HOSTS: localhost:11211

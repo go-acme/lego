@@ -29,9 +29,9 @@ func (a *AccountService) New(req acme.Account) (acme.ExtendedAccount, error) {
 
 // NewEAB Creates a new account with an External Account Binding.
 func (a *AccountService) NewEAB(accMsg acme.Account, kid, hmacEncoded string) (acme.ExtendedAccount, error) {
-	hmac, err := base64.RawURLEncoding.DecodeString(hmacEncoded)
+	hmac, err := decodeEABHmac(hmacEncoded)
 	if err != nil {
-		return acme.ExtendedAccount{}, fmt.Errorf("acme: could not decode hmac key: %w", err)
+		return acme.ExtendedAccount{}, err
 	}
 
 	eabJWS, err := a.core.signEABContent(a.core.GetDirectory().NewAccountURL, kid, hmac)
@@ -82,4 +82,18 @@ func (a *AccountService) Deactivate(accountURL string) error {
 	req := acme.Account{Status: acme.StatusDeactivated}
 	_, err := a.core.post(accountURL, req, nil)
 	return err
+}
+
+func decodeEABHmac(hmacEncoded string) ([]byte, error) {
+	hmac, errRaw := base64.RawURLEncoding.DecodeString(hmacEncoded)
+	if errRaw == nil {
+		return hmac, nil
+	}
+
+	hmac, err := base64.URLEncoding.DecodeString(hmacEncoded)
+	if err == nil {
+		return hmac, nil
+	}
+
+	return nil, fmt.Errorf("acme: could not decode hmac key: %w", errors.Join(errRaw, err))
 }

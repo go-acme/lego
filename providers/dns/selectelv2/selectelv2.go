@@ -146,7 +146,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
 
-	client, err := d.authorize()
+	client, err := d.authorize(ctx)
 	if err != nil {
 		return fmt.Errorf("selectelv2: authorize: %w", err)
 	}
@@ -193,7 +193,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
 
-	client, err := d.authorize()
+	client, err := d.authorize(ctx)
 	if err != nil {
 		return fmt.Errorf("selectelv2: authorize: %w", err)
 	}
@@ -234,8 +234,8 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) authorize() (*clientWrapper, error) {
-	token, err := obtainOpenstackToken(d.config)
+func (d *DNSProvider) authorize(ctx context.Context) (*clientWrapper, error) {
+	token, err := obtainOpenstackToken(ctx, d.config)
 	if err != nil {
 		return nil, err
 	}
@@ -248,9 +248,9 @@ func (d *DNSProvider) authorize() (*clientWrapper, error) {
 	}, nil
 }
 
-func obtainOpenstackToken(config *Config) (string, error) {
+func obtainOpenstackToken(ctx context.Context, config *Config) (string, error) {
 	vpcClient, err := selvpcclient.NewClient(&selvpcclient.ClientOptions{
-		Context:    nil,
+		Context:    ctx,
 		DomainName: config.Account,
 		AuthURL:    config.AuthURL,
 		AuthRegion: config.AuthRegion,

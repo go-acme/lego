@@ -125,6 +125,9 @@ func TestDomainsSeq(t *testing.T) {
 		},
 	}
 
+	// Add tests for newer gTLD handling
+	testCases = append(testCases, getNewerGTLDTestCases()...)
+
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
@@ -133,5 +136,48 @@ func TestDomainsSeq(t *testing.T) {
 
 			assert.Equal(t, test.expected, actual)
 		})
+	}
+}
+
+func getNewerGTLDTestCases() []struct {
+	desc     string
+	fqdn     string
+	expected []string
+} {
+	return []struct {
+		desc     string
+		fqdn     string
+		expected []string
+	}{
+		{
+			desc:     ".dog gTLD - simple domain",
+			fqdn:     "app4.dog",
+			expected: []string{"app4.dog"},
+		},
+		{
+			desc:     ".dog gTLD - simple domain FQDN",
+			fqdn:     "app4.dog.",
+			expected: []string{"app4.dog."},
+		},
+		{
+			desc:     ".dog gTLD - subdomain",
+			fqdn:     "play.app4.dog",
+			expected: []string{"play.app4.dog", "app4.dog"},
+		},
+		{
+			desc:     ".dog gTLD - deep subdomain",
+			fqdn:     "_acme-challenge.play.app4.dog",
+			expected: []string{"_acme-challenge.play.app4.dog", "play.app4.dog", "app4.dog"},
+		},
+		{
+			desc:     ".app gTLD - subdomain", 
+			fqdn:     "test.myapp.app",
+			expected: []string{"test.myapp.app", "myapp.app"},
+		},
+		{
+			desc:     "traditional TLD - unchanged behavior",
+			fqdn:     "sub.example.com",
+			expected: []string{"sub.example.com", "example.com", "com"},
+		},
 	}
 }

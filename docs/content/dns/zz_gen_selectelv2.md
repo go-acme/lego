@@ -53,6 +53,8 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `SELECTELV2_AUTH_REGION` | Location for auth endpoint like ResellAPI or Keystone (default: 'ru-1') |
+| `SELECTELV2_AUTH_URL` | Identity endpoint (defaul: 'https://cloud.api.selcloud.ru/identity/v3/') |
 | `SELECTELV2_BASE_URL` | API endpoint URL |
 | `SELECTELV2_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
 | `SELECTELV2_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 5) |

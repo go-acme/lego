@@ -2935,6 +2935,8 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SELECTELV2_AUTH_REGION":	Location for auth endpoint like ResellAPI or Keystone (default: 'ru-1')`)
+		ew.writeln(`	- "SELECTELV2_AUTH_URL":	Identity endpoint (defaul: 'https://cloud.api.selcloud.ru/identity/v3/')`)
 		ew.writeln(`	- "SELECTELV2_BASE_URL":	API endpoint URL`)
 		ew.writeln(`	- "SELECTELV2_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "SELECTELV2_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 5)`)

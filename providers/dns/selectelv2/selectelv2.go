@@ -26,6 +26,8 @@ const (
 	EnvPasswordOS = envNamespace + "PASSWORD"
 	EnvAccount    = envNamespace + "ACCOUNT_ID"
 	EnvProjectID  = envNamespace + "PROJECT_ID"
+	EnvAuthRegion = envNamespace + "AUTH_REGION"
+	EnvAuthURL    = envNamespace + "AUTH_URL"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -34,7 +36,12 @@ const (
 )
 
 const (
-	defaultBaseURL            = "https://api.selectel.ru/domains/v2"
+	defaultBaseURL    = "https://api.selectel.ru/domains/v2"
+	defaultAuthRegion = "ru-1"
+	defaultAuthURL    = "https://cloud.api.selcloud.ru/identity/v3/"
+)
+
+const (
 	defaultTTL                = 60
 	defaultPropagationTimeout = 120 * time.Second
 	defaultPollingInterval    = 5 * time.Second
@@ -47,11 +54,14 @@ var errNotFound = errors.New("rrset not found")
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	BaseURL            string
-	Username           string
-	Password           string
-	Account            string
-	ProjectID          string
+	BaseURL    string
+	Username   string
+	Password   string
+	Account    string
+	ProjectID  string
+	AuthURL    string
+	AuthRegion string
+
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -61,7 +71,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(EnvBaseURL, defaultBaseURL),
+		BaseURL:    env.GetOrDefaultString(EnvBaseURL, defaultBaseURL),
+		AuthRegion: env.GetOrDefaultString(EnvAuthRegion, defaultAuthRegion),
+		AuthURL:    env.GetOrDefaultString(EnvAuthURL, defaultAuthURL),
+
 		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollingInterval),
@@ -237,10 +250,13 @@ func (d *DNSProvider) authorize() (*clientWrapper, error) {
 
 func obtainOpenstackToken(config *Config) (string, error) {
 	vpcClient, err := selvpcclient.NewClient(&selvpcclient.ClientOptions{
-		Username:       config.Username,
-		Password:       config.Password,
-		UserDomainName: config.Account,
-		ProjectID:      config.ProjectID,
+		Context:    nil,
+		DomainName: config.Account,
+		AuthURL:    config.AuthURL,
+		AuthRegion: config.AuthRegion,
+		Username:   config.Username,
+		Password:   config.Password,
+		ProjectID:  config.ProjectID,
 	})
 	if err != nil {
 		return "", fmt.Errorf("new VPC client: %w", err)

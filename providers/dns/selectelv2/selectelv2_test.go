@@ -11,7 +11,14 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvUsernameOS, EnvPasswordOS, EnvAccount, EnvProjectID).
+var envTest = tester.NewEnvTest(
+	EnvUsernameOS,
+	EnvPasswordOS,
+	EnvAccount,
+	EnvProjectID,
+	EnvAuthRegion,
+	EnvAuthURL,
+).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {

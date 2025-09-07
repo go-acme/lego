@@ -14,7 +14,8 @@ const envDomain = envNamespace + "DOMAIN"
 var envTest = tester.NewEnvTest(
 	EnvUsernameOS,
 	EnvPasswordOS,
-	EnvAccount,
+	EnvDomainName,
+	EnvUserDomainName,
 	EnvProjectID,
 	EnvAuthRegion,
 	EnvAuthURL,
@@ -32,7 +33,7 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvUsernameOS: "someName",
 				EnvPasswordOS: "qwerty",
-				EnvAccount:    "1",
+				EnvDomainName: "1",
 				EnvProjectID:  "111a11111aaa11aa1a11aaa11111aa1a",
 			},
 		},
@@ -40,7 +41,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "missing username",
 			envVars: map[string]string{
 				EnvPasswordOS: "qwerty",
-				EnvAccount:    "1",
+				EnvDomainName: "1",
 				EnvProjectID:  "111a11111aaa11aa1a11aaa11111aa1a",
 			},
 			expected: "selectelv2: some credentials information are missing: SELECTELV2_USERNAME",
@@ -49,7 +50,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "missing password",
 			envVars: map[string]string{
 				EnvUsernameOS: "someName",
-				EnvAccount:    "1",
+				EnvDomainName: "1",
 				EnvProjectID:  "111a11111aaa11aa1a11aaa11111aa1a",
 			},
 			expected: "selectelv2: some credentials information are missing: SELECTELV2_PASSWORD",
@@ -68,7 +69,7 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvUsernameOS: "someName",
 				EnvPasswordOS: "qwerty",
-				EnvAccount:    "1",
+				EnvDomainName: "1",
 			},
 			expected: "selectelv2: some credentials information are missing: SELECTELV2_PROJECT_ID",
 		},
@@ -130,7 +131,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			username:  "user",
 			password:  "secret",
 			projectID: "111a11111aaa11aa1a11aaa11111aa1a",
-			expected:  "selectelv2: missing account",
+			expected:  "selectelv2: missing account ID",
 		},
 		{
 			desc:     "missing projectID",
@@ -146,7 +147,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config := NewDefaultConfig()
 			config.Username = test.username
 			config.Password = test.password
-			config.Account = test.account
+			config.DomainName = test.account
 			config.ProjectID = test.projectID
 
 			p, err := NewDNSProviderConfig(config)

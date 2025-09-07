@@ -21,13 +21,14 @@ import (
 const (
 	envNamespace = "SELECTELV2_"
 
-	EnvBaseURL    = envNamespace + "BASE_URL"
-	EnvUsernameOS = envNamespace + "USERNAME"
-	EnvPasswordOS = envNamespace + "PASSWORD"
-	EnvAccount    = envNamespace + "ACCOUNT_ID"
-	EnvProjectID  = envNamespace + "PROJECT_ID"
-	EnvAuthRegion = envNamespace + "AUTH_REGION"
-	EnvAuthURL    = envNamespace + "AUTH_URL"
+	EnvBaseURL        = envNamespace + "BASE_URL"
+	EnvUsernameOS     = envNamespace + "USERNAME"
+	EnvPasswordOS     = envNamespace + "PASSWORD"
+	EnvDomainName     = envNamespace + "ACCOUNT_ID"
+	EnvProjectID      = envNamespace + "PROJECT_ID"
+	EnvAuthRegion     = envNamespace + "AUTH_REGION"
+	EnvAuthURL        = envNamespace + "AUTH_URL"
+	EnvUserDomainName = envNamespace + "USER_DOMAIN_NAME"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -54,13 +55,14 @@ var errNotFound = errors.New("rrset not found")
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	BaseURL    string
-	Username   string
-	Password   string
-	Account    string
-	ProjectID  string
-	AuthURL    string
-	AuthRegion string
+	BaseURL        string
+	Username       string
+	Password       string
+	DomainName     string
+	ProjectID      string
+	AuthURL        string
+	AuthRegion     string
+	UserDomainName string
 
 	TTL                int
 	PropagationTimeout time.Duration
@@ -91,7 +93,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Selectel Domains APIv2.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUsernameOS, EnvPasswordOS, EnvAccount, EnvProjectID)
+	values, err := env.Get(EnvUsernameOS, EnvPasswordOS, EnvDomainName, EnvProjectID)
 	if err != nil {
 		return nil, fmt.Errorf("selectelv2: %w", err)
 	}
@@ -99,8 +101,9 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Username = values[EnvUsernameOS]
 	config.Password = values[EnvPasswordOS]
-	config.Account = values[EnvAccount]
+	config.DomainName = values[EnvDomainName]
 	config.ProjectID = values[EnvProjectID]
+	config.UserDomainName = env.GetOrDefaultString(EnvUserDomainName, "")
 
 	return NewDNSProviderConfig(config)
 }
@@ -119,8 +122,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("selectelv2: missing password")
 	}
 
-	if config.Account == "" {
-		return nil, errors.New("selectelv2: missing account")
+	if config.DomainName == "" {
+		return nil, errors.New("selectelv2: missing account ID")
 	}
 
 	if config.ProjectID == "" {
@@ -250,13 +253,14 @@ func (d *DNSProvider) authorize(ctx context.Context) (*clientWrapper, error) {
 
 func obtainOpenstackToken(ctx context.Context, config *Config) (string, error) {
 	vpcClient, err := selvpcclient.NewClient(&selvpcclient.ClientOptions{
-		Context:    ctx,
-		DomainName: config.Account,
-		AuthURL:    config.AuthURL,
-		AuthRegion: config.AuthRegion,
-		Username:   config.Username,
-		Password:   config.Password,
-		ProjectID:  config.ProjectID,
+		Context:        ctx,
+		DomainName:     config.DomainName,
+		AuthURL:        config.AuthURL,
+		AuthRegion:     config.AuthRegion,
+		Username:       config.Username,
+		Password:       config.Password,
+		ProjectID:      config.ProjectID,
+		UserDomainName: config.UserDomainName,
 	})
 	if err != nil {
 		return "", fmt.Errorf("new VPC client: %w", err)

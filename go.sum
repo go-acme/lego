@@ -807,8 +807,8 @@ github.com/russross/blackfriday/v2 v2.0.1/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQD
 github.com/russross/blackfriday/v2 v2.1.0 h1:JIOH55/0cWyOuilr9/qlrm0BSXldqnqwMsf35Ld67mk=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
-github.com/sacloud/api-client-go v0.3.2 h1:INbdSpQbyGN9Ai4hQ+Gbv3UQcgtRPG2tJrOmqT7HGl0=
-github.com/sacloud/api-client-go v0.3.2/go.mod h1:0p3ukcWYXRCc2AUWTl1aA+3sXLvurvvDqhRaLZRLBwo=
+github.com/sacloud/api-client-go v0.3.3 h1:ZpSAyGpITA8UFO3Hq4qMHZLGuNI1FgxAxo4sqBnCKDs=
+github.com/sacloud/api-client-go v0.3.3/go.mod h1:0p3ukcWYXRCc2AUWTl1aA+3sXLvurvvDqhRaLZRLBwo=
 github.com/sacloud/go-http v0.1.9 h1:Xa5PY8/pb7XWhwG9nAeXSrYXPbtfBWqawgzxD5co3VE=
 github.com/sacloud/go-http v0.1.9/go.mod h1:DpDG+MSyxYaBwPJ7l3aKLMzwYdTVtC5Bo63HActcgoE=
 github.com/sacloud/iaas-api-go v1.16.1 h1:B5Lec9WyZkrOCjtGkVuPn5RxDm/zCzazVsHh7BQIjYQ=

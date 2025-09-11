@@ -20,7 +20,7 @@ require (
 	github.com/alibabacloud-go/tea v1.3.12
 	github.com/aliyun/credentials-go v1.4.7
 	github.com/aws/aws-sdk-go-v2 v1.39.0
-	github.com/aws/aws-sdk-go-v2/config v1.29.18
+	github.com/aws/aws-sdk-go-v2/config v1.31.8
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.12
 	github.com/aws/aws-sdk-go-v2/service/lightsail v1.43.5
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.53.1

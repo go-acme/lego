@@ -77,7 +77,7 @@ require (
 	github.com/selectel/domains-go v1.1.0
 	github.com/selectel/go-selvpcclient/v4 v4.1.0
 	github.com/softlayer/softlayer-go v1.1.7
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1212
 	github.com/transip/gotransip/v6 v6.26.0
 	github.com/ultradns/ultradns-go-sdk v1.8.0-20241010134910-243eeec

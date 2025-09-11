@@ -96,7 +96,7 @@ require (
 	google.golang.org/api v0.242.0
 	gopkg.in/ns1/ns1-go.v2 v2.14.4
 	gopkg.in/yaml.v2 v2.4.0
-	software.sslmate.com/src/go-pkcs12 v0.5.0
+	software.sslmate.com/src/go-pkcs12 v0.6.0
 )
 
 require (

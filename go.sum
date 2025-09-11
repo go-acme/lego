@@ -540,8 +540,8 @@ github.com/influxdata/influxdb1-client v0.0.0-20200827194710-b269163b24ab/go.mod
 github.com/infobloxopen/infoblox-go-client/v2 v2.10.0 h1:AKsihjFT/t6Y0keEv3p59DACcOuh0inWXdUB0ZOzYH0=
 github.com/infobloxopen/infoblox-go-client/v2 v2.10.0/go.mod h1:NeNJpz09efw/edzqkVivGv1bWqBXTomqYBRFbP+XBqg=
 github.com/jarcoal/httpmock v1.0.8/go.mod h1:ATjnClrvW/3tijVmpL/va5Z3aAyGvqU3gCT8nX0Txik=
-github.com/jarcoal/httpmock v1.4.0 h1:BvhqnH0JAYbNudL2GMJKgOHe2CtKlzJ/5rWKyp+hc2k=
-github.com/jarcoal/httpmock v1.4.0/go.mod h1:ftW1xULwo+j0R0JJkJIIi7UKigZUXCLLanykgjwBXL0=
+github.com/jarcoal/httpmock v1.4.1 h1:0Ju+VCFuARfFlhVXFc2HxlcQkfB+Xq12/EotHko+x2A=
+github.com/jarcoal/httpmock v1.4.1/go.mod h1:ftW1xULwo+j0R0JJkJIIi7UKigZUXCLLanykgjwBXL0=
 github.com/jcmturner/aescts/v2 v2.0.0/go.mod h1:AiaICIRyfYg35RUkr8yESTqvSy7csK90qZ5xfvvsoNs=
 github.com/jcmturner/dnsutils/v2 v2.0.0/go.mod h1:b0TnjGOvI/n42bZa+hmXL+kFJZsFT7G4t3HTlQ184QM=
 github.com/jcmturner/gofork v1.0.0/go.mod h1:MK8+TM0La+2rjBD4jE12Kj1pCCxK7d2LK/UM3ncEo0o=
@@ -603,8 +603,8 @@ github.com/ldez/grignotin v0.10.0/go.mod h1:oR4iCKUP9fwoeO6vCQeD7M5SMxCT6xdVas4v
 github.com/leodido/go-urn v1.2.0/go.mod h1:+8+nEpDfqqsY+g338gtMEUOtuK+4dEMhiQEgxpxOKII=
 github.com/leodido/go-urn v1.4.0 h1:WT9HwE9SGECu3lg4d/dIA+jxlljEa1/ffXKmRjqdmIQ=
 github.com/leodido/go-urn v1.4.0/go.mod h1:bvxc+MVxLKB4z00jd1z+Dvzr47oO32F/QSNjSBOlFxI=
-github.com/linode/linodego v1.53.0 h1:UWr7bUUVMtcfsuapC+6blm6+jJLPd7Tf9MZUpdOERnI=
-github.com/linode/linodego v1.53.0/go.mod h1:bI949fZaVchjWyKIA08hNyvAcV6BAS+PM2op3p7PAWA=
+github.com/linode/linodego v1.57.0 h1:B5cl2gRNtaY1TIQ7B4uAhDa8NjtiWdEnWUO8nkHaU0A=
+github.com/linode/linodego v1.57.0/go.mod h1:7zol1dqpLRdAT9s04mIaUhA+rXaRERFnKBERcQZiEeg=
 github.com/liquidweb/go-lwApi v0.0.0-20190605172801-52a4864d2738/go.mod h1:0sYF9rMXb0vlG+4SzdiGMXHheCZxjguMq+Zb4S2BfBs=
 github.com/liquidweb/liquidweb-cli v0.6.9 h1:acbIvdRauiwbxIsOCEMXGwF75aSJDbDiyAWPjVnwoYM=
 github.com/liquidweb/liquidweb-cli v0.6.9/go.mod h1:cE1uvQ+x24NGUL75D0QagOFCG8Wdvmwu8aL9TLmA/eQ=

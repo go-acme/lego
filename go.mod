@@ -94,7 +94,7 @@ require (
 	golang.org/x/text v0.29.0
 	golang.org/x/time v0.13.0
 	google.golang.org/api v0.249.0
-	gopkg.in/ns1/ns1-go.v2 v2.14.4
+	gopkg.in/ns1/ns1-go.v2 v2.15.0
 	gopkg.in/yaml.v2 v2.4.0
 	software.sslmate.com/src/go-pkcs12 v0.6.0
 )

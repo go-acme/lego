@@ -46,7 +46,7 @@ require (
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/infobloxopen/infoblox-go-client/v2 v2.10.0
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
-	github.com/ldez/grignotin v0.9.0
+	github.com/ldez/grignotin v0.10.0
 	github.com/linode/linodego v1.53.0
 	github.com/liquidweb/liquidweb-go v1.6.4
 	github.com/mattn/go-isatty v0.0.20

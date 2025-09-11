@@ -80,7 +80,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1212
 	github.com/transip/gotransip/v6 v6.26.0
-	github.com/ultradns/ultradns-go-sdk v1.8.0-20241010134910-243eeec
+	github.com/ultradns/ultradns-go-sdk v1.8.1-20250722213956-faef419
 	github.com/urfave/cli/v2 v2.27.7
 	github.com/vinyldns/go-vinyldns v0.9.16
 	github.com/volcengine/volc-sdk-golang v1.0.216

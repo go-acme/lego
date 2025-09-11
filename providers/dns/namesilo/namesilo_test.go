@@ -77,7 +77,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc:     "missing API key",
 			ttl:      defaultTTL,
-			expected: "namesilo: credentials missing: API key",
+			expected: "namesilo: credentials missing",
 		},
 		{
 			desc:     "unavailable TTL",

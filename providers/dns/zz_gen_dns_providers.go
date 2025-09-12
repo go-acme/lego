@@ -88,6 +88,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/ipv64"
 	"github.com/go-acme/lego/v4/providers/dns/iwantmyname"
 	"github.com/go-acme/lego/v4/providers/dns/joker"
+	"github.com/go-acme/lego/v4/providers/dns/keyhelp"
 	"github.com/go-acme/lego/v4/providers/dns/liara"
 	"github.com/go-acme/lego/v4/providers/dns/lightsail"
 	"github.com/go-acme/lego/v4/providers/dns/limacity"
@@ -335,6 +336,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return iwantmyname.NewDNSProvider()
 	case "joker":
 		return joker.NewDNSProvider()
+	case "keyhelp":
+		return keyhelp.NewDNSProvider()
 	case "liara":
 		return liara.NewDNSProvider()
 	case "lightsail":

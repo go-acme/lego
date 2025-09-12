@@ -80,14 +80,16 @@ func (c *Client) do(req *http.Request, result any) error {
 }
 
 func (c *Client) ListDomains(ctx context.Context) ([]Domain, error) {
-	req, err := newJSONRequest(ctx, http.MethodGet, c.baseURL, nil)
+	endpoint := c.baseURL.JoinPath("domains")
+
+	query := endpoint.Query()
+	query.Set("sort", "domain_utf8")
+	endpoint.RawQuery = query.Encode()
+
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
-
-	query := req.URL.Query()
-	query.Set("sort", "domain_utf8")
-	req.URL.RawQuery = query.Encode()
 
 	var result []Domain
 
@@ -100,7 +102,7 @@ func (c *Client) ListDomains(ctx context.Context) ([]Domain, error) {
 }
 
 func (c *Client) ListDomainRecords(ctx context.Context, domainID int) (*DomainRecords, error) {
-	endpoint := c.baseURL.JoinPath(strconv.Itoa(domainID))
+	endpoint := c.baseURL.JoinPath("dns", strconv.Itoa(domainID))
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -118,7 +120,7 @@ func (c *Client) ListDomainRecords(ctx context.Context, domainID int) (*DomainRe
 }
 
 func (c *Client) UpdateDomainRecords(ctx context.Context, domainID int, records DomainRecords) (*DomainID, error) {
-	endpoint := c.baseURL.JoinPath(strconv.Itoa(domainID))
+	endpoint := c.baseURL.JoinPath("dns", strconv.Itoa(domainID))
 
 	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, records)
 	if err != nil {

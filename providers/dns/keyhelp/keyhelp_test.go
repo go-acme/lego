@@ -161,14 +161,14 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
-		Route("GET /api/v2/",
+		Route("GET /api/v2/domains",
 			servermock.ResponseFromInternal("get_domains.json"),
 			servermock.CheckQueryParameter().
 				With("sort", "domain_utf8").
 				Strict()).
-		Route("GET /api/v2/8",
+		Route("GET /api/v2/dns/8",
 			servermock.ResponseFromInternal("get_domain_records.json")).
-		Route("PUT /api/v2/8",
+		Route("PUT /api/v2/dns/8",
 			servermock.ResponseFromInternal("update_domain_records.json"),
 			servermock.CheckRequestJSONBodyFromInternal("update_domain_records-request.json")).
 		Build(t)
@@ -181,9 +181,9 @@ func TestDNSProvider_Present(t *testing.T) {
 
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
-		Route("GET /api/v2/8",
+		Route("GET /api/v2/dns/8",
 			servermock.ResponseFromInternal("get_domain_records2.json")).
-		Route("PUT /api/v2/8",
+		Route("PUT /api/v2/dns/8",
 			servermock.ResponseFromInternal("update_domain_records.json"),
 			servermock.CheckRequestJSONBodyFromInternal("update_domain_records-request2.json")).
 		Build(t)

@@ -1,0 +1,24 @@
+{
+  "is_custom_dns": false,
+  "is_dns_disabled": false,
+  "dkim_record": "default._domainkey IN TXT ( \"v=DKIM1; k=rsa; s=email; \" \"...DKIM KEY...\" )",
+  "records": {
+    "soa": {
+      "ttl": 86400,
+      "primary_ns": "ns.example.com.",
+      "rname": "root.example.com.",
+      "refresh": 14400,
+      "retry": 1800,
+      "expire": 604800,
+      "minimum": 3600
+    },
+    "other": [
+      {
+        "host": "@",
+        "ttl": 86400,
+        "type": "A",
+        "value": "192.168.178.1"
+      }
+    ]
+  }
+}

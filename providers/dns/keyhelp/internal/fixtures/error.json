@@ -1,0 +1,4 @@
+{
+  "code": "401 Unauthorized",
+  "message": "API key is missing or invalid."
+}

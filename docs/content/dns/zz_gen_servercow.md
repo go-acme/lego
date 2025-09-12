@@ -62,7 +62,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://cp.servercow.de/client/plugin/support_manager/knowledgebase/view/34/dns-api-v1/7/)
+- [API documentation](https://wiki.servercow.de/en/domains/dns_api/api-syntax/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/servercow/servercow.toml -->

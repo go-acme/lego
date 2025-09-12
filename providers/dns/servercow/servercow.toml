@@ -21,4 +21,4 @@ lego --email you@example.com --dns servercow -d '*.example.com' -d example.com r
     SERVERCOW_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]
-  API = "https://cp.servercow.de/client/plugin/support_manager/knowledgebase/view/34/dns-api-v1/7/"
+  API = "https://wiki.servercow.de/en/domains/dns_api/api-syntax/"

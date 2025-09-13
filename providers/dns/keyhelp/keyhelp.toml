@@ -1,0 +1,24 @@
+Name = "KeyHelp"
+Description = ''''''
+URL = "https://www.keyweb.de/en/keyhelp/keyhelp/"
+Code = "keyhelp"
+Since = "v4.26.0"
+
+Example = '''
+KEYHELP_BASE_URL="https://keyhelp.example.com" \
+KEYHELP_API_KEY="xxx" \
+lego --email you@example.com --dns keyhelp -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    KEYHELP_BASE_URL= "Server URL"
+    KEYHELP_API_KEY = "API key"
+  [Configuration.Additional]
+    KEYHELP_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    KEYHELP_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    KEYHELP_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    KEYHELP_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://app.swaggerhub.com/apis-docs/keyhelp/api/"

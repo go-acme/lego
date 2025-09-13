@@ -94,6 +94,7 @@ func allDNSCodes() string {
 		"ipv64",
 		"iwantmyname",
 		"joker",
+		"keyhelp",
 		"liara",
 		"lightsail",
 		"limacity",
@@ -1920,6 +1921,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/joker`)
+
+	case "keyhelp":
+		// generated from: providers/dns/keyhelp/keyhelp.toml
+		ew.writeln(`Configuration for KeyHelp.`)
+		ew.writeln(`Code:	'keyhelp'`)
+		ew.writeln(`Since:	'v4.26.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "KEYHELP_API_KEY":	API key`)
+		ew.writeln(`	- "KEYHELP_BASE_URL":	Server URL`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "KEYHELP_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "KEYHELP_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "KEYHELP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "KEYHELP_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/keyhelp`)
 
 	case "liara":
 		// generated from: providers/dns/liara/liara.toml

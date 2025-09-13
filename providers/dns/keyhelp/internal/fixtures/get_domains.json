@@ -1,0 +1,41 @@
+[
+  {
+    "id": 8,
+    "id_user": 4,
+    "id_parent_domain": 0,
+    "status": 1,
+    "domain": "example.com",
+    "domain_utf8": "example.com",
+    "created_at": "2019-08-15T11:29:13+02:00",
+    "php_version": "",
+    "traffic": 32434624,
+    "is_disabled": false,
+    "delete_on": "2025-09-02T19:31:14+0000",
+    "dkim_selector": "default",
+    "dkim_record": "default._domainkey IN TXT ( \"v=DKIM1; k=rsa; s=email; \" \"...DKIM KEY...\" )",
+    "is_custom_dns": false,
+    "is_dns_disabled": false,
+    "is_subdomain": false,
+    "is_system_domain": false,
+    "is_email_domain": true,
+    "is_email_sending_only": false,
+    "target": {
+      "target": "https://www.keyhelp.de",
+      "is_forwarding": true,
+      "forwarding_type": 301
+    },
+    "security": {
+      "id_certificate": 0,
+      "lets_encrypt": true,
+      "is_prefer_https": true,
+      "is_hsts": true,
+      "hsts_max_age": 10368000,
+      "hsts_include": true,
+      "hsts_preload": true
+    },
+    "apache": {
+      "http_directives": "# My custom HTTP directives",
+      "https_directives": "# My custom HTTPS directives"
+    }
+  }
+]

@@ -51,13 +51,6 @@ func NewClient(baseURL, apiKey string) (*Client, error) {
 }
 
 func (c *Client) do(req *http.Request, result any) error {
-	dReq, err := httputil.DumpRequest(req, false)
-	if err != nil {
-		return err
-	}
-
-	log.Infof("HTTP request: %s", string(dReq))
-
 	req.Header.Set(APIKeyHeader, c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)

@@ -10,7 +10,7 @@
     "php_version": "",
     "traffic": 32434624,
     "is_disabled": false,
-    "delete_on": "2019-08-15T11:29:13+02:00",
+    "delete_on": "2025-09-02T19:31:14+0000",
     "dkim_selector": "default",
     "dkim_record": "default._domainkey IN TXT ( \"v=DKIM1; k=rsa; s=email; \" \"...DKIM KEY...\" )",
     "is_custom_dns": false,

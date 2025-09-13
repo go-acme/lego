@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"time"
 )
 
 type APIError struct {
@@ -15,21 +14,19 @@ func (a *APIError) Error() string {
 }
 
 type Domain struct {
-	ID                 int       `json:"id,omitempty"`
-	UserID             int       `json:"id_user,omitempty"`
-	ParentDomainID     int       `json:"id_parent_domain,omitempty"`
-	Status             int       `json:"status,omitempty"`
-	Domain             string    `json:"domain,omitempty"`
-	DomainUTF8         string    `json:"domain_utf8,omitempty"`
-	CreatedAt          time.Time `json:"created_at,omitempty"`
-	IsDisabled         bool      `json:"is_disabled,omitempty"`
-	DeleteOn           time.Time `json:"delete_on,omitempty"`
-	IsCustomDNS        bool      `json:"is_custom_dns,omitempty"`
-	IsDNSDisabled      bool      `json:"is_dns_disabled,omitempty"`
-	IsSubdomain        bool      `json:"is_subdomain,omitempty"`
-	IsSystemDomain     bool      `json:"is_system_domain,omitempty"`
-	IsEmailDomain      bool      `json:"is_email_domain,omitempty"`
-	IsEmailSendingOnly bool      `json:"is_email_sending_only,omitempty"`
+	ID                 int    `json:"id,omitempty"`
+	UserID             int    `json:"id_user,omitempty"`
+	ParentDomainID     int    `json:"id_parent_domain,omitempty"`
+	Status             int    `json:"status,omitempty"`
+	Domain             string `json:"domain,omitempty"`
+	DomainUTF8         string `json:"domain_utf8,omitempty"`
+	IsDisabled         bool   `json:"is_disabled,omitempty"`
+	IsCustomDNS        bool   `json:"is_custom_dns,omitempty"`
+	IsDNSDisabled      bool   `json:"is_dns_disabled,omitempty"`
+	IsSubdomain        bool   `json:"is_subdomain,omitempty"`
+	IsSystemDomain     bool   `json:"is_system_domain,omitempty"`
+	IsEmailDomain      bool   `json:"is_email_domain,omitempty"`
+	IsEmailSendingOnly bool   `json:"is_email_sending_only,omitempty"`
 }
 
 type DomainID struct {

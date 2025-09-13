@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
@@ -41,32 +40,6 @@ func TestClient_ListDomains(t *testing.T) {
 	domains, err := client.ListDomains(t.Context())
 	require.NoError(t, err)
 
-	// Fix the timezone.
-	for i, domain := range domains {
-		domain.CreatedAt.UTC()
-		domain.CreatedAt = time.Date(
-			domain.CreatedAt.Year(),
-			domain.CreatedAt.Month(),
-			domain.CreatedAt.Day(),
-			domain.CreatedAt.Hour(),
-			domain.CreatedAt.Minute(),
-			domain.CreatedAt.Second(),
-			0,
-			time.UTC,
-		)
-		domain.DeleteOn = time.Date(
-			domain.DeleteOn.Year(),
-			domain.DeleteOn.Month(),
-			domain.DeleteOn.Day(),
-			domain.DeleteOn.Hour(),
-			domain.DeleteOn.Minute(),
-			domain.DeleteOn.Second(),
-			0,
-			time.UTC,
-		)
-		domains[i] = domain
-	}
-
 	expected := []Domain{{
 		ID:             8,
 		UserID:         4,
@@ -74,8 +47,6 @@ func TestClient_ListDomains(t *testing.T) {
 		Status:         1,
 		Domain:         "example.com",
 		DomainUTF8:     "example.com",
-		CreatedAt:      time.Date(2019, time.August, 15, 11, 29, 13, 0, time.UTC),
-		DeleteOn:       time.Date(2019, time.August, 15, 11, 29, 13, 0, time.UTC),
 		IsEmailDomain:  true,
 	}}
 

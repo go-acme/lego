@@ -8,12 +8,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strconv"
 	"time"
 
-	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
@@ -67,13 +65,6 @@ func (c *Client) do(req *http.Request, result any) error {
 	if result == nil {
 		return nil
 	}
-
-	response, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		return err
-	}
-
-	log.Infof("HTTP response: %s", string(response))
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {

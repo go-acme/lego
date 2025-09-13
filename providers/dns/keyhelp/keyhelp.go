@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/keyhelp/internal"
 )
@@ -211,11 +210,7 @@ func (d *DNSProvider) findDomain(ctx context.Context, zone string) (internal.Dom
 		return internal.Domain{}, fmt.Errorf("list domains: %w", err)
 	}
 
-	log.Infof("zone: %s", zone) // FIXME debug
-
 	for _, domain := range domains {
-		log.Infof("Domain: %s", domain.Domain)         // FIXME debug
-		log.Infof("DomainUTF8: %s", domain.DomainUTF8) // FIXME debug
 		if domain.DomainUTF8 == zone || domain.Domain == zone {
 			return domain, nil
 		}

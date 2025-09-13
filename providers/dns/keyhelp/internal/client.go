@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strconv"
 	"time"
 
+	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
@@ -49,6 +51,13 @@ func NewClient(baseURL, apiKey string) (*Client, error) {
 }
 
 func (c *Client) do(req *http.Request, result any) error {
+	dReq, err := httputil.DumpRequest(req, false)
+	if err != nil {
+		return err
+	}
+
+	log.Infof("HTTP request: %s", string(dReq))
+
 	req.Header.Set(APIKeyHeader, c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)
@@ -65,6 +74,13 @@ func (c *Client) do(req *http.Request, result any) error {
 	if result == nil {
 		return nil
 	}
+
+	response, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		return err
+	}
+
+	log.Infof("HTTP response: %s", string(response))
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {

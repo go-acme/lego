@@ -1,5 +1,25 @@
 # Changelog
 
+## [v4.26.0](https://github.com/go-acme/lego/releases/tag/v4.26.0) (2025-09-13)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for KeyHelp
+- **[dnsprovider]** Add DNS provider for Binary Lane
+- **[dnsprovider]** Add DNS provider for Tencent EdgeOne
+- **[dnsprovider]** azuredns: pipeline credential support
+- **[dnsprovider]** oraclecloud: handle instance_principal authentication
+
+### Changed
+
+- **[dnsprovider]** oraclecloud: add env var aliases
+- **[dnsprovider]** simply: update to API v2
+- **[lib,cli]** EAB: fallback to base64.URLEncoding
+
+### Fixed
+
+- **[dnsprovider]** selectelv2: add missing options
+
 ## [v4.25.2](https://github.com/go-acme/lego/releases/tag/v4.25.2) (2025-08-06)
 
 ### Changed

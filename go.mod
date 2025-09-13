@@ -76,7 +76,7 @@ require (
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.34
 	github.com/selectel/domains-go v1.1.0
 	github.com/selectel/go-selvpcclient/v4 v4.1.0
-	github.com/softlayer/softlayer-go v1.1.7
+	github.com/softlayer/softlayer-go v1.2.1
 	github.com/stretchr/testify v1.11.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.1.26
 	github.com/transip/gotransip/v6 v6.26.0
@@ -191,7 +191,7 @@ require (
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.7.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/pflag v1.0.7 // indirect
 	github.com/spf13/viper v1.18.2 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect

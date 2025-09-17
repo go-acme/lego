@@ -21,6 +21,7 @@ const (
 	EnvDomainName       = envNamespace + "DOMAIN_NAME"
 	EnvUserName         = envNamespace + "USER_NAME"
 	EnvPassword         = envNamespace + "PASSWORD"
+	EnvPrivateZone      = envNamespace + "PRIVATE_ZONE"
 	EnvProjectName      = envNamespace + "PROJECT_NAME"
 	EnvIdentityEndpoint = envNamespace + "IDENTITY_ENDPOINT"
 
@@ -45,6 +46,7 @@ type Config struct {
 	ProjectName        string
 	UserName           string
 	Password           string
+	PrivateZone        bool
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	SequenceInterval   time.Duration
@@ -70,6 +72,7 @@ func NewDefaultConfig() *Config {
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		IdentityEndpoint:   env.GetOrDefaultString(EnvIdentityEndpoint, defaultIdentityEndpoint),
 		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
+		PrivateZone:        env.GetOrDefaultBool(EnvPrivateZone, false),
 		HTTPClient: &http.Client{
 			Timeout:   env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 			Transport: tr,
@@ -115,7 +118,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("otc: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	client := internal.NewClient(config.UserName, config.Password, config.DomainName, config.ProjectName)
+	client := internal.NewClient(config.UserName, config.Password, config.DomainName, config.ProjectName, config.PrivateZone)
 
 	if config.IdentityEndpoint != "" {
 		client.IdentityEndpoint = config.IdentityEndpoint

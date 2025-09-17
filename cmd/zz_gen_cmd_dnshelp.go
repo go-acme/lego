@@ -2574,6 +2574,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "OTC_DOMAIN_NAME":	Domain name`)
 		ew.writeln(`	- "OTC_IDENTITY_ENDPOINT":	Identity endpoint URL`)
 		ew.writeln(`	- "OTC_PASSWORD":	Password`)
+		ew.writeln(`	- "OTC_PRIVATE_ZONE":	Set to true to use private zones only (default: use public zones only)`)
 		ew.writeln(`	- "OTC_PROJECT_NAME":	Project name`)
 		ew.writeln(`	- "OTC_USER_NAME":	User name`)
 		ew.writeln()

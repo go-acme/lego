@@ -20,6 +20,7 @@ type Client struct {
 	password    string
 	domainName  string
 	projectName string
+	privateZone bool
 
 	IdentityEndpoint string
 	token            string
@@ -31,12 +32,13 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-func NewClient(username, password, domainName, projectName string) *Client {
+func NewClient(username, password, domainName, projectName string, privateZone bool) *Client {
 	return &Client{
 		username:         username,
 		password:         password,
 		domainName:       domainName,
 		projectName:      projectName,
+		privateZone:      privateZone,
 		IdentityEndpoint: DefaultIdentityEndpoint,
 		HTTPClient:       &http.Client{Timeout: 5 * time.Second},
 	}
@@ -69,6 +71,9 @@ func (c *Client) getZones(ctx context.Context, zone string) (*ZonesResponse, err
 
 	query := endpoint.Query()
 	query.Set("name", zone)
+	if c.privateZone {
+		query.Set("type", "private")
+	}
 	endpoint.RawQuery = query.Encode()
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)

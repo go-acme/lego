@@ -37,6 +37,7 @@ _Please contribute by adding a CLI example._
 | `OTC_DOMAIN_NAME` | Domain name |
 | `OTC_IDENTITY_ENDPOINT` | Identity endpoint URL |
 | `OTC_PASSWORD` | Password |
+| `OTT_PRIVATE_ZONE` | Set to true to use private zones only (default: use public zones only) |
 | `OTC_PROJECT_NAME` | Project name |
 | `OTC_USER_NAME` | User name |
 

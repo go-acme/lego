@@ -12,6 +12,7 @@ Example = ''''''
     OTC_PASSWORD = "Password"
     OTC_PROJECT_NAME = "Project name"
     OTC_DOMAIN_NAME = "Domain name"
+    OTC_PRIVATE_ZONE = "Set to true to use private zones only (default: use public zones only)"
     OTC_IDENTITY_ENDPOINT = "Identity endpoint URL"
   [Configuration.Additional]
     OTC_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"

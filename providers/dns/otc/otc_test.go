@@ -18,6 +18,7 @@ var envTest = tester.NewEnvTest(
 	EnvDomainName,
 	EnvUserName,
 	EnvPassword,
+	EnvPrivateZone,
 	EnvProjectName,
 	EnvIdentityEndpoint).
 	WithDomain(envDomain)

@@ -21,9 +21,9 @@ const (
 	EnvDomainName       = envNamespace + "DOMAIN_NAME"
 	EnvUserName         = envNamespace + "USER_NAME"
 	EnvPassword         = envNamespace + "PASSWORD"
-	EnvPrivateZone      = envNamespace + "PRIVATE_ZONE"
 	EnvProjectName      = envNamespace + "PROJECT_NAME"
 	EnvIdentityEndpoint = envNamespace + "IDENTITY_ENDPOINT"
+	EnvPrivateZone      = envNamespace + "PRIVATE_ZONE"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -41,12 +41,13 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	IdentityEndpoint   string
-	DomainName         string
-	ProjectName        string
-	UserName           string
-	Password           string
-	PrivateZone        bool
+	DomainName       string
+	ProjectName      string
+	UserName         string
+	Password         string
+	IdentityEndpoint string
+	PrivateZone      bool
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	SequenceInterval   time.Duration
@@ -67,12 +68,13 @@ func NewDefaultConfig() *Config {
 	tr.DisableKeepAlives = true
 
 	return &Config{
+		PrivateZone:      env.GetOrDefaultBool(EnvPrivateZone, false),
+		IdentityEndpoint: env.GetOrDefaultString(EnvIdentityEndpoint, defaultIdentityEndpoint),
+
 		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		IdentityEndpoint:   env.GetOrDefaultString(EnvIdentityEndpoint, defaultIdentityEndpoint),
 		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
-		PrivateZone:        env.GetOrDefaultBool(EnvPrivateZone, false),
 		HTTPClient: &http.Client{
 			Timeout:   env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 			Transport: tr,

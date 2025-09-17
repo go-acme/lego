@@ -20,7 +20,6 @@ type Client struct {
 	password    string
 	domainName  string
 	projectName string
-	privateZone bool
 
 	IdentityEndpoint string
 	token            string
@@ -32,20 +31,19 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-func NewClient(username, password, domainName, projectName string, privateZone bool) *Client {
+func NewClient(username, password, domainName, projectName string) *Client {
 	return &Client{
 		username:         username,
 		password:         password,
 		domainName:       domainName,
 		projectName:      projectName,
-		privateZone:      privateZone,
 		IdentityEndpoint: DefaultIdentityEndpoint,
 		HTTPClient:       &http.Client{Timeout: 5 * time.Second},
 	}
 }
 
-func (c *Client) GetZoneID(ctx context.Context, zone string) (string, error) {
-	zonesResp, err := c.getZones(ctx, zone)
+func (c *Client) GetZoneID(ctx context.Context, zone string, privateZone bool) (string, error) {
+	zonesResp, err := c.getZones(ctx, zone, privateZone)
 	if err != nil {
 		return "", err
 	}
@@ -64,14 +62,14 @@ func (c *Client) GetZoneID(ctx context.Context, zone string) (string, error) {
 }
 
 // https://docs.otc.t-systems.com/domain-name-service/api-ref/apis/public_zone_management/querying_public_zones.html
-func (c *Client) getZones(ctx context.Context, zone string) (*ZonesResponse, error) {
+func (c *Client) getZones(ctx context.Context, zone string, privateZone bool) (*ZonesResponse, error) {
 	c.muBaseURL.Lock()
 	endpoint := c.baseURL.JoinPath("zones")
 	c.muBaseURL.Unlock()
 
 	query := endpoint.Query()
 	query.Set("name", zone)
-	if c.privateZone {
+	if privateZone {
 		query.Set("type", "private")
 	}
 	endpoint.RawQuery = query.Encode()

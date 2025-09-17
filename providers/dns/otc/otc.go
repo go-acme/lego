@@ -118,7 +118,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("otc: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	client := internal.NewClient(config.UserName, config.Password, config.DomainName, config.ProjectName, config.PrivateZone)
+	client := internal.NewClient(config.UserName, config.Password, config.DomainName, config.ProjectName)
 
 	if config.IdentityEndpoint != "" {
 		client.IdentityEndpoint = config.IdentityEndpoint
@@ -147,7 +147,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("otc: %w", err)
 	}
 
-	zoneID, err := d.client.GetZoneID(ctx, authZone)
+	zoneID, err := d.client.GetZoneID(ctx, authZone, d.config.PrivateZone)
 	if err != nil {
 		return fmt.Errorf("otc: unable to get zone: %w", err)
 	}
@@ -184,7 +184,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("otc: %w", err)
 	}
 
-	zoneID, err := d.client.GetZoneID(ctx, authZone)
+	zoneID, err := d.client.GetZoneID(ctx, authZone, d.config.PrivateZone)
 	if err != nil {
 		return fmt.Errorf("otc: %w", err)
 	}

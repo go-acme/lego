@@ -2572,7 +2572,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "OTC_DOMAIN_NAME":	Domain name`)
-		ew.writeln(`	- "OTC_IDENTITY_ENDPOINT":	Identity endpoint URL`)
 		ew.writeln(`	- "OTC_PASSWORD":	Password`)
 		ew.writeln(`	- "OTC_PROJECT_NAME":	Project name`)
 		ew.writeln(`	- "OTC_USER_NAME":	User name`)
@@ -2580,7 +2579,9 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "OTC_HTTP_TIMEOUT":	API request timeout in seconds (Default: 10)`)
+		ew.writeln(`	- "OTC_IDENTITY_ENDPOINT":	Identity endpoint URL`)
 		ew.writeln(`	- "OTC_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "OTC_PRIVATE_ZONE":	Set to true to use private zones only (default: use public zones only)`)
 		ew.writeln(`	- "OTC_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
 		ew.writeln(`	- "OTC_SEQUENCE_INTERVAL":	Time between sequential requests in seconds (Default: 60)`)
 		ew.writeln(`	- "OTC_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)`)

@@ -33,7 +33,22 @@ func TestClient_GetZoneID(t *testing.T) {
 				With("name", "example.com.")).
 		Build(t)
 
-	zoneID, err := client.GetZoneID(context.Background(), "example.com.")
+	zoneID, err := client.GetZoneID(context.Background(), "example.com.", false)
+	require.NoError(t, err)
+
+	assert.Equal(t, "123123", zoneID)
+}
+
+func TestClient_GetZoneID_private(t *testing.T) {
+	client := mockBuilder().
+		Route("GET /zones",
+			servermock.ResponseFromFixture("zones_GET.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "example.com.").
+				With("type", "private")).
+		Build(t)
+
+	zoneID, err := client.GetZoneID(context.Background(), "example.com.", true)
 	require.NoError(t, err)
 
 	assert.Equal(t, "123123", zoneID)
@@ -47,7 +62,7 @@ func TestClient_GetZoneID_error(t *testing.T) {
 				With("name", "example.com.")).
 		Build(t)
 
-	_, err := client.GetZoneID(context.Background(), "example.com.")
+	_, err := client.GetZoneID(context.Background(), "example.com.", false)
 	require.EqualError(t, err, "zone example.com. not found")
 }
 

@@ -18,6 +18,7 @@ var envTest = tester.NewEnvTest(
 	EnvDomainName,
 	EnvUserName,
 	EnvPassword,
+	EnvPrivateZone,
 	EnvProjectName,
 	EnvIdentityEndpoint).
 	WithDomain(envDomain)
@@ -213,7 +214,7 @@ func TestLiveCleanUp(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider := mockBuilder().
+	provider := mockBuilder(false).
 		Route("GET /v2/zones",
 			servermock.ResponseFromInternal("zones_GET.json"),
 			servermock.CheckQueryParameter().Strict().
@@ -227,8 +228,24 @@ func TestDNSProvider_Present(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDNSProvider_Present_private(t *testing.T) {
+	provider := mockBuilder(true).
+		Route("GET /v2/zones",
+			servermock.ResponseFromInternal("zones_GET.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "example.com.").
+				With("type", "private")).
+		Route("POST /v2/zones/123123/recordsets",
+			servermock.Noop(),
+			servermock.CheckRequestJSONBodyFromInternal("zones-recordsets_POST-request.json")).
+		Build(t)
+
+	err := provider.Present("example.com", "", "123d==")
+	require.NoError(t, err)
+}
+
 func TestDNSProvider_Present_emptyZone(t *testing.T) {
-	provider := mockBuilder().
+	provider := mockBuilder(false).
 		Route("GET /v2/zones",
 			servermock.ResponseFromInternal("zones_GET_empty.json"),
 			servermock.CheckQueryParameter().Strict().
@@ -240,7 +257,7 @@ func TestDNSProvider_Present_emptyZone(t *testing.T) {
 }
 
 func TestDNSProvider_Cleanup(t *testing.T) {
-	provider := mockBuilder().
+	provider := mockBuilder(false).
 		Route("GET /v2/zones",
 			servermock.ResponseFromInternal("zones_GET.json"),
 			servermock.CheckQueryParameter().Strict().
@@ -258,8 +275,28 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDNSProvider_Cleanup_private(t *testing.T) {
+	provider := mockBuilder(true).
+		Route("GET /v2/zones",
+			servermock.ResponseFromInternal("zones_GET.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "example.com.").
+				With("type", "private")).
+		Route("GET /v2/zones/123123/recordsets",
+			servermock.ResponseFromInternal("zones-recordsets_GET.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "_acme-challenge.example.com.").
+				With("type", "TXT")).
+		Route("DELETE /v2/zones/123123/recordsets/321321",
+			servermock.ResponseFromInternal("zones-recordsets_DELETE.json")).
+		Build(t)
+
+	err := provider.CleanUp("example.com", "", "123d==")
+	require.NoError(t, err)
+}
+
 func TestDNSProvider_Cleanup_emptyRecordset(t *testing.T) {
-	provider := mockBuilder().
+	provider := mockBuilder(false).
 		Route("GET /v2/zones",
 			servermock.ResponseFromInternal("zones_GET.json"),
 			servermock.CheckQueryParameter().Strict().
@@ -275,7 +312,7 @@ func TestDNSProvider_Cleanup_emptyRecordset(t *testing.T) {
 	require.EqualError(t, err, "otc: unable to get record _acme-challenge.example.com. for zone example.com: record not found")
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
+func mockBuilder(private bool) *servermock.Builder[*DNSProvider] {
 	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
@@ -285,6 +322,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 			config.DomainName = "example.com"
 			config.ProjectName = "test"
 			config.IdentityEndpoint = fmt.Sprintf("%s/v3/auth/token", server.URL)
+			config.PrivateZone = private
 
 			return NewDNSProviderConfig(config)
 		},

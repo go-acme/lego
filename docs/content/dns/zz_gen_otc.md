@@ -35,7 +35,6 @@ _Please contribute by adding a CLI example._
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `OTC_DOMAIN_NAME` | Domain name |
-| `OTC_IDENTITY_ENDPOINT` | Identity endpoint URL |
 | `OTC_PASSWORD` | Password |
 | `OTC_PROJECT_NAME` | Project name |
 | `OTC_USER_NAME` | User name |
@@ -49,7 +48,9 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `OTC_HTTP_TIMEOUT` | API request timeout in seconds (Default: 10) |
+| `OTC_IDENTITY_ENDPOINT` | Identity endpoint URL |
 | `OTC_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `OTC_PRIVATE_ZONE` | Set to true to use private zones only (default: use public zones only) |
 | `OTC_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
 | `OTC_SEQUENCE_INTERVAL` | Time between sequential requests in seconds (Default: 60) |
 | `OTC_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 300) |

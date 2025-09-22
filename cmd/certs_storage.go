@@ -232,9 +232,9 @@ func (s *CertificatesStorage) WritePFXFile(domain string, certRes *certificate.R
 		return fmt.Errorf("unable to get certificate chain for domain %s: %w", domain, err)
 	}
 
-	privateKey, err := certcrypto.ParsePEMPrivateKey(certRes.PrivateKey);
+	privateKey, err := certcrypto.ParsePEMPrivateKey(certRes.PrivateKey)
 	if err != nil {
-		return fmt.Errorf("unable to parse PrivateKey for domain %s: %w", domain, err);
+		return fmt.Errorf("unable to parse PrivateKey for domain %s: %w", domain, err)
 	}
 
 	encoder, err := getPFXEncoder(s.pfxFormat)

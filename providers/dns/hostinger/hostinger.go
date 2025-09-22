@@ -110,12 +110,27 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	var newRecordSet []internal.RecordSet
 
+	var added bool
+
 	for _, recordSet := range recordSets {
 		if recordSet.Name == subDomain && recordSet.Type == "TXT" {
 			recordSet.Records = append(recordSet.Records, internal.Record{Content: info.Value})
 		}
 
+		added = true
+
 		newRecordSet = append(newRecordSet, recordSet)
+	}
+
+	if !added {
+		newRecordSet = append(newRecordSet, internal.RecordSet{
+			Name: subDomain,
+			Type: "TXT",
+			TTL:  d.config.TTL,
+			Records: []internal.Record{
+				{Content: info.Value},
+			},
+		})
 	}
 
 	request := internal.ZoneRequest{
@@ -152,6 +167,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("hostinger: get DNS records: %w", err)
 	}
 
+	var changed bool
+
 	var newRecordSet []internal.RecordSet
 
 	for _, recordSet := range recordSets {
@@ -159,7 +176,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			var rs []internal.Record
 
 			for _, record := range recordSet.Records {
-				if record.Content != info.Value {
+				if record.Content == info.Value {
+					changed = true
+				} else {
 					rs = append(rs, record)
 				}
 			}
@@ -168,6 +187,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 
 		newRecordSet = append(newRecordSet, recordSet)
+	}
+
+	if !changed {
+		return nil
 	}
 
 	request := internal.ZoneRequest{

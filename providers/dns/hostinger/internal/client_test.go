@@ -80,6 +80,7 @@ func TestClient_UpdateDNSRecords(t *testing.T) {
 		Build(t)
 
 	zone := ZoneRequest{
+		Overwrite: false,
 		Zone: []RecordSet{
 			{
 				Name: "_acme-challenge",

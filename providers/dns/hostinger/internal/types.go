@@ -22,7 +22,7 @@ func (a *APIError) Error() string {
 }
 
 type ZoneRequest struct {
-	Overwrite bool        `json:"overwrite,omitempty"`
+	Overwrite bool        `json:"overwrite"`
 	Zone      []RecordSet `json:"zone,omitempty"`
 }
 

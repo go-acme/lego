@@ -1,4 +1,5 @@
 {
+  "overwrite": false,
   "zone": [
     {
       "name": "_acme-challenge",

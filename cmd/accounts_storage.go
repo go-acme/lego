@@ -2,10 +2,8 @@ package cmd
 
 import (
 	"crypto"
-	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
-	"errors"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -209,16 +207,11 @@ func loadPrivateKey(file string) (crypto.PrivateKey, error) {
 		return nil, err
 	}
 
-	keyBlock, _ := pem.Decode(keyBytes)
-
-	switch keyBlock.Type {
-	case "RSA PRIVATE KEY":
-		return x509.ParsePKCS1PrivateKey(keyBlock.Bytes)
-	case "EC PRIVATE KEY":
-		return x509.ParseECPrivateKey(keyBlock.Bytes)
+	privateKey, err := certcrypto.ParsePEMPrivateKey(keyBytes)
+	if err != nil {
+		return nil, err
 	}
-
-	return nil, errors.New("unknown private key type")
+	return privateKey, nil
 }
 
 func tryRecoverRegistration(ctx *cli.Context, privateKey crypto.PrivateKey) (*registration.Resource, error) {

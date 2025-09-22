@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"crypto"
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
@@ -233,27 +232,9 @@ func (s *CertificatesStorage) WritePFXFile(domain string, certRes *certificate.R
 		return fmt.Errorf("unable to get certificate chain for domain %s: %w", domain, err)
 	}
 
-	keyPemBlock, _ := pem.Decode(certRes.PrivateKey)
-	if keyPemBlock == nil {
-		return fmt.Errorf("unable to parse PrivateKey for domain %s", domain)
-	}
-
-	var privateKey crypto.Signer
-	var keyErr error
-
-	switch keyPemBlock.Type {
-	case "RSA PRIVATE KEY":
-		privateKey, keyErr = x509.ParsePKCS1PrivateKey(keyPemBlock.Bytes)
-		if keyErr != nil {
-			return fmt.Errorf("unable to load RSA PrivateKey for domain %s: %w", domain, keyErr)
-		}
-	case "EC PRIVATE KEY":
-		privateKey, keyErr = x509.ParseECPrivateKey(keyPemBlock.Bytes)
-		if keyErr != nil {
-			return fmt.Errorf("unable to load EC PrivateKey for domain %s: %w", domain, keyErr)
-		}
-	default:
-		return fmt.Errorf("unsupported PrivateKey type '%s' for domain %s", keyPemBlock.Type, domain)
+	privateKey, err := certcrypto.ParsePEMPrivateKey(certRes.PrivateKey)
+	if err != nil {
+		return fmt.Errorf("unable to parse PrivateKey for domain %s: %w", domain, err)
 	}
 
 	encoder, err := getPFXEncoder(s.pfxFormat)

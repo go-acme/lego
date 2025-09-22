@@ -1,0 +1,10 @@
+{
+  "message": "The name field is required. (and 1 more error)",
+  "errors": {
+    "field_1": [
+      "The field_1 field is required.",
+      "The field_1 must be a number."
+    ]
+  },
+  "correlation_id": "26a91bd9-f8c8-4a83-9df9-83e23d696fe3"
+}

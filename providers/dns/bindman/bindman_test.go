@@ -1,4 +1,3 @@
-// Package bindman implements a DNS provider for solving the DNS-01 challenge.
 package bindman
 
 import (

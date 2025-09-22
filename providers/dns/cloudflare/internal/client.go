@@ -84,7 +84,7 @@ func (c *Client) CreateDNSRecord(ctx context.Context, zoneID string, record Reco
 	return &result.Result, nil
 }
 
-// DeleteDNSRecord Delete DNS record.
+// DeleteDNSRecord deletes DNS record.
 // https://developers.cloudflare.com/api/resources/dns/subresources/records/methods/delete/
 func (c *Client) DeleteDNSRecord(ctx context.Context, zoneID, recordID string) error {
 	endpoint := c.baseURL.JoinPath("zones", zoneID, "dns_records", recordID)
@@ -97,6 +97,7 @@ func (c *Client) DeleteDNSRecord(ctx context.Context, zoneID, recordID string) e
 	return c.do(req, nil)
 }
 
+// ZonesByName returns a list of zones matching the given name.
 // https://developers.cloudflare.com/api/resources/zones/methods/list/
 func (c *Client) ZonesByName(ctx context.Context, name string) ([]Zone, error) {
 	endpoint := c.baseURL.JoinPath("zones")

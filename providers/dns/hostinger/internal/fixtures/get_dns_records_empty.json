@@ -1,0 +1,13 @@
+[
+  {
+    "name": "_acme-challenge",
+    "records": [
+      {
+        "content": "example.com.",
+        "is_disabled": false
+      }
+    ],
+    "ttl": 14400,
+    "type": "A"
+  }
+]

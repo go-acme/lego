@@ -115,9 +115,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	for _, recordSet := range recordSets {
 		if recordSet.Name == subDomain && recordSet.Type == "TXT" {
 			recordSet.Records = append(recordSet.Records, internal.Record{Content: info.Value})
+			added = true
 		}
-
-		added = true
 
 		newRecordSet = append(newRecordSet, recordSet)
 	}

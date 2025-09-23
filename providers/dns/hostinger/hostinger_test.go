@@ -1,6 +1,7 @@
 package hostinger
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -126,6 +127,19 @@ func TestDNSProvider_Present(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDNSProvider_Present_empty(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /api/dns/v1/zones/example.com",
+			servermock.ResponseFromInternal("get_dns_records_empty.json")).
+		Route("PUT /api/dns/v1/zones/example.com",
+			servermock.ResponseFromInternal("update_dns_records.json"),
+			servermock.CheckRequestJSONBodyFromInternal("update_dns_records_empty-request.json")).
+		Build(t)
+
+	err := provider.Present("example.com", "", "123d==")
+	require.NoError(t, err)
+}
+
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /api/dns/v1/zones/example.com",
@@ -133,6 +147,18 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		Route("PUT /api/dns/v1/zones/example.com",
 			servermock.ResponseFromInternal("update_dns_records.json"),
 			servermock.CheckRequestJSONBodyFromInternal("update_dns_records_base-request.json")).
+		Build(t)
+
+	err := provider.CleanUp("example.com", "", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp_empty(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /api/dns/v1/zones/example.com",
+			servermock.ResponseFromInternal("get_dns_records_empty.json")).
+		Route("PUT /api/dns/v1/zones/example.com",
+			servermock.Noop().WithStatusCode(http.StatusServiceUnavailable)).
 		Build(t)
 
 	err := provider.CleanUp("example.com", "", "123d==")

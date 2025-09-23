@@ -4,7 +4,13 @@ URL = "https://cloud.telekom.de/en"
 Code = "otc"
 Since = "v0.4.1"
 
-Example = ''''''
+Example = '''
+OTC_DOMAIN_NAME=domain_name \
+OTC_USER_NAME=user_name \
+OTC_PASSWORD=password \
+OTC_PROJECT_NAME=project_name \
+lego --email you@example.com --dns otc -d '*.example.com' -d example.com run
+'''
 
 [Configuration]
   [Configuration.Credentials]
@@ -13,7 +19,7 @@ Example = ''''''
     OTC_PROJECT_NAME = "Project name"
     OTC_DOMAIN_NAME = "Domain name"
   [Configuration.Additional]
-    OTC_IDENTITY_ENDPOINT = "Identity endpoint URL"
+    OTC_IDENTITY_ENDPOINT = "Identity endpoint URL (default: https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens)"
     OTC_PRIVATE_ZONE = "Set to true to use private zones only (default: use public zones only)"
     OTC_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     OTC_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"

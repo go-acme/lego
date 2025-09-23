@@ -2600,7 +2600,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "OTC_HTTP_TIMEOUT":	API request timeout in seconds (Default: 10)`)
-		ew.writeln(`	- "OTC_IDENTITY_ENDPOINT":	Identity endpoint URL`)
+		ew.writeln(`	- "OTC_IDENTITY_ENDPOINT":	Identity endpoint URL (default: https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens)`)
 		ew.writeln(`	- "OTC_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "OTC_PRIVATE_ZONE":	Set to true to use private zones only (default: use public zones only)`)
 		ew.writeln(`	- "OTC_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)

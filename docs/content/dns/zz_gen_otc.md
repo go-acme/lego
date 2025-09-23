@@ -23,9 +23,15 @@ Configuration for [Open Telekom Cloud](https://cloud.telekom.de/en).
 - Since: v0.4.1
 
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Open Telekom Cloud provider:
+
+```bash
+OTC_DOMAIN_NAME=domain_name \
+OTC_USER_NAME=user_name \
+OTC_PASSWORD=password \
+OTC_PROJECT_NAME=project_name \
+lego --email you@example.com --dns otc -d '*.example.com' -d example.com run
+```
 
 
 
@@ -48,7 +54,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `OTC_HTTP_TIMEOUT` | API request timeout in seconds (Default: 10) |
-| `OTC_IDENTITY_ENDPOINT` | Identity endpoint URL |
+| `OTC_IDENTITY_ENDPOINT` | Identity endpoint URL (default: https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens) |
 | `OTC_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
 | `OTC_PRIVATE_ZONE` | Set to true to use private zones only (default: use public zones only) |
 | `OTC_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |

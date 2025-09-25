@@ -237,7 +237,7 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
 	assert.NotEmpty(t, resource.IssuerCertificate)
-	assert.Empty(t, resource.CSR)
+	assert.NotEmpty(t, resource.CSR)
 }
 
 func TestChallengeHTTP_Client_Obtain_profile(t *testing.T) {
@@ -437,7 +437,7 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
 	assert.NotEmpty(t, resource.IssuerCertificate)
-	assert.Empty(t, resource.CSR)
+	assert.NotEmpty(t, resource.CSR)
 }
 
 func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {

@@ -3,6 +3,7 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 const successResult = "success"
@@ -39,12 +40,34 @@ type Answer struct {
 	Status string          `json:"status,omitempty"`
 	Result json.RawMessage `json:"result,omitempty"`
 
+	Errors    []AnswerError `json:"errors,omitempty"`
+	ErrorCode string        `json:"error_code,omitempty"`
+	ErrorText string        `json:"error_text,omitempty"`
+}
+
+type AnswerError struct {
 	ErrorCode string `json:"error_code,omitempty"`
 	ErrorText string `json:"error_text,omitempty"`
 }
 
 func (a Answer) Error() string {
-	return fmt.Sprintf("API answer %s: %s: %s", a.Status, a.ErrorCode, a.ErrorText)
+	parts := []string{fmt.Sprintf("API answer %s", a.Status)}
+
+	if a.ErrorCode != "" {
+		parts = append(parts, a.ErrorCode)
+	}
+
+	if a.ErrorText != "" {
+		parts = append(parts, a.ErrorText)
+	}
+
+	if len(a.Errors) > 0 {
+		for _, e := range a.Errors {
+			parts = append(parts, e.ErrorCode, e.ErrorText)
+		}
+	}
+
+	return strings.Join(parts, ": ")
 }
 
 // ChangeRecordsRequest - data representation for data change request.

@@ -2,98 +2,90 @@ package internal
 
 import (
 	"context"
-	"fmt"
-	"io"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T, handler http.HandlerFunc) *Client {
-	t.Helper()
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
+		func(server *httptest.Server) (*Client, error) {
+			client := NewClient("user", "secret")
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+			client.HTTPClient = server.Client()
+			client.baseURL, _ = url.Parse(server.URL)
 
-	mux.HandleFunc("/dns/changeRecords", handler)
-
-	client := NewClient("user", "secret")
-	client.HTTPClient = server.Client()
-	client.baseURL, _ = url.Parse(server.URL)
-
-	return client
-}
-
-func writeFixtureHandler(filename string) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodGet {
-			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
-			return
-		}
-
-		query := req.URL.Query()
-
-		if query.Get("login") != "user" {
-			http.Error(rw, fmt.Sprintf("invalid login: %q", query.Get("login")), http.StatusUnauthorized)
-			return
-		}
-		if query.Get("passwd") != "secret" {
-			http.Error(rw, fmt.Sprintf("invalid password: %q", query.Get("passwd")), http.StatusUnauthorized)
-			return
-		}
-
-		if filename == "" {
-			return
-		}
-
-		file, err := os.Open(filepath.Join("fixtures", filename))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer func() { _ = file.Close() }()
-
-		_, _ = io.Copy(rw, file)
-	}
+			return client, nil
+		},
+		servermock.CheckQueryParameter().
+			With("login", "user").
+			With("passwd", "secret").
+			With("input_format", "json").
+			With("output_format", "json"),
+	)
 }
 
 func TestClient_AddTXTRecord(t *testing.T) {
-	client := setupTest(t, writeFixtureHandler("changeRecords.json"))
+	client := mockBuilder().
+		Route("GET /dns/changeRecords",
+			servermock.ResponseFromFixture("changeRecords.json"),
+			servermock.CheckQueryParameter().
+				With("input_data", `{"fqdn":"sub.example.com","records":{"TXT":[{"priority":10,"value":"txtTXTtxt"}]}}`),
+		).
+		Build(t)
 
 	err := client.AddTXTRecord(context.Background(), "example.com", "sub", "txtTXTtxt")
 	require.NoError(t, err)
 }
 
 func TestClient_AddTXTRecord_error(t *testing.T) {
-	client := setupTest(t, writeFixtureHandler("error.json"))
+	client := mockBuilder().
+		Route("GET /dns/changeRecords",
+			servermock.ResponseFromFixture("error.json")).
+		Build(t)
 
 	err := client.AddTXTRecord(context.Background(), "example.com", "sub", "txtTXTtxt")
 	require.Error(t, err)
+
+	require.EqualError(t, err, "API error: NO_SUCH_METHOD: No such method")
 }
 
 func TestClient_AddTXTRecord_answer_error(t *testing.T) {
-	client := setupTest(t, writeFixtureHandler("answer_error.json"))
+	client := mockBuilder().
+		Route("GET /dns/changeRecords",
+			servermock.ResponseFromFixture("answer_error.json")).
+		Build(t)
 
 	err := client.AddTXTRecord(context.Background(), "example.com", "sub", "txtTXTtxt")
 	require.Error(t, err)
+
+	require.EqualError(t, err, "API answer error: INVALID_DATA: Login length cannot be greater than 12 characters")
 }
 
 func TestClient_RemoveTxtRecord(t *testing.T) {
-	client := setupTest(t, writeFixtureHandler("changeRecords.json"))
+	client := mockBuilder().
+		Route("GET /dns/changeRecords",
+			servermock.ResponseFromFixture("changeRecords.json"),
+			servermock.CheckQueryParameter().
+				With("input_data", `{"fqdn":"sub.example.com","records":{}}`),
+		).
+		Build(t)
 
 	err := client.RemoveTxtRecord(context.Background(), "example.com", "sub")
 	require.NoError(t, err)
 }
 
 func TestClient_RemoveTxtRecord_error(t *testing.T) {
-	client := setupTest(t, writeFixtureHandler("error.json"))
+	client := mockBuilder().
+		Route("GET /dns/changeRecords",
+			servermock.ResponseFromFixture("error.json")).
+		Build(t)
 
 	err := client.RemoveTxtRecord(context.Background(), "example.com", "sub")
 	require.Error(t, err)
+
+	require.EqualError(t, err, "API error: NO_SUCH_METHOD: No such method")
 }

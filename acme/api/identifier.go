@@ -2,10 +2,32 @@ package api
 
 import (
 	"cmp"
+	"maps"
+	"net"
 	"slices"
 
 	"github.com/go-acme/lego/v4/acme"
 )
+
+func createIdentifiers(domains []string) []acme.Identifier {
+	uniqIdentifiers := make(map[string]acme.Identifier)
+
+	for _, domain := range domains {
+		if _, ok := uniqIdentifiers[domain]; ok {
+			continue
+		}
+
+		ident := acme.Identifier{Value: domain, Type: "dns"}
+
+		if net.ParseIP(domain) != nil {
+			ident.Type = "ip"
+		}
+
+		uniqIdentifiers[domain] = ident
+	}
+
+	return slices.AppendSeq(make([]acme.Identifier, 0, len(uniqIdentifiers)), maps.Values(uniqIdentifiers))
+}
 
 // compareIdentifiers compares 2 slices of [acme.Identifier].
 func compareIdentifiers(a, b []acme.Identifier) int {

@@ -103,20 +103,22 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	records, err := d.client.GetTXTRecords(context.Background(), dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("beget: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("beget: get TXT records: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
-	if err != nil {
-		return fmt.Errorf("beget: %w", err)
-	}
+	records = append(records, internal.Record{
+		Value:    info.Value,
+		Data:     "", // NOTE: there are 2 fields in the API for the same thing.
+		Priority: 10,
+		TTL:      d.config.TTL,
+	})
 
-	err = d.client.AddTXTRecord(context.Background(), dns01.UnFqdn(authZone), subDomain, info.Value)
+	err = d.client.ChangeTXTRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), records)
 	if err != nil {
-		return fmt.Errorf("beget: failed to create TXT records [domain: %s, sub domain: %s]: %w",
-			dns01.UnFqdn(authZone), subDomain, err)
+		return fmt.Errorf("beget: failed to create TXT records [domain: %s]: %w",
+			dns01.UnFqdn(info.EffectiveFQDN), err)
 	}
 
 	return nil
@@ -126,20 +128,28 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	records, err := d.client.GetTXTRecords(context.Background(), dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("beget: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("beget: get TXT records: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
-	if err != nil {
-		return fmt.Errorf("beget: %w", err)
+	if len(records) == 0 {
+		return nil
 	}
 
-	err = d.client.RemoveTxtRecord(context.Background(), dns01.UnFqdn(authZone), subDomain)
+	var updatedRecords []internal.Record
+	for _, record := range records {
+		if record.Data == info.Value {
+			continue
+		}
+
+		updatedRecords = append(updatedRecords, record)
+	}
+
+	err = d.client.ChangeTXTRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), updatedRecords)
 	if err != nil {
-		return fmt.Errorf("beget: failed to remove TXT records [domain: %s, sub domain: %s]: %w",
-			dns01.UnFqdn(authZone), subDomain, err)
+		return fmt.Errorf("beget: failed to remove TXT records [domain: %s]: %w",
+			dns01.UnFqdn(info.EffectiveFQDN), err)
 	}
 
 	return nil

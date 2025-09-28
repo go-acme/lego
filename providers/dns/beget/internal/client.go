@@ -19,7 +19,7 @@ type Client struct {
 	login    string
 	password string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -30,21 +30,42 @@ func NewClient(login, password string) *Client {
 	return &Client{
 		login:      login,
 		password:   password,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
 
-// AddTXTRecord adds a TXT record.
-// https://beget.com/ru/kb/api/funkczii-upravleniya-dns
-func (c Client) AddTXTRecord(ctx context.Context, domain, subDomain, content string) error {
+// GetTXTRecords returns TXT records.
+// https://beget.com/ru/kb/api/funkczii-upravleniya-dns#getdata
+func (c *Client) GetTXTRecords(ctx context.Context, domain string) ([]Record, error) {
+	request := GetRecordsRequest{Fqdn: domain}
+
+	resp, err := c.doRequest(ctx, request, "dns", "getData")
+	if err != nil {
+		return nil, err
+	}
+
+	err = resp.HasError()
+	if err != nil {
+		return nil, err
+	}
+
+	result := GetRecordsResult{}
+
+	err = json.Unmarshal(resp.Answer.Result, &result)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal result: %s: %w", string(resp.Answer.Result), err)
+	}
+
+	return result.Records.TXT, nil
+}
+
+// ChangeTXTRecord changes TXT records.
+// https://beget.com/ru/kb/api/funkczii-upravleniya-dns#changerecords
+func (c *Client) ChangeTXTRecord(ctx context.Context, domain string, records []Record) error {
 	request := ChangeRecordsRequest{
-		Fqdn: fmt.Sprintf("%s.%s", subDomain, domain),
-		Records: RecordList{
-			TXT: []Record{
-				{Priority: 10, Value: content},
-			},
-		},
+		Fqdn:    domain,
+		Records: RecordList{TXT: records},
 	}
 
 	resp, err := c.doRequest(ctx, request, "dns", "changeRecords")
@@ -55,24 +76,8 @@ func (c Client) AddTXTRecord(ctx context.Context, domain, subDomain, content str
 	return resp.HasError()
 }
 
-// RemoveTxtRecord removes a TXT record.
-// https://beget.com/ru/kb/api/funkczii-upravleniya-dns
-func (c Client) RemoveTxtRecord(ctx context.Context, domain, subDomain string) error {
-	request := ChangeRecordsRequest{
-		Fqdn:    fmt.Sprintf("%s.%s", subDomain, domain),
-		Records: RecordList{},
-	}
-
-	resp, err := c.doRequest(ctx, request, "dns", "changeRecords")
-	if err != nil {
-		return err
-	}
-
-	return resp.HasError()
-}
-
-func (c Client) doRequest(ctx context.Context, data any, fragments ...string) (*APIResponse, error) {
-	endpoint := c.baseURL.JoinPath(fragments...)
+func (c *Client) doRequest(ctx context.Context, data any, fragments ...string) (*APIResponse, error) {
+	endpoint := c.BaseURL.JoinPath(fragments...)
 
 	inputData, err := json.Marshal(data)
 	if err != nil {

@@ -70,7 +70,12 @@ func (a Answer) Error() string {
 	return strings.Join(parts, ": ")
 }
 
-// ChangeRecordsRequest - data representation for data change request.
+// GetRecordsRequest data representation for data get request.
+type GetRecordsRequest struct {
+	Fqdn string `json:"fqdn,omitempty"`
+}
+
+// ChangeRecordsRequest data representation for data change request.
 type ChangeRecordsRequest struct {
 	Fqdn    string     `json:"fqdn,omitempty"`
 	Records RecordList `json:"records,omitempty"`
@@ -81,8 +86,15 @@ type RecordList struct {
 	TXT []Record `json:"TXT,omitempty"`
 }
 
-// Record record structure.
+// Record data representation for TXT record.
 type Record struct {
-	Priority int    `json:"priority,omitempty"`
 	Value    string `json:"value,omitempty"`
+	Data     string `json:"txtdata,omitempty"`
+	Priority int    `json:"priority,omitempty"`
+	TTL      int    `json:"ttl,omitempty"`
+}
+
+type GetRecordsResult struct {
+	Fqdn    string     `json:"fqdn"`
+	Records RecordList `json:"records"`
 }

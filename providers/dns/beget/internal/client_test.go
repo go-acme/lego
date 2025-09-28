@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,7 +17,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 			client := NewClient("user", "secret")
 
 			client.HTTPClient = server.Client()
-			client.baseURL, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
@@ -28,64 +29,75 @@ func mockBuilder() *servermock.Builder[*Client] {
 	)
 }
 
-func TestClient_AddTXTRecord(t *testing.T) {
+func TestClient_GetTXTRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /dns/changeRecords",
-			servermock.ResponseFromFixture("changeRecords.json"),
+		Route("GET /dns/getData",
+			servermock.ResponseFromFixture("getData-real.json"),
 			servermock.CheckQueryParameter().
-				With("input_data", `{"fqdn":"sub.example.com","records":{"TXT":[{"priority":10,"value":"txtTXTtxt"}]}}`),
+				With("input_data", `{"fqdn":"example.com"}`),
 		).
 		Build(t)
 
-	err := client.AddTXTRecord(context.Background(), "example.com", "sub", "txtTXTtxt")
+	data, err := client.GetTXTRecords(context.Background(), "example.com")
+	require.NoError(t, err)
+
+	expected := []Record{{Data: "v=spf1 redirect=beget.com", TTL: 300}}
+
+	assert.Equal(t, expected, data)
+}
+
+func TestClient_ChangeTXTRecord(t *testing.T) {
+	client := mockBuilder().
+		Route("GET /dns/changeRecords",
+			servermock.ResponseFromFixture("changeRecords-doc.json"),
+			servermock.CheckQueryParameter().
+				With("input_data", `{"fqdn":"sub.example.com","records":{"TXT":[{"value":"txtTXTtxt","priority":10,"ttl":300}]}}`),
+		).
+		Build(t)
+
+	records := []Record{{Value: "txtTXTtxt", TTL: 300, Priority: 10}}
+
+	err := client.ChangeTXTRecord(context.Background(), "sub.example.com", records)
 	require.NoError(t, err)
 }
 
-func TestClient_AddTXTRecord_error(t *testing.T) {
+func TestClient_ChangeTXTRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/changeRecords",
 			servermock.ResponseFromFixture("error.json")).
 		Build(t)
 
-	err := client.AddTXTRecord(context.Background(), "example.com", "sub", "txtTXTtxt")
+	records := []Record{{Data: "txtTXTtxt", TTL: 300}}
+
+	err := client.ChangeTXTRecord(context.Background(), "sub.example.com", records)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "API error: NO_SUCH_METHOD: No such method")
 }
 
-func TestClient_AddTXTRecord_answer_error(t *testing.T) {
+func TestClient_ChangeTXTRecord_answer_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/changeRecords",
 			servermock.ResponseFromFixture("answer_error.json")).
 		Build(t)
 
-	err := client.AddTXTRecord(context.Background(), "example.com", "sub", "txtTXTtxt")
+	records := []Record{{Data: "txtTXTtxt", TTL: 300}}
+
+	err := client.ChangeTXTRecord(context.Background(), "sub.example.com", records)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "API answer error: INVALID_DATA: Login length cannot be greater than 12 characters")
 }
 
-func TestClient_RemoveTxtRecord(t *testing.T) {
+func TestClient_ChangeTXTRecord_remove(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/changeRecords",
-			servermock.ResponseFromFixture("changeRecords.json"),
+			servermock.ResponseFromFixture("changeRecords-doc.json"),
 			servermock.CheckQueryParameter().
 				With("input_data", `{"fqdn":"sub.example.com","records":{}}`),
 		).
 		Build(t)
 
-	err := client.RemoveTxtRecord(context.Background(), "example.com", "sub")
+	err := client.ChangeTXTRecord(context.Background(), "sub.example.com", nil)
 	require.NoError(t, err)
-}
-
-func TestClient_RemoveTxtRecord_error(t *testing.T) {
-	client := mockBuilder().
-		Route("GET /dns/changeRecords",
-			servermock.ResponseFromFixture("error.json")).
-		Build(t)
-
-	err := client.RemoveTxtRecord(context.Background(), "example.com", "sub")
-	require.Error(t, err)
-
-	require.EqualError(t, err, "API error: NO_SUCH_METHOD: No such method")
 }

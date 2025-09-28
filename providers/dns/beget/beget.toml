@@ -15,8 +15,8 @@ lego --email you@example.com --dns beget --domains my.example.org run
     BEGET_USERNAME = "API username"
     BEGET_PASSWORD = "API password"
   [Configuration.Additional]
-    BEGET_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
-    BEGET_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    BEGET_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 30)"
+    BEGET_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 300)"
     BEGET_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
     BEGET_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 

@@ -4,8 +4,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"maps"
-	"net"
 	"slices"
 	"time"
 
@@ -37,23 +35,7 @@ func (o *OrderService) New(domains []string) (acme.ExtendedOrder, error) {
 
 // NewWithOptions Creates a new order.
 func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acme.ExtendedOrder, error) {
-	uniqIdentifiers := make(map[string]acme.Identifier)
-
-	for _, domain := range domains {
-		if _, ok := uniqIdentifiers[domain]; ok {
-			continue
-		}
-
-		ident := acme.Identifier{Value: domain, Type: "dns"}
-
-		if net.ParseIP(domain) != nil {
-			ident.Type = "ip"
-		}
-
-		uniqIdentifiers[domain] = ident
-	}
-
-	orderReq := acme.Order{Identifiers: slices.Collect(maps.Values(uniqIdentifiers))}
+	orderReq := acme.Order{Identifiers: createIdentifiers(domains)}
 
 	if opts != nil {
 		if !opts.NotAfter.IsZero() {

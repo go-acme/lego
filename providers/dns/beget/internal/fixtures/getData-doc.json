@@ -1,0 +1,58 @@
+{
+  "status": "success",
+  "answer": {
+    "status": "success",
+    "result": {
+      "is_under_control": 1,
+      "is_beget_dns": 1,
+      "is_subdomain": 0,
+      "fqdn": "beget.ru",
+      "records": {
+        "DNS": [
+          {
+            "value": "ns1.beget.ru",
+            "priority": 10
+          },
+          {
+            "value": "ns2.beget.ru",
+            "priority": 20
+          }
+        ],
+        "DNS_IP": [
+          {
+            "value": null,
+            "priority": 10
+          },
+          {
+            "value": null,
+            "priority": 20
+          }
+        ],
+        "A": [
+          {
+            "value": "91.106.201.65",
+            "priority": "0"
+          }
+        ],
+        "MX": [
+          {
+            "value": "mx1.beget.ru",
+            "priority": "10"
+          },
+          {
+            "value": "mx2.beget.ru",
+            "priority": "20"
+          }
+        ],
+        "TXT": [
+          {
+            "value": "",
+            "priority": 0
+          }
+        ]
+      },
+      "set_type": 1
+    }
+  }
+}
+

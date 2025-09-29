@@ -1,0 +1,67 @@
+{
+  "status": "success",
+  "answer": {
+    "status": "success",
+    "result": {
+      "is_under_control": true,
+      "is_beget_dns": true,
+      "is_subdomain": false,
+      "fqdn": "_acme-challenge.example.com",
+      "records": {
+        "MX": [
+          {
+            "ttl": 300,
+            "exchange": "mx2.beget.com.",
+            "preference": 20
+          },
+          {
+            "ttl": 300,
+            "exchange": "mx1.beget.com.",
+            "preference": 10
+          }
+        ],
+        "TXT": [
+          {
+            "ttl": 300,
+            "txtdata": "foo"
+          }
+        ],
+        "A": [
+          {
+            "ttl": 300,
+            "address": "1.2.3.4"
+          }
+        ],
+        "DNS": [
+          {
+            "value": "ns1.beget.pro"
+          },
+          {
+            "value": "ns2.beget.pro"
+          },
+          {
+            "value": "ns1.beget.com"
+          },
+          {
+            "value": "ns2.beget.com"
+          }
+        ],
+        "DNS_IP": [
+          {
+            "value": ""
+          },
+          {
+            "value": ""
+          },
+          {
+            "value": ""
+          },
+          {
+            "value": ""
+          }
+        ]
+      },
+      "set_type": 1
+    }
+  }
+}

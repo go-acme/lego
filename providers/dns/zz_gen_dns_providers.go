@@ -19,6 +19,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/azure"
 	"github.com/go-acme/lego/v4/providers/dns/azuredns"
 	"github.com/go-acme/lego/v4/providers/dns/baiducloud"
+	"github.com/go-acme/lego/v4/providers/dns/beget"
 	"github.com/go-acme/lego/v4/providers/dns/binarylane"
 	"github.com/go-acme/lego/v4/providers/dns/bindman"
 	"github.com/go-acme/lego/v4/providers/dns/bluecat"
@@ -199,6 +200,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return azuredns.NewDNSProvider()
 	case "baiducloud":
 		return baiducloud.NewDNSProvider()
+	case "beget":
+		return beget.NewDNSProvider()
 	case "binarylane":
 		return binarylane.NewDNSProvider()
 	case "bindman":

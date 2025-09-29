@@ -25,6 +25,7 @@ func allDNSCodes() string {
 		"azure",
 		"azuredns",
 		"baiducloud",
+		"beget",
 		"binarylane",
 		"bindman",
 		"bluecat",
@@ -450,6 +451,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/baiducloud`)
+
+	case "beget":
+		// generated from: providers/dns/beget/beget.toml
+		ew.writeln(`Configuration for Beget.com.`)
+		ew.writeln(`Code:	'beget'`)
+		ew.writeln(`Since:	'v4.27.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "BEGET_PASSWORD":	API password`)
+		ew.writeln(`	- "BEGET_USERNAME":	API username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "BEGET_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "BEGET_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 30)`)
+		ew.writeln(`	- "BEGET_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 300)`)
+		ew.writeln(`	- "BEGET_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/beget`)
 
 	case "binarylane":
 		// generated from: providers/dns/binarylane/binarylane.toml

@@ -5,6 +5,11 @@ on:
     tags:
       - v*
 
+permissions:
+  # Allow the workflow to write attestations.
+  id-token: write
+  attestations: write
+
 jobs:
 
   release:
@@ -66,9 +71,16 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          version: v2.8.1
+          version: v2.12.3
           args: release -p 1 --clean --timeout=90m
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_REPO }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
           AUR_KEY: ${{ secrets.AUR_KEY }}
+
+      - uses: actions/attest-build-provenance@v3
+        with:
+          subject-checksums: ./dist/checksums.txt
+      - uses: actions/attest-build-provenance@v3
+        with:
+          subject-checksums: ./dist/digests.txt

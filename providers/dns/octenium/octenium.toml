@@ -1,0 +1,22 @@
+Name = "Octenium"
+Description = ''''''
+URL = "https://octenium.com/"
+Code = "octenium"
+Since = "v4.27.0"
+
+Example = '''
+OCTENIUM_API_KEY="xxx" \
+lego --email you@example.com --dns octenium -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    OCTENIUM_API_KEY = "API key"
+  [Configuration.Additional]
+    OCTENIUM_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    OCTENIUM_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    OCTENIUM_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    OCTENIUM_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://octenium.com/api#tag/Domains-DNS"

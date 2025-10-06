@@ -1,0 +1,15 @@
+{
+  "api-status": "success",
+  "api-response": [
+    {
+      "domains": {
+        "2976": {
+          "domain-name": "example.com",
+          "registration-date": "12/09/2021",
+          "expiration-date": "12/09/2024",
+          "status": "active"
+        }
+      }
+    }
+  ]
+}

@@ -57,7 +57,7 @@ func (c *Client) ListDomains(ctx context.Context, domain string) (map[string]Dom
 		return nil, err
 	}
 
-	var result APIResponse[[]DomainsResponse]
+	var result APIResponse[DomainsResponse]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -68,14 +68,7 @@ func (c *Client) ListDomains(ctx context.Context, domain string) (map[string]Dom
 		return nil, fmt.Errorf("unexpected status: %s", result.Status)
 	}
 
-	allDomains := make(map[string]Domain)
-	for _, domains := range result.Response {
-		for k, v := range domains.Domains {
-			allDomains[k] = v
-		}
-	}
-
-	return allDomains, nil
+	return result.Response.Domains, nil
 }
 
 // ListDNSRecords retrieves a list of DNS records.

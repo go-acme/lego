@@ -162,7 +162,6 @@ func TestDNSProvider_Present(t *testing.T) {
 				With("ttl", "120").
 				With("type", "TXT").
 				With("value", "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI")).
-		Route("/", servermock.DumpRequest()).
 		Build(t)
 
 	err := provider.Present("example.com", "", "foobar")

@@ -138,7 +138,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("octenium: unknown domain ID for '%s'", info.EffectiveFQDN)
 	}
 
-	records, err := d.client.ListDNSRecords(context.Background(), domainID)
+	records, err := d.client.ListDNSRecords(context.Background(), domainID, "TXT")
 	if err != nil {
 		return fmt.Errorf("octenium: list records: %w", err)
 	}

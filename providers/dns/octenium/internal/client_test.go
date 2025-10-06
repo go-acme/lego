@@ -74,10 +74,11 @@ func TestClient_ListDNSRecords(t *testing.T) {
 		Route("POST /domains/dns-records/list",
 			servermock.ResponseFromFixture("list_dns_records.json"),
 			servermock.CheckQueryParameter().Strict().
-				With("order-id", "abc")).
+				With("order-id", "abc").
+				With("types[]", "TXT")).
 		Build(t)
 
-	records, err := client.ListDNSRecords(t.Context(), "abc")
+	records, err := client.ListDNSRecords(t.Context(), "abc", "TXT")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -95,7 +96,7 @@ func TestClient_ListDNSRecords_error(t *testing.T) {
 			servermock.Noop().WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
-	_, err := client.ListDNSRecords(t.Context(), "abc")
+	_, err := client.ListDNSRecords(t.Context(), "abc", "TXT")
 	require.EqualError(t, err, "unexpected status code: [status code: 400] body: ")
 }
 
@@ -105,7 +106,7 @@ func TestClient_ListDNSRecords_api_error(t *testing.T) {
 			servermock.ResponseFromFixture("error.json")).
 		Build(t)
 
-	_, err := client.ListDNSRecords(t.Context(), "abc")
+	_, err := client.ListDNSRecords(t.Context(), "abc", "TXT")
 	require.EqualError(t, err, "unexpected status: error: missing required fields (type, name, ttl)")
 }
 

@@ -64,11 +64,12 @@ func (c *Client) ListDomains(ctx context.Context, domain string) (map[string]Dom
 
 // ListDNSRecords retrieves a list of DNS records.
 // https://octenium.com/api#tag/Domains-DNS/operation/domains-dns-records-list
-func (c *Client) ListDNSRecords(ctx context.Context, orderID string) ([]Record, error) {
+func (c *Client) ListDNSRecords(ctx context.Context, orderID, recordType string) ([]Record, error) {
 	endpoint := c.BaseURL.JoinPath("domains", "dns-records", "list")
 
 	query := endpoint.Query()
 	query.Set("order-id", orderID)
+	query.Set("types[]", recordType)
 	endpoint.RawQuery = query.Encode()
 
 	result := &ListRecordsResponse{}

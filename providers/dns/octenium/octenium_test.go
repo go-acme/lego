@@ -174,7 +174,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		Route("POST /domains/dns-records/list",
 			servermock.ResponseFromFixture("list_dns_records.json"),
 			servermock.CheckQueryParameter().Strict().
-				With("order-id", "2976")).
+				With("order-id", "2976").
+				With("types[]", "TXT")).
 		Route("POST /domains/dns-records/delete",
 			servermock.ResponseFromFixture("delete_dns_record.json"),
 			servermock.CheckQueryParameter().Strict().

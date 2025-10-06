@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strconv"
 	"time"
@@ -130,6 +131,11 @@ func (c *Client) doRequest(ctx context.Context, method string, endpoint *url.URL
 	}
 
 	req.Header.Set("Accept", "application/json")
+
+	// FIXME debug
+	dumpReq, _ := httputil.DumpRequest(req, false)
+	fmt.Println(string(dumpReq))
+
 	req.Header.Set("X-Api-Key", c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)

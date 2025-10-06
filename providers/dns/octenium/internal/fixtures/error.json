@@ -1,0 +1,5 @@
+{
+  "api-status": "error",
+  "api-response": [],
+  "api-error": "missing required fields (type, name, ttl)"
+}

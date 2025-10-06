@@ -59,14 +59,14 @@ func TestClient_ListDomains_error(t *testing.T) {
 	require.EqualError(t, err, "unexpected status code: [status code: 400] body: ")
 }
 
-func TestClient_ListDomains_unexpected_status(t *testing.T) {
+func TestClient_ListDomains_api_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains",
-			servermock.ResponseFromFixture("unexpected_status.json")).
+			servermock.ResponseFromFixture("error.json")).
 		Build(t)
 
 	_, err := client.ListDomains(t.Context(), "example.com")
-	require.EqualError(t, err, "unexpected status: xxx")
+	require.EqualError(t, err, "unexpected status: error: missing required fields (type, name, ttl)")
 }
 
 func TestClient_ListDNSRecords(t *testing.T) {
@@ -99,14 +99,14 @@ func TestClient_ListDNSRecords_error(t *testing.T) {
 	require.EqualError(t, err, "unexpected status code: [status code: 400] body: ")
 }
 
-func TestClient_ListDNSRecords_unexpected_status(t *testing.T) {
+func TestClient_ListDNSRecords_api_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/list",
-			servermock.ResponseFromFixture("unexpected_status.json")).
+			servermock.ResponseFromFixture("error.json")).
 		Build(t)
 
 	_, err := client.ListDNSRecords(t.Context(), "abc")
-	require.EqualError(t, err, "unexpected status: xxx")
+	require.EqualError(t, err, "unexpected status: error: missing required fields (type, name, ttl)")
 }
 
 func TestClient_AddDNSRecord(t *testing.T) {
@@ -158,10 +158,10 @@ func TestClient_AddDNSRecord_error(t *testing.T) {
 	require.EqualError(t, err, "unexpected status code: [status code: 400] body: ")
 }
 
-func TestClient_AddDNSRecord_unexpected_status(t *testing.T) {
+func TestClient_AddDNSRecord_api_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/add",
-			servermock.ResponseFromFixture("unexpected_status.json")).
+			servermock.ResponseFromFixture("error.json")).
 		Build(t)
 
 	record := Record{
@@ -172,7 +172,7 @@ func TestClient_AddDNSRecord_unexpected_status(t *testing.T) {
 	}
 
 	_, err := client.AddDNSRecord(t.Context(), "abc", record)
-	require.EqualError(t, err, "unexpected status: xxx")
+	require.EqualError(t, err, "unexpected status: error: missing required fields (type, name, ttl)")
 }
 
 func TestClient_DeleteDNSRecord(t *testing.T) {
@@ -205,12 +205,12 @@ func TestClient_DeleteDNSRecord_error(t *testing.T) {
 	require.EqualError(t, err, "unexpected status code: [status code: 400] body: ")
 }
 
-func TestClient_DeleteDNSRecord_unexpected_status(t *testing.T) {
+func TestClient_DeleteDNSRecord_api_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/delete",
-			servermock.ResponseFromFixture("unexpected_status.json")).
+			servermock.ResponseFromFixture("error.json")).
 		Build(t)
 
 	_, err := client.DeleteDNSRecord(t.Context(), "abc", 123)
-	require.EqualError(t, err, "unexpected status: xxx")
+	require.EqualError(t, err, "unexpected status: error: missing required fields (type, name, ttl)")
 }

@@ -1,8 +1,11 @@
 package internal
 
-type APIResponse[T any] struct {
-	Status   string `json:"api-status,omitempty"`
-	Response T      `json:"api-response,omitempty"`
+import "encoding/json"
+
+type APIResponse struct {
+	Status   string          `json:"api-status,omitempty"`
+	Response json.RawMessage `json:"api-response,omitempty"`
+	Error    string          `json:"api-error,omitempty"`
 }
 
 type Domain struct {

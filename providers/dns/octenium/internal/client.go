@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -52,23 +51,14 @@ func (c *Client) ListDomains(ctx context.Context, domain string) (map[string]Dom
 	query.Set("domain-name", domain)
 	endpoint.RawQuery = query.Encode()
 
-	req, err := newJSONRequest(ctx, http.MethodGet, endpoint)
+	result := &DomainsResponse{}
+
+	err := c.doRequest(ctx, http.MethodGet, endpoint, result)
 	if err != nil {
 		return nil, err
 	}
 
-	var result APIResponse[DomainsResponse]
-
-	err = c.do(req, &result)
-	if err != nil {
-		return nil, err
-	}
-
-	if result.Status != statusSuccess {
-		return nil, fmt.Errorf("unexpected status: %s", result.Status)
-	}
-
-	return result.Response.Domains, nil
+	return result.Domains, nil
 }
 
 // ListDNSRecords retrieves a list of DNS records.
@@ -80,23 +70,14 @@ func (c *Client) ListDNSRecords(ctx context.Context, orderID string) ([]Record, 
 	query.Set("order-id", orderID)
 	endpoint.RawQuery = query.Encode()
 
-	req, err := newJSONRequest(ctx, http.MethodPost, endpoint)
+	result := &ListRecordsResponse{}
+
+	err := c.doRequest(ctx, http.MethodPost, endpoint, result)
 	if err != nil {
 		return nil, err
 	}
 
-	var result APIResponse[ListRecordsResponse]
-
-	err = c.do(req, &result)
-	if err != nil {
-		return nil, err
-	}
-
-	if result.Status != statusSuccess {
-		return nil, fmt.Errorf("unexpected status: %s", result.Status)
-	}
-
-	return result.Response.Records, nil
+	return result.Records, nil
 }
 
 // AddDNSRecord adds a DNS record.
@@ -112,23 +93,14 @@ func (c *Client) AddDNSRecord(ctx context.Context, orderID string, record Record
 	values.Set("order-id", orderID)
 	endpoint.RawQuery = values.Encode()
 
-	req, err := newJSONRequest(ctx, http.MethodPost, endpoint)
+	result := &AddRecordResponse{}
+
+	err = c.doRequest(ctx, http.MethodPost, endpoint, result)
 	if err != nil {
 		return nil, err
 	}
 
-	var result APIResponse[AddRecordResponse]
-
-	err = c.do(req, &result)
-	if err != nil {
-		return nil, err
-	}
-
-	if result.Status != statusSuccess {
-		return nil, fmt.Errorf("unexpected status: %s", result.Status)
-	}
-
-	return result.Response.Record, nil
+	return result.Record, nil
 }
 
 // DeleteDNSRecord deletes a DNS record.
@@ -141,25 +113,23 @@ func (c *Client) DeleteDNSRecord(ctx context.Context, orderID string, recordID i
 	query.Set("line", strconv.Itoa(recordID))
 	endpoint.RawQuery = query.Encode()
 
-	req, err := newJSONRequest(ctx, http.MethodPost, endpoint)
+	result := &DeleteRecordResponse{}
+
+	err := c.doRequest(ctx, http.MethodPost, endpoint, result)
 	if err != nil {
 		return nil, err
 	}
 
-	var result APIResponse[DeleteRecordResponse]
-	err = c.do(req, &result)
-	if err != nil {
-		return nil, err
-	}
-
-	if result.Status != statusSuccess {
-		return nil, fmt.Errorf("unexpected status: %s", result.Status)
-	}
-
-	return result.Response.Deleted, nil
+	return result.Deleted, nil
 }
 
-func (c *Client) do(req *http.Request, result any) error {
+func (c *Client) doRequest(ctx context.Context, method string, endpoint *url.URL, result any) error {
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), http.NoBody)
+	if err != nil {
+		return fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("X-Api-Key", c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)
@@ -175,32 +145,26 @@ func (c *Client) do(req *http.Request, result any) error {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	if result == nil {
-		return nil
-	}
-
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	err = json.Unmarshal(raw, result)
+	var response APIResponse
+
+	err = json.Unmarshal(raw, &response)
 	if err != nil {
 		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
-	return nil
-}
-
-func newJSONRequest(ctx context.Context, method string, endpoint *url.URL) (*http.Request, error) {
-	buf := new(bytes.Buffer)
-
-	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create request: %w", err)
+	if response.Status != statusSuccess {
+		return fmt.Errorf("unexpected status: %s: %s", response.Status, response.Error)
 	}
 
-	req.Header.Set("Accept", "application/json")
+	err = json.Unmarshal(response.Response, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, response.Response, err)
+	}
 
-	return req, nil
+	return nil
 }

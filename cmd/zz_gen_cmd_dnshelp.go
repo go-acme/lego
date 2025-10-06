@@ -125,6 +125,7 @@ func allDNSCodes() string {
 		"njalla",
 		"nodion",
 		"ns1",
+		"octenium",
 		"oraclecloud",
 		"otc",
 		"ovh",
@@ -2573,6 +2574,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/ns1`)
+
+	case "octenium":
+		// generated from: providers/dns/octenium/octenium.toml
+		ew.writeln(`Configuration for Octenium.`)
+		ew.writeln(`Code:	'octenium'`)
+		ew.writeln(`Since:	'v4.27.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "OCTENIUM_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "OCTENIUM_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "OCTENIUM_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "OCTENIUM_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "OCTENIUM_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/octenium`)
 
 	case "oraclecloud":
 		// generated from: providers/dns/oraclecloud/oraclecloud.toml

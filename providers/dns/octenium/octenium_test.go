@@ -161,7 +161,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.CheckForm().Strict().
 				With("order-id", "2976").
 				With("name", "_acme-challenge.example.com.").
-				With("ttl", "300").
+				With("ttl", "120").
 				With("type", "TXT").
 				With("value", "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI")).
 		Build(t)

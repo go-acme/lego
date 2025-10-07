@@ -1,0 +1,14 @@
+{
+  "api-status": "success",
+  "api-response": {
+    "record": {
+      "type": "A",
+      "name": "example.com.",
+      "ttl": 14400,
+      "value": "203.0.113.10",
+      "raw": {
+        "address": "203.0.113.10"
+      }
+    }
+  }
+}

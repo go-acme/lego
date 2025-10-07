@@ -1,0 +1,27 @@
+{
+  "api-status": "success",
+  "api-response": {
+    "records": [
+      {
+        "line": 31,
+        "type": "TXT",
+        "name": "_dmarc.example.com.",
+        "ttl": 300,
+        "value": "xxx",
+        "raw": {
+          "txtdata": "xxx"
+        }
+      },
+      {
+        "line": 123,
+        "type": "TXT",
+        "name": "_acme-challenge.example.com.",
+        "ttl": 300,
+        "value": "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI",
+        "raw": {
+          "txtdata": "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"
+        }
+      }
+    ]
+  }
+}

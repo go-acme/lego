@@ -1,0 +1,11 @@
+{
+  "api-status": "success",
+  "api-response": {
+    "deleted": {
+      "count": 1,
+      "lines": [
+        123
+      ]
+    }
+  }
+}

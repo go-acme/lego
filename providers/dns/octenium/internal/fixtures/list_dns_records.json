@@ -1,0 +1,38 @@
+{
+  "api-status": "success",
+  "api-response": {
+    "records": [
+      {
+        "line": 15,
+        "type": "A",
+        "name": "example.com.",
+        "ttl": 14400,
+        "value": "203.0.113.10",
+        "raw": {
+          "address": "203.0.113.10"
+        }
+      },
+      {
+        "line": 22,
+        "type": "MX",
+        "name": "example.com.",
+        "ttl": 14400,
+        "value": "10 mail.example.com.",
+        "raw": {
+          "preference": 10,
+          "exchange": "mail.example.com."
+        }
+      },
+      {
+        "line": 31,
+        "type": "TXT",
+        "name": "_dmarc.example.com.",
+        "ttl": 300,
+        "value": "v=DMARC1; p=none; rua=mailto:dmarc@example.com",
+        "raw": {
+          "txtdata": "v=DMARC1; p=none; rua=mailto:dmarc@example.com"
+        }
+      }
+    ]
+  }
+}

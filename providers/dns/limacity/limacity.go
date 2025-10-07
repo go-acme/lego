@@ -110,9 +110,11 @@ func (d *DNSProvider) Sequential() time.Duration {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	domains, err := d.client.GetDomains(context.Background())
+	domains, err := d.client.GetDomains(ctx)
 	if err != nil {
 		return fmt.Errorf("limacity: get domains: %w", err)
 	}
@@ -134,7 +136,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Type:    "TXT",
 	}
 
-	err = d.client.AddRecord(context.Background(), dom.ID, record)
+	err = d.client.AddRecord(ctx, dom.ID, record)
 	if err != nil {
 		return fmt.Errorf("limacity: add record: %w", err)
 	}
@@ -148,6 +150,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// gets the domain's unique ID
@@ -158,7 +162,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("limacity: unknown domain ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	records, err := d.client.GetRecords(context.Background(), domainID)
+	records, err := d.client.GetRecords(ctx, domainID)
 	if err != nil {
 		return fmt.Errorf("limacity: get records: %w", err)
 	}
@@ -175,7 +179,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return errors.New("limacity: TXT record not found")
 	}
 
-	err = d.client.DeleteRecord(context.Background(), domainID, recordID)
+	err = d.client.DeleteRecord(ctx, domainID, recordID)
 	if err != nil {
 		return fmt.Errorf("limacity: delete record (domain ID=%d, record ID=%d): %w", domainID, recordID, err)
 	}

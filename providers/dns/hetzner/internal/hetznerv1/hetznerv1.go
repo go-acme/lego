@@ -192,7 +192,7 @@ func (d *DNSProvider) waitAction(ctx context.Context, actionID int) error {
 				return fmt.Errorf("action %d is %s", actionID, internal.StatusRunning)
 
 			case internal.StatusError:
-				return fmt.Errorf("action %d: %s: %w", actionID, internal.StatusError, result.ErrorInfo)
+				return backoff.Permanent(fmt.Errorf("action %d: %s: %w", actionID, internal.StatusError, result.ErrorInfo))
 
 			default:
 				return nil

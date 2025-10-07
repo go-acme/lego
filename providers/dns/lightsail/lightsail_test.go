@@ -76,5 +76,5 @@ func TestDNSProvider_Present(t *testing.T) {
 	keyAuth := "123456d=="
 
 	err := provider.Present(domain, "", keyAuth)
-	require.NoError(t, err, "Expected Present to return no error")
+	require.NoError(t, err)
 }

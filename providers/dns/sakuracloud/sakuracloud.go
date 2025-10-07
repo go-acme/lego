@@ -2,6 +2,7 @@
 package sakuracloud
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -115,7 +116,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.addTXTRecord(info.EffectiveFQDN, info.Value, d.config.TTL)
+	err := d.addTXTRecord(context.Background(), info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("sakuracloud: %w", err)
 	}
@@ -127,7 +128,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.cleanupTXTRecord(info.EffectiveFQDN, info.Value)
+	err := d.cleanupTXTRecord(context.Background(), info.EffectiveFQDN, info.Value)
 	if err != nil {
 		return fmt.Errorf("sakuracloud: %w", err)
 	}

@@ -160,7 +160,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		Build(t)
 
 	err := provider.Present("example.com", "", "foobar")
-	require.NoError(t, err, "fail to create TXT record")
+	require.NoError(t, err)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
@@ -185,8 +185,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		Build(t)
 
 	err := provider.Present("example.com", "", "foobar")
-	require.NoError(t, err, "fail to create TXT record")
+	require.NoError(t, err)
 
 	err = provider.CleanUp("example.com", "", "foobar")
-	require.NoError(t, err, "fail to remove TXT record")
+	require.NoError(t, err)
 }

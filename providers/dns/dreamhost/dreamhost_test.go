@@ -151,7 +151,7 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 		Build(t)
 
 	err := provider.CleanUp("example.com", "", fakeChallengeToken)
-	require.NoError(t, err, "failed to remove TXT record")
+	require.NoError(t, err)
 }
 
 func TestLivePresentAndCleanUp(t *testing.T) {

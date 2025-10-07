@@ -250,7 +250,7 @@ func (d *DNSProvider) changeRecord(ctx context.Context, action awstypes.ChangeAc
 	changeID := resp.ChangeInfo.Id
 
 	if d.config.WaitForRecordSetsChanged {
-		return wait.Retry(context.Background(),
+		return wait.Retry(ctx,
 			func() error {
 				resp, err := d.client.GetChange(ctx, &route53.GetChangeInput{Id: changeID})
 				if err != nil {

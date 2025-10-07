@@ -152,9 +152,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneName, err := d.getHostedZone(info.EffectiveFQDN)
+	zoneName, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("alicloud: %w", err)
 	}
@@ -164,7 +166,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	_, err = alidns.AddDomainRecordWithContext(context.Background(), d.client, recordRequest, &dara.RuntimeOptions{})
+	_, err = alidns.AddDomainRecordWithContext(ctx, d.client, recordRequest, &dara.RuntimeOptions{})
 	if err != nil {
 		return fmt.Errorf("alicloud: API call failed: %w", err)
 	}
@@ -173,14 +175,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	records, err := d.findTxtRecords(info.EffectiveFQDN)
+	records, err := d.findTxtRecords(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("alicloud: %w", err)
 	}
 
-	_, err = d.getHostedZone(info.EffectiveFQDN)
+	_, err = d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("alicloud: %w", err)
 	}
@@ -190,7 +194,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			RecordId: rec.RecordId,
 		}
 
-		_, err = alidns.DeleteDomainRecordWithContext(context.Background(), d.client, request, &dara.RuntimeOptions{})
+		_, err = alidns.DeleteDomainRecordWithContext(ctx, d.client, request, &dara.RuntimeOptions{})
 		if err != nil {
 			return fmt.Errorf("alicloud: %w", err)
 		}
@@ -199,7 +203,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) getHostedZone(domain string) (string, error) {
+func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string, error) {
 	request := new(alidns.DescribeDomainsRequest)
 
 	var domains []*alidns.DescribeDomainsResponseBodyDomainsDomain
@@ -209,7 +213,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	for {
 		request.SetPageNumber(startPage)
 
-		response, err := alidns.DescribeDomainsWithContext(context.Background(), d.client, request, &dara.RuntimeOptions{})
+		response, err := alidns.DescribeDomainsWithContext(ctx, d.client, request, &dara.RuntimeOptions{})
 		if err != nil {
 			return "", fmt.Errorf("API call failed: %w", err)
 		}
@@ -256,8 +260,8 @@ func (d *DNSProvider) newTxtRecord(zone, fqdn, value string) (*alidns.AddDomainR
 		SetTTL(int64(d.config.TTL)), nil
 }
 
-func (d *DNSProvider) findTxtRecords(fqdn string) ([]*alidns.DescribeDomainRecordsResponseBodyDomainRecordsRecord, error) {
-	zoneName, err := d.getHostedZone(fqdn)
+func (d *DNSProvider) findTxtRecords(ctx context.Context, fqdn string) ([]*alidns.DescribeDomainRecordsResponseBodyDomainRecordsRecord, error) {
+	zoneName, err := d.getHostedZone(ctx, fqdn)
 	if err != nil {
 		return nil, err
 	}
@@ -268,7 +272,7 @@ func (d *DNSProvider) findTxtRecords(fqdn string) ([]*alidns.DescribeDomainRecor
 
 	var records []*alidns.DescribeDomainRecordsResponseBodyDomainRecordsRecord
 
-	result, err := alidns.DescribeDomainRecordsWithContext(context.Background(), d.client, request, &dara.RuntimeOptions{})
+	result, err := alidns.DescribeDomainRecordsWithContext(ctx, d.client, request, &dara.RuntimeOptions{})
 	if err != nil {
 		return records, fmt.Errorf("API call has failed: %w", err)
 	}

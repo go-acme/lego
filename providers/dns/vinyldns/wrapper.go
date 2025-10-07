@@ -43,7 +43,7 @@ func (d *DNSProvider) getRecordSet(fqdn string) (*vinyldns.RecordSet, error) {
 	}
 }
 
-func (d *DNSProvider) createRecordSet(fqdn string, records []vinyldns.Record) error {
+func (d *DNSProvider) createRecordSet(ctx context.Context, fqdn string, records []vinyldns.Record) error {
 	zoneName, hostName, err := splitDomain(fqdn)
 	if err != nil {
 		return err
@@ -67,10 +67,10 @@ func (d *DNSProvider) createRecordSet(fqdn string, records []vinyldns.Record) er
 		return err
 	}
 
-	return d.waitForChanges("CreateRS", resp)
+	return d.waitForChanges(ctx, "CreateRS", resp)
 }
 
-func (d *DNSProvider) updateRecordSet(recordSet *vinyldns.RecordSet, newRecords []vinyldns.Record) error {
+func (d *DNSProvider) updateRecordSet(ctx context.Context, recordSet *vinyldns.RecordSet, newRecords []vinyldns.Record) error {
 	operation := "delete"
 	if len(recordSet.Records) < len(newRecords) {
 		operation = "add"
@@ -84,20 +84,20 @@ func (d *DNSProvider) updateRecordSet(recordSet *vinyldns.RecordSet, newRecords 
 		return err
 	}
 
-	return d.waitForChanges("UpdateRS - "+operation, resp)
+	return d.waitForChanges(ctx, "UpdateRS - "+operation, resp)
 }
 
-func (d *DNSProvider) deleteRecordSet(existingRecord *vinyldns.RecordSet) error {
+func (d *DNSProvider) deleteRecordSet(ctx context.Context, existingRecord *vinyldns.RecordSet) error {
 	resp, err := d.client.RecordSetDelete(existingRecord.ZoneID, existingRecord.ID)
 	if err != nil {
 		return err
 	}
 
-	return d.waitForChanges("DeleteRS", resp)
+	return d.waitForChanges(ctx, "DeleteRS", resp)
 }
 
-func (d *DNSProvider) waitForChanges(operation string, resp *vinyldns.RecordSetUpdateResponse) error {
-	return wait.Retry(context.Background(),
+func (d *DNSProvider) waitForChanges(ctx context.Context, operation string, resp *vinyldns.RecordSetUpdateResponse) error {
+	return wait.Retry(ctx,
 		func() error {
 			change, err := d.client.RecordSetChange(resp.Zone.ID, resp.RecordSet.ID, resp.ChangeID)
 			if err != nil {

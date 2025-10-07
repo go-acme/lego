@@ -38,7 +38,7 @@ func TestClient_GetDNSRecords_Live(t *testing.T) {
 	info := dns01.GetChallengeInfo(envTest.GetDomain(), "123d==")
 
 	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	require.NoError(t, err, "error finding DNSZone")
+	require.NoError(t, err)
 
 	zone = dns01.UnFqdn(zone)
 
@@ -103,7 +103,7 @@ func TestClient_UpdateDNSRecord_Live(t *testing.T) {
 
 	// Tear down
 	err = client.UpdateDNSRecord(ctx, envTest.GetDomain(), []DNSRecord{records[recordIdx]})
-	require.NoError(t, err, "Did not remove record! Please do so yourself.")
+	require.NoError(t, err)
 
 	err = client.Logout(ctx)
 	require.NoError(t, err)

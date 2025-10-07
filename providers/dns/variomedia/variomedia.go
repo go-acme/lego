@@ -180,7 +180,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func (d *DNSProvider) waitJob(ctx context.Context, domain, id string) error {
-	return wait.Retry(context.Background(),
+	return wait.Retry(ctx,
 		func() error {
 			result, err := d.client.GetJob(ctx, id)
 			if err != nil {

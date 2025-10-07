@@ -163,7 +163,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // waitNameservers At the time of writing 4 servers are found as authoritative, but 8 are reported during the sync.
 // If this is not done, the secondary verification done by Let's Encrypt server will fail quire a bit.
 func (d *DNSProvider) waitNameservers(ctx context.Context, domain string, zone *internal.Zone) error {
-	return wait.Retry(context.Background(),
+	return wait.Retry(ctx,
 		func() error {
 			syncProgress, err := d.client.GetUpdateStatus(ctx, zone.Name)
 			if err != nil {

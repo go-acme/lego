@@ -25,7 +25,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().
-			WithJSONHeaders().
+			WithAccept("application/json").
 			With("X-Api-Key", "secret"),
 	)
 }
@@ -74,7 +74,9 @@ func TestClient_ListDNSRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/list",
 			servermock.ResponseFromFixture("list_dns_records.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock.CheckHeader().
+				WithContentType("application/x-www-form-urlencoded"),
+			servermock.CheckForm().Strict().
 				With("order-id", "abc").
 				With("types[]", "TXT")).
 		Build(t)
@@ -115,7 +117,9 @@ func TestClient_AddDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/add",
 			servermock.ResponseFromFixture("add_dns_record.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock.CheckHeader().
+				WithContentType("application/x-www-form-urlencoded"),
+			servermock.CheckForm().Strict().
 				With("order-id", "abc").
 				With("name", "example.com.").
 				With("ttl", "120").
@@ -181,7 +185,9 @@ func TestClient_DeleteDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/delete",
 			servermock.ResponseFromFixture("delete_dns_record.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock.CheckHeader().
+				WithContentType("application/x-www-form-urlencoded"),
+			servermock.CheckForm().Strict().
 				With("order-id", "abc").
 				With("line", "123")).
 		Build(t)

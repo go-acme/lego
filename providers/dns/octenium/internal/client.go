@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
@@ -48,13 +48,18 @@ func NewClient(apiKey string) (*Client, error) {
 func (c *Client) ListDomains(ctx context.Context, domain string) (map[string]Domain, error) {
 	endpoint := c.BaseURL.JoinPath("domains")
 
-	query := endpoint.Query()
-	query.Set("domain-name", domain)
-	endpoint.RawQuery = query.Encode()
+	data := endpoint.Query()
+	data.Set("domain-name", domain)
+	endpoint.RawQuery = data.Encode()
+
+	req, err := newRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	result := &DomainsResponse{}
 
-	err := c.doRequest(ctx, http.MethodGet, endpoint, result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
@@ -67,14 +72,18 @@ func (c *Client) ListDomains(ctx context.Context, domain string) (map[string]Dom
 func (c *Client) ListDNSRecords(ctx context.Context, orderID, recordType string) ([]Record, error) {
 	endpoint := c.BaseURL.JoinPath("domains", "dns-records", "list")
 
-	query := endpoint.Query()
-	query.Set("order-id", orderID)
-	query.Set("types[]", recordType)
-	endpoint.RawQuery = query.Encode()
+	data := make(url.Values)
+	data.Set("order-id", orderID)
+	data.Set("types[]", recordType)
+
+	req, err := newRequest(ctx, http.MethodPost, endpoint, data)
+	if err != nil {
+		return nil, err
+	}
 
 	result := &ListRecordsResponse{}
 
-	err := c.doRequest(ctx, http.MethodPost, endpoint, result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
@@ -87,17 +96,21 @@ func (c *Client) ListDNSRecords(ctx context.Context, orderID, recordType string)
 func (c *Client) AddDNSRecord(ctx context.Context, orderID string, record Record) (*Record, error) {
 	endpoint := c.BaseURL.JoinPath("domains", "dns-records", "add")
 
-	values, err := querystring.Values(record)
+	data, err := querystring.Values(record)
 	if err != nil {
 		return nil, err
 	}
 
-	values.Set("order-id", orderID)
-	endpoint.RawQuery = values.Encode()
+	data.Set("order-id", orderID)
+
+	req, err := newRequest(ctx, http.MethodPost, endpoint, data)
+	if err != nil {
+		return nil, err
+	}
 
 	result := &AddRecordResponse{}
 
-	err = c.doRequest(ctx, http.MethodPost, endpoint, result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
@@ -110,14 +123,18 @@ func (c *Client) AddDNSRecord(ctx context.Context, orderID string, record Record
 func (c *Client) DeleteDNSRecord(ctx context.Context, orderID string, recordID int) (*DeletedRecordInfo, error) {
 	endpoint := c.BaseURL.JoinPath("domains", "dns-records", "delete")
 
-	query := endpoint.Query()
-	query.Set("order-id", orderID)
-	query.Set("line", strconv.Itoa(recordID))
-	endpoint.RawQuery = query.Encode()
+	data := make(url.Values)
+	data.Set("order-id", orderID)
+	data.Set("line", strconv.Itoa(recordID))
+
+	req, err := newRequest(ctx, http.MethodPost, endpoint, data)
+	if err != nil {
+		return nil, err
+	}
 
 	result := &DeleteRecordResponse{}
 
-	err := c.doRequest(ctx, http.MethodPost, endpoint, result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
@@ -125,18 +142,7 @@ func (c *Client) DeleteDNSRecord(ctx context.Context, orderID string, recordID i
 	return result.Deleted, nil
 }
 
-func (c *Client) doRequest(ctx context.Context, method string, endpoint *url.URL, result any) error {
-	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), http.NoBody)
-	if err != nil {
-		return fmt.Errorf("unable to create request: %w", err)
-	}
-
-	req.Header.Set("Accept", "application/json")
-
-	// FIXME debug
-	dumpReq, _ := httputil.DumpRequest(req, false)
-	fmt.Println(string(dumpReq))
-
+func (c *Client) do(req *http.Request, result any) error {
 	req.Header.Set("X-Api-Key", c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)
@@ -174,4 +180,25 @@ func (c *Client) doRequest(ctx context.Context, method string, endpoint *url.URL
 	}
 
 	return nil
+}
+
+func newRequest(ctx context.Context, method string, endpoint *url.URL, payload url.Values) (*http.Request, error) {
+	var body io.Reader = http.NoBody
+
+	if method == http.MethodPost {
+		body = strings.NewReader(payload.Encode())
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), body)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if method == http.MethodPost && payload != nil {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
+
+	return req, nil
 }

@@ -43,7 +43,8 @@ func TestClient_ListDomains(t *testing.T) {
 
 	expected := map[string]Domain{
 		"2976": {DomainName: "example.com", RegistrationDate: "12/09/2021", ExpirationDate: "12/09/2024", Status: "active"},
-		"2977": {DomainName: "example2.com", RegistrationDate: "01/10/2021", ExpirationDate: "01/10/2024", Status: "active"},
+		"2977": {DomainName: "example.org", RegistrationDate: "01/10/2021", ExpirationDate: "01/10/2024", Status: "active"},
+		"2978": {DomainName: "example.net", RegistrationDate: "21/08/2025", ExpirationDate: "-", Status: "active"},
 	}
 
 	assert.Equal(t, expected, domains)

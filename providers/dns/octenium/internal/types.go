@@ -34,6 +34,7 @@ type AddRecordResponse struct {
 type ListRecordsResponse struct {
 	Records []Record `json:"records"`
 }
+
 type DeleteRecordResponse struct {
 	Deleted *DeletedRecordInfo `json:"deleted"`
 }

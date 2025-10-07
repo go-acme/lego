@@ -32,14 +32,14 @@ type AddRecordResponse struct {
 }
 
 type ListRecordsResponse struct {
-	Records []Record `json:"records"`
+	Records []Record `json:"records,omitempty"`
 }
 
 type DeleteRecordResponse struct {
-	Deleted *DeletedRecordInfo `json:"deleted"`
+	Deleted *DeletedRecordInfo `json:"deleted,omitempty"`
 }
 
 type DeletedRecordInfo struct {
-	Count int   `json:"count"`
-	Lines []int `json:"lines"`
+	Count int   `json:"count,omitempty"`
+	Lines []int `json:"lines,omitempty"`
 }

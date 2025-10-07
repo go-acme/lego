@@ -138,6 +138,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	d.domainIDsMu.Lock()
@@ -147,7 +149,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("octenium: unknown domain ID for '%s'", info.EffectiveFQDN)
 	}
 
-	records, err := d.client.ListDNSRecords(context.Background(), domainID, "TXT")
+	records, err := d.client.ListDNSRecords(ctx, domainID, "TXT")
 	if err != nil {
 		return fmt.Errorf("octenium: list records: %w", err)
 	}
@@ -157,7 +159,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			continue
 		}
 
-		_, err = d.client.DeleteDNSRecord(context.Background(), domainID, record.ID)
+		_, err = d.client.DeleteDNSRecord(ctx, domainID, record.ID)
 		if err != nil {
 			return fmt.Errorf("octenium: delete record: %w", err)
 		}

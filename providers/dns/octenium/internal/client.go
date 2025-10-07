@@ -185,7 +185,7 @@ func (c *Client) do(req *http.Request, result any) error {
 func newRequest(ctx context.Context, method string, endpoint *url.URL, payload url.Values) (*http.Request, error) {
 	var body io.Reader = http.NoBody
 
-	if method == http.MethodPost {
+	if method == http.MethodPost && payload != nil {
 		body = strings.NewReader(payload.Encode())
 	}
 

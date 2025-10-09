@@ -30,7 +30,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "hetznerv1: some credentials information are missing: HETZNER_API_TOKEN",
+			expected: "hetzner: some credentials information are missing: HETZNER_API_TOKEN",
 		},
 	}
 
@@ -67,7 +67,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "hetznerv1: credentials missing",
+			expected: "hetzner: credentials missing",
 		},
 	}
 

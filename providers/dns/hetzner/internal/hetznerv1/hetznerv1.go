@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/hetznerv1/internal"
+	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal/hetznerv1/internal"
 )
 
 // Environment variables names.
@@ -57,7 +57,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAPIToken)
 	if err != nil {
-		return nil, fmt.Errorf("hetznerv1: %w", err)
+		return nil, fmt.Errorf("hetzner: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -69,16 +69,16 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for Hetzner.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("hetznerv1: the configuration of the DNS provider is nil")
+		return nil, errors.New("hetzner: the configuration of the DNS provider is nil")
 	}
 
 	if config.APIToken == "" {
-		return nil, errors.New("hetznerv1: credentials missing")
+		return nil, errors.New("hetzner: credentials missing")
 	}
 
 	client, err := internal.NewClient(internal.OAuthStaticAccessToken(config.HTTPClient, config.APIToken))
 	if err != nil {
-		return nil, fmt.Errorf("hetznerv1: %w", err)
+		return nil, fmt.Errorf("hetzner: %w", err)
 	}
 
 	return &DNSProvider{
@@ -93,12 +93,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("hetznerv1: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("hetzner: could not find zone for domain %q: %w", domain, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
-		return fmt.Errorf("hetznerv1: %w", err)
+		return fmt.Errorf("hetzner: %w", err)
 	}
 
 	ctx := context.Background()
@@ -118,13 +118,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 			_, err = d.client.CreateRRSet(ctx, dns01.UnFqdn(authZone), rrset)
 			if err != nil {
-				return fmt.Errorf("hetznerv1: create RRSet: %w", err)
+				return fmt.Errorf("hetzner: create RRSet: %w", err)
 			}
 
 			return nil
 		}
 
-		return fmt.Errorf("hetznerv1: get RRSet: %w", err)
+		return fmt.Errorf("hetzner: get RRSet: %w", err)
 	}
 
 	// add record to existing RRSet
@@ -134,7 +134,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, err = d.client.AddRRSetRecords(ctx, dns01.UnFqdn(authZone), "TXT", subDomain, d.config.TTL, records)
 	if err != nil {
-		return fmt.Errorf("hetznerv1: add RRSet records: %w", err)
+		return fmt.Errorf("hetzner: add RRSet records: %w", err)
 	}
 
 	return nil
@@ -146,12 +146,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("hetznerv1: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("hetzner: could not find zone for domain %q: %w", domain, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
-		return fmt.Errorf("hetznerv1: %w", err)
+		return fmt.Errorf("hetzner: %w", err)
 	}
 
 	records := []internal.Record{{
@@ -160,7 +160,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, err = d.client.RemoveRRSetRecords(context.Background(), dns01.UnFqdn(authZone), "TXT", subDomain, records)
 	if err != nil {
-		return fmt.Errorf("hetznerv1: remove RRSet records: %w", err)
+		return fmt.Errorf("hetzner: remove RRSet records: %w", err)
 	}
 
 	return nil

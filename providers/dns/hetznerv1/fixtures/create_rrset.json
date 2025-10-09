@@ -1,0 +1,29 @@
+{
+  "rrset": {
+    "id": "abc",
+    "name": "_acme-challenge",
+    "type": "TXT",
+    "ttl": 120,
+    "records": [
+      {
+        "value": "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"
+      }
+    ],
+    "zone": 42
+  },
+  "action": {
+    "id": 1,
+    "command": "create_rrset",
+    "status": "running",
+    "progress": 50,
+    "started": "2016-01-30T23:55:00+00:00",
+    "finished": null,
+    "resources": [
+      {
+        "id": 42,
+        "type": "zone"
+      }
+    ],
+    "error": null
+  }
+}

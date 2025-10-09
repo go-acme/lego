@@ -1,0 +1,36 @@
+{
+  "rrset": {
+    "id": "www/A",
+    "name": "www",
+    "type": "A",
+    "ttl": 3600,
+    "labels": {
+      "key": "value"
+    },
+    "protection": {
+      "change": false
+    },
+    "records": [
+      {
+        "value": "198.51.100.1",
+        "comment": "My web server at Hetzner Cloud."
+      }
+    ],
+    "zone": 42
+  },
+  "action": {
+    "id": 1,
+    "command": "create_rrset",
+    "status": "running",
+    "progress": 50,
+    "started": "2016-01-30T23:55:00+00:00",
+    "finished": null,
+    "resources": [
+      {
+        "id": 42,
+        "type": "zone"
+      }
+    ],
+    "error": null
+  }
+}

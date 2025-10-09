@@ -1,0 +1,14 @@
+{
+  "rrset": {
+    "id": "abc",
+    "name": "_acme-challenge",
+    "type": "TXT",
+    "ttl": 3600,
+    "records": [
+      {
+        "value": "xxx"
+      }
+    ],
+    "zone": 42
+  }
+}

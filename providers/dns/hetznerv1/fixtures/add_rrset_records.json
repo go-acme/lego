@@ -1,0 +1,17 @@
+{
+  "action": {
+    "id": 1,
+    "command": "add_rrset_records",
+    "status": "running",
+    "progress": 50,
+    "started": "2016-01-30T23:55:00+00:00",
+    "finished": null,
+    "resources": [
+      {
+        "id": 42,
+        "type": "zone"
+      }
+    ],
+    "error": null
+  }
+}

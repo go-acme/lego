@@ -1,0 +1,5 @@
+{
+  "name": "_acme-challenge",
+  "type": "TXT",
+  "ttl": 120
+}

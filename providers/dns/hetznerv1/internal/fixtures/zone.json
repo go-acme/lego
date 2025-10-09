@@ -1,0 +1,44 @@
+{
+  "zone": {
+    "id": 42,
+    "name": "example.com",
+    "created": "2016-01-30T23:55:00+00:00",
+    "mode": "primary",
+    "primary_nameservers": [
+      {
+        "address": "198.51.100.1",
+        "port": 53
+      },
+      {
+        "address": "203.0.113.1",
+        "port": 53
+      }
+    ],
+    "labels": {
+      "environment": "prod",
+      "example.com/my": "label",
+      "just-a-key": ""
+    },
+    "protection": {
+      "delete": false
+    },
+    "ttl": 10800,
+    "status": "ok",
+    "record_count": 0,
+    "authoritative_nameservers": {
+      "assigned": [
+        "hydrogen.ns.hetzner.com.",
+        "oxygen.ns.hetzner.com.",
+        "helium.ns.hetzner.de."
+      ],
+      "delegated": [
+        "hydrogen.ns.hetzner.com.",
+        "oxygen.ns.hetzner.com.",
+        "helium.ns.hetzner.de."
+      ],
+      "delegation_last_check": "2016-01-30T23:55:00+00:00",
+      "delegation_status": "valid"
+    },
+    "registrar": "hetzner"
+  }
+}

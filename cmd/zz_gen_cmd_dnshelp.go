@@ -77,6 +77,7 @@ func allDNSCodes() string {
 		"godaddy",
 		"googledomains",
 		"hetzner",
+		"hetznerv1",
 		"hostingde",
 		"hostinger",
 		"hosttech",
@@ -1561,6 +1562,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hetzner`)
+
+	case "hetznerv1":
+		// generated from: providers/dns/hetznerv1/hetznerv1.toml
+		ew.writeln(`Configuration for Hetzner.`)
+		ew.writeln(`Code:	'hetznerv1'`)
+		ew.writeln(`Since:	'v4.27.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "HETZNER_API_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "HETZNER_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "HETZNER_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "HETZNER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "HETZNER_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hetznerv1`)
 
 	case "hostingde":
 		// generated from: providers/dns/hostingde/hostingde.toml

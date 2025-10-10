@@ -48,23 +48,6 @@ func (a *APIError) Error() string {
 	return msg
 }
 
-type ZoneResponse struct {
-	Zone *Zone `json:"zone,omitempty"`
-}
-
-type Zone struct {
-	ID          int    `json:"id,omitempty"`
-	Name        string `json:"name,omitempty"`
-	Mode        string `json:"mode,omitempty"`
-	TTL         int    `json:"ttl,omitempty"`
-	Status      string `json:"status,omitempty"`
-	RecordCount int    `json:"record_count,omitempty"`
-}
-
-type RRSetResponse struct {
-	RRSet *RRSet `json:"rrset,omitempty"`
-}
-
 type RRSet struct {
 	ID         string            `json:"id,omitempty"`
 	Name       string            `json:"name,omitempty"`

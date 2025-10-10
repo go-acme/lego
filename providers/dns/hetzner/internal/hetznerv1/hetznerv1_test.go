@@ -1,7 +1,6 @@
 package hetznerv1
 
 import (
-	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -138,27 +137,11 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 	)
 }
 
-func TestDNSProvider_Present_existing_rrset(t *testing.T) {
+func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
-		Route("GET /zones/example.com/rrsets/_acme-challenge/TXT",
-			servermock.ResponseFromFixture("rrset.json")).
 		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/add_records",
 			servermock.ResponseFromFixture("add_rrset_records.json"),
 			servermock.CheckRequestJSONBodyFromFixture("add_rrset_records-request.json")).
-		Build(t)
-
-	err := provider.Present("example.com", "", "foobar")
-	require.NoError(t, err)
-}
-
-func TestDNSProvider_Present_new_rrset(t *testing.T) {
-	provider := mockBuilder().
-		Route("GET /zones/example.com/rrsets/_acme-challenge/TXT",
-			servermock.ResponseFromFixture("error-not_found.json").
-				WithStatusCode(http.StatusNotFound)).
-		Route("POST /zones/example.com/rrsets",
-			servermock.ResponseFromFixture("create_rrset.json"),
-			servermock.CheckRequestJSONBodyFromFixture("create_rrset-request.json")).
 		Build(t)
 
 	err := provider.Present("example.com", "", "foobar")

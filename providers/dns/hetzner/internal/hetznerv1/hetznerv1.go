@@ -101,38 +101,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	ctx := context.Background()
+	records := []internal.Record{{Value: info.Value}}
 
-	_, err = d.client.GetRRSet(ctx, dns01.UnFqdn(authZone), "TXT", subDomain)
-	if err != nil {
-		apiError := &internal.APIError{}
-
-		// create a new RRSet
-		if errors.As(err, &apiError) && apiError.ErrorInfo.Code == "not_found" {
-			rrset := internal.RRSet{
-				Name:    subDomain,
-				Type:    "TXT",
-				TTL:     d.config.TTL,
-				Records: []internal.Record{},
-			}
-
-			_, err = d.client.CreateRRSet(ctx, dns01.UnFqdn(authZone), rrset)
-			if err != nil {
-				return fmt.Errorf("hetzner: create RRSet: %w", err)
-			}
-
-			return nil
-		}
-
-		return fmt.Errorf("hetzner: get RRSet: %w", err)
-	}
-
-	// add record to existing RRSet
-	records := []internal.Record{{
-		Value: info.Value,
-	}}
-
-	_, err = d.client.AddRRSetRecords(ctx, dns01.UnFqdn(authZone), "TXT", subDomain, d.config.TTL, records)
+	_, err = d.client.AddRRSetRecords(context.Background(), dns01.UnFqdn(authZone), "TXT", subDomain, d.config.TTL, records)
 	if err != nil {
 		return fmt.Errorf("hetzner: add RRSet records: %w", err)
 	}
@@ -154,9 +125,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	records := []internal.Record{{
-		Value: info.Value,
-	}}
+	records := []internal.Record{{Value: info.Value}}
 
 	_, err = d.client.RemoveRRSetRecords(context.Background(), dns01.UnFqdn(authZone), "TXT", subDomain, records)
 	if err != nil {

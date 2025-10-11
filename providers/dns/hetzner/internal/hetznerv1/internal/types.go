@@ -15,6 +15,24 @@ type ErrorInfo struct {
 	Details ErrorDetails `json:"details,omitempty"`
 }
 
+func (i *ErrorInfo) Error() string {
+	msg := fmt.Sprintf("%s: %s", i.Code, i.Message)
+
+	if i.Details.Announcement != "" {
+		msg += fmt.Sprintf(": %s", i.Details.Announcement)
+	}
+
+	for _, limit := range i.Details.Limits {
+		msg += fmt.Sprintf("limit: %s", limit.Name)
+	}
+
+	for _, field := range i.Details.Fields {
+		msg += fmt.Sprintf("field: %s: %s", field.Name, strings.Join(field.Messages, ", "))
+	}
+
+	return msg
+}
+
 type ErrorDetails struct {
 	Announcement string       `json:"announcement,omitempty"`
 	Limits       []LimitError `json:"limits,omitempty"`
@@ -31,21 +49,7 @@ type LimitError struct {
 }
 
 func (a *APIError) Error() string {
-	msg := fmt.Sprintf("%s: %s", a.ErrorInfo.Code, a.ErrorInfo.Message)
-
-	if a.ErrorInfo.Details.Announcement != "" {
-		msg += fmt.Sprintf(": %s", a.ErrorInfo.Details.Announcement)
-	}
-
-	for _, limit := range a.ErrorInfo.Details.Limits {
-		msg += fmt.Sprintf("limit: %s", limit.Name)
-	}
-
-	for _, field := range a.ErrorInfo.Details.Fields {
-		msg += fmt.Sprintf("field: %s: %s", field.Name, strings.Join(field.Messages, ", "))
-	}
-
-	return msg
+	return a.ErrorInfo.Error()
 }
 
 type RRSet struct {
@@ -73,10 +77,15 @@ type ActionResponse struct {
 }
 
 type Action struct {
-	ID        int         `json:"id,omitempty"`
-	Command   string      `json:"command,omitempty"`
-	Status    string      `json:"status,omitempty"`
-	Progress  int         `json:"progress,omitempty"`
+	ID      int    `json:"id,omitempty"`
+	Command string `json:"command,omitempty"`
+
+	// It can be: `running`, `success`, `error`.
+	// https://docs.hetzner.cloud/reference/cloud#zone-actions-get-an-action
+	// https://docs.hetzner.cloud/reference/cloud#zone-actions
+	Status   string `json:"status,omitempty"`
+	Progress int    `json:"progress,omitempty"`
+
 	Resources []Resources `json:"resources,omitempty"`
 	ErrorInfo *ErrorInfo  `json:"error,omitempty"`
 }

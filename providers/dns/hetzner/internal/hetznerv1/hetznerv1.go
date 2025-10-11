@@ -151,15 +151,18 @@ func (d *DNSProvider) waitAction(ctx context.Context, msg string, actionID int) 
 	return wait.For(msg, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
 		result, err := d.client.GetAction(ctx, actionID)
 		if err != nil {
-			return false, fmt.Errorf("hetzner: get action: %w", err)
+			return false, fmt.Errorf("get action: %w", err)
 		}
 
-		if result.Progress < 100 {
+		switch result.Status {
+		case internal.StatusRunning:
 			return false, nil
-		}
 
-		if result.ErrorInfo != nil {
-			return false, fmt.Errorf("hetzner: %s", result.ErrorInfo.Message)
+		case internal.StatusSuccess:
+			return true, nil
+
+		case internal.StatusError:
+			return false, result.ErrorInfo
 		}
 
 		return true, nil

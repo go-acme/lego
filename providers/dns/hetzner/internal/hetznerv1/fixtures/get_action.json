@@ -2,7 +2,7 @@
   "action": {
     "id": 42,
     "command": "start_resource",
-    "status": "running",
+    "status": "success",
     "started": "2016-01-30T23:55:00+00:00",
     "finished": "2016-01-30T23:55:00+00:00",
     "progress": 100,

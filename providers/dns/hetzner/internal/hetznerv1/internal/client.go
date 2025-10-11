@@ -17,6 +17,12 @@ import (
 
 const defaultBaseURL = "https://api.hetzner.cloud/v1"
 
+const (
+	StatusRunning = "running"
+	StatusSuccess = "success"
+	StatusError   = "error"
+)
+
 // Client the Hetzner API client.
 type Client struct {
 	BaseURL    *url.URL

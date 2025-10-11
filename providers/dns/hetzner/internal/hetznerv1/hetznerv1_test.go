@@ -142,6 +142,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/add_records",
 			servermock.ResponseFromFixture("add_rrset_records.json"),
 			servermock.CheckRequestJSONBodyFromFixture("add_rrset_records-request.json")).
+		Route("GET /actions/1", servermock.ResponseFromFixture("get_action.json")).
 		Build(t)
 
 	err := provider.Present("example.com", "", "foobar")
@@ -153,7 +154,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/remove_records",
 			servermock.ResponseFromFixture("remove_rrset_records.json"),
 			servermock.CheckRequestJSONBodyFromFixture("remove_rrset_records-request.json")).
-		Route("/", servermock.DumpRequest()).
+		Route("GET /actions/1", servermock.ResponseFromFixture("get_action.json")).
 		Build(t)
 
 	err := provider.CleanUp("example.com", "", "foobar")

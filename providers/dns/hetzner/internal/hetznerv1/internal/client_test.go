@@ -128,3 +128,27 @@ func TestClient_RemoveRRSetRecords(t *testing.T) {
 
 	assert.Equal(t, expected, result)
 }
+
+func TestClient_GetAction(t *testing.T) {
+	client := mockBuilder().
+		Route("GET /actions/123", servermock.ResponseFromFixture("get_action.json")).
+		Route("/", servermock.DumpRequest()).
+		Build(t)
+
+	result, err := client.GetAction(t.Context(), 123)
+	require.NoError(t, err)
+
+	expected := &Action{
+		ID:        42,
+		Command:   "start_resource",
+		Status:    "running",
+		Progress:  100,
+		Resources: []Resources{{ID: 42, Type: "server"}},
+		ErrorInfo: &ErrorInfo{
+			Code:    "action_failed",
+			Message: "Action failed",
+		},
+	}
+
+	assert.Equal(t, expected, result)
+}

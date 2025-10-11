@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
@@ -61,6 +62,25 @@ func (c *Client) RemoveRRSetRecords(ctx context.Context, zoneIDName, recordType,
 	endpoint := c.BaseURL.JoinPath("zones", zoneIDName, "rrsets", recordName, recordType, "actions", "remove_records")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, RRSet{Records: records})
+	if err != nil {
+		return nil, err
+	}
+
+	var result ActionResponse
+	err = c.do(req, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Action, nil
+}
+
+// GetAction gets an action.
+// https://docs.hetzner.cloud/reference/cloud#actions-get-an-action
+func (c *Client) GetAction(ctx context.Context, id int) (*Action, error) {
+	endpoint := c.BaseURL.JoinPath("actions", strconv.Itoa(id))
+
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

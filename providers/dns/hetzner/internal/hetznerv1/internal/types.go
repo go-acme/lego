@@ -78,6 +78,7 @@ type Action struct {
 	Status    string      `json:"status,omitempty"`
 	Progress  int         `json:"progress,omitempty"`
 	Resources []Resources `json:"resources,omitempty"`
+	ErrorInfo *ErrorInfo  `json:"error,omitempty"`
 }
 
 type Resources struct {

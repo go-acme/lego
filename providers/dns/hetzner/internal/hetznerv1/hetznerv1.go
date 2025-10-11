@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/platform/wait"
 	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal/hetznerv1/internal"
 )
 
@@ -90,6 +91,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
@@ -104,16 +107,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	records := []internal.Record{{Value: strconv.Quote(info.Value)}}
 
-	_, err = d.client.AddRRSetRecords(context.Background(), dns01.UnFqdn(authZone), "TXT", subDomain, d.config.TTL, records)
+	action, err := d.client.AddRRSetRecords(ctx, dns01.UnFqdn(authZone), "TXT", subDomain, d.config.TTL, records)
 	if err != nil {
 		return fmt.Errorf("hetzner: add RRSet records: %w", err)
 	}
 
-	return nil
+	return d.waitAction(ctx, "add RRSet records", action.ID)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
@@ -128,16 +133,35 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	records := []internal.Record{{Value: strconv.Quote(info.Value)}}
 
-	_, err = d.client.RemoveRRSetRecords(context.Background(), dns01.UnFqdn(authZone), "TXT", subDomain, records)
+	action, err := d.client.RemoveRRSetRecords(ctx, dns01.UnFqdn(authZone), "TXT", subDomain, records)
 	if err != nil {
 		return fmt.Errorf("hetzner: remove RRSet records: %w", err)
 	}
 
-	return nil
+	return d.waitAction(ctx, "remove RRSet records", action.ID)
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) waitAction(ctx context.Context, msg string, actionID int) error {
+	return wait.For(msg, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
+		result, err := d.client.GetAction(ctx, actionID)
+		if err != nil {
+			return false, fmt.Errorf("hetzner: get action: %w", err)
+		}
+
+		if result.Progress < 100 {
+			return false, nil
+		}
+
+		if result.ErrorInfo != nil {
+			return false, fmt.Errorf("hetzner: %s", result.ErrorInfo.Message)
+		}
+
+		return true, nil
+	})
 }

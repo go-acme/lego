@@ -1,0 +1,16 @@
+{
+  "error": {
+    "code": "invalid_input",
+    "message": "invalid input in field 'broken_field': is too long",
+    "details": {
+      "fields": [
+        {
+          "name": "broken_field",
+          "messages": [
+            "is too long"
+          ]
+        }
+      ]
+    }
+  }
+}

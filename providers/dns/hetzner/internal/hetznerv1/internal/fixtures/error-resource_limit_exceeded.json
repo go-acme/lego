@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": "resource_limit_exceeded",
+    "message": "project limit exceeded",
+    "details": {
+      "limits": [
+        {
+          "name": "project_limit"
+        }
+      ]
+    }
+  }
+}

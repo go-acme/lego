@@ -2,15 +2,15 @@
 title: "Hetzner"
 date: 2019-03-03T16:39:46+01:00
 draft: false
-slug: hetzner
+slug: hetznerv1
 dnsprovider:
-  since:    "v3.7.0"
-  code:     "hetzner"
+  since:    "v4.27.0"
+  code:     "hetznerv1"
   url:      "https://hetzner.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/hetzner/hetzner.toml -->
+<!-- providers/dns/hetznerv1/hetznerv1.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
@@ -19,15 +19,15 @@ Configuration for [Hetzner](https://hetzner.com).
 
 <!--more-->
 
-- Code: `hetzner`
-- Since: v3.7.0
+- Code: `hetznerv1`
+- Since: v4.27.0
 
 
 Here is an example bash command using the Hetzner provider:
 
 ```bash
 HETZNER_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns hetzner -d '*.example.com' -d example.com run
+lego --email you@example.com --dns hetznerv1 -d '*.example.com' -d example.com run
 ```
 
 
@@ -63,5 +63,5 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 - [API documentation](https://docs.hetzner.cloud/reference/cloud#dns)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/hetzner/hetzner.toml -->
+<!-- providers/dns/hetznerv1/hetznerv1.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

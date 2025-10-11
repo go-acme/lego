@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -101,7 +102,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	records := []internal.Record{{Value: info.Value}}
+	records := []internal.Record{{Value: strconv.Quote(info.Value)}}
 
 	_, err = d.client.AddRRSetRecords(context.Background(), dns01.UnFqdn(authZone), "TXT", subDomain, d.config.TTL, records)
 	if err != nil {
@@ -125,7 +126,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	records := []internal.Record{{Value: info.Value}}
+	records := []internal.Record{{Value: strconv.Quote(info.Value)}}
 
 	_, err = d.client.RemoveRRSetRecords(context.Background(), dns01.UnFqdn(authZone), "TXT", subDomain, records)
 	if err != nil {

@@ -112,7 +112,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: add RRSet records: %w", err)
 	}
 
-	return d.waitAction(ctx, "add RRSet records", action.ID)
+	err = d.waitAction(ctx, "action: add RRSet records", action.ID)
+	if err != nil {
+		return fmt.Errorf("hetzner: %w", err)
+	}
+
+	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
@@ -138,7 +143,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: remove RRSet records: %w", err)
 	}
 
-	return d.waitAction(ctx, "remove RRSet records", action.ID)
+	err = d.waitAction(ctx, "action: remove RRSet records", action.ID)
+	if err != nil {
+		return fmt.Errorf("hetzner: %w", err)
+	}
+
+	return nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -151,18 +161,18 @@ func (d *DNSProvider) waitAction(ctx context.Context, msg string, actionID int) 
 	return wait.For(msg, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
 		result, err := d.client.GetAction(ctx, actionID)
 		if err != nil {
-			return false, fmt.Errorf("get action: %w", err)
+			return false, fmt.Errorf("get action %d: %w", actionID, err)
 		}
 
 		switch result.Status {
 		case internal.StatusRunning:
-			return false, nil
+			return false, fmt.Errorf("action %d is %s", actionID, internal.StatusRunning)
 
 		case internal.StatusSuccess:
 			return true, nil
 
 		case internal.StatusError:
-			return false, result.ErrorInfo
+			return false, fmt.Errorf("action %d: %s: %w", actionID, internal.StatusError, result.ErrorInfo)
 		}
 
 		return true, nil

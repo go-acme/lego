@@ -1,0 +1,20 @@
+{
+  "action": {
+    "id": 1,
+    "command": "remove_rrset_records",
+    "status": "error",
+    "started": "2016-01-30T23:55:00+00:00",
+    "finished": "2016-01-30T23:55:00+00:00",
+    "progress": 50,
+    "resources": [
+      {
+        "id": 42,
+        "type": "zone"
+      }
+    ],
+    "error": {
+      "code": "action_failed",
+      "message": "Action failed"
+    }
+  }
+}

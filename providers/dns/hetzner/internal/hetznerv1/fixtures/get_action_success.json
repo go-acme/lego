@@ -1,7 +1,7 @@
 {
   "action": {
-    "id": 42,
-    "command": "start_resource",
+    "id": 1,
+    "command": "remove_rrset_records",
     "status": "success",
     "started": "2016-01-30T23:55:00+00:00",
     "finished": "2016-01-30T23:55:00+00:00",
@@ -9,7 +9,7 @@
     "resources": [
       {
         "id": 42,
-        "type": "server"
+        "type": "zone"
       }
     ]
   }

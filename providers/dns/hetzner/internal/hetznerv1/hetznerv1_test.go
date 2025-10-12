@@ -4,6 +4,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/go-acme/lego/v4/platform/tester/servermock"
@@ -142,11 +143,44 @@ func TestDNSProvider_Present(t *testing.T) {
 		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/add_records",
 			servermock.ResponseFromFixture("add_rrset_records.json"),
 			servermock.CheckRequestJSONBodyFromFixture("add_rrset_records-request.json")).
-		Route("GET /actions/1", servermock.ResponseFromFixture("get_action.json")).
+		Route("GET /actions/1",
+			servermock.ResponseFromFixture("get_action_success.json")).
 		Build(t)
 
 	err := provider.Present("example.com", "", "foobar")
 	require.NoError(t, err)
+}
+
+func TestDNSProvider_Present_error(t *testing.T) {
+	provider := mockBuilder().
+		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/add_records",
+			servermock.ResponseFromFixture("add_rrset_records.json"),
+			servermock.CheckRequestJSONBodyFromFixture("add_rrset_records-request.json")).
+		Route("GET /actions/1",
+			servermock.ResponseFromFixture("get_action_error.json")).
+		Build(t)
+
+	provider.config.PollingInterval = 20 * time.Millisecond
+	provider.config.PropagationTimeout = 1 * time.Second
+
+	err := provider.Present("example.com", "", "foobar")
+	require.EqualError(t, err, "hetzner: action: add RRSet records: time limit exceeded: last error: action 1: error: action_failed: Action failed")
+}
+
+func TestDNSProvider_Present_running(t *testing.T) {
+	provider := mockBuilder().
+		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/add_records",
+			servermock.ResponseFromFixture("add_rrset_records.json"),
+			servermock.CheckRequestJSONBodyFromFixture("add_rrset_records-request.json")).
+		Route("GET /actions/1",
+			servermock.ResponseFromFixture("get_action_running.json")).
+		Build(t)
+
+	provider.config.PollingInterval = 20 * time.Millisecond
+	provider.config.PropagationTimeout = 1 * time.Second
+
+	err := provider.Present("example.com", "", "foobar")
+	require.EqualError(t, err, "hetzner: action: add RRSet records: time limit exceeded: last error: action 1 is running")
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
@@ -154,9 +188,42 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/remove_records",
 			servermock.ResponseFromFixture("remove_rrset_records.json"),
 			servermock.CheckRequestJSONBodyFromFixture("remove_rrset_records-request.json")).
-		Route("GET /actions/1", servermock.ResponseFromFixture("get_action.json")).
+		Route("GET /actions/1",
+			servermock.ResponseFromFixture("get_action_success.json")).
 		Build(t)
 
 	err := provider.CleanUp("example.com", "", "foobar")
 	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp_error(t *testing.T) {
+	provider := mockBuilder().
+		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/remove_records",
+			servermock.ResponseFromFixture("remove_rrset_records.json"),
+			servermock.CheckRequestJSONBodyFromFixture("remove_rrset_records-request.json")).
+		Route("GET /actions/1",
+			servermock.ResponseFromFixture("get_action_error.json")).
+		Build(t)
+
+	provider.config.PollingInterval = 20 * time.Millisecond
+	provider.config.PropagationTimeout = 1 * time.Second
+
+	err := provider.CleanUp("example.com", "", "foobar")
+	require.EqualError(t, err, "hetzner: action: remove RRSet records: time limit exceeded: last error: action 1: error: action_failed: Action failed")
+}
+
+func TestDNSProvider_CleanUp_running(t *testing.T) {
+	provider := mockBuilder().
+		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/remove_records",
+			servermock.ResponseFromFixture("remove_rrset_records.json"),
+			servermock.CheckRequestJSONBodyFromFixture("remove_rrset_records-request.json")).
+		Route("GET /actions/1",
+			servermock.ResponseFromFixture("get_action_running.json")).
+		Build(t)
+
+	provider.config.PollingInterval = 20 * time.Millisecond
+	provider.config.PropagationTimeout = 1 * time.Second
+
+	err := provider.CleanUp("example.com", "", "foobar")
+	require.EqualError(t, err, "hetzner: action: remove RRSet records: time limit exceeded: last error: action 1 is running")
 }

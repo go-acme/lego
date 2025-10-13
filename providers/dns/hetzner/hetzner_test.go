@@ -41,7 +41,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIKey:   "123",
 				EnvAPIToken: "123",
 			},
-			expectedError: "hetzner: credentials are provided by both HETZNER_API_TOKEN and HETZNER_API_KEY",
+			expectedProvider: &hetznerv1.DNSProvider{},
 		},
 		{
 			desc: "missing credentials",
@@ -96,11 +96,11 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expectedProvider: &legacy.DNSProvider{},
 		},
 		{
-			desc:          "success (both)",
-			ttl:           minTTL,
-			apiToken:      "123",
-			apiKey:        "456",
-			expectedError: "hetzner: credentials are provided by both APIToken and APIKey",
+			desc:             "success (both)",
+			ttl:              minTTL,
+			apiToken:         "123",
+			apiKey:           "456",
+			expectedProvider: &hetznerv1.DNSProvider{},
 		},
 		{
 			desc:          "missing credentials",

@@ -125,7 +125,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err = d.waitAction(ctx, "action: add RRSet records", action.ID)
 	if err != nil {
-		return fmt.Errorf("hetzner: %w", err)
+		return fmt.Errorf("hetzner: wait (add): %w", err)
 	}
 
 	return nil
@@ -166,7 +166,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.waitAction(ctx, "action: remove RRSet records", action.ID)
 	if err != nil {
-		return fmt.Errorf("hetzner: %w", err)
+		return fmt.Errorf("hetzner: wait (remove): %w", err)
 	}
 
 	return nil
@@ -193,7 +193,7 @@ func (d *DNSProvider) waitAction(ctx context.Context, msg string, actionID int) 
 			return true, nil
 
 		case internal.StatusError:
-			return false, fmt.Errorf("action %d: %s: %w", actionID, internal.StatusError, result.ErrorInfo)
+			return true, fmt.Errorf("action %d: %s: %w", actionID, internal.StatusError, result.ErrorInfo)
 		}
 
 		return true, nil

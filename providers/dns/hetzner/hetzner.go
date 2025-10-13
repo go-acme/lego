@@ -3,7 +3,6 @@ package hetzner
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -68,8 +67,13 @@ func NewDNSProvider() (*DNSProvider, error) {
 	_, foundAPIKey := os.LookupEnv(EnvAPIKey)
 
 	switch {
-	case foundAPIToken && foundAPIKey:
-		return nil, fmt.Errorf("hetzner: credentials are provided by both %s and %s", EnvAPIToken, EnvAPIKey)
+	case foundAPIToken:
+		provider, err := hetznerv1.NewDNSProvider()
+		if err != nil {
+			return nil, err
+		}
+
+		return &DNSProvider{provider: provider}, nil
 
 	case foundAPIKey:
 		provider, err := legacy.NewDNSProvider()
@@ -96,9 +100,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	switch {
-	case config.APIToken != "" && config.APIKey != "":
-		return nil, errors.New("hetzner: credentials are provided by both APIToken and APIKey")
-
 	case config.APIToken != "":
 		cfg := &hetznerv1.Config{
 			APIToken:           config.APIToken,

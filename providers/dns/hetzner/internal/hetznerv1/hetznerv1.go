@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/platform/wait"
 	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal/hetznerv1/internal"
+	"golang.org/x/net/idna"
 )
 
 // Environment variables names.
@@ -105,9 +106,19 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
+	subDomainPunnycoded, err := idna.ToASCII(dns01.UnFqdn(subDomain))
+	if err != nil {
+		return fmt.Errorf("hetzner: %w", err)
+	}
+
+	zone, err := idna.ToASCII(dns01.UnFqdn(authZone))
+	if err != nil {
+		return fmt.Errorf("hetzner: %w", err)
+	}
+
 	records := []internal.Record{{Value: strconv.Quote(info.Value)}}
 
-	action, err := d.client.AddRRSetRecords(ctx, dns01.UnFqdn(authZone), "TXT", subDomain, d.config.TTL, records)
+	action, err := d.client.AddRRSetRecords(ctx, zone, "TXT", subDomainPunnycoded, d.config.TTL, records)
 	if err != nil {
 		return fmt.Errorf("hetzner: add RRSet records: %w", err)
 	}
@@ -136,9 +147,19 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
+	subDomainPunnycoded, err := idna.ToASCII(dns01.UnFqdn(subDomain))
+	if err != nil {
+		return fmt.Errorf("hetzner: %w", err)
+	}
+
+	zone, err := idna.ToASCII(dns01.UnFqdn(authZone))
+	if err != nil {
+		return fmt.Errorf("hetzner: %w", err)
+	}
+
 	records := []internal.Record{{Value: strconv.Quote(info.Value)}}
 
-	action, err := d.client.RemoveRRSetRecords(ctx, dns01.UnFqdn(authZone), "TXT", subDomain, records)
+	action, err := d.client.RemoveRRSetRecords(ctx, zone, "TXT", subDomainPunnycoded, records)
 	if err != nil {
 		return fmt.Errorf("hetzner: remove RRSet records: %w", err)
 	}

@@ -25,8 +25,9 @@ func For(msg string, timeout, interval time.Duration, f func() (bool, error)) er
 
 		stop, err := f()
 		if stop {
-			return nil
+			return err
 		}
+
 		if err != nil {
 			lastErr = err
 		}

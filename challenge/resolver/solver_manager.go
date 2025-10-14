@@ -1,13 +1,14 @@
 package resolver
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sort"
 	"strconv"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/challenge"
@@ -101,33 +102,41 @@ func validate(core *api.Core, domain string, chlg acme.Challenge) error {
 	}
 	initialInterval := time.Duration(ra) * time.Second
 
+	ctx := context.Background()
+
 	bo := backoff.NewExponentialBackOff()
 	bo.InitialInterval = initialInterval
 	bo.MaxInterval = 10 * initialInterval
-	bo.MaxElapsedTime = 100 * initialInterval
 
 	// After the path is sent, the ACME server will access our server.
 	// Repeatedly check the server for an updated status on our request.
-	operation := func() error {
+	operation := func() (bool, error) {
 		authz, err := core.Authorizations.Get(chlng.AuthorizationURL)
 		if err != nil {
-			return backoff.Permanent(err)
+			return false, backoff.Permanent(err)
 		}
 
 		valid, err := checkAuthorizationStatus(authz)
 		if err != nil {
-			return backoff.Permanent(err)
+			return false, backoff.Permanent(err)
 		}
 
 		if valid {
 			log.Infof("[%s] The server validated our request", domain)
-			return nil
+			return true, nil
 		}
 
-		return fmt.Errorf("the server didn't respond to our request (status=%s)", authz.Status)
+		return false, fmt.Errorf("the server didn't respond to our request (status=%s)", authz.Status)
 	}
 
-	return backoff.Retry(operation, bo)
+	_, errR := backoff.Retry(ctx, operation,
+		backoff.WithBackOff(bo),
+		backoff.WithMaxElapsedTime(100*initialInterval))
+	if errR != nil {
+		return errR
+	}
+
+	return nil
 }
 
 func checkChallengeStatus(chlng acme.ExtendedChallenge) (bool, error) {

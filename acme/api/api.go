@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"crypto"
 	"encoding/json"
 	"errors"
@@ -9,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/acme/api/internal/nonces"
 	"github.com/go-acme/lego/v4/acme/api/internal/secure"
@@ -76,39 +77,36 @@ func (a *Core) postAsGet(uri string, response any) (*http.Response, error) {
 }
 
 func (a *Core) retrievablePost(uri string, content []byte, response any) (*http.Response, error) {
+	ctx := context.Background()
+
 	// during tests, allow to support ~90% of bad nonce with a minimum of attempts.
 	bo := backoff.NewExponentialBackOff()
 	bo.InitialInterval = 200 * time.Millisecond
 	bo.MaxInterval = 5 * time.Second
-	bo.MaxElapsedTime = 20 * time.Second
 
-	var resp *http.Response
-	operation := func() error {
-		var err error
-		resp, err = a.signedPost(uri, content, response)
+	operation := func() (*http.Response, error) {
+		resp, err := a.signedPost(uri, content, response)
 		if err != nil {
 			// Retry if the nonce was invalidated
 			var e *acme.NonceError
 			if errors.As(err, &e) {
-				return err
+				return resp, err
 			}
 
-			return backoff.Permanent(err)
+			return resp, backoff.Permanent(err)
 		}
 
-		return nil
+		return resp, nil
 	}
 
 	notify := func(err error, duration time.Duration) {
 		log.Infof("retry due to: %v", err)
 	}
 
-	err := backoff.RetryNotify(operation, bo, notify)
-	if err != nil {
-		return resp, err
-	}
-
-	return resp, nil
+	return backoff.Retry(ctx, operation,
+		backoff.WithBackOff(bo),
+		backoff.WithMaxElapsedTime(20*time.Second),
+		backoff.WithNotify(notify))
 }
 
 func (a *Core) signedPost(uri string, content []byte, response any) (*http.Response, error) {

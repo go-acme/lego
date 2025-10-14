@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
@@ -112,8 +112,8 @@ func (c *Client) GetRootDomain(ctx context.Context, hostname string) (*DNSHostna
 
 // doRetry the API is really unstable, so we need to retry on EOF.
 func (c *Client) doRetry(ctx context.Context, method, uri string, body []byte, result any) error {
-	operation := func() error {
-		return c.do(ctx, method, uri, body, result)
+	operation := func() (any, error) {
+		return nil, c.do(ctx, method, uri, body, result)
 	}
 
 	notify := func(err error, duration time.Duration) {
@@ -123,7 +123,7 @@ func (c *Client) doRetry(ctx context.Context, method, uri string, body []byte, r
 	bo := backoff.NewExponentialBackOff()
 	bo.InitialInterval = 1 * time.Second
 
-	err := backoff.RetryNotify(operation, bo, notify)
+	_, err := backoff.Retry(ctx, operation, backoff.WithBackOff(bo), backoff.WithNotify(notify))
 	if err != nil {
 		return err
 	}

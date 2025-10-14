@@ -132,11 +132,7 @@ func validate(core *api.Core, domain string, chlg acme.Challenge) error {
 	_, errR := backoff.Retry(ctx, operation,
 		backoff.WithBackOff(bo),
 		backoff.WithMaxElapsedTime(100*initialInterval))
-	if errR != nil {
-		return errR
-	}
-
-	return nil
+	return errR
 }
 
 func checkChallengeStatus(chlng acme.ExtendedChallenge) (bool, error) {

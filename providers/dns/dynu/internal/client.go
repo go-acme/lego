@@ -124,11 +124,7 @@ func (c *Client) doRetry(ctx context.Context, method, uri string, body []byte, r
 	bo.InitialInterval = 1 * time.Second
 
 	_, err := backoff.Retry(ctx, operation, backoff.WithBackOff(bo), backoff.WithNotify(notify))
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (c *Client) do(ctx context.Context, method, uri string, body []byte, result any) error {

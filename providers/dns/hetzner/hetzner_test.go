@@ -3,34 +3,53 @@ package hetzner
 import (
 	"testing"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal/hetznerv1"
+	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal/legacy"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-const envDomain = envNamespace + "DOMAIN"
-
-var envTest = tester.NewEnvTest(
-	EnvAPIKey).
-	WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvAPIKey, EnvAPIToken)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
-		desc     string
-		envVars  map[string]string
-		expected string
+		desc    string
+		envVars map[string]string
+
+		expectedProvider challenge.ProviderTimeout
+		expectedError    string
 	}{
 		{
-			desc: "success",
+			desc: "success (v1)",
+			envVars: map[string]string{
+				EnvAPIToken: "123",
+			},
+			expectedProvider: &hetznerv1.DNSProvider{},
+		},
+		{
+			desc: "success (legacy)",
 			envVars: map[string]string{
 				EnvAPIKey: "123",
 			},
+			expectedProvider: &legacy.DNSProvider{},
+		},
+		{
+			desc: "success (both)",
+			envVars: map[string]string{
+				EnvAPIKey:   "123",
+				EnvAPIToken: "123",
+			},
+			expectedProvider: &hetznerv1.DNSProvider{},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				EnvAPIKey: "",
+				EnvAPIKey:   "",
+				EnvAPIToken: "",
 			},
-			expected: "hetzner: some credentials information are missing: HETZNER_API_KEY",
+			expectedError: "hetzner: some credentials information are missing: HETZNER_API_TOKEN",
 		},
 	}
 
@@ -43,12 +62,12 @@ func TestNewDNSProvider(t *testing.T) {
 
 			p, err := NewDNSProvider()
 
-			if test.expected == "" {
+			if test.expectedError == "" {
 				require.NoError(t, err)
+				assert.IsType(t, test.expectedProvider, p.provider)
 				require.NotNil(t, p)
-				require.NotNil(t, p.config)
 			} else {
-				require.EqualError(t, err, test.expected)
+				require.EqualError(t, err, test.expectedError)
 			}
 		})
 	}
@@ -58,68 +77,53 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		apiKey   string
+		apiToken string
 		ttl      int
-		expected string
+
+		expectedProvider challenge.ProviderTimeout
+		expectedError    string
 	}{
 		{
-			desc:   "success",
-			ttl:    minTTL,
-			apiKey: "123",
+			desc:             "success (v1)",
+			ttl:              minTTL,
+			apiToken:         "123",
+			expectedProvider: &hetznerv1.DNSProvider{},
 		},
 		{
-			desc:     "missing credentials",
-			ttl:      minTTL,
-			expected: "hetzner: credentials missing",
+			desc:             "success (legacy)",
+			ttl:              minTTL,
+			apiKey:           "456",
+			expectedProvider: &legacy.DNSProvider{},
 		},
 		{
-			desc:     "invalid TTL",
-			apiKey:   "123",
-			ttl:      10,
-			expected: "hetzner: invalid TTL, TTL (10) must be greater than 60",
+			desc:             "success (both)",
+			ttl:              minTTL,
+			apiToken:         "123",
+			apiKey:           "456",
+			expectedProvider: &hetznerv1.DNSProvider{},
+		},
+		{
+			desc:          "missing credentials",
+			ttl:           minTTL,
+			expectedError: "hetzner: credentials missing",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
+			config.APIToken = test.apiToken
 			config.APIKey = test.apiKey
 			config.TTL = test.ttl
 
 			p, err := NewDNSProviderConfig(config)
 
-			if test.expected == "" {
+			if test.expectedError == "" {
 				require.NoError(t, err)
-				require.NotNil(t, p)
-				require.NotNil(t, p.config)
+				assert.IsType(t, test.expectedProvider, p.provider)
 			} else {
-				require.EqualError(t, err, test.expected)
+				require.EqualError(t, err, test.expectedError)
 			}
 		})
 	}
-}
-
-func TestLivePresent(t *testing.T) {
-	if !envTest.IsLiveTest() {
-		t.Skip("skipping live test")
-	}
-
-	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
-	require.NoError(t, err)
-}
-
-func TestLiveCleanUp(t *testing.T) {
-	if !envTest.IsLiveTest() {
-		t.Skip("skipping live test")
-	}
-
-	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
-	require.NoError(t, err)
 }

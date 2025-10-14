@@ -2,28 +2,28 @@
 package hetzner
 
 import (
-	"context"
 	"errors"
-	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal"
+	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal/hetznerv1"
+	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal/legacy"
 )
 
 // Environment variables names.
 const (
-	envNamespace = "HETZNER_"
+	// Deprecated: use EnvAPIToken instead.
+	EnvAPIKey   = legacy.EnvAPIKey
+	EnvAPIToken = hetznerv1.EnvAPIToken
 
-	EnvAPIKey = envNamespace + "API_KEY"
-
-	EnvTTL                = envNamespace + "TTL"
-	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
-	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvTTL                = hetznerv1.EnvTTL
+	EnvPropagationTimeout = hetznerv1.EnvPropagationTimeout
+	EnvPollingInterval    = hetznerv1.EnvPollingInterval
+	EnvHTTPTimeout        = hetznerv1.EnvHTTPTimeout
 )
 
 const minTTL = 60
@@ -32,7 +32,11 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	APIKey             string
+	// Deprecated: use APIToken instead
+	APIKey string
+
+	APIToken string
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -53,22 +57,40 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config *Config
-	client *internal.Client
+	provider challenge.ProviderTimeout
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for hetzner.
 // Credentials must be passed in the environment variable: HETZNER_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIKey)
-	if err != nil {
-		return nil, fmt.Errorf("hetzner: %w", err)
+	_, foundAPIToken := os.LookupEnv(EnvAPIToken)
+	_, foundAPIKey := os.LookupEnv(EnvAPIKey)
+
+	switch {
+	case foundAPIToken:
+		provider, err := hetznerv1.NewDNSProvider()
+		if err != nil {
+			return nil, err
+		}
+
+		return &DNSProvider{provider: provider}, nil
+
+	case foundAPIKey:
+		provider, err := legacy.NewDNSProvider()
+		if err != nil {
+			return nil, err
+		}
+
+		return &DNSProvider{provider: provider}, nil
+
+	default:
+		provider, err := hetznerv1.NewDNSProvider()
+		if err != nil {
+			return nil, err
+		}
+
+		return &DNSProvider{provider: provider}, nil
 	}
-
-	config := NewDefaultConfig()
-	config.APIKey = values[EnvAPIKey]
-
-	return NewDNSProviderConfig(config)
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for hetzner.
@@ -77,98 +99,55 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("hetzner: the configuration of the DNS provider is nil")
 	}
 
-	if config.APIKey == "" {
-		return nil, errors.New("hetzner: credentials missing")
+	switch {
+	case config.APIToken != "":
+		cfg := &hetznerv1.Config{
+			APIToken:           config.APIToken,
+			PropagationTimeout: config.PropagationTimeout,
+			PollingInterval:    config.PollingInterval,
+			TTL:                config.TTL,
+			HTTPClient:         config.HTTPClient,
+		}
+
+		provider, err := hetznerv1.NewDNSProviderConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+
+		return &DNSProvider{provider: provider}, nil
+
+	case config.APIKey != "":
+		cfg := &legacy.Config{
+			APIKey:             config.APIKey,
+			PropagationTimeout: config.PropagationTimeout,
+			PollingInterval:    config.PollingInterval,
+			TTL:                config.TTL,
+			HTTPClient:         config.HTTPClient,
+		}
+
+		provider, err := legacy.NewDNSProviderConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+
+		return &DNSProvider{provider: provider}, nil
 	}
 
-	if config.TTL < minTTL {
-		return nil, fmt.Errorf("hetzner: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
-	}
-
-	client := internal.NewClient(config.APIKey)
-
-	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
-	}
-
-	return &DNSProvider{config: config, client: client}, nil
+	return nil, errors.New("hetzner: credentials missing")
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.config.PropagationTimeout, d.config.PollingInterval
+	return d.provider.Timeout()
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("hetzner: could not find zone for domain %q: %w", domain, err)
-	}
-
-	zone := dns01.UnFqdn(authZone)
-
-	ctx := context.Background()
-
-	zoneID, err := d.client.GetZoneID(ctx, zone)
-	if err != nil {
-		return fmt.Errorf("hetzner: %w", err)
-	}
-
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
-	if err != nil {
-		return fmt.Errorf("hetzner: %w", err)
-	}
-
-	record := internal.DNSRecord{
-		Type:   "TXT",
-		Name:   subDomain,
-		Value:  info.Value,
-		TTL:    d.config.TTL,
-		ZoneID: zoneID,
-	}
-
-	if err := d.client.CreateRecord(ctx, record); err != nil {
-		return fmt.Errorf("hetzner: failed to add TXT record: fqdn=%s, zoneID=%s: %w", info.EffectiveFQDN, zoneID, err)
-	}
-
-	return nil
+	return d.provider.Present(domain, token, keyAuth)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("hetzner: could not find zone for domain %q: %w", domain, err)
-	}
-
-	zone := dns01.UnFqdn(authZone)
-
-	ctx := context.Background()
-
-	zoneID, err := d.client.GetZoneID(ctx, zone)
-	if err != nil {
-		return fmt.Errorf("hetzner: %w", err)
-	}
-
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
-	if err != nil {
-		return fmt.Errorf("hetzner: %w", err)
-	}
-
-	record, err := d.client.GetTxtRecord(ctx, subDomain, info.Value, zoneID)
-	if err != nil {
-		return fmt.Errorf("hetzner: %w", err)
-	}
-
-	if err := d.client.DeleteRecord(ctx, record.ID); err != nil {
-		return fmt.Errorf("hetzner: failed to delete TXT record: id=%s, name=%s: %w", record.ID, record.Name, err)
-	}
-
-	return nil
+	return d.provider.CleanUp(domain, token, keyAuth)
 }

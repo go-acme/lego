@@ -1,0 +1,8 @@
+{
+  "records": [
+    {
+      "value": "198.51.100.1",
+      "comment": "My web server at Hetzner Cloud."
+    }
+  ]
+}

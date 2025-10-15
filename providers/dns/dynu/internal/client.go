@@ -12,8 +12,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v4/platform/wait"
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
@@ -123,12 +124,7 @@ func (c *Client) doRetry(ctx context.Context, method, uri string, body []byte, r
 	bo := backoff.NewExponentialBackOff()
 	bo.InitialInterval = 1 * time.Second
 
-	err := backoff.RetryNotify(operation, bo, notify)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return wait.Retry(ctx, operation, backoff.WithBackOff(bo), backoff.WithNotify(notify))
 }
 
 func (c *Client) do(ctx context.Context, method, uri string, body []byte, result any) error {

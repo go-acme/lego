@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
@@ -40,35 +40,25 @@ func NewClient(apiKey string) *Client {
 
 // GetZone gets a zone.
 func (c *Client) GetZone(ctx context.Context, req ZoneConfigsFindRequest) (*ZoneConfig, error) {
-	var zoneConfig *ZoneConfig
-
-	operation := func() error {
+	operation := func() (*ZoneConfig, error) {
 		response, err := c.ListZoneConfigs(ctx, req)
 		if err != nil {
-			return backoff.Permanent(err)
+			return nil, backoff.Permanent(err)
 		}
 
 		if response.Data[0].Status != "active" {
-			return fmt.Errorf("unexpected status: %q", response.Data[0].Status)
+			return nil, fmt.Errorf("unexpected status: %q", response.Data[0].Status)
 		}
 
-		zoneConfig = &response.Data[0]
-
-		return nil
+		return &response.Data[0], nil
 	}
 
 	bo := backoff.NewExponentialBackOff()
 	bo.InitialInterval = 3 * time.Second
 	bo.MaxInterval = 10 * bo.InitialInterval
-	bo.MaxElapsedTime = 100 * bo.InitialInterval
 
 	// retry in case the zone was edited recently and is not yet active
-	err := backoff.Retry(operation, bo)
-	if err != nil {
-		return nil, err
-	}
-
-	return zoneConfig, nil
+	return backoff.Retry(ctx, operation, backoff.WithBackOff(bo), backoff.WithMaxElapsedTime(100*bo.InitialInterval))
 }
 
 // ListZoneConfigs lists zone configuration.

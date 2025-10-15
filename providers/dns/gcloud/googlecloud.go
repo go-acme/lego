@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/compute/metadata"
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
@@ -266,24 +267,28 @@ func (d *DNSProvider) applyChanges(zone string, change *gdns.Change) error {
 	chgID := chg.Id
 
 	// wait for change to be acknowledged
-	return wait.For("apply change", 30*time.Second, 3*time.Second, func() (bool, error) {
-		if d.config.Debug {
-			data, _ := json.Marshal(change)
-			log.Printf("change (Get): %s", string(data))
-		}
+	return wait.Retry(context.Background(),
+		func() error {
+			if d.config.Debug {
+				data, _ := json.Marshal(change)
+				log.Printf("change (Get): %s", string(data))
+			}
 
-		chg, err = d.client.Changes.Get(d.config.Project, zone, chgID).Do()
-		if err != nil {
-			data, _ := json.Marshal(change)
-			return false, fmt.Errorf("failed to get changes [zone %s, change %s]: %w", zone, string(data), err)
-		}
+			chg, err = d.client.Changes.Get(d.config.Project, zone, chgID).Do()
+			if err != nil {
+				data, _ := json.Marshal(change)
+				return fmt.Errorf("failed to get changes [zone %s, change %s]: %w", zone, string(data), err)
+			}
 
-		if chg.Status == changeStatusDone {
-			return true, nil
-		}
+			if chg.Status != changeStatusDone {
+				return fmt.Errorf("status: %s", chg.Status)
+			}
 
-		return false, fmt.Errorf("status: %s", chg.Status)
-	})
+			return nil
+		},
+		backoff.WithBackOff(backoff.NewConstantBackOff(3*time.Second)),
+		backoff.WithMaxElapsedTime(30*time.Second),
+	)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.

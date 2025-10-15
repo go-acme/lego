@@ -2,6 +2,7 @@
 package huaweicloud
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -148,19 +150,27 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	d.recordIDs[token] = recordSetID
 	d.recordIDsMu.Unlock()
 
-	err = wait.For("record set sync on "+domain, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
-		rs, errShow := d.client.ShowRecordSet(&hwmodel.ShowRecordSetRequest{
-			ZoneId:      zoneID,
-			RecordsetId: recordSetID,
-		})
-		if errShow != nil {
-			return false, fmt.Errorf("show record set: %w", errShow)
-		}
+	err = wait.Retry(context.Background(),
+		func() error {
+			rs, errShow := d.client.ShowRecordSet(&hwmodel.ShowRecordSetRequest{
+				ZoneId:      zoneID,
+				RecordsetId: recordSetID,
+			})
+			if errShow != nil {
+				return fmt.Errorf("show record set: %w", errShow)
+			}
 
-		return !strings.HasSuffix(ptr.Deref(rs.Status), "PENDING_"), nil
-	})
+			if !strings.HasSuffix(ptr.Deref(rs.Status), "PENDING_") {
+				return nil
+			}
+
+			return fmt.Errorf("status: %s", ptr.Deref(rs.Status))
+		},
+		backoff.WithBackOff(backoff.NewConstantBackOff(d.config.PollingInterval)),
+		backoff.WithMaxElapsedTime(d.config.PropagationTimeout),
+	)
 	if err != nil {
-		return fmt.Errorf("huaweicloud: %w", err)
+		return fmt.Errorf("huaweicloud: record set sync on %s: %w", domain, err)
 	}
 
 	return nil

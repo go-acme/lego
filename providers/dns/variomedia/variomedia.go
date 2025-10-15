@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
@@ -179,14 +180,22 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func (d *DNSProvider) waitJob(ctx context.Context, domain, id string) error {
-	return wait.For("variomedia: apply change on "+domain, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
-		result, err := d.client.GetJob(ctx, id)
-		if err != nil {
-			return false, err
-		}
+	return wait.Retry(context.Background(),
+		func() error {
+			result, err := d.client.GetJob(ctx, id)
+			if err != nil {
+				return fmt.Errorf("apply change on %s: %w", domain, err)
+			}
 
-		log.Infof("variomedia: [%s] %s: %s %s", domain, result.Data.ID, result.Data.Attributes.JobType, result.Data.Attributes.Status)
+			log.Infof("variomedia: [%s] %s: %s %s", domain, result.Data.ID, result.Data.Attributes.JobType, result.Data.Attributes.Status)
 
-		return result.Data.Attributes.Status == "done", nil
-	})
+			if result.Data.Attributes.Status != "done" {
+				return fmt.Errorf("apply change on %s: status: %s", domain, result.Data.Attributes.Status)
+			}
+
+			return nil
+		},
+		backoff.WithBackOff(backoff.NewConstantBackOff(d.config.PollingInterval)),
+		backoff.WithMaxElapsedTime(d.config.PropagationTimeout),
+	)
 }

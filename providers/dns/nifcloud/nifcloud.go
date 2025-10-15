@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -179,11 +180,20 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 	statusID := resp.ChangeInfo.ID
 
-	return wait.For("nifcloud", 120*time.Second, 4*time.Second, func() (bool, error) {
-		resp, err := d.client.GetChange(ctx, statusID)
-		if err != nil {
-			return false, fmt.Errorf("failed to query change status: %w", err)
-		}
-		return resp.ChangeInfo.Status == "INSYNC", nil
-	})
+	return wait.Retry(context.Background(),
+		func() error {
+			resp, err := d.client.GetChange(ctx, statusID)
+			if err != nil {
+				return fmt.Errorf("get change: %w", err)
+			}
+
+			if resp.ChangeInfo.Status != "INSYNC" {
+				return fmt.Errorf("change status: %s", resp.ChangeInfo.Status)
+			}
+
+			return nil
+		},
+		backoff.WithBackOff(backoff.NewConstantBackOff(4*time.Second)),
+		backoff.WithMaxElapsedTime(120*time.Second),
+	)
 }

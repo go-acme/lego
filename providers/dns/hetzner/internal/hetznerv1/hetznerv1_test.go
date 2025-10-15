@@ -164,7 +164,7 @@ func TestDNSProvider_Present_error(t *testing.T) {
 	provider.config.PropagationTimeout = 1 * time.Second
 
 	err := provider.Present("example.com", "", "foobar")
-	require.EqualError(t, err, "hetzner: wait (add): action 1: error: action_failed: Action failed")
+	require.EqualError(t, err, "hetzner: wait (add RRSet records): action 1: error: action_failed: Action failed")
 }
 
 func TestDNSProvider_Present_running(t *testing.T) {
@@ -180,7 +180,7 @@ func TestDNSProvider_Present_running(t *testing.T) {
 	provider.config.PropagationTimeout = 1 * time.Second
 
 	err := provider.Present("example.com", "", "foobar")
-	require.EqualError(t, err, "hetzner: wait (add): action: add RRSet records: time limit exceeded: last error: action 1 is running")
+	require.EqualError(t, err, "hetzner: wait (add RRSet records): action 1 is running")
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
@@ -209,7 +209,7 @@ func TestDNSProvider_CleanUp_error(t *testing.T) {
 	provider.config.PropagationTimeout = 1 * time.Second
 
 	err := provider.CleanUp("example.com", "", "foobar")
-	require.EqualError(t, err, "hetzner: wait (remove): action 1: error: action_failed: Action failed")
+	require.EqualError(t, err, "hetzner: wait (remove RRSet records): action 1: error: action_failed: Action failed")
 }
 
 func TestDNSProvider_CleanUp_running(t *testing.T) {
@@ -225,5 +225,5 @@ func TestDNSProvider_CleanUp_running(t *testing.T) {
 	provider.config.PropagationTimeout = 1 * time.Second
 
 	err := provider.CleanUp("example.com", "", "foobar")
-	require.EqualError(t, err, "hetzner: wait (remove): action: remove RRSet records: time limit exceeded: last error: action 1 is running")
+	require.EqualError(t, err, "hetzner: wait (remove RRSet records): action 1 is running")
 }

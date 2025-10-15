@@ -1,8 +1,10 @@
 package vinyldns
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/wait"
 	"github.com/vinyldns/go-vinyldns/vinyldns"
@@ -95,20 +97,22 @@ func (d *DNSProvider) deleteRecordSet(existingRecord *vinyldns.RecordSet) error 
 }
 
 func (d *DNSProvider) waitForChanges(operation string, resp *vinyldns.RecordSetUpdateResponse) error {
-	return wait.For("vinyldns", d.config.PropagationTimeout, d.config.PollingInterval,
-		func() (bool, error) {
+	return wait.Retry(context.Background(),
+		func() error {
 			change, err := d.client.RecordSetChange(resp.Zone.ID, resp.RecordSet.ID, resp.ChangeID)
 			if err != nil {
-				return false, fmt.Errorf("failed to query change status: %w", err)
+				return fmt.Errorf("failed to query change status: %w", err)
 			}
 
-			if change.Status == "Complete" {
-				return true, nil
+			if change.Status != "Complete" {
+				return fmt.Errorf("waiting operation: %s, zoneID: %s, recordsetID: %s, changeID: %s",
+					operation, resp.Zone.ID, resp.RecordSet.ID, resp.ChangeID)
 			}
 
-			return false, fmt.Errorf("waiting operation: %s, zoneID: %s, recordsetID: %s, changeID: %s",
-				operation, resp.Zone.ID, resp.RecordSet.ID, resp.ChangeID)
+			return nil
 		},
+		backoff.WithBackOff(backoff.NewConstantBackOff(d.config.PollingInterval)),
+		backoff.WithMaxElapsedTime(d.config.PropagationTimeout),
 	)
 }
 

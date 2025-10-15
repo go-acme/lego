@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/platform/wait"
@@ -128,27 +129,39 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			},
 		}
 
-		return wait.For("f5xc create", 60*time.Second, 2*time.Second, func() (bool, error) {
+		return d.waitFor(context.Background(), func() error {
 			_, err = d.client.CreateRRSet(context.Background(), dns01.UnFqdn(authZone), d.config.GroupName, rrSet)
 			if err != nil {
-				return false, fmt.Errorf("f5xc: create RR set: %w", err)
+				return fmt.Errorf("create RR set: %w", err)
 			}
 
-			return true, nil
+			return nil
 		})
 	}
 
 	// Update RRSet.
 	existingRRSet.RRSet.TXTRecord.Values = append(existingRRSet.RRSet.TXTRecord.Values, info.Value)
 
-	return wait.For("f5xc replace", 60*time.Second, 2*time.Second, func() (bool, error) {
+	return d.waitFor(context.Background(), func() error {
 		_, err = d.client.ReplaceRRSet(context.Background(), dns01.UnFqdn(authZone), d.config.GroupName, subDomain, "TXT", existingRRSet.RRSet)
 		if err != nil {
-			return false, fmt.Errorf("f5xc: replace RR set: %w", err)
+			return fmt.Errorf("replace RR set: %w", err)
 		}
 
-		return true, nil
+		return nil
 	})
+}
+
+func (d *DNSProvider) waitFor(ctx context.Context, operation func() error) error {
+	err := wait.Retry(ctx, operation,
+		backoff.WithBackOff(backoff.NewConstantBackOff(2*time.Second)),
+		backoff.WithMaxElapsedTime(60*time.Second),
+	)
+	if err != nil {
+		return fmt.Errorf("f5xc: %w", err)
+	}
+
+	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.

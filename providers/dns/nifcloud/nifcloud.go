@@ -179,7 +179,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 	statusID := resp.ChangeInfo.ID
 
-	return wait.For("nifcloud", 120*time.Second, 4*time.Second, func() (bool, error) {
+	return wait.For("nifcloud", d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
 		resp, err := d.client.GetChange(ctx, statusID)
 		if err != nil {
 			return false, fmt.Errorf("failed to query change status: %w", err)

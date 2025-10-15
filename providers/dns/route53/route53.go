@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	awstypes "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -249,18 +250,22 @@ func (d *DNSProvider) changeRecord(ctx context.Context, action awstypes.ChangeAc
 	changeID := resp.ChangeInfo.Id
 
 	if d.config.WaitForRecordSetsChanged {
-		return wait.For("route53", d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
-			resp, err := d.client.GetChange(ctx, &route53.GetChangeInput{Id: changeID})
-			if err != nil {
-				return false, fmt.Errorf("failed to query change status: %w", err)
-			}
+		return wait.Retry(context.Background(),
+			func() error {
+				resp, err := d.client.GetChange(ctx, &route53.GetChangeInput{Id: changeID})
+				if err != nil {
+					return fmt.Errorf("failed to query change status: %w", err)
+				}
 
-			if resp.ChangeInfo.Status == awstypes.ChangeStatusInsync {
-				return true, nil
-			}
+				if resp.ChangeInfo.Status != awstypes.ChangeStatusInsync {
+					return fmt.Errorf("unable to retrieve change: ID=%s, status=%s", ptr.Deref(changeID), resp.ChangeInfo.Status)
+				}
 
-			return false, fmt.Errorf("unable to retrieve change: ID=%s", ptr.Deref(changeID))
-		})
+				return nil
+			},
+			backoff.WithBackOff(backoff.NewConstantBackOff(d.config.PollingInterval)),
+			backoff.WithMaxElapsedTime(d.config.PropagationTimeout),
+		)
 	}
 
 	return nil

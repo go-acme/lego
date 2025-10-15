@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
@@ -162,14 +163,22 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // waitNameservers At the time of writing 4 servers are found as authoritative, but 8 are reported during the sync.
 // If this is not done, the secondary verification done by Let's Encrypt server will fail quire a bit.
 func (d *DNSProvider) waitNameservers(ctx context.Context, domain string, zone *internal.Zone) error {
-	return wait.For("Nameserver sync on "+domain, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
-		syncProgress, err := d.client.GetUpdateStatus(ctx, zone.Name)
-		if err != nil {
-			return false, err
-		}
+	return wait.Retry(context.Background(),
+		func() error {
+			syncProgress, err := d.client.GetUpdateStatus(ctx, zone.Name)
+			if err != nil {
+				return fmt.Errorf("nameserver sync on %s: %w", domain, err)
+			}
 
-		log.Infof("[%s] Sync %d/%d complete", domain, syncProgress.Updated, syncProgress.Total)
+			log.Infof("[%s] Sync %d/%d complete", domain, syncProgress.Updated, syncProgress.Total)
 
-		return syncProgress.Complete, nil
-	})
+			if !syncProgress.Complete {
+				return fmt.Errorf("nameserver sync on %s not complete", domain)
+			}
+
+			return nil
+		},
+		backoff.WithBackOff(backoff.NewConstantBackOff(d.config.PollingInterval)),
+		backoff.WithMaxElapsedTime(d.config.PropagationTimeout),
+	)
 }

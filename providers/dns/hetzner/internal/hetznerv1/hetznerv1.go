@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/platform/wait"
@@ -123,9 +124,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: add RRSet records: %w", err)
 	}
 
-	err = d.waitAction(ctx, "action: add RRSet records", action.ID)
+	err = d.waitAction(ctx, action.ID)
 	if err != nil {
-		return fmt.Errorf("hetzner: wait (add): %w", err)
+		return fmt.Errorf("hetzner: wait (add RRSet records): %w", err)
 	}
 
 	return nil
@@ -164,9 +165,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: remove RRSet records: %w", err)
 	}
 
-	err = d.waitAction(ctx, "action: remove RRSet records", action.ID)
+	err = d.waitAction(ctx, action.ID)
 	if err != nil {
-		return fmt.Errorf("hetzner: wait (remove): %w", err)
+		return fmt.Errorf("hetzner: wait (remove RRSet records): %w", err)
 	}
 
 	return nil
@@ -178,24 +179,26 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) waitAction(ctx context.Context, msg string, actionID int) error {
-	return wait.For(msg, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
-		result, err := d.client.GetAction(ctx, actionID)
-		if err != nil {
-			return false, fmt.Errorf("get action %d: %w", actionID, err)
-		}
+func (d *DNSProvider) waitAction(ctx context.Context, actionID int) error {
+	return wait.Retry(ctx,
+		func() error {
+			result, err := d.client.GetAction(ctx, actionID)
+			if err != nil {
+				return backoff.Permanent(fmt.Errorf("get action %d: %w", actionID, err))
+			}
 
-		switch result.Status {
-		case internal.StatusRunning:
-			return false, fmt.Errorf("action %d is %s", actionID, internal.StatusRunning)
+			switch result.Status {
+			case internal.StatusRunning:
+				return fmt.Errorf("action %d is %s", actionID, internal.StatusRunning)
 
-		case internal.StatusSuccess:
-			return true, nil
+			case internal.StatusError:
+				return fmt.Errorf("action %d: %s: %w", actionID, internal.StatusError, result.ErrorInfo)
 
-		case internal.StatusError:
-			return true, fmt.Errorf("action %d: %s: %w", actionID, internal.StatusError, result.ErrorInfo)
-		}
-
-		return true, nil
-	})
+			default:
+				return nil
+			}
+		},
+		backoff.WithBackOff(backoff.NewConstantBackOff(d.config.PollingInterval)),
+		backoff.WithMaxElapsedTime(d.config.PropagationTimeout),
+	)
 }

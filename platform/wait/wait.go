@@ -1,9 +1,11 @@
 package wait
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/log"
 )
 
@@ -34,4 +36,13 @@ func For(msg string, timeout, interval time.Duration, f func() (bool, error)) er
 
 		time.Sleep(interval)
 	}
+}
+
+// Retry retries the given operation until it succeeds or the context is canceled.
+// Similar to [backoff.Retry] but with a different signature.
+func Retry(ctx context.Context, operation func() error, opts ...backoff.RetryOption) error {
+	_, err := backoff.Retry(ctx, func() (any, error) {
+		return nil, operation()
+	}, opts...)
+	return err
 }

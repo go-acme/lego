@@ -16,6 +16,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/http01"
 	"github.com/go-acme/lego/v4/challenge/tlsalpn01"
 	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v4/platform/wait"
 )
 
 type byType []acme.Challenge
@@ -110,29 +111,28 @@ func validate(core *api.Core, domain string, chlg acme.Challenge) error {
 
 	// After the path is sent, the ACME server will access our server.
 	// Repeatedly check the server for an updated status on our request.
-	operation := func() (bool, error) {
+	operation := func() error {
 		authz, err := core.Authorizations.Get(chlng.AuthorizationURL)
 		if err != nil {
-			return false, backoff.Permanent(err)
+			return backoff.Permanent(err)
 		}
 
 		valid, err := checkAuthorizationStatus(authz)
 		if err != nil {
-			return false, backoff.Permanent(err)
+			return backoff.Permanent(err)
 		}
 
 		if valid {
 			log.Infof("[%s] The server validated our request", domain)
-			return true, nil
+			return nil
 		}
 
-		return false, fmt.Errorf("the server didn't respond to our request (status=%s)", authz.Status)
+		return fmt.Errorf("the server didn't respond to our request (status=%s)", authz.Status)
 	}
 
-	_, errR := backoff.Retry(ctx, operation,
+	return wait.Retry(ctx, operation,
 		backoff.WithBackOff(bo),
 		backoff.WithMaxElapsedTime(100*initialInterval))
-	return errR
 }
 
 func checkChallengeStatus(chlng acme.ExtendedChallenge) (bool, error) {

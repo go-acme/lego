@@ -34,7 +34,7 @@ require (
 	github.com/go-acme/alidns-20150109/v4 v4.6.1
 	github.com/go-acme/tencentclouddnspod v1.1.10
 	github.com/go-acme/tencentedgdeone v1.1.19
-	github.com/go-jose/go-jose/v4 v4.1.2
+	github.com/go-jose/go-jose/v4 v4.1.3
 	github.com/go-viper/mapstructure/v2 v2.4.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/go-querystring v1.1.0

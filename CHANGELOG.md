@@ -6,6 +6,27 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v4.27.0
+
+- Release date: 2025-10-17
+- Tag: [v4.27.0](https://github.com/go-acme/lego/releases/tag/v4.27.0)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Octenium
+- **[dnsprovider]** Add DNS provider for Hostinger
+- **[dnsprovider]** Add DNS provider for Beget.com
+
+### Changed
+
+- **[cli]** support `--private-key` with a PKCS#8 keypair
+- **[dnsprovider]** hetzner: update to new API
+- **[dnsprovider]** otc: adds option to use private zone
+
+### Fixed
+
+- **[lib]** fix: deduplicate order identifiers
+
 ## v4.26.0
 
 - Release date: 2025-09-13

@@ -1,6 +1,9 @@
 # Changelog
 
-## [v4.26.0](https://github.com/go-acme/lego/releases/tag/v4.26.0) (2025-09-13)
+## v4.26.0
+
+- Release date: 2025-09-13
+- Tag: [v4.26.0](https://github.com/go-acme/lego/releases/tag/v4.26.0)
 
 ### Added
 
@@ -20,10 +23,13 @@
 
 - **[dnsprovider]** selectelv2: add missing options
 
-## [v4.25.2](https://github.com/go-acme/lego/releases/tag/v4.25.2) (2025-08-06)
+## v4.25.2
+
+- Release date: 2025-08-06
+- Tag: [v4.25.2](https://github.com/go-acme/lego/releases/tag/v4.25.2)
 
 ### Changed
-- 
+
 - **[cli,log]** log when dynamic renew date not yet reached
 
 ### Fixed
@@ -31,13 +37,19 @@
 - **[cli]** fix: remove wrong env var
 - **[lib,cli]** fix: enforce HTTPS to the ACME server
 
-## [v4.25.1](https://github.com/go-acme/lego/releases/tag/v4.25.1) (2025-07-21)
+## v4.25.1
+
+- Release date: 2025-07-21
+- Tag: [v4.25.1](https://github.com/go-acme/lego/releases/tag/v4.25.1)
 
 ### Fixed
 
 - **[cli]** fix: wrong CLI flag type
 
-## [v4.25.0](https://github.com/go-acme/lego/releases/tag/v4.25.0) (2025-07-21)
+## v4.25.0
+
+- Release date: 2025-07-21
+- Tag: [v4.25.0](https://github.com/go-acme/lego/releases/tag/v4.25.0)
 
 The binary size of this release is about ~50% smaller compared to previous releases.
 
@@ -50,7 +62,7 @@ This will also reduce the module cache usage by 320 MB (this will only affect us
 - **[lib,cli]** Add an option to disable common name in CSR
 
 ### Changed
-- 
+
 - **[dnsprovider]** vinyldns: add an option to add quotes around the TXT record value
 - **[dnsprovider]** ionos: increase default propagation timeout
 
@@ -58,7 +70,10 @@ This will also reduce the module cache usage by 320 MB (this will only affect us
 
 - **[cli]** fix: enforce domain into renewal command
 
-## [v4.24.0](https://github.com/go-acme/lego/releases/tag/v4.24.0) (2025-07-07)
+## v4.24.0
+
+- Release date: 2025-07-07
+- Tag: [v4.24.0](https://github.com/go-acme/lego/releases/tag/v4.24.0)
 
 ### Added
 
@@ -81,13 +96,19 @@ This will also reduce the module cache usage by 320 MB (this will only affect us
 - **[dnsprovider]** nicmanager: fix mode env var name and value
 - **[lib,cli]** Check order identifiers difference between client and server
 
-## [v4.23.1](https://github.com/go-acme/lego/releases/tag/v4.23.1) (2025-04-16)
+## v4.23.1
+
+- Release date: 2025-04-16
+- Tag: [v4.23.1](https://github.com/go-acme/lego/releases/tag/v4.23.1)
 
 Due to an error related to Snapcraft, some artifacts of the v4.23.0 release have not been published.
 
 This release contains the same things as v4.23.0. 
 
-## [v4.23.0](https://github.com/go-acme/lego/releases/tag/v4.23.0) (2025-04-16)
+## v4.23.0
+
+- Release date: 2025-04-16
+- Tag: [v4.23.0](https://github.com/go-acme/lego/releases/tag/v4.23.0)
 
 ### Added
 
@@ -118,13 +139,19 @@ This release contains the same things as v4.23.0.
 - **[dnsprovider]** pdns: fix TXT record cleanup for wildcard domains
 - **[dnsprovider]** allinkl: remove `ReturnInfo`
 
-## [v4.22.2](https://github.com/go-acme/lego/releases/tag/v4.22.2) (2025-02-17)
+## v4.22.2
+
+- Release date: 2025-02-17
+- Tag: [v4.22.2](https://github.com/go-acme/lego/releases/tag/v4.22.2)
 
 ### Fixed
 
 - **[dnsprovider]** acme-dns: use new registred account
 
-## [v4.22.1](https://github.com/go-acme/lego/releases/tag/v4.22.1) (2025-02-17)
+## v4.22.1
+
+- Release date: 2025-02-17
+- Tag: [v4.22.1](https://github.com/go-acme/lego/releases/tag/v4.22.1)
 
 ### Fixed
 
@@ -132,7 +159,10 @@ This release contains the same things as v4.23.0.
 
 ### Added
 
-## [v4.22.0](https://github.com/go-acme/lego/releases/tag/v4.22.0) (2025-02-17)
+## v4.22.0
+
+- Release date: 2025-02-17
+- Tag: [v4.22.0](https://github.com/go-acme/lego/releases/tag/v4.22.0)
 
 ### Added
 
@@ -160,7 +190,10 @@ This release contains the same things as v4.23.0.
 
 - **[cli,log]** remove extra debug logs
 
-## [v4.21.0](https://github.com/go-acme/lego/releases/tag/v4.21.0) (2024-12-20)
+## v4.21.0
+
+- Release date: 2024-12-20
+- Tag: [v4.21.0](https://github.com/go-acme/lego/releases/tag/v4.21.0)
 
 ### Added
 
@@ -181,11 +214,17 @@ This release contains the same things as v4.23.0.
 - **[dnsprovider]** netcup: increase default propagation values
 - **[dnsprovider]** otc: use default transport
 
-## [v4.20.4](https://github.com/go-acme/lego/releases/tag/v4.20.4) (2024-11-21)
+## v4.20.4
+
+- Release date: 2024-11-21
+- Tag: [v4.20.4](https://github.com/go-acme/lego/releases/tag/v4.20.4)
 
 Publish the Snap to the Snapcraft stable channel.
 
-## [v4.20.3](https://github.com/go-acme/lego/releases/tag/v4.20.3) (2024-11-21)
+## v4.20.3
+
+- Release date: 2024-11-21
+- Tag: [v4.20.3](https://github.com/go-acme/lego/releases/tag/v4.20.3)
 
 ### Fixed
 
@@ -193,7 +232,10 @@ Publish the Snap to the Snapcraft stable channel.
 - **[dnsprovider]** directadmin: fix timeout configuration
 - **[httpprovider]** fix: HTTP server IPv6 matching
 
-## [v4.20.2](https://github.com/go-acme/lego/releases/tag/v4.20.2) (2024-11-11)
+## v4.20.2
+
+- Release date: 2024-11-11
+- Tag: [v4.20.2](https://github.com/go-acme/lego/releases/tag/v4.20.2)
 
 ### Added
 
@@ -221,28 +263,41 @@ Publish the Snap to the Snapcraft stable channel.
 - **[dnsprovider]** volcengine: set API information within the default configuration
 - **[log]** Parse printf verbs in log line output
 
-## v4.20.1 (2024-11-11)
+## v4.20.1
+
+- Release date: 2024-11-11
 
 Cancelled due to CI failure.
 
-## v4.20.0 (2024-11-11)
+## v4.20.0
+
+- Release date: 2024-11-11
 
 Cancelled due to CI failure.
 
-## [v4.19.2](https://github.com/go-acme/lego/releases/tag/v4.19.2) (2024-10-06)
+## v4.19.2
+
+- Release date: 2024-10-06
+- Tag: [v4.19.2](https://github.com/go-acme/lego/releases/tag/v4.19.2)
 
 ### Fixed
 
 - **[lib]** go1.22 compatibility
 
-## [v4.19.1](https://github.com/go-acme/lego/releases/tag/v4.19.1) (2024-10-06)
+## v4.19.1
+
+- Release date: 2024-10-06
+- Tag: [v4.19.1](https://github.com/go-acme/lego/releases/tag/v4.19.1)
 
 ### Fixed
 
 - **[dnsprovider]** selectelv2: use baseURL from configuration
 - **[dnsprovider]** epik: add User-Agent
 
-## [v4.19.0](https://github.com/go-acme/lego/releases/tag/v4.19.0) (2024-10-03)
+## v4.19.0
+
+- Release date: 2024-10-03
+- Tag: [v4.19.0](https://github.com/go-acme/lego/releases/tag/v4.19.0)
 
 ### Added
 
@@ -264,7 +319,10 @@ Cancelled due to CI failure.
 - **[dnsprovider]** namesilo: restrict CleanUp
 - **[dnsprovider]** godaddy: fix cleanup
 
-## [v4.18.0](https://github.com/go-acme/lego/releases/tag/v4.18.0) (2024-08-30)
+## v4.18.0
+
+- Release date: 2024-08-30
+- Tag: [v4.18.0](https://github.com/go-acme/lego/releases/tag/v4.18.0)
 
 ### Added
 
@@ -286,13 +344,19 @@ Cancelled due to CI failure.
 
 - **[ari]** fix: avoid Int63n panic in ShouldRenewAt()
 
-## [v4.17.4](https://github.com/go-acme/lego/releases/tag/v4.17.4) (2024-06-12)
+## v4.17.4
+
+- Release date: 2024-06-12
+- Tag: [v4.17.4](https://github.com/go-acme/lego/releases/tag/v4.17.4)
 
 ### Fixed
 
 - **[dnsprovider]** Update dependencies
 
-## [v4.17.3](https://github.com/go-acme/lego/releases/tag/v4.17.3) (2024-05-28)
+## v4.17.3
+
+- Release date: 2024-05-28
+- Tag: [v4.17.3](https://github.com/go-acme/lego/releases/tag/v4.17.3)
 
 ### Added
 
@@ -320,13 +384,17 @@ Cancelled due to CI failure.
 - **[dnsprovider]** pdns: reconstruct zone URLs to enable non-root folder API endpoints
 - **[dnsprovider]** alidns: fix link to API documentation
 
-## v4.17.2 (2024-05-28)
+## v4.17.2
+
+- Release date: 2024-05-28
 
 Canceled due to a release failure related to Snapcraft.
 
 The Snapcraft release are disabled for now.
 
-## v4.17.1 (2024-05-28)
+## v4.17.1
+
+- Release date: 2024-05-28
 
 Canceled due to a release failure related to oci-go-sdk.
 
@@ -335,17 +403,25 @@ The module `github.com/oracle/oci-go-sdk/v65` uses `github.com/gofrs/flock` but 
 
 Due to that we will remove the Solaris build.
 
-## v4.17.0 (2024-05-28)
+## v4.17.0
+
+- Release date: 2024-05-28
 
 Canceled due to a release failure related to Snapcraft.
 
-## [v4.16.1](https://github.com/go-acme/lego/releases/tag/v4.16.1) (2024-03-10)
+## v4.16.1
+
+- Release date: 2024-03-10
+- Tag: [v4.16.1](https://github.com/go-acme/lego/releases/tag/v4.16.1)
 
 ### Fixed
 
 - **[cli,ari]** fix: don't generate ARI cert ID if ARI is not enable
 
-## [v4.16.0](https://github.com/go-acme/lego/releases/tag/v4.16.0) (2024-03-09)
+## v4.16.0
+
+- Release date: 2024-03-09
+- Tag: [v4.16.0](https://github.com/go-acme/lego/releases/tag/v4.16.0)
 
 ### Added
 
@@ -366,7 +442,10 @@ Canceled due to a release failure related to Snapcraft.
 - **[dnsprovider]** easydns: fix zone detection
 - **[dnsprovider]** ns1: fix record creation
 
-## [v4.15.0](https://github.com/go-acme/lego/releases/tag/v4.15.0) (2024-01-28)
+## v4.15.0
+
+- Release date: 2024-01-28
+- Tag: [v4.15.0](https://github.com/go-acme/lego/releases/tag/v4.15.0)
 
 ### Added
 
@@ -404,7 +483,10 @@ Canceled due to a release failure related to Snapcraft.
 - **[dnsprovider]** nifcloud: fix API requests
 - **[dnsprovider]** otc: sequential challenge
 
-## [v4.14.1](https://github.com/go-acme/lego/releases/tag/v4.14.1) (2023-09-20)
+## v4.14.1
+
+- Release date: 2023-09-20
+- Tag: [v4.14.1](https://github.com/go-acme/lego/releases/tag/v4.14.1)
 
 ### Fixed
 
@@ -412,11 +494,16 @@ Canceled due to a release failure related to Snapcraft.
 - **[dnsprovider]** bunny: use NRDCG fork
 - **[dnsprovider]** ovh: update client to v1.4.2
 
-## v4.14.1 (2023-09-19)
+## v4.14.1
+
+- Release date: 2023-09-19
 
 Cancelled due to CI failure.
 
-## [v4.14.0](https://github.com/go-acme/lego/releases/tag/v4.14.0) (2023-08-20)
+## v4.14.0
+
+- Release date: 2023-08-20
+- Tag: [v4.14.0](https://github.com/go-acme/lego/releases/tag/v4.14.0)
 
 ### Added
 
@@ -435,20 +522,29 @@ Cancelled due to CI failure.
 - **[dnsprovider]** pdns: fix notify
 - **[dnsprovider]** route53: avoid unexpected records deletion
 
-## [v4.13.3](https://github.com/go-acme/lego/releases/tag/v4.13.3) (2023-07-25)
+## v4.13.3
+
+- Release date: 2023-07-25
+- Tag: [v4.13.3](https://github.com/go-acme/lego/releases/tag/v4.13.3)
 
 ### Fixed
 
 - **[dnsprovider]** azuredns: fix configuration from env vars
 - **[dnsprovider]** gcore: change API domain
 
-## [v4.13.2](https://github.com/go-acme/lego/releases/tag/v4.13.2) (2023-07-21)
+## v4.13.2
+
+- Release date: 2023-07-21
+- Tag: [v4.13.2](https://github.com/go-acme/lego/releases/tag/v4.13.2)
 
 ### Fixed
 
 - **[dnsprovider]** servercow: fix regression
 
-## [v4.13.1](https://github.com/go-acme/lego/releases/tag/v4.13.1) (2023-07-20)
+## v4.13.1
+
+- Release date: 2023-07-20
+- Tag: [v4.13.1](https://github.com/go-acme/lego/releases/tag/v4.13.1)
 
 ### Added
 
@@ -469,24 +565,35 @@ Cancelled due to CI failure.
 - **[cli]** fix: list command
 - **[lib]** fix: ARI explanationURL
 
-## v4.13.0 (2023-07-20)
+## v4.13.0
+
+- Release date: 2023-07-20
 
 Cancelled due to a CI issue (no space left on device).
 
-## [v4.12.2](https://github.com/go-acme/lego/releases/tag/v4.12.2) (2023-06-19)
+## v4.12.2
+
+- Release date: 2023-06-19
+- Tag: [v4.12.2](https://github.com/go-acme/lego/releases/tag/v4.12.2)
 
 ### Fixed
 
 - **[dnsprovider]** dnsmadeeasy: fix DeleteRecord
 - **[lib]** fix: read status code from response
 
-## [v4.12.1](https://github.com/go-acme/lego/releases/tag/v4.12.1) (2023-06-06)
+## v4.12.1
+
+- Release date: 2023-06-06
+- Tag: [v4.12.1](https://github.com/go-acme/lego/releases/tag/v4.12.1)
 
 ### Fixed
 
 - **[dnsprovider]** pdns: fix record value
 
-## [v4.12.0](https://github.com/go-acme/lego/releases/tag/v4.12.0) (2023-05-28)
+## v4.12.0
+
+- Release date: 2023-05-28
+- Tag: [v4.12.0](https://github.com/go-acme/lego/releases/tag/v4.12.0)
 
 ### Added
 
@@ -504,7 +611,10 @@ Cancelled due to a CI issue (no space left on device).
 - **[dnsprovider]** autodns: fixes wrong zone in api call if CNAME is used
 - **[cli]** fix: archive only domain-related files on revoke
 
-## [v4.11.0](https://github.com/go-acme/lego/releases/tag/v4.11.0) (2023-05-02)
+## v4.11.0
+
+- Release date: 2023-05-02
+- Tag: [v4.11.0](https://github.com/go-acme/lego/releases/tag/v4.11.0)
 
 ### Added
 
@@ -526,18 +636,27 @@ Cancelled due to a CI issue (no space left on device).
 
 - **[dnsprovider]** rimuhosting: fix API base URL
 
-## [v4.10.2](https://github.com/go-acme/lego/releases/tag/v4.10.2) (2023-02-26)
+## v4.10.2
+
+- Release date: 2023-02-26
+- Tag: [v4.10.2](https://github.com/go-acme/lego/releases/tag/v4.10.2)
 
 Fix Docker image builds.
 
-## [v4.10.1](https://github.com/go-acme/lego/releases/tag/v4.10.1) (2023-02-25)
+## v4.10.1
+
+- Release date: 2023-02-25
+- Tag: [v4.10.1](https://github.com/go-acme/lego/releases/tag/v4.10.1)
 
 ### Fixed
 
 - **[dnsprovider,cname]** acmedns: fix CNAME support
 - **[dnsprovider]** dynu: fix subdomain support
 
-## [v4.10.0](https://github.com/go-acme/lego/releases/tag/v4.10.0) (2023-02-10)
+## v4.10.0
+
+- Release date: 2023-02-10
+- Tag: [v4.10.0](https://github.com/go-acme/lego/releases/tag/v4.10.0)
 
 ### Added
 
@@ -563,7 +682,10 @@ Fix Docker image builds.
 - **[dnsprovider]** pdns: fix usage of notify only when zone kind is Master or Slave
 - **[dnsprovider]** return an error when extracting record name
 
-## [v4.9.1](https://github.com/go-acme/lego/releases/tag/v4.9.1) (2022-11-25)
+## v4.9.1
+
+- Release date: 2022-11-25
+- Tag: [v4.9.1](https://github.com/go-acme/lego/releases/tag/v4.9.1)
 
 ### Changed
 
@@ -578,7 +700,10 @@ Fix Docker image builds.
 - **[dnsprovider]** hurricane: fix CNAME support
 - **[lib,cname]** cname: stop trying to traverse cname if none have been found
 
-## [v4.9.0](https://github.com/go-acme/lego/releases/tag/v4.9.0) (2022-10-03)
+## v4.9.0
+
+- Release date: 2022-10-03
+- Tag: [v4.9.0](https://github.com/go-acme/lego/releases/tag/v4.9.0)
 
 ### Added
 
@@ -608,7 +733,10 @@ Fix Docker image builds.
 - **[dnsprovider]** njalla: fix record id unmarshal error
 - **[dnsprovider]** tencentcloud: fix subdomain error
 
-## [v4.8.0](https://github.com/go-acme/lego/releases/tag/v4.8.0) (2022-06-30)
+## v4.8.0
+
+- Release date: 2022-06-30
+- Tag: [v4.8.0](https://github.com/go-acme/lego/releases/tag/v4.8.0)
 
 ### Added
 
@@ -624,7 +752,10 @@ Fix Docker image builds.
 - **[dnsprovider]** hetzner: set min TTL to 60s
 - **[docs]** refactoring and cleanup
 
-## [v4.7.0](https://github.com/go-acme/lego/releases/tag/v4.7.0) (2022-05-27)
+## v4.7.0
+
+- Release date: 2022-05-27
+- Tag: [v4.7.0](https://github.com/go-acme/lego/releases/tag/v4.7.0)
 
 ### Added
 
@@ -646,7 +777,10 @@ Fix Docker image builds.
 - **[dnsprovider]** tencentcloud: fix InvalidParameter.DomainInvalid error when using DNS challenges
 - **[lib]** fix: panic in certcrypto.ParsePEMPrivateKey
 
-## [v4.6.0](https://github.com/go-acme/lego/releases/tag/v4.6.0) (2022-01-18)
+## v4.6.0
+
+- Release date: 2022-01-18
+- Tag: [v4.6.0](https://github.com/go-acme/lego/releases/tag/v4.6.0)
 
 ### Added
 
@@ -668,13 +802,19 @@ Fix Docker image builds.
 - **[dnsprovider]** mythicbeasts: fix token expiration
 - **[dnsprovider]** rackspace: change zone ID to string
 
-## [v4.5.3](https://github.com/go-acme/lego/releases/tag/v4.5.3) (2021-09-06)
+## v4.5.3
+
+- Release date: 2021-09-06
+- Tag: [v4.5.3](https://github.com/go-acme/lego/releases/tag/v4.5.3)
 
 ### Fixed
 
 - **[lib,cli]** fix: missing preferred chain param for renew request
 
-## [v4.5.2](https://github.com/go-acme/lego/releases/tag/v4.5.2) (2021-09-01)
+## v4.5.2
+
+- Release date: 2021-09-01
+- Tag: [v4.5.2](https://github.com/go-acme/lego/releases/tag/v4.5.2)
 
 ### Added
 
@@ -704,15 +844,22 @@ Fix Docker image builds.
 - **[lib]** lib: use permanent error instead of context cancellation
 - **[dnsprovider]** desec: bump to v0.6.0
 
-## v4.5.1 (2021-09-01)
+## v4.5.1
+
+- Release date: 2021-10-01
 
 Cancelled due to a CI issue, replaced by v4.5.2.
 
-## v4.5.0 (2021-09-30)
+## v4.5.0
+
+- Release date: 2021-09-30
 
 Cancelled due to a CI issue, replaced by v4.5.2.
 
-## [v4.4.0](https://github.com/go-acme/lego/releases/tag/v4.4.0) (2021-06-08)
+## v4.4.0
+
+- Release date: 2021-06-08
+- Tag: [v4.4.0](https://github.com/go-acme/lego/releases/tag/v4.4.0)
 
 ### Added
 
@@ -740,13 +887,19 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 - **[dnsprovider]** nifcloud: Get zone info from dns01.FindZoneByFqdn
 - **[cli,lib]** csr: Support the type `NEW CERTIFICATE REQUEST`
 
-## [v4.3.1](https://github.com/go-acme/lego/releases/tag/v4.3.1) (2021-03-12)
+## v4.3.1
+
+- Release date: 2021-03-12
+- Tag: [v4.3.1](https://github.com/go-acme/lego/releases/tag/v4.3.1)
 
 ### Fixed
 
 - **[dnsprovider]** exoscale: fix dependency version.
 
-## [v4.3.0](https://github.com/go-acme/lego/releases/tag/v4.3.0) (2021-03-10)
+## v4.3.0
+
+- Release date: 2021-03-10
+- Tag: [v4.3.0](https://github.com/go-acme/lego/releases/tag/v4.3.0)
 
 ### Added
 
@@ -770,7 +923,10 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 - **[lib]** Increase HTTP client timeouts
 - **[lib]** preferred chain only match root name
 
-## [v4.2.0](https://github.com/go-acme/lego/releases/tag/v4.2.0) (2021-01-24)
+## v4.2.0
+
+- Release date: 2021-01-24
+- Tag: [v4.2.0](https://github.com/go-acme/lego/releases/tag/v4.2.0)
 
 ### Added
 
@@ -790,26 +946,38 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 - **[dnsprovider]** pdns: URL request creation.
 - **[lib]** errors: Fix instance not being printed
 
-## [v4.1.3](https://github.com/go-acme/lego/releases/tag/v4.1.3) (2020-11-25)
+## v4.1.3
+
+- Release date: 2020-11-25
+- Tag: [v4.1.3](https://github.com/go-acme/lego/releases/tag/v4.1.3)
 
 ### Fixed
 
 - **[dnsprovider]** azure: fix error handling.
 
-## [v4.1.2](https://github.com/go-acme/lego/releases/tag/v4.1.2) (2020-11-21)
+## v4.1.2
+
+- Release date: 2020-11-21
+- Tag: [v4.1.2](https://github.com/go-acme/lego/releases/tag/v4.1.2)
 
 ### Fixed
 
 - **[lib]** fix: preferred chain support.
 
-## [v4.1.1](https://github.com/go-acme/lego/releases/tag/v4.1.1) (2020-11-19)
+## v4.1.1
+
+- Release date: 2020-11-19
+- Tag: [v4.1.1](https://github.com/go-acme/lego/releases/tag/v4.1.1)
 
 ### Fixed
 
 - **[dnsprovider]** otc: select correct zone if multiple returned
 - **[dnsprovider]** azure: fix target must be a non-nil pointer
 
-## [v4.1.0](https://github.com/go-acme/lego/releases/tag/v4.1.0) (2020-11-06)
+## v4.1.0
+
+- Release date: 2020-11-06
+- Tag: [v4.1.0](https://github.com/go-acme/lego/releases/tag/v4.1.0)
 
 ### Added
 
@@ -827,13 +995,19 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 - **[lib]** acme/api: use postAsGet instead of post for AccountService.Get
 - **[lib]** fix: use http.Header.Set method instead of Add.
 
-## [v4.0.1](https://github.com/go-acme/lego/releases/tag/v4.0.1) (2020-09-03)
+## v4.0.1
+
+- Release date: 2020-09-03
+- Tag: [v4.0.1](https://github.com/go-acme/lego/releases/tag/v4.0.1)
 
 ### Fixed
 
 - **[dnsprovider]** exoscale: change dependency version.
 
-## [v4.0.0](https://github.com/go-acme/lego/releases/tag/v4.0.0) (2020-09-02)
+## v4.0.0
+
+- Release date: 2020-09-02
+- Tag: [v4.0.0](https://github.com/go-acme/lego/releases/tag/v4.0.0)
 
 ### Added
 
@@ -850,7 +1024,10 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 - **[dnsprovider]** Removes old Linode provider
 - **[lib]** Removes `AddPreCheck` function
 
-## [v3.9.0](https://github.com/go-acme/lego/releases/tag/v3.9.0) (2020-09-01)
+## v3.9.0
+
+- Release date: 2020-09-01
+- Tag: [v3.9.0](https://github.com/go-acme/lego/releases/tag/v3.9.0)
 
 ### Added
 
@@ -867,7 +1044,10 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 
 - **[dnsprovider]** namesilo: fix cleanup.
 
-## [v3.8.0](https://github.com/go-acme/lego/releases/tag/v3.8.0) (2020-07-02)
+## v3.8.0
+
+- Release date: 2020-07-02
+- Tag: [v3.8.0](https://github.com/go-acme/lego/releases/tag/v3.8.0)
 
 ### Added
 
@@ -891,7 +1071,10 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 - **[dnsprovider]** hetzner: fix record name.
 - **[lib]** Registrar.ResolveAccountByKey: Fix malformed request
 
-## [v3.7.0](https://github.com/go-acme/lego/releases/tag/v3.7.0) (2020-05-11)
+## v3.7.0
+
+- Release date: 2020-05-11
+- Tag: [v3.7.0](https://github.com/go-acme/lego/releases/tag/v3.7.0)
 
 ### Added
 
@@ -914,7 +1097,10 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 - **[cli]** fix: renew path information.
 - **[cli]** Fix account storage location warning message
 
-## [v3.6.0](https://github.com/go-acme/lego/releases/tag/v3.6.0) (2020-04-24)
+## v3.6.0
+
+- Release date: 2020-04-24
+- Tag: [v3.6.0](https://github.com/go-acme/lego/releases/tag/v3.6.0)
 
 ### Added
 
@@ -938,7 +1124,10 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 - **[dnsprovider]** ns1: fix missing domain in log 
 - **[dnsprovider]** rimuhosting: use HTTP client from config.
 
-## [v3.5.0](https://github.com/go-acme/lego/releases/tag/v3.5.0) (2020-03-15)
+## v3.5.0
+
+- Release date: 2020-03-15
+- Tag: [v3.5.0](https://github.com/go-acme/lego/releases/tag/v3.5.0)
 
 ### Added
 
@@ -961,7 +1150,10 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 - **[dnsprovider]** gcloud: fixes issues when used with GKE Workload Identity
 - **[dnsprovider]** oraclecloud: fix subdomain support
 
-## [v3.4.0](https://github.com/go-acme/lego/releases/tag/v3.4.0) (2020-02-25)
+## v3.4.0
+
+- Release date: 2020-02-25
+- Tag: [v3.4.0](https://github.com/go-acme/lego/releases/tag/v3.4.0)
 
 ### Added
 
@@ -986,7 +1178,10 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 - **[lib]** crypto: Treat CommonName as optional
 - **[lib]** chore: update cenkalti/backoff to v4.
 
-## [v3.3.0](https://github.com/go-acme/lego/releases/tag/v3.3.0) (2020-01-08)
+## v3.3.0
+
+- Release date: 2020-01-08
+- Tag: [v3.3.0](https://github.com/go-acme/lego/releases/tag/v3.3.0)
 
 ### Added
 
@@ -1002,7 +1197,10 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 
 - **[dnsprovider]** Update dnspod, because of API breaking changes.
 
-## [v3.2.0](https://github.com/go-acme/lego/releases/tag/v3.2.0) (2019-11-10)
+## v3.2.0
+
+- Release date: 2019-11-10
+- Tag: [v3.2.0](https://github.com/go-acme/lego/releases/tag/v3.2.0)
 
 ### Added
 
@@ -1018,7 +1216,10 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 
 - **[dnsprovider]** use token as unique ID.
 
-## [v3.1.0](https://github.com/go-acme/lego/releases/tag/v3.1.0) (2019-10-07)
+## v3.1.0
+
+- Release date: 2019-10-07
+- Tag: [v3.1.0](https://github.com/go-acme/lego/releases/tag/v3.1.0)
 
 ### Added
 
@@ -1036,36 +1237,54 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 - **[dnsprovider]** ovh: fix int overflow.
 - **[dnsprovider]** bindman: fix client version.
 
-## [v3.0.2](https://github.com/go-acme/lego/releases/tag/v3.0.2) (2019-08-15)
+## v3.0.2
+
+- Release date: 2019-08-15
+- Tag: [v3.0.2](https://github.com/go-acme/lego/releases/tag/v3.0.2)
 
 ### Fixed
 
 - Invalid pseudo version (related to Cloudflare client).
 
-## [v3.0.1](https://github.com/go-acme/lego/releases/tag/v3.0.1) (2019-08-14)
+## v3.0.1
+
+- Release date: 2019-08-14
+- Tag: [v3.0.1](https://github.com/go-acme/lego/releases/tag/v3.0.1)
 
 There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 
-## [v3.0.0](https://github.com/go-acme/lego/releases/tag/v3.0.0) (2019-08-05)
+## v3.0.0
+
+- Release date: 2019-08-05
+- Tag: [v3.0.0](https://github.com/go-acme/lego/releases/tag/v3.0.0)
 
 ### Changed
 
 - migrate to go module (new import github.com/go-acme/lego/v3/)
 - update DNS clients
 
-## [v2.7.2](https://github.com/go-acme/lego/releases/tag/v2.7.2) (2019-07-30)
+## v2.7.2
+
+- Release date: 2019-07-30
+- Tag: [v2.7.2](https://github.com/go-acme/lego/releases/tag/v2.7.2)
 
 ### Fixed
 
 - **[dnsprovider]** vultr: quote TXT record
 
-## [v2.7.1](https://github.com/go-acme/lego/releases/tag/v2.7.1) (2019-07-22)
+## v2.7.1
+
+- Release date: 2019-07-22
+- Tag: [v2.7.1](https://github.com/go-acme/lego/releases/tag/v2.7.1)
 
 ### Fixed
 
 - **[dnsprovider]** vultr: invalid record type.
 
-## [v2.7.0](https://github.com/go-acme/lego/releases/tag/v2.7.0) (2019-07-17)
+## v2.7.0
+
+- Release date: 2019-07-17
+- Tag: [v2.7.0](https://github.com/go-acme/lego/releases/tag/v2.7.0)
 
 ### Added
 
@@ -1082,7 +1301,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 
 - **[dnsprovider]** otc: Prevent sending empty body.
 
-## [v2.6.0](https://github.com/go-acme/lego/releases/tag/v2.6.0) (2019-05-27)
+## v2.6.0
+
+- Release date: 2019-05-27
+- Tag: [v2.6.0](https://github.com/go-acme/lego/releases/tag/v2.6.0)
 
 ### Added
 
@@ -1104,7 +1326,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - **[cli]** fix: cli disable-cp option.
 - **[dnsprovider]** gcloud: fix zone visibility.
 
-## [v2.5.0](https://github.com/go-acme/lego/releases/tag/v2.5.0) (2019-04-17)
+## v2.5.0
+
+- Release date: 2019-04-17
+- Tag: [v2.5.0](https://github.com/go-acme/lego/releases/tag/v2.5.0)
 
 ### Added
 
@@ -1123,9 +1348,12 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - **[dnsprovider]** Disable authz when solve fail.
 - Add tzdata to the Docker image.
 
-## [v2.4.0](https://github.com/go-acme/lego/releases/tag/v2.4.0) (2019-03-25)
+## v2.4.0
 
-- Migrate from xenolf/lego to go-acme/lego.
+- Release date: 2019-03-25
+- Tag: [v2.4.0](https://github.com/go-acme/lego/releases/tag/v2.4.0)
+
+Migrate from xenolf/lego to go-acme/lego.
 
 ### Added
 
@@ -1138,7 +1366,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - **[dnsprovider]** hostingde: Use provided ZoneName instead of domain
 - **[dnsprovider]** pdns: fix wildcard with SANs
 
-## [v2.3.0](https://github.com/go-acme/lego/releases/tag/v2.3.0) (2019-03-11)
+## v2.3.0
+
+- Release date: 2019-03-11
+- Tag: [v2.3.0](https://github.com/go-acme/lego/releases/tag/v2.3.0)
 
 ### Added
 
@@ -1162,7 +1393,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - **[dnsprovider]** vscale: fix TXT records clean up
 - **[dnsprovider]** selectel: fix TXT records clean up
 
-## [v2.2.0](https://github.com/go-acme/lego/releases/tag/v2.2.0) (2019-02-08)
+## v2.2.0
+
+- Release date: 2019-02-08
+- Tag: [v2.2.0](https://github.com/go-acme/lego/releases/tag/v2.2.0)
 
 ### Added
 
@@ -1182,7 +1416,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - **[dnsprovider]** fastdns: Do not overwrite existing TXT records
 - Log wildcard domain correctly in validation
 
-## [v2.1.0](https://github.com/go-acme/lego/releases/tag/v2.1.0) (2019-01-24)
+## v2.1.0
+
+- Release date: 2019-01-24
+- Tag: [v2.1.0](https://github.com/go-acme/lego/releases/tag/v2.1.0)
 
 ### Added
 
@@ -1199,7 +1436,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - **[dnsprovider]** alicloud: fix pagination.
 - **[dnsprovider]** namecheap: fix panic.
 
-## [v2.0.0](https://github.com/go-acme/lego/releases/tag/v2.0.0) (2019-01-09)
+## v2.0.0
+
+- Release date: 2019-01-09
+- Tag: [v2.0.0](https://github.com/go-acme/lego/releases/tag/v2.0.0)
 
 ### Added
 
@@ -1251,7 +1491,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - **[dnsprovider]** Azure: Do not overwrite existing TXT records
 - **[dnsprovider]** fix: Cloudflare error.
 
-## [v1.2.0](https://github.com/go-acme/lego/releases/tag/v1.2.0) (2018-11-04)
+## v1.2.0
+
+- Release date: 2018-11-04
+- Tag: [v1.2.0](https://github.com/go-acme/lego/releases/tag/v1.2.0)
 
 ### Added
 
@@ -1272,7 +1515,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - **[lib]** Do not send a JWS body when POSTing challenges.
 - **[lib]** Support POST-as-GET.
 
-## [v1.1.0](https://github.com/go-acme/lego/releases/tag/v1.1.0) (2018-10-16)
+## v1.1.0
+
+- Release date: 2018-10-16
+- Tag: [v1.1.0](https://github.com/go-acme/lego/releases/tag/v1.1.0)
 
 ### Added
 
@@ -1308,7 +1554,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 
 - **[lib]** Submit all dns records up front, then validate serially
 
-## [v1.0.0](https://github.com/go-acme/lego/releases/tag/v1.0.0) (2018-05-30)
+## v1.0.0
+
+- Release date: 2018-05-30
+- Tag: [v1.0.0](https://github.com/go-acme/lego/releases/tag/v1.0.0)
 
 ### Changed
 
@@ -1317,7 +1566,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - **[dnsprovider]** Modified Google Cloud provider `gcloud.NewDNSProviderServiceAccount` function to extract the project id directly from the service account file.
 - **[dnsprovider]** Made errors more verbose for the Cloudflare provider.
 
-## [v0.5.0](https://github.com/go-acme/lego/releases/tag/v0.5.0) (2018-05-29)
+## v0.5.0
+
+- Release date: 2018-05-29
+- Tag: [v0.5.0](https://github.com/go-acme/lego/releases/tag/v0.5.0)
 
 ### Added
 
@@ -1351,7 +1603,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - **[dnsprovider]** Exoscale: update to latest egoscale version.
 - **[dnsprovider]** Route53: Use NewSessionWithOptions instead of deprecated New.
 
-## [0.4.1](https://github.com/go-acme/lego/releases/tag/0.4.1) (2017-09-26)
+## 0.4.1
+
+- Release date: 2017-09-26
+- Tag: [0.4.1](https://github.com/go-acme/lego/releases/tag/0.4.1)
 
 ### Added
 
@@ -1364,7 +1619,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 
 - lib: Fixed an authentication issue with the latest Azure SDK.
 
-## [0.4.0](https://github.com/go-acme/lego/releases/tag/0.4.0) (2017-07-13)
+## 0.4.0
+
+- Release date: 2017-07-13
+- Tag: [0.4.0](https://github.com/go-acme/lego/releases/tag/0.4.0)
 
 ### Added
 
@@ -1417,7 +1675,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - lib: Fixed a condition where we could stall due to an early error condition.
 - lib: Fixed an issue where Authz object could end up in an active state after an error condition.
 
-## [0.3.1](https://github.com/go-acme/lego/releases/tag/0.3.1) (2016-04-19)
+## 0.3.1
+
+- Release date: 2016-04-19
+- Tag: [0.3.1](https://github.com/go-acme/lego/releases/tag/0.3.1)
 
 ### Added
 
@@ -1429,7 +1690,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - lib: handleHTTPError should only try to JSON decode error messages with the right content type.
 - lib: The propagation checker for the DNS challenge would not retry on send errors.
 
-## [0.3.0](https://github.com/go-acme/lego/releases/tag/0.3.0) (2016-03-19)
+## 0.3.0
+
+- Release date: 2016-03-19
+- Tag: [0.3.0](https://github.com/go-acme/lego/releases/tag/0.3.0)
 
 ### Added
 
@@ -1464,7 +1728,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - lib: Fixed an issue where status codes on ACME challenge responses could lead to no action being taken.
 - lib: Fixed a regression when calling the Renew function with a SAN certificate.
 
-## [0.2.0](https://github.com/go-acme/lego/releases/tag/0.2.0) (2016-01-09)
+## 0.2.0
+
+- Release date: 2016-01-09
+- Tag: [0.2.0](https://github.com/go-acme/lego/releases/tag/0.2.0)
 
 ### Added
 
@@ -1494,7 +1761,10 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 
 - CLI: Fix logic using the `--days` parameter for renew
 
-## [0.1.1](https://github.com/go-acme/lego/releases/tag/0.1.1) (2015-12-18)
+## 0.1.1
+
+- Release date: 2015-12-18
+- Tag: [0.1.1](https://github.com/go-acme/lego/releases/tag/0.1.1)
 
 ### Added
 
@@ -1514,6 +1784,9 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 
 - lib: Fix possible DOS on GetOCSPForCert
 
-## [0.1.0](https://github.com/go-acme/lego/releases/tag/0.1.0) (2015-12-03)
+## 0.1.0
 
-- Initial release
+- Release date: 2015-12-03
+- Tag: [0.1.0](https://github.com/go-acme/lego/releases/tag/0.1.0)
+
+Initial release

@@ -909,8 +909,8 @@ github.com/tjfoc/gmsm v1.3.2/go.mod h1:HaUcFuY0auTiaHB9MHFGCPx5IaLhTUd2atbCFBQXn
 github.com/tjfoc/gmsm v1.4.1 h1:aMe1GlZb+0bLjn+cKTPEvvn9oUEBlJitaZiiBwsbgho=
 github.com/tjfoc/gmsm v1.4.1/go.mod h1:j4INPkHWMrhJb38G+J6W4Tw0AbuN8Thu3PbdVYhVcTE=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
-github.com/transip/gotransip/v6 v6.26.0 h1:Aejfvh8rSp8Mj2GX/RpdBjMCv+Iy/DmgfNgczPDP550=
-github.com/transip/gotransip/v6 v6.26.0/go.mod h1:x0/RWGRK/zob817O3tfO2xhFoP1vu8YOHORx6Jpk80s=
+github.com/transip/gotransip/v6 v6.26.1 h1:MeqIjkTBBsZwWAK6giZyMkqLmKMclVHEuTNmoBdx4MA=
+github.com/transip/gotransip/v6 v6.26.1/go.mod h1:x0/RWGRK/zob817O3tfO2xhFoP1vu8YOHORx6Jpk80s=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
 github.com/ultradns/ultradns-go-sdk v1.8.1-20250722213956-faef419 h1:/VaznPrb/b68e3iMvkr27fU7JqPKU4j7tIITZnjQX1k=
 github.com/ultradns/ultradns-go-sdk v1.8.1-20250722213956-faef419/go.mod h1:QN0/PdenvYWB0GRMz6JJbPeZz2Lph2iys1p8AFVHm2c=

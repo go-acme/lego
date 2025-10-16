@@ -63,7 +63,7 @@ require (
 	github.com/nrdcg/mailinabox v0.2.0
 	github.com/nrdcg/namesilo v0.5.0
 	github.com/nrdcg/nodion v0.1.0
-	github.com/nrdcg/oci-go-sdk/common/v1065 v1065.100.0
+	github.com/nrdcg/oci-go-sdk/common/v1065 v1065.102.0
 	github.com/nrdcg/oci-go-sdk/dns/v1065 v1065.100.0
 	github.com/nrdcg/porkbun v0.4.0
 	github.com/nzdjb/go-metaname v1.0.0

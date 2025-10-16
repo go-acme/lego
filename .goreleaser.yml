@@ -55,6 +55,20 @@ changelog:
       - '(?i)^Detach v[\d|.]+'
       - '(?i)^Prepare release v[\d|.]+'
 
+release:
+  skip_upload: false
+  github:
+    owner: 'go-acme'
+    name: 'lego'
+  header: |
+    lego is an independent, free, and open-source project, if you value it, consider [supporting it](https://donate.ldez.dev)! ❤️
+    
+    Everybody thinks that the others will donate, but in the end, nobody does.
+    
+    So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
+    
+    For key updates, see the [changelog](https://github.com/go-acme/lego/blob/HEAD/CHANGELOG.md#v{{ .Major }}{{ .Minor }}{{ .Patch }}).
+
 archives:
   - id: lego
     name_template: '{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}'

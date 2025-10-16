@@ -11,6 +11,12 @@ Let's Encrypt client and ACME library written in Go.
 [![Build Status](https://github.com//go-acme/lego/workflows/Main/badge.svg?branch=master)](https://github.com//go-acme/lego/actions)
 [![Docker Pulls](https://img.shields.io/docker/pulls/goacme/lego.svg)](https://hub.docker.com/r/goacme/lego/)
 
+lego is an independent, free, and open-source project, if you value it, consider [supporting it](https://donate.ldez.dev)! ❤️
+
+Everybody thinks that the others will donate, but in the end, nobody does.
+
+So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
+
 ## Features
 
 - ACME v2 [RFC 8555](https://www.rfc-editor.org/rfc/rfc8555.html)
@@ -18,7 +24,7 @@ Let's Encrypt client and ACME library written in Go.
   - Support [RFC 8738](https://www.rfc-editor.org/rfc/rfc8738.html): certificates for IP addresses
   - Support [RFC 9773](https://www.rfc-editor.org/rfc/rfc9773.html): Renewal Information (ARI) Extension
   - Support [draft-aaron-acme-profiles-00](https://datatracker.ietf.org/doc/draft-aaron-acme-profiles/): Profiles Extension
-- Comes with about [150 DNS providers](https://go-acme.github.io/lego/dns)
+- Comes with about [170 DNS providers](https://go-acme.github.io/lego/dns)
 - Register with CA
 - Obtain certificates, both from scratch or with an existing CSR
 - Renew certificates

@@ -1,5 +1,11 @@
 # Changelog
 
+lego is an independent, free, and open-source project, if you value it, consider [supporting it](https://donate.ldez.dev)! ❤️
+
+Everybody thinks that the others will donate, but in the end, nobody does.
+
+So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
+
 ## v4.26.0
 
 - Release date: 2025-09-13

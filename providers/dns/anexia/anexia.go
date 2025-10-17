@@ -1,17 +1,18 @@
-// Package anxcloud implements a DNS provider for solving the DNS-01 challenge using Anexia CloudDNS.
-package anxcloud
+// Package anexia implements a DNS provider for solving the DNS-01 challenge using Anexia CloudDNS.
+package anexia
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	uuid "github.com/satori/go.uuid"
 	"go.anx.io/go-anxcloud/pkg/client"
@@ -38,8 +39,9 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Token              string
-	APIURL             string
+	Token  string
+	APIURL string
+
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -61,7 +63,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	api    clouddns.API
+	client clouddns.API
 
 	recordIDs   map[string]uuid.UUID
 	recordIDsMu sync.Mutex
@@ -72,7 +74,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvToken)
 	if err != nil {
-		return nil, fmt.Errorf("anxcloud: %w", err)
+		return nil, fmt.Errorf("anexia: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -85,11 +87,11 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for Anexia CloudDNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("anxcloud: the configuration of the DNS provider is nil")
+		return nil, errors.New("anexia: the configuration of the DNS provider is nil")
 	}
 
 	if config.Token == "" {
-		return nil, errors.New("anxcloud: incomplete credentials, missing token")
+		return nil, errors.New("anexia: incomplete credentials, missing token")
 	}
 
 	opts := []client.Option{
@@ -106,14 +108,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	c, err := client.New(opts...)
 	if err != nil {
-		return nil, fmt.Errorf("anxcloud: failed to create client: %w", err)
+		return nil, fmt.Errorf("anexia: failed to create client: %w", err)
 	}
-
-	api := clouddns.NewAPI(c)
 
 	return &DNSProvider{
 		config:    config,
-		api:       api,
+		client:    clouddns.NewAPI(c),
 		recordIDs: make(map[string]uuid.UUID),
 	}, nil
 }
@@ -132,17 +132,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("anxcloud: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("anexia: could not find zone for domain %q: %w", domain, err)
+	}
+
+	recordName, err := extractRecordName(info.EffectiveFQDN, authZone)
+	if err != nil {
+		return fmt.Errorf("anexia: %w", err)
 	}
 
 	zoneName := dns01.UnFqdn(authZone)
 
-	zoneAPI := d.api.Zone()
-
-	// Extract record name (subdomain part)
-	recordName := extractRecordName(info.EffectiveFQDN, authZone)
-
-	// Create the TXT record
 	recordReq := zone.RecordRequest{
 		Name:  recordName,
 		Type:  "TXT",
@@ -150,22 +149,20 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:   d.config.TTL,
 	}
 
-	updatedZone, err := zoneAPI.NewRecord(ctx, zoneName, recordReq)
+	updatedZone, err := d.client.Zone().NewRecord(ctx, zoneName, recordReq)
 	if err != nil {
-		return fmt.Errorf("anxcloud: failed to create TXT record: %w", err)
+		return fmt.Errorf("anexia: new record: %w", err)
 	}
 
 	// Find the newly created record in the updated zone
 	recordID, err := d.findRecordID(ctx, updatedZone, zoneName, recordName, info.Value)
 	if err != nil {
-		return fmt.Errorf("anxcloud: %w", err)
+		return fmt.Errorf("anexia: find record ID: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
 	d.recordIDs[token] = recordID
 	d.recordIDsMu.Unlock()
-
-	log.Infof("anxcloud: new record for %s, ID %s", domain, recordID)
 
 	return nil
 }
@@ -178,49 +175,20 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("anxcloud: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("anexia: could not find zone for domain %q: %w", domain, err)
 	}
-
-	zoneName := dns01.UnFqdn(authZone)
-	recordName := extractRecordName(info.EffectiveFQDN, authZone)
-
-	zoneAPI := d.api.Zone()
 
 	// Get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
-
-	// If we don't have the record ID cached (e.g., Present() failed), try to find it
 	if !ok {
-		// Get the zone to access current revision
-		currentZone, getErr := zoneAPI.Get(ctx, zoneName)
-		if getErr != nil {
-			return fmt.Errorf("anxcloud: failed to get zone for cleanup: %w", getErr)
-		}
-
-		// Check the first revision (index 0) which should be the current one
-		if len(currentZone.Revisions) > 0 {
-			revision := currentZone.Revisions[0]
-
-			for _, record := range revision.Records {
-				if matchTXTRecord(record, recordName, info.Value) {
-					recordID = record.Identifier
-					ok = true
-					break
-				}
-			}
-		}
-
-		if !ok {
-			// Don't fail cleanup if record doesn't exist
-			return nil
-		}
+		return fmt.Errorf("anexia: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err = zoneAPI.DeleteRecord(ctx, zoneName, recordID)
+	err = d.client.Zone().DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
 	if err != nil {
-		return fmt.Errorf("anxcloud: failed to delete TXT record: %w", err)
+		return fmt.Errorf("anexia: delete TXT record: %w", err)
 	}
 
 	// Delete record ID from map
@@ -235,86 +203,55 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // If the record is not immediately available in the response, it retries by querying the zone.
 func (d *DNSProvider) findRecordID(ctx context.Context, updatedZone zone.Zone, zoneName, recordName, rdata string) (uuid.UUID, error) {
 	// First, try to find the record in the immediate response
-	var recordID uuid.UUID
-	if len(updatedZone.Revisions) > 0 {
-		for _, record := range updatedZone.Revisions[0].Records {
-			if matchTXTRecord(record, recordName, rdata) {
-				recordID = record.Identifier
-				break
-			}
-		}
-	}
-
+	recordID := findRecordIdentifier(updatedZone, recordName, rdata)
 	if recordID != uuid.Nil {
 		return recordID, nil
 	}
 
-	// If not found, the record might not be immediately available in the response.
-	// Query the zone with retries to find the newly created record.
-	zoneAPI := d.api.Zone()
+	return backoff.Retry(ctx,
+		func() (uuid.UUID, error) {
+			currentZone, err := d.client.Zone().Get(ctx, zoneName)
+			if err != nil {
+				return uuid.Nil, fmt.Errorf("get zone: %w", err)
+			}
 
-	const maxRetries = 60
-	retryDelay := 5 * time.Second
+			recordID := findRecordIdentifier(currentZone, recordName, rdata)
+			if recordID == uuid.Nil {
+				return uuid.Nil, fmt.Errorf("get record identifier: %w", err)
+			}
 
-	for i := range maxRetries {
-		if i > 0 {
-			time.Sleep(retryDelay)
-		}
+			return recordID, nil
+		},
+		backoff.WithBackOff(backoff.NewConstantBackOff(5*time.Second)),
+		backoff.WithMaxElapsedTime(300*time.Second),
+	)
+}
 
-		// Get the zone to access current revision
-		currentZone, err := zoneAPI.Get(ctx, zoneName)
-		if err != nil {
-			log.Warnf("anxcloud: failed to get zone (attempt %d/%d): %v", i+1, maxRetries, err)
+func findRecordIdentifier(z zone.Zone, recordName, rdata string) uuid.UUID {
+	if len(z.Revisions) == 0 {
+		return uuid.Nil
+	}
+
+	// Check the first revision (index 0) which should be the current one
+
+	for _, record := range z.Revisions[0].Records {
+		if record.Name != recordName || record.Type != "TXT" {
 			continue
 		}
 
-		// Check the first revision (index 0) which should be the current one
-		if len(currentZone.Revisions) > 0 {
-			revision := currentZone.Revisions[0]
-
-			for _, record := range revision.Records {
-				if matchTXTRecord(record, recordName, rdata) {
-					return record.Identifier, nil
-				}
-			}
+		if record.RData == rdata || record.RData == strconv.Quote(rdata) {
+			return record.Identifier
 		}
 	}
 
-	return uuid.Nil, fmt.Errorf("could not find created record after %d retries", maxRetries)
+	return uuid.Nil
 }
 
-// matchTXTRecord checks if a record matches our search criteria.
-// The Anexia API returns TXT record RData with quotes, so we need to handle both formats.
-func matchTXTRecord(record zone.Record, recordName, rdata string) bool {
-	if record.Name != recordName || record.Type != "TXT" {
-		return false
+func extractRecordName(fqdn, authZone string) (string, error) {
+	if dns01.UnFqdn(fqdn) == dns01.UnFqdn(authZone) {
+		// "@" for the root domain instead of an empty string.
+		return "@", nil
 	}
 
-	// The API may return TXT records with quotes around the value
-	// Try exact match first, then try with quotes added
-	if record.RData == rdata {
-		return true
-	}
-
-	// Try with quotes
-	quotedRData := "\"" + rdata + "\""
-	return record.RData == quotedRData
-}
-
-// extractRecordName extracts the record name from the FQDN.
-// The Anexia CloudDNS API requires "@" for the root domain instead of an empty string.
-func extractRecordName(fqdn, authZone string) string {
-	name := dns01.UnFqdn(fqdn)
-	zoneName := dns01.UnFqdn(authZone)
-
-	if name == zoneName {
-		return "@"
-	}
-
-	// Remove the zone suffix from the FQDN to get the record name
-	if len(name) > len(zoneName) && name[len(name)-len(zoneName)-1:] == "."+zoneName {
-		return name[:len(name)-len(zoneName)-1]
-	}
-
-	return name
+	return dns01.ExtractSubDomain(fqdn, authZone)
 }

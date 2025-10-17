@@ -2,15 +2,15 @@
 title: "Anexia CloudDNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
-slug: anxcloud
+slug: anexia
 dnsprovider:
-  since:    "v4.21.0"
-  code:     "anxcloud"
+  since:    "v4.28.0"
+  code:     "anexia"
   url:      "https://www.anexia-it.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/anxcloud/anxcloud.toml -->
+<!-- providers/dns/anexia/anexia.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
@@ -19,15 +19,15 @@ Configuration for [Anexia CloudDNS](https://www.anexia-it.com/).
 
 <!--more-->
 
-- Code: `anxcloud`
-- Since: v4.21.0
+- Code: `anexia`
+- Since: v4.28.0
 
 
 Here is an example bash command using the Anexia CloudDNS provider:
 
 ```bash
-ANEXIA_TOKEN=your-api-token \
-lego --email you@example.com --dns anxcloud -d '*.example.com' -d example.com run
+ANEXIA_TOKEN=xxx \
+lego --email you@example.com --dns anexia -d '*.example.com' -d example.com run
 ```
 
 
@@ -47,7 +47,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `ANEXIA_API_URL` | Custom API endpoint URL (optional) |
+| `ANEXIA_API_URL` | API endpoint URL (default: https://engine.anexia-it.com) |
 | `ANEXIA_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
 | `ANEXIA_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
 | `ANEXIA_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 300) |
@@ -62,18 +62,13 @@ You need to create an API token in the [Anexia Engine](https://engine.anexia-it.
 
 The token must have permissions to manage DNS zones and records.
 
-## API Token
-
-Create an API token through the Anexia Engine web interface or API.
-Pass the token to Lego using the `ANEXIA_TOKEN` environment variable.
-
 
 
 ## More information
 
-- [API documentation](https://engine.anexia-it.com/docs/)
+- [API documentation](https://engine.anexia-it.com/docs/en/module/clouddns/api)
 - [Go client](https://github.com/anexia-it/go-anxcloud)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/anxcloud/anxcloud.toml -->
+<!-- providers/dns/anexia/anexia.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

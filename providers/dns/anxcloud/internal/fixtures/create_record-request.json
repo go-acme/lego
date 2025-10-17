@@ -1,0 +1,7 @@
+{
+  "name": "_acme-challenge",
+  "type": "TXT",
+  "rdata": "123d==",
+  "region": "",
+  "ttl": 300
+}

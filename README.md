@@ -66,6 +66,8 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/lightsail/">Amazon Lightsail</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/route53/">Amazon Route 53</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/anxcloud/">Anexia CloudDNS</a></td>
+</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/arvancloud/">ArvanCloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/auroradns/">Aurora DNS</a></td>
 </tr><tr>

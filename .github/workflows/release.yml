@@ -80,7 +80,7 @@ jobs:
 
       - uses: actions/attest-build-provenance@v3
         with:
-          subject-checksums: ./dist/checksums.txt
+          subject-checksums: ./dist/lego_*_checksums.txt
       - uses: actions/attest-build-provenance@v3
         with:
           subject-checksums: ./dist/digests.txt

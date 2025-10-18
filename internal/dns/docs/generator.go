@@ -48,6 +48,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	err = cleanDocumentation()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for _, m := range models.Providers {
 		// generate documentation
 		err = generateDocumentation(m)
@@ -69,6 +74,22 @@ func main() {
 	}
 
 	fmt.Printf("Documentation for %d DNS providers has been generated.\n", len(models.Providers)+1)
+}
+
+func cleanDocumentation() error {
+	paths, err := filepath.Glob(filepath.Join(docOutput, "zz_gen_*.md"))
+	if err != nil {
+		return err
+	}
+
+	for _, p := range paths {
+		err = os.RemoveAll(p)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func generateDocumentation(m descriptors.Provider) error {

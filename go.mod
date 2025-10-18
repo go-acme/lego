@@ -73,7 +73,6 @@ require (
 	github.com/regfish/regfish-dnsapi-go v0.1.1
 	github.com/sacloud/api-client-go v0.3.3
 	github.com/sacloud/iaas-api-go v1.19.0
-	github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.35
 	github.com/selectel/domains-go v1.1.0
 	github.com/selectel/go-selvpcclient/v4 v4.1.0
@@ -89,7 +88,6 @@ require (
 	github.com/yandex-cloud/go-genproto v0.31.0
 	github.com/yandex-cloud/go-sdk/services/dns v0.0.12
 	github.com/yandex-cloud/go-sdk/v2 v2.19.0
-	go.anx.io/go-anxcloud v0.8.0
 	golang.org/x/crypto v0.43.0
 	golang.org/x/net v0.46.0
 	golang.org/x/oauth2 v0.32.0

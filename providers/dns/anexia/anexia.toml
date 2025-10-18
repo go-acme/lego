@@ -29,4 +29,3 @@ The token must have permissions to manage DNS zones and records.
 
 [Links]
   API = "https://engine.anexia-it.com/docs/en/module/clouddns/api"
-  GoClient = "https://github.com/anexia-it/go-anxcloud"

@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/go-acme/lego/v4/platform/tester/servermock"
-	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -136,7 +135,6 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 			return NewDNSProviderConfig(config)
 		},
 		servermock.CheckHeader().
-			WithRegexp("User-Agent", `go-anxcloud/.+ \(.+\)`).
 			WithAuthorization("Token secret"),
 	)
 }
@@ -144,10 +142,10 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /api/clouddns/v1/zone.json/example.com/records",
-			servermock.ResponseFromFixture("create_record.json"),
+			servermock.ResponseFromInternal("create_record.json"),
 			servermock.CheckHeader().
 				WithContentType("application/json; charset=utf-8"),
-			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json")).
 		Build(t)
 
 	err := provider.Present("example.com", "abc", "123d==")
@@ -157,12 +155,12 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_Present_incomplete(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /api/clouddns/v1/zone.json/example.com/records",
-			servermock.ResponseFromFixture("create_record_incomplete.json"),
+			servermock.ResponseFromInternal("create_record_incomplete.json"),
 			servermock.CheckHeader().
 				WithContentType("application/json; charset=utf-8"),
-			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json")).
 		Route("GET /api/clouddns/v1/zone.json/example.com",
-			servermock.ResponseFromFixture("get_zone.json")).
+			servermock.ResponseFromInternal("get_zone.json")).
 		Build(t)
 
 	err := provider.Present("example.com", "abc", "123d==")
@@ -177,11 +175,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	const token = "abc"
 
-	u, err := uuid.FromString("12345678-1234-1234-1234-123456789abc")
-	require.NoError(t, err)
+	provider.recordIDs[token] = "12345678-1234-1234-1234-123456789abc"
 
-	provider.recordIDs[token] = u
-
-	err = provider.CleanUp("example.com", token, "123d==")
+	err := provider.CleanUp("example.com", token, "123d==")
 	require.NoError(t, err)
 }

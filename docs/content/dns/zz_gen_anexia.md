@@ -67,7 +67,6 @@ The token must have permissions to manage DNS zones and records.
 ## More information
 
 - [API documentation](https://engine.anexia-it.com/docs/en/module/clouddns/api)
-- [Go client](https://github.com/anexia-it/go-anxcloud)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/anexia/anexia.toml -->

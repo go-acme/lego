@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"sync"
 	"time"
@@ -14,10 +15,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	uuid "github.com/satori/go.uuid"
-	"go.anx.io/go-anxcloud/pkg/client"
-	"go.anx.io/go-anxcloud/pkg/clouddns"
-	"go.anx.io/go-anxcloud/pkg/clouddns/zone"
+	"github.com/go-acme/lego/v4/providers/dns/anexia/internal"
 )
 
 // Environment variables names.
@@ -63,9 +61,9 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client clouddns.API
+	client *internal.Client
 
-	recordIDs   map[string]uuid.UUID
+	recordIDs   map[string]string
 	recordIDsMu sync.Mutex
 }
 
@@ -94,27 +92,27 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("anexia: incomplete credentials, missing token")
 	}
 
-	opts := []client.Option{
-		client.TokenFromString(config.Token),
+	client, err := internal.NewClient(config.Token)
+	if err != nil {
+		return nil, fmt.Errorf("anexia: %w", err)
 	}
 
 	if config.APIURL != "" {
-		opts = append(opts, client.BaseURL(config.APIURL))
+		var err error
+		client.BaseURL, err = url.Parse(config.APIURL)
+		if err != nil {
+			return nil, fmt.Errorf("anexia: %w", err)
+		}
 	}
 
 	if config.HTTPClient != nil {
-		opts = append(opts, client.HTTPClient(config.HTTPClient))
-	}
-
-	c, err := client.New(opts...)
-	if err != nil {
-		return nil, fmt.Errorf("anexia: failed to create client: %w", err)
+		client.HTTPClient = config.HTTPClient
 	}
 
 	return &DNSProvider{
 		config:    config,
-		client:    clouddns.NewAPI(c),
-		recordIDs: make(map[string]uuid.UUID),
+		client:    client,
+		recordIDs: make(map[string]string),
 	}, nil
 }
 
@@ -142,14 +140,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneName := dns01.UnFqdn(authZone)
 
-	recordReq := zone.RecordRequest{
+	recordReq := internal.Record{
 		Name:  recordName,
 		Type:  "TXT",
 		RData: info.Value,
 		TTL:   d.config.TTL,
 	}
 
-	updatedZone, err := d.client.Zone().NewRecord(ctx, zoneName, recordReq)
+	updatedZone, err := d.client.CreateRecord(ctx, zoneName, recordReq)
 	if err != nil {
 		return fmt.Errorf("anexia: new record: %w", err)
 	}
@@ -186,7 +184,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("anexia: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err = d.client.Zone().DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
+	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
 	if err != nil {
 		return fmt.Errorf("anexia: delete TXT record: %w", err)
 	}
@@ -201,23 +199,23 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 // findRecordID attempts to find the record ID from the zone response.
 // If the record is not immediately available in the response, it retries by querying the zone.
-func (d *DNSProvider) findRecordID(ctx context.Context, updatedZone zone.Zone, zoneName, recordName, rdata string) (uuid.UUID, error) {
+func (d *DNSProvider) findRecordID(ctx context.Context, updatedZone *internal.Zone, zoneName, recordName, rdata string) (string, error) {
 	// First, try to find the record in the immediate response
 	recordID := findRecordIdentifier(updatedZone, recordName, rdata)
-	if recordID != uuid.Nil {
+	if recordID != "" {
 		return recordID, nil
 	}
 
 	return backoff.Retry(ctx,
-		func() (uuid.UUID, error) {
-			currentZone, err := d.client.Zone().Get(ctx, zoneName)
+		func() (string, error) {
+			currentZone, err := d.client.GetZone(ctx, zoneName)
 			if err != nil {
-				return uuid.Nil, fmt.Errorf("get zone: %w", err)
+				return "", backoff.Permanent(fmt.Errorf("get zone: %w", err))
 			}
 
 			recordID := findRecordIdentifier(currentZone, recordName, rdata)
-			if recordID == uuid.Nil {
-				return uuid.Nil, fmt.Errorf("get record identifier: %w", err)
+			if recordID == "" {
+				return "", fmt.Errorf("get record identifier: %w", err)
 			}
 
 			return recordID, nil
@@ -227,14 +225,14 @@ func (d *DNSProvider) findRecordID(ctx context.Context, updatedZone zone.Zone, z
 	)
 }
 
-func findRecordIdentifier(z zone.Zone, recordName, rdata string) uuid.UUID {
-	if len(z.Revisions) == 0 {
-		return uuid.Nil
+func findRecordIdentifier(zone *internal.Zone, recordName, rdata string) string {
+	if len(zone.Revisions) == 0 {
+		return ""
 	}
 
 	// Check the first revision (index 0) which should be the current one
 
-	for _, record := range z.Revisions[0].Records {
+	for _, record := range zone.Revisions[0].Records {
 		if record.Name != recordName || record.Type != "TXT" {
 			continue
 		}
@@ -244,7 +242,7 @@ func findRecordIdentifier(z zone.Zone, recordName, rdata string) uuid.UUID {
 		}
 	}
 
-	return uuid.Nil
+	return ""
 }
 
 func extractRecordName(fqdn, authZone string) (string, error) {

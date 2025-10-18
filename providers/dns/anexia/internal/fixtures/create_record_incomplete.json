@@ -1,0 +1,37 @@
+{
+  "name": "example.com",
+  "zone_name": "example.com",
+  "master": true,
+  "dnssec_mode": "managed",
+  "admin_email": "admin@example.com",
+  "refresh": 10800,
+  "retry": 3600,
+  "expire": 604800,
+  "ttl": 86400,
+  "customer": "ANX12345",
+  "created_at": "0001-01-01T00:00:00Z",
+  "updated_at": "0001-01-01T00:00:00Z",
+  "published_at": "0001-01-01T00:00:00Z",
+  "is_editable": true,
+  "validation_level": 0,
+  "deployment_level": 0,
+  "revisions": [
+    {
+      "created_at": "0001-01-01T00:00:00Z",
+      "identifier": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "modified_at": "0001-01-01T00:00:00Z",
+      "records": [
+        {
+          "immutable": false,
+          "name": "_acme-challenge",
+          "rdata": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+          "region": "",
+          "ttl": 300,
+          "type": "TXT"
+        }
+      ],
+      "serial": 1,
+      "state": "deployed"
+    }
+  ]
+}

@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/active24"
 	"github.com/go-acme/lego/v4/providers/dns/alidns"
 	"github.com/go-acme/lego/v4/providers/dns/allinkl"
+	"github.com/go-acme/lego/v4/providers/dns/anexia"
 	"github.com/go-acme/lego/v4/providers/dns/arvancloud"
 	"github.com/go-acme/lego/v4/providers/dns/auroradns"
 	"github.com/go-acme/lego/v4/providers/dns/autodns"
@@ -185,6 +186,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return alidns.NewDNSProvider()
 	case "allinkl":
 		return allinkl.NewDNSProvider()
+	case "anexia":
+		return anexia.NewDNSProvider()
 	case "arvancloud":
 		return arvancloud.NewDNSProvider()
 	case "auroradns":

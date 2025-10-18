@@ -1,0 +1,31 @@
+Name = "Anexia CloudDNS"
+Description = ''''''
+URL = "https://www.anexia-it.com/"
+Code = "anexia"
+Since = "v4.28.0"
+
+Example = '''
+ANEXIA_TOKEN=xxx \
+lego --email you@example.com --dns anexia -d '*.example.com' -d example.com run
+'''
+
+Additional = '''
+## Description
+
+You need to create an API token in the [Anexia Engine](https://engine.anexia-it.com/).
+
+The token must have permissions to manage DNS zones and records.
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    ANEXIA_TOKEN = "API token for Anexia Engine"
+  [Configuration.Additional]
+    ANEXIA_API_URL = "API endpoint URL (default: https://engine.anexia-it.com)"
+    ANEXIA_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    ANEXIA_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 300)"
+    ANEXIA_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)"
+    ANEXIA_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://engine.anexia-it.com/docs/en/module/clouddns/api"

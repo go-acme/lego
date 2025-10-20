@@ -7,9 +7,9 @@ body:
     attributes:
       label: Welcome
       options:
-        - label: Yes, I'm using a binary release within 2 latest releases.
+        - label: Yes, I'm using a binary release within the two latest releases.
           required: true
-        - label: Yes, I've searched similar issues on GitHub and didn't find any.
+        - label: Yes, I've searched for similar issues on GitHub and didn't find any.
           required: true
         - label: Yes, I've included all information below (version, config, etc).
           required: true

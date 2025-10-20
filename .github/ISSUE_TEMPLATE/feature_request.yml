@@ -6,7 +6,7 @@ body:
     attributes:
       label: Welcome
       options:
-        - label: Yes, I've searched similar issues on GitHub and didn't find any.
+        - label: Yes, I've searched for similar issues on GitHub and didn't find any.
           required: true
 
   - type: dropdown

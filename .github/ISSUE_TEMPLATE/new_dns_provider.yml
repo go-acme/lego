@@ -8,7 +8,7 @@ body:
     attributes:
       label: Welcome
       options:
-        - label: Yes, I've searched similar issues on GitHub and didn't find any.
+        - label: Yes, I've searched for similar issues on GitHub and didn't find any.
           required: true
         - label: Yes, the DNS provider exposes a public API.
           required: true
@@ -34,6 +34,7 @@ body:
         - Through Bitnami
         - Through 1Panel
         - Through Zoraxy
+        - go install
         - Other
     validations:
       required: true

@@ -1,14 +1,18 @@
 package cmd
 
 import (
+	"context"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/log"
@@ -70,6 +74,7 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 5
 	retryClient.HTTPClient = config.HTTPClient
+	retryClient.CheckRetry = checkRetry
 	retryClient.Logger = nil
 
 	if _, v := os.LookupEnv("LEGO_DEBUG_ACME_HTTP_CLIENT"); v {
@@ -162,4 +167,37 @@ func readCSRFile(filename string) (*x509.CertificateRequest, error) {
 	// assume we were given a DER-encoded ASN.1 CSR
 	// (if this assumption is wrong, parsing these bytes will fail)
 	return x509.ParseCertificateRequest(raw)
+}
+
+func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
+	rt, err := retryablehttp.ErrorPropagatedRetryPolicy(ctx, resp, err)
+	if err != nil {
+		return rt, err
+	}
+
+	if resp.StatusCode/100 == 2 {
+		return rt, nil
+	}
+
+	all, err := io.ReadAll(resp.Body)
+	if err == nil {
+		var errorDetails *acme.ProblemDetails
+
+		err = json.Unmarshal(all, &errorDetails)
+		if err != nil {
+			return rt, fmt.Errorf("%s %s: %s", resp.Request.Method, resp.Request.URL.Redacted(), string(all))
+		}
+
+		log.Warnf("retry: %v", errorDetails)
+
+		if errorDetails.Type == acme.BadNonceErr {
+			return rt, &acme.NonceError{
+				ProblemDetails: errorDetails,
+			}
+		}
+
+		return rt, errorDetails
+	}
+
+	return rt, nil
 }

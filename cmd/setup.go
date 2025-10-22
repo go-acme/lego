@@ -188,8 +188,6 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			return rt, fmt.Errorf("%s %s: %s", resp.Request.Method, resp.Request.URL.Redacted(), string(all))
 		}
 
-		log.Warnf("retry: %v", errorDetails)
-
 		switch errorDetails.Type {
 		case acme.BadNonceErr:
 			return false, &acme.NonceError{
@@ -204,6 +202,8 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			}
 
 		default:
+			log.Warnf("retry: %v", errorDetails)
+
 			return rt, errorDetails
 		}
 	}

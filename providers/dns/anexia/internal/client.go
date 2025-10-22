@@ -60,7 +60,7 @@ func (c *Client) CreateRecord(ctx context.Context, zoneName string, record Recor
 func (c *Client) DeleteRecord(ctx context.Context, zoneName, recordID string) error {
 	endpoint := c.BaseURL.JoinPath("api", "clouddns", "v1", "zone.json", zoneName, "records", recordID)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, endpoint.String(), nil)
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneName, recordID string) er
 func (c *Client) GetZone(ctx context.Context, zoneName string) (*Zone, error) {
 	endpoint := c.BaseURL.JoinPath("api", "clouddns", "v1", "zone.json", zoneName)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), nil)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

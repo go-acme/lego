@@ -152,31 +152,14 @@ func TestDNSProvider_Present(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestDNSProvider_Present_incomplete(t *testing.T) {
-	provider := mockBuilder().
-		Route("POST /api/clouddns/v1/zone.json/example.com/records",
-			servermock.ResponseFromInternal("create_record_incomplete.json"),
-			servermock.CheckHeader().
-				WithContentType("application/json; charset=utf-8"),
-			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json")).
-		Route("GET /api/clouddns/v1/zone.json/example.com",
-			servermock.ResponseFromInternal("get_zone.json")).
-		Build(t)
-
-	err := provider.Present("example.com", "abc", "123d==")
-	require.NoError(t, err)
-}
-
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
+		Route("GET /api/clouddns/v1/zone.json/example.com",
+			servermock.ResponseFromInternal("get_zone.json")).
 		Route("DELETE /api/clouddns/v1/zone.json/example.com/records/12345678-1234-1234-1234-123456789abc",
 			servermock.Noop()).
 		Build(t)
 
-	const token = "abc"
-
-	provider.recordIDs[token] = "12345678-1234-1234-1234-123456789abc"
-
-	err := provider.CleanUp("example.com", token, "123d==")
+	err := provider.CleanUp("example.com", "abc", "123d==")
 	require.NoError(t, err)
 }

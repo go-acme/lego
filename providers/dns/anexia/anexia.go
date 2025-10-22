@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
@@ -62,9 +61,6 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config *Config
 	client *internal.Client
-
-	recordIDs   map[string]string
-	recordIDsMu sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Anexia CloudDNS.
@@ -110,9 +106,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	return &DNSProvider{
-		config:    config,
-		client:    client,
-		recordIDs: make(map[string]string),
+		config: config,
+		client: client,
 	}, nil
 }
 
@@ -147,20 +142,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:   d.config.TTL,
 	}
 
-	updatedZone, err := d.client.CreateRecord(ctx, zoneName, recordReq)
+	// Ignores returned zone, because of UUID unstability.
+	// https://github.com/go-acme/lego/pull/2675#issuecomment-3418678194
+	_, err = d.client.CreateRecord(ctx, zoneName, recordReq)
 	if err != nil {
 		return fmt.Errorf("anexia: new record: %w", err)
 	}
-
-	// Find the newly created record in the updated zone
-	recordID, err := d.findRecordID(ctx, updatedZone, zoneName, recordName, info.Value)
-	if err != nil {
-		return fmt.Errorf("anexia: find record ID: %w", err)
-	}
-
-	d.recordIDsMu.Lock()
-	d.recordIDs[token] = recordID
-	d.recordIDsMu.Unlock()
 
 	return nil
 }
@@ -176,12 +163,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("anexia: could not find zone for domain %q: %w", domain, err)
 	}
 
-	// Get the record's unique ID from when we created it
-	d.recordIDsMu.Lock()
-	recordID, ok := d.recordIDs[token]
-	d.recordIDsMu.Unlock()
-	if !ok {
-		return fmt.Errorf("anexia: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
+	recordName, err := extractRecordName(info.EffectiveFQDN, authZone)
+	if err != nil {
+		return fmt.Errorf("anexia: %w", err)
+	}
+
+	recordID, err := d.findRecordID(ctx, dns01.UnFqdn(authZone), recordName, info.Value)
+	if err != nil {
+		return fmt.Errorf("anexia: %w", err)
 	}
 
 	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
@@ -189,23 +178,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("anexia: delete TXT record: %w", err)
 	}
 
-	// Delete record ID from map
-	d.recordIDsMu.Lock()
-	delete(d.recordIDs, token)
-	d.recordIDsMu.Unlock()
-
 	return nil
 }
 
 // findRecordID attempts to find the record ID from the zone response.
 // If the record is not immediately available in the response, it retries by querying the zone.
-func (d *DNSProvider) findRecordID(ctx context.Context, updatedZone *internal.Zone, zoneName, recordName, rdata string) (string, error) {
-	// First, try to find the record in the immediate response
-	recordID := findRecordIdentifier(updatedZone, recordName, rdata)
-	if recordID != "" {
-		return recordID, nil
-	}
-
+func (d *DNSProvider) findRecordID(ctx context.Context, zoneName, recordName, rdata string) (string, error) {
 	return backoff.Retry(ctx,
 		func() (string, error) {
 			currentZone, err := d.client.GetZone(ctx, zoneName)

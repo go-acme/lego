@@ -190,13 +190,22 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 
 		log.Warnf("retry: %v", errorDetails)
 
-		if errorDetails.Type == acme.BadNonceErr {
-			return rt, &acme.NonceError{
+		switch errorDetails.Type {
+		case acme.BadNonceErr:
+			return false, &acme.NonceError{
 				ProblemDetails: errorDetails,
 			}
-		}
 
-		return rt, errorDetails
+		case acme.AlreadyReplacedErr:
+			if errorDetails.HTTPStatus == http.StatusConflict {
+				return false, &acme.AlreadyReplacedError{
+					ProblemDetails: errorDetails,
+				}
+			}
+
+		default:
+			return rt, errorDetails
+		}
 	}
 
 	return rt, nil

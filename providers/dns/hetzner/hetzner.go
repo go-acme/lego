@@ -77,7 +77,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return &DNSProvider{provider: provider}, nil
 
 	case foundAPIKey:
-		log.Warnf("APIKey (old Hetzner API) is deprecated, please use APIToken (Hetzner Cloud API) instead.")
+		log.Warnf("APIKey (legacy Hetzner DNS API) is deprecated, please use APIToken (Hetzner Cloud API) instead.")
 
 		provider, err := legacy.NewDNSProvider()
 		if err != nil {
@@ -120,7 +120,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return &DNSProvider{provider: provider}, nil
 
 	case config.APIKey != "":
-		log.Warnf("%s (old Hetzner API) is deprecated, please use %s (Hetzner Cloud API) instead.", EnvAPIKey, EnvAPIToken)
+		log.Warnf("%s (legacy Hetzner DNS API) is deprecated, please use %s (Hetzner Cloud API) instead.", EnvAPIKey, EnvAPIToken)
 
 		cfg := &legacy.Config{
 			APIKey:             config.APIKey,

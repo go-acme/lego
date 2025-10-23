@@ -77,6 +77,7 @@ func allDNSCodes() string {
 		"godaddy",
 		"googledomains",
 		"hetzner",
+		"hetznerhcloud",
 		"hostingde",
 		"hostinger",
 		"hosttech",
@@ -1561,6 +1562,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hetzner`)
+
+	case "hetznerhcloud":
+		// generated from: providers/dns/hetznerhcloud/hetznerhcloud.toml
+		ew.writeln(`Configuration for Hetzner Cloud.`)
+		ew.writeln(`Code:	'hetznerhcloud'`)
+		ew.writeln(`Since:	'v4.28.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "HCLOUD_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "HCLOUD_BASE_URL":	Override the Hetzner Cloud API base URL (Default: https://api.hetzner.cloud)`)
+		ew.writeln(`	- "HCLOUD_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "HCLOUD_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 5)`)
+		ew.writeln(`	- "HCLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
+		ew.writeln(`	- "HCLOUD_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hetznerhcloud`)
 
 	case "hostingde":
 		// generated from: providers/dns/hostingde/hostingde.toml

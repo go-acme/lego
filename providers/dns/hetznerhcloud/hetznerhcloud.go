@@ -74,7 +74,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		client.HTTPClient = config.HTTPClient
 	}
 	if config.BaseURL != "" {
-		client.SetBaseURL(config.BaseURL)
+		if err := client.SetBaseURL(config.BaseURL); err != nil {
+			return nil, fmt.Errorf("hetznerhcloud: invalid base URL: %w", err)
+		}
 	}
 	return &DNSProvider{config: config, client: client, recordIDs: make(map[string]string)}, nil
 }

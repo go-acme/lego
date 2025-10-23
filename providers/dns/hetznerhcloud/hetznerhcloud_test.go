@@ -14,15 +14,15 @@ func TestDNSProvider_Present_Success(t *testing.T) {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/v1/zones", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]any{
+		require.NoError(t, json.NewEncoder(w).Encode(map[string]any{
 			"zones": []map[string]any{{"id": "123", "name": "example.com"}},
-		})
+		}))
 	})
 
 	mux.HandleFunc("/v1/zones/123/records", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]any{
+		require.NoError(t, json.NewEncoder(w).Encode(map[string]any{
 			"record": map[string]any{"id": "456"},
-		})
+		}))
 	})
 
 	server := httptest.NewServer(mux)
@@ -43,16 +43,16 @@ func TestDNSProvider_CleanUp_Success(t *testing.T) {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/v1/zones", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]any{
+		require.NoError(t, json.NewEncoder(w).Encode(map[string]any{
 			"zones": []map[string]any{{"id": "123", "name": "example.com"}},
-		})
+		}))
 	})
 
 	mux.HandleFunc("/v1/zones/123/records", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
-			json.NewEncoder(w).Encode(map[string]any{
+			require.NoError(t, json.NewEncoder(w).Encode(map[string]any{
 				"record": map[string]any{"id": "456"},
-			})
+			}))
 		} else {
 			w.WriteHeader(http.StatusNoContent)
 		}
@@ -82,7 +82,7 @@ func TestDNSProvider_CleanUp_Success(t *testing.T) {
 func TestDNSProvider_ZoneNotFound(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/zones", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]any{"zones": []map[string]any{}})
+		require.NoError(t, json.NewEncoder(w).Encode(map[string]any{"zones": []map[string]any{}}))
 	})
 
 	server := httptest.NewServer(mux)

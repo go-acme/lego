@@ -1,0 +1,82 @@
+{
+  "identifier": "fdb355ffd07c48aba3d4f6bf6a116296",
+  "admin_email": "admin@example.com",
+  "created_at": "2019-02-06T10:02:07.000Z",
+  "current_revision": "eeed7e08-f1ad-442b-9e75-369a0958c7d8",
+  "deployment_level": 100,
+  "dns_servers": [
+    {
+      "server": "acns01.xaas.systems",
+      "alias": null
+    },
+    {
+      "server": "acns04.xaas.systems",
+      "alias": null
+    },
+    {
+      "server": "acns02.xaas.systems",
+      "alias": null
+    },
+    {
+      "server": "acns03.xaas.systems",
+      "alias": null
+    },
+    {
+      "server": "acns05.xaas.systems",
+      "alias": null
+    }
+  ],
+  "dnsCluster": null,
+  "dnssec_ksk": null,
+  "dnssec_mode": "unvalidated",
+  "dnssec_sig_expires_at": null,
+  "dnssec_zsk": null,
+  "expire": 604800,
+  "inherit_ns_from": null,
+  "nameserver_set": null,
+  "master": true,
+  "master_ns": "acns02.xaas.systems.",
+  "name": "example.com",
+  "notify_allowed_ips": [
+    "127.0.0.1"
+  ],
+  "published_at": "2023-06-20T08:41:06.000Z",
+  "refresh": 14400,
+  "revisions": [
+    {
+      "created_at": "2023-06-20T08:41:06.000000Z",
+      "identifier": "eeed7e08-f1ad-442b-9e75-369a0958c7d8",
+      "modified_at": "2023-06-20T08:41:06.000000Z",
+      "records": [
+        {
+          "identifier": "5ced498b-c89d-4487-824d-c03ded84f849",
+          "immutable": true,
+          "name": "@",
+          "rdata": "acns02.xaas.systems.",
+          "region": "9a1609af9dae4ce1a4ef63f51d305321",
+          "ttl": 3600,
+          "type": "NS",
+          "options": null
+        },
+        {
+          "identifier": "12345678-1234-1234-1234-123456789abc",
+          "immutable": false,
+          "name": "_acme-challenge",
+          "rdata": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+          "region": "",
+          "ttl": 300,
+          "Type": "TXT"
+        }
+      ],
+      "serial": 14,
+      "state": "active"
+    }
+  ],
+  "retry": 3600,
+  "ttl": 3600,
+  "updated_at": "2020-06-04T18:34:22.000Z",
+  "validation_level": 100,
+  "whitelabel_config": null,
+  "is_editable": true,
+  "deploy_zone": "49459f420f614eb2a979fc7e961f83e6"
+}

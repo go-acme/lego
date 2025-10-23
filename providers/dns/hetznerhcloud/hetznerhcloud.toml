@@ -1,0 +1,24 @@
+Name = "Hetzner Cloud"
+Description = ''''''
+URL = "https://docs.hetzner.cloud/reference/dns"
+Code = "hetznerhcloud"
+Since = "v4.28.0"
+
+Example = '''
+HCLOUD_TOKEN="xxxxxx" \
+lego --email you@example.com --dns hetznerhcloud -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    HCLOUD_TOKEN = "API token"
+  [Configuration.Additional]
+    HCLOUD_BASE_URL = "Override the Hetzner Cloud API base URL (Default: https://api.hetzner.cloud)"
+    HCLOUD_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+    HCLOUD_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 5)"
+    HCLOUD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 120)"
+    HCLOUD_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)"
+
+[Links]
+  API = "https://docs.hetzner.cloud/reference/dns"
+  Product = "https://www.hetzner.com/cloud"

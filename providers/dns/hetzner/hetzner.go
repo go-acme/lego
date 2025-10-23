@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal/hetznerv1"
 	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal/legacy"
@@ -76,6 +77,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return &DNSProvider{provider: provider}, nil
 
 	case foundAPIKey:
+		log.Warnf("APIKey (legacy Hetzner DNS API) is deprecated, please use APIToken (Hetzner Cloud API) instead.")
+
 		provider, err := legacy.NewDNSProvider()
 		if err != nil {
 			return nil, err
@@ -117,6 +120,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return &DNSProvider{provider: provider}, nil
 
 	case config.APIKey != "":
+		log.Warnf("%s (legacy Hetzner DNS API) is deprecated, please use %s (Hetzner Cloud API) instead.", EnvAPIKey, EnvAPIToken)
+
 		cfg := &legacy.Config{
 			APIKey:             config.APIKey,
 			PropagationTimeout: config.PropagationTimeout,

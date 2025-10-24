@@ -119,6 +119,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/nifcloud"
 	"github.com/go-acme/lego/v4/providers/dns/njalla"
 	"github.com/go-acme/lego/v4/providers/dns/nodion"
+	"github.com/go-acme/lego/v4/providers/dns/noip"
 	"github.com/go-acme/lego/v4/providers/dns/ns1"
 	"github.com/go-acme/lego/v4/providers/dns/octenium"
 	"github.com/go-acme/lego/v4/providers/dns/oraclecloud"
@@ -402,6 +403,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return njalla.NewDNSProvider()
 	case "nodion":
 		return nodion.NewDNSProvider()
+	case "noip":
+		return noip.NewDNSProvider()
 	case "ns1":
 		return ns1.NewDNSProvider()
 	case "octenium":

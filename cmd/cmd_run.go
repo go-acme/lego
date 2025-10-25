@@ -76,7 +76,7 @@ func createRun() *cli.Command {
 			},
 			&cli.StringFlag{
 				Name:  flgProfile,
-				Usage: "If the CA offers multiple certificate profiles (draft-aaron-acme-profiles), choose this one.",
+				Usage: "If the CA offers multiple certificate profiles (draft-ietf-acme-profiles), choose this one.",
 			},
 			&cli.StringFlag{
 				Name:  flgAlwaysDeactivateAuthorizations,

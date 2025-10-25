@@ -76,7 +76,7 @@ OPTIONS:
    --not-after value                         Set the notAfter field in the certificate (RFC3339 format)
    --private-key value                       Path to private key (in PEM encoding) for the certificate. By default, the private key is generated.
    --preferred-chain value                   If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.
-   --profile value                           If the CA offers multiple certificate profiles (draft-aaron-acme-profiles), choose this one.
+   --profile value                           If the CA offers multiple certificate profiles (draft-ietf-acme-profiles), choose this one.
    --always-deactivate-authorizations value  Force the authorizations to be relinquished even if the certificate request was successful.
    --run-hook value                          Define a hook. The hook is executed when the certificates are effectively created.
    --run-hook-timeout value                  Define the timeout for the hook execution. (default: 2m0s)
@@ -103,7 +103,7 @@ OPTIONS:
    --not-before value                        Set the notBefore field in the certificate (RFC3339 format)
    --not-after value                         Set the notAfter field in the certificate (RFC3339 format)
    --preferred-chain value                   If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.
-   --profile value                           If the CA offers multiple certificate profiles (draft-aaron-acme-profiles), choose this one.
+   --profile value                           If the CA offers multiple certificate profiles (draft-ietf-acme-profiles), choose this one.
    --always-deactivate-authorizations value  Force the authorizations to be relinquished even if the certificate request was successful.
    --renew-hook value                        Define a hook. The hook is executed only when the certificates are effectively renewed.
    --renew-hook-timeout value                Define the timeout for the hook execution. (default: 2m0s)

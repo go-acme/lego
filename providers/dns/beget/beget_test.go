@@ -158,13 +158,13 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 			config := NewDefaultConfig()
 			config.Username = "user"
 			config.Password = "secret"
+			config.HTTPClient = server.Client()
 
 			p, err := NewDNSProviderConfig(config)
 			if err != nil {
 				return nil, err
 			}
 
-			p.client.HTTPClient = server.Client()
 			p.client.BaseURL, _ = url.Parse(server.URL)
 
 			return p, nil

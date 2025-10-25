@@ -96,13 +96,13 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.APIToken = "secret"
+			config.HTTPClient = server.Client()
 
 			p, err := NewDNSProviderConfig(config)
 			if err != nil {
 				return nil, err
 			}
 
-			p.client.HTTPClient = server.Client()
 			p.client.BaseURL, _ = url.Parse(server.URL)
 
 			return p, nil

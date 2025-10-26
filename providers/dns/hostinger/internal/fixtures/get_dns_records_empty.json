@@ -3,6 +3,16 @@
     "name": "_acme-challenge",
     "records": [
       {
+        "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+      }
+    ],
+    "ttl": 14400,
+    "type": "TXT"
+  },
+  {
+    "name": "_acme-challenge",
+    "records": [
+      {
         "content": "example.com.",
         "is_disabled": false
       }

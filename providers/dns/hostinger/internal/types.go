@@ -37,3 +37,12 @@ type Record struct {
 	Content    string `json:"content,omitempty"`
 	IsDisabled bool   `json:"is_disabled,omitempty"`
 }
+
+type Filters struct {
+	Filters []Filter `json:"filters"`
+}
+
+type Filter struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}

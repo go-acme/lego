@@ -5,24 +5,11 @@
       "name": "_acme-challenge",
       "records": [
         {
-          "content": "aaa"
-        },
-        {
           "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
         }
       ],
-      "ttl": 14400,
+      "ttl": 120,
       "type": "TXT"
-    },
-    {
-      "name": "_acme-challenge",
-      "records": [
-        {
-          "content": "example.com."
-        }
-      ],
-      "ttl": 14400,
-      "type": "A"
     }
   ]
 }

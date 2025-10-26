@@ -86,9 +86,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("stackpath: stack id missing")
 	}
 
-	client := internal.NewClient(context.Background(), config.StackID, config.ClientID, config.ClientSecret)
-
-	return &DNSProvider{config: config, client: client}, nil
+	return &DNSProvider{
+		config: config,
+		client: internal.NewClient(config.StackID,
+			internal.CreateOAuthClient(context.Background(), config.ClientID, config.ClientSecret),
+		),
+	}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.

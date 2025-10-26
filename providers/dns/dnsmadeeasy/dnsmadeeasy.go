@@ -112,7 +112,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("dnsmadeeasy: %w", err)
 	}
 
-	client.HTTPClient = config.HTTPClient
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
 	client.BaseURL, err = url.Parse(baseURL)
 	if err != nil {
 		return nil, err

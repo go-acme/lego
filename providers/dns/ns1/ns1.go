@@ -80,6 +80,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("ns1: credentials missing")
 	}
 
+	if config.HTTPClient == nil {
+		// Because the rest.NewClient uses the http.DefaultClient.
+		config.HTTPClient = &http.Client{Timeout: 10 * time.Second}
+	}
+
 	client := rest.NewClient(config.HTTPClient, rest.SetAPIKey(config.APIKey))
 
 	return &DNSProvider{client: client, config: config}, nil

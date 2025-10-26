@@ -18,6 +18,7 @@ lego --email you@example.com --dns transip -d '*.example.com' -d example.com run
     TRANSIP_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 10)"
     TRANSIP_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 600)"
     TRANSIP_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 10)"
+    TRANSIP_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]
   API = "https://api.transip.eu/rest/docs.html"

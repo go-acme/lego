@@ -82,7 +82,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	params := dnspod.CommonParams{LoginToken: config.LoginToken, Format: "json"}
 
 	client := dnspod.NewClient(params)
-	client.HTTPClient = config.HTTPClient
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
 
 	return &DNSProvider{client: client, config: config}, nil
 }

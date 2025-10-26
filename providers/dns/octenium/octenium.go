@@ -89,10 +89,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 5
-	if config.HTTPClient != nil {
-		retryClient.HTTPClient = config.HTTPClient
-	}
+	retryClient.HTTPClient = client.HTTPClient
 	retryClient.Logger = log.Logger
+
+	client.HTTPClient = retryClient.StandardClient()
 
 	return &DNSProvider{
 		config:    config,

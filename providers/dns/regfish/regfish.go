@@ -84,6 +84,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client := regfishapi.NewClient(config.APIKey)
 
+	if config.HTTPClient != nil {
+		client.Client = config.HTTPClient
+	} else {
+		// Because the regfishapi.NewClient uses an empty http.Client.
+		client.Client = &http.Client{Timeout: 30 * time.Second}
+	}
+
 	return &DNSProvider{
 		config:    config,
 		client:    client,

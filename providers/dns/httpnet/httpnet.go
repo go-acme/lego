@@ -91,6 +91,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client := hostingde.NewClient(config.APIKey)
 	client.BaseURL, _ = url.Parse(hostingde.DefaultHTTPNetBaseURL)
 
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
 	return &DNSProvider{
 		config:    config,
 		client:    client,

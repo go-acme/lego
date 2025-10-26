@@ -103,6 +103,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client := internal.NewClient(config.Host, config.ServerName, config.APIVersion, config.APIKey)
 
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
 	if config.APIVersion <= 0 {
 		err := client.SetAPIVersion(context.Background())
 		if err != nil {

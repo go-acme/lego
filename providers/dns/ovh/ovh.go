@@ -277,5 +277,9 @@ func newClient(config *Config) (*ovh.Client, error) {
 
 	client.UserAgent = useragent.Get()
 
+	if config.HTTPClient != nil {
+		client.Client = config.HTTPClient
+	}
+
 	return client, nil
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -23,6 +24,7 @@ const (
 
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
@@ -34,6 +36,7 @@ type Config struct {
 	BaseURL            string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -41,6 +44,9 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
 	}
 }
 
@@ -81,7 +87,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("mailinabox: missing base URL")
 	}
 
-	client, err := mailinabox.New(config.BaseURL, config.Email, config.Password)
+	client, err := mailinabox.New(config.BaseURL, config.Email, config.Password, mailinabox.WithHTTPClient(config.HTTPClient))
 	if err != nil {
 		return nil, fmt.Errorf("mailinabox: %w", err)
 	}

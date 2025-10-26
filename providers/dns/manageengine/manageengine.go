@@ -75,11 +75,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("manageengine: credentials missing")
 	}
 
-	client := internal.NewClient(context.Background(), config.ClientID, config.ClientSecret)
-
 	return &DNSProvider{
 		config: config,
-		client: client,
+		client: internal.NewClient(
+			internal.CreateOAuthClient(context.Background(), config.ClientID, config.ClientSecret),
+		),
 	}, nil
 }
 

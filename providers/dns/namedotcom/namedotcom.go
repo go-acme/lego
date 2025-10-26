@@ -97,7 +97,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	client := namecom.New(config.Username, config.APIToken)
-	client.Client = config.HTTPClient
+
+	if config.HTTPClient != nil {
+		client.Client = config.HTTPClient
+	}
 
 	if config.Server != "" {
 		client.Server = config.Server

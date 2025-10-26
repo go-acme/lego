@@ -24,12 +24,12 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(ctx context.Context, clientID, clientSecret string) *Client {
+func NewClient(hc *http.Client) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 
 	return &Client{
 		baseURL:    baseURL,
-		httpClient: createOAuthClient(ctx, clientID, clientSecret),
+		httpClient: hc,
 	}
 }
 

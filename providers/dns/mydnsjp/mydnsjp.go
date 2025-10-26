@@ -79,9 +79,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("mydnsjp: some credentials information are missing")
 	}
 
+	client := internal.NewClient(config.MasterID, config.Password)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
 	return &DNSProvider{
 		config: config,
-		client: internal.NewClient(config.MasterID, config.Password),
+		client: client,
 	}, nil
 }
 

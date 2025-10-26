@@ -5,6 +5,7 @@ package scaleway
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -32,6 +33,7 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 const (
@@ -47,12 +49,14 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	ProjectID          string
-	Token              string // TODO(ldez) rename to SecretKey in the next major.
-	AccessKey          string
+	ProjectID string
+	Token     string // TODO(ldez) rename to SecretKey in the next major.
+	AccessKey string
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -62,6 +66,9 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOneWithFallback(EnvTTL, minTTL, strconv.Atoi, altEnvName(EnvTTL)),
 		PropagationTimeout: env.GetOneWithFallback(EnvPropagationTimeout, defaultPropagationTimeout, env.ParseSecond, altEnvName(EnvPropagationTimeout)),
 		PollingInterval:    env.GetOneWithFallback(EnvPollingInterval, defaultPollingInterval, env.ParseSecond, altEnvName(EnvPollingInterval)),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
 	}
 }
 
@@ -105,6 +112,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	configuration := []scw.ClientOption{
 		scw.WithAuth(config.AccessKey, config.Token),
 		scw.WithUserAgent(useragent.Get()),
+	}
+
+	if config.HTTPClient != nil {
+		configuration = append(configuration, scw.WithHTTPClient(config.HTTPClient))
 	}
 
 	if config.ProjectID != "" {

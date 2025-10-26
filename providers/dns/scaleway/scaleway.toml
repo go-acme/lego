@@ -18,6 +18,7 @@ lego --email you@example.com --dns scaleway -d '*.example.com' -d example.com ru
     SCW_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 10)"
     SCW_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 120)"
     SCW_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)"
+    SCW_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]
   API = "https://developers.scaleway.com/en/products/domain/dns/api/"

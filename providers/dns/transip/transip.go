@@ -4,6 +4,7 @@ package transip
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -23,6 +24,7 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
@@ -34,6 +36,7 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int64
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -42,6 +45,9 @@ func NewDefaultConfig() *Config {
 		TTL:                int64(env.GetOrDefaultInt(EnvTTL, 10)),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 10*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
 	}
 }
 
@@ -73,10 +79,19 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("transip: the configuration of the DNS provider is nil")
 	}
 
-	client, err := gotransip.NewClient(gotransip.ClientConfiguration{
+	cfg := gotransip.ClientConfiguration{
 		AccountName:    config.AccountName,
 		PrivateKeyPath: config.PrivateKeyPath,
-	})
+	}
+
+	if config.HTTPClient != nil {
+		cfg.HTTPClient = config.HTTPClient
+	} else {
+		// Uses an explicit default HTTP client because the desec.NewDefaultClientOptions uses the http.DefaultClient.
+		cfg.HTTPClient = &http.Client{Timeout: 30 * time.Second}
+	}
+
+	client, err := gotransip.NewClient(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("transip: %w", err)
 	}

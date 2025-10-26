@@ -87,9 +87,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("hostingde: API key missing")
 	}
 
+	client := hostingde.NewClient(config.APIKey)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
 	return &DNSProvider{
 		config:    config,
-		client:    hostingde.NewClient(config.APIKey),
+		client:    client,
 		recordIDs: make(map[string]string),
 	}, nil
 }

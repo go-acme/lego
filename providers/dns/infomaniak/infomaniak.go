@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/infomaniak/internal"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 )
 
 // Infomaniak API reference: https://api.infomaniak.com/doc
@@ -96,7 +97,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("infomaniak: missing access token")
 	}
 
-	client, err := internal.New(internal.OAuthStaticAccessToken(config.HTTPClient, config.AccessToken), config.APIEndpoint)
+	client, err := internal.New(
+		clientdebug.Wrap(
+			internal.OAuthStaticAccessToken(config.HTTPClient, config.AccessToken),
+		),
+		config.APIEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("infomaniak: %w", err)
 	}

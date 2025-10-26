@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/vultr/govultr/v3"
 	"golang.org/x/oauth2"
 )
@@ -38,7 +39,7 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
-	HTTPTimeout        time.Duration
+	HTTPTimeout        time.Duration // TODO(ldez): remove in v5
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -84,7 +85,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	authClient := OAuthStaticAccessToken(config.HTTPClient, config.APIKey)
 	authClient.Timeout = config.HTTPTimeout
 
-	client := govultr.NewClient(authClient)
+	client := govultr.NewClient(clientdebug.Wrap(authClient))
 
 	return &DNSProvider{client: client, config: config}, nil
 }

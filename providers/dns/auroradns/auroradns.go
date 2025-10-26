@@ -10,6 +10,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/miekg/dns"
 	"github.com/nrdcg/auroradns"
 )
@@ -94,7 +95,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("aurora: %w", err)
 	}
 
-	client, err := auroradns.NewClient(tr.Client(), auroradns.WithBaseURL(config.BaseURL))
+	client, err := auroradns.NewClient(clientdebug.Wrap(tr.Client()), auroradns.WithBaseURL(config.BaseURL))
 	if err != nil {
 		return nil, fmt.Errorf("aurora: %w", err)
 	}

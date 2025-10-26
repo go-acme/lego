@@ -10,6 +10,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/namedotcom/go/v4/namecom"
 )
 
@@ -101,6 +102,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.HTTPClient != nil {
 		client.Client = config.HTTPClient
 	}
+
+	client.Client = clientdebug.Wrap(client.Client)
 
 	if config.Server != "" {
 		client.Server = config.Server

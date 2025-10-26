@@ -9,6 +9,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/joker/internal/svc"
 )
 
@@ -46,6 +47,8 @@ func newSvcProviderConfig(config *Config) (*svcProvider, error) {
 	}
 
 	client := svc.NewClient(config.Username, config.Password)
+
+	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &svcProvider{config: config, client: client}, nil
 }

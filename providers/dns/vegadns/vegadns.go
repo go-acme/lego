@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/nrdcg/vegadns"
 )
 
@@ -82,6 +83,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("vegadns: the configuration of the DNS provider is nil")
 	}
+
+	if config.HTTPClient == nil {
+		config.HTTPClient = &http.Client{Timeout: 30 * time.Second}
+	}
+
+	config.HTTPClient = clientdebug.Wrap(config.HTTPClient)
 
 	client, err := vegadns.NewClient(config.BaseURL,
 		vegadns.WithOAuth(config.APIKey, config.APISecret),

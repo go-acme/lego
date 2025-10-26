@@ -14,6 +14,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 )
 
@@ -89,7 +90,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client, err := egoscale.NewClient(
 		credentials.NewStaticCredentials(config.APIKey, config.APISecret),
 		egoscale.ClientOptWithEndpoint(egoscale.Endpoint(config.Endpoint)),
-		egoscale.ClientOptWithHTTPClient(&http.Client{Timeout: config.HTTPTimeout}),
+		egoscale.ClientOptWithHTTPClient(clientdebug.Wrap(&http.Client{Timeout: config.HTTPTimeout})),
 		egoscale.ClientOptWithUserAgent(useragent.Get()),
 	)
 	if err != nil {

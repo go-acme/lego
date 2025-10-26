@@ -10,6 +10,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	bindman "github.com/labbsr0x/bindman-dns-webhook/src/client"
 )
 
@@ -80,7 +81,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config.HTTPClient = &http.Client{Timeout: time.Minute}
 	}
 
-	client, err := bindman.New(config.BaseURL, config.HTTPClient)
+	client, err := bindman.New(config.BaseURL, clientdebug.Wrap(config.HTTPClient))
 	if err != nil {
 		return nil, fmt.Errorf("bindman: %w", err)
 	}

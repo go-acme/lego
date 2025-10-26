@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 	scwdomain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -115,7 +116,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.HTTPClient != nil {
-		configuration = append(configuration, scw.WithHTTPClient(config.HTTPClient))
+		configuration = append(configuration, scw.WithHTTPClient(clientdebug.Wrap(config.HTTPClient)))
 	}
 
 	if config.ProjectID != "" {

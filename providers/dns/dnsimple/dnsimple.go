@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 	"golang.org/x/oauth2"
 )
@@ -79,8 +80,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("dnsimple: OAuth token is missing")
 	}
 
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.AccessToken})
-	client := dnsimple.NewClient(oauth2.NewClient(context.Background(), ts))
+	client := dnsimple.NewClient(
+		clientdebug.Wrap(
+			oauth2.NewClient(
+				context.Background(),
+				oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.AccessToken}),
+			),
+		),
+	)
 	client.SetUserAgent(useragent.Get())
 
 	if config.BaseURL != "" {

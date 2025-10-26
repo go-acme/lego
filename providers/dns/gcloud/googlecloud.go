@@ -17,6 +17,7 @@ import (
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/platform/wait"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/miekg/dns"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -172,7 +173,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("googlecloud: unable to create Google Cloud DNS service: client is nil")
 	}
 
-	svc, err := gdns.NewService(context.Background(), option.WithHTTPClient(config.HTTPClient))
+	svc, err := gdns.NewService(context.Background(), option.WithHTTPClient(clientdebug.Wrap(config.HTTPClient)))
 	if err != nil {
 		return nil, fmt.Errorf("googlecloud: unable to create Google Cloud DNS service: %w", err)
 	}

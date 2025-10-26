@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/timewebcloud/internal"
 )
 
@@ -81,7 +82,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("timewebcloud: authentication token is missing")
 	}
 
-	client := internal.NewClient(internal.OAuthStaticAccessToken(config.HTTPClient, config.AuthToken))
+	client := internal.NewClient(
+		clientdebug.Wrap(
+			internal.OAuthStaticAccessToken(config.HTTPClient, config.AuthToken),
+		),
+	)
 
 	return &DNSProvider{
 		config:    config,

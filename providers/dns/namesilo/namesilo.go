@@ -10,6 +10,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/nrdcg/namesilo"
 )
 
@@ -84,7 +85,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("namesilo: credentials missing")
 	}
 
-	return &DNSProvider{client: namesilo.NewClient(config.APIKey), config: config}, nil
+	client := namesilo.NewClient(config.APIKey)
+
+	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
+
+	return &DNSProvider{client: client, config: config}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.

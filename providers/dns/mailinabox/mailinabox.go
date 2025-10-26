@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/nrdcg/mailinabox"
 )
 
@@ -86,6 +87,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.BaseURL == "" {
 		return nil, errors.New("mailinabox: missing base URL")
 	}
+
+	if config.HTTPClient == nil {
+		config.HTTPClient = &http.Client{Timeout: 30 * time.Second}
+	}
+
+	config.HTTPClient = clientdebug.Wrap(config.HTTPClient)
 
 	client, err := mailinabox.New(config.BaseURL, config.Email, config.Password, mailinabox.WithHTTPClient(config.HTTPClient))
 	if err != nil {

@@ -59,7 +59,7 @@ require (
 	github.com/nrdcg/freemyip v0.3.0
 	github.com/nrdcg/goacmedns v0.2.0
 	github.com/nrdcg/goinwx v0.11.0
-	github.com/nrdcg/mailinabox v0.2.0
+	github.com/nrdcg/mailinabox v0.3.0
 	github.com/nrdcg/namesilo v0.5.0
 	github.com/nrdcg/nodion v0.1.0
 	github.com/nrdcg/oci-go-sdk/common/v1065 v1065.102.0

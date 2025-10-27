@@ -61,7 +61,7 @@ func TestDNSProvider_Present(t *testing.T) {
 				Route("GET /1.0/domains",
 					servermock.Noop().
 						WithStatusCode(http.StatusNotFound)),
-			expectedError: "vegadns: can't find Authoritative Zone for _acme-challenge.example.com. in Present: Unable to find auth zone for fqdn _acme-challenge.example.com",
+			expectedError: "vegadns: can't find Authoritative Zone for _acme-challenge.example.com. in Present: unable to find auth zone for fqdn _acme-challenge.example.com",
 		},
 		{
 			desc: "FailToCreateTXT",
@@ -72,7 +72,7 @@ func TestDNSProvider_Present(t *testing.T) {
 				Route("POST /1.0/records",
 					servermock.Noop().
 						WithStatusCode(http.StatusBadRequest)),
-			expectedError: "vegadns: Got bad answer from VegaDNS on CreateTXT. Code: 400. Message: ",
+			expectedError: "vegadns: bad answer from VegaDNS (code: 400, message: )",
 		},
 	}
 
@@ -119,7 +119,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 				Route("GET /1.0/domains",
 					servermock.Noop().
 						WithStatusCode(http.StatusNotFound)),
-			expectedError: "vegadns: can't find Authoritative Zone for _acme-challenge.example.com. in CleanUp: Unable to find auth zone for fqdn _acme-challenge.example.com",
+			expectedError: "vegadns: can't find Authoritative Zone for _acme-challenge.example.com. in CleanUp: unable to find auth zone for fqdn _acme-challenge.example.com",
 		},
 		{
 			desc: "FailToGetRecordID",
@@ -131,7 +131,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 					servermock.Noop().
 						WithStatusCode(http.StatusNotFound),
 					servermock.CheckQueryParameter().With("domain_id", "1")),
-			expectedError: "vegadns: couldn't get Record ID in CleanUp: Got bad answer from VegaDNS on GetRecordID. Code: 404. Message: ",
+			expectedError: "vegadns: couldn't get Record ID in CleanUp: bad answer from VegaDNS (code: 404, message: )",
 		},
 	}
 

@@ -77,7 +77,7 @@ type Meta struct {
 
 	// profiles (optional, object):
 	// A map of profile names to human-readable descriptions of those profiles.
-	// https://www.ietf.org/id/draft-aaron-acme-profiles-00.html#section-3
+	// https://www.ietf.org/id/draft-ietf-acme-profiles-00.html#section-3
 	Profiles map[string]string `json:"profiles"`
 }
 
@@ -156,7 +156,7 @@ type Order struct {
 	// profile (string, optional):
 	// A string uniquely identifying the profile
 	// which will be used to affect issuance of the certificate requested by this Order.
-	// https://www.ietf.org/id/draft-aaron-acme-profiles-00.html#section-4
+	// https://www.ietf.org/id/draft-ietf-acme-profiles-00.html#section-4
 	Profile string `json:"profile,omitempty"`
 
 	// notBefore (optional, string):

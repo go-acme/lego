@@ -1,7 +1,6 @@
 package hostinger
 
 import (
-	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -116,8 +115,6 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
-		Route("GET /api/dns/v1/zones/example.com",
-			servermock.ResponseFromInternal("get_dns_records.json")).
 		Route("PUT /api/dns/v1/zones/example.com",
 			servermock.ResponseFromInternal("update_dns_records.json"),
 			servermock.CheckRequestJSONBodyFromInternal("update_dns_records-request.json")).
@@ -127,20 +124,7 @@ func TestDNSProvider_Present(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestDNSProvider_Present_empty(t *testing.T) {
-	provider := mockBuilder().
-		Route("GET /api/dns/v1/zones/example.com",
-			servermock.ResponseFromInternal("get_dns_records_empty.json")).
-		Route("PUT /api/dns/v1/zones/example.com",
-			servermock.ResponseFromInternal("update_dns_records.json"),
-			servermock.CheckRequestJSONBodyFromInternal("update_dns_records_empty-request.json")).
-		Build(t)
-
-	err := provider.Present("example.com", "", "123d==")
-	require.NoError(t, err)
-}
-
-func TestDNSProvider_CleanUp(t *testing.T) {
+func TestDNSProvider_CleanUp_update(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /api/dns/v1/zones/example.com",
 			servermock.ResponseFromInternal("get_dns_records_acme.json")).
@@ -153,12 +137,13 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestDNSProvider_CleanUp_empty(t *testing.T) {
+func TestDNSProvider_CleanUp_delete(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /api/dns/v1/zones/example.com",
 			servermock.ResponseFromInternal("get_dns_records_empty.json")).
-		Route("PUT /api/dns/v1/zones/example.com",
-			servermock.Noop().WithStatusCode(http.StatusServiceUnavailable)).
+		Route("DELETE /api/dns/v1/zones/example.com",
+			servermock.ResponseFromInternal("delete_dns_records.json"),
+			servermock.CheckRequestJSONBody(`{"filters":[{"name":"_acme-challenge","type":"TXT"}]}`)).
 		Build(t)
 
 	err := provider.CleanUp("example.com", "", "123d==")

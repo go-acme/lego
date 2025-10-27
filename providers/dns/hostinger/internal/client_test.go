@@ -85,19 +85,10 @@ func TestClient_UpdateDNSRecords(t *testing.T) {
 			{
 				Name: "_acme-challenge",
 				Records: []Record{
-					{Content: "aaa"},
 					{Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"},
 				},
-				TTL:  14400,
+				TTL:  120,
 				Type: "TXT",
-			},
-			{
-				Name: "_acme-challenge",
-				Records: []Record{{
-					Content: "example.com.",
-				}},
-				TTL:  14400,
-				Type: "A",
 			},
 		},
 	}
@@ -127,4 +118,37 @@ func TestClient_UpdateDNSRecords_error(t *testing.T) {
 	err := client.UpdateDNSRecords(t.Context(), "example.com", zone)
 
 	require.EqualError(t, err, "26a91bd9-f8c8-4a83-9df9-83e23d696fe3: The name field is required. (and 1 more error): field_1: The field_1 field is required., The field_1 must be a number.")
+}
+
+func TestClient_DeleteDNSRecords(t *testing.T) {
+	client := mockBuilder().
+		Route("DELETE /api/dns/v1/zones/example.com",
+			servermock.ResponseFromFixture("delete_dns_records.json"),
+			servermock.CheckRequestJSONBody(`{"filters":[{"name":"_acme-challenge","type":"TXT"}]}`)).
+		Build(t)
+
+	filters := []Filter{{
+		Name: "_acme-challenge",
+		Type: "TXT",
+	}}
+
+	err := client.DeleteDNSRecords(t.Context(), "example.com", filters)
+	require.NoError(t, err)
+}
+
+func TestClient_DeleteDNSRecords_error(t *testing.T) {
+	client := mockBuilder().
+		Route("DELETE /api/dns/v1/zones/example.com",
+			servermock.ResponseFromFixture("error_401.json").
+				WithStatusCode(http.StatusUnauthorized)).
+		Build(t)
+
+	filters := []Filter{{
+		Name: "_acme-challenge",
+		Type: "TXT",
+	}}
+
+	err := client.DeleteDNSRecords(t.Context(), "example.com", filters)
+
+	require.EqualError(t, err, "26a91bd9-f8c8-4a83-9df9-83e23d696fe3: Unauthenticated")
 }

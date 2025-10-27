@@ -73,6 +73,19 @@ func (c *Client) UpdateDNSRecords(ctx context.Context, domain string, zone ZoneR
 	return c.do(req, nil)
 }
 
+// DeleteDNSRecords deletes DNS records for the selected domain.
+// https://developers.hostinger.com/#tag/dns-zone/delete/api/dns/v1/zones/{domain}
+func (c *Client) DeleteDNSRecords(ctx context.Context, domain string, filters []Filter) error {
+	endpoint := c.BaseURL.JoinPath("/api/dns/v1/zones/", domain)
+
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, Filters{Filters: filters})
+	if err != nil {
+		return err
+	}
+
+	return c.do(req, nil)
+}
+
 func (c *Client) do(req *http.Request, result any) error {
 	req.Header.Set(authorizationHeader, "Bearer "+c.token)
 

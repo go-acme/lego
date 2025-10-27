@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -103,38 +104,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	ctx := context.Background()
 
-	recordSets, err := d.client.GetDNSRecords(ctx, dns01.UnFqdn(authZone))
-	if err != nil {
-		return fmt.Errorf("hostinger: get DNS records: %w", err)
-	}
-
-	var newRecordSet []internal.RecordSet
-
-	var added bool
-
-	for _, recordSet := range recordSets {
-		if recordSet.Name == subDomain && recordSet.Type == "TXT" {
-			recordSet.Records = append(recordSet.Records, internal.Record{Content: info.Value})
-			added = true
-		}
-
-		newRecordSet = append(newRecordSet, recordSet)
-	}
-
-	if !added {
-		newRecordSet = append(newRecordSet, internal.RecordSet{
+	request := internal.ZoneRequest{
+		Overwrite: false,
+		Zone: []internal.RecordSet{{
 			Name: subDomain,
 			Type: "TXT",
 			TTL:  d.config.TTL,
 			Records: []internal.Record{
 				{Content: info.Value},
 			},
-		})
-	}
-
-	request := internal.ZoneRequest{
-		Overwrite: false,
-		Zone:      newRecordSet,
+		}},
 	}
 
 	err = d.client.UpdateDNSRecords(ctx, dns01.UnFqdn(authZone), request)
@@ -161,45 +140,45 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	ctx := context.Background()
 
-	recordSets, err := d.client.GetDNSRecords(ctx, dns01.UnFqdn(authZone))
+	recordSet, err := d.findRecordSet(ctx, authZone, subDomain)
 	if err != nil {
-		return fmt.Errorf("hostinger: get DNS records: %w", err)
+		return fmt.Errorf("hostinger: %w", err)
 	}
 
-	var changed bool
+	var newRecords []internal.Record
 
-	var newRecordSet []internal.RecordSet
-
-	for _, recordSet := range recordSets {
-		if recordSet.Name == subDomain && recordSet.Type == "TXT" {
-			var rs []internal.Record
-
-			for _, record := range recordSet.Records {
-				if record.Content == info.Value {
-					changed = true
-				} else {
-					rs = append(rs, record)
-				}
-			}
-
-			recordSet.Records = rs
+	for _, record := range recordSet.Records {
+		if record.Content == info.Value || record.Content == strconv.Quote(info.Value) {
+			continue
 		}
 
-		newRecordSet = append(newRecordSet, recordSet)
+		newRecords = append(newRecords, record)
 	}
 
-	if !changed {
+	recordSet.Records = newRecords
+
+	if len(recordSet.Records) > 0 {
+		request := internal.ZoneRequest{
+			Overwrite: true,
+			Zone:      []internal.RecordSet{recordSet},
+		}
+
+		err = d.client.UpdateDNSRecords(ctx, dns01.UnFqdn(authZone), request)
+		if err != nil {
+			return fmt.Errorf("hostinger: update DNS records (delete): %w", err)
+		}
+
 		return nil
 	}
 
-	request := internal.ZoneRequest{
-		Overwrite: false,
-		Zone:      newRecordSet,
-	}
+	filters := []internal.Filter{{
+		Name: subDomain,
+		Type: "TXT",
+	}}
 
-	err = d.client.UpdateDNSRecords(ctx, dns01.UnFqdn(authZone), request)
+	err = d.client.DeleteDNSRecords(ctx, dns01.UnFqdn(authZone), filters)
 	if err != nil {
-		return fmt.Errorf("hostinger: update DNS records (delete): %w", err)
+		return fmt.Errorf("hostinger: delete DNS records: %w", err)
 	}
 
 	return nil
@@ -209,4 +188,21 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) findRecordSet(ctx context.Context, authZone, subDomain string) (internal.RecordSet, error) {
+	recordSets, err := d.client.GetDNSRecords(ctx, dns01.UnFqdn(authZone))
+	if err != nil {
+		return internal.RecordSet{}, fmt.Errorf("get DNS records: %w", err)
+	}
+
+	for _, recordSet := range recordSets {
+		if recordSet.Name != subDomain || recordSet.Type != "TXT" {
+			continue
+		}
+
+		return recordSet, nil
+	}
+
+	return internal.RecordSet{}, fmt.Errorf("no record found for domain %q and subdomain %q", authZone, subDomain)
 }

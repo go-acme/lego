@@ -143,6 +143,18 @@ Example:
 LEGO_DEBUG_CLIENT_VERBOSE_ERROR=true
 ```
 
+### LEGO_DEBUG_DNS_API_HTTP_CLIENT
+
+The environment variable `LEGO_DEBUG_DNS_API_HTTP_CLIENT` allows debug the calls to the DNS API.
+
+Some DNS providers don't support this option.
+
+Example:
+
+```bash
+LEGO_DEBUG_DNS_API_HTTP_CLIENT=true
+```
+
 ### LEGO_DEBUG_ACME_HTTP_CLIENT
 
 The environment variable `LEGO_DEBUG_ACME_HTTP_CLIENT` allows debug the calls to the ACME server.

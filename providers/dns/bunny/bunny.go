@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
+	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 	"github.com/nrdcg/bunny-go"
 	"golang.org/x/net/publicsuffix"
 )
@@ -82,9 +83,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("bunny: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	client := bunny.NewClient(config.APIKey)
-
-	return &DNSProvider{config: config, client: client}, nil
+	return &DNSProvider{
+		config: config,
+		client: bunny.NewClient(config.APIKey, bunny.WithUserAgent(useragent.Get())),
+	}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

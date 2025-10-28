@@ -685,8 +685,8 @@ github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OS
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nrdcg/auroradns v1.1.0 h1:KekGh8kmf2MNwqZVVYo/fw/ZONt8QMEmbMFOeljteWo=
 github.com/nrdcg/auroradns v1.1.0/go.mod h1:O7tViUZbAcnykVnrGkXzIJTHoQCHcgalgAe6X1mzHfk=
-github.com/nrdcg/bunny-go v0.0.0-20250327222614-988a091fc7ea h1:OSgRS4kqOs/WuxuFOObP2gwrenL4/qiKXQbQugr/Two=
-github.com/nrdcg/bunny-go v0.0.0-20250327222614-988a091fc7ea/go.mod h1:IDRRngAngb2eTEaWgpO0hukQFI/vJId46fT1KErMytA=
+github.com/nrdcg/bunny-go v0.1.0 h1:GAHTRpHaG/TxfLZlqoJ8OJFzw8rI74+jOTkzxWh0uHA=
+github.com/nrdcg/bunny-go v0.1.0/go.mod h1:u+C9dgsspgtWVaAz6QkyV17s9fxD8viwwKoxb9XMz1A=
 github.com/nrdcg/desec v0.11.0 h1:XZVHy07sg12y8FozMp+l7XvzPsdzog0AYXuQMaHBsfs=
 github.com/nrdcg/desec v0.11.0/go.mod h1:5+4vyhMRTs49V9CNoODF/HwT8Mwxv9DJ6j+7NekUnBs=
 github.com/nrdcg/dnspod-go v0.4.0 h1:c/jn1mLZNKF3/osJ6mz3QPxTudvPArXTjpkmYj0uK6U=

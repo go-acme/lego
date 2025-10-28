@@ -96,14 +96,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	_, domainID, err := d.client.GetAuthZone(ctx, info.EffectiveFQDN)
+	domainID, err := d.findDomainID(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("vegadns: can't find Authoritative Zone for %s in Present: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("vegadns: find domain ID for %s: %w", info.EffectiveFQDN, err)
 	}
 
-	err = d.client.CreateTXTRecord(ctx, domainID, info.EffectiveFQDN, info.Value, d.config.TTL)
+	err = d.client.CreateTXTRecord(ctx, domainID, dns01.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("vegadns: %w", err)
+		return fmt.Errorf("vegadns: create TXT record: %w", err)
 	}
 
 	return nil
@@ -115,16 +115,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	_, domainID, err := d.client.GetAuthZone(ctx, info.EffectiveFQDN)
+	domainID, err := d.findDomainID(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("vegadns: can't find Authoritative Zone for %s in CleanUp: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("vegadns: find domain ID for %s: %w", info.EffectiveFQDN, err)
 	}
 
-	txt := dns01.UnFqdn(info.EffectiveFQDN)
-
-	recordID, err := d.client.GetRecordID(ctx, domainID, txt, "TXT")
+	recordID, err := d.client.GetRecordID(ctx, domainID, dns01.UnFqdn(info.EffectiveFQDN), "TXT")
 	if err != nil {
-		return fmt.Errorf("vegadns: couldn't get Record ID in CleanUp: %w", err)
+		return fmt.Errorf("vegadns: get Record ID: %w", err)
 	}
 
 	err = d.client.DeleteRecord(ctx, recordID)
@@ -133,4 +131,17 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return nil
+}
+
+func (d *DNSProvider) findDomainID(ctx context.Context, fqdn string) (int, error) {
+	for host := range dns01.UnFqdnDomainsSeq(fqdn) {
+		id, err := d.client.GetDomainID(ctx, host)
+		if err != nil {
+			continue
+		}
+
+		return id, nil
+	}
+
+	return 0, errors.New("domain not found")
 }

@@ -65,7 +65,7 @@ require (
 	github.com/nrdcg/oci-go-sdk/common/v1065 v1065.102.0
 	github.com/nrdcg/oci-go-sdk/dns/v1065 v1065.102.0
 	github.com/nrdcg/porkbun v0.4.0
-	github.com/nrdcg/vegadns2client v0.1.0
+	github.com/nrdcg/vegadns v0.1.0
 	github.com/nzdjb/go-metaname v1.0.0
 	github.com/ovh/go-ovh v1.9.0
 	github.com/pquerna/otp v1.5.0

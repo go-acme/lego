@@ -10,7 +10,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	vega "github.com/nrdcg/vegadns2client"
+	"github.com/nrdcg/vegadns"
 )
 
 // Environment variables names.
@@ -50,7 +50,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *vega.Client
+	client *vegadns.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for VegaDNS.
@@ -76,7 +76,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("vegadns: the configuration of the DNS provider is nil")
 	}
 
-	client, err := vega.NewClient(config.BaseURL, vega.WithOAuth(config.APIKey, config.APISecret))
+	client, err := vegadns.NewClient(config.BaseURL, vegadns.WithOAuth(config.APIKey, config.APISecret))
 	if err != nil {
 		return nil, fmt.Errorf("vegadns: %w", err)
 	}

@@ -14,7 +14,6 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
 	github.com/Azure/go-autorest/autorest/to v0.4.1
 	github.com/BurntSushi/toml v1.5.0
-	github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v11 v11.1.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.13
 	github.com/alibabacloud-go/tea v1.3.13
@@ -66,6 +65,7 @@ require (
 	github.com/nrdcg/oci-go-sdk/common/v1065 v1065.102.0
 	github.com/nrdcg/oci-go-sdk/dns/v1065 v1065.102.0
 	github.com/nrdcg/porkbun v0.4.0
+	github.com/nrdcg/vegadns v0.2.0
 	github.com/nzdjb/go-metaname v1.0.0
 	github.com/ovh/go-ovh v1.9.0
 	github.com/pquerna/otp v1.5.0

@@ -96,8 +96,6 @@ github.com/HdrHistogram/hdrhistogram-go v1.1.0/go.mod h1:yDgFjdqOqDEKOvasDdhWNXY
 github.com/HdrHistogram/hdrhistogram-go v1.1.2/go.mod h1:yDgFjdqOqDEKOvasDdhWNXYg9BVp4O+o5f6V/ehm6Oo=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
-github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87 h1:xPMsUicZ3iosVPSIP7bW5EcGUzjiiMl1OYTe14y/R24=
-github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87/go.mod h1:iGLljf5n9GjT6kc0HBvyI1nOKnGQbNB66VzSNbK5iks=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
 github.com/Shopify/sarama v1.30.1/go.mod h1:hGgx05L/DiW8XYBXeJdKIN6V2QUy2H6JqME5VT1NLRw=
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
@@ -711,6 +709,8 @@ github.com/nrdcg/oci-go-sdk/dns/v1065 v1065.102.0 h1:gAOs1dkE7LFoWflzqrDqAhOprc0
 github.com/nrdcg/oci-go-sdk/dns/v1065 v1065.102.0/go.mod h1:EUBSYwop1K40VpcKy1haIK6kFK/gPT1atEk89OkY0Kg=
 github.com/nrdcg/porkbun v0.4.0 h1:rWweKlwo1PToQ3H+tEO9gPRW0wzzgmI/Ob3n2Guticw=
 github.com/nrdcg/porkbun v0.4.0/go.mod h1:/QMskrHEIM0IhC/wY7iTCUgINsxdT2WcOphktJ9+Q54=
+github.com/nrdcg/vegadns v0.2.0 h1:tLs8WDuWORJP+YlDOKf+eQCKtIwXeUW17R5Ls5NcyB8=
+github.com/nrdcg/vegadns v0.2.0/go.mod h1:NqSyRKZuJlAsv8VI/7rSubfPXN68NwaJ0aG9KxQVFVo=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=

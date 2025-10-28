@@ -1,3 +1,5 @@
+//go:build lego.debug
+
 package clientdebug
 
 import (

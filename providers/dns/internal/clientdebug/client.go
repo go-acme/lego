@@ -1,6 +1,7 @@
 package clientdebug
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"os"

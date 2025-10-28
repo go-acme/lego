@@ -22,15 +22,15 @@ func NewDumpTransport(rt http.RoundTripper) *DumpTransport {
 func (d *DumpTransport) RoundTrip(h *http.Request) (*http.Response, error) {
 	dump, _ := httputil.DumpRequestOut(h, true)
 
-	println("[HTTP Request]")
-	println(string(dump))
+	fmt.Println("[HTTP Request]")
+	fmt.Println(string(dump))
 
 	resp, err := d.rt.RoundTrip(h)
 
 	dump, _ = httputil.DumpResponse(resp, true)
 
-	println("[HTTP Response]")
-	println(string(dump))
+	fmt.Println("[HTTP Response]")
+	fmt.Println(string(dump))
 
 	return resp, err
 }

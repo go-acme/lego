@@ -145,8 +145,6 @@ LEGO_DEBUG_CLIENT_VERBOSE_ERROR=true
 
 ### LEGO_DEBUG_DNS_API_HTTP_CLIENT
 
-This option is only available for lego as CLI and when lego is built using `lego.debug` build tag.
-
 **IMPORTANT:** This option exposes credentials inside logs.
 
 The environment variable `LEGO_DEBUG_DNS_API_HTTP_CLIENT` allows debug the calls to the DNS API.

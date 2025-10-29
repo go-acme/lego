@@ -814,8 +814,8 @@ github.com/sacloud/api-client-go v0.3.3 h1:ZpSAyGpITA8UFO3Hq4qMHZLGuNI1FgxAxo4sq
 github.com/sacloud/api-client-go v0.3.3/go.mod h1:0p3ukcWYXRCc2AUWTl1aA+3sXLvurvvDqhRaLZRLBwo=
 github.com/sacloud/go-http v0.1.9 h1:Xa5PY8/pb7XWhwG9nAeXSrYXPbtfBWqawgzxD5co3VE=
 github.com/sacloud/go-http v0.1.9/go.mod h1:DpDG+MSyxYaBwPJ7l3aKLMzwYdTVtC5Bo63HActcgoE=
-github.com/sacloud/iaas-api-go v1.19.0 h1:Bw4uygqukcvlblhWrITp94nikXqy2fnKoAC6929LkIA=
-github.com/sacloud/iaas-api-go v1.19.0/go.mod h1:XV995RM1I7k5AHb7UZrCVyDF/8bZXDxa+uk1EXoj/Zs=
+github.com/sacloud/iaas-api-go v1.20.0 h1:L4TfAzoFSwxrD3QXX8UxJa2o+GZrP9b863K+voTy3tQ=
+github.com/sacloud/iaas-api-go v1.20.0/go.mod h1:XV995RM1I7k5AHb7UZrCVyDF/8bZXDxa+uk1EXoj/Zs=
 github.com/sacloud/packages-go v0.0.11 h1:hrRWLmfPM9w7GBs6xb5/ue6pEMl8t1UuDKyR/KfteHo=
 github.com/sacloud/packages-go v0.0.11/go.mod h1:XNF5MCTWcHo9NiqWnYctVbASSSZR3ZOmmQORIzcurJ8=
 github.com/sagikazarmark/locafero v0.4.0 h1:HApY1R9zGo4DBgr7dqsTH/JJxLTTsOt7u6keLGt6kNQ=

@@ -254,18 +254,18 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
   <td><a href="https://go-acme.github.io/lego/dns/vultr/">Vultr</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/webnames/">Webnames</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/webnamesca/">webnames.ca</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/websupport/">Websupport</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/wedos/">WEDOS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/westcn/">West.cn/西部数码</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/yandex360/">Yandex 360</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/yandex360/">Yandex 360</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/yandexcloud/">Yandex Cloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/yandex/">Yandex PDD</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/zoneee/">Zone.ee</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/zoneedit/">ZoneEdit</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/zoneedit/">ZoneEdit</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/zonomi/">Zonomi</a></td>
-  <td></td>
   <td></td>
   <td></td>
 </tr></table>

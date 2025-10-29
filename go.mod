@@ -62,7 +62,7 @@ require (
 	github.com/nrdcg/mailinabox v0.3.0
 	github.com/nrdcg/namesilo v0.5.0
 	github.com/nrdcg/nodion v0.1.0
-	github.com/nrdcg/oci-go-sdk/common/v1065 v1065.102.0
+	github.com/nrdcg/oci-go-sdk/common/v1065 v1065.103.0
 	github.com/nrdcg/oci-go-sdk/dns/v1065 v1065.102.0
 	github.com/nrdcg/porkbun v0.4.0
 	github.com/nrdcg/vegadns v0.2.0
@@ -150,7 +150,7 @@ require (
 	github.com/go-playground/validator/v10 v10.23.0 // indirect
 	github.com/go-resty/resty/v2 v2.16.5 // indirect
 	github.com/goccy/go-yaml v1.9.8 // indirect
-	github.com/gofrs/flock v0.12.1 // indirect
+	github.com/gofrs/flock v0.13.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect

@@ -145,9 +145,13 @@ LEGO_DEBUG_CLIENT_VERBOSE_ERROR=true
 
 ### LEGO_DEBUG_DNS_API_HTTP_CLIENT
 
-**IMPORTANT:** This option exposes credentials inside logs.
+**⚠️ WARNING: This will expose credentials in the log output! ⚠️**
 
-The environment variable `LEGO_DEBUG_DNS_API_HTTP_CLIENT` allows debug the calls to the DNS API.
+Do not run this in production environments, or if you can't be sure that logs aren't accessed by third parties or tools (like log collectors).
+
+You have been warned. Here be dragons.
+
+The environment variable `LEGO_DEBUG_DNS_API_HTTP_CLIENT` allows debugging the DNS API interaction. It will dump the full request and response to the log output.
 
 Some DNS providers don't support this option.
 

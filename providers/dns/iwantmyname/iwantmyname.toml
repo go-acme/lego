@@ -1,5 +1,9 @@
-Name = "iwantmyname"
-Description = ''''''
+Name = "iwantmyname (Deprecated)"
+Description = '''
+The iwantmyname API has shut down.
+
+https://github.com/go-acme/lego/issues/2563
+'''
 URL = "https://iwantmyname.com"
 Code = "iwantmyname"
 Since = "v4.7.0"

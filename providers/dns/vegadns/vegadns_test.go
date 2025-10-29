@@ -46,7 +46,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		expectedError string
 	}{
 		{
-			desc: "Success",
+			desc: "success",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
 					servermock.ResponseFromFixture("token.json")).
@@ -56,7 +56,7 @@ func TestDNSProvider_Present(t *testing.T) {
 						WithStatusCode(http.StatusCreated)),
 		},
 		{
-			desc: "FailToFindZone",
+			desc: "fail to find the zone",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
 					servermock.ResponseFromFixture("token.json")).
@@ -66,7 +66,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			expectedError: "vegadns: find domain ID for _acme-challenge.example.com.: domain not found",
 		},
 		{
-			desc: "FailToCreateTXT",
+			desc: "fail to create TXT record",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
 					servermock.ResponseFromFixture("token.json")).
@@ -103,7 +103,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		expectedError string
 	}{
 		{
-			desc: "Success",
+			desc: "success",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
 					servermock.ResponseFromFixture("token.json")).
@@ -115,7 +115,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 					servermock.ResponseFromFixture("record_delete.json")),
 		},
 		{
-			desc: "FailToFindZone",
+			desc: "fail to find the zone",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
 					servermock.ResponseFromFixture("token.json")).
@@ -125,7 +125,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			expectedError: "vegadns: find domain ID for _acme-challenge.example.com.: domain not found",
 		},
 		{
-			desc: "FailToGetRecordID",
+			desc: "fail to get record ID",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
 					servermock.ResponseFromFixture("token.json")).
@@ -134,7 +134,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 					servermock.Noop().
 						WithStatusCode(http.StatusNotFound),
 					servermock.CheckQueryParameter().With("domain_id", "1")),
-			expectedError: "vegadns: get Record ID: bad answer from VegaDNS (code: 404, message: )",
+			expectedError: "vegadns: find record ID for 1: get records: bad answer from VegaDNS (code: 404, message: )",
 		},
 	}
 

@@ -1,5 +1,5 @@
 ---
-title: "iwantmyname"
+title: "iwantmyname (Deprecated)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: iwantmyname
@@ -13,8 +13,10 @@ dnsprovider:
 <!-- providers/dns/iwantmyname/iwantmyname.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+The iwantmyname API has shut down.
 
-Configuration for [iwantmyname](https://iwantmyname.com).
+https://github.com/go-acme/lego/issues/2563
+
 
 
 <!--more-->
@@ -23,7 +25,7 @@ Configuration for [iwantmyname](https://iwantmyname.com).
 - Since: v4.7.0
 
 
-Here is an example bash command using the iwantmyname provider:
+Here is an example bash command using the iwantmyname (Deprecated) provider:
 
 ```bash
 IWANTMYNAME_USERNAME=xxxxxxxx \

@@ -26,14 +26,14 @@ build: clean
 # It exposes credentials inside logs.
 build_debug: clean
 	@echo Version: $(VERSION)
-	go build -tags lego.debug -ldflags '-X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
+	go build -ldflags '-X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
 
 image:
 	@echo Version: $(VERSION)
 	docker build -t $(LEGO_IMAGE) .
 
 test: clean
-	go test -tags lego.debug -v -cover ./...
+	go test -v -cover ./...
 
 e2e: clean
 	LEGO_E2E_TESTS=local go test -count=1 -v ./e2e/...

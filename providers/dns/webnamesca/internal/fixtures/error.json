@@ -1,0 +1,6 @@
+{
+  "errorMessage": "string",
+  "errorDetails": "string",
+  "logID": 0,
+  "result": "string"
+}

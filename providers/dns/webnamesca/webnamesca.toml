@@ -1,0 +1,24 @@
+Name = "webnames.ca"
+Description = ''''''
+URL = "https://www.webnames.ca/"
+Code = "webnamesca"
+Since = "v4.28.0"
+
+Example = '''
+WEBNAMESCA_API_USER="xxx" \
+WEBNAMESCA_API_KEY="yyy" \
+lego --email you@example.com --dns webnamesca -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    WEBNAMESCA_API_USER = "API username"
+    WEBNAMESCA_API_KEY = "API key"
+  [Configuration.Additional]
+    WEBNAMESCA_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    WEBNAMESCA_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    WEBNAMESCA_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    WEBNAMESCA_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://www.webnames.ca/_/swagger/index.html"

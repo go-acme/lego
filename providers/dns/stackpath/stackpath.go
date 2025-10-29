@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/stackpath/internal"
 )
 
@@ -86,9 +87,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("stackpath: stack id missing")
 	}
 
-	client := internal.NewClient(context.Background(), config.StackID, config.ClientID, config.ClientSecret)
-
-	return &DNSProvider{config: config, client: client}, nil
+	return &DNSProvider{
+		config: config,
+		client: internal.NewClient(config.StackID,
+			clientdebug.Wrap(
+				internal.CreateOAuthClient(context.Background(), config.ClientID, config.ClientSecret),
+			),
+		),
+	}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.

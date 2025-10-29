@@ -14,6 +14,7 @@ import (
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/platform/wait"
 	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal/hetznerv1/internal"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"golang.org/x/net/idna"
 )
 
@@ -80,7 +81,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("hetzner: credentials missing")
 	}
 
-	client, err := internal.NewClient(internal.OAuthStaticAccessToken(config.HTTPClient, config.APIToken))
+	client, err := internal.NewClient(
+		clientdebug.Wrap(
+			internal.OAuthStaticAccessToken(config.HTTPClient, config.APIToken),
+		),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("hetzner: %w", err)
 	}

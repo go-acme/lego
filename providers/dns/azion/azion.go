@@ -12,6 +12,7 @@ import (
 	"github.com/aziontech/azionapi-go-sdk/idns"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -91,6 +92,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.HTTPClient != nil {
 		clientConfig.HTTPClient = config.HTTPClient
 	}
+
+	clientConfig.HTTPClient = clientdebug.Wrap(clientConfig.HTTPClient)
 
 	client := idns.NewAPIClient(clientConfig)
 

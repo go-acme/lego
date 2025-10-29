@@ -5,12 +5,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 	"github.com/vinyldns/go-vinyldns/vinyldns"
 )
@@ -27,6 +29,7 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
@@ -41,6 +44,7 @@ type Config struct {
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -49,6 +53,9 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, 30),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
 	}
 }
 
@@ -97,7 +104,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		UserAgent: useragent.Get(),
 	})
 
-	client.HTTPClient.Timeout = 30 * time.Second
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	} else {
+		// For compatibility, it should be removed in v5.
+		client.HTTPClient.Timeout = 30 * time.Second
+	}
+
+	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{client: client, config: config}, nil
 }

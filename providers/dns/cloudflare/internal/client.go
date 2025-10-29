@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 )
@@ -60,6 +61,8 @@ func NewClient(opts ...Option) (*Client, error) {
 	if client.authEmail == "" || client.authKey == "" {
 		return nil, errors.New("invalid credentials: authEmail and authKey must be set together")
 	}
+
+	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return client, nil
 }

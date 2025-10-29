@@ -162,15 +162,9 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 		config.AccessKey = "foo"
 		config.SecretKey = "bar"
 		config.Host = server.URL
+		config.HTTPClient = server.Client()
 
-		provider, err := NewDNSProviderConfig(config)
-		if err != nil {
-			return nil, err
-		}
-
-		provider.client.HTTPClient = server.Client()
-
-		return provider, nil
+		return NewDNSProviderConfig(config)
 	})
 }
 

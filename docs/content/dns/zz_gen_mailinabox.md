@@ -51,6 +51,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `MAILINABOX_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
 | `MAILINABOX_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 4) |
 | `MAILINABOX_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |
 

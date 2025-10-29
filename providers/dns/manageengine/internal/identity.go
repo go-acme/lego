@@ -9,7 +9,7 @@ import (
 
 const defaultAuthURL = "https://clouddns.manageengine.com/oauth2/token/"
 
-func createOAuthClient(ctx context.Context, clientID, clientSecret string) *http.Client {
+func CreateOAuthClient(ctx context.Context, clientID, clientSecret string) *http.Client {
 	config := &clientcredentials.Config{
 		TokenURL:     defaultAuthURL,
 		ClientID:     clientID,

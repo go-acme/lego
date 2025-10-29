@@ -14,6 +14,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/constellix/internal"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/hashicorp/go-retryablehttp"
 )
 
@@ -96,7 +97,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	retryClient.HTTPClient = tr.Wrap(config.HTTPClient)
 	retryClient.Backoff = backoff
 
-	client := internal.NewClient(retryClient.StandardClient())
+	client := internal.NewClient(clientdebug.Wrap(retryClient.StandardClient()))
 
 	return &DNSProvider{config: config, client: client}, nil
 }

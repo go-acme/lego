@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	querystring "github.com/google/go-querystring/query"
-	"github.com/nrdcg/mailinabox/errutils"
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"

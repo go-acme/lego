@@ -614,6 +614,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "BUNNY_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "BUNNY_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "BUNNY_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
 		ew.writeln(`	- "BUNNY_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)`)
@@ -2171,6 +2172,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "MAILINABOX_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "MAILINABOX_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 4)`)
 		ew.writeln(`	- "MAILINABOX_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
 
@@ -3001,6 +3003,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "SCW_ACCESS_KEY":	Access key`)
+		ew.writeln(`	- "SCW_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "SCW_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 10)`)
 		ew.writeln(`	- "SCW_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
 		ew.writeln(`	- "SCW_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)`)
@@ -3281,6 +3284,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "TRANSIP_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "TRANSIP_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 10)`)
 		ew.writeln(`	- "TRANSIP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 600)`)
 		ew.writeln(`	- "TRANSIP_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 10)`)
@@ -3409,6 +3413,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "VINYLDNS_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "VINYLDNS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 4)`)
 		ew.writeln(`	- "VINYLDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
 		ew.writeln(`	- "VINYLDNS_QUOTE_VALUE":	Adds quotes around the TXT record value (Default: false)`)

@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	regfishapi "github.com/regfish/regfish-dnsapi-go"
 )
 
@@ -83,6 +84,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	client := regfishapi.NewClient(config.APIKey)
+
+	if config.HTTPClient != nil {
+		client.Client = config.HTTPClient
+	} else {
+		// Because the regfishapi.NewClient uses an empty http.Client.
+		client.Client = &http.Client{Timeout: 30 * time.Second}
+	}
+
+	client.Client = clientdebug.Wrap(client.Client)
 
 	return &DNSProvider{
 		config:    config,

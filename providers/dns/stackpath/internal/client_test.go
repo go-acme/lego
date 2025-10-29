@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -15,8 +14,8 @@ import (
 func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client := NewClient(context.Background(), "STACK_ID", "CLIENT_ID", "CLIENT_SECRET")
-			client.httpClient = server.Client()
+			client := NewClient("STACK_ID", server.Client())
+
 			client.baseURL, _ = url.Parse(server.URL + "/")
 
 			return client, nil

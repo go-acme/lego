@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/manageengine/internal"
 )
 
@@ -75,11 +76,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("manageengine: credentials missing")
 	}
 
-	client := internal.NewClient(context.Background(), config.ClientID, config.ClientSecret)
-
 	return &DNSProvider{
 		config: config,
-		client: client,
+		client: internal.NewClient(
+			clientdebug.Wrap(
+				internal.CreateOAuthClient(context.Background(), config.ClientID, config.ClientSecret),
+			),
+		),
 	}, nil
 }
 

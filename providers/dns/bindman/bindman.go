@@ -10,7 +10,8 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/labbsr0x/bindman-dns-webhook/src/client"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	bindman "github.com/labbsr0x/bindman-dns-webhook/src/client"
 )
 
 // Environment variables names.
@@ -48,7 +49,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *client.DNSWebhookClient
+	client *bindman.DNSWebhookClient
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Bindman.
@@ -75,12 +76,17 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("bindman: bindman manager address missing")
 	}
 
-	bClient, err := client.New(config.BaseURL, config.HTTPClient)
+	// Because the client.New uses the http.DefaultClient.
+	if config.HTTPClient == nil {
+		config.HTTPClient = &http.Client{Timeout: time.Minute}
+	}
+
+	client, err := bindman.New(config.BaseURL, clientdebug.Wrap(config.HTTPClient))
 	if err != nil {
 		return nil, fmt.Errorf("bindman: %w", err)
 	}
 
-	return &DNSProvider{config: config, client: bClient}, nil
+	return &DNSProvider{config: config, client: client}, nil
 }
 
 // Present creates a TXT record using the specified parameters.

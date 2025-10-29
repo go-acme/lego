@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/dynu/internal"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -86,7 +87,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	client := internal.NewClient()
-	client.HTTPClient = tr.Wrap(config.HTTPClient)
+
+	client.HTTPClient = clientdebug.Wrap(tr.Wrap(config.HTTPClient))
 
 	return &DNSProvider{config: config, client: client}, nil
 }

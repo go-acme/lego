@@ -5,11 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/nrdcg/vegadns"
 )
 
@@ -24,18 +26,21 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	BaseURL            string
-	APIKey             string
-	APISecret          string
+	BaseURL   string
+	APIKey    string
+	APISecret string
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -44,6 +49,9 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 12*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, time.Minute),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
 	}
 }
 
@@ -76,7 +84,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("vegadns: the configuration of the DNS provider is nil")
 	}
 
-	client, err := vegadns.NewClient(config.BaseURL, vegadns.WithOAuth(config.APIKey, config.APISecret))
+	if config.HTTPClient == nil {
+		config.HTTPClient = &http.Client{Timeout: 30 * time.Second}
+	}
+
+	config.HTTPClient = clientdebug.Wrap(config.HTTPClient)
+
+	client, err := vegadns.NewClient(config.BaseURL,
+		vegadns.WithOAuth(config.APIKey, config.APISecret),
+		vegadns.WithHTTPClient(config.HTTPClient),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("vegadns: %w", err)
 	}

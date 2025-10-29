@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/octenium/internal"
 	"github.com/hashicorp/go-retryablehttp"
 )
@@ -89,10 +90,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 5
-	if config.HTTPClient != nil {
-		retryClient.HTTPClient = config.HTTPClient
-	}
+	retryClient.HTTPClient = client.HTTPClient
 	retryClient.Logger = log.Logger
+
+	client.HTTPClient = clientdebug.Wrap(retryClient.StandardClient())
 
 	return &DNSProvider{
 		config:    config,

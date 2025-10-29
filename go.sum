@@ -685,8 +685,8 @@ github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OS
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nrdcg/auroradns v1.1.0 h1:KekGh8kmf2MNwqZVVYo/fw/ZONt8QMEmbMFOeljteWo=
 github.com/nrdcg/auroradns v1.1.0/go.mod h1:O7tViUZbAcnykVnrGkXzIJTHoQCHcgalgAe6X1mzHfk=
-github.com/nrdcg/bunny-go v0.0.0-20250327222614-988a091fc7ea h1:OSgRS4kqOs/WuxuFOObP2gwrenL4/qiKXQbQugr/Two=
-github.com/nrdcg/bunny-go v0.0.0-20250327222614-988a091fc7ea/go.mod h1:IDRRngAngb2eTEaWgpO0hukQFI/vJId46fT1KErMytA=
+github.com/nrdcg/bunny-go v0.1.0 h1:GAHTRpHaG/TxfLZlqoJ8OJFzw8rI74+jOTkzxWh0uHA=
+github.com/nrdcg/bunny-go v0.1.0/go.mod h1:u+C9dgsspgtWVaAz6QkyV17s9fxD8viwwKoxb9XMz1A=
 github.com/nrdcg/desec v0.11.0 h1:XZVHy07sg12y8FozMp+l7XvzPsdzog0AYXuQMaHBsfs=
 github.com/nrdcg/desec v0.11.0/go.mod h1:5+4vyhMRTs49V9CNoODF/HwT8Mwxv9DJ6j+7NekUnBs=
 github.com/nrdcg/dnspod-go v0.4.0 h1:c/jn1mLZNKF3/osJ6mz3QPxTudvPArXTjpkmYj0uK6U=
@@ -697,8 +697,8 @@ github.com/nrdcg/goacmedns v0.2.0 h1:ADMbThobzEMnr6kg2ohs4KGa3LFqmgiBA22/6jUWJR0
 github.com/nrdcg/goacmedns v0.2.0/go.mod h1:T5o6+xvSLrQpugmwHvrSNkzWht0UGAwj2ACBMhh73Cg=
 github.com/nrdcg/goinwx v0.11.0 h1:GER0SE3POub7rxARt3Y3jRy1OON1hwF1LRxHz5xsFBw=
 github.com/nrdcg/goinwx v0.11.0/go.mod h1:0BXSC0FxVtU4aTjX0Zw3x0DK32tjugLzeNIAGtwXvPQ=
-github.com/nrdcg/mailinabox v0.2.0 h1:IKq8mfKiVwNW2hQii/ng1dJ4yYMMv3HAP3fMFIq2CFk=
-github.com/nrdcg/mailinabox v0.2.0/go.mod h1:0yxqeYOiGyxAu7Sb94eMxHPIOsPYXAjTeA9ZhePhGnc=
+github.com/nrdcg/mailinabox v0.3.0 h1:PHkC1elKXKAjEvdx2HHFMgcEGZFqudAl7aU3L2JDhM4=
+github.com/nrdcg/mailinabox v0.3.0/go.mod h1:1eFIGcM4lI+AfFOUpbs548SFGz1ZWoMOGbECBmkghw4=
 github.com/nrdcg/namesilo v0.5.0 h1:6QNxT/XxE+f5B+7QlfWorthNzOzcGlBLRQxqi6YeBrE=
 github.com/nrdcg/namesilo v0.5.0/go.mod h1:4UkwlwQfDt74kSGmhLaDylnBrD94IfflnpoEaj6T2qw=
 github.com/nrdcg/nodion v0.1.0 h1:zLKaqTn2X0aDuBHHfyA1zFgeZfiCpmu/O9DM73okavw=

@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/nrdcg/desec"
 )
 
@@ -87,7 +88,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	opts := desec.NewDefaultClientOptions()
 	if config.HTTPClient != nil {
 		opts.HTTPClient = config.HTTPClient
+	} else {
+		// Because the desec.NewDefaultClientOptions uses the http.DefaultClient.
+		// TODO(ldez): change the desec lib.
+		opts.HTTPClient = &http.Client{Timeout: 30 * time.Second}
 	}
+
+	opts.HTTPClient = clientdebug.Wrap(opts.HTTPClient)
+
 	opts.Logger = log.Default()
 
 	client := desec.New(config.Token, opts)

@@ -17,6 +17,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/cpanel"
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/shared"
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/whm"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -314,6 +315,8 @@ func createClient(config *Config) (apiClient, error) {
 			client.HTTPClient = config.HTTPClient
 		}
 
+		client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
+
 		return client, nil
 
 	case "whm":
@@ -325,6 +328,8 @@ func createClient(config *Config) (apiClient, error) {
 		if config.HTTPClient != nil {
 			client.HTTPClient = config.HTTPClient
 		}
+
+		client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 		return client, nil
 

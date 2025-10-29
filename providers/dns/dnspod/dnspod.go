@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/nrdcg/dnspod-go"
 )
 
@@ -82,7 +83,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	params := dnspod.CommonParams{LoginToken: config.LoginToken, Format: "json"}
 
 	client := dnspod.NewClient(params)
-	client.HTTPClient = config.HTTPClient
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{client: client, config: config}, nil
 }

@@ -51,6 +51,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `VINYLDNS_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
 | `VINYLDNS_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 4) |
 | `VINYLDNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |
 | `VINYLDNS_QUOTE_VALUE` | Adds quotes around the TXT record value (Default: false) |

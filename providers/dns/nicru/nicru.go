@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/nicru/internal"
 )
 
@@ -90,7 +91,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("nicru: %w", err)
 	}
 
-	client, err := internal.NewClient(oauthClient)
+	client, err := internal.NewClient(clientdebug.Wrap(oauthClient))
 	if err != nil {
 		return nil, fmt.Errorf("nicru: unable to build API client: %w", err)
 	}

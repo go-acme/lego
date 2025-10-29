@@ -1,0 +1,32 @@
+[HTTP Request]
+GET /***?foo=*** HTTP/1.1
+Host: {{ .Host }}
+User-Agent: Go-http-client/1.1
+Content-Length: 37
+Api-Key: ***
+Auth-Token: ***
+Authorization: ***
+Secret-Request-Header: request-header-aaaa-aaaa
+Super-Secret-Request-Header: env-aaaa-aaaa
+Token: ***
+X-Api-Key: ***
+X-Api-Secret: ***
+X-Auth-Token: ***
+X-Authorization: not-redacted
+X-Token: ***
+Accept-Encoding: gzip
+
+{
+	"foo": "***"
+}
+
+[HTTP Response]
+HTTP/1.1 200 OK
+Content-Length: 37
+Content-Type: text/plain; charset=utf-8
+Date: {{ .Date }}
+Secret-Response-Header: response-header-aaaa-aaaa
+
+{
+	"bar": "response-body-aaaa-aaaa"
+}

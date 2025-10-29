@@ -11,6 +11,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -170,6 +171,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.HTTPClient == nil {
 		config.HTTPClient = &http.Client{Timeout: 5 * time.Second}
 	}
+
+	config.HTTPClient = clientdebug.Wrap(config.HTTPClient)
 
 	credentials, err := getCredentials(config)
 	if err != nil {

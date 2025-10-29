@@ -49,6 +49,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `TRANSIP_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
 | `TRANSIP_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 10) |
 | `TRANSIP_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 600) |
 | `TRANSIP_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 10) |

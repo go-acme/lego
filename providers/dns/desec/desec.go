@@ -88,10 +88,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	opts := desec.NewDefaultClientOptions()
 	if config.HTTPClient != nil {
 		opts.HTTPClient = config.HTTPClient
-	} else {
-		// Because the desec.NewDefaultClientOptions uses the http.DefaultClient.
-		// TODO(ldez): change the desec lib.
-		opts.HTTPClient = &http.Client{Timeout: 30 * time.Second}
 	}
 
 	opts.HTTPClient = clientdebug.Wrap(opts.HTTPClient)

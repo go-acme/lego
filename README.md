@@ -161,7 +161,7 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/ionos/">Ionos</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/ipv64/">IPv64</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/iwantmyname/">iwantmyname</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/iwantmyname/">iwantmyname (Deprecated)</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/joker/">Joker</a></td>
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/acme-dns/">Joohoi&#39;s ACME-DNS</a></td>

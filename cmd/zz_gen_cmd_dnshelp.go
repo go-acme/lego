@@ -1946,7 +1946,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "iwantmyname":
 		// generated from: providers/dns/iwantmyname/iwantmyname.toml
-		ew.writeln(`Configuration for iwantmyname.`)
+		ew.writeln(`Configuration for iwantmyname (Deprecated).`)
 		ew.writeln(`Code:	'iwantmyname'`)
 		ew.writeln(`Since:	'v4.7.0'`)
 		ew.writeln()

@@ -2,6 +2,7 @@ package clientdebug
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"os"
@@ -51,6 +52,8 @@ type DumpTransport struct {
 	replacer     *strings.Replacer
 
 	regexps []*regexp.Regexp
+
+	writer io.Writer
 }
 
 func NewDumpTransport(rt http.RoundTripper, opts ...Option) *DumpTransport {
@@ -58,7 +61,10 @@ func NewDumpTransport(rt http.RoundTripper, opts ...Option) *DumpTransport {
 		rt = http.DefaultTransport
 	}
 
-	d := &DumpTransport{rt: rt}
+	d := &DumpTransport{
+		rt:     rt,
+		writer: os.Stdout,
+	}
 
 	for _, opt := range opts {
 		opt(d)
@@ -81,15 +87,15 @@ func NewDumpTransport(rt http.RoundTripper, opts ...Option) *DumpTransport {
 func (d *DumpTransport) RoundTrip(h *http.Request) (*http.Response, error) {
 	data, _ := httputil.DumpRequestOut(h, true)
 
-	fmt.Println("[HTTP Request]")
-	fmt.Println(d.redact(data))
+	_, _ = fmt.Fprintln(d.writer, "[HTTP Request]")
+	_, _ = fmt.Fprintln(d.writer, d.redact(data))
 
 	resp, err := d.rt.RoundTrip(h)
 
 	data, _ = httputil.DumpResponse(resp, true)
 
-	fmt.Println("[HTTP Response]")
-	fmt.Println(d.redact(data))
+	_, _ = fmt.Fprintln(d.writer, "[HTTP Response]")
+	_, _ = fmt.Fprintln(d.writer, d.redact(data))
 
 	return resp, err
 }

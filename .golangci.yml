@@ -50,7 +50,6 @@ linters:
     - tagliatelle
     - testpackage # not relevant
     - tparallel # not relevant
-    - usestdlibvars # false-positive https://github.com/sashamelentyev/usestdlibvars/issues/96
     - varnamelen # not relevant
     - wrapcheck
 

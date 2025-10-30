@@ -46,6 +46,7 @@ func discoverDNSZones(ctx context.Context, config *Config, credentials azcore.To
 	}
 
 	zones := map[string]ServiceDiscoveryZone{}
+
 	for {
 		// create the query request
 		request := armresourcegraph.QueryRequest{

@@ -124,6 +124,7 @@ func (c *Client) createRecord(ctx context.Context, domainID string, record Recor
 	}
 
 	newRecord := &Record{}
+
 	err = c.do(req, newRecord)
 	if err != nil {
 		return nil, err

@@ -57,8 +57,10 @@ type DERCertificateBytes []byte
 // ParsePEMBundle parses a certificate bundle from top to bottom and returns
 // a slice of x509 certificates. This function will error if no certificates are found.
 func ParsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
-	var certificates []*x509.Certificate
-	var certDERBlock *pem.Block
+	var (
+		certificates []*x509.Certificate
+		certDERBlock *pem.Block
+	)
 
 	for {
 		certDERBlock, bundle = pem.Decode(bundle)
@@ -71,6 +73,7 @@ func ParsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 			if err != nil {
 				return nil, err
 			}
+
 			certificates = append(certificates, cert)
 		}
 	}
@@ -152,8 +155,11 @@ type CSROptions struct {
 }
 
 func CreateCSR(privateKey crypto.PrivateKey, opts CSROptions) ([]byte, error) {
-	var dnsNames []string
-	var ipAddresses []net.IP
+	var (
+		dnsNames    []string
+		ipAddresses []net.IP
+	)
+
 	for _, altname := range opts.SAN {
 		if ip := net.ParseIP(altname); ip != nil {
 			ipAddresses = append(ipAddresses, ip)
@@ -185,6 +191,7 @@ func PEMEncode(data any) []byte {
 
 func PEMBlock(data any) *pem.Block {
 	var pemBlock *pem.Block
+
 	switch key := data.(type) {
 	case *ecdsa.PrivateKey:
 		keyBytes, _ := x509.MarshalECPrivateKey(key)
@@ -265,6 +272,7 @@ func ExtractDomains(cert *x509.Certificate) []string {
 		if sanDomain == cert.Subject.CommonName {
 			continue
 		}
+
 		domains = append(domains, sanDomain)
 	}
 
@@ -316,6 +324,7 @@ func GeneratePemCert(privateKey *rsa.PrivateKey, domain string, extensions []pki
 
 func generateDerCert(privateKey *rsa.PrivateKey, expiration time.Time, domain string, extensions []pkix.Extension) ([]byte, error) {
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
+
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
 		return nil, err

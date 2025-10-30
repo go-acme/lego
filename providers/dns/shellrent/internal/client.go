@@ -114,6 +114,7 @@ func (c *Client) GetDomainDetails(ctx context.Context, domainID int) (*DomainDet
 	if result.Code != 0 {
 		return nil, result.Base
 	}
+
 	return result.Data, nil
 }
 
@@ -137,6 +138,7 @@ func (c *Client) CreateRecord(ctx context.Context, domainID int, record Record) 
 	if result.Code != 0 {
 		return 0, result.Base
 	}
+
 	return result.Data.ID.Value(), nil
 }
 
@@ -219,6 +221,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var response Base
+
 	err := json.Unmarshal(raw, &response)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

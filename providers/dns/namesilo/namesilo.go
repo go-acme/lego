@@ -118,6 +118,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("namesilo: failed to add record %w", err)
 	}
+
 	return nil
 }
 

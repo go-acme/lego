@@ -140,6 +140,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		if err != nil {
 			return fmt.Errorf("servercow: failed to update TXT records: %w", err)
 		}
+
 		return nil
 	}
 
@@ -194,6 +195,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		if err != nil {
 			return fmt.Errorf("servercow: failed to delete TXT records: %w", err)
 		}
+
 		return nil
 	}
 

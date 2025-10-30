@@ -25,6 +25,7 @@ func LoadPassportFile(location string) (*Passport, error) {
 	defer func() { _ = file.Close() }()
 
 	var passport Passport
+
 	err = json.NewDecoder(file).Decode(&passport)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse passport file: %w", err)

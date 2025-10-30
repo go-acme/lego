@@ -13,6 +13,7 @@ type AccountService service
 // New Creates a new account.
 func (a *AccountService) New(req acme.Account) (acme.ExtendedAccount, error) {
 	var account acme.Account
+
 	resp, err := a.core.post(a.core.GetDirectory().NewAccountURL, req, &account)
 	location := getLocation(resp)
 
@@ -51,10 +52,12 @@ func (a *AccountService) Get(accountURL string) (acme.Account, error) {
 	}
 
 	var account acme.Account
+
 	_, err := a.core.postAsGet(accountURL, &account)
 	if err != nil {
 		return acme.Account{}, err
 	}
+
 	return account, nil
 }
 
@@ -65,6 +68,7 @@ func (a *AccountService) Update(accountURL string, req acme.Account) (acme.Accou
 	}
 
 	var account acme.Account
+
 	_, err := a.core.post(accountURL, req, &account)
 	if err != nil {
 		return acme.Account{}, err
@@ -81,6 +85,7 @@ func (a *AccountService) Deactivate(accountURL string) error {
 
 	req := acme.Account{Status: acme.StatusDeactivated}
 	_, err := a.core.post(accountURL, req, nil)
+
 	return err
 }
 

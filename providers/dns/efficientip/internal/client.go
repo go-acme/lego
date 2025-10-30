@@ -108,6 +108,7 @@ func (c *Client) DeleteRecord(ctx context.Context, params DeleteInputParameters)
 	if err != nil {
 		return nil, fmt.Errorf("query parameters: %w", err)
 	}
+
 	endpoint.RawQuery = v.Encode()
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
@@ -200,6 +201,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var response APIError
+
 	err := json.Unmarshal(raw, &response)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

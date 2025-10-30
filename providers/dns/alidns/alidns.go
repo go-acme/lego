@@ -170,6 +170,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("alicloud: API call failed: %w", err)
 	}
+
 	return nil
 }
 
@@ -233,6 +234,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string,
 	}
 
 	var hostedZone *alidns.DescribeDomainsResponseBodyDomainsDomain
+
 	for _, zone := range domains {
 		if ptr.Deref(zone.DomainName) == dns01.UnFqdn(authZone) || ptr.Deref(zone.PunyCode) == dns01.UnFqdn(authZone) {
 			hostedZone = zone
@@ -287,6 +289,7 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, fqdn string) ([]*alidn
 			records = append(records, record)
 		}
 	}
+
 	return records, nil
 }
 

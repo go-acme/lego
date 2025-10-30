@@ -26,6 +26,7 @@ func main() {
 	}
 
 	var defaultPath string
+
 	cwd, err := os.Getwd()
 	if err == nil {
 		defaultPath = filepath.Join(cwd, ".lego")

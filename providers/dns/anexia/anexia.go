@@ -96,6 +96,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	if config.APIURL != "" {
 		var err error
+
 		client.BaseURL, err = url.Parse(config.APIURL)
 		if err != nil {
 			return nil, fmt.Errorf("anexia: %w", err)

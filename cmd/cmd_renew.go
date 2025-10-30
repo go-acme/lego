@@ -39,16 +39,20 @@ func createRenew() *cli.Command {
 		Before: func(ctx *cli.Context) error {
 			// we require either domains or csr, but not both
 			hasDomains := len(ctx.StringSlice(flgDomains)) > 0
+
 			hasCsr := ctx.String(flgCSR) != ""
 			if hasDomains && hasCsr {
 				log.Fatalf("Please specify either --%s/-d or --%s/-c, but not both", flgDomains, flgCSR)
 			}
+
 			if !hasDomains && !hasCsr {
 				log.Fatalf("Please specify --%s/-d (or --%s/-c if you already have a CSR)", flgDomains, flgCSR)
 			}
+
 			if ctx.Bool(flgForceCertDomains) && hasCsr {
 				log.Fatalf("--%s only works with --%s/-d, --%s/-c doesn't support this option.", flgForceCertDomains, flgDomains, flgCSR)
 			}
+
 			return nil
 		},
 		Flags: []cli.Flag{
@@ -165,8 +169,10 @@ func renewForDomains(ctx *cli.Context, account *Account, keyType certcrypto.KeyT
 
 	cert := certificates[0]
 
-	var ariRenewalTime *time.Time
-	var replacesCertID string
+	var (
+		ariRenewalTime *time.Time
+		replacesCertID string
+	)
 
 	var client *lego.Client
 
@@ -208,6 +214,7 @@ func renewForDomains(ctx *cli.Context, account *Account, keyType certcrypto.KeyT
 	log.Infof("[%s] acme: Trying renewal with %d hours remaining", domain, int(timeLeft.Hours()))
 
 	var privateKey crypto.PrivateKey
+
 	if ctx.Bool(flgReuseKey) {
 		keyBytes, errR := certsStorage.ReadFile(domain, keyExt)
 		if errR != nil {
@@ -225,6 +232,7 @@ func renewForDomains(ctx *cli.Context, account *Account, keyType certcrypto.KeyT
 	if !isatty.IsTerminal(os.Stdout.Fd()) && !ctx.Bool(flgNoRandomSleep) {
 		// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L472
 		const jitter = 8 * time.Minute
+
 		rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 		sleepTime := time.Duration(rnd.Int63n(int64(jitter)))
 
@@ -288,8 +296,10 @@ func renewForCSR(ctx *cli.Context, account *Account, keyType certcrypto.KeyType,
 
 	cert := certificates[0]
 
-	var ariRenewalTime *time.Time
-	var replacesCertID string
+	var (
+		ariRenewalTime *time.Time
+		replacesCertID string
+	)
 
 	var client *lego.Client
 
@@ -408,16 +418,20 @@ func getARIRenewalTime(ctx *cli.Context, cert *x509.Certificate, domain string, 
 			log.Warnf("[%s] acme: %v", domain, err)
 			return nil
 		}
+
 		log.Warnf("[%s] acme: calling renewal info endpoint: %v", domain, err)
+
 		return nil
 	}
 
 	now := time.Now().UTC()
+
 	renewalTime := renewalInfo.ShouldRenewAt(now, ctx.Duration(flgARIWaitToRenewDuration))
 	if renewalTime == nil {
 		log.Infof("[%s] acme: renewalInfo endpoint indicates that renewal is not needed", domain)
 		return nil
 	}
+
 	log.Infof("[%s] acme: renewalInfo endpoint indicates that renewal is needed", domain)
 
 	if renewalInfo.ExplanationURL != "" {

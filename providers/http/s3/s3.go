@@ -57,6 +57,7 @@ func (s *HTTPProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("s3: failed to upload token to s3: %w", err)
 	}
+
 	return nil
 }
 

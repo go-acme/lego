@@ -98,6 +98,7 @@ func (c *Client) do(req *http.Request) error {
 	}
 
 	var apiErr APIError
+
 	err = xml.Unmarshal(raw, &apiErr)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

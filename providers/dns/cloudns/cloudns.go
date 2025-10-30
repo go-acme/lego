@@ -68,6 +68,7 @@ type DNSProvider struct {
 // CLOUDNS_AUTH_ID and CLOUDNS_AUTH_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
 	var subAuthID string
+
 	authID := env.GetOrFile(EnvAuthID)
 	if authID == "" {
 		subAuthID = env.GetOrFile(EnvSubAuthID)

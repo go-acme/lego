@@ -191,6 +191,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// Create TXT record
 	var respData Record
+
 	err = d.client.Post(reqURL, reqData, &respData)
 	if err != nil {
 		return fmt.Errorf("ovh: error when call api to add record (%s): %w", reqURL, err)
@@ -198,6 +199,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// Apply the change
 	reqURL = fmt.Sprintf("/domain/zone/%s/refresh", authZone)
+
 	err = d.client.Post(reqURL, nil, nil)
 	if err != nil {
 		return fmt.Errorf("ovh: error when call api to refresh zone (%s): %w", reqURL, err)
@@ -218,6 +220,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("ovh: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
@@ -238,6 +241,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// Apply the change
 	reqURL = fmt.Sprintf("/domain/zone/%s/refresh", authZone)
+
 	err = d.client.Post(reqURL, nil, nil)
 	if err != nil {
 		return fmt.Errorf("ovh: error when call api to refresh zone (%s): %w", reqURL, err)
@@ -258,8 +262,10 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func newClient(config *Config) (*ovh.Client, error) {
-	var client *ovh.Client
-	var err error
+	var (
+		client *ovh.Client
+		err    error
+	)
 
 	switch {
 	case config.hasAppKeyAuth():

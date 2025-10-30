@@ -60,6 +60,7 @@ func (c *Client) GetRecords(ctx context.Context, zoneName string) ([]Record, err
 	}
 
 	result := &apiResponse[[]Record, json.RawMessage]{}
+
 	err = c.do(req, result)
 	if err != nil {
 		return nil, err
@@ -78,6 +79,7 @@ func (c *Client) AddRecord(ctx context.Context, zoneName string, record Record) 
 	}
 
 	result := &apiResponse[json.RawMessage, recordHeader]{}
+
 	err = c.do(req, result)
 	if err != nil {
 		return 0, err

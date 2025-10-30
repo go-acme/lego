@@ -70,6 +70,7 @@ func (c *Client) UpdateTxtRecord(ctx context.Context, fqdn, txt string, clearRec
 	}
 
 	var response apiResponse
+
 	err = json.Unmarshal(raw, &response)
 	if err != nil {
 		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)

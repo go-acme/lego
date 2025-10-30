@@ -51,6 +51,7 @@ func (d *DNSProvider) deleteTxtRecord(ctx context.Context, zoneID, fqdn, rdata s
 			// empty target rrset
 			return nil
 		}
+
 		return err
 	}
 
@@ -66,11 +67,13 @@ func (d *DNSProvider) deleteTxtRecord(ctx context.Context, zoneID, fqdn, rdata s
 
 	// delete rdata
 	rdataSlice := dpfzones.RecordRDATASlice{}
+
 	for _, v := range r.RData {
 		if v.Value != rdata {
 			rdataSlice = append(rdataSlice, v)
 		}
 	}
+
 	r.RData = rdataSlice
 
 	_, _, err = dpfapiutils.SyncUpdate(ctx, d.client, r, nil)

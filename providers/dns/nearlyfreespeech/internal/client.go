@@ -97,6 +97,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	errAPI := &APIError{}
+
 	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
@@ -118,7 +119,6 @@ func (c Signer) Sign(uri, body, login, apiKey string) string {
 	// Header is "login;timestamp;salt;hash".
 	// hash is SHA1("login;timestamp;salt;api-key;request-uri;body-hash")
 	// and body-hash is SHA1(body).
-
 	bodyHash := sha1.Sum([]byte(body))
 	timestamp := strconv.FormatInt(c.clock().Unix(), 10)
 

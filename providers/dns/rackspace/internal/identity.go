@@ -65,6 +65,7 @@ func (a *Identifier) Login(ctx context.Context, apiUser, apiKey string) (*Identi
 	}
 
 	var identity Identity
+
 	err = json.Unmarshal(raw, &identity)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)

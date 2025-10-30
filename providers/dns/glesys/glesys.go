@@ -136,6 +136,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// save data necessary for CleanUp
 	d.activeRecords[info.EffectiveFQDN] = recordID
+
 	return nil
 }
 
@@ -146,6 +147,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// acquire lock and retrieve authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
+
 	if _, ok := d.activeRecords[info.EffectiveFQDN]; !ok {
 		// if there is no cleanup information then just return
 		return nil

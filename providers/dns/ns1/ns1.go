@@ -147,10 +147,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	name := dns01.UnFqdn(info.EffectiveFQDN)
+
 	_, err = d.client.Records.Delete(zone.Zone, name, "TXT")
 	if err != nil {
 		return fmt.Errorf("ns1: failed to delete record [zone: %q, domain: %q]: %w", zone.Zone, name, err)
 	}
+
 	return nil
 }
 

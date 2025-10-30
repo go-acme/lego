@@ -188,8 +188,10 @@ func TestNewDNSProvider(t *testing.T) {
 				if privKeyFile != "" {
 					_ = os.Remove(privKeyFile)
 				}
+
 				envTest.RestoreEnv()
 			}()
+
 			envTest.ClearEnv()
 
 			envTest.Apply(test.envVars)
@@ -331,6 +333,7 @@ func TestLivePresent(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
@@ -344,6 +347,7 @@ func TestLiveCleanUp(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 

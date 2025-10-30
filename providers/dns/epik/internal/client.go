@@ -46,6 +46,7 @@ func (c *Client) GetDNSRecords(ctx context.Context, domain string) ([]Record, er
 	}
 
 	var data GetDNSRecordResponse
+
 	err = c.do(req, &data)
 	if err != nil {
 		return nil, err
@@ -67,6 +68,7 @@ func (c *Client) CreateHostRecord(ctx context.Context, domain string, record Rec
 	}
 
 	var data Data
+
 	err = c.do(req, &data)
 	if err != nil {
 		return nil, err
@@ -89,6 +91,7 @@ func (c *Client) RemoveHostRecord(ctx context.Context, domain, recordID string) 
 	}
 
 	var data Data
+
 	err = c.do(req, &data)
 	if err != nil {
 		return nil, err
@@ -165,6 +168,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var apiErr APIError
+
 	err := json.Unmarshal(raw, &apiErr)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

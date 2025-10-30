@@ -39,6 +39,7 @@ func TestNewDNSProvider(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
+
 			envTest.ClearEnv()
 
 			envTest.Apply(test.envVars)
@@ -94,6 +95,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 func TestDNSProvider_Present(t *testing.T) {
 	defer envTest.RestoreEnv()
+
 	os.Setenv(EnvToken, "testing")
 
 	domain := "example.com"
@@ -178,6 +180,7 @@ func TestDNSProvider_Present(t *testing.T) {
 
 func TestDNSProvider_CleanUp(t *testing.T) {
 	defer envTest.RestoreEnv()
+
 	os.Setenv(EnvToken, "testing")
 
 	domain := "example.com"

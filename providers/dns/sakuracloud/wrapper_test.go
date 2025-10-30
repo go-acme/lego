@@ -44,6 +44,7 @@ func createDummyZone(t *testing.T, caller iaas.APICaller) {
 		if zone.Name == "example.com" {
 			err = dnsOp.Delete(ctx, zone.ID)
 			require.NoError(t, err)
+
 			break
 		}
 	}
@@ -96,6 +97,7 @@ func TestDNSProvider_concurrentAddAndCleanupRecords(t *testing.T) {
 	dummyRecordCount := 10
 
 	var providers []*DNSProvider
+
 	for range dummyRecordCount {
 		config := NewDefaultConfig()
 		config.Token = "token3"

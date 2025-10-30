@@ -42,6 +42,7 @@ func TestChallenge(t *testing.T) {
 		assert.NotEmpty(t, remoteCert.Extensions, "Expected the challenge certificate to contain extensions")
 
 		idx := -1
+
 		for i, ext := range remoteCert.Extensions {
 			if idPeAcmeIdentifierV1.Equal(ext.Id) {
 				idx = i
@@ -145,18 +146,24 @@ func TestChallengeIPaddress(t *testing.T) {
 		assert.True(t, net.ParseIP("127.0.0.1").Equal(remoteCert.IPAddresses[0]), "challenge certificate IPAddress ")
 		assert.NotEmpty(t, remoteCert.Extensions, "Expected the challenge certificate to contain extensions")
 
-		var foundAcmeIdentifier bool
-		var extValue []byte
+		var (
+			foundAcmeIdentifier bool
+			extValue            []byte
+		)
+
 		for _, ext := range remoteCert.Extensions {
 			if idPeAcmeIdentifierV1.Equal(ext.Id) {
 				assert.True(t, ext.Critical, "Expected the challenge certificate id-pe-acmeIdentifier extension to be marked as critical")
+
 				foundAcmeIdentifier = true
 				extValue = ext.Value
+
 				break
 			}
 		}
 
 		require.True(t, foundAcmeIdentifier, "Expected the challenge certificate to contain an extension with the id-pe-acmeIdentifier id,")
+
 		zBytes := sha256.Sum256([]byte(chlng.KeyAuthorization))
 		value, err := asn1.Marshal(zBytes[:sha256.Size])
 		require.NoError(t, err, "Expected marshaling of the keyAuth to return no error")

@@ -31,9 +31,11 @@ func (p *ProblemDetails) Error() string {
 	var msg strings.Builder
 
 	msg.WriteString(fmt.Sprintf("acme: error: %d", p.HTTPStatus))
+
 	if p.Method != "" || p.URL != "" {
 		msg.WriteString(fmt.Sprintf(" :: %s :: %s", p.Method, p.URL))
 	}
+
 	msg.WriteString(fmt.Sprintf(" :: %s :: %s", p.Type, p.Detail))
 
 	for _, sub := range p.SubProblems {

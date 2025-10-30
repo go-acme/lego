@@ -104,6 +104,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	)
 	if err != nil {
 		var errT error
+
 		values, errT = env.GetWithFallback(
 			[]string{EnvDNSAPIToken, altEnvName(EnvDNSAPIToken)},
 			[]string{EnvZoneAPIToken, altEnvName(EnvZoneAPIToken), EnvDNSAPIToken, altEnvName(EnvDNSAPIToken)},
@@ -209,6 +210,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("cloudflare: unknown record ID for '%s'", info.EffectiveFQDN)
 	}

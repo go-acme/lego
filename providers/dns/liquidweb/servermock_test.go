@@ -62,6 +62,7 @@ func mockAPICreate(recs map[int]network.DNSRecord) http.HandlerFunc {
 			http.Error(rw, makeEncodingError(body), http.StatusBadRequest)
 			return
 		}
+
 		payload.Params.ID = types.FlexInt(rand.Intn(10000000))
 		payload.Params.ZoneID = types.FlexInt(mockAPIServerZones[payload.Params.Name])
 
@@ -69,6 +70,7 @@ func mockAPICreate(recs map[int]network.DNSRecord) http.HandlerFunc {
 			http.Error(rw, "dns record already exists", http.StatusTeapot)
 			return
 		}
+
 		recs[int(payload.Params.ID)] = payload.Params
 
 		resp, err := json.Marshal(payload.Params)
@@ -76,6 +78,7 @@ func mockAPICreate(recs map[int]network.DNSRecord) http.HandlerFunc {
 			http.Error(rw, "", http.StatusInternalServerError)
 			return
 		}
+
 		http.Error(rw, string(resp), http.StatusOK)
 	}
 }
@@ -109,6 +112,7 @@ func mockAPIDelete(recs map[int]network.DNSRecord) http.HandlerFunc {
 			http.Error(rw, fmt.Sprintf(`{"error":"","error_class":"LW::Exception::RecordNotFound","field":"network_dns_rr","full_message":"Record 'network_dns_rr: %d' not found","input":"%d","public_message":null}`, payload.Params.ID, payload.Params.ID), http.StatusOK)
 			return
 		}
+
 		delete(recs, payload.Params.ID)
 		http.Error(rw, fmt.Sprintf("{\"deleted\":%d}", payload.Params.ID), http.StatusOK)
 	}
@@ -141,6 +145,7 @@ func mockAPIListZones() http.HandlerFunc {
 		case payload.Params.PageNum > len(mockZones):
 			payload.Params.PageNum = len(mockZones)
 		}
+
 		resp := mockZones[payload.Params.PageNum]
 		resp.ItemTotal = types.FlexInt(len(mockAPIServerZones))
 		resp.PageNum = types.FlexInt(payload.Params.PageNum)
@@ -276,10 +281,12 @@ func makeMockZones() (map[int]network.DNSZoneList, map[string]int) {
 	}
 
 	mockAPIServerZones := make(map[string]int)
+
 	for _, page := range mockZones {
 		for _, zone := range page.Items {
 			mockAPIServerZones[zone.Name] = int(zone.ID)
 		}
 	}
+
 	return mockZones, mockAPIServerZones
 }

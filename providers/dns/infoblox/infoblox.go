@@ -198,6 +198,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordRefsMu.Lock()
 	recordRef, ok := d.recordRefs[token]
 	d.recordRefsMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("infoblox: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}

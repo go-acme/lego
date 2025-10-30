@@ -59,6 +59,7 @@ func (c *Client) ChangeResourceRecordSets(ctx context.Context, hostedZoneID stri
 	}
 
 	output := &ChangeResourceRecordSetsResponse{}
+
 	err = c.do(req, output)
 	if err != nil {
 		return nil, err
@@ -77,6 +78,7 @@ func (c *Client) GetChange(ctx context.Context, statusID string) (*GetChangeResp
 	}
 
 	output := &GetChangeResponse{}
+
 	err = c.do(req, output)
 	if err != nil {
 		return nil, err
@@ -129,6 +131,7 @@ func (c *Client) sign(req *http.Request) error {
 	}
 
 	mac := hmac.New(sha1.New, []byte(c.secretKey))
+
 	_, err := mac.Write([]byte(req.Header.Get("Date")))
 	if err != nil {
 		return err
@@ -148,6 +151,7 @@ func newXMLRequest(ctx context.Context, method string, endpoint *url.URL, payloa
 
 	if payload != nil {
 		body.WriteString(xml.Header)
+
 		err := xml.NewEncoder(body).Encode(payload)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create request XML body: %w", err)
@@ -170,6 +174,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	errResp := &ErrorResponse{}
+
 	err := xml.Unmarshal(raw, errResp)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

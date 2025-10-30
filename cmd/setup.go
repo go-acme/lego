@@ -114,6 +114,7 @@ func getKeyType(ctx *cli.Context) certcrypto.KeyType {
 	}
 
 	log.Fatalf("Unsupported KeyType: %s", keyType)
+
 	return ""
 }
 
@@ -122,6 +123,7 @@ func getEmail(ctx *cli.Context) string {
 	if email == "" {
 		log.Fatalf("You have to pass an account (email address) to the program using --%s or -m", flgEmail)
 	}
+
 	return email
 }
 
@@ -135,6 +137,7 @@ func createNonExistingFolder(path string) error {
 	} else if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -143,10 +146,12 @@ func readCSRFile(filename string) (*x509.CertificateRequest, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	raw := bytes
 
 	// see if we can find a PEM-encoded CSR
 	var p *pem.Block
+
 	rest := bytes
 	for {
 		// decode a PEM block

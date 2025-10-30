@@ -178,12 +178,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	var recordID int
+
 	for _, record := range response.Records {
 		if record.Content != info.Value {
 			continue
 		}
 
 		recordID = record.ID
+
 		break
 	}
 

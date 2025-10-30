@@ -155,6 +155,7 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("dnsmadeeasy: unable to create record for %s: %w", name, err)
 	}
+
 	return nil
 }
 
@@ -177,6 +178,7 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 
 	// find matching records
 	name := strings.Replace(info.EffectiveFQDN, "."+authZone, "", 1)
+
 	records, err := d.client.GetRecords(ctx, domain, name, "TXT")
 	if err != nil {
 		return fmt.Errorf("dnsmadeeasy: unable to get records for domain %s: %w", domain.Name, err)
@@ -184,6 +186,7 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 
 	// delete records
 	var lastError error
+
 	for _, record := range *records {
 		err = d.client.DeleteRecord(ctx, record)
 		if err != nil {

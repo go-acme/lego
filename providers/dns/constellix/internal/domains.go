@@ -30,10 +30,12 @@ func (s *DomainService) GetAll(ctx context.Context, params *PaginationParameters
 		if errQ != nil {
 			return nil, errQ
 		}
+
 		req.URL.RawQuery = v.Encode()
 	}
 
 	var domains []Domain
+
 	err = s.client.do(req, &domains)
 	if err != nil {
 		return nil, err
@@ -78,6 +80,7 @@ func (s *DomainService) Search(ctx context.Context, filter searchFilter, value s
 	req.URL.RawQuery = query.Encode()
 
 	var domains []Domain
+
 	err = s.client.do(req, &domains)
 	if err != nil {
 		var nf *NotFound

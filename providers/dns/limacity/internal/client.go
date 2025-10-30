@@ -41,6 +41,7 @@ func (c *Client) GetDomains(ctx context.Context) ([]Domain, error) {
 	}
 
 	var results DomainsResponse
+
 	err = c.do(req, &results)
 	if err != nil {
 		return nil, err
@@ -58,6 +59,7 @@ func (c *Client) GetRecords(ctx context.Context, domainID int) ([]Record, error)
 	}
 
 	var results RecordsResponse
+
 	err = c.do(req, &results)
 	if err != nil {
 		return nil, err
@@ -75,6 +77,7 @@ func (c *Client) AddRecord(ctx context.Context, domainID int, record Record) err
 	}
 
 	var results APIResponse
+
 	err = c.do(req, &results)
 	if err != nil {
 		return err
@@ -92,6 +95,7 @@ func (c *Client) UpdateRecord(ctx context.Context, domainID, recordID int, recor
 	}
 
 	var results APIResponse
+
 	err = c.do(req, &results)
 	if err != nil {
 		return err
@@ -110,6 +114,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int) error
 	}
 
 	var results APIResponse
+
 	err = c.do(req, &results)
 	if err != nil {
 		return err
@@ -177,6 +182,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var errAPI APIResponse
+
 	err := json.Unmarshal(raw, &errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

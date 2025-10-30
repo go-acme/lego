@@ -55,6 +55,7 @@ func (l *HeaderLink) Bind(next http.Handler) http.Handler {
 			if !exp.MatchString(value) {
 				msg := fmt.Sprintf("invalid %q header value, %q doesn't match to %q", k, value, exp)
 				http.Error(rw, msg, l.statusCode)
+
 				return
 			}
 		}

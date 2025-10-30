@@ -145,6 +145,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	var updatedRecords []internal.Record
+
 	for _, record := range records {
 		if record.Data == info.Value {
 			continue

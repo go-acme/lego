@@ -29,6 +29,7 @@ func TestHTTPProvider(t *testing.T) {
 	}
 
 	var data []byte
+
 	data, err = os.ReadFile(challengeFilePath)
 	require.NoError(t, err)
 

@@ -169,6 +169,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	var dnsRecord internal.Record
+
 	for _, entry := range dnsRecords {
 		if entry.Name == subDomain && entry.Value == info.Value {
 			dnsRecord = entry

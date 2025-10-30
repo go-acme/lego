@@ -179,6 +179,7 @@ func TestParsePEMPrivateKey(t *testing.T) {
 	// ignoring precomputed values.
 	decoded, err := ParsePEMPrivateKey(pemPrivateKey)
 	require.NoError(t, err)
+
 	decodedRsaPrivateKey := decoded.(*rsa.PrivateKey)
 	require.True(t, decodedRsaPrivateKey.Equal(privateKey))
 

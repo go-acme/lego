@@ -53,6 +53,7 @@ func TestNewDNSProvider(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
+
 			envTest.ClearEnv()
 
 			envTest.Apply(test.envVars)
@@ -112,6 +113,7 @@ func TestLivePresent(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
@@ -125,6 +127,7 @@ func TestLiveCleanUp(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 

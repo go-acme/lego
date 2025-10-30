@@ -34,6 +34,7 @@ var envTest = tester.NewEnvTest(
 
 func Test_loadCredentials_FromEnv(t *testing.T) {
 	defer envTest.RestoreEnv()
+
 	envTest.ClearEnv()
 
 	_ = os.Setenv(EnvAccessKeyID, "123")
@@ -60,6 +61,7 @@ func Test_loadCredentials_FromEnv(t *testing.T) {
 
 func Test_loadRegion_FromEnv(t *testing.T) {
 	defer envTest.RestoreEnv()
+
 	envTest.ClearEnv()
 
 	_ = os.Setenv(EnvRegion, "foo")
@@ -72,6 +74,7 @@ func Test_loadRegion_FromEnv(t *testing.T) {
 
 func Test_getHostedZoneID_FromEnv(t *testing.T) {
 	defer envTest.RestoreEnv()
+
 	envTest.ClearEnv()
 
 	expectedZoneID := "zoneID"
@@ -128,6 +131,7 @@ func TestNewDefaultConfig(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			envTest.ClearEnv()
+
 			for key, value := range test.envVars {
 				_ = os.Setenv(key, value)
 			}
@@ -141,6 +145,7 @@ func TestNewDefaultConfig(t *testing.T) {
 
 func TestDNSProvider_Present(t *testing.T) {
 	defer envTest.RestoreEnv()
+
 	envTest.ClearEnv()
 
 	provider := servermock.NewBuilder(
@@ -271,6 +276,7 @@ func Test_createAWSConfig(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
+
 			envTest.ClearEnv()
 
 			envTest.Apply(test.env)

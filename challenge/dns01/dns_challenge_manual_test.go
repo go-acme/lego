@@ -18,6 +18,7 @@ func TestDNSProviderManual(t *testing.T) {
 		Build(t))
 
 	backupStdin := os.Stdin
+
 	defer func() { os.Stdin = backupStdin }()
 
 	testCases := []struct {

@@ -127,6 +127,7 @@ func (c *Client) do(req *http.Request) (*APIResponse, error) {
 	}
 
 	var response APIResponse
+
 	err = json.Unmarshal(raw, &response)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)

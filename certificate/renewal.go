@@ -85,6 +85,7 @@ func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse
 	defer resp.Body.Close()
 
 	var info RenewalInfoResponse
+
 	err = json.NewDecoder(resp.Body).Decode(&info)
 	if err != nil {
 		return nil, err

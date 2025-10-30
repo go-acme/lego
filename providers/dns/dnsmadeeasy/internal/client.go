@@ -68,6 +68,7 @@ func (c *Client) GetDomain(ctx context.Context, authZone string) (*Domain, error
 	}
 
 	domain := &Domain{}
+
 	err = c.do(req, domain)
 	if err != nil {
 		return nil, err
@@ -91,6 +92,7 @@ func (c *Client) GetRecords(ctx context.Context, domain *Domain, recordName, rec
 	}
 
 	records := &recordsResponse{}
+
 	err = c.do(req, records)
 	if err != nil {
 		return nil, err
@@ -172,10 +174,12 @@ func (c *Client) sign(req *http.Request, timestamp string) error {
 func computeHMAC(message, secret string) (string, error) {
 	key := []byte(secret)
 	h := hmac.New(sha1.New, key)
+
 	_, err := h.Write([]byte(message))
 	if err != nil {
 		return "", err
 	}
+
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 

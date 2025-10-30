@@ -145,6 +145,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	var lastErr error
+
 	for _, rec := range records {
 		_, err := d.client.Zones.DeleteRecord(ctx, accountID, rec.ZoneID, rec.ID)
 		if err != nil {

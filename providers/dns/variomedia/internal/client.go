@@ -52,6 +52,7 @@ func (c *Client) CreateDNSRecord(ctx context.Context, record DNSRecord) (*Create
 	}
 
 	var result CreateDNSRecordResponse
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -71,6 +72,7 @@ func (c *Client) DeleteDNSRecord(ctx context.Context, id string) (*DeleteRecordR
 	}
 
 	var result DeleteRecordResponse
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -90,6 +92,7 @@ func (c *Client) GetJob(ctx context.Context, id string) (*GetJobResponse, error)
 	}
 
 	var result GetJobResponse
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -153,6 +156,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var errAPI APIError
+
 	err := json.Unmarshal(raw, &errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

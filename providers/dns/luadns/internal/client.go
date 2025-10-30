@@ -49,6 +49,7 @@ func (c *Client) ListZones(ctx context.Context) ([]DNSZone, error) {
 	}
 
 	var zones []DNSZone
+
 	err = c.do(req, &zones)
 	if err != nil {
 		return nil, fmt.Errorf("could not list zones: %w", err)
@@ -68,6 +69,7 @@ func (c *Client) CreateRecord(ctx context.Context, zone DNSZone, newRecord DNSRe
 	}
 
 	var record *DNSRecord
+
 	err = c.do(req, &record)
 	if err != nil {
 		return nil, fmt.Errorf("could not create record %#v: %w", record, err)
@@ -153,6 +155,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var errResp errorResponse
+
 	err := json.Unmarshal(raw, &errResp)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

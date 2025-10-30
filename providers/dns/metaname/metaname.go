@@ -79,6 +79,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.AccountReference == "" {
 		return nil, errors.New("metaname: missing account reference")
 	}
+
 	if config.APIKey == "" {
 		return nil, errors.New("metaname: missing api key")
 	}

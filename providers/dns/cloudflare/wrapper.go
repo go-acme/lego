@@ -99,6 +99,7 @@ func (m *metaClient) ZoneIDByName(ctx context.Context, fdqn string) (string, err
 	m.zonesMu.Lock()
 	m.zones[fdqn] = id
 	m.zonesMu.Unlock()
+
 	return id, nil
 }
 

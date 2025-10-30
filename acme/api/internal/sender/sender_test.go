@@ -12,6 +12,7 @@ import (
 
 func TestDo_UserAgentOnAllHTTPMethod(t *testing.T) {
 	var ua, method string
+
 	server := httptest.NewTLSServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
 		ua = r.Header.Get("User-Agent")
 		method = r.Method
@@ -60,9 +61,11 @@ func TestDo_CustomUserAgent(t *testing.T) {
 	ua := doer.formatUserAgent()
 	assert.Contains(t, ua, ourUserAgent)
 	assert.Contains(t, ua, customUA)
+
 	if strings.HasSuffix(ua, " ") {
 		t.Errorf("UA should not have trailing spaces; got '%s'", ua)
 	}
+
 	assert.Len(t, strings.Split(ua, " "), 5)
 }
 

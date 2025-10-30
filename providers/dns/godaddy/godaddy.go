@@ -131,6 +131,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	var newRecords []internal.DNSRecord
+
 	for _, record := range existingRecords {
 		if record.Data != "" {
 			newRecords = append(newRecords, record)
@@ -177,6 +178,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	var recordsToKeep []internal.DNSRecord
+
 	for _, record := range existingRecords {
 		if record.Data != info.Value && record.Data != "" {
 			recordsToKeep = append(recordsToKeep, record)

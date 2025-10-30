@@ -61,6 +61,7 @@ func (c *Client) GetZones(ctx context.Context, parentID string) ([]Zone, error) 
 	}
 
 	var zones APIResponse[Zone]
+
 	err = c.do(req, &zones)
 	if err != nil {
 		return nil, err
@@ -78,6 +79,7 @@ func (c *Client) GetRecords(ctx context.Context, zoneID string) ([]Record, error
 	}
 
 	var records APIResponse[Record]
+
 	err = c.do(req, &records)
 	if err != nil {
 		return nil, err
@@ -95,6 +97,7 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID string, record Record)
 	}
 
 	var result Record
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err

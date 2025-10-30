@@ -51,6 +51,7 @@ func (c *Client) AddRecord(ctx context.Context, payload Record) (*Record, error)
 	}
 
 	r := AddResponse{}
+
 	err = c.do(req, &r)
 	if err != nil {
 		return nil, err
@@ -68,6 +69,7 @@ func (c *Client) RemoveRecord(ctx context.Context, payload Record) (int, error) 
 	}
 
 	r := RemoveResponse{}
+
 	err = c.do(req, &r)
 	if err != nil {
 		return 0, err
@@ -89,6 +91,7 @@ func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error
 	}
 
 	r := ListResponse{}
+
 	err = c.do(req, &r)
 	if err != nil {
 		return nil, err

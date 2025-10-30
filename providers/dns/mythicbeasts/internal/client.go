@@ -99,6 +99,7 @@ func (c *Client) createTXTRecord(ctx context.Context, zone, leaf, recordType, va
 	}
 
 	resp := &createTXTResponse{}
+
 	err = c.do(req, resp)
 	if err != nil {
 		return nil, err

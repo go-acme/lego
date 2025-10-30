@@ -34,6 +34,7 @@ var envTest = tester.NewEnvTest(
 
 func TestCredentialsFromEnv(t *testing.T) {
 	defer envTest.RestoreEnv()
+
 	envTest.ClearEnv()
 
 	_ = os.Setenv(envAwsAccessKeyID, "123")

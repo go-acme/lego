@@ -46,6 +46,7 @@ func (c *Client) ListZones(ctx context.Context, domain string) ([]ZoneRecord, er
 	}
 
 	response := &apiResponse[[]ZoneRecord]{}
+
 	err = c.do(req, response)
 	if err != nil {
 		return nil, err
@@ -67,6 +68,7 @@ func (c *Client) AddRecord(ctx context.Context, domain string, record ZoneRecord
 	}
 
 	response := &apiResponse[*ZoneRecord]{}
+
 	err = c.do(req, response)
 	if err != nil {
 		return "", err

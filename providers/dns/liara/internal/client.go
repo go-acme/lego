@@ -60,6 +60,7 @@ func (c *Client) GetRecords(ctx context.Context, domainName string) ([]Record, e
 	}
 
 	var response Response[[]Record]
+
 	err = json.Unmarshal(raw, &response)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
@@ -94,6 +95,7 @@ func (c *Client) CreateRecord(ctx context.Context, domainName string, record Rec
 	}
 
 	var response Response[*Record]
+
 	err = json.Unmarshal(raw, &response)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
@@ -128,6 +130,7 @@ func (c *Client) GetRecord(ctx context.Context, domainName, recordID string) (*R
 	}
 
 	var response Response[*Record]
+
 	err = json.Unmarshal(raw, &response)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
@@ -187,6 +190,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var errAPI APIError
+
 	err := json.Unmarshal(raw, &errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

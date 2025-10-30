@@ -19,9 +19,11 @@ func (a APIError) Error() string {
 	var msg strings.Builder
 
 	msg.WriteString(fmt.Sprintf("%d: %s", a.StatusCode, a.Message))
+
 	for k, v := range a.Errors {
 		msg.WriteString(fmt.Sprintf(" %s: %v", k, v))
 	}
+
 	return msg.String()
 }
 

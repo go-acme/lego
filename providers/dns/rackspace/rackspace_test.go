@@ -75,6 +75,7 @@ func TestLiveNewDNSProvider_ValidEnv(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
@@ -87,6 +88,7 @@ func TestLivePresent(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
@@ -100,6 +102,7 @@ func TestLiveCleanUp(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 

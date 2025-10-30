@@ -88,6 +88,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("mythicbeasts: %w", err)
 	}
+
 	config.UserName = values[EnvUserName]
 	config.Password = values[EnvPassword]
 

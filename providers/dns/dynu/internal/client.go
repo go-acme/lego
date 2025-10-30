@@ -43,6 +43,7 @@ func (c *Client) GetRecords(ctx context.Context, hostname, recordType string) ([
 	endpoint.RawQuery = query.Encode()
 
 	apiResp := RecordsResponse{}
+
 	err := c.doRetry(ctx, http.MethodGet, endpoint.String(), nil, &apiResp)
 	if err != nil {
 		return nil, err
@@ -65,6 +66,7 @@ func (c *Client) AddNewRecord(ctx context.Context, domainID int64, record DNSRec
 	}
 
 	apiResp := RecordResponse{}
+
 	err = c.doRetry(ctx, http.MethodPost, endpoint.String(), reqBody, &apiResp)
 	if err != nil {
 		return err
@@ -82,6 +84,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int64) err
 	endpoint := c.baseURL.JoinPath("dns", strconv.FormatInt(domainID, 10), "record", strconv.FormatInt(recordID, 10))
 
 	apiResp := APIException{}
+
 	err := c.doRetry(ctx, http.MethodDelete, endpoint.String(), nil, &apiResp)
 	if err != nil {
 		return err
@@ -99,6 +102,7 @@ func (c *Client) GetRootDomain(ctx context.Context, hostname string) (*DNSHostna
 	endpoint := c.baseURL.JoinPath("dns", "getroot", hostname)
 
 	apiResp := DNSHostname{}
+
 	err := c.doRetry(ctx, http.MethodGet, endpoint.String(), nil, &apiResp)
 	if err != nil {
 		return nil, err

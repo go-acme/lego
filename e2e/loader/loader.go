@@ -43,12 +43,14 @@ func (l *EnvLoader) MainTest(m *testing.M) int {
 	if _, e2e := os.LookupEnv("LEGO_E2E_TESTS"); !e2e {
 		fmt.Fprintln(os.Stderr, "skipping test: e2e tests are disabled. (no 'LEGO_E2E_TESTS' env var)")
 		fmt.Println("PASS")
+
 		return 0
 	}
 
 	if _, err := exec.LookPath("git"); err != nil {
 		fmt.Fprintln(os.Stderr, "skipping because git command not found")
 		fmt.Println("PASS")
+
 		return 0
 	}
 
@@ -56,6 +58,7 @@ func (l *EnvLoader) MainTest(m *testing.M) int {
 		if _, err := exec.LookPath(cmdNamePebble); err != nil {
 			fmt.Fprintln(os.Stderr, "skipping because pebble binary not found")
 			fmt.Println("PASS")
+
 			return 0
 		}
 	}
@@ -64,6 +67,7 @@ func (l *EnvLoader) MainTest(m *testing.M) int {
 		if _, err := exec.LookPath(cmdNameChallSrv); err != nil {
 			fmt.Fprintln(os.Stderr, "skipping because challtestsrv binary not found")
 			fmt.Println("PASS")
+
 			return 0
 		}
 	}
@@ -76,6 +80,7 @@ func (l *EnvLoader) MainTest(m *testing.M) int {
 
 	legoBinary, tearDown, err := buildLego()
 	defer tearDown()
+
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
@@ -136,6 +141,7 @@ func (l *EnvLoader) launchPebble() func() {
 	}
 
 	pebble, outPebble := l.cmdPebble()
+
 	go func() {
 		err := pebble.Run()
 		if err != nil {
@@ -148,6 +154,7 @@ func (l *EnvLoader) launchPebble() func() {
 		if err != nil {
 			fmt.Println(err)
 		}
+
 		fmt.Println(outPebble.String())
 	}
 }
@@ -160,11 +167,13 @@ func (l *EnvLoader) cmdPebble() (*exec.Cmd, *bytes.Buffer) {
 	if err != nil {
 		panic(err)
 	}
+
 	cmd.Dir = dir
 
 	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
 
 	var b bytes.Buffer
+
 	cmd.Stdout = &b
 	cmd.Stderr = &b
 
@@ -173,6 +182,7 @@ func (l *EnvLoader) cmdPebble() (*exec.Cmd, *bytes.Buffer) {
 
 func pebbleHealthCheck(options *CmdOption) {
 	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
+
 	err := wait.For("pebble", 10*time.Second, 500*time.Millisecond, func() (bool, error) {
 		resp, err := client.Get(options.HealthCheckURL)
 		if err != nil {
@@ -196,6 +206,7 @@ func (l *EnvLoader) launchChallSrv() func() {
 	}
 
 	challtestsrv, outChalSrv := l.cmdChallSrv()
+
 	go func() {
 		err := challtestsrv.Run()
 		if err != nil {
@@ -208,6 +219,7 @@ func (l *EnvLoader) launchChallSrv() func() {
 		if err != nil {
 			fmt.Println(err)
 		}
+
 		fmt.Println(outChalSrv.String())
 	}
 }
@@ -218,6 +230,7 @@ func (l *EnvLoader) cmdChallSrv() (*exec.Cmd, *bytes.Buffer) {
 	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
 
 	var b bytes.Buffer
+
 	cmd.Stdout = &b
 	cmd.Stderr = &b
 
@@ -229,6 +242,7 @@ func buildLego() (string, func(), error) {
 	if err != nil {
 		return "", func() {}, err
 	}
+
 	defer func() { _ = os.Chdir(here) }()
 
 	buildPath, err := os.MkdirTemp("", "lego_test")
@@ -262,6 +276,7 @@ func buildLego() (string, func(), error) {
 
 	return binary, func() {
 		_ = os.RemoveAll(buildPath)
+
 		CleanLegoFiles()
 	}, nil
 }
@@ -283,6 +298,7 @@ func build(binary string) error {
 	if err != nil {
 		return err
 	}
+
 	cmd := exec.Command(toolPath, "build", "-o", binary)
 
 	output, err := cmd.CombinedOutput()
@@ -334,6 +350,7 @@ func goTool() (string, error) {
 func CleanLegoFiles() {
 	cmd := exec.Command("rm", "-rf", ".lego")
 	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println(string(output))

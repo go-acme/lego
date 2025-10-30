@@ -101,6 +101,7 @@ func (c *Client) updateTxtRecord(ctx context.Context, endpoint *url.URL) error {
 	}
 
 	var response apiResponse
+
 	err = json.Unmarshal(raw, &response)
 	if err != nil {
 		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)

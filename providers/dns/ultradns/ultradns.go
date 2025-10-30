@@ -135,6 +135,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	} else {
 		_, err = recordService.Create(rrSetKeyData, rrSetData)
 	}
+
 	if err != nil {
 		return fmt.Errorf("ultradns: %w", err)
 	}

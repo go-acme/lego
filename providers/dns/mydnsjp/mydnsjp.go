@@ -109,6 +109,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("mydnsjp: %w", err)
 	}
+
 	return nil
 }
 
@@ -121,5 +122,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("mydnsjp: %w", err)
 	}
+
 	return nil
 }

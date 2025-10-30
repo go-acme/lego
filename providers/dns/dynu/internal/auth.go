@@ -46,6 +46,7 @@ func (t *TokenTransport) transport() http.RoundTripper {
 	if t.Transport != nil {
 		return t.Transport
 	}
+
 	return http.DefaultTransport
 }
 

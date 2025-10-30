@@ -113,6 +113,7 @@ func (c *Client) listDomainsByName(ctx context.Context, domain string) (*ZoneSea
 	}
 
 	var zoneSearchResponse ZoneSearchResponse
+
 	err = c.do(req, &zoneSearchResponse)
 	if err != nil {
 		return nil, err
@@ -154,6 +155,7 @@ func (c *Client) searchRecords(ctx context.Context, zoneID, recordName, recordTy
 	}
 
 	var records Records
+
 	err = c.do(req, &records)
 	if err != nil {
 		return nil, err

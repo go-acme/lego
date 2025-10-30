@@ -15,6 +15,7 @@ func authToken(userName, wapiPass string) string {
 func sha1string(txt string) string {
 	h := sha1.New()
 	_, _ = io.WriteString(h, txt)
+
 	return hex.EncodeToString(h.Sum(nil))
 }
 
@@ -46,11 +47,13 @@ func utcToCet(utc time.Time) time.Time {
 	if utcMonth < time.March || utcMonth > time.October {
 		return utc.Add(time.Hour)
 	}
+
 	if utcMonth > time.March && utcMonth < time.October {
 		return utc.Add(time.Hour * 2)
 	}
 
 	dayOff := 0
+
 	breaking := time.Date(utc.Year(), utcMonth+1, dayOff, 1, 0, 0, 0, time.UTC)
 	for breaking.Weekday() != time.Sunday {
 		dayOff--
@@ -65,6 +68,7 @@ func utcToCet(utc time.Time) time.Time {
 	if (utcMonth == time.March && utc.Before(breaking)) || (utcMonth == time.October && utc.After(breaking)) {
 		return utc.Add(time.Hour)
 	}
+
 	return utc.Add(time.Hour * 2)
 }
 

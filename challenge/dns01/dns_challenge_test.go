@@ -184,6 +184,7 @@ func TestChallenge_Solve(t *testing.T) {
 			if test.preCheck != nil {
 				options = append(options, WrapPreCheck(test.preCheck))
 			}
+
 			chlg := NewChallenge(core, test.validate, test.provider, options...)
 
 			authz := acme.Authorization{

@@ -98,6 +98,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err := d.client.AddRecord(info.EffectiveFQDN, "TXT", info.Value); err != nil {
 		return fmt.Errorf("bindman: %w", err)
 	}
+
 	return nil
 }
 
@@ -108,6 +109,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err := d.client.RemoveRecord(info.EffectiveFQDN, "TXT"); err != nil {
 		return fmt.Errorf("bindman: %w", err)
 	}
+
 	return nil
 }
 

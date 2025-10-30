@@ -137,6 +137,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	record.SetTtl(int32(d.config.TTL))
 
 	var resp *idns.PostOrPutRecordResponse
+
 	if existingRecord != nil {
 		// Update existing record by adding the new value to the existing ones
 		record.SetAnswersList(append(existingRecord.GetAnswersList(), info.Value))
@@ -161,6 +162,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	results := resp.GetResults()
+
 	d.recordIDsMu.Lock()
 	d.recordIDs[token] = results.GetId()
 	d.recordIDsMu.Unlock()
@@ -203,6 +205,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	currentAnswers := existingRecord.GetAnswersList()
 
 	var updatedAnswers []string
+
 	for _, answer := range currentAnswers {
 		if answer != info.Value {
 			updatedAnswers = append(updatedAnswers, answer)

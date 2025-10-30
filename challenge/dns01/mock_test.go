@@ -40,6 +40,7 @@ func mockResolver(t *testing.T, addr net.Addr) {
 	require.NoError(t, err)
 
 	originalDefaultNameserverPort := defaultNameserverPort
+
 	t.Cleanup(func() {
 		defaultNameserverPort = originalDefaultNameserverPort
 	})
@@ -47,6 +48,7 @@ func mockResolver(t *testing.T, addr net.Addr) {
 	defaultNameserverPort = port
 
 	originalResolver := net.DefaultResolver
+
 	t.Cleanup(func() {
 		net.DefaultResolver = originalResolver
 	})
@@ -70,6 +72,7 @@ func useAsNameserver(t *testing.T, addr net.Addr) {
 	})
 
 	originalRecursiveNameservers := recursiveNameservers
+
 	t.Cleanup(func() {
 		recursiveNameservers = originalRecursiveNameservers
 	})

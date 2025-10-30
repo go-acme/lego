@@ -57,6 +57,7 @@ func (m *IntOrString) UnmarshalJSON(data []byte) error {
 	raw := string(data)
 	if data[0] == '"' {
 		var err error
+
 		raw, err = strconv.Unquote(string(data))
 		if err != nil {
 			return err

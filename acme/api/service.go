@@ -23,11 +23,13 @@ func getLinks(header http.Header, rel string) []string {
 	linkExpr := regexp.MustCompile(`<(.+?)>(?:;[^;]+)*?;\s*rel="(.+?)"`)
 
 	var links []string
+
 	for _, link := range header["Link"] {
 		for _, m := range linkExpr.FindAllStringSubmatch(link, -1) {
 			if len(m) != 3 {
 				continue
 			}
+
 			if m[2] == rel {
 				links = append(links, m[1])
 			}

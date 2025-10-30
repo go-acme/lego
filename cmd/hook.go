@@ -34,6 +34,7 @@ func launchHook(hook string, timeout time.Duration, meta map[string]string) erro
 	parts := strings.Fields(hook)
 
 	cmd := exec.CommandContext(ctxCmd, parts[0], parts[1:]...)
+
 	cmd.Env = append(os.Environ(), metaToEnv(meta)...)
 
 	stdout, err := cmd.StdoutPipe()
@@ -50,6 +51,7 @@ func launchHook(hook string, timeout time.Duration, meta map[string]string) erro
 
 	go func() {
 		<-ctxCmd.Done()
+
 		if ctxCmd.Err() != nil {
 			_ = cmd.Process.Kill()
 			_ = stdout.Close()

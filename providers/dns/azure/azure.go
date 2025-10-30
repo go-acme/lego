@@ -97,6 +97,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	environmentName := env.GetOrFile(EnvEnvironment)
 	if environmentName != "" {
 		var environment aazure.Environment
+
 		switch environmentName {
 		case "china":
 			environment = aazure.ChinaCloud
@@ -150,6 +151,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		if subsID == "" {
 			return nil, errors.New("azure: SubscriptionID is missing")
 		}
+
 		config.SubscriptionID = subsID
 	}
 
@@ -162,6 +164,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		if resGroup == "" {
 			return nil, errors.New("azure: ResourceGroup is missing")
 		}
+
 		config.ResourceGroup = resGroup
 	}
 

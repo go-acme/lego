@@ -146,6 +146,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.domainIDsMu.Lock()
 	domainID, ok := d.domainIDs[token]
 	d.domainIDsMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("octenium: unknown domain ID for '%s'", info.EffectiveFQDN)
 	}

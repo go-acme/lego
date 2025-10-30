@@ -162,6 +162,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.domainIDsMu.Lock()
 	domainID, ok := d.domainIDs[token]
 	d.domainIDsMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("keyhelp: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
@@ -172,6 +173,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	var records []internal.Record
+
 	for _, record := range domainRecords.Records.Other {
 		if record.Type == "TXT" && record.Value == info.Value {
 			continue

@@ -14,13 +14,16 @@ func For(msg string, timeout, interval time.Duration, f func() (bool, error)) er
 	log.Infof("Wait for %s [timeout: %s, interval: %s]", msg, timeout, interval)
 
 	var lastErr error
+
 	timeUp := time.After(timeout)
+
 	for {
 		select {
 		case <-timeUp:
 			if lastErr == nil {
 				return fmt.Errorf("%s: time limit exceeded", msg)
 			}
+
 			return fmt.Errorf("%s: time limit exceeded: last error: %w", msg, lastErr)
 		default:
 		}
@@ -44,5 +47,6 @@ func Retry(ctx context.Context, operation func() error, opts ...backoff.RetryOpt
 	_, err := backoff.Retry(ctx, func() (any, error) {
 		return nil, operation()
 	}, opts...)
+
 	return err
 }

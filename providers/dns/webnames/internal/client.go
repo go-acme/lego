@@ -83,6 +83,7 @@ func (c *Client) doRequest(ctx context.Context, data url.Values) error {
 	}
 
 	var r APIResponse
+
 	err = json.Unmarshal(raw, &r)
 	if err != nil {
 		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)

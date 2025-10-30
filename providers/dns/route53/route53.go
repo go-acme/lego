@@ -155,6 +155,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	realValue := `"` + info.Value + `"`
 
 	var found bool
+
 	for _, record := range records {
 		if ptr.Deref(record.Value) == realValue {
 			found = true
@@ -200,6 +201,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	var nonLegoRecords []awstypes.ResourceRecord
+
 	for _, record := range existingRecords {
 		if ptr.Deref(record.Value) != `"`+info.Value+`"` {
 			nonLegoRecords = append(nonLegoRecords, record)
@@ -312,12 +314,14 @@ func (d *DNSProvider) getHostedZoneID(ctx context.Context, fqdn string) (string,
 	reqParams := &route53.ListHostedZonesByNameInput{
 		DNSName: aws.String(dns01.UnFqdn(authZone)),
 	}
+
 	resp, err := d.client.ListHostedZonesByName(ctx, reqParams)
 	if err != nil {
 		return "", err
 	}
 
 	var hostedZoneID string
+
 	for _, hostedZone := range resp.HostedZones {
 		// .Name has a trailing dot
 		if ptr.Deref(hostedZone.Name) == authZone && d.config.PrivateZone == hostedZone.Config.PrivateZone {
@@ -353,6 +357,7 @@ func createAWSConfig(ctx context.Context, config *Config) (aws.Config, error) {
 					retryCount := min(attempt, 7)
 
 					delay := (1 << uint(retryCount)) * (rand.Intn(50) + 200)
+
 					return time.Duration(delay) * time.Millisecond, nil
 				})
 			})

@@ -201,6 +201,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	apiErr := APIError{StatusCode: resp.StatusCode}
+
 	err := json.Unmarshal(raw, &apiErr)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

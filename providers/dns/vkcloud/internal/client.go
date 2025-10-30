@@ -46,6 +46,7 @@ func (c *Client) ListZones() ([]DNSZone, error) {
 	endpoint := c.baseURL.JoinPath("/")
 
 	var zones []DNSZone
+
 	opts := &gophercloud.RequestOpts{JSONResponse: &zones}
 
 	err := c.request(http.MethodGet, endpoint, opts)
@@ -60,6 +61,7 @@ func (c *Client) ListTXTRecords(zoneUUID string) ([]DNSTXTRecord, error) {
 	endpoint := c.baseURL.JoinPath(zoneUUID, "txt", "/")
 
 	var records []DNSTXTRecord
+
 	opts := &gophercloud.RequestOpts{JSONResponse: &records}
 
 	err := c.request(http.MethodGet, endpoint, opts)

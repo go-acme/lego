@@ -80,6 +80,7 @@ func (c *Client) GetDNSRecords(ctx context.Context, hostname string) ([]DNSRecor
 	}
 
 	var responseData InfoDNSRecordsResponse
+
 	err := c.doRequest(ctx, payload, &responseData)
 	if err != nil {
 		return nil, fmt.Errorf("error when sending the request: %w", err)
@@ -139,6 +140,7 @@ func GetDNSRecordIdx(records []DNSRecord, record DNSRecord) (int, error) {
 			return index, nil
 		}
 	}
+
 	return -1, errors.New("no DNS Record found")
 }
 
@@ -173,6 +175,7 @@ func unmarshalResponseMsg(req *http.Request, resp *http.Response) (*ResponseMsg,
 	}
 
 	var respMsg ResponseMsg
+
 	err = json.Unmarshal(raw, &respMsg)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)

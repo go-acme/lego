@@ -97,6 +97,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	if config.BaseURL != "" {
 		var err error
+
 		client.BaseURL, err = url.Parse(config.BaseURL)
 		if err != nil {
 			return nil, fmt.Errorf("digitalocean: %w", err)
@@ -152,6 +153,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("digitalocean: unknown record ID for '%s'", info.EffectiveFQDN)
 	}

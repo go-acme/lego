@@ -110,7 +110,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// Records are deleted automatically.
-
 	return nil
 }
 

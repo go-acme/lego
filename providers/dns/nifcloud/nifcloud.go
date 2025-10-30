@@ -119,6 +119,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("nifcloud: %w", err)
 	}
+
 	return err
 }
 
@@ -132,6 +133,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("nifcloud: %w", err)
 	}
+
 	return err
 }
 

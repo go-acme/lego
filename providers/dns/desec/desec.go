@@ -184,6 +184,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	records := make([]string, 0)
+
 	for _, record := range rrSet.Records {
 		if record != fmt.Sprintf(`%q`, info.Value) {
 			records = append(records, record)

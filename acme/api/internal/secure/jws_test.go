@@ -31,11 +31,13 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 
 	ch := make(chan bool)
 	resultCh := make(chan bool)
+
 	go func() {
 		_, errN := manager.Nonce()
 		if errN != nil {
 			t.Log(errN)
 		}
+
 		ch <- true
 	}()
 	go func() {
@@ -43,13 +45,16 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 		if errN != nil {
 			t.Log(errN)
 		}
+
 		ch <- true
 	}()
 	go func() {
 		<-ch
 		<-ch
+
 		resultCh <- true
 	}()
+
 	select {
 	case <-resultCh:
 	case <-time.After(500 * time.Millisecond):

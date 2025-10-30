@@ -67,6 +67,7 @@ func listCertificates(ctx *cli.Context) error {
 		if !names {
 			fmt.Println("No certificates found.")
 		}
+
 		return nil
 	}
 
@@ -122,6 +123,7 @@ func listAccount(ctx *cli.Context) error {
 	}
 
 	fmt.Println("Found the following accounts:")
+
 	for _, filename := range matches {
 		data, err := os.ReadFile(filename)
 		if err != nil {
@@ -129,6 +131,7 @@ func listAccount(ctx *cli.Context) error {
 		}
 
 		var account Account
+
 		err = json.Unmarshal(data, &account)
 		if err != nil {
 			return err

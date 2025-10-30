@@ -161,6 +161,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 				DomainName: domain,
 				ID:         rec.ID,
 			}
+
 			_, err := d.client.DeleteRecord(request)
 			if err != nil {
 				return fmt.Errorf("namedotcom: %w", err)
@@ -184,6 +185,7 @@ func (d *DNSProvider) getRecords(domain string) ([]*namecom.Record, error) {
 	}
 
 	var records []*namecom.Record
+
 	for request.Page > 0 {
 		response, err := d.client.ListRecords(request)
 		if err != nil {

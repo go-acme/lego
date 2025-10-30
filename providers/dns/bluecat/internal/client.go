@@ -106,6 +106,7 @@ func (c *Client) AddEntity(ctx context.Context, parentID uint, entity Entity) (u
 
 	// addEntity responds only with body text containing the ID of the created record
 	addTxtResp := string(raw)
+
 	id, err := strconv.ParseUint(addTxtResp, 10, 64)
 	if err != nil {
 		return 0, fmt.Errorf("addEntity request failed: %s", addTxtResp)
@@ -147,6 +148,7 @@ func (c *Client) GetEntityByName(ctx context.Context, parentID uint, name, objTy
 	}
 
 	var entity EntityResponse
+
 	err = json.Unmarshal(raw, &entity)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)

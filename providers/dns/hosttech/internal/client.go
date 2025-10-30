@@ -58,6 +58,7 @@ func (c *Client) GetZones(ctx context.Context, query string, limit, offset int) 
 	}
 
 	result := apiResponse[[]Zone]{}
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -77,6 +78,7 @@ func (c *Client) GetZone(ctx context.Context, zoneID string) (*Zone, error) {
 	}
 
 	result := apiResponse[*Zone]{}
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -104,6 +106,7 @@ func (c *Client) GetRecords(ctx context.Context, zoneID, recordType string) ([]R
 	}
 
 	result := apiResponse[[]Record]{}
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -123,6 +126,7 @@ func (c *Client) AddRecord(ctx context.Context, zoneID string, record Record) (*
 	}
 
 	result := apiResponse[*Record]{}
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -202,6 +206,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	errAPI := &APIError{StatusCode: resp.StatusCode}
+
 	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

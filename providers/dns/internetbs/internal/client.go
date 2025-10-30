@@ -48,6 +48,7 @@ func NewClient(apiKey, password string) *Client {
 // AddRecord The command is intended to add a new DNS record to a specific zone (domain).
 func (c *Client) AddRecord(ctx context.Context, query RecordQuery) error {
 	var r APIResponse
+
 	err := c.doRequest(ctx, "Add", query, &r)
 	if err != nil {
 		return err
@@ -63,6 +64,7 @@ func (c *Client) AddRecord(ctx context.Context, query RecordQuery) error {
 // RemoveRecord The command is intended to remove a DNS record from a specific zone.
 func (c *Client) RemoveRecord(ctx context.Context, query RecordQuery) error {
 	var r APIResponse
+
 	err := c.doRequest(ctx, "Remove", query, &r)
 	if err != nil {
 		return err
@@ -78,6 +80,7 @@ func (c *Client) RemoveRecord(ctx context.Context, query RecordQuery) error {
 // ListRecords The command is intended to retrieve the list of DNS records for a specific domain.
 func (c *Client) ListRecords(ctx context.Context, query ListRecordQuery) ([]Record, error) {
 	var l ListResponse
+
 	err := c.doRequest(ctx, "List", query, &l)
 	if err != nil {
 		return nil, err

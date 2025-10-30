@@ -195,6 +195,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 		// Update the zone record.
 		var values []string
+
 		for _, value := range record.Values {
 			if value != info.Value {
 				values = append(values, value)

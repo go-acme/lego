@@ -155,6 +155,7 @@ func getDirectory(do *sender.Doer, caDirURL string) (acme.Directory, error) {
 	if dir.NewAccountURL == "" {
 		return dir, errors.New("directory missing new registration URL")
 	}
+
 	if dir.NewOrderURL == "" {
 		return dir, errors.New("directory missing new order URL")
 	}

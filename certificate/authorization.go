@@ -29,6 +29,7 @@ func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authoriz
 	var responses []acme.Authorization
 
 	failures := newObtainError()
+
 	for range len(order.Authorizations) {
 		select {
 		case res := <-resc:
@@ -62,6 +63,7 @@ func (c *Certifier) deactivateAuthorizations(order acme.ExtendedOrder, force boo
 		}
 
 		log.Infof("Deactivating auth: %s", authzURL)
+
 		if c.core.Authorizations.Deactivate(authzURL) != nil {
 			log.Infof("Unable to deactivate the authorization: %s", authzURL)
 		}

@@ -54,6 +54,7 @@ func (c *Client) GetHosts(ctx context.Context, sld, tld string) ([]Record, error
 	}
 
 	var ghr getHostsResponse
+
 	err = c.do(request, &ghr)
 	if err != nil {
 		return nil, err
@@ -88,6 +89,7 @@ func (c *Client) SetHosts(ctx context.Context, sld, tld string, hosts []Record) 
 	}
 
 	var shr setHostsResponse
+
 	err = c.do(req, &shr)
 	if err != nil {
 		return err
@@ -96,6 +98,7 @@ func (c *Client) SetHosts(ctx context.Context, sld, tld string, hosts []Record) 
 	if len(shr.Errors) > 0 {
 		return shr.Errors[0]
 	}
+
 	if shr.Result.IsSuccess != "true" {
 		return errors.New("setHosts failed")
 	}

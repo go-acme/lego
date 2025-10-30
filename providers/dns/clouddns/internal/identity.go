@@ -20,6 +20,7 @@ func (c *Client) login(ctx context.Context) (*AuthResponse, error) {
 	}
 
 	var result AuthResponse
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err

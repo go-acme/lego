@@ -71,6 +71,7 @@ func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
 			log.Infof("[%s] acme: use %s solver", domain, chlg.Type)
 			return solvr
 		}
+
 		log.Infof("[%s] acme: Could not find solver for: %s", domain, chlg.Type)
 	}
 
@@ -101,6 +102,7 @@ func validate(core *api.Core, domain string, chlg acme.Challenge) error {
 		// https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md#section-82
 		ra = 5
 	}
+
 	initialInterval := time.Duration(ra) * time.Second
 
 	ctx := context.Background()
@@ -162,6 +164,7 @@ func checkAuthorizationStatus(authz acme.Authorization) (bool, error) {
 				return false, fmt.Errorf("invalid authorization: %w", chlg.Err())
 			}
 		}
+
 		return false, errors.New("invalid authorization")
 	default:
 		return false, fmt.Errorf("the server returned an unexpected authorization status: %s", authz.Status)

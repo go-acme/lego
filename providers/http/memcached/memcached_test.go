@@ -25,6 +25,7 @@ func loadMemcachedHosts() []string {
 	if memcachedHostsStr != "" {
 		return strings.Split(memcachedHostsStr, ",")
 	}
+
 	return nil
 }
 
@@ -38,6 +39,7 @@ func TestNewMemcachedProviderValid(t *testing.T) {
 	if len(memcachedHosts) == 0 {
 		t.Skip("Skipping memcached tests")
 	}
+
 	_, err := NewMemcachedProvider(memcachedHosts)
 	require.NoError(t, err)
 }
@@ -46,6 +48,7 @@ func TestMemcachedPresentSingleHost(t *testing.T) {
 	if len(memcachedHosts) == 0 {
 		t.Skip("Skipping memcached tests")
 	}
+
 	p, err := NewMemcachedProvider(memcachedHosts[0:1])
 	require.NoError(t, err)
 
@@ -64,6 +67,7 @@ func TestMemcachedPresentMultiHost(t *testing.T) {
 	if len(memcachedHosts) <= 1 {
 		t.Skip("Skipping memcached multi-host tests")
 	}
+
 	p, err := NewMemcachedProvider(memcachedHosts)
 	require.NoError(t, err)
 
@@ -71,6 +75,7 @@ func TestMemcachedPresentMultiHost(t *testing.T) {
 
 	err = p.Present(domain, token, keyAuth)
 	require.NoError(t, err)
+
 	for _, host := range memcachedHosts {
 		mc, err := memcache.New(host)
 		require.NoError(t, err)
@@ -84,6 +89,7 @@ func TestMemcachedPresentPartialFailureMultiHost(t *testing.T) {
 	if len(memcachedHosts) == 0 {
 		t.Skip("Skipping memcached tests")
 	}
+
 	hosts := append(memcachedHosts, "5.5.5.5:11211")
 	p, err := NewMemcachedProvider(hosts)
 	require.NoError(t, err)
@@ -92,6 +98,7 @@ func TestMemcachedPresentPartialFailureMultiHost(t *testing.T) {
 
 	err = p.Present(domain, token, keyAuth)
 	require.NoError(t, err)
+
 	for _, host := range memcachedHosts {
 		mc, err := memcache.New(host)
 		require.NoError(t, err)
@@ -105,6 +112,7 @@ func TestMemcachedCleanup(t *testing.T) {
 	if len(memcachedHosts) == 0 {
 		t.Skip("Skipping memcached tests")
 	}
+
 	p, err := NewMemcachedProvider(memcachedHosts)
 	require.NoError(t, err)
 	require.NoError(t, p.CleanUp(domain, token, keyAuth))

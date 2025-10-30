@@ -14,6 +14,7 @@ import (
 
 func TestDNSProvider_Present(t *testing.T) {
 	backupLogger := log.Logger
+
 	defer func() {
 		log.Logger = backupLogger
 	}()
@@ -62,6 +63,7 @@ func TestDNSProvider_Present(t *testing.T) {
 	}
 
 	var message string
+
 	logRecorder.On("Println", mock.Anything).Run(func(args mock.Arguments) {
 		message = args.String(0)
 		fmt.Fprintln(os.Stdout, "XXX", message)
@@ -87,6 +89,7 @@ func TestDNSProvider_Present(t *testing.T) {
 
 func TestDNSProvider_CleanUp(t *testing.T) {
 	backupLogger := log.Logger
+
 	defer func() {
 		log.Logger = backupLogger
 	}()
@@ -135,6 +138,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	}
 
 	var message string
+
 	logRecorder.On("Println", mock.Anything).Run(func(args mock.Arguments) {
 		message = args.String(0)
 		fmt.Fprintln(os.Stdout, "XXX", message)

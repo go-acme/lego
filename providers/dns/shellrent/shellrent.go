@@ -162,6 +162,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Lock()
 	key, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("shellrent: unknown request key for '%s' '%s'", info.EffectiveFQDN, token)
 	}

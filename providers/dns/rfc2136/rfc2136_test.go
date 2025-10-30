@@ -84,6 +84,7 @@ func TestNewDNSProvider(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
+
 			envTest.ClearEnv()
 
 			envTest.Apply(test.envVars)
@@ -250,6 +251,7 @@ func TestDNSProvider_Present_error(t *testing.T) {
 
 	err = provider.Present(fakeDomain, "", fakeKeyAuth)
 	require.Error(t, err)
+
 	if !strings.Contains(err.Error(), "NOTZONE") {
 		t.Errorf("Expected Present() to return an error with the 'NOTZONE' rcode string, but it did not: %v", err)
 	}

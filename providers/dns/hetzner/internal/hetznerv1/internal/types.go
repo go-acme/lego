@@ -12,7 +12,7 @@ type APIError struct {
 type ErrorInfo struct {
 	Code    string       `json:"code,omitempty"`
 	Message string       `json:"message,omitempty"`
-	Details ErrorDetails `json:"details,omitempty"`
+	Details ErrorDetails `json:"details"`
 }
 
 func (i *ErrorInfo) Error() string {

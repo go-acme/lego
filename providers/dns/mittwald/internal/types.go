@@ -39,7 +39,7 @@ type NewDNSZone struct {
 // https://api.mittwald.de/v2/docs/#/Domain/dns-update-record-set
 
 type TXTRecord struct {
-	Settings Settings `json:"settings,omitempty"`
+	Settings Settings `json:"settings"`
 	Entries  []string `json:"entries,omitempty"`
 }
 
@@ -79,7 +79,7 @@ type ValidationError struct {
 	Message string                 `json:"message,omitempty"`
 	Path    string                 `json:"path,omitempty"`
 	Type    string                 `json:"type,omitempty"`
-	Context ValidationErrorContext `json:"context,omitempty"`
+	Context ValidationErrorContext `json:"context"`
 }
 
 type ValidationErrorContext struct {

@@ -15,7 +15,7 @@ const mailTo = "mailto:"
 // of which the client needs to keep track itself.
 // WARNING: will be removed in the future (acme.ExtendedAccount), https://github.com/go-acme/lego/issues/855.
 type Resource struct {
-	Body acme.Account `json:"body,omitempty"`
+	Body acme.Account `json:"body"`
 	URI  string       `json:"uri,omitempty"`
 }
 

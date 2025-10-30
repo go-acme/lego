@@ -54,7 +54,7 @@ func (p *ProblemDetails) Error() string {
 type SubProblem struct {
 	Type       string     `json:"type,omitempty"`
 	Detail     string     `json:"detail,omitempty"`
-	Identifier Identifier `json:"identifier,omitempty"`
+	Identifier Identifier `json:"identifier"`
 }
 
 // NonceError represents the error which is returned

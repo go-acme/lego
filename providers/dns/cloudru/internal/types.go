@@ -38,9 +38,9 @@ type Zone struct {
 	Valid          bool      `json:"valid,omitempty"`
 	ValidationText string    `json:"validationText,omitempty"`
 	Delegated      bool      `json:"delegated,omitempty"`
-	LastCheck      time.Time `json:"lastCheck,omitempty"`
-	CreatedAt      time.Time `json:"created_at,omitempty"`
-	UpdatedAt      time.Time `json:"updated_at,omitempty"`
+	LastCheck      time.Time `json:"lastCheck,omitzero"`
+	CreatedAt      time.Time `json:"created_at,omitzero"`
+	UpdatedAt      time.Time `json:"updated_at,omitzero"`
 }
 
 type Record struct {

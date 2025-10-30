@@ -10,7 +10,7 @@ type RecordsResponse struct {
 }
 
 type NameserverRecordPayload struct {
-	Data Record `json:"nameserver_record,omitempty"`
+	Data Record `json:"nameserver_record"`
 }
 
 type DomainsResponse struct {

@@ -41,8 +41,8 @@ type TokenResponse struct {
 }
 
 type Token struct {
-	User      UserR     `json:"user,omitempty"`
-	Domain    Domain    `json:"domain,omitempty"`
+	User      UserR     `json:"user"`
+	Domain    Domain    `json:"domain"`
 	Catalog   []Catalog `json:"catalog,omitempty"`
 	Methods   []string  `json:"methods,omitempty"`
 	Roles     []Role    `json:"roles,omitempty"`
@@ -59,7 +59,7 @@ type Catalog struct {
 
 type UserR struct {
 	ID                string `json:"id,omitempty"`
-	Domain            Domain `json:"domain,omitempty"`
+	Domain            Domain `json:"domain"`
 	Name              string `json:"name,omitempty"`
 	PasswordExpiresAt string `json:"password_expires_at,omitempty"`
 }
@@ -106,7 +106,7 @@ type RecordSets struct {
 // ZonesResponse
 
 type ZonesResponse struct {
-	Links    Links    `json:"links,omitempty"`
+	Links    Links    `json:"links"`
 	Zones    []Zone   `json:"zones"`
 	Metadata Metadata `json:"metadata"`
 }

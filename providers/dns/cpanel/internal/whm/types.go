@@ -7,7 +7,7 @@ import (
 )
 
 type APIResponse[T any] struct {
-	Metadata Metadata `json:"metadata,omitempty"`
+	Metadata Metadata `json:"metadata"`
 	Data     T        `json:"data,omitempty"`
 }
 

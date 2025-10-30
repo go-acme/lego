@@ -27,13 +27,13 @@ type APIRRSet struct {
 	Namespace   string `json:"namespace,omitempty"`
 	RecordName  string `json:"record_name,omitempty"`
 	Type        string `json:"type,omitempty"`
-	RRSet       RRSet  `json:"rrset,omitempty"`
+	RRSet       RRSet  `json:"rrset"`
 }
 
 type RRSetRequest struct {
 	DNSZoneName string `json:"dns_zone_name,omitempty"`
 	GroupName   string `json:"group_name,omitempty"`
-	RRSet       RRSet  `json:"rrset,omitempty"`
+	RRSet       RRSet  `json:"rrset"`
 }
 
 type RRSet struct {

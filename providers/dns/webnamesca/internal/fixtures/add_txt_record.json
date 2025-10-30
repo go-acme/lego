@@ -1,28 +1,25 @@
 {
-  "errorMessage": "string",
-  "errorDetails": "string",
-  "logID": 0,
   "result": {
-    "domainAdvancedDNSConfigID": 0,
-    "domainID": 0,
-    "dtCreated": "2025-10-29T21:24:25.445Z",
-    "dtModified": "2025-10-29T21:24:25.445Z",
-    "timeToLive": 0,
-    "soAorigin": "string",
-    "soArefresh": 0,
-    "soAretry": 0,
-    "soAexpire": 0,
-    "soAnegcache": 0,
-    "forwardingURL": "string",
-    "gripping": true,
-    "name": "string",
-    "dtSubmitted": "2025-10-29T21:24:25.445Z",
-    "dtRequestedDNSChange": "2025-10-29T21:24:25.445Z",
-    "type": "string",
-    "userManaged": true,
-    "effectiveMgmtOption": "string",
-    "urlForwardRootOnly": true,
-    "enableDNSSEC": true,
+    "domainAdvancedDNSConfigID": 3258480,
+    "domainID": 1333334,
+    "dtCreated": "2025-10-30T11:55:23.243",
+    "dtModified": "2025-10-30T11:55:23.177",
+    "timeToLive": 21600,
+    "soAorigin": "hosting.webnames.ca",
+    "soArefresh": 21600,
+    "soAretry": 180,
+    "soAexpire": 1209600,
+    "soAnegcache": 3600,
+    "forwardingURL": null,
+    "gripping": false,
+    "name": null,
+    "dtSubmitted": "2025-10-30T11:55:24.927",
+    "dtRequestedDNSChange": null,
+    "type": "REAL_DOMAIN",
+    "userManaged": false,
+    "effectiveMgmtOption": "AD",
+    "urlForwardRootOnly": false,
+    "enableDNSSEC": false,
     "dnsRecordSets": [
       {
         "hostname": "_acme-challenge.example.com",
@@ -32,5 +29,6 @@
         ]
       }
     ]
-  }
+  },
+  "logID": 36014
 }

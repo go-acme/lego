@@ -1,12 +1,13 @@
-Name = "Webnames"
+Name = "webnames.ru"
 Description = ''''''
 URL = "https://www.webnames.ru/"
 Code = "webnames"
+Aliases = ["webnamesru"]
 Since = "v4.15.0"
 
 Example = '''
-WEBNAMES_API_KEY=xxxxxx \
-lego --email you@example.com --dns webnames -d '*.example.com' -d example.com run
+WEBNAMESRU_API_KEY=xxxxxx \
+lego --email you@example.com --dns webnamesru -d '*.example.com' -d example.com run
 '''
 
 Additional = '''
@@ -19,11 +20,11 @@ The API key can be found: Personal account / My domains and services / Select th
 
 [Configuration]
   [Configuration.Credentials]
-    WEBNAMES_API_KEY = "Domain API key"
+    WEBNAMESRU_API_KEY = "Domain API key"
   [Configuration.Additional]
-    WEBNAMES_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
-    WEBNAMES_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
-    WEBNAMES_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+    WEBNAMESRU_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    WEBNAMESRU_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    WEBNAMESRU_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]
   API = "https://github.com/regtime-ltd/certbot-dns-webnames"

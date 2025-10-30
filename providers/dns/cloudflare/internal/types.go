@@ -1,6 +1,9 @@
 package internal
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Record struct {
 	ID      string `json:"id,omitempty"`
@@ -39,17 +42,17 @@ type ErrorChain struct {
 type Errors []Message
 
 func (e Errors) Error() string {
-	var msg string
+	var msg strings.Builder
 
 	for _, item := range e {
-		msg = fmt.Sprintf("%d: %s", item.Code, item.Message)
+		msg.WriteString(fmt.Sprintf("%d: %s", item.Code, item.Message))
 
 		for _, link := range item.ErrorChain {
-			msg += fmt.Sprintf("; %d: %s", link.Code, link.Message)
+			msg.WriteString(fmt.Sprintf("; %d: %s", link.Code, link.Message))
 		}
 	}
 
-	return msg
+	return msg.String()
 }
 
 type ResultInfo struct {

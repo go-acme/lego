@@ -15,13 +15,15 @@ type APIError struct {
 }
 
 func (a *APIError) Error() string {
-	msg := fmt.Sprintf("%d: %s: %s: %s: %s", a.Status, a.Type, a.Title, a.Detail, a.Instance)
+	var msg strings.Builder
+
+	msg.WriteString(fmt.Sprintf("%d: %s: %s: %s: %s", a.Status, a.Type, a.Title, a.Detail, a.Instance))
 
 	for s, values := range a.Errors {
-		msg += fmt.Sprintf(": %s: %s", s, strings.Join(values, ", "))
+		msg.WriteString(fmt.Sprintf(": %s: %s", s, strings.Join(values, ", ")))
 	}
 
-	return msg
+	return msg.String()
 }
 
 type Record struct {

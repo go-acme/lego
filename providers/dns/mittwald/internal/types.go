@@ -1,6 +1,9 @@
 package internal
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // https://api.mittwald.de/v2/docs/#/Domain/domain-list-domains
 
@@ -58,16 +61,18 @@ type APIError struct {
 }
 
 func (a APIError) Error() string {
-	msg := fmt.Sprintf("%s: %s", a.Type, a.Message)
+	var msg strings.Builder
+
+	msg.WriteString(fmt.Sprintf("%s: %s", a.Type, a.Message))
 
 	if len(a.ValidationErrors) > 0 {
 		for _, validationError := range a.ValidationErrors {
-			msg += fmt.Sprintf(" [%s: %s (%s, %s)]",
-				validationError.Type, validationError.Message, validationError.Path, validationError.Context.Format)
+			msg.WriteString(fmt.Sprintf(" [%s: %s (%s, %s)]",
+				validationError.Type, validationError.Message, validationError.Path, validationError.Context.Format))
 		}
 	}
 
-	return msg
+	return msg.String()
 }
 
 type ValidationError struct {

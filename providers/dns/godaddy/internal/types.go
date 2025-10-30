@@ -1,6 +1,9 @@
 package internal
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // DNSRecord a DNS record.
 type DNSRecord struct {
@@ -23,13 +26,16 @@ type APIError struct {
 }
 
 func (a APIError) Error() string {
-	msg := fmt.Sprintf("%s: %s", a.Code, a.Message)
+	var msg strings.Builder
+
+	msg.WriteString(fmt.Sprintf("%s: %s", a.Code, a.Message))
 
 	for _, field := range a.Fields {
-		msg += " " + field.String()
+		msg.WriteString(" ")
+		msg.WriteString(field.String())
 	}
 
-	return msg
+	return msg.String()
 }
 
 type Field struct {

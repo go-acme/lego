@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
+	"maps"
 	"net/http/httptest"
 	"os"
 	"testing"
@@ -257,9 +258,7 @@ func TestNewDNSProvider_instance_principal(t *testing.T) {
 				envSDKAuthClientRegionURL: serverURL,
 			}
 
-			for k, v := range test.envVars {
-				envVars[k] = v
-			}
+			maps.Copy(envVars, test.envVars)
 
 			envTest.Apply(envVars)
 

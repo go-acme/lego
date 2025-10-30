@@ -164,6 +164,9 @@ linters:
       os-setenv: false # we already have a test "framework" to handle env vars
     funcorder:
       struct-method: false
+    modernize:
+      disable:
+        - omitzero # need to be enabled in the future.
 
   exclusions:
     warn-unused: true

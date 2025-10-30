@@ -16,10 +16,12 @@ func (e obtainError) Error() string {
 	for domain := range e {
 		domains = append(domains, domain)
 	}
+
 	sort.Strings(domains)
 
 	for _, domain := range domains {
 		_, _ = fmt.Fprintf(buffer, "[%s] %s\n", domain, e[domain])
 	}
+
 	return buffer.String()
 }

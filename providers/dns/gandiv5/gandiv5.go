@@ -114,6 +114,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		if err != nil {
 			return nil, fmt.Errorf("gandiv5: %w", err)
 		}
+
 		client.BaseURL = baseURL
 	}
 
@@ -163,6 +164,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		authZone:  authZone,
 		fieldName: subDomain,
 	}
+
 	return nil
 }
 
@@ -173,6 +175,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// acquire lock and retrieve authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
+
 	if _, ok := d.inProgressFQDNs[info.EffectiveFQDN]; !ok {
 		// if there is no cleanup information then just return
 		return nil
@@ -187,6 +190,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("gandiv5: %w", err)
 	}
+
 	return nil
 }
 

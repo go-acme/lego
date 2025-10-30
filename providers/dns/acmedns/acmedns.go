@@ -114,6 +114,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // NewDNSProviderClient creates an ACME-DNS DNSProvider with the given acmeDNSClient and [goacmedns.Storage].
+//
 // Deprecated: use [NewDNSProviderConfig] instead.
 func NewDNSProviderClient(client acmeDNSClient, store goacmedns.Storage) (*DNSProvider, error) {
 	if client == nil {

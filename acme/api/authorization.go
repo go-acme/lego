@@ -15,10 +15,12 @@ func (c *AuthorizationService) Get(authzURL string) (acme.Authorization, error) 
 	}
 
 	var authz acme.Authorization
+
 	_, err := c.core.postAsGet(authzURL, &authz)
 	if err != nil {
 		return acme.Authorization{}, err
 	}
+
 	return authz, nil
 }
 
@@ -29,6 +31,8 @@ func (c *AuthorizationService) Deactivate(authzURL string) error {
 	}
 
 	var disabledAuth acme.Authorization
+
 	_, err := c.core.post(authzURL, acme.Authorization{Status: acme.StatusDeactivated}, &disabledAuth)
+
 	return err
 }

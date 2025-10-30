@@ -48,6 +48,7 @@ func (c *Client) GetRecords(ctx context.Context, domainZone, rType, recordName s
 	}
 
 	var records []DNSRecord
+
 	err = c.do(req, &records)
 	if err != nil {
 		return nil, err
@@ -141,6 +142,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var errAPI APIError
+
 	err := json.Unmarshal(raw, &errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

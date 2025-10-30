@@ -159,10 +159,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	var record *bunny.DNSRecord
+
 	for _, r := range zone.Records {
 		if ptr.Deref(r.Name) == subDomain && ptr.Deref(r.Type) == bunny.DNSRecordTypeTXT {
 			r := r
 			record = &r
+
 			break
 		}
 	}
@@ -198,6 +200,7 @@ func findZone(zones *bunny.DNSZones, domain string) *bunny.DNSZone {
 	var domainLength int
 
 	var zone *bunny.DNSZone
+
 	for _, item := range zones.Items {
 		if item == nil {
 			continue

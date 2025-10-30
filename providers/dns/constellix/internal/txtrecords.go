@@ -32,6 +32,7 @@ func (s *TxtRecordService) Create(ctx context.Context, domainID int64, record Re
 	}
 
 	var records []Record
+
 	err = s.client.do(req, &records)
 	if err != nil {
 		return nil, err
@@ -54,6 +55,7 @@ func (s *TxtRecordService) GetAll(ctx context.Context, domainID int64) ([]Record
 	}
 
 	var records []Record
+
 	err = s.client.do(req, &records)
 	if err != nil {
 		return nil, err
@@ -76,6 +78,7 @@ func (s *TxtRecordService) Get(ctx context.Context, domainID, recordID int64) (*
 	}
 
 	var records Record
+
 	err = s.client.do(req, &records)
 	if err != nil {
 		return nil, err
@@ -103,6 +106,7 @@ func (s *TxtRecordService) Update(ctx context.Context, domainID, recordID int64,
 	}
 
 	var msg SuccessMessage
+
 	err = s.client.do(req, &msg)
 	if err != nil {
 		return nil, err
@@ -125,6 +129,7 @@ func (s *TxtRecordService) Delete(ctx context.Context, domainID, recordID int64)
 	}
 
 	var msg *SuccessMessage
+
 	err = s.client.do(req, &msg)
 	if err != nil {
 		return nil, err

@@ -77,6 +77,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.PassportLocation == "" {
 		var err error
+
 		config.PassportLocation, err = GetDefaultPassportLocation()
 		if err != nil {
 			return nil, fmt.Errorf("hyperone: %w", err)
@@ -166,6 +167,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("hyperone: %w", err)
 	}
+
 	if len(records) == 1 {
 		if records[0].Content != info.Value {
 			return fmt.Errorf("hyperone: record with content %s not found: fqdn=%s", info.Value, info.EffectiveFQDN)

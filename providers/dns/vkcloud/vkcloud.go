@@ -135,6 +135,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	}
 
 	var zoneUUID string
+
 	for _, zone := range zones {
 		if zone.Zone == authZone {
 			zoneUUID = zone.UUID

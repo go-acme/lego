@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // ClientError a detailed error.
@@ -13,21 +14,23 @@ type ClientError struct {
 }
 
 func (f ClientError) Error() string {
-	msg := strconv.Itoa(f.StatusCode) + ": "
+	var msg strings.Builder
+
+	msg.WriteString(strconv.Itoa(f.StatusCode) + ": ")
 
 	if f.message != "" {
-		msg += f.message + ": "
+		msg.WriteString(f.message + ": ")
 	}
 
 	for i, e := range f.errors {
 		if i != 0 {
-			msg += ", "
+			msg.WriteString(", ")
 		}
 
-		msg += e.Error()
+		msg.WriteString(e.Error())
 	}
 
-	return msg
+	return msg.String()
 }
 
 func (f ClientError) Unwrap() error {

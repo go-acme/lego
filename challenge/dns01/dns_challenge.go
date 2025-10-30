@@ -40,6 +40,7 @@ func CondOption(condition bool, opt ChallengeOption) ChallengeOption {
 			return nil
 		}
 	}
+
 	return opt
 }
 
@@ -118,6 +119,7 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 	info := GetChallengeInfo(authz.Identifier.Value, keyAuth)
 
 	var timeout, interval time.Duration
+
 	switch provider := c.provider.(type) {
 	case challenge.ProviderTimeout:
 		timeout, interval = provider.Timeout()
@@ -134,6 +136,7 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 		if !stop || errP != nil {
 			log.Infof("[%s] acme: Waiting for DNS record propagation.", domain)
 		}
+
 		return stop, errP
 	})
 	if err != nil {
@@ -141,6 +144,7 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 	}
 
 	chlng.KeyAuthorization = keyAuth
+
 	return c.validate(c.core, domain, chlng)
 }
 
@@ -165,6 +169,7 @@ func (c *Challenge) Sequential() (bool, time.Duration) {
 	if p, ok := c.provider.(sequential); ok {
 		return ok, p.Sequential()
 	}
+
 	return false, 0
 }
 
@@ -173,6 +178,7 @@ type sequential interface {
 }
 
 // GetRecord returns a DNS record which will fulfill the `dns-01` challenge.
+//
 // Deprecated: use GetChallengeInfo instead.
 func GetRecord(domain, keyAuth string) (fqdn, value string) {
 	info := GetChallengeInfo(domain, keyAuth)

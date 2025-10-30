@@ -88,6 +88,7 @@ func (m *forwardedMatcher) matches(r *http.Request, domain string) bool {
 	}
 
 	host := fwds[0]["host"]
+
 	return matchDomain(host, domain)
 }
 
@@ -99,6 +100,7 @@ func parseForwardedHeader(s string) (elements []map[string]string, err error) {
 	inquote := false
 
 	pos := 0
+
 	l := len(s)
 	for i := 0; i < l; i++ {
 		r := rune(s[i])
@@ -110,6 +112,7 @@ func parseForwardedHeader(s string) (elements []map[string]string, err error) {
 				pos = i
 				inquote = false
 			}
+
 			continue
 		}
 
@@ -118,6 +121,7 @@ func parseForwardedHeader(s string) (elements []map[string]string, err error) {
 			if key == "" {
 				return nil, fmt.Errorf("unexpected quoted string as pos %d", i)
 			}
+
 			inquote = true
 			pos = i + 1
 
@@ -137,6 +141,7 @@ func parseForwardedHeader(s string) (elements []map[string]string, err error) {
 				val = s[pos:i]
 				cur[key] = val
 			}
+
 			elements = append(elements, cur)
 			cur = make(map[string]string)
 			key = ""
@@ -159,11 +164,14 @@ func parseForwardedHeader(s string) (elements []map[string]string, err error) {
 		if pos < len(s) {
 			val = s[pos:]
 		}
+
 		cur[key] = val
 	}
+
 	if len(cur) > 0 {
 		elements = append(elements, cur)
 	}
+
 	return elements, nil
 }
 
@@ -178,6 +186,7 @@ func skipWS(s string, i int) int {
 	for isWS(rune(s[i+1])) {
 		i++
 	}
+
 	return i
 }
 

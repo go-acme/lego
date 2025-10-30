@@ -19,6 +19,7 @@ func UnFqdn(name string) string {
 	if n != 0 && name[n-1] == '.' {
 		return name[:n-1]
 	}
+
 	return name
 }
 

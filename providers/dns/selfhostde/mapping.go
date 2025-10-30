@@ -88,8 +88,10 @@ func parseLine(line string) (string, *Seq, error) {
 
 	name, rawIDs := line[:idx], line[idx+1:]
 
-	var ids []string
-	var count int
+	var (
+		ids   []string
+		count int
+	)
 
 	for {
 		idx, err = safeIndex(rawIDs, recordSep)

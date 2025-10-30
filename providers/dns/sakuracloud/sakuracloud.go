@@ -171,6 +171,7 @@ func newCaller(opts *api.CallerOptions) iaas.APICaller {
 		if strings.HasSuffix(opts.APIRootURL, "/") {
 			opts.APIRootURL = strings.TrimRight(opts.APIRootURL, "/")
 		}
+
 		iaas.SakuraCloudAPIRoot = opts.APIRootURL
 	}
 

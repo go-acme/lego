@@ -49,6 +49,7 @@ func (c *Client) CreateRecord(ctx context.Context, zone string, record DNSRecord
 	}
 
 	respData := &CreateRecordResponse{}
+
 	err = c.do(req, respData)
 	if err != nil {
 		return nil, err
@@ -127,6 +128,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var response ErrorResponse
+
 	err := json.Unmarshal(raw, &response)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

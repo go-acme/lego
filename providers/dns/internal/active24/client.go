@@ -55,6 +55,7 @@ func (c *Client) GetServices(ctx context.Context) ([]Service, error) {
 	}
 
 	var result OldAPIResponse
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -82,6 +83,7 @@ func (c *Client) GetRecords(ctx context.Context, service string, filter RecordFi
 	}
 
 	var result APIResponse
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -180,6 +182,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var errAPI APIError
+
 	err := json.Unmarshal(raw, &errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
@@ -198,6 +201,7 @@ func (c *Client) sign(req *http.Request, now time.Time) error {
 	canonicalRequest := fmt.Sprintf("%s %s %d", req.Method, req.URL.Path, now.Unix())
 
 	mac := hmac.New(sha1.New, []byte(c.secret))
+
 	_, err := mac.Write([]byte(canonicalRequest))
 	if err != nil {
 		return err

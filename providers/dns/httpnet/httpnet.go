@@ -190,6 +190,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("httpnet: %w", err)
 	}
+
 	zoneConfig.Name = zoneName
 
 	rec := []hostingde.DNSRecord{{
@@ -212,6 +213,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("httpnet: %w", err)
 	}
+
 	return nil
 }
 

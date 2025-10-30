@@ -17,6 +17,7 @@ func (tr Trimmer) Token() (xml.Token, error) {
 	if cd, ok := t.(xml.CharData); ok {
 		t = xml.CharData(bytes.TrimSpace(cd))
 	}
+
 	return t, err
 }
 
@@ -53,6 +54,7 @@ func decodeXML[T any](reader io.Reader) (*T, error) {
 	}
 
 	var result T
+
 	err = xml.NewTokenDecoder(Trimmer{decoder: xml.NewDecoder(bytes.NewReader(raw))}).Decode(&result)
 	if err != nil {
 		return nil, fmt.Errorf("decode XML response: %w", err)

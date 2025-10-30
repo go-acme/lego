@@ -18,6 +18,7 @@ const (
 
 func TestMain(m *testing.M) {
 	exitCode := m.Run()
+
 	clearEnv()
 	os.Exit(exitCode)
 }
@@ -39,6 +40,7 @@ func clearEnv() {
 			os.Unsetenv(strings.Split(key, "=")[0])
 		}
 	}
+
 	os.Unsetenv("EXTRA_LEGO_TEST")
 }
 
@@ -325,6 +327,7 @@ func TestEnvTest(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer clearEnv()
+
 			applyEnv(test.envVars)
 
 			envTest := test.envTestSetup()

@@ -213,6 +213,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	var records []internal.Record
+
 	for _, r := range set.Records {
 		if r.Content != strconv.Quote(info.Value) {
 			records = append(records, r)

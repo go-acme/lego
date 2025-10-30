@@ -205,6 +205,7 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -222,6 +223,7 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
+
 	user.registration = reg
 
 	request := certificate.ObtainRequest{
@@ -243,6 +245,7 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 func TestChallengeHTTP_Client_Obtain_profile(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -260,6 +263,7 @@ func TestChallengeHTTP_Client_Obtain_profile(t *testing.T) {
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
+
 	user.registration = reg
 
 	request := certificate.ObtainRequest{
@@ -282,6 +286,7 @@ func TestChallengeHTTP_Client_Obtain_profile(t *testing.T) {
 func TestChallengeHTTP_Client_Obtain_emails_csr(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -299,6 +304,7 @@ func TestChallengeHTTP_Client_Obtain_emails_csr(t *testing.T) {
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
+
 	user.registration = reg
 
 	request := certificate.ObtainRequest{
@@ -321,6 +327,7 @@ func TestChallengeHTTP_Client_Obtain_emails_csr(t *testing.T) {
 func TestChallengeHTTP_Client_Obtain_notBefore_notAfter(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -338,6 +345,7 @@ func TestChallengeHTTP_Client_Obtain_notBefore_notAfter(t *testing.T) {
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
+
 	user.registration = reg
 
 	now := time.Now().UTC()
@@ -368,6 +376,7 @@ func TestChallengeHTTP_Client_Obtain_notBefore_notAfter(t *testing.T) {
 func TestChallengeHTTP_Client_Registration_QueryRegistration(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -385,6 +394,7 @@ func TestChallengeHTTP_Client_Registration_QueryRegistration(t *testing.T) {
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
+
 	user.registration = reg
 
 	resource, err := client.Registration.QueryRegistration()
@@ -400,6 +410,7 @@ func TestChallengeHTTP_Client_Registration_QueryRegistration(t *testing.T) {
 func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -417,6 +428,7 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
+
 	user.registration = reg
 
 	// https://github.com/letsencrypt/pebble/issues/285
@@ -443,6 +455,7 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -460,6 +473,7 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
+
 	user.registration = reg
 
 	csr, err := x509.ParseCertificateRequest(createTestCSR(t))
@@ -483,6 +497,7 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 func TestChallengeTLS_Client_ObtainForCSR_profile(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -500,6 +515,7 @@ func TestChallengeTLS_Client_ObtainForCSR_profile(t *testing.T) {
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
+
 	user.registration = reg
 
 	csr, err := x509.ParseCertificateRequest(createTestCSR(t))
@@ -524,6 +540,7 @@ func TestChallengeTLS_Client_ObtainForCSR_profile(t *testing.T) {
 func TestRegistrar_UpdateAccount(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)

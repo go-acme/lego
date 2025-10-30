@@ -129,6 +129,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		if err != nil {
 			return fmt.Errorf("httpreq: %w", err)
 		}
+
 		return nil
 	}
 
@@ -142,6 +143,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("httpreq: %w", err)
 	}
+
 	return nil
 }
 
@@ -160,6 +162,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		if err != nil {
 			return fmt.Errorf("httpreq: %w", err)
 		}
+
 		return nil
 	}
 
@@ -173,11 +176,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("httpreq: %w", err)
 	}
+
 	return nil
 }
 
 func (d *DNSProvider) doPost(ctx context.Context, uri string, msg any) error {
 	reqBody := new(bytes.Buffer)
+
 	err := json.NewEncoder(reqBody).Encode(msg)
 	if err != nil {
 		return fmt.Errorf("failed to create request JSON body: %w", err)

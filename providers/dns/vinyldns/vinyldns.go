@@ -175,6 +175,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	value := d.formatValue(info.Value)
 
 	var records []vinyldns.Record
+
 	for _, i := range existingRecord.Records {
 		if i.Text != value {
 			records = append(records, i)

@@ -62,6 +62,7 @@ func TestNewDNSProvider(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
+
 			envTest.ClearEnv()
 
 			envTest.Apply(test.envVars)
@@ -124,6 +125,7 @@ func TestLivePresentAndCleanup(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	envTest.Apply(map[string]string{
 		EnvSandbox: "true",
 		EnvTTL:     "3600", // In sandbox mode, the minimum allowed TTL is 3600

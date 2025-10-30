@@ -19,6 +19,7 @@ func TestFor_timeout(t *testing.T) {
 	go func() {
 		c <- For("test", 3*time.Second, 1*time.Second, func() (bool, error) {
 			io.Add(1)
+
 			if io.Load() == 1 {
 				return false, nil
 			}

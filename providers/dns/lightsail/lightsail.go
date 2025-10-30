@@ -99,6 +99,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 					retryCount := min(attempt, 7)
 
 					delay := (1 << uint(retryCount)) * (rand.Intn(50) + 200)
+
 					return time.Duration(delay) * time.Millisecond, nil
 				})
 			})

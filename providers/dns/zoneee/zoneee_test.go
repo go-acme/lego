@@ -77,6 +77,7 @@ func TestNewDNSProvider(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
+
 			envTest.ClearEnv()
 
 			envTest.Apply(test.envVars)
@@ -247,6 +248,7 @@ func TestLivePresent(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
@@ -260,6 +262,7 @@ func TestLiveCleanUp(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
@@ -286,6 +289,7 @@ func mockBuilder(username, apiKey string) *servermock.Builder[*DNSProvider] {
 func mockHandlerCreateRecord() http.HandlerFunc {
 	return encodeJSONHandler(func(req *http.Request, rw http.ResponseWriter) (any, error) {
 		record := internal.TXTRecord{}
+
 		err := json.NewDecoder(req.Body).Decode(&record)
 		if err != nil {
 			return nil, err
@@ -340,6 +344,7 @@ func checkBasicAuth() servermock.LinkFunc {
 			if username != fakeUsername || apiKey != fakeAPIKey || !ok {
 				rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm=%q`, "Please enter your username and API key."))
 				http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+
 				return
 			}
 

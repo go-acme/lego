@@ -29,6 +29,7 @@ func WrapPreCheck(wrap WrapPreCheckFunc) ChallengeOption {
 }
 
 // DisableCompletePropagationRequirement obsolete.
+//
 // Deprecated: use DisableAuthoritativeNssPropagationRequirement instead.
 func DisableCompletePropagationRequirement() ChallengeOption {
 	return DisableAuthoritativeNssPropagationRequirement()
@@ -140,9 +141,11 @@ func checkNameserversPropagation(fqdn, value string, nameservers []string, addPo
 		var records []string
 
 		var found bool
+
 		for _, rr := range r.Answer {
 			if txt, ok := rr.(*dns.TXT); ok {
 				record := strings.Join(txt.Txt, "")
+
 				records = append(records, record)
 				if record == value {
 					found = true

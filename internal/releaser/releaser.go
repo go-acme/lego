@@ -108,6 +108,7 @@ func detach(_ *cli.Context) error {
 
 func readCurrentVersion(filename string) (*hcversion.Version, error) {
 	fset := token.NewFileSet()
+
 	file, err := parser.ParseFile(fset, filename, nil, parser.AllErrors)
 	if err != nil {
 		return nil, err
@@ -141,6 +142,7 @@ func (v visitor) Visit(n ast.Node) ast.Visitor {
 				if !ok {
 					continue
 				}
+
 				if len(valueSpec.Names) != 1 || len(valueSpec.Values) != 1 {
 					continue
 				}
@@ -149,6 +151,7 @@ func (v visitor) Visit(n ast.Node) ast.Visitor {
 				if !ok {
 					continue
 				}
+
 				if va.Kind != token.STRING {
 					continue
 				}
@@ -164,6 +167,7 @@ func (v visitor) Visit(n ast.Node) ast.Visitor {
 	default:
 		// noop
 	}
+
 	return v
 }
 

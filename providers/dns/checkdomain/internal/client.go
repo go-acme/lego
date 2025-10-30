@@ -63,6 +63,7 @@ func (c *Client) GetDomainIDByName(ctx context.Context, name string) (int, error
 	c.domainIDMu.Lock()
 	id, ok := c.domainIDMapping[name]
 	c.domainIDMu.Unlock()
+
 	if ok {
 		return id, nil
 	}
@@ -100,6 +101,7 @@ func (c *Client) listDomains(ctx context.Context) ([]*Domain, error) {
 	totalPages := maxInt
 
 	var domainList []*Domain
+
 	for currentPage <= totalPages {
 		q.Set("page", strconv.Itoa(currentPage))
 		endpoint.RawQuery = q.Encode()
@@ -151,6 +153,7 @@ func (c *Client) CheckNameservers(ctx context.Context, domainID int) error {
 	}
 
 	var found1, found2 bool
+
 	for _, item := range info.Nameservers {
 		switch item.Name {
 		case ns1:
@@ -229,6 +232,7 @@ func (c *Client) getDomainInfo(ctx context.Context, domainID int) (*DomainRespon
 	}
 
 	var res DomainResponse
+
 	err = c.do(req, &res)
 	if err != nil {
 		return nil, err
@@ -242,6 +246,7 @@ func (c *Client) listRecords(ctx context.Context, domainID int, recordType strin
 
 	q := endpoint.Query()
 	q.Set("limit", strconv.Itoa(maxLimit))
+
 	if recordType != "" {
 		q.Set("type", recordType)
 	}
@@ -250,6 +255,7 @@ func (c *Client) listRecords(ctx context.Context, domainID int, recordType strin
 	totalPages := maxInt
 
 	var recordList []*Record
+
 	for currentPage <= totalPages {
 		q.Set("page", strconv.Itoa(currentPage))
 		endpoint.RawQuery = q.Encode()

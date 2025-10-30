@@ -118,6 +118,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("exoscale: %w", err)
 	}
+
 	if zone == nil {
 		return fmt.Errorf("exoscale: zone %q not found", zoneName)
 	}
@@ -157,6 +158,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("exoscale: %w", err)
 	}
+
 	if zone == nil {
 		return fmt.Errorf("exoscale: zone %q not found", zoneName)
 	}

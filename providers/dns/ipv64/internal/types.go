@@ -11,6 +11,7 @@ type APIResponse struct {
 
 type APIError struct {
 	APIResponse
+
 	AddRecordMessage string `json:"add_record"`
 	DelRecordMessage string `json:"del_record"`
 	AddDomainMessage string `json:"add_domain"`
@@ -41,6 +42,7 @@ func (a APIError) Error() string {
 
 type Domains struct {
 	APIResponse
+
 	APICall    string               `json:"add_domain"`
 	Subdomains map[string]Subdomain `json:"subdomains"`
 }

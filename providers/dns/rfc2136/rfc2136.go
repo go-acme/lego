@@ -171,6 +171,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("rfc2136: failed to insert: %w", err)
 	}
+
 	return nil
 }
 
@@ -182,6 +183,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("rfc2136: failed to remove: %w", err)
 	}
+
 	return nil
 }
 
@@ -228,6 +230,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	if err != nil {
 		return fmt.Errorf("DNS update failed: %w", err)
 	}
+
 	if reply != nil && reply.Rcode != dns.RcodeSuccess {
 		return fmt.Errorf("DNS update failed: server replied: %s", dns.RcodeToString[reply.Rcode])
 	}

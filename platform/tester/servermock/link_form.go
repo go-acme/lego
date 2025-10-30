@@ -43,6 +43,7 @@ func (l *FormLink) Bind(next http.Handler) http.Handler {
 			if len(form) != len(l.values)+len(l.regexes) {
 				msg := fmt.Sprintf("invalid query parameters, got %v, want %v", req.Form, l.values)
 				http.Error(rw, msg, l.statusCode)
+
 				return
 			}
 		}
@@ -52,6 +53,7 @@ func (l *FormLink) Bind(next http.Handler) http.Handler {
 			if !slices.Equal(v, value) {
 				msg := fmt.Sprintf("invalid %q form value, got %q, want %q", k, value, v)
 				http.Error(rw, msg, l.statusCode)
+
 				return
 			}
 		}
@@ -61,6 +63,7 @@ func (l *FormLink) Bind(next http.Handler) http.Handler {
 			if !exp.MatchString(value) {
 				msg := fmt.Sprintf("invalid %q form value, %q doesn't match to %q", k, value, exp)
 				http.Error(rw, msg, l.statusCode)
+
 				return
 			}
 		}

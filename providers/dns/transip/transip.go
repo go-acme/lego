@@ -168,6 +168,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			if err = d.repository.RemoveDNSEntry(domainName, entry); err != nil {
 				return fmt.Errorf("transip: couldn't get Record ID in CleanUp: %w", err)
 			}
+
 			return nil
 		}
 	}

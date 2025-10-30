@@ -99,6 +99,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	// Iterate through the Service Catalog to get the DNS Endpoint
 	var dnsEndpoint string
+
 	for _, service := range identity.Access.ServiceCatalog {
 		if service.Name == "cloudDNS" {
 			dnsEndpoint = service.Endpoints[0].PublicURL

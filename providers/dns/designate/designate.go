@@ -85,7 +85,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 		opts, erro := clientconfig.AuthOptions(&clientconfig.ClientOpts{
 			Cloud: val[EnvCloud],
 		})
-
 		if erro != nil {
 			return nil, fmt.Errorf("designate: %w", erro)
 		}
@@ -202,6 +201,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("designate: error for %s in CleanUp: %w", info.EffectiveFQDN, err)
 	}
+
 	return nil
 }
 
@@ -241,6 +241,7 @@ func (d *DNSProvider) updateRecord(record *recordsets.RecordSet, value string) e
 	}
 
 	result := recordsets.Update(d.client, record.ZoneID, record.ID, updateOpts)
+
 	return result.Err
 }
 

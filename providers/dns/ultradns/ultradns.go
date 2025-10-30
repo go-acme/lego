@@ -4,6 +4,7 @@ package ultradns
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -121,7 +122,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		RecordType: "TXT",
 	}
 
-	res, _, _ := recordService.Read(rrSetKeyData)
+	resp, _, _ := recordService.Read(rrSetKeyData)
 
 	rrSetData := &rrset.RRSet{
 		OwnerName: info.EffectiveFQDN,
@@ -130,11 +131,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		RData:     []string{info.Value},
 	}
 
-	if res != nil && res.StatusCode == 200 {
+	if resp != nil && resp.StatusCode == http.StatusOK {
 		_, err = recordService.Update(rrSetKeyData, rrSetData)
 	} else {
 		_, err = recordService.Create(rrSetKeyData, rrSetData)
 	}
+
 	if err != nil {
 		return fmt.Errorf("ultradns: %w", err)
 	}

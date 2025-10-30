@@ -48,6 +48,7 @@ func (c *Client) GetZone(ctx context.Context, name string) (Zone, error) {
 	endpoint := c.baseURL.JoinPath("v2", "zones", name)
 
 	zone := Zone{}
+
 	err := c.doRequest(ctx, http.MethodGet, endpoint, nil, &zone)
 	if err != nil {
 		return Zone{}, fmt.Errorf("get zone %s: %w", name, err)
@@ -62,6 +63,7 @@ func (c *Client) GetRRSet(ctx context.Context, zone, name string) (RRSet, error)
 	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
 	var result RRSet
+
 	err := c.doRequest(ctx, http.MethodGet, endpoint, nil, &result)
 	if err != nil {
 		return RRSet{}, fmt.Errorf("get txt records %s -> %s: %w", zone, name, err)
@@ -180,6 +182,7 @@ func parseError(resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	errAPI := APIError{StatusCode: resp.StatusCode}
+
 	err := json.Unmarshal(raw, &errAPI)
 	if err != nil {
 		errAPI.Message = string(raw)

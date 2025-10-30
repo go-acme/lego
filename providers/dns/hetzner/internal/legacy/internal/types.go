@@ -25,12 +25,12 @@ type Zone struct {
 // Zones a set of DNS zones.
 type Zones struct {
 	Zones []Zone `json:"zones"`
-	Meta  Meta   `json:"meta,omitempty"`
+	Meta  Meta   `json:"meta"`
 }
 
 // Meta response metadata.
 type Meta struct {
-	Pagination Pagination `json:"pagination,omitempty"`
+	Pagination Pagination `json:"pagination"`
 }
 
 // Pagination information about pagination.

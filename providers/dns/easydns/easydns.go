@@ -78,6 +78,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("easydns: %w", err)
 	}
+
 	config.Endpoint = endpoint
 
 	values, err := env.Get(EnvToken, EnvKey)
@@ -192,6 +193,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	d.recordIDsMu.Lock()
 	defer delete(d.recordIDs, key)
+
 	d.recordIDsMu.Unlock()
 
 	if err != nil {

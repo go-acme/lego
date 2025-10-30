@@ -32,6 +32,7 @@ func (l *QueryParameterLink) Bind(next http.Handler) http.Handler {
 			if len(query) != len(l.values)+len(l.regexes) {
 				msg := fmt.Sprintf("invalid query parameters, got %v, want %v", query, l.values)
 				http.Error(rw, msg, l.statusCode)
+
 				return
 			}
 		}
@@ -41,6 +42,7 @@ func (l *QueryParameterLink) Bind(next http.Handler) http.Handler {
 			if p != v {
 				msg := fmt.Sprintf("invalid %q query parameter value, got %q, want %q", k, p, v)
 				http.Error(rw, msg, l.statusCode)
+
 				return
 			}
 		}
@@ -50,6 +52,7 @@ func (l *QueryParameterLink) Bind(next http.Handler) http.Handler {
 			if !exp.MatchString(value) {
 				msg := fmt.Sprintf("invalid %q query parameter value, %q doesn't match to %q", k, value, exp)
 				http.Error(rw, msg, l.statusCode)
+
 				return
 			}
 		}

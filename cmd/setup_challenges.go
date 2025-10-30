@@ -54,18 +54,21 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		return ps
 	case ctx.IsSet(flgHTTPMemcachedHost):
 		ps, err := memcached.NewMemcachedProvider(ctx.StringSlice(flgHTTPMemcachedHost))
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		return ps
 	case ctx.IsSet(flgHTTPS3Bucket):
 		ps, err := s3.NewHTTPProvider(ctx.String(flgHTTPS3Bucket))
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		return ps
 	case ctx.IsSet(flgHTTPPort):
 		iface := ctx.String(flgHTTPPort)
@@ -82,12 +85,14 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 		if header := ctx.String(flgHTTPProxyHeader); header != "" {
 			srv.SetProxyHeader(header)
 		}
+
 		return srv
 	case ctx.Bool(flgHTTP):
 		srv := http01.NewProviderServer("", "")
 		if header := ctx.String(flgHTTPProxyHeader); header != "" {
 			srv.SetProxyHeader(header)
 		}
+
 		return srv
 	default:
 		log.Fatal("Invalid HTTP challenge options.")

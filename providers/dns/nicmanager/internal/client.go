@@ -83,6 +83,7 @@ func (c *Client) GetZone(ctx context.Context, name string) (*Zone, error) {
 	}
 
 	var zone Zone
+
 	err = c.do(req, http.StatusOK, &zone)
 	if err != nil {
 		return nil, err

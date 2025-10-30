@@ -168,6 +168,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordsMu.Lock()
 	dnsRecord, ok := d.records[token]
 	d.recordsMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("brandit: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
@@ -186,6 +187,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	var recordID int
+
 	for i, r := range records.RR {
 		if r == dnsRecord {
 			recordID = i

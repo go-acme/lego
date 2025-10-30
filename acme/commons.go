@@ -84,6 +84,7 @@ type Meta struct {
 // ExtendedAccount an extended Account.
 type ExtendedAccount struct {
 	Account
+
 	// Contains the value of the response header `Location`
 	Location string `json:"-"`
 }
@@ -220,11 +221,11 @@ type Authorization struct {
 	// The timestamp after which the server will consider this authorization invalid,
 	// encoded in the format specified in RFC 3339 [RFC3339].
 	// This field is REQUIRED for objects with "valid" in the "status" field.
-	Expires time.Time `json:"expires,omitempty"`
+	Expires time.Time `json:"expires,omitzero"`
 
 	// identifier (required, object):
 	// The identifier that the account is authorized to represent
-	Identifier Identifier `json:"identifier,omitempty"`
+	Identifier Identifier `json:"identifier"`
 
 	// challenges (required, array of objects):
 	// For pending authorizations, the challenges that the client can fulfill in order to prove possession of the identifier.
@@ -244,6 +245,7 @@ type Authorization struct {
 // ExtendedChallenge a extended Challenge.
 type ExtendedChallenge struct {
 	Challenge
+
 	// Contains the value of the response header `Retry-After`
 	RetryAfter string `json:"-"`
 	// Contains the value of the response header `Link` rel="up"
@@ -270,7 +272,7 @@ type Challenge struct {
 	// The time at which the server validated this challenge,
 	// encoded in the format specified in RFC 3339 [RFC3339].
 	// This field is REQUIRED if the "status" field is "valid".
-	Validated time.Time `json:"validated,omitempty"`
+	Validated time.Time `json:"validated,omitzero"`
 
 	// error (optional, object):
 	// Error that occurred while the server was validating the challenge, if any,

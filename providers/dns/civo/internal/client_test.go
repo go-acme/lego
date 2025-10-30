@@ -93,7 +93,6 @@ func TestClient_ListDNSRecords_error_raw(t *testing.T) {
 	// > So, for example, 404 Not Found pages are a standard page of text
 	// > but 403 Unauthorized requests may have a reason attribute available in the JSON object.
 	// https://www.civo.com/api#parameters-and-responses
-
 	client := mockBuilder().
 		Route("GET /dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
 			servermock.RawStringResponse(http.StatusText(http.StatusNotFound)).

@@ -28,6 +28,7 @@ func NewTokenTransport(apiKey, secretKey string) (*TokenTransport, error) {
 	if apiKey == "" {
 		return nil, errors.New("credentials missing: API key")
 	}
+
 	if secretKey == "" {
 		return nil, errors.New("credentials missing: secret key")
 	}
@@ -57,6 +58,7 @@ func (t *TokenTransport) transport() http.RoundTripper {
 	if t.Transport != nil {
 		return t.Transport
 	}
+
 	return http.DefaultTransport
 }
 

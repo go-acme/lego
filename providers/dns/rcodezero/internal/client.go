@@ -64,6 +64,7 @@ func (c *Client) do(req *http.Request) (*APIResponse, error) {
 	}
 
 	result := &APIResponse{}
+
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
@@ -105,6 +106,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	errAPI := &APIResponse{}
+
 	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

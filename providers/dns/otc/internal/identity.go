@@ -46,6 +46,7 @@ func (c *Client) Login(ctx context.Context) error {
 
 	c.muToken.Lock()
 	defer c.muToken.Unlock()
+
 	c.token = token
 
 	if c.token == "" {
@@ -96,6 +97,7 @@ func (c *Client) obtainUserToken(ctx context.Context, payload LoginRequest) (*To
 	}
 
 	var newToken TokenResponse
+
 	err = json.Unmarshal(raw, &newToken)
 	if err != nil {
 		return nil, "", errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
@@ -106,6 +108,7 @@ func (c *Client) obtainUserToken(ctx context.Context, payload LoginRequest) (*To
 
 func getBaseURL(tokenResp *TokenResponse) (*url.URL, error) {
 	var endpoints []Endpoint
+
 	for _, v := range tokenResp.Token.Catalog {
 		if v.Type == "dns" {
 			endpoints = append(endpoints, v.Endpoints...)

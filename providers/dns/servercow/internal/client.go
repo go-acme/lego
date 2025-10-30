@@ -47,6 +47,7 @@ func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error
 	}
 
 	var records []Record
+
 	err = c.do(req, &records)
 	if err != nil {
 		return nil, err
@@ -65,6 +66,7 @@ func (c *Client) CreateUpdateRecord(ctx context.Context, domain string, data Rec
 	}
 
 	var msg Message
+
 	err = c.do(req, &msg)
 	if err != nil {
 		return nil, err
@@ -87,6 +89,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domain string, data Record) (
 	}
 
 	var msg Message
+
 	err = c.do(req, &msg)
 	if err != nil {
 		return nil, err
@@ -168,6 +171,7 @@ func unmarshal(raw []byte, v any) error {
 	}
 
 	var apiErr Message
+
 	errU := json.Unmarshal(raw, &apiErr)
 	if errU != nil {
 		return fmt.Errorf("unmarshaling %T error: %w: %s", v, err, string(raw))

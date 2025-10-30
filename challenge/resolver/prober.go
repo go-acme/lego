@@ -50,11 +50,14 @@ func NewProber(solverManager *SolverManager) *Prober {
 func (p *Prober) Solve(authorizations []acme.Authorization) error {
 	failures := make(obtainError)
 
-	var authSolvers []*selectedAuthSolver
-	var authSolversSequential []*selectedAuthSolver
+	var (
+		authSolvers           []*selectedAuthSolver
+		authSolversSequential []*selectedAuthSolver
+	)
 
 	// Loop through the resources, basically through the domains.
 	// First pass just selects a solver for each authz.
+
 	for _, authz := range authorizations {
 		domain := challenge.GetTargetedDomain(authz)
 		if authz.Status == acme.StatusValid {
@@ -90,6 +93,7 @@ func (p *Prober) Solve(authorizations []acme.Authorization) error {
 	if len(failures) > 0 {
 		return failures
 	}
+
 	return nil
 }
 
@@ -102,7 +106,9 @@ func sequentialSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 			err := solvr.PreSolve(authSolver.authz)
 			if err != nil {
 				failures[domain] = err
+
 				cleanUp(authSolver.solver, authSolver.authz)
+
 				continue
 			}
 		}
@@ -111,7 +117,9 @@ func sequentialSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 		err := authSolver.solver.Solve(authSolver.authz)
 		if err != nil {
 			failures[domain] = err
+
 			cleanUp(authSolver.solver, authSolver.authz)
+
 			continue
 		}
 
@@ -149,6 +157,7 @@ func parallelSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 	// Finally solve all challenges for real
 	for _, authSolver := range authSolvers {
 		authz := authSolver.authz
+
 		domain := challenge.GetTargetedDomain(authz)
 		if failures[domain] != nil {
 			// already failed in previous loop
@@ -165,6 +174,7 @@ func parallelSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 func cleanUp(solvr solver, authz acme.Authorization) {
 	if solvr, ok := solvr.(cleanup); ok {
 		domain := challenge.GetTargetedDomain(authz)
+
 		err := solvr.CleanUp(authz)
 		if err != nil {
 			log.Warnf("[%s] acme: cleaning up failed: %v ", domain, err)

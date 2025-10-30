@@ -121,6 +121,7 @@ func (c *Client) doRequest(ctx context.Context, payload RequestPacketType) (*Res
 	endpoint := c.baseURL.JoinPath("/enterprise/control/agent.php")
 
 	body := new(bytes.Buffer)
+
 	err := xml.NewEncoder(body).Encode(payload)
 	if err != nil {
 		return nil, err
@@ -153,6 +154,7 @@ func (c *Client) doRequest(ctx context.Context, payload RequestPacketType) (*Res
 	}
 
 	var response ResponsePacketType
+
 	err = xml.Unmarshal(raw, &response)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)

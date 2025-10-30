@@ -51,6 +51,7 @@ func getCredentials(config *Config) (azcore.TokenCredential, error) {
 		if config.TenantID != "" {
 			credOptions = &azidentity.AzureCLICredentialOptions{TenantID: config.TenantID}
 		}
+
 		return azidentity.NewAzureCLICredential(credOptions)
 
 	case authMethodOIDC:

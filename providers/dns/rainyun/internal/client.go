@@ -84,6 +84,7 @@ func (c *Client) ListRecords(ctx context.Context, domainID int) ([]Record, error
 	}
 
 	var recordData APIResponse[Record]
+
 	err = c.do(req, &recordData)
 	if err != nil {
 		return nil, err
@@ -173,6 +174,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var errAPI APIError
+
 	err := json.Unmarshal(raw, &errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

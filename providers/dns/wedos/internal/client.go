@@ -69,6 +69,7 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record DNSRow) erro
 	}
 
 	cmd := commandDNSRowAdd
+
 	if record.ID == "" {
 		payload.Name = record.Name
 	} else {

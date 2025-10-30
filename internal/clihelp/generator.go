@@ -50,6 +50,7 @@ func generate() error {
 
 	// collect output of various help pages
 	var help []commandHelp
+
 	for _, args := range [][]string{
 		{"lego", "help"},
 		{"lego", "help", "run"},
@@ -72,7 +73,9 @@ func generate() error {
 	}
 
 	err = outputTpl.Execute(f, help)
+
 	defer func() { _ = f.Close() }()
+
 	if err != nil {
 		return fmt.Errorf("failed to write cli_help.toml: %w", err)
 	}
@@ -98,9 +101,11 @@ func createStubApp() *cli.App {
 
 func run(app *cli.App, args []string) (h commandHelp, err error) {
 	w := app.Writer
+
 	defer func() { app.Writer = w }()
 
 	var buf bytes.Buffer
+
 	app.Writer = &buf
 
 	if err := app.Run(args); err != nil {

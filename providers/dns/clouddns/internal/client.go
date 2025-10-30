@@ -122,6 +122,7 @@ func (c *Client) getDomain(ctx context.Context, zone string) (Domain, error) {
 	}
 
 	var result SearchResponse
+
 	err = c.do(req, &result)
 	if err != nil {
 		return Domain{}, err
@@ -143,6 +144,7 @@ func (c *Client) getRecord(ctx context.Context, domainID, recordName string) (Re
 	}
 
 	var result DomainInfo
+
 	err = c.do(req, &result)
 	if err != nil {
 		return Record{}, err
@@ -232,6 +234,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var response APIError
+
 	err := json.Unmarshal(raw, &response)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

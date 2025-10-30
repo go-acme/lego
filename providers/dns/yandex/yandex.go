@@ -136,6 +136,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	var record *internal.Record
+
 	for _, rcd := range records {
 		if rcd.Type == "TXT" && rcd.SubDomain == subDomain && rcd.Content == info.Value {
 			record = &rcd
@@ -156,6 +157,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("yandex: %w", err)
 	}
+
 	return nil
 }
 

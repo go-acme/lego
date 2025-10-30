@@ -260,6 +260,7 @@ func validateNoBody(privateKey *rsa.PrivateKey, r *http.Request) error {
 	}
 
 	sigAlgs := []jose.SignatureAlgorithm{jose.RS256}
+
 	jws, err := jose.ParseSigned(string(reqBody), sigAlgs)
 	if err != nil {
 		return err
@@ -276,5 +277,6 @@ func validateNoBody(privateKey *rsa.PrivateKey, r *http.Request) error {
 	if bodyStr := string(body); bodyStr != "{}" && bodyStr != "" {
 		return fmt.Errorf(`expected JWS POST body "{}" or "", got %q`, bodyStr)
 	}
+
 	return nil
 }

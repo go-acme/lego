@@ -200,6 +200,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		if err != nil {
 			return fmt.Errorf("constellix: failed to delete TXT records: %w", err)
 		}
+
 		return nil
 	}
 

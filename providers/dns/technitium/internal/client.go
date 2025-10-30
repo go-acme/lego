@@ -125,6 +125,7 @@ func (c *Client) newFormRequest(ctx context.Context, endpoint *url.URL, payload 
 
 	if payload != nil {
 		var err error
+
 		values, err = querystring.Values(payload)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create request body: %w", err)
@@ -149,6 +150,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var errAPI APIResponse[any]
+
 	err := json.Unmarshal(raw, &errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

@@ -78,7 +78,7 @@ type GetRecordsRequest struct {
 // ChangeRecordsRequest data representation for data change request.
 type ChangeRecordsRequest struct {
 	Fqdn    string     `json:"fqdn,omitempty"`
-	Records RecordList `json:"records,omitempty"`
+	Records RecordList `json:"records"`
 }
 
 // RecordList List of entries (in this case only described TXT).

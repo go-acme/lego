@@ -258,5 +258,6 @@ func getTime(ctx *cli.Context, name string) time.Time {
 	if value == nil {
 		return time.Time{}
 	}
+
 	return *value
 }

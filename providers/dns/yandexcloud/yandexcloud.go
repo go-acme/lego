@@ -229,6 +229,7 @@ func (d *DNSProvider) upsertRecordSetData(ctx context.Context, zoneID, name, val
 	}
 
 	var deletions []*ycdnsproto.RecordSet
+
 	if exist != nil {
 		record.SetData(append(record.GetData(), exist.GetData()...))
 		deletions = append(deletions, exist)
@@ -307,6 +308,7 @@ func decodeCredentials(accountB64 string) (credentials.Credentials, error) {
 	}
 
 	key := &iamkey.Key{}
+
 	err = json.Unmarshal(account, key)
 	if err != nil {
 		return nil, err

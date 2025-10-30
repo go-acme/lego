@@ -44,6 +44,7 @@ func NewUnixProviderServer(socketPath string, mode fs.FileMode) *ProviderServer 
 // Present starts a web server and makes the token available at `ChallengePath(token)` for web requests.
 func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	var err error
+
 	s.listener, err = net.Listen(s.network, s.GetAddress())
 	if err != nil {
 		return fmt.Errorf("could not start HTTP server for challenge: %w", err)
@@ -120,6 +121,7 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 			}
 
 			log.Infof("[%s] Served key authentication", domain)
+
 			return
 		}
 

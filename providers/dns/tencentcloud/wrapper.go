@@ -38,6 +38,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*dnspod
 	}
 
 	var hostedZone *dnspod.DomainListItem
+
 	for _, zone := range domains {
 		unfqdn := dns01.UnFqdn(authZone)
 		if *zone.Name == unfqdn || *zone.Punycode == unfqdn {
@@ -73,6 +74,7 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, zone *dnspod.DomainLis
 				return nil, nil
 			}
 		}
+
 		return nil, err
 	}
 

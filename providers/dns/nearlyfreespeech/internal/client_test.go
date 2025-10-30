@@ -163,6 +163,7 @@ func TestSigner_Sign(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
+
 			signer := NewSigner()
 			signer.saltShaker = func() []byte { return []byte(test.salt) }
 			signer.clock = func() time.Time { return time.Unix(test.now, 0) }

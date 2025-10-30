@@ -27,6 +27,7 @@ func (d *DNSProvider) getRecordSet(fqdn string) (*vinyldns.RecordSet, error) {
 	}
 
 	var recordSets []vinyldns.RecordSet
+
 	for _, i := range allRecordSets {
 		if i.Type == "TXT" {
 			recordSets = append(recordSets, i)

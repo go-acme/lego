@@ -12,25 +12,27 @@ type APIError struct {
 type ErrorInfo struct {
 	Code    string       `json:"code,omitempty"`
 	Message string       `json:"message,omitempty"`
-	Details ErrorDetails `json:"details,omitempty"`
+	Details ErrorDetails `json:"details"`
 }
 
 func (i *ErrorInfo) Error() string {
-	msg := fmt.Sprintf("%s: %s", i.Code, i.Message)
+	var msg strings.Builder
+
+	msg.WriteString(fmt.Sprintf("%s: %s", i.Code, i.Message))
 
 	if i.Details.Announcement != "" {
-		msg += fmt.Sprintf(": %s", i.Details.Announcement)
+		msg.WriteString(fmt.Sprintf(": %s", i.Details.Announcement))
 	}
 
 	for _, limit := range i.Details.Limits {
-		msg += fmt.Sprintf("limit: %s", limit.Name)
+		msg.WriteString(fmt.Sprintf("limit: %s", limit.Name))
 	}
 
 	for _, field := range i.Details.Fields {
-		msg += fmt.Sprintf("field: %s: %s", field.Name, strings.Join(field.Messages, ", "))
+		msg.WriteString(fmt.Sprintf("field: %s: %s", field.Name, strings.Join(field.Messages, ", ")))
 	}
 
-	return msg
+	return msg.String()
 }
 
 type ErrorDetails struct {

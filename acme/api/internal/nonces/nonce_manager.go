@@ -11,10 +11,11 @@ import (
 
 // Manager Manages nonces.
 type Manager struct {
+	sync.Mutex
+
 	do       *sender.Doer
 	nonceURL string
 	nonces   []string
-	sync.Mutex
 }
 
 // NewManager Creates a new Manager.
@@ -36,6 +37,7 @@ func (n *Manager) Pop() (string, bool) {
 
 	nonce := n.nonces[len(n.nonces)-1]
 	n.nonces = n.nonces[:len(n.nonces)-1]
+
 	return nonce, true
 }
 
@@ -43,6 +45,7 @@ func (n *Manager) Pop() (string, bool) {
 func (n *Manager) Push(nonce string) {
 	n.Lock()
 	defer n.Unlock()
+
 	n.nonces = append(n.nonces, nonce)
 }
 
@@ -51,6 +54,7 @@ func (n *Manager) Nonce() (string, error) {
 	if nonce, ok := n.Pop(); ok {
 		return nonce, nil
 	}
+
 	return n.getNonce()
 }
 

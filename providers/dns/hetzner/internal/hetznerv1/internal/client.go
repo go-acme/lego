@@ -54,6 +54,7 @@ func (c *Client) AddRRSetRecords(ctx context.Context, zoneIDName, recordType, re
 	}
 
 	var result ActionResponse
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -73,6 +74,7 @@ func (c *Client) RemoveRRSetRecords(ctx context.Context, zoneIDName, recordType,
 	}
 
 	var result ActionResponse
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -92,6 +94,7 @@ func (c *Client) GetAction(ctx context.Context, id int) (*Action, error) {
 	}
 
 	var result ActionResponse
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -157,6 +160,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var errAPI APIError
+
 	err := json.Unmarshal(raw, &errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

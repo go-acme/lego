@@ -50,6 +50,7 @@ func (c *Client) CreateDNSRecord(ctx context.Context, domain *DNSDomain, record 
 	}
 
 	result := APIResponse[string]{}
+
 	err = c.do(req, &result)
 	if err != nil {
 		return "", err
@@ -112,6 +113,7 @@ func (c *Client) getDomainByName(ctx context.Context, name string) (*DNSDomain, 
 	}
 
 	result := APIResponse[[]DNSDomain]{}
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err

@@ -47,6 +47,7 @@ func (c *Client) ListZone(ctx context.Context) ([]Zone, error) {
 	}
 
 	var zones []Zone
+
 	err = c.do(req, &zones)
 	if err != nil {
 		return nil, err
@@ -66,6 +67,7 @@ func (c *Client) GetZoneDetails(ctx context.Context, zone string) (*ZoneDetails,
 	}
 
 	var details ZoneDetails
+
 	err = c.do(req, &details)
 	if err != nil {
 		return nil, err
@@ -85,6 +87,7 @@ func (c *Client) ListRecords(ctx context.Context, zone string) ([]Record, error)
 	}
 
 	var records []Record
+
 	err = c.do(req, &records)
 	if err != nil {
 		return nil, err

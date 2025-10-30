@@ -69,6 +69,7 @@ func (r responseFault) faultString() string { return r.FaultString }
 
 type responseStruct struct {
 	responseFault
+
 	StructMembers []struct {
 		Name     string `xml:"name"`
 		ValueInt int    `xml:"value>int"`
@@ -77,11 +78,13 @@ type responseStruct struct {
 
 type responseInt struct {
 	responseFault
+
 	Value int `xml:"params>param>value>int"`
 }
 
 type responseBool struct {
 	responseFault
+
 	Value bool `xml:"params>param>value>boolean"`
 }
 

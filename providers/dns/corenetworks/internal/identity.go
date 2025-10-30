@@ -22,6 +22,7 @@ func (c *Client) CreateAuthenticationToken(ctx context.Context) (*Token, error) 
 	}
 
 	var token Token
+
 	err = c.do(req, &token)
 	if err != nil {
 		return nil, err

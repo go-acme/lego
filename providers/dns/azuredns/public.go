@@ -179,6 +179,7 @@ func (c publicZoneClient) Delete(ctx context.Context, subDomain string) (armdns.
 
 func publicUniqueRecords(recordSet armdns.RecordSet, value string) map[string]struct{} {
 	uniqRecords := map[string]struct{}{value: {}}
+
 	if recordSet.Properties != nil && recordSet.Properties.TxtRecords != nil {
 		for _, txtRecord := range recordSet.Properties.TxtRecords {
 			// Assume Value doesn't contain multiple strings

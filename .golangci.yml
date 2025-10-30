@@ -50,11 +50,8 @@ linters:
     - tagliatelle
     - testpackage # not relevant
     - tparallel # not relevant
-    - usestdlibvars # false-positive https://github.com/sashamelentyev/usestdlibvars/issues/96
     - varnamelen # not relevant
     - wrapcheck
-    - wsl_v5 # should be enabled the future.
-    - embeddedstructfieldcheck # should be enabled the future.
 
   settings:
     depguard:

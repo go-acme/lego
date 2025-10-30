@@ -38,6 +38,7 @@ func TestPayload_buildToken(t *testing.T) {
 	require.NoError(t, err)
 
 	var headerStruct Header
+
 	err = json.Unmarshal(headerString, &headerStruct)
 	require.NoError(t, err)
 
@@ -45,6 +46,7 @@ func TestPayload_buildToken(t *testing.T) {
 	require.NoError(t, err)
 
 	var payloadStruct Payload
+
 	err = json.Unmarshal(payloadString, &payloadStruct)
 	require.NoError(t, err)
 

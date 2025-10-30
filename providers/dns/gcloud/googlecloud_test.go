@@ -86,6 +86,7 @@ func TestNewDNSProvider(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
+
 			envTest.ClearEnv()
 
 			envTest.Apply(test.envVars)
@@ -125,6 +126,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
+
 			envTest.ClearEnv()
 
 			config := NewDefaultConfig()
@@ -237,12 +239,14 @@ func TestPresentWithExistingRR(t *testing.T) {
 				}
 
 				var prevVal string
+
 				for _, addition := range chgReq.Additions {
 					for _, value := range addition.Rrdatas {
 						if prevVal == value {
 							http.Error(rw, fmt.Sprintf("The resource %s already exists", value), http.StatusConflict)
 							return
 						}
+
 						prevVal = value
 					}
 				}

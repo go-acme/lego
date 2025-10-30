@@ -50,6 +50,7 @@ func (c *Client) GetZoneID(ctx context.Context, domain string) (int, error) {
 	}
 
 	var zoneID int
+
 	for _, member := range resp.StructMembers {
 		if member.Name == "zone_id" {
 			zoneID = member.ValueInt
@@ -59,6 +60,7 @@ func (c *Client) GetZoneID(ctx context.Context, domain string) (int, error) {
 	if zoneID == 0 {
 		return 0, fmt.Errorf("could not find zone_id for %s", domain)
 	}
+
 	return zoneID, nil
 }
 
@@ -88,6 +90,7 @@ func (c *Client) CloneZone(ctx context.Context, zoneID int, name string) (int, e
 	}
 
 	var newZoneID int
+
 	for _, member := range resp.StructMembers {
 		if member.Name == "id" {
 			newZoneID = member.ValueInt
@@ -97,6 +100,7 @@ func (c *Client) CloneZone(ctx context.Context, zoneID int, name string) (int, e
 	if newZoneID == 0 {
 		return 0, errors.New("could not determine cloned zone_id")
 	}
+
 	return newZoneID, nil
 }
 
@@ -119,6 +123,7 @@ func (c *Client) NewZoneVersion(ctx context.Context, zoneID int) (int, error) {
 	if resp.Value == 0 {
 		return 0, errors.New("could not create new zone version")
 	}
+
 	return resp.Value, nil
 }
 
@@ -174,6 +179,7 @@ func (c *Client) SetZoneVersion(ctx context.Context, zoneID, version int) error 
 	if !resp.Value {
 		return errors.New("could not set zone version")
 	}
+
 	return nil
 }
 
@@ -195,6 +201,7 @@ func (c *Client) SetZone(ctx context.Context, domain string, zoneID int) error {
 	}
 
 	var respZoneID int
+
 	for _, member := range resp.StructMembers {
 		if member.Name == "zone_id" {
 			respZoneID = member.ValueInt
@@ -204,6 +211,7 @@ func (c *Client) SetZone(ctx context.Context, domain string, zoneID int) error {
 	if respZoneID != zoneID {
 		return fmt.Errorf("could not set new zone_id for %s", domain)
 	}
+
 	return nil
 }
 

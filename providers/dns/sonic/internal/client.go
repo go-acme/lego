@@ -83,6 +83,7 @@ func (c *Client) SetRecord(ctx context.Context, hostname, value string, ttl int)
 	}
 
 	r := APIResponse{}
+
 	err = json.Unmarshal(raw, &r)
 	if err != nil {
 		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)

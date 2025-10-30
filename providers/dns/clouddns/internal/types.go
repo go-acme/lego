@@ -21,7 +21,7 @@ type Authorization struct {
 }
 
 type AuthResponse struct {
-	Auth Auth `json:"auth,omitempty"`
+	Auth Auth `json:"auth"`
 }
 
 type Auth struct {

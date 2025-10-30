@@ -66,6 +66,7 @@ type response interface {
 
 type responseString struct {
 	responseFault
+
 	Value string `xml:"params>param>value>string"`
 }
 
@@ -88,6 +89,7 @@ func (e RPCError) Error() string {
 
 type recordObjectsResponse struct {
 	responseFault
+
 	XMLName xml.Name    `xml:"methodResponse"`
 	Params  []RecordObj `xml:"params>param>value>array>data>value>struct"`
 }
@@ -102,6 +104,7 @@ type RecordObj struct {
 
 func (r *RecordObj) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var name string
+
 	for {
 		t, err := d.Token()
 		if err != nil {
@@ -144,6 +147,7 @@ func (r *RecordObj) decodeValueString(name string, d *xml.Decoder, start xml.Sta
 	}
 
 	s = strings.TrimSpace(s)
+
 	switch name {
 	case "type":
 		r.Type = s

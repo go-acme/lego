@@ -81,8 +81,10 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	const apiKey = "myKeyC"
 
-	const domain = "example.com"
-	const recordID = "recordId"
+	const (
+		domain   = "example.com"
+		recordID = "recordId"
+	)
 
 	client := mockBuilder(apiKey).
 		Route("DELETE /cdn/4.0/domains/"+domain+"/dns-records/"+recordID, nil).

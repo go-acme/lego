@@ -35,6 +35,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*teo.Zo
 	}
 
 	var hostedZone *teo.Zone
+
 	for _, zone := range domains {
 		unfqdn := dns01.UnFqdn(authZone)
 		if ptr.Deref(zone.ZoneName) == unfqdn {

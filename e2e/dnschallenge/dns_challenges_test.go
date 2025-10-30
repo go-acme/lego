@@ -75,10 +75,12 @@ func TestChallengeDNS_Run(t *testing.T) {
 func TestChallengeDNS_Client_Obtain(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	err = os.Setenv("EXEC_PATH", "../fixtures/update-dns.sh")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("EXEC_PATH") }()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -101,6 +103,7 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
+
 	user.registration = reg
 
 	domains := []string{testDomain2, testDomain1}
@@ -129,10 +132,12 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	err = os.Setenv("EXEC_PATH", "../fixtures/update-dns.sh")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("EXEC_PATH") }()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -155,6 +160,7 @@ func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
+
 	user.registration = reg
 
 	domains := []string{testDomain2, testDomain1}

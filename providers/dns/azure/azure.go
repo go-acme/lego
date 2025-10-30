@@ -89,6 +89,7 @@ type DNSProvider struct {
 // If the credentials are _not_ set via the environment,
 // then it will attempt to get a bearer token via the instance metadata service.
 // see: https://github.com/Azure/go-autorest/blob/v10.14.0/autorest/azure/auth/auth.go#L38-L42
+//
 // Deprecated: use azuredns instead.
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
@@ -96,6 +97,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	environmentName := env.GetOrFile(EnvEnvironment)
 	if environmentName != "" {
 		var environment aazure.Environment
+
 		switch environmentName {
 		case "china":
 			environment = aazure.ChinaCloud
@@ -124,6 +126,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for Azure.
+//
 // Deprecated: use azuredns instead.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -148,6 +151,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		if subsID == "" {
 			return nil, errors.New("azure: SubscriptionID is missing")
 		}
+
 		config.SubscriptionID = subsID
 	}
 
@@ -160,6 +164,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		if resGroup == "" {
 			return nil, errors.New("azure: ResourceGroup is missing")
 		}
+
 		config.ResourceGroup = resGroup
 	}
 

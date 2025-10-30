@@ -152,6 +152,7 @@ func Test_newPseudoRecord_domainSplit(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.domain, func(t *testing.T) {
 			valid := true
+
 			ch, err := newPseudoRecord(test.domain, "")
 			if err != nil {
 				valid = false

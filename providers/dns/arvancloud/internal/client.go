@@ -70,6 +70,7 @@ func (c *Client) getRecords(ctx context.Context, domain, search string) ([]DNSRe
 	}
 
 	response := &apiResponse[[]DNSRecord]{}
+
 	err = c.do(req, http.StatusOK, response)
 	if err != nil {
 		return nil, fmt.Errorf("could not get records %s: Domain: %s: %w", search, domain, err)
@@ -89,6 +90,7 @@ func (c *Client) CreateRecord(ctx context.Context, domain string, record DNSReco
 	}
 
 	response := &apiResponse[*DNSRecord]{}
+
 	err = c.do(req, http.StatusCreated, response)
 	if err != nil {
 		return nil, fmt.Errorf("could not create record; Domain: %s: %w", domain, err)

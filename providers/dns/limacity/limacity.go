@@ -165,6 +165,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.domainIDsMu.Lock()
 	domainID, ok := d.domainIDs[token]
 	d.domainIDsMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("limacity: unknown domain ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
@@ -175,6 +176,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	var recordID int
+
 	for _, record := range records {
 		if record.Type == "TXT" && record.Content == strconv.Quote(info.Value) {
 			recordID = record.ID

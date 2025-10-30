@@ -2,6 +2,7 @@ package acme
 
 import (
 	"fmt"
+	"strings"
 )
 
 // Errors types.
@@ -27,21 +28,25 @@ type ProblemDetails struct {
 }
 
 func (p *ProblemDetails) Error() string {
-	msg := fmt.Sprintf("acme: error: %d", p.HTTPStatus)
+	var msg strings.Builder
+
+	msg.WriteString(fmt.Sprintf("acme: error: %d", p.HTTPStatus))
+
 	if p.Method != "" || p.URL != "" {
-		msg += fmt.Sprintf(" :: %s :: %s", p.Method, p.URL)
+		msg.WriteString(fmt.Sprintf(" :: %s :: %s", p.Method, p.URL))
 	}
-	msg += fmt.Sprintf(" :: %s :: %s", p.Type, p.Detail)
+
+	msg.WriteString(fmt.Sprintf(" :: %s :: %s", p.Type, p.Detail))
 
 	for _, sub := range p.SubProblems {
-		msg += fmt.Sprintf(", problem: %q :: %s", sub.Type, sub.Detail)
+		msg.WriteString(fmt.Sprintf(", problem: %q :: %s", sub.Type, sub.Detail))
 	}
 
 	if p.Instance != "" {
-		msg += ", url: " + p.Instance
+		msg.WriteString(", url: " + p.Instance)
 	}
 
-	return msg
+	return msg.String()
 }
 
 // SubProblem a "subproblems".
@@ -49,7 +54,7 @@ func (p *ProblemDetails) Error() string {
 type SubProblem struct {
 	Type       string     `json:"type,omitempty"`
 	Detail     string     `json:"detail,omitempty"`
-	Identifier Identifier `json:"identifier,omitempty"`
+	Identifier Identifier `json:"identifier"`
 }
 
 // NonceError represents the error which is returned

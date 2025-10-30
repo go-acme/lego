@@ -55,6 +55,7 @@ func (c *Client) RemoveTXTRecords(ctx context.Context, domain string, records []
 	zoneStream := &ZoneStream{Removes: records}
 
 	_, err := c.updateZone(ctx, domain, zoneStream)
+
 	return err
 }
 

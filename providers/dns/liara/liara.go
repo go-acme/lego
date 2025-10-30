@@ -100,10 +100,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	retryClient := retryablehttp.NewClient()
+
 	retryClient.RetryMax = 5
 	if config.HTTPClient != nil {
 		retryClient.HTTPClient = config.HTTPClient
 	}
+
 	retryClient.Logger = log.Logger
 
 	client := internal.NewClient(
@@ -145,6 +147,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Contents: []internal.Content{{Text: info.Value}},
 		TTL:      d.config.TTL,
 	}
+
 	newRecord, err := d.client.CreateRecord(context.Background(), dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("liara: failed to create TXT record, fqdn=%s: %w", info.EffectiveFQDN, err)
@@ -170,6 +173,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("liara: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}

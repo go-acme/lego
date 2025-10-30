@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
+	"maps"
 	"net/http/httptest"
 	"os"
 	"testing"
@@ -187,8 +188,10 @@ func TestNewDNSProvider(t *testing.T) {
 				if privKeyFile != "" {
 					_ = os.Remove(privKeyFile)
 				}
+
 				envTest.RestoreEnv()
 			}()
+
 			envTest.ClearEnv()
 
 			envTest.Apply(test.envVars)
@@ -257,9 +260,7 @@ func TestNewDNSProvider_instance_principal(t *testing.T) {
 				envSDKAuthClientRegionURL: serverURL,
 			}
 
-			for k, v := range test.envVars {
-				envVars[k] = v
-			}
+			maps.Copy(envVars, test.envVars)
 
 			envTest.Apply(envVars)
 
@@ -332,6 +333,7 @@ func TestLivePresent(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
@@ -345,6 +347,7 @@ func TestLiveCleanUp(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 

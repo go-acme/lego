@@ -49,6 +49,7 @@ func (c *Client) obtainToken(ctx context.Context) (*Token, error) {
 	}
 
 	tok := Token{}
+
 	err = json.Unmarshal(raw, &tok)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
@@ -88,6 +89,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	errResp := &authResponseError{}
+
 	err := json.Unmarshal(raw, errResp)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

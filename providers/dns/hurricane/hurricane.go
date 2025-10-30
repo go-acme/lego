@@ -58,6 +58,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Hurricane Electric.
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
+
 	values, err := env.Get(EnvTokens)
 	if err != nil {
 		return nil, fmt.Errorf("hurricane: %w", err)

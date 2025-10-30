@@ -42,6 +42,7 @@ func WriteJSONResponse(w http.ResponseWriter, body any) error {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if _, err := w.Write(bs); err != nil {
 		return err
 	}

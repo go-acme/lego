@@ -90,6 +90,7 @@ func (l *RequestBodyJSONLink) Bind(next http.Handler) http.Handler {
 		if err != nil {
 			msg := fmt.Sprintf("%s: the expected request body is not valid JSON: %v", req.URL.Path, err)
 			http.Error(rw, msg, http.StatusBadRequest)
+
 			return
 		}
 
@@ -97,12 +98,14 @@ func (l *RequestBodyJSONLink) Bind(next http.Handler) http.Handler {
 		if err != nil {
 			msg := fmt.Sprintf("%s: request body is not valid JSON: %v", req.URL.Path, err)
 			http.Error(rw, msg, http.StatusBadRequest)
+
 			return
 		}
 
 		if !cmp.Equal(actual, expected) {
 			msg := fmt.Sprintf("%s: request body differences: %s", req.URL.Path, cmp.Diff(actual, expected))
 			http.Error(rw, msg, http.StatusBadRequest)
+
 			return
 		}
 

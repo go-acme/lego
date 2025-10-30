@@ -32,6 +32,7 @@ func TestOrderService_NewWithOptions(t *testing.T) {
 				}
 
 				order := acme.Order{}
+
 				err = json.Unmarshal(body, &order)
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -107,6 +108,7 @@ func readSignedBody(r *http.Request, privateKey *rsa.PrivateKey) ([]byte, error)
 	}
 
 	sigAlgs := []jose.SignatureAlgorithm{jose.RS256}
+
 	jws, err := jose.ParseSigned(string(reqBody), sigAlgs)
 	if err != nil {
 		return nil, err

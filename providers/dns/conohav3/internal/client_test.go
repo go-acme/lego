@@ -98,6 +98,7 @@ func TestClient_CreateRecord(t *testing.T) {
 					http.Error(rw, err.Error(), http.StatusBadRequest)
 					return
 				}
+
 				defer func() { _ = req.Body.Close() }()
 
 				if string(bytes.TrimSpace(raw)) != `{"name":"lego.com.","type":"TXT","data":"txtTXTtxt","ttl":300}` {
@@ -110,6 +111,7 @@ func TestClient_CreateRecord(t *testing.T) {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
 					return
 				}
+
 				defer func() { _ = file.Close() }()
 
 				_, _ = io.Copy(rw, file)

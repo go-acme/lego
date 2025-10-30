@@ -135,6 +135,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -156,6 +157,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 	}
 
 	var hostedZone dnspod.Domain
+
 	for _, zone := range zones {
 		if zone.Name == dns01.UnFqdn(authZone) {
 			hostedZone = zone
@@ -191,6 +193,7 @@ func (d *DNSProvider) findTxtRecords(fqdn, zoneID, zoneName string) ([]dnspod.Re
 	}
 
 	var records []dnspod.Record
+
 	result, _, err := d.client.Records.List(zoneID, subDomain)
 	if err != nil {
 		return records, fmt.Errorf("API call has failed: %w", err)

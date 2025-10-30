@@ -24,6 +24,7 @@ type Token struct {
 // login performs a log in to Joker's DMAPI.
 func (c *Client) login(ctx context.Context) (*Response, error) {
 	var values url.Values
+
 	switch {
 	case c.username != "" && c.password != "":
 		values = url.Values{
@@ -106,5 +107,6 @@ func formatResponseError(response *Response, err error) error {
 	if response != nil {
 		return fmt.Errorf("joker: DMAPI error: %w Response: %v", err, response.Headers)
 	}
+
 	return fmt.Errorf("joker: DMAPI error: %w", err)
 }

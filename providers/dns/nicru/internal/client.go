@@ -30,6 +30,7 @@ func (tr Trimmer) Token() (xml.Token, error) {
 	if cd, ok := t.(xml.CharData); ok {
 		t = xml.CharData(bytes.TrimSpace(cd))
 	}
+
 	return t, err
 }
 

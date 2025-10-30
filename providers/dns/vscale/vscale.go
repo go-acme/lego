@@ -101,6 +101,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	var err error
+
 	client.BaseURL, err = url.Parse(config.BaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("vscale: %w", err)
@@ -133,6 +134,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Name:    info.EffectiveFQDN,
 		Content: info.Value,
 	}
+
 	_, err = d.client.AddRecord(ctx, domainObj.ID, txtRecord)
 	if err != nil {
 		return fmt.Errorf("vscale: %w", err)
@@ -162,6 +164,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// Delete records with specific FQDN
 	var lastErr error
+
 	for _, record := range records {
 		if record.Name == recordName {
 			err = d.client.DeleteRecord(ctx, domainObj.ID, record.ID)

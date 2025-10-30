@@ -33,6 +33,7 @@ func (c *Client) login(ctx context.Context) (session, error) {
 	}
 
 	var s session
+
 	err = json.Unmarshal(dynRes.Data, &s)
 	if err != nil {
 		return session{}, errutils.NewUnmarshalError(req, http.StatusOK, dynRes.Data, err)

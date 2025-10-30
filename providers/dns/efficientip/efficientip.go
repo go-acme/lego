@@ -92,12 +92,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.Username == "" {
 		return nil, errors.New("efficientip: missing username")
 	}
+
 	if config.Password == "" {
 		return nil, errors.New("efficientip: missing password")
 	}
+
 	if config.Hostname == "" {
 		return nil, errors.New("efficientip: missing hostname")
 	}
+
 	if config.DNSName == "" {
 		return nil, errors.New("efficientip: missing dnsname")
 	}

@@ -171,6 +171,7 @@ func (c *Client) ListTxtRecords(ctx context.Context, zoneName, fqdn string) ([]T
 	}
 
 	var records []TXTRecord
+
 	for _, record := range raw {
 		if record.Host == subDomain && record.Type == "TXT" {
 			records = append(records, record)
@@ -279,6 +280,7 @@ func (c *Client) GetUpdateStatus(ctx context.Context, zoneName string) (*SyncPro
 	}
 
 	updatedCount := 0
+
 	for _, record := range records {
 		if record.Updated {
 			updatedCount++

@@ -19,6 +19,7 @@ var envTest = tester.NewEnvTest(EnvKey, EnvSecret, EnvURL)
 
 func TestNewDNSProvider_Fail(t *testing.T) {
 	defer envTest.RestoreEnv()
+
 	envTest.ClearEnv()
 
 	_, err := NewDNSProvider()
@@ -27,6 +28,7 @@ func TestNewDNSProvider_Fail(t *testing.T) {
 
 func TestDNSProvider_TimeoutSuccess(t *testing.T) {
 	defer envTest.RestoreEnv()
+
 	envTest.ClearEnv()
 
 	provider := mockBuilder().Build(t)
@@ -79,6 +81,7 @@ func TestDNSProvider_Present(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
+
 			envTest.ClearEnv()
 
 			provider := test.builder.Build(t)
@@ -138,6 +141,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
+
 			envTest.ClearEnv()
 
 			provider := test.builder.Build(t)
@@ -167,6 +171,7 @@ func getDomainHandler() http.HandlerFunc {
   ]
 }
 `)
+
 			return
 		}
 

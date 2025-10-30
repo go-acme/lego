@@ -69,6 +69,7 @@ func (c *Client) getAPIVersion(ctx context.Context) (int, error) {
 	}
 
 	var versions []apiVersion
+
 	err = json.Unmarshal(result, &versions)
 	if err != nil {
 		return 0, err
@@ -98,6 +99,7 @@ func (c *Client) GetHostedZone(ctx context.Context, authZone string) (*HostedZon
 	}
 
 	var zone HostedZone
+
 	err = json.Unmarshal(result, &zone)
 	if err != nil {
 		return nil, err
@@ -180,6 +182,7 @@ func (c *Client) do(req *http.Request) (json.RawMessage, error) {
 	}
 
 	var msg json.RawMessage
+
 	err = json.NewDecoder(resp.Body).Decode(&msg)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
@@ -193,10 +196,12 @@ func (c *Client) do(req *http.Request) (json.RawMessage, error) {
 	// check for PowerDNS error message
 	if len(msg) > 0 && msg[0] == '{' {
 		var errInfo apiError
+
 		err = json.Unmarshal(msg, &errInfo)
 		if err != nil {
 			return nil, errutils.NewUnmarshalError(req, resp.StatusCode, msg, err)
 		}
+
 		if errInfo.ShortMsg != "" {
 			return nil, fmt.Errorf("error talking to PDNS API: %w", errInfo)
 		}

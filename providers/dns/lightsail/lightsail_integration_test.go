@@ -34,6 +34,7 @@ func TestLiveTTL(t *testing.T) {
 	require.NoError(t, err)
 
 	svc := lightsail.NewFromConfig(cfg)
+
 	require.NoError(t, err)
 
 	defer func() {

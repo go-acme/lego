@@ -52,6 +52,7 @@ func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
 	}
 
 	var zones []Zone
+
 	err = c.do(req, &zones)
 	if err != nil {
 		return nil, fmt.Errorf("failed to call API: %w", err)
@@ -96,6 +97,7 @@ func (c *Client) GetRecords(ctx context.Context, zoneID string, filter *RecordsF
 	}
 
 	var zone CustomerZone
+
 	err = c.do(req, &zone)
 	if err != nil {
 		return nil, fmt.Errorf("failed to call API: %w", err)
@@ -180,6 +182,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	errClient := &ClientError{StatusCode: resp.StatusCode}
+
 	err := json.Unmarshal(raw, &errClient.errors)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

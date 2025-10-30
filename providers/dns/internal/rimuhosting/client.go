@@ -82,14 +82,17 @@ func (c *Client) DoActions(ctx context.Context, actions ...ActionParameter) (*DN
 		if err != nil {
 			return nil, err
 		}
+
 		return resp, nil
 	}
 
 	multi := c.toMultiParameters(actions)
+
 	err := c.do(ctx, multi, resp)
 	if err != nil {
 		return nil, err
 	}
+
 	return resp, nil
 }
 
@@ -160,6 +163,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	errAPI := APIError{}
+
 	err := xml.Unmarshal(raw, &errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

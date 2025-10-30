@@ -28,6 +28,7 @@ func newDmapiProvider() (*dmapiProvider, error) {
 	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		var errU error
+
 		values, errU = env.Get(EnvUsername, EnvPassword)
 		if errU != nil {
 			//nolint:errorlint // false-positive
@@ -161,6 +162,7 @@ func (d *dmapiProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return formatResponseError(response, err)
 	}
+
 	return nil
 }
 
@@ -169,5 +171,6 @@ func formatResponseError(response *dmapi.Response, err error) error {
 	if response != nil {
 		return fmt.Errorf("joker: DMAPI error: %w Response: %v", err, response.Headers)
 	}
+
 	return fmt.Errorf("joker: DMAPI error: %w", err)
 }

@@ -81,6 +81,7 @@ func getNameservers(path string, defaults []string) []string {
 
 func ParseNameservers(servers []string) []string {
 	var resolvers []string
+
 	for _, resolver := range servers {
 		// ensure all servers have a port number
 		if _, _, err := net.SplitHostPort(resolver); err != nil {
@@ -89,6 +90,7 @@ func ParseNameservers(servers []string) []string {
 			resolvers = append(resolvers, resolver)
 		}
 	}
+
 	return resolvers
 }
 
@@ -132,6 +134,7 @@ func FindPrimaryNsByFqdnCustom(fqdn string, nameservers []string) (string, error
 	if err != nil {
 		return "", fmt.Errorf("[fqdn=%s] %w", fqdn, err)
 	}
+
 	return soa.primaryNs, nil
 }
 
@@ -148,6 +151,7 @@ func FindZoneByFqdnCustom(fqdn string, nameservers []string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("[fqdn=%s] %w", fqdn, err)
 	}
+
 	return soa.zone, nil
 }
 
@@ -172,8 +176,10 @@ func lookupSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) 
 }
 
 func fetchSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) {
-	var err error
-	var r *dns.Msg
+	var (
+		err error
+		r   *dns.Msg
+	)
 
 	for domain := range DomainsSeq(fqdn) {
 		r, err = dnsQuery(domain, dns.TypeSOA, nameservers, true)
@@ -229,9 +235,11 @@ func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (
 		return nil, &DNSError{Message: "empty list of nameservers"}
 	}
 
-	var r *dns.Msg
-	var err error
-	var errAll error
+	var (
+		r      *dns.Msg
+		err    error
+		errAll error
+	)
 
 	for _, ns := range nameservers {
 		r, err = sendDNSQuery(m, ns)
@@ -264,6 +272,7 @@ func createDNSMsg(fqdn string, rtype uint16, recursive bool) *dns.Msg {
 func sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {
 	if ok, _ := strconv.ParseBool(os.Getenv("LEGO_EXPERIMENTAL_DNS_TCP_ONLY")); ok {
 		tcp := &dns.Client{Net: "tcp", Timeout: dnsTimeout}
+
 		r, _, err := tcp.Exchange(m, ns)
 		if err != nil {
 			return r, &DNSError{Message: "DNS call error", MsgIn: m, NS: ns, Err: err}

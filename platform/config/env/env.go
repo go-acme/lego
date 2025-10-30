@@ -16,11 +16,13 @@ func Get(names ...string) (map[string]string, error) {
 	values := map[string]string{}
 
 	var missingEnvVars []string
+
 	for _, envVar := range names {
 		value := GetOrFile(envVar)
 		if value == "" {
 			missingEnvVars = append(missingEnvVars, envVar)
 		}
+
 		values[envVar] = value
 	}
 
@@ -58,6 +60,7 @@ func GetWithFallback(groups ...[]string) (map[string]string, error) {
 	values := map[string]string{}
 
 	var missingEnvVars []string
+
 	for _, names := range groups {
 		if len(names) == 0 {
 			return nil, errors.New("undefined environment variable names")
@@ -68,6 +71,7 @@ func GetWithFallback(groups ...[]string) (map[string]string, error) {
 			missingEnvVars = append(missingEnvVars, envVar)
 			continue
 		}
+
 		values[envVar] = value
 	}
 
@@ -148,6 +152,7 @@ func GetOrFile(envVar string) string {
 	}
 
 	fileVar := envVar + "_FILE"
+
 	fileVarValue := os.Getenv(fileVar)
 	if fileVarValue == "" {
 		return envVarValue

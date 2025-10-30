@@ -62,6 +62,7 @@ func (c *Client) ListRecords(ctx context.Context, account, dnsZone string) (*Lis
 		query.Add("first", strconv.Itoa(result.Response.Last[0]+1))
 
 		tmp := &Response[*ListRecordsResponse]{}
+
 		err := c.do(ctx, query, tmp)
 		if err != nil {
 			return nil, err
@@ -156,6 +157,7 @@ func (c *Client) do(ctx context.Context, query url.Values, result any) error {
 
 	//  Unmarshal the error response, because the API returns a 200 OK even if there is an error.
 	var apiError APIError
+
 	err = json.Unmarshal(raw, &apiError)
 	if err != nil {
 		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
@@ -183,6 +185,7 @@ func sign(apiUsername, apiKey string, query url.Values) (url.Values, error) {
 	canonicalRequest := fmt.Sprintf("%s%s%s", apiUsername, timestamp, defaultBaseURL)
 
 	mac := hmac.New(sha256.New, []byte(apiKey))
+
 	_, err := mac.Write([]byte(canonicalRequest))
 	if err != nil {
 		return nil, err

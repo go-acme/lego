@@ -24,6 +24,7 @@ func (c *Client) login(ctx context.Context) (string, error) {
 	}
 
 	var responseData LoginResponse
+
 	err := c.doRequest(ctx, payload, &responseData)
 	if err != nil {
 		return "", fmt.Errorf("loging error: %w", err)

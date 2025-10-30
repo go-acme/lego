@@ -88,6 +88,7 @@ func TestChallenge(t *testing.T) {
 		if err != nil {
 			return err
 		}
+
 		bodyStr := string(body)
 
 		if bodyStr != chlng.KeyAuthorization {
@@ -157,6 +158,7 @@ func TestChallengeUnix(t *testing.T) {
 		if err != nil {
 			return err
 		}
+
 		bodyStr := string(body)
 
 		if bodyStr != chlng.KeyAuthorization {
@@ -224,6 +226,7 @@ func (h *testProxyHeader) update(r *http.Request) {
 	if h == nil || len(h.values) == 0 {
 		return
 	}
+
 	if h.name == "Host" {
 		r.Host = h.values[0]
 	} else if h.name != "" {
@@ -385,6 +388,7 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 		if err != nil {
 			return err
 		}
+
 		header.update(req)
 		extra.update(req)
 
@@ -402,6 +406,7 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 		if err != nil {
 			return err
 		}
+
 		bodyStr := string(body)
 
 		if bodyStr != chlng.KeyAuthorization {

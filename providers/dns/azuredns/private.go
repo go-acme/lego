@@ -181,6 +181,7 @@ func (c privateZoneClient) Delete(ctx context.Context, subDomain string) (armpri
 
 func privateUniqueRecords(recordSet armprivatedns.RecordSet, value string) map[string]struct{} {
 	uniqRecords := map[string]struct{}{value: {}}
+
 	if recordSet.Properties != nil && recordSet.Properties.TxtRecords != nil {
 		for _, txtRecord := range recordSet.Properties.TxtRecords {
 			// Assume Value doesn't contain multiple strings

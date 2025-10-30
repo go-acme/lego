@@ -54,6 +54,7 @@ func (d *dnsProviderPublic) Present(domain, token, keyAuth string) error {
 
 	// Construct unique TXT records using map
 	uniqRecords := map[string]struct{}{info.Value: {}}
+
 	if rset.RecordSetProperties != nil && rset.TxtRecords != nil {
 		for _, txtRecord := range *rset.TxtRecords {
 			// Assume Value doesn't contain multiple strings
@@ -81,6 +82,7 @@ func (d *dnsProviderPublic) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("azure: %w", err)
 	}
+
 	return nil
 }
 
@@ -106,6 +108,7 @@ func (d *dnsProviderPublic) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("azure: %w", err)
 	}
+
 	return nil
 }
 

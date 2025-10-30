@@ -107,6 +107,7 @@ func newMockStorage() *mockStorage {
 		if acct, ok := m.accounts[domain]; ok {
 			return acct, nil
 		}
+
 		return goacmedns.Account{}, storage.ErrDomainNotFound
 	}
 

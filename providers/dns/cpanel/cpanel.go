@@ -147,12 +147,16 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	valueB64 := base64.StdEncoding.EncodeToString([]byte(info.Value))
 
-	var found bool
-	var existingRecord shared.ZoneRecord
+	var (
+		found          bool
+		existingRecord shared.ZoneRecord
+	)
+
 	for _, record := range zoneInfo {
 		if slices.Contains(record.DataB64, valueB64) {
 			existingRecord = record
 			found = true
+
 			break
 		}
 	}
@@ -221,12 +225,16 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	valueB64 := base64.StdEncoding.EncodeToString([]byte(info.Value))
 
-	var found bool
-	var existingRecord shared.ZoneRecord
+	var (
+		found          bool
+		existingRecord shared.ZoneRecord
+	)
+
 	for _, record := range zoneInfo {
 		if slices.Contains(record.DataB64, valueB64) {
 			existingRecord = record
 			found = true
+
 			break
 		}
 	}
@@ -236,6 +244,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	}
 
 	var newData []string
+
 	for _, dataB64 := range existingRecord.DataB64 {
 		if dataB64 == valueB64 {
 			continue
@@ -292,6 +301,7 @@ func getZoneSerial(zoneFqdn string, zoneInfo []shared.ZoneRecord) (uint32, error
 		}
 
 		var newSerial uint32
+
 		_, err = fmt.Sscan(string(data), &newSerial)
 		if err != nil {
 			return 0, fmt.Errorf("decode serial DNameB64, invalid serial value %q: %w", string(data), err)

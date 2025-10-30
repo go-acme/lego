@@ -48,6 +48,7 @@ func (c *Client) UpdateDomain(ctx context.Context, domain string, msg *DomainInf
 	}
 
 	respData := &DomainInfoResponse{}
+
 	err = c.do(req, respData)
 	if err != nil {
 		return nil, err
@@ -71,6 +72,7 @@ func (c *Client) GetDomain(ctx context.Context, domain string) (*DomainInfoRespo
 	}
 
 	respData := &DomainInfoResponse{}
+
 	err = c.do(req, respData)
 	if err != nil {
 		return nil, err
@@ -88,6 +90,7 @@ func (c *Client) do(req *http.Request, result any) error {
 	if resp != nil {
 		defer func() { _ = resp.Body.Close() }()
 	}
+
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)
 	}
@@ -140,6 +143,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	response := &ErrorResponse{}
+
 	err := json.Unmarshal(raw, response)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

@@ -73,6 +73,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("checkdomain: invalid %s: %w", EnvEndpoint, err)
 	}
+
 	config.Endpoint = endpoint
 
 	return NewDNSProviderConfig(config)

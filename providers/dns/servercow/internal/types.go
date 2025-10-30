@@ -43,6 +43,7 @@ func (v *Value) UnmarshalJSON(b []byte) error {
 	}
 
 	*v = append(*v, s)
+
 	return nil
 }
 

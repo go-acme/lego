@@ -158,6 +158,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.zoneIDsMu.Lock()
 	zoneID, ok := d.zoneIDs[token]
 	d.zoneIDsMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("mittwald: unknown zone ID for '%s'", info.EffectiveFQDN)
 	}

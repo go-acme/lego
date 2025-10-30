@@ -83,6 +83,7 @@ func (c *Client) getRecords(ctx context.Context, zoneID string) (*DNSRecords, er
 	}
 
 	records := &DNSRecords{}
+
 	err = json.Unmarshal(raw, records)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
@@ -190,6 +191,7 @@ func (c *Client) getZones(ctx context.Context, name string) (*Zones, error) {
 	}
 
 	zones := &Zones{}
+
 	err = json.Unmarshal(raw, zones)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)

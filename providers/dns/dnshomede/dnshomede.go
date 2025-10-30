@@ -57,6 +57,7 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variable: DNSHOMEDE_CREDENTIALS.
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
+
 	values, err := env.Get(EnvCredentials)
 	if err != nil {
 		return nil, fmt.Errorf("dnshomede: %w", err)

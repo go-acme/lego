@@ -93,6 +93,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	// Use default credentials.
 	project := env.GetOrDefaultString(EnvProject, autodetectProjectID(context.Background()))
+
 	return NewDNSProviderCredentials(project)
 }
 
@@ -107,6 +108,7 @@ func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 	config.Project = project
 
 	var err error
+
 	config.HTTPClient, err = newClientFromCredentials(context.Background(), config)
 	if err != nil {
 		return nil, fmt.Errorf("googlecloud: %w", err)
@@ -130,10 +132,12 @@ func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
 		var datJSON struct {
 			ProjectID string `json:"project_id"`
 		}
+
 		err := json.Unmarshal(saKey, &datJSON)
 		if err != nil || datJSON.ProjectID == "" {
 			return nil, errors.New("googlecloud: project ID not found in Google Cloud Service Account file")
 		}
+
 		project = datJSON.ProjectID
 	}
 
@@ -141,6 +145,7 @@ func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
 	config.Project = project
 
 	var err error
+
 	config.HTTPClient, err = newClientFromServiceAccountKey(context.Background(), config, saKey)
 	if err != nil {
 		return nil, fmt.Errorf("googlecloud: %w", err)
@@ -169,6 +174,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("googlecloud: the configuration of the DNS provider is nil")
 	}
+
 	if config.HTTPClient == nil {
 		return nil, errors.New("googlecloud: unable to create Google Cloud DNS service: client is nil")
 	}
@@ -200,6 +206,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	for _, rrSet := range existingRrSet {
 		var rrd []string
+
 		for _, rr := range rrSet.Rrdatas {
 			data := mustUnquote(rr)
 			rrd = append(rrd, data)
@@ -209,6 +216,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 				return nil
 			}
 		}
+
 		rrSet.Rrdatas = rrd
 	}
 
@@ -260,6 +268,7 @@ func (d *DNSProvider) applyChanges(ctx context.Context, zone string, change *gdn
 		}
 
 		data, _ := json.Marshal(change)
+
 		return fmt.Errorf("failed to perform changes [zone %s, change %s]: %w", zone, string(data), err)
 	}
 
@@ -316,6 +325,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("googlecloud: %w", err)
 	}
+
 	return nil
 }
 
@@ -450,6 +460,7 @@ func mustUnquote(raw string) string {
 	if err != nil {
 		return raw
 	}
+
 	return clean
 }
 

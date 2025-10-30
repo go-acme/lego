@@ -21,6 +21,7 @@ type EnvTest struct {
 // NewEnvTest Creates an EnvTest.
 func NewEnvTest(keys ...string) *EnvTest {
 	values := make(map[string]string)
+
 	for _, key := range keys {
 		value := os.Getenv(key)
 		if value != "" {
@@ -39,6 +40,7 @@ func NewEnvTest(keys ...string) *EnvTest {
 func (e *EnvTest) WithDomain(key string) *EnvTest {
 	e.domainKey = key
 	e.domain = os.Getenv(key)
+
 	return e
 }
 

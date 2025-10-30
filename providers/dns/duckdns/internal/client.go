@@ -81,6 +81,7 @@ func (c *Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clearR
 	if body != "OK" {
 		return fmt.Errorf("request to change TXT record for DuckDNS returned the following result (%s) this does not match expectation (OK) used url [%s]", body, endpoint)
 	}
+
 	return nil
 }
 
@@ -98,6 +99,7 @@ func getMainDomain(domain string) string {
 		}
 
 		firstSubDomainIndex := split[len(split)-3]
+
 		return domain[firstSubDomainIndex:]
 	}
 

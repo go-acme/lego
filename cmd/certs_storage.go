@@ -158,6 +158,7 @@ func (s *CertificatesStorage) ExistsFile(domain, extension string) bool {
 	} else if err != nil {
 		log.Fatal(err)
 	}
+
 	return true
 }
 
@@ -283,6 +284,7 @@ func getCertificateChain(certRes *certificate.Resource) ([]*x509.Certificate, er
 	}
 
 	var certChain []*x509.Certificate
+
 	for chainCertPemBlock != nil {
 		chainCert, err := x509.ParseCertificate(chainCertPemBlock.Bytes)
 		if err != nil {
@@ -298,6 +300,7 @@ func getCertificateChain(certRes *certificate.Resource) ([]*x509.Certificate, er
 
 func getPFXEncoder(pfxFormat string) (*pkcs12.Encoder, error) {
 	var encoder *pkcs12.Encoder
+
 	switch pfxFormat {
 	case "SHA256":
 		encoder = pkcs12.Modern2023
@@ -318,5 +321,6 @@ func sanitizedDomain(domain string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return safe
 }

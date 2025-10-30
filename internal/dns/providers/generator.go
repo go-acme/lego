@@ -46,6 +46,7 @@ func generate() error {
 	defer func() { _ = file.Close() }()
 
 	b := &bytes.Buffer{}
+
 	err = template.Must(
 		template.New("").Funcs(map[string]any{
 			"cleanName": func(src string) string {

@@ -30,18 +30,21 @@ func (r BaseResponse) GetError() string {
 
 type AddResponse struct {
 	BaseResponse
+
 	Domain string  `json:"domain,omitempty"`
 	Record *Record `json:"record,omitempty"`
 }
 
 type RemoveResponse struct {
 	BaseResponse
+
 	Domain   string `json:"domain,omitempty"`
 	RecordID int    `json:"record_id,omitempty"`
 }
 
 type ListResponse struct {
 	BaseResponse
+
 	Domain  string   `json:"domain,omitempty"`
 	Records []Record `json:"records,omitempty"`
 }

@@ -148,6 +148,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	_, err = d.client.CreateDomainRecord(ctx, zone.domainID, createOpts)
+
 	return err
 }
 
@@ -164,6 +165,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// Get all TXT records for the specified domain.
 	listOpts := linodego.NewListOptions(0, `{"type":"TXT"}`)
+
 	resources, err := d.client.ListDomainRecords(ctx, zone.domainID, listOpts)
 	if err != nil {
 		return err
@@ -196,6 +198,7 @@ func (d *DNSProvider) getHostedZoneInfo(ctx context.Context, fqdn string) (*host
 	}
 
 	listOpts := linodego.NewListOptions(0, string(filter))
+
 	domains, err := d.client.ListDomains(ctx, listOpts)
 	if err != nil {
 		return nil, err

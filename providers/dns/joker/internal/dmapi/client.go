@@ -176,12 +176,15 @@ func RemoveTxtEntryFromZone(zone, relative string) (string, bool) {
 	prefix := fmt.Sprintf("%s TXT 0 ", relative)
 
 	modified := false
+
 	var zoneEntries []string
+
 	for line := range strings.Lines(zone) {
 		if strings.HasPrefix(line, prefix) {
 			modified = true
 			continue
 		}
+
 		zoneEntries = append(zoneEntries, line)
 	}
 

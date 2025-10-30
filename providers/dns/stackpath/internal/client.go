@@ -55,6 +55,7 @@ func (c *Client) GetZones(ctx context.Context, domain string) (*Zone, error) {
 	req.URL.RawQuery = query.Encode()
 
 	var zones Zones
+
 	err = c.do(req, &zones)
 	if err != nil {
 		return nil, err
@@ -82,6 +83,7 @@ func (c *Client) GetZoneRecords(ctx context.Context, name string, zone *Zone) ([
 	req.URL.RawQuery = query.Encode()
 
 	var records Records
+
 	err = c.do(req, &records)
 	if err != nil {
 		return nil, err
@@ -177,6 +179,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	errResp := &ErrorResponse{}
+
 	err := json.Unmarshal(raw, errResp)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

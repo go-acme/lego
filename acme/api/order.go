@@ -56,6 +56,7 @@ func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acm
 	}
 
 	var order acme.Order
+
 	resp, err := o.core.post(o.core.GetDirectory().NewOrderURL, orderReq, &order)
 	if err != nil {
 		are := &acme.AlreadyReplacedError{}
@@ -107,6 +108,7 @@ func (o *OrderService) Get(orderURL string) (acme.ExtendedOrder, error) {
 	}
 
 	var order acme.Order
+
 	_, err := o.core.postAsGet(orderURL, &order)
 	if err != nil {
 		return acme.ExtendedOrder{}, err
@@ -122,6 +124,7 @@ func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (acme.ExtendedO
 	}
 
 	var order acme.Order
+
 	_, err := o.core.post(orderURL, csrMsg, &order)
 	if err != nil {
 		return acme.ExtendedOrder{}, err

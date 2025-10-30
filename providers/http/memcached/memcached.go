@@ -33,12 +33,14 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	var errs []error
 
 	challengePath := path.Join("/", http01.ChallengePath(token))
+
 	for _, host := range w.hosts {
 		mc, err := memcache.New(host)
 		if err != nil {
 			errs = append(errs, err)
 			continue
 		}
+
 		_ = mc.Add(&memcache.Item{
 			Key:        challengePath,
 			Value:      []byte(keyAuth),

@@ -61,6 +61,7 @@ func (d *DNSProvider) cleanupTXTRecord(ctx context.Context, fqdn, value string) 
 	}
 
 	var updRecords iaas.DNSRecords
+
 	for _, r := range zone.Records {
 		if !(r.Name == subDomain && r.Type == "TXT" && r.RData == value) { //nolint:staticcheck // Clearer without De Morgan's law.
 			updRecords = append(updRecords, r)
@@ -71,6 +72,7 @@ func (d *DNSProvider) cleanupTXTRecord(ctx context.Context, fqdn, value string) 
 		Records:      updRecords,
 		SettingsHash: zone.SettingsHash,
 	}
+
 	_, err = d.client.UpdateSettings(ctx, zone.ID, settings)
 	if err != nil {
 		return fmt.Errorf("API call failed: %w", err)

@@ -46,7 +46,7 @@ type Zone struct {
 	HumanReadable    string    `json:"humanReadable,omitempty"`
 	Serial           string    `json:"serial,omitempty"`
 	CreationTime     int64     `json:"creationTime,omitempty"`
-	CreationTimeDate time.Time `json:"creationTimeDate,omitempty"`
+	CreationTimeDate time.Time `json:"creationTimeDate,omitzero"`
 	Status           string    `json:"status,omitempty"`
 	IsMoved          bool      `json:"is_moved,omitempty"`
 	Paused           bool      `json:"paused,omitempty"`

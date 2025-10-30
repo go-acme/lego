@@ -12,13 +12,15 @@ type APIError struct {
 }
 
 func (a *APIError) Error() string {
-	msg := fmt.Sprintf("%s: %s", a.CorrelationID, a.Message)
+	var msg strings.Builder
+
+	msg.WriteString(fmt.Sprintf("%s: %s", a.CorrelationID, a.Message))
 
 	for field, values := range a.Errors {
-		msg += fmt.Sprintf(": %s: %s", field, strings.Join(values, ", "))
+		msg.WriteString(fmt.Sprintf(": %s: %s", field, strings.Join(values, ", ")))
 	}
 
-	return msg
+	return msg.String()
 }
 
 type ZoneRequest struct {

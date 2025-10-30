@@ -102,7 +102,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("webnamesca: could not find zone for domain %q: %w", domain, err)
 	}
 
-	_, err = d.client.AddTXTRecord(context.Background(), authZone, info.EffectiveFQDN, info.Value)
+	_, err = d.client.AddTXTRecord(context.Background(), dns01.UnFqdn(authZone), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 	if err != nil {
 		return fmt.Errorf("webnamesca: add TXT record: %w", err)
 	}
@@ -119,7 +119,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("webnamesca: could not find zone for domain %q: %w", domain, err)
 	}
 
-	_, err = d.client.DeleteTXTRecord(context.Background(), authZone, info.EffectiveFQDN, info.Value)
+	_, err = d.client.DeleteTXTRecord(context.Background(), dns01.UnFqdn(authZone), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 	if err != nil {
 		return fmt.Errorf("webnamesca: delete TXT record: %w", err)
 	}

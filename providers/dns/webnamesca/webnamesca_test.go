@@ -171,10 +171,10 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
-		Route("POST /domains/example.com./add-txt-record",
+		Route("POST /domains/example.com/add-txt-record",
 			servermock.ResponseFromInternal("add_txt_record.json"),
 			servermock.CheckQueryParameter().Strict().
-				With("hostName", "_acme-challenge.example.com.").
+				With("hostName", "_acme-challenge.example.com").
 				With("txt", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")).
 		Build(t)
 
@@ -184,10 +184,10 @@ func TestDNSProvider_Present(t *testing.T) {
 
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
-		Route("DELETE /domains/example.com./delete-txt-record",
+		Route("DELETE /domains/example.com/delete-txt-record",
 			servermock.ResponseFromInternal("delete_txt_record.json"),
 			servermock.CheckQueryParameter().Strict().
-				With("hostName", "_acme-challenge.example.com.").
+				With("hostName", "_acme-challenge.example.com").
 				With("txt", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")).
 		Build(t)
 

@@ -1,0 +1,34 @@
+{
+  "result": {
+    "domainAdvancedDNSConfigID": 3258480,
+    "domainID": 1333334,
+    "dtCreated": "2025-10-30T11:55:23.243",
+    "dtModified": "2025-10-30T11:55:23.177",
+    "timeToLive": 21600,
+    "soAorigin": "hosting.webnames.ca",
+    "soArefresh": 21600,
+    "soAretry": 180,
+    "soAexpire": 1209600,
+    "soAnegcache": 3600,
+    "forwardingURL": null,
+    "gripping": false,
+    "name": null,
+    "dtSubmitted": "2025-10-30T11:55:24.927",
+    "dtRequestedDNSChange": null,
+    "type": "REAL_DOMAIN",
+    "userManaged": false,
+    "effectiveMgmtOption": "AD",
+    "urlForwardRootOnly": false,
+    "enableDNSSEC": false,
+    "dnsRecordSets": [
+      {
+        "hostname": "_acme-challenge.example.com",
+        "type": "TXT",
+        "records": [
+          "value"
+        ]
+      }
+    ]
+  },
+  "logID": 36014
+}

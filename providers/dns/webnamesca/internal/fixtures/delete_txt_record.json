@@ -1,0 +1,36 @@
+{
+  "errorMessage": "string",
+  "errorDetails": "string",
+  "logID": 0,
+  "result": {
+    "domainAdvancedDNSConfigID": 0,
+    "domainID": 0,
+    "dtCreated": "2025-10-29T21:22:31.478",
+    "dtModified": "2025-10-29T21:22:31.478",
+    "timeToLive": 0,
+    "soAorigin": "string",
+    "soArefresh": 0,
+    "soAretry": 0,
+    "soAexpire": 0,
+    "soAnegcache": 0,
+    "forwardingURL": "string",
+    "gripping": true,
+    "name": "string",
+    "dtSubmitted": "2025-10-29T21:22:31.478",
+    "dtRequestedDNSChange": "2025-10-29T21:22:31.478",
+    "type": "string",
+    "userManaged": true,
+    "effectiveMgmtOption": "string",
+    "urlForwardRootOnly": true,
+    "enableDNSSEC": true,
+    "dnsRecordSets": [
+      {
+        "hostname": "_acme-challenge.example.com",
+        "type": "TXT",
+        "records": [
+          "value"
+        ]
+      }
+    ]
+  }
+}

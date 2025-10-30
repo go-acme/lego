@@ -25,8 +25,8 @@ type APIResponse[T any] struct {
 type DNSInfo struct {
 	DomainAdvancedDNSConfigID int            `json:"domainAdvancedDNSConfigID,omitempty"`
 	DomainID                  int            `json:"domainID,omitempty"`
-	DtCreated                 time.Time      `json:"dtCreated,omitempty"`
-	DtModified                time.Time      `json:"dtModified,omitempty"`
+	DtCreated                 time.Time      `json:"dtCreated,omitzero"`
+	DtModified                time.Time      `json:"dtModified,omitzero"`
 	TimeToLive                int            `json:"timeToLive,omitempty"`
 	SoAorigin                 string         `json:"soAorigin,omitempty"`
 	SoArefresh                int            `json:"soArefresh,omitempty"`
@@ -36,8 +36,8 @@ type DNSInfo struct {
 	ForwardingURL             string         `json:"forwardingURL,omitempty"`
 	Gripping                  bool           `json:"gripping,omitempty"`
 	Name                      string         `json:"name,omitempty"`
-	DtSubmitted               time.Time      `json:"dtSubmitted,omitempty"`
-	DtRequestedDNSChange      time.Time      `json:"dtRequestedDNSChange,omitempty"`
+	DtSubmitted               time.Time      `json:"dtSubmitted,omitzero"`
+	DtRequestedDNSChange      time.Time      `json:"dtRequestedDNSChange,omitzero"`
 	Type                      string         `json:"type,omitempty"`
 	UserManaged               bool           `json:"userManaged,omitempty"`
 	EffectiveMgmtOption       string         `json:"effectiveMgmtOption,omitempty"`

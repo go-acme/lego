@@ -487,7 +487,7 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return vscale.NewDNSProvider()
 	case "vultr":
 		return vultr.NewDNSProvider()
-	case "webnames":
+	case "webnames", "webnamesru":
 		return webnames.NewDNSProvider()
 	case "webnamesca":
 		return webnamesca.NewDNSProvider()

@@ -1,6 +1,6 @@
 {
-  "errorMessage": "string",
+  "errorMessage":"User does not exist.",
   "errorDetails": "string",
-  "logID": 0,
-  "result": "string"
+  "logID":35579,
+  "result": {}
 }

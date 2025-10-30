@@ -56,7 +56,7 @@ func (c *Client) AddTXTRecord(ctx context.Context, domainName, hostName, value s
 		return nil, err
 	}
 
-	var result APIResponse
+	var result APIResponse[*DNSInfo]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -80,7 +80,7 @@ func (c *Client) DeleteTXTRecord(ctx context.Context, domainName, hostName, valu
 		return nil, err
 	}
 
-	var result APIResponse
+	var result APIResponse[*DNSInfo]
 
 	err = c.do(req, &result)
 	if err != nil {

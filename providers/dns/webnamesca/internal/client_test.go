@@ -60,7 +60,7 @@ func TestClient_AddTXTRecord_error(t *testing.T) {
 		Build(t)
 
 	_, err := client.AddTXTRecord(t.Context(), "example.com", "foo.example.com", "value")
-	require.EqualError(t, err, "message: string, details: string, logiD: 0, result: string")
+	require.EqualError(t, err, "message: User does not exist., details: string, logiD: 35579, result: {}")
 }
 
 func TestClient_DeleteTXTRecord(t *testing.T) {
@@ -92,5 +92,5 @@ func TestClient_DeleteTXTRecord_error(t *testing.T) {
 		Build(t)
 
 	_, err := client.DeleteTXTRecord(t.Context(), "example.com", "foo.example.com", "value")
-	require.EqualError(t, err, "message: string, details: string, logiD: 0, result: string")
+	require.EqualError(t, err, "message: User does not exist., details: string, logiD: 35579, result: {}")
 }

@@ -1,29 +1,28 @@
 package internal
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 )
 
 type APIError struct {
-	ErrorMessage string `json:"errorMessage,omitempty"`
-	ErrorDetails string `json:"errorDetails,omitempty"`
-	LogID        int    `json:"logID,omitempty"`
-	Result       string `json:"result,omitempty"`
+	ErrorMessage string          `json:"errorMessage,omitempty"`
+	ErrorDetails string          `json:"errorDetails,omitempty"`
+	LogID        int             `json:"logID,omitempty"`
+	Result       json.RawMessage `json:"result,omitempty"`
 }
 
 func (a *APIError) Error() string {
 	return fmt.Sprintf("message: %s, details: %s, logiD: %d, result: %s", a.ErrorMessage, a.ErrorDetails, a.LogID, a.Result)
 }
 
-type APIResponse struct {
-	ErrorMessage string  `json:"errorMessage,omitempty"`
-	ErrorDetails string  `json:"errorDetails,omitempty"`
-	LogID        int     `json:"logID,omitempty"`
-	Result       *Result `json:"result,omitempty"`
+type APIResponse[T any] struct {
+	Result T   `json:"result,omitempty"`
+	LogID  int `json:"logID,omitempty"`
 }
 
-type Result struct {
+type DNSInfo struct {
 	DomainAdvancedDNSConfigID int            `json:"domainAdvancedDNSConfigID,omitempty"`
 	DomainID                  int            `json:"domainID,omitempty"`
 	DtCreated                 time.Time      `json:"dtCreated,omitempty"`

@@ -163,7 +163,9 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 			return p, nil
 		},
 		servermock.CheckHeader().
-			WithJSONHeaders(),
+			WithJSONHeaders().
+			With("API-User", "user").
+			With("API-Key", "secret"),
 	)
 }
 

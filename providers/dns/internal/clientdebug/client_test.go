@@ -32,12 +32,14 @@ func TestWrap_redact_env_vars(t *testing.T) {
 		WithEnvKeys("MY_VAR_01", "MY_VAR_02", "MY_VAR_03", "MY_VAR_04", "MY_VAR_05", "MY_VAR_06"),
 	)
 
+	now := time.Now()
+
 	resp, err := client.Transport.RoundTrip(req)
 	require.NoError(t, err)
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	assertDump(t, server, buf, "env_vars.txt")
+	assertDump(t, now, server, buf, "env_vars.txt")
 }
 
 func TestWrap_redact_headers(t *testing.T) {
@@ -49,12 +51,14 @@ func TestWrap_redact_headers(t *testing.T) {
 		WithHeaders("Secret-Request-Header", "Super-Secret-Request-Header", "Secret-Response-Header"),
 	)
 
+	now := time.Now()
+
 	resp, err := client.Transport.RoundTrip(req)
 	require.NoError(t, err)
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	assertDump(t, server, buf, "headers.txt")
+	assertDump(t, now, server, buf, "headers.txt")
 }
 
 func TestWrap_redact_values(t *testing.T) {
@@ -66,12 +70,14 @@ func TestWrap_redact_values(t *testing.T) {
 		WithValues("query-aaaa-aaaa", "path-aaaa-aaaa", "request-body-aaaa-aaaa"),
 	)
 
+	now := time.Now()
+
 	resp, err := client.Transport.RoundTrip(req)
 	require.NoError(t, err)
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	assertDump(t, server, buf, "values.txt")
+	assertDump(t, now, server, buf, "values.txt")
 }
 
 func fakeRequest(t *testing.T, baseURL string) *http.Request {
@@ -144,7 +150,7 @@ func setupTest(t *testing.T, buf io.Writer, opts ...Option) (*httptest.Server, *
 	return server, client, req
 }
 
-func assertDump(t *testing.T, server *httptest.Server, actual *bytes.Buffer, filename string) {
+func assertDump(t *testing.T, now time.Time, server *httptest.Server, actual *bytes.Buffer, filename string) {
 	t.Helper()
 
 	tmpl, err := template.New(filename).ParseFiles(filepath.Join("testdata", filename))
@@ -160,7 +166,7 @@ func assertDump(t *testing.T, server *httptest.Server, actual *bytes.Buffer, fil
 
 	err = tmpl.Execute(expected, map[string]string{
 		"Host": baseURL.Host,
-		"Date": time.Now().In(location).Format(time.RFC1123),
+		"Date": now.In(location).Format(time.RFC1123),
 	})
 	require.NoError(t, err)
 

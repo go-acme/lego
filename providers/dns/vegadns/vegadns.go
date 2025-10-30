@@ -137,14 +137,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("vegadns: find domain ID for %s: %w", info.EffectiveFQDN, err)
 	}
 
-	recordID, err := d.client.GetRecordID(ctx, domainID, dns01.UnFqdn(info.EffectiveFQDN), "TXT")
+	recordID, err := d.findRecordID(ctx, domainID, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("vegadns: get Record ID: %w", err)
+		return fmt.Errorf("vegadns: find record ID for %d: %w", domainID, err)
 	}
 
 	err = d.client.DeleteRecord(ctx, recordID)
 	if err != nil {
-		return fmt.Errorf("vegadns: %w", err)
+		return fmt.Errorf("vegadns: delete record: %w", err)
 	}
 
 	return nil
@@ -161,4 +161,19 @@ func (d *DNSProvider) findDomainID(ctx context.Context, fqdn string) (int, error
 	}
 
 	return 0, errors.New("domain not found")
+}
+
+func (d *DNSProvider) findRecordID(ctx context.Context, domainID int, name string) (int, error) {
+	records, err := d.client.GetRecords(ctx, domainID)
+	if err != nil {
+		return 0, fmt.Errorf("get records: %w", err)
+	}
+
+	for _, r := range records {
+		if r.Name == name && r.RecordType == "TXT" {
+			return r.RecordID, nil
+		}
+	}
+
+	return 0, errors.New("record not found")
 }

@@ -7,6 +7,7 @@ import (
 
 type Response[T any] struct {
 	Base
+
 	Data T `json:"data"`
 }
 

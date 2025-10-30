@@ -84,6 +84,7 @@ type Meta struct {
 // ExtendedAccount an extended Account.
 type ExtendedAccount struct {
 	Account
+
 	// Contains the value of the response header `Location`
 	Location string `json:"-"`
 }
@@ -244,6 +245,7 @@ type Authorization struct {
 // ExtendedChallenge a extended Challenge.
 type ExtendedChallenge struct {
 	Challenge
+
 	// Contains the value of the response header `Retry-After`
 	RetryAfter string `json:"-"`
 	// Contains the value of the response header `Link` rel="up"

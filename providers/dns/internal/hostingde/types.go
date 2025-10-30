@@ -88,7 +88,8 @@ type Zone struct {
 // https://www.hosting.de/api/?json#updating-zones
 type ZoneUpdateRequest struct {
 	BaseRequest
-	ZoneConfig      `json:"zoneConfig"`
+	ZoneConfig `json:"zoneConfig"`
+
 	RecordsToAdd    []DNSRecord `json:"recordsToAdd"`
 	RecordsToDelete []DNSRecord `json:"recordsToDelete"`
 }
@@ -97,6 +98,7 @@ type ZoneUpdateRequest struct {
 // https://www.hosting.de/api/?json#list-zoneconfigs
 type ZoneConfigsFindRequest struct {
 	BaseRequest
+
 	Filter Filter `json:"filter"`
 	Limit  int    `json:"limit"`
 	Page   int    `json:"page"`

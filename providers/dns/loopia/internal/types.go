@@ -66,6 +66,7 @@ type response interface {
 
 type responseString struct {
 	responseFault
+
 	Value string `xml:"params>param>value>string"`
 }
 
@@ -88,6 +89,7 @@ func (e RPCError) Error() string {
 
 type recordObjectsResponse struct {
 	responseFault
+
 	XMLName xml.Name    `xml:"methodResponse"`
 	Params  []RecordObj `xml:"params>param>value>array>data>value>struct"`
 }

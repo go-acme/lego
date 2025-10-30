@@ -11,10 +11,11 @@ import (
 
 // Manager Manages nonces.
 type Manager struct {
+	sync.Mutex
+
 	do       *sender.Doer
 	nonceURL string
 	nonces   []string
-	sync.Mutex
 }
 
 // NewManager Creates a new Manager.

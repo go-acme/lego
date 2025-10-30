@@ -53,6 +53,7 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	*edgegrid.Config
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int

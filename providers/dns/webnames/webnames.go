@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -17,7 +18,8 @@ import (
 
 // Environment variables names.
 const (
-	envNamespace = "WEBNAMES_"
+	envNamespace    = "WEBNAMESRU_"
+	altEnvNamespace = "WEBNAMES_"
 
 	EnvAPIKey = envNamespace + "API_KEY"
 
@@ -40,10 +42,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOneWithFallback(EnvPropagationTimeout, dns01.DefaultPropagationTimeout, env.ParseSecond, altEnvName(EnvPropagationTimeout)),
+		PollingInterval:    env.GetOneWithFallback(EnvPollingInterval, dns01.DefaultPollingInterval, env.ParseSecond, altEnvName(EnvPollingInterval)),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOneWithFallback(EnvHTTPTimeout, 20*time.Second, env.ParseSecond, altEnvName(EnvHTTPTimeout)),
 		},
 	}
 }
@@ -55,11 +57,11 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a new DNS provider using
-// environment variable WEBNAMES_API_KEY for adding and removing the DNS record.
+// environment variable WEBNAMESRU_API_KEY for adding and removing the DNS record.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIKey)
+	values, err := env.GetWithFallback([]string{EnvAPIKey, altEnvName(EnvAPIKey)})
 	if err != nil {
-		return nil, fmt.Errorf("webnames: %w", err)
+		return nil, fmt.Errorf("webnamesru: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -71,11 +73,11 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for Webnames.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("webnames: the configuration of the DNS provider is nil")
+		return nil, errors.New("webnamesru: the configuration of the DNS provider is nil")
 	}
 
 	if config.APIKey == "" {
-		return nil, errors.New("webnames: credentials missing")
+		return nil, errors.New("webnamesru: credentials missing")
 	}
 
 	client := internal.NewClient(config.APIKey)
@@ -95,17 +97,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("webnames: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("webnamesru: could not find zone for domain %q: %w", domain, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
-		return fmt.Errorf("webnames: %w", err)
+		return fmt.Errorf("webnamesru: %w", err)
 	}
 
 	err = d.client.AddTXTRecord(context.Background(), dns01.UnFqdn(authZone), subDomain, info.Value)
 	if err != nil {
-		return fmt.Errorf("webnames: failed to create TXT records [domain: %s, sub domain: %s]: %w",
+		return fmt.Errorf("webnamesru: failed to create TXT records [domain: %s, sub domain: %s]: %w",
 			dns01.UnFqdn(authZone), subDomain, err)
 	}
 
@@ -118,17 +120,17 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("webnames: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("webnamesru: could not find zone for domain %q: %w", domain, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
-		return fmt.Errorf("webnames: %w", err)
+		return fmt.Errorf("webnamesru: %w", err)
 	}
 
 	err = d.client.RemoveTXTRecord(context.Background(), dns01.UnFqdn(authZone), subDomain, info.Value)
 	if err != nil {
-		return fmt.Errorf("webnames: failed to remove TXT records [domain: %s, sub domain: %s]: %w",
+		return fmt.Errorf("webnamesru: failed to remove TXT records [domain: %s, sub domain: %s]: %w",
 			dns01.UnFqdn(authZone), subDomain, err)
 	}
 
@@ -139,4 +141,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func altEnvName(v string) string {
+	return strings.ReplaceAll(v, envNamespace, altEnvNamespace)
 }

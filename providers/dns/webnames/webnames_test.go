@@ -29,7 +29,7 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvAPIKey: "",
 			},
-			expected: "webnames: some credentials information are missing: WEBNAMES_API_KEY",
+			expected: "webnamesru: some credentials information are missing: WEBNAMESRU_API_KEY",
 		},
 	}
 
@@ -66,7 +66,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "webnames: credentials missing",
+			expected: "webnamesru: credentials missing",
 		},
 	}
 

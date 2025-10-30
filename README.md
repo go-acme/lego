@@ -252,9 +252,9 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
   <td><a href="https://go-acme.github.io/lego/dns/volcengine/">Volcano Engine/火山引擎</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/vscale/">Vscale</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/vultr/">Vultr</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/webnames/">Webnames</a></td>
-</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/webnamesca/">webnames.ca</a></td>
+</tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/webnames/">webnames.ru</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/websupport/">Websupport</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/wedos/">WEDOS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/westcn/">West.cn/西部数码</a></td>

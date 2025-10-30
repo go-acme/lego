@@ -1,5 +1,5 @@
 ---
-title: "Webnames"
+title: "webnames.ru"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: webnames
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [Webnames](https://www.webnames.ru/).
+Configuration for [webnames.ru](https://www.webnames.ru/).
 
 
 <!--more-->
@@ -23,11 +23,11 @@ Configuration for [Webnames](https://www.webnames.ru/).
 - Since: v4.15.0
 
 
-Here is an example bash command using the Webnames provider:
+Here is an example bash command using the webnames.ru provider:
 
 ```bash
-WEBNAMES_API_KEY=xxxxxx \
-lego --email you@example.com --dns webnames -d '*.example.com' -d example.com run
+WEBNAMESRU_API_KEY=xxxxxx \
+lego --email you@example.com --dns webnamesru -d '*.example.com' -d example.com run
 ```
 
 
@@ -37,7 +37,7 @@ lego --email you@example.com --dns webnames -d '*.example.com' -d example.com ru
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `WEBNAMES_API_KEY` | Domain API key |
+| `WEBNAMESRU_API_KEY` | Domain API key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
@@ -47,9 +47,9 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `WEBNAMES_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
-| `WEBNAMES_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
-| `WEBNAMES_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
+| `WEBNAMESRU_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `WEBNAMESRU_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `WEBNAMESRU_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

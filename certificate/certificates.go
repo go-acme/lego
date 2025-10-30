@@ -490,6 +490,7 @@ type RenewOptions struct {
 // If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
 //
 // For private key reuse the PrivateKey property of the passed in Resource should be non-nil.
+//
 // Deprecated: use RenewWithOptions instead.
 func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool, preferredChain string) (*Resource, error) {
 	return c.RenewWithOptions(certRes, &RenewOptions{

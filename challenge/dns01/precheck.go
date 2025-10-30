@@ -29,6 +29,7 @@ func WrapPreCheck(wrap WrapPreCheckFunc) ChallengeOption {
 }
 
 // DisableCompletePropagationRequirement obsolete.
+//
 // Deprecated: use DisableAuthoritativeNssPropagationRequirement instead.
 func DisableCompletePropagationRequirement() ChallengeOption {
 	return DisableAuthoritativeNssPropagationRequirement()

@@ -173,6 +173,7 @@ type sequential interface {
 }
 
 // GetRecord returns a DNS record which will fulfill the `dns-01` challenge.
+//
 // Deprecated: use GetChallengeInfo instead.
 func GetRecord(domain, keyAuth string) (fqdn, value string) {
 	info := GetChallengeInfo(domain, keyAuth)

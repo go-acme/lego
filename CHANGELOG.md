@@ -6,6 +6,27 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v4.28.0
+
+- Release date: 2025-10-31
+- Tag: [v4.28.0](https://github.com/go-acme/lego/releases/tag/v4.28.0)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Anexia
+- **[dnsprovider]** Add DNS provider for webnames.ca
+- **[dnsprovider]** webnames: rename to webnamesru to avoid ambiguity with webnamesca
+
+### Changed
+
+- **[dnsprovider,log]** hetzner: add deprecation logs
+- **[dnsprovider]** iwantmyname: provider deprecation
+- **[cli]** improve retryable HTTP client error handling
+
+### Fixed
+
+- **[dnsprovider]** hostinger: fix record update
+
 ## v4.27.0
 
 - Release date: 2025-10-17

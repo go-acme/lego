@@ -1,0 +1,33 @@
+Name = "AlibabaCloud ESA"
+Description = ''''''
+URL = "https://www.alibabacloud.com/en/product/esa"
+Code = "aliesa"
+Since = "v4.29.0"
+
+Example = '''
+# Setup using instance RAM role
+ALIESA_RAM_ROLE=lego \
+lego --email you@example.com --dns aliesa -d '*.example.com' -d example.com run
+
+# Or, using credentials
+ALIESA_ACCESS_KEY=abcdefghijklmnopqrstuvwx \
+ALIESA_SECRET_KEY=your-secret-key \
+ALIESA_SECURITY_TOKEN=your-sts-token \
+lego --email you@example.com --dns aliesa - -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    ALIESA_RAM_ROLE = "Your instance RAM role (https://www.alibabacloud.com/help/en/ecs/user-guide/attach-an-instance-ram-role-to-an-ecs-instance)"
+    ALIESA_ACCESS_KEY = "Access key ID"
+    ALIESA_SECRET_KEY = "Access Key secret"
+    ALIESA_SECURITY_TOKEN = "STS Security Token (optional)"
+  [Configuration.Additional]
+    ALIESA_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    ALIESA_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    ALIESA_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    ALIESA_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://www.alibabacloud.com/help/en/edge-security-acceleration/esa/api-esa-2024-09-10-overview?spm=a2c63.p38356.help-menu-2673927.d_6_0_0.20b224c28PSZDc#:~:text=DNS-,DNS%20records,-DNS%20records"
+  GoClient = "https://github.com/alibabacloud-go/esa-20240910"

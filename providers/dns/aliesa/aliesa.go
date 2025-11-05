@@ -9,9 +9,9 @@ import (
 	"time"
 
 	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
-	esa "github.com/alibabacloud-go/esa-20240910/v2/client"
 	"github.com/alibabacloud-go/tea/dara"
 	"github.com/aliyun/credentials-go/credentials"
+	esa "github.com/go-acme/esa-20240910/v2/client"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
@@ -161,7 +161,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		SetData(new(esa.CreateRecordRequestData).SetValue(info.Value))
 
 	// https://www.alibabacloud.com/help/en/edge-security-acceleration/esa/api-esa-2024-09-10-createrecord
-	crResp, err := d.client.CreateRecordWithContext(ctx, crReq, &dara.RuntimeOptions{})
+	crResp, err := esa.CreateRecordWithContext(ctx, d.client, crReq, &dara.RuntimeOptions{})
 	if err != nil {
 		return fmt.Errorf("aliesa: create record: %w", err)
 	}
@@ -192,7 +192,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		SetRecordId(recordID)
 
 	// https://www.alibabacloud.com/help/en/edge-security-acceleration/esa/api-esa-2024-09-10-deleterecord
-	_, err := d.client.DeleteRecordWithContext(ctx, drReq, &dara.RuntimeOptions{})
+	_, err := esa.DeleteRecordWithContext(ctx, d.client, drReq, &dara.RuntimeOptions{})
 	if err != nil {
 		return fmt.Errorf("aliesa: delete record: %w", err)
 	}
@@ -217,7 +217,7 @@ func (d *DNSProvider) getSiteID(ctx context.Context, fqdn string) (int64, error)
 		SetSiteSearchType("suffix")
 
 	// https://www.alibabacloud.com/help/en/edge-security-acceleration/esa/api-esa-2024-09-10-listsites
-	lsResp, err := d.client.ListSitesWithContext(ctx, lsReq, &dara.RuntimeOptions{})
+	lsResp, err := esa.ListSitesWithContext(ctx, d.client, lsReq, &dara.RuntimeOptions{})
 	if err != nil {
 		return 0, fmt.Errorf("list sites: %w", err)
 	}

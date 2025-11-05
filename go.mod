@@ -16,7 +16,6 @@ require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v11 v11.1.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.13
-	github.com/alibabacloud-go/esa-20240910/v2 v2.39.3
 	github.com/alibabacloud-go/tea v1.3.13
 	github.com/aliyun/credentials-go v1.4.7
 	github.com/aws/aws-sdk-go-v2 v1.39.4
@@ -32,6 +31,7 @@ require (
 	github.com/dnsimple/dnsimple-go/v4 v4.0.0
 	github.com/exoscale/egoscale/v3 v3.1.27
 	github.com/go-acme/alidns-20150109/v4 v4.6.1
+	github.com/go-acme/esa-20240910/v2 v2.39.4-0.20251105201639-2cc10a8ec341
 	github.com/go-acme/tencentclouddnspod v1.1.10
 	github.com/go-acme/tencentedgdeone v1.1.48
 	github.com/go-jose/go-jose/v4 v4.1.3

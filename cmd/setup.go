@@ -180,6 +180,10 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 		return rt, err
 	}
 
+	if resp == nil {
+		return rt, nil
+	}
+
 	if resp.StatusCode/100 == 2 {
 		return rt, nil
 	}

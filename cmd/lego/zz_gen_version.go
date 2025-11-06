@@ -2,7 +2,7 @@
 
 package main
 
-const defaultVersion = "v4.28.0+dev-detach"
+const defaultVersion = "v4.28.1+dev-release"
 
 var version = ""
 

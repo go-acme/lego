@@ -81,6 +81,8 @@ jobs:
       - uses: actions/attest-build-provenance@v3
         with:
           subject-checksums: ./dist/lego_*_checksums.txt
+          github-token: ${{ secrets.GH_TOKEN_REPO }}
       - uses: actions/attest-build-provenance@v3
         with:
           subject-checksums: ./dist/digests.txt
+          github-token: ${{ secrets.GH_TOKEN_REPO }}

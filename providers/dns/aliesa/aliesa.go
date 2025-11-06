@@ -139,7 +139,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("aliesa: new client: %w", err)
 	}
 
-	return &DNSProvider{config: config, client: client}, nil
+	return &DNSProvider{
+		config:    config,
+		client:    client,
+		recordIDs: make(map[string]int64),
+	}, nil
 }
 
 // Present creates a TXT record using the specified parameters.

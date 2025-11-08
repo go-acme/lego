@@ -90,8 +90,9 @@ dockers_v2:
       - linux/arm/v7
     tags:
       - 'latest'
-      - '{{ .Tag }}'
+      - 'v{{ .Major }}'
       - 'v{{ .Major }}.{{ .Minor }}'
+      - '{{ .Tag }}'
     labels:
       # https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
       'org.opencontainers.image.title': '{{.ProjectName}}'

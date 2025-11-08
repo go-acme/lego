@@ -15,7 +15,7 @@ import (
 )
 
 // defaultBaseURL endpoint is the Gandi API endpoint used by Present and CleanUp.
-const defaultBaseURL = "https://dns.api.gandi.net/api/v5"
+const defaultBaseURL = "https://api.gandi.net/v5/livedns"
 
 // APIKeyHeader API key header.
 const APIKeyHeader = "X-Api-Key"

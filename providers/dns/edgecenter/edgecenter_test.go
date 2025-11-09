@@ -65,7 +65,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "gcore: incomplete credentials provided",
+			expected: "edgecenter: incomplete credentials provided",
 		},
 	}
 

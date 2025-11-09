@@ -7,12 +7,13 @@ type Zone struct {
 }
 
 type RRSet struct {
-	TTL     int       `json:"ttl"`
-	Records []Records `json:"resource_records"`
+	TTL             int              `json:"ttl"`
+	ResourceRecords []ResourceRecord `json:"resource_records"`
 }
 
-type Records struct {
+type ResourceRecord struct {
 	Content []string `json:"content"`
+	Enabled *bool    `json:"enabled,omitempty"`
 }
 
 type APIError struct {

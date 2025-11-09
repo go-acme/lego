@@ -93,11 +93,11 @@ func (c *Client) DeleteRRSet(ctx context.Context, zone, name string) error {
 
 // AddRRSet adds TXT record (create or update).
 func (c *Client) AddRRSet(ctx context.Context, zone, recordName, value string, ttl int) error {
-	record := RRSet{TTL: ttl, Records: []Records{{Content: []string{value}}}}
+	record := RRSet{TTL: ttl, ResourceRecords: []ResourceRecord{{Content: []string{value}}}}
 
 	txt, err := c.GetRRSet(ctx, zone, recordName)
-	if err == nil && len(txt.Records) > 0 {
-		record.Records = append(record.Records, txt.Records...)
+	if err == nil && len(txt.ResourceRecords) > 0 {
+		record.ResourceRecords = append(record.ResourceRecords, txt.ResourceRecords...)
 		return c.updateRRSet(ctx, zone, recordName, record)
 	}
 

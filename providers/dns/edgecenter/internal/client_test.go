@@ -56,7 +56,7 @@ func TestClient_GetZone_error(t *testing.T) {
 func TestClient_GetRRSet(t *testing.T) {
 	expected := RRSet{
 		TTL: testTTL,
-		Records: []Records{
+		ResourceRecords: []ResourceRecord{
 			{Content: []string{testRecordContent}},
 		},
 	}
@@ -108,7 +108,7 @@ func TestClient_AddRRSet_add(t *testing.T) {
 			servermock.JSONEncode(APIError{Message: "not found"}).WithStatusCode(http.StatusBadRequest)).
 		// createRRSet
 		Route("POST /v2/zones/test.example.com/my.test.example.com/TXT",
-			servermock.JSONEncode([]Records{{Content: []string{testRecordContent}}}),
+			servermock.JSONEncode([]ResourceRecord{{Content: []string{testRecordContent}}}),
 			servermock.CheckRequestJSONBody(`{"ttl":10,"resource_records":[{"content":["acme"]}]}`)).
 		Build(t)
 
@@ -135,8 +135,8 @@ func TestClient_AddRRSet_update(t *testing.T) {
 		// GetRRSet
 		Route("GET /v2/zones/test.example.com/my.test.example.com/TXT",
 			servermock.JSONEncode(RRSet{
-				TTL:     testTTL,
-				Records: []Records{{Content: []string{"foo"}}},
+				TTL:             testTTL,
+				ResourceRecords: []ResourceRecord{{Content: []string{"foo"}}},
 			})).
 		// updateRRSet
 		Route("PUT /v2/zones/test.example.com/my.test.example.com/TXT", nil,
@@ -152,8 +152,8 @@ func TestClient_AddRRSet_update_error(t *testing.T) {
 		// GetRRSet
 		Route("GET /v2/zones/test.example.com/my.test.example.com/TXT",
 			servermock.JSONEncode(RRSet{
-				TTL:     testTTL,
-				Records: []Records{{Content: []string{"foo"}}},
+				TTL:             testTTL,
+				ResourceRecords: []ResourceRecord{{Content: []string{"foo"}}},
 			})).
 		// updateRRSet
 		Route("PUT /v2/zones/test.example.com/my.test.example.com/TXT",

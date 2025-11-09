@@ -1,10 +1,11 @@
-package gcore
+package edgecenter
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -16,7 +17,7 @@ import (
 
 // Environment variables names.
 const (
-	envNamespace = "GCORE_"
+	envNamespace = "EDGECENTER_"
 
 	EnvPermanentAPIToken = envNamespace + "PERMANENT_API_TOKEN"
 
@@ -64,7 +65,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvPermanentAPIToken)
 	if err != nil {
-		return nil, fmt.Errorf("gcore: %w", err)
+		return nil, fmt.Errorf("edgecenter: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -76,14 +77,15 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for G-Core DNS API.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("gcore: the configuration of the DNS provider is nil")
+		return nil, errors.New("edgecenter: the configuration of the DNS provider is nil")
 	}
 
 	if config.APIToken == "" {
-		return nil, errors.New("gcore: incomplete credentials provided")
+		return nil, errors.New("edgecenter: incomplete credentials provided")
 	}
 
 	client := gcore.NewClient(config.APIToken)
+	client.BaseURL, _ = url.Parse(gcore.DefaultEdgeCenterBaseURL)
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
@@ -105,12 +107,12 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	zone, err := d.guessZone(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("gcore: %w", err)
+		return fmt.Errorf("edgecenter: %w", err)
 	}
 
 	err = d.client.AddRRSet(ctx, zone, dns01.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("gcore: add txt record: %w", err)
+		return fmt.Errorf("edgecenter: add txt record: %w", err)
 	}
 
 	return nil
@@ -124,12 +126,12 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	zone, err := d.guessZone(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("gcore: %w", err)
+		return fmt.Errorf("edgecenter: %w", err)
 	}
 
 	err = d.client.DeleteRRSet(ctx, zone, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("gcore: remove txt record: %w", err)
+		return fmt.Errorf("edgecenter: remove txt record: %w", err)
 	}
 
 	return nil

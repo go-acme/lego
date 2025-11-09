@@ -1,4 +1,4 @@
-package gcore
+package edgecenter
 
 import (
 	"testing"
@@ -26,7 +26,7 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvPermanentAPIToken: "",
 			},
-			expected: "gcore: some credentials information are missing: GCORE_PERMANENT_API_TOKEN",
+			expected: "edgecenter: some credentials information are missing: EDGECENTER_PERMANENT_API_TOKEN",
 		},
 	}
 
@@ -64,7 +64,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "gcore: incomplete credentials provided",
+			expected: "edgecenter: incomplete credentials provided",
 		},
 	}
 

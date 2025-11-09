@@ -62,6 +62,7 @@ func allDNSCodes() string {
 		"dyndnsfree",
 		"dynu",
 		"easydns",
+		"edgecenter",
 		"edgedns",
 		"edgeone",
 		"efficientip",
@@ -1251,6 +1252,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/easydns`)
+
+	case "edgecenter":
+		// generated from: providers/dns/edgecenter/edgecenter.toml
+		ew.writeln(`Configuration for EdgeCenter.`)
+		ew.writeln(`Code:	'edgecenter'`)
+		ew.writeln(`Since:	'v4.29.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "EDGECENTER_PERMANENT_API_TOKEN":	Permanent API token (https://edgecenter.ru/blog/permanent-api-token-explained/)`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "EDGECENTER_HTTP_TIMEOUT":	API request timeout in seconds (Default: 10)`)
+		ew.writeln(`	- "EDGECENTER_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 20)`)
+		ew.writeln(`	- "EDGECENTER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 360)`)
+		ew.writeln(`	- "EDGECENTER_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/edgecenter`)
 
 	case "edgedns":
 		// generated from: providers/dns/edgedns/edgedns.toml

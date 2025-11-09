@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
+	"net/url"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/edgecenter/internal"
 	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v4/providers/dns/internal/gcore"
 )
 
 // Environment variables names.
@@ -58,7 +58,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider an implementation of challenge.Provider contract.
 type DNSProvider struct {
 	config *Config
-	client *internal.Client
+	client *gcore.Client
 }
 
 // NewDNSProvider returns an instance of DNSProvider configured for G-Core DNS API.
@@ -84,7 +84,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("edgecenter: incomplete credentials provided")
 	}
 
-	client := internal.NewClient(config.APIToken)
+	client := gcore.NewClient(config.APIToken)
+	client.BaseURL, _ = url.Parse(gcore.DefaultEdgeCenterBaseURL)
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
@@ -145,28 +146,15 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) guessZone(ctx context.Context, fqdn string) (string, error) {
 	var lastErr error
 
-	for _, zone := range extractAllZones(fqdn) {
+	for zone := range dns01.UnFqdnDomainsSeq(fqdn) {
 		dnsZone, err := d.client.GetZone(ctx, zone)
-		if err == nil {
-			return dnsZone.Name, nil
+		if err != nil {
+			lastErr = err
+			continue
 		}
 
-		lastErr = err
+		return dnsZone.Name, nil
 	}
 
 	return "", fmt.Errorf("zone %q not found: %w", fqdn, lastErr)
-}
-
-func extractAllZones(fqdn string) []string {
-	parts := strings.Split(dns01.UnFqdn(fqdn), ".")
-	if len(parts) < 3 {
-		return nil
-	}
-
-	var zones []string
-	for i := 1; i < len(parts)-1; i++ {
-		zones = append(zones, strings.Join(parts[i:], "."))
-	}
-
-	return zones
 }

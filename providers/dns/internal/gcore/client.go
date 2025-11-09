@@ -1,4 +1,4 @@
-package internal
+package gcore
 
 import (
 	"bytes"
@@ -14,7 +14,10 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-const defaultBaseURL = "https://api.gcore.com/dns"
+const (
+	DefaultGCoreBaseURL      = "https://api.gcore.com/dns"
+	DefaultEdgeCenterBaseURL = "https://api.edgecenter.ru/dns"
+)
 
 const (
 	authorizationHeader = "Authorization"
@@ -27,17 +30,17 @@ const txtRecordType = "TXT"
 type Client struct {
 	token string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient constructor of Client.
 func NewClient(token string) *Client {
-	baseURL, _ := url.Parse(defaultBaseURL)
+	baseURL, _ := url.Parse(DefaultGCoreBaseURL)
 
 	return &Client{
 		token:      token,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
@@ -45,7 +48,7 @@ func NewClient(token string) *Client {
 // GetZone gets zone information.
 // https://api.gcore.com/docs/dns#tag/zones/operation/Zone
 func (c *Client) GetZone(ctx context.Context, name string) (Zone, error) {
-	endpoint := c.baseURL.JoinPath("v2", "zones", name)
+	endpoint := c.BaseURL.JoinPath("v2", "zones", name)
 
 	zone := Zone{}
 
@@ -60,7 +63,7 @@ func (c *Client) GetZone(ctx context.Context, name string) (Zone, error) {
 // GetRRSet gets RRSet item.
 // https://api.gcore.com/docs/dns#tag/rrsets/operation/RRSet
 func (c *Client) GetRRSet(ctx context.Context, zone, name string) (RRSet, error) {
-	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
+	endpoint := c.BaseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
 	var result RRSet
 
@@ -75,7 +78,7 @@ func (c *Client) GetRRSet(ctx context.Context, zone, name string) (RRSet, error)
 // DeleteRRSet removes RRSet record.
 // https://api.gcore.com/docs/dns#tag/rrsets/operation/DeleteRRSet
 func (c *Client) DeleteRRSet(ctx context.Context, zone, name string) error {
-	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
+	endpoint := c.BaseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
 	err := c.doRequest(ctx, http.MethodDelete, endpoint, nil, nil)
 	if err != nil {
@@ -106,14 +109,14 @@ func (c *Client) AddRRSet(ctx context.Context, zone, recordName, value string, t
 
 // https://api.gcore.com/docs/dns#tag/rrsets/operation/CreateRRSet
 func (c *Client) createRRSet(ctx context.Context, zone, name string, record RRSet) error {
-	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
+	endpoint := c.BaseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
 	return c.doRequest(ctx, http.MethodPost, endpoint, record, nil)
 }
 
 // https://api.gcore.com/docs/dns#tag/rrsets/operation/UpdateRRSet
 func (c *Client) updateRRSet(ctx context.Context, zone, name string, record RRSet) error {
-	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
+	endpoint := c.BaseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
 	return c.doRequest(ctx, http.MethodPut, endpoint, record, nil)
 }

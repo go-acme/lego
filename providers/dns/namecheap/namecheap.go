@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -45,6 +46,7 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvHTTPProxy          = envNamespace + "HTTP_PROXY"
 )
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
@@ -60,6 +62,7 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
+	HTTPProxy          string
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -69,15 +72,29 @@ func NewDefaultConfig() *Config {
 		baseURL = internal.SandboxBaseURL
 	}
 
+	timeout := env.GetOrDefaultSecond(EnvHTTPTimeout, time.Minute)
+
+	// Build default HTTP client and attach proxy if NAMECHEAP_HTTP_PROXY is set.
+	httpClient := &http.Client{
+		Timeout: timeout,
+	}
+
+	proxy := env.GetOrDefaultString(EnvHTTPProxy, "")
+	if proxy != "" {
+		if proxyUrl, err := url.Parse(proxy); err == nil {
+			httpClient.Transport = &http.Transport{
+				Proxy: http.ProxyURL(proxyUrl),
+			}
+		}
+	}
+
 	return &Config{
 		BaseURL:            baseURL,
 		Debug:              env.GetOrDefaultBool(EnvDebug, false),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, time.Hour),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
-		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, time.Minute),
-		},
+		HTTPClient:         httpClient,
 	}
 }
 
@@ -127,6 +144,20 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
+	}
+
+	if config.HTTPProxy != "" {
+		proxyUrl, err := url.Parse(config.HTTPProxy)
+
+		if err != nil {
+			return nil, fmt.Errorf("namecheap: %w", err)
+		}
+
+		if config.HTTPClient.Transport == nil {
+			config.HTTPClient.Transport = &http.Transport{
+				Proxy: http.ProxyURL(proxyUrl),
+			}
+		}
 	}
 
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)

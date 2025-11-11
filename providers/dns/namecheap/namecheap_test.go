@@ -1,7 +1,9 @@
 package namecheap
 
 import (
+	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester/servermock"
@@ -173,6 +175,27 @@ func Test_newPseudoRecord_domainSplit(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNewDefaultConfig_HTTPProxy(t *testing.T) {
+	const proxy = "http://127.0.0.1:8888"
+
+	t.Setenv(EnvHTTPProxy, proxy)
+
+	cfg := NewDefaultConfig()
+	require.NotNil(t, cfg.HTTPClient)
+
+	// Transport should be an *http.Transport with Proxy set to the env URL.
+	tr, ok := cfg.HTTPClient.Transport.(*http.Transport)
+	require.True(t, ok, "expected *http.Transport")
+
+	req := &http.Request{URL: &url.URL{Scheme: "http", Host: "example.com"}}
+
+	proxyURL, err := tr.Proxy(req)
+	require.NoError(t, err)
+	require.NotNil(t, proxyURL)
+
+	assert.Equal(t, proxy, proxyURL.String())
 }
 
 func mockBuilder() *servermock.Builder[*DNSProvider] {

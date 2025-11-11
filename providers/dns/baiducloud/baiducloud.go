@@ -24,6 +24,9 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
 
+// 300 is the minimum TTL for free users.
+const defaultTTL = 300
+
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	AccessKeyID     string
@@ -37,7 +40,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
@@ -103,6 +106,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Rr:          subDomain,
 		Type:        "TXT",
 		Value:       info.Value,
+		Ttl:         ptr.Pointer(int32(d.config.TTL)),
 	}
 
 	err = d.client.CreateRecord(dns01.UnFqdn(authZone), crr, "")
@@ -122,14 +126,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("baiducloud: could not find zone for domain %q: %w", domain, err)
 	}
 
-	lrr := &baidudns.ListRecordRequest{}
-
-	recordResponse, err := d.client.ListRecord(dns01.UnFqdn(authZone), lrr)
-	if err != nil {
-		return fmt.Errorf("baiducloud: list record: %w", err)
-	}
-
-	recordID, err := findRecordID(recordResponse, info)
+	recordID, err := d.findRecordID(dns01.UnFqdn(authZone), info.Value)
 	if err != nil {
 		return fmt.Errorf("baiducloud: find record: %w", err)
 	}
@@ -142,11 +139,26 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func findRecordID(recordResponse *baidudns.ListRecordResponse, info dns01.ChallengeInfo) (string, error) {
-	for _, record := range recordResponse.Records {
-		if record.Type == "TXT" && record.Value == info.Value {
-			return record.Id, nil
+func (d *DNSProvider) findRecordID(zoneName, tokenValue string) (string, error) {
+	lrr := &baidudns.ListRecordRequest{}
+
+	for {
+		recordResponse, err := d.client.ListRecord(zoneName, lrr)
+		if err != nil {
+			return "", fmt.Errorf("baiducloud: list record: %w", err)
 		}
+
+		for _, record := range recordResponse.Records {
+			if record.Type == "TXT" && record.Value == tokenValue {
+				return record.Id, nil
+			}
+		}
+
+		if !recordResponse.IsTruncated {
+			break
+		}
+
+		lrr.Marker = recordResponse.NextMarker
 	}
 
 	return "", errors.New("record not found")

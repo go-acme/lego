@@ -12,9 +12,6 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
 )
 
-// 300 is the minimum TTL for free users.
-const defaultTTL = 300
-
 // Environment variables names.
 const (
 	envNamespace = "BAIDUCLOUD_"
@@ -26,6 +23,9 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
+
+// 300 is the minimum TTL for free users.
+const defaultTTL = 300
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
@@ -157,6 +157,7 @@ func (d *DNSProvider) findRecordID(zoneName, tokenValue string) (string, error) 
 		if !recordResponse.IsTruncated {
 			break
 		}
+
 		lrr.Marker = recordResponse.NextMarker
 	}
 

@@ -91,6 +91,9 @@ func (d *DumpTransport) RoundTrip(h *http.Request) (*http.Response, error) {
 	_, _ = fmt.Fprintln(d.writer, d.redact(data))
 
 	resp, err := d.rt.RoundTrip(h)
+	if err != nil {
+		return nil, err
+	}
 
 	data, _ = httputil.DumpResponse(resp, true)
 

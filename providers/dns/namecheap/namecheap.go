@@ -76,7 +76,8 @@ func NewDefaultConfig() *Config {
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, time.Hour),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, time.Minute),
+			Timeout:   env.GetOrDefaultSecond(EnvHTTPTimeout, time.Minute),
+			Transport: defaultTransport(envNamespace),
 		},
 	}
 }

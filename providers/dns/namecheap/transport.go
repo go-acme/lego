@@ -10,6 +10,16 @@ import (
 	"golang.org/x/net/http/httpproxy"
 )
 
+const (
+	envHTTPProxy       = "HTTP_PROXY"
+	envHTTPProxyLower  = "http_proxy"
+	envHTTPSProxy      = "HTTPS_PROXY"
+	envHTTPSProxyLower = "https_proxy"
+	envNoProxy         = "NO_PROXY"
+	envNoProxyLower    = "no_proxy"
+	envRequestMethod   = "REQUEST_METHOD"
+)
+
 // Allows lazy loading of the proxy.
 var (
 	envProxyOnce      sync.Once
@@ -34,13 +44,10 @@ func defaultTransport(namespace string) http.RoundTripper {
 func envProxyFunc(namespace string) func(*url.URL) (*url.URL, error) {
 	envProxyOnce.Do(func() {
 		cfg := &httpproxy.Config{
-			HTTPProxy: env.GetOneWithFallback(namespace+"HTTP_PROXY", "", env.ParseString,
-				strings.ToLower(namespace)+"http_proxy", "HTTP_PROXY", "http_proxy"),
-			HTTPSProxy: env.GetOneWithFallback(namespace+"HTTPS_PROXY", "", env.ParseString,
-				strings.ToLower(namespace)+"https_proxy", "HTTPS_PROXY", "https_proxy"),
-			NoProxy: env.GetOneWithFallback(namespace+"NO_PROXY", "", env.ParseString,
-				strings.ToLower(namespace)+"no_proxy", "NO_PROXY", "no_proxy"),
-			CGI: env.GetOneWithFallback(namespace+"REQUEST_METHOD", "", env.ParseString, "REQUEST_METHOD") != "",
+			HTTPProxy:  getEnv(namespace, envHTTPProxy, envHTTPProxyLower),
+			HTTPSProxy: getEnv(namespace, envHTTPSProxy, envHTTPSProxyLower),
+			NoProxy:    getEnv(namespace, envNoProxy, envNoProxyLower),
+			CGI:        env.GetOneWithFallback(namespace+envRequestMethod, "", env.ParseString, envRequestMethod) != "",
 		}
 
 		envProxyFuncValue = cfg.ProxyFunc()
@@ -56,4 +63,9 @@ func proxyFromEnvironment(namespace string) func(req *http.Request) (*url.URL, e
 	return func(req *http.Request) (*url.URL, error) {
 		return envProxyFunc(namespace)(req.URL)
 	}
+}
+
+func getEnv(namespace, baseEnvName, baseEnvNameLower string) string {
+	return env.GetOneWithFallback(namespace+baseEnvName, "", env.ParseString,
+		strings.ToLower(namespace)+baseEnvNameLower, baseEnvName, baseEnvNameLower)
 }

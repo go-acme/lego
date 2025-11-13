@@ -13,15 +13,17 @@ import (
 func Test_defaultTransport(t *testing.T) {
 	client := servermock.NewBuilder(
 		func(server *httptest.Server) (*http.Client, error) {
+			cl := server.Client()
+
 			t.Setenv("NAMECHEAP_HTTP_PROXY", server.URL)
 
-			return server.Client(), nil
+			cl.Transport = defaultTransport(envNamespace)
+
+			return cl, nil
 		}).
 		Route("/",
 			servermock.Noop().WithStatusCode(http.StatusTeapot)).
 		Build(t)
-
-	client.Transport = defaultTransport(envNamespace)
 
 	req, err := http.NewRequest(http.MethodGet, "http://example.com", nil)
 	require.NoError(t, err)

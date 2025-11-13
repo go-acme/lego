@@ -3,7 +3,6 @@ package namecheap
 import (
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"sync"
 
@@ -35,10 +34,13 @@ func defaultTransport(namespace string) http.RoundTripper {
 func envProxyFunc(namespace string) func(*url.URL) (*url.URL, error) {
 	envProxyOnce.Do(func() {
 		cfg := &httpproxy.Config{
-			HTTPProxy:  env.GetOneWithFallback(namespace+"HTTP_PROXY", "", env.ParseString, strings.ToLower(namespace)+"http_proxy"),
-			HTTPSProxy: env.GetOneWithFallback(namespace+"HTTPS_PROXY", "", env.ParseString, strings.ToLower(namespace)+"https_proxy"),
-			NoProxy:    env.GetOneWithFallback(namespace+"NO_PROXY", "", env.ParseString, strings.ToLower(namespace)+"no_proxy"),
-			CGI:        os.Getenv(namespace+"REQUEST_METHOD") != "",
+			HTTPProxy: env.GetOneWithFallback(namespace+"HTTP_PROXY", "", env.ParseString,
+				strings.ToLower(namespace)+"http_proxy", "HTTP_PROXY", "http_proxy"),
+			HTTPSProxy: env.GetOneWithFallback(namespace+"HTTPS_PROXY", "", env.ParseString,
+				strings.ToLower(namespace)+"https_proxy", "HTTPS_PROXY", "https_proxy"),
+			NoProxy: env.GetOneWithFallback(namespace+"NO_PROXY", "", env.ParseString,
+				strings.ToLower(namespace)+"no_proxy", "NO_PROXY", "no_proxy"),
+			CGI: env.GetOneWithFallback(namespace+"REQUEST_METHOD", "", env.ParseString, "REQUEST_METHOD") != "",
 		}
 
 		envProxyFuncValue = cfg.ProxyFunc()

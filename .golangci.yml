@@ -216,16 +216,16 @@ linters:
         text: load is a global variable
         linters:
           - gochecknoglobals
-      - path: providers/dns/([\d\w]+/)*[\d\w]+_test.go
-        text: envTest is a global variable
-        linters:
-          - gochecknoglobals
-      - path: providers/http/([\d\w]+/)*[\d\w]+_test.go
+      - path: providers/(dns|http)/([\d\w]+/)*[\d\w]+_test.go
         text: envTest is a global variable
         linters:
           - gochecknoglobals
       - path: providers/dns/namecheap/namecheap_test.go
         text: testCases is a global variable
+        linters:
+          - gochecknoglobals
+      - path: providers/dns/namecheap/transport.go
+        text: (envProxyOnce|envProxyFuncValue) is a global variable
         linters:
           - gochecknoglobals
       - path: providers/dns/acmedns/mock_test.go

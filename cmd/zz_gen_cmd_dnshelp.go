@@ -16,6 +16,7 @@ func allDNSCodes() string {
 		"acme-dns",
 		"active24",
 		"alidns",
+		"aliesa",
 		"allinkl",
 		"anexia",
 		"arvancloud",
@@ -251,6 +252,29 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/alidns`)
+
+	case "aliesa":
+		// generated from: providers/dns/aliesa/aliesa.toml
+		ew.writeln(`Configuration for AlibabaCloud ESA.`)
+		ew.writeln(`Code:	'aliesa'`)
+		ew.writeln(`Since:	'v4.29.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ALIESA_ACCESS_KEY":	Access key ID`)
+		ew.writeln(`	- "ALIESA_RAM_ROLE":	Your instance RAM role (https://www.alibabacloud.com/help/en/ecs/user-guide/attach-an-instance-ram-role-to-an-ecs-instance)`)
+		ew.writeln(`	- "ALIESA_SECRET_KEY":	Access Key secret`)
+		ew.writeln(`	- "ALIESA_SECURITY_TOKEN":	STS Security Token (optional)`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ALIESA_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "ALIESA_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "ALIESA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "ALIESA_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/aliesa`)
 
 	case "allinkl":
 		// generated from: providers/dns/allinkl/allinkl.toml

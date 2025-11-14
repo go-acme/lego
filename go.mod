@@ -31,6 +31,7 @@ require (
 	github.com/dnsimple/dnsimple-go/v4 v4.0.0
 	github.com/exoscale/egoscale/v3 v3.1.27
 	github.com/go-acme/alidns-20150109/v4 v4.6.1
+	github.com/go-acme/esa-20240910/v2 v2.40.1
 	github.com/go-acme/tencentclouddnspod v1.1.10
 	github.com/go-acme/tencentedgdeone v1.1.48
 	github.com/go-jose/go-jose/v4 v4.1.3

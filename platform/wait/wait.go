@@ -6,13 +6,10 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
-	"github.com/go-acme/lego/v4/log"
 )
 
 // For polls the given function 'f', once every 'interval', up to 'timeout'.
 func For(msg string, timeout, interval time.Duration, f func() (bool, error)) error {
-	log.Infof("Wait for %s [timeout: %s, interval: %s]", msg, timeout, interval)
-
 	var lastErr error
 
 	timeUp := time.After(timeout)

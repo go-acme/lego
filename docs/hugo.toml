@@ -15,6 +15,7 @@ title = "Lego"
   custom_css = ["css/theme-custom.css"]
   disableLandingPageButton = true
   hideAuthorEmail = true
+  hideAuthorName = true
 
   # Author of the site, will be used in meta information
   [params.author]

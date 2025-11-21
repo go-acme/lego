@@ -85,8 +85,8 @@ func (c *Client) RemoveRRSetRecords(ctx context.Context, zoneIDName, recordType,
 
 // GetAction gets an action.
 // https://docs.hetzner.cloud/reference/cloud#actions-get-an-action
-func (c *Client) GetAction(ctx context.Context, id int) (*Action, error) {
-	endpoint := c.BaseURL.JoinPath("actions", strconv.Itoa(id))
+func (c *Client) GetAction(ctx context.Context, id int64) (*Action, error) {
+	endpoint := c.BaseURL.JoinPath("actions", strconv.FormatInt(id, 10))
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {

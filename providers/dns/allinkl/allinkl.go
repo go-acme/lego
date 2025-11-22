@@ -121,11 +121,6 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("allinkl: could not find zone for domain %q: %w", domain, err)
-	}
-
 	ctx := context.Background()
 
 	credential, err := d.identifier.Authentication(ctx, 60, true)
@@ -135,16 +130,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	ctx = internal.WithContext(ctx, credential)
 
+	var authZone string
+
 	for z := range dns01.UnFqdnDomainsSeq(info.EffectiveFQDN) {
-		settings, err := d.client.GetDNSSettings(ctx, z, "")
+		_, err := d.client.GetDNSSettings(ctx, z, "")
 		if err != nil {
 			fmt.Printf("allinkl: zone[%s] %v\n", z, err)
 			continue
 		}
 
-		for i, setting := range settings {
-			fmt.Printf("allinkl: zone[%s] settings[%d]: %#v\n", z, i, setting)
-		}
+		authZone = z
+		break
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)

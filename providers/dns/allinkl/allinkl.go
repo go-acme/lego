@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/allinkl/internal"
 	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
@@ -125,7 +126,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	credential, err := d.identifier.Authentication(ctx, 60, true)
 	if err != nil {
-		return fmt.Errorf("allinkl: %w", err)
+		return fmt.Errorf("allinkl: authentication: %w", err)
 	}
 
 	ctx = internal.WithContext(ctx, credential)
@@ -135,7 +136,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	for z := range dns01.UnFqdnDomainsSeq(info.EffectiveFQDN) {
 		_, err := d.client.GetDNSSettings(ctx, z, "")
 		if err != nil {
-			fmt.Printf("allinkl: zone[%s] %v\n", z, err)
+			log.Infof("allinkl: get DNS settings zone[%s] %v", z, err)
 			continue
 		}
 
@@ -157,7 +158,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	recordID, err := d.client.AddDNSSettings(ctx, record)
 	if err != nil {
-		return fmt.Errorf("allinkl: %w", err)
+		return fmt.Errorf("allinkl: add DNS settings: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -175,7 +176,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	credential, err := d.identifier.Authentication(ctx, 60, true)
 	if err != nil {
-		return fmt.Errorf("allinkl: %w", err)
+		return fmt.Errorf("allinkl: authentication: %w", err)
 	}
 
 	ctx = internal.WithContext(ctx, credential)
@@ -191,7 +192,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, err = d.client.DeleteDNSSettings(ctx, recordID)
 	if err != nil {
-		return fmt.Errorf("allinkl: %w", err)
+		return fmt.Errorf("allinkl: delete DNS settings: %w", err)
 	}
 
 	d.recordIDsMu.Lock()

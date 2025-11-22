@@ -134,13 +134,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	var authZone string
 
 	for z := range dns01.UnFqdnDomainsSeq(info.EffectiveFQDN) {
-		_, err := d.client.GetDNSSettings(ctx, z, "")
-		if err != nil {
-			log.Infof("allinkl: get DNS settings zone[%s] %v", z, err)
+		_, errG := d.client.GetDNSSettings(ctx, z, "")
+		if errG != nil {
+			log.Infof("allinkl: get DNS settings zone[%s] %v", z, errG)
 			continue
 		}
 
 		authZone = z
+
 		break
 	}
 

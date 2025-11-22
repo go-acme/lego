@@ -49,7 +49,7 @@ func TestClient_AddRRSetRecords(t *testing.T) {
 		Command:   "add_rrset_records",
 		Status:    "running",
 		Progress:  50,
-		Resources: []Resources{{ID: 42, Type: "zone"}},
+		Resources: []Resources{{ID: 590000000000000, Type: "zone"}},
 	}
 
 	assert.Equal(t, expected, result)
@@ -139,11 +139,11 @@ func TestClient_GetAction(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := &Action{
-		ID:        42,
+		ID:        590000000000000,
 		Command:   "start_resource",
 		Status:    "running",
 		Progress:  100,
-		Resources: []Resources{{ID: 42, Type: "server"}},
+		Resources: []Resources{{ID: 590000000000000, Type: "server"}},
 		ErrorInfo: &ErrorInfo{
 			Code:    "action_failed",
 			Message: "Action failed",

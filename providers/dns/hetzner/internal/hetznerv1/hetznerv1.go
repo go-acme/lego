@@ -184,7 +184,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) waitAction(ctx context.Context, actionID int) error {
+func (d *DNSProvider) waitAction(ctx context.Context, actionID int64) error {
 	return wait.Retry(ctx,
 		func() error {
 			result, err := d.client.GetAction(ctx, actionID)

@@ -79,7 +79,7 @@ type ActionResponse struct {
 }
 
 type Action struct {
-	ID      int    `json:"id,omitempty"`
+	ID      int64  `json:"id,omitempty"`
 	Command string `json:"command,omitempty"`
 
 	// It can be: `running`, `success`, `error`.
@@ -93,6 +93,6 @@ type Action struct {
 }
 
 type Resources struct {
-	ID   int    `json:"id,omitempty"`
+	ID   int64  `json:"id,omitempty"`
 	Type string `json:"type,omitempty"`
 }

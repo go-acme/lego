@@ -145,6 +145,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		break
 	}
 
+	if authZone == "" {
+		return fmt.Errorf("allinkl: unable to find auth zone for '%s'", info.EffectiveFQDN)
+	}
+
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("allinkl: %w", err)

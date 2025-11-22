@@ -2,6 +2,7 @@ package internal
 
 import (
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester/servermock"
@@ -11,7 +12,7 @@ import (
 
 func setupClient(server *httptest.Server) (*Client, error) {
 	client := NewClient("user")
-	client.baseURL = server.URL
+	client.BaseURL, _ = url.Parse(server.URL)
 	client.HTTPClient = server.Client()
 
 	return client, nil
@@ -19,7 +20,7 @@ func setupClient(server *httptest.Server) (*Client, error) {
 
 func TestClient_GetDNSSettings(t *testing.T) {
 	client := servermock.NewBuilder[*Client](setupClient).
-		Route("POST /", servermock.ResponseFromFixture("get_dns_settings.xml"),
+		Route("POST /KasApi.php", servermock.ResponseFromFixture("get_dns_settings.xml"),
 			servermock.CheckRequestBodyFromFixture("get_dns_settings-request.xml").
 				IgnoreWhitespace()).
 		Build(t)
@@ -98,7 +99,7 @@ func TestClient_GetDNSSettings(t *testing.T) {
 
 func TestClient_AddDNSSettings(t *testing.T) {
 	client := servermock.NewBuilder[*Client](setupClient).
-		Route("POST /", servermock.ResponseFromFixture("add_dns_settings.xml"),
+		Route("POST /KasApi.php", servermock.ResponseFromFixture("add_dns_settings.xml"),
 			servermock.CheckRequestBodyFromFixture("add_dns_settings-request.xml").
 				IgnoreWhitespace()).
 		Build(t)
@@ -118,7 +119,7 @@ func TestClient_AddDNSSettings(t *testing.T) {
 
 func TestClient_DeleteDNSSettings(t *testing.T) {
 	client := servermock.NewBuilder[*Client](setupClient).
-		Route("POST /", servermock.ResponseFromFixture("delete_dns_settings.xml"),
+		Route("POST /KasApi.php", servermock.ResponseFromFixture("delete_dns_settings.xml"),
 			servermock.CheckRequestBodyFromFixture("delete_dns_settings-request.xml").
 				IgnoreWhitespace()).
 		Build(t)

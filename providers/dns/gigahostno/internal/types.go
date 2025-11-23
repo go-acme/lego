@@ -27,29 +27,29 @@ type APIResponse[T any] struct {
 }
 
 type Zone struct {
-	ZoneID           string `json:"zone_id,omitempty"`
+	ID               string `json:"zone_id,omitempty"`
+	Name             string `json:"zone_name,omitempty"`
+	NameDisplay      string `json:"zone_name_display,omitempty"`
+	Type             string `json:"zone_type,omitempty"`
+	Active           string `json:"zone_active,omitempty"`
+	Protected        string `json:"zone_protected,omitempty"`
+	IsRegistered     string `json:"zone_is_registered,omitempty"`
+	Updated          int    `json:"zone_updated,omitempty"`
 	CustomerID       string `json:"cust_id,omitempty"`
-	ZoneName         string `json:"zone_name,omitempty"`
-	ZoneNameDisplay  string `json:"zone_name_display,omitempty"`
-	ZoneType         string `json:"zone_type,omitempty"`
-	ZoneActive       string `json:"zone_active,omitempty"`
-	ZoneProtected    string `json:"zone_protected,omitempty"`
-	ZoneIsRegistered string `json:"zone_is_registered,omitempty"`
 	DomainRegistrar  string `json:"domain_registrar,omitempty"`
 	DomainStatus     string `json:"domain_status,omitempty"`
 	DomainExpiryDate string `json:"domain_expiry_date,omitempty"`
 	DomainAutoRenew  string `json:"domain_auto_renew,omitempty"`
 	ExternalDNS      string `json:"external_dns,omitempty"`
 	RecordCount      int    `json:"record_count,omitempty"`
-	ZoneUpdated      int    `json:"zone_updated,omitempty"`
 }
 
 type Record struct {
-	RecordID    string `json:"record_id,omitempty"`
-	RecordName  string `json:"record_name,omitempty"`
-	RecordType  string `json:"record_type,omitempty"`
-	RecordValue string `json:"record_value,omitempty"`
-	RecordTTL   int    `json:"record_ttl,omitempty"`
+	ID    string `json:"record_id,omitempty"`
+	Name  string `json:"record_name,omitempty"`
+	Type  string `json:"record_type,omitempty"`
+	Value string `json:"record_value,omitempty"`
+	TTL   int    `json:"record_ttl,omitempty"`
 }
 
 type Auth struct {

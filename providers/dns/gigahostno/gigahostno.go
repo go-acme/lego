@@ -129,19 +129,19 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("gigahostno: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.ZoneName)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
 	if err != nil {
 		return fmt.Errorf("gigahostno: %w", err)
 	}
 
 	record := internal.Record{
-		RecordName:  subDomain,
-		RecordType:  "TXT",
-		RecordValue: info.Value,
-		RecordTTL:   d.config.TTL,
+		Name:  subDomain,
+		Type:  "TXT",
+		Value: info.Value,
+		TTL:   d.config.TTL,
 	}
 
-	err = d.client.CreateNewRecord(ctx, zone.ZoneID, record)
+	err = d.client.CreateNewRecord(ctx, zone.ID, record)
 	if err != nil {
 		return fmt.Errorf("gigahostno: create new record: %w", err)
 	}
@@ -167,19 +167,19 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("gigahostno: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.ZoneName)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
 	if err != nil {
 		return fmt.Errorf("gigahostno: %w", err)
 	}
 
-	records, err := d.client.GetZoneRecords(ctx, zone.ZoneID)
+	records, err := d.client.GetZoneRecords(ctx, zone.ID)
 	if err != nil {
 		return fmt.Errorf("gigahostno: get zone records: %w", err)
 	}
 
 	for _, record := range records {
-		if record.RecordType == "TXT" && record.RecordName == subDomain && record.RecordValue == info.Value {
-			err := d.client.DeleteRecord(ctx, zone.ZoneID, record.RecordID, record.RecordName, record.RecordType)
+		if record.Type == "TXT" && record.Name == subDomain && record.Value == info.Value {
+			err := d.client.DeleteRecord(ctx, zone.ID, record.ID, record.Name, record.Type)
 			if err != nil {
 				return fmt.Errorf("gigahostno: delete record: %w", err)
 			}
@@ -223,7 +223,7 @@ func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*internal.Zone
 
 	for d := range dns01.UnFqdnDomainsSeq(fqdn) {
 		for _, zone := range zones {
-			if zone.ZoneName == d && zone.ZoneActive == "1" {
+			if zone.Name == d && zone.Active == "1" {
 				return &zone, nil
 			}
 		}

@@ -37,21 +37,21 @@ func TestClient_GetZones(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := []Zone{{
-		ZoneID:           "123",
+		ID:               "123",
+		Name:             "example.com",
+		NameDisplay:      "example.com",
+		Type:             "NATIVE",
+		Active:           "1",
+		Protected:        "1",
+		IsRegistered:     "1",
+		Updated:          1700000000,
 		CustomerID:       "1111",
-		ZoneName:         "example.com",
-		ZoneNameDisplay:  "example.com",
-		ZoneType:         "NATIVE",
-		ZoneActive:       "1",
-		ZoneProtected:    "1",
-		ZoneIsRegistered: "1",
 		DomainRegistrar:  "norid",
 		DomainStatus:     "active",
 		DomainExpiryDate: "2025-12-31 23:59:59",
 		DomainAutoRenew:  "1",
 		ExternalDNS:      "0",
 		RecordCount:      5,
-		ZoneUpdated:      1700000000,
 	}}
 
 	assert.Equal(t, expected, zones)
@@ -79,32 +79,32 @@ func TestClient_GetZoneRecords(t *testing.T) {
 
 	expected := []Record{
 		{
-			RecordID:    "abc123",
-			RecordName:  "@",
-			RecordType:  "A",
-			RecordValue: "185.125.168.166",
-			RecordTTL:   3600,
+			ID:    "abc123",
+			Name:  "@",
+			Type:  "A",
+			Value: "185.125.168.166",
+			TTL:   3600,
 		},
 		{
-			RecordID:    "def456",
-			RecordName:  "www",
-			RecordType:  "A",
-			RecordValue: "185.125.168.166",
-			RecordTTL:   3600,
+			ID:    "def456",
+			Name:  "www",
+			Type:  "A",
+			Value: "185.125.168.166",
+			TTL:   3600,
 		},
 		{
-			RecordID:    "ghi789",
-			RecordName:  "@",
-			RecordType:  "MX",
-			RecordValue: "mail.example.no",
-			RecordTTL:   3600,
+			ID:    "ghi789",
+			Name:  "@",
+			Type:  "MX",
+			Value: "mail.example.no",
+			TTL:   3600,
 		},
 		{
-			RecordID:    "jkl012",
-			RecordName:  "_acme-challenge",
-			RecordType:  "TXT",
-			RecordValue: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
-			RecordTTL:   120,
+			ID:    "jkl012",
+			Name:  "_acme-challenge",
+			Type:  "TXT",
+			Value: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+			TTL:   120,
 		},
 	}
 
@@ -119,10 +119,10 @@ func TestClient_CreateNewRecord(t *testing.T) {
 		Build(t)
 
 	record := Record{
-		RecordName:  "_acme-challenge",
-		RecordType:  "TXT",
-		RecordValue: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
-		RecordTTL:   120,
+		Name:  "_acme-challenge",
+		Type:  "TXT",
+		Value: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		TTL:   120,
 	}
 
 	err := client.CreateNewRecord(mockContext(t), "example.com", record)

@@ -37,19 +37,19 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvPassword: "secret",
 			},
-			expected: "gigahost: some credentials information are missing: GIGAHOSTNO_USERNAME",
+			expected: "gigahostno: some credentials information are missing: GIGAHOSTNO_USERNAME",
 		},
 		{
 			desc: "missing GIGAHOSTNO_PASSWORD",
 			envVars: map[string]string{
 				EnvUsername: "user",
 			},
-			expected: "gigahost: some credentials information are missing: GIGAHOSTNO_PASSWORD",
+			expected: "gigahostno: some credentials information are missing: GIGAHOSTNO_PASSWORD",
 		},
 		{
 			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "gigahost: some credentials information are missing: GIGAHOSTNO_USERNAME,GIGAHOSTNO_PASSWORD",
+			expected: "gigahostno: some credentials information are missing: GIGAHOSTNO_USERNAME,GIGAHOSTNO_PASSWORD",
 		},
 	}
 
@@ -92,16 +92,16 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc:     "missing username",
 			password: "secret",
-			expected: "gigahost: credentials missing",
+			expected: "gigahostno: credentials missing",
 		},
 		{
 			desc:     "missing password",
 			username: "user",
-			expected: "gigahost: credentials missing",
+			expected: "gigahostno: credentials missing",
 		},
 		{
 			desc:     "missing credentials",
-			expected: "gigahost: credentials missing",
+			expected: "gigahostno: credentials missing",
 		},
 	}
 

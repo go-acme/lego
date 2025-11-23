@@ -64,7 +64,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvUsername, EnvPassword)
 	if err != nil {
-		return nil, fmt.Errorf("gigahost: %w", err)
+		return nil, fmt.Errorf("gigahostno: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -78,12 +78,12 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for Gigahost.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("gigahost: the configuration of the DNS provider is nil")
+		return nil, errors.New("gigahostno: the configuration of the DNS provider is nil")
 	}
 
 	identifier, err := internal.NewIdentifier(config.Username, config.Password, config.Secret)
 	if err != nil {
-		return nil, fmt.Errorf("gigahost: %w", err)
+		return nil, fmt.Errorf("gigahostno: %w", err)
 	}
 
 	if config.HTTPClient != nil {
@@ -115,24 +115,24 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("gigahost: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("gigahostno: could not find zone for domain %q: %w", domain, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
-		return fmt.Errorf("gigahost: %w", err)
+		return fmt.Errorf("gigahostno: %w", err)
 	}
 
 	tok, err := d.identifier.Authenticate(ctx)
 	if err != nil {
-		return fmt.Errorf("gigahost: authenticate: %w", err)
+		return fmt.Errorf("gigahostno: authenticate: %w", err)
 	}
 
 	ctx = internal.WithContext(ctx, tok)
 
 	zoneID, err := d.findZoneID(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
-		return fmt.Errorf("gigahost: %w", err)
+		return fmt.Errorf("gigahostno: %w", err)
 	}
 
 	record := internal.Record{
@@ -144,7 +144,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err = d.client.CreateNewRecord(ctx, zoneID, record)
 	if err != nil {
-		return fmt.Errorf("gigahost: create new record: %w", err)
+		return fmt.Errorf("gigahostno: create new record: %w", err)
 	}
 
 	return nil
@@ -158,36 +158,36 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("gigahost: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("gigahostno: could not find zone for domain %q: %w", domain, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
-		return fmt.Errorf("gigahost: %w", err)
+		return fmt.Errorf("gigahostno: %w", err)
 	}
 
 	tok, err := d.identifier.Authenticate(ctx)
 	if err != nil {
-		return fmt.Errorf("gigahost: authenticate: %w", err)
+		return fmt.Errorf("gigahostno: authenticate: %w", err)
 	}
 
 	ctx = internal.WithContext(ctx, tok)
 
 	zoneID, err := d.findZoneID(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
-		return fmt.Errorf("gigahost: %w", err)
+		return fmt.Errorf("gigahostno: %w", err)
 	}
 
 	records, err := d.client.GetZoneRecords(ctx, zoneID)
 	if err != nil {
-		return fmt.Errorf("gigahost: get zone records: %w", err)
+		return fmt.Errorf("gigahostno: get zone records: %w", err)
 	}
 
 	for _, record := range records {
 		if record.RecordType == "TXT" && record.RecordName == subDomain && record.RecordValue == info.Value {
 			err := d.client.DeleteRecord(ctx, zoneID, record.RecordID, record.RecordName, record.RecordType)
 			if err != nil {
-				return fmt.Errorf("gigahost: delete record: %w", err)
+				return fmt.Errorf("gigahostno: delete record: %w", err)
 			}
 
 			break

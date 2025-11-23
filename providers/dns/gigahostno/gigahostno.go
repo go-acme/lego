@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -58,6 +59,9 @@ type DNSProvider struct {
 
 	identifier *internal.Identifier
 	client     *internal.Client
+
+	tokenMu sync.Mutex
+	token   *internal.Token
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Gigahost.
@@ -113,12 +117,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	tok, err := d.identifier.Authenticate(ctx)
+	err := d.authenticate(ctx)
 	if err != nil {
-		return fmt.Errorf("gigahostno: authenticate: %w", err)
+		return fmt.Errorf("gigahostno: %w", err)
 	}
 
-	ctx = internal.WithContext(ctx, tok)
+	ctx = internal.WithContext(ctx, d.token.Token)
 
 	zone, err := d.findZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -151,12 +155,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	tok, err := d.identifier.Authenticate(ctx)
+	err := d.authenticate(ctx)
 	if err != nil {
-		return fmt.Errorf("gigahostno: authenticate: %w", err)
+		return fmt.Errorf("gigahostno: %w", err)
 	}
 
-	ctx = internal.WithContext(ctx, tok)
+	ctx = internal.WithContext(ctx, d.token.Token)
 
 	zone, err := d.findZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -191,6 +195,24 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) authenticate(ctx context.Context) error {
+	d.tokenMu.Lock()
+	defer d.tokenMu.Unlock()
+
+	if !d.token.IsExpired() {
+		return nil
+	}
+
+	tok, err := d.identifier.Authenticate(ctx)
+	if err != nil {
+		return fmt.Errorf("authenticate: %w", err)
+	}
+
+	d.token = tok
+
+	return nil
 }
 
 func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*internal.Zone, error) {

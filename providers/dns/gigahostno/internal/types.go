@@ -1,6 +1,10 @@
 package internal
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"time"
+)
 
 type APIError struct {
 	Meta MetaData `json:"meta"`
@@ -58,4 +62,17 @@ type Token struct {
 	Token       string `json:"token"`
 	TokenExpire string `json:"token_expire"`
 	CustomerID  string `json:"customer_id"`
+}
+
+func (t *Token) IsExpired() bool {
+	if t == nil {
+		return true
+	}
+
+	expire, err := strconv.ParseInt(t.TokenExpire, 10, 64)
+	if err != nil {
+		return true
+	}
+
+	return time.Now().Add(10 * time.Second).After(time.Unix(expire, 0))
 }

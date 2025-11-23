@@ -39,5 +39,11 @@ func TestIdentifier_Authenticate(t *testing.T) {
 	token, err := identifier.Authenticate(context.Background())
 	require.NoError(t, err)
 
-	assert.Equal(t, "secrettoken", token)
+	expected := &Token{
+		Token:       "secrettoken",
+		TokenExpire: "1577836800",
+		CustomerID:  "xxxxxx",
+	}
+
+	assert.Equal(t, expected, token)
 }

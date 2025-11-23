@@ -45,7 +45,7 @@ func NewIdentifier(username, password, secret string) (*Identifier, error) {
 	}, nil
 }
 
-func (c *Identifier) Authenticate(ctx context.Context) (string, error) {
+func (c *Identifier) Authenticate(ctx context.Context) (*Token, error) {
 	endpoint := c.BaseURL.JoinPath("authenticate")
 
 	auth := Auth{Username: c.username, Password: c.password}
@@ -53,28 +53,28 @@ func (c *Identifier) Authenticate(ctx context.Context) (string, error) {
 	if c.Secret != "" {
 		tan, err := totp.GenerateCode(c.Secret, time.Now())
 		if err != nil {
-			return "", fmt.Errorf("generate TOTP: %w", err)
+			return nil, fmt.Errorf("generate TOTP: %w", err)
 		}
 
 		auth.Code, err = strconv.Atoi(tan)
 		if err != nil {
-			return "", fmt.Errorf("parse TOTP: %w", err)
+			return nil, fmt.Errorf("parse TOTP: %w", err)
 		}
 	}
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, auth)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	var result APIResponse[Token]
+	var result APIResponse[*Token]
 
 	err = c.do(req, &result)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return result.Data.Token, nil
+	return result.Data, nil
 }
 
 func (c *Identifier) do(req *http.Request, result any) error {

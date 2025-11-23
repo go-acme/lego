@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "status": 200,
+    "status_message": "200 OK"
+  },
+  "data": [
+    {
+      "zone_id": "123",
+      "cust_id": "1111",
+      "zone_name": "example.com",
+      "zone_name_display": "example.com",
+      "zone_type": "NATIVE",
+      "zone_active": "1",
+      "zone_protected": "1",
+      "zone_is_registered": "1",
+      "domain_registrar": "norid",
+      "domain_status": "active",
+      "domain_expiry_date": "2025-12-31 23:59:59",
+      "domain_auto_renew": "1",
+      "external_dns": "0",
+      "record_count": 5,
+      "zone_updated": 1700000000
+    }
+  ]
+}

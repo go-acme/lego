@@ -1,0 +1,196 @@
+// Package gigahostno implements a DNS provider for solving the DNS-01 challenge using Gigahost.no.
+package gigahostno
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/gigahostno/internal"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+)
+
+// Environment variables names.
+const (
+	envNamespace = "GIGAHOSTNO_"
+
+	EnvToken = envNamespace + "TOKEN"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
+// Config is used to configure the creation of the DNSProvider.
+type Config struct {
+	Token string
+
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+	TTL                int
+	HTTPClient         *http.Client
+}
+
+// NewDefaultConfig returns a default configuration for the DNSProvider.
+func NewDefaultConfig() *Config {
+	return &Config{
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
+	}
+}
+
+// DNSProvider implements the challenge.Provider interface.
+type DNSProvider struct {
+	config *Config
+	client *internal.Client
+}
+
+// NewDNSProvider returns a DNSProvider instance configured for Gigahost.
+func NewDNSProvider() (*DNSProvider, error) {
+	values, err := env.Get(EnvToken)
+	if err != nil {
+		return nil, fmt.Errorf("gigahost: %w", err)
+	}
+
+	config := NewDefaultConfig()
+	config.Token = values[EnvToken]
+
+	return NewDNSProviderConfig(config)
+}
+
+// NewDNSProviderConfig return a DNSProvider instance configured for Gigahost.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("gigahost: the configuration of the DNS provider is nil")
+	}
+
+	client, err := internal.NewClient(config.Token)
+	if err != nil {
+		return nil, fmt.Errorf("gigahost: %w", err)
+	}
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
+
+	return &DNSProvider{
+		config: config,
+		client: client,
+	}, nil
+}
+
+// Present creates a TXT record using the specified parameters.
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
+	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("gigahost: could not find zone for domain %q: %w", domain, err)
+	}
+
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	if err != nil {
+		return fmt.Errorf("gigahost: %w", err)
+	}
+
+	zoneID, err := d.findZoneID(ctx, dns01.UnFqdn(authZone))
+	if err != nil {
+		return fmt.Errorf("gigahost: %w", err)
+	}
+
+	record := internal.Record{
+		RecordName:  subDomain,
+		RecordType:  "TXT",
+		RecordValue: info.Value,
+		RecordTTL:   d.config.TTL,
+	}
+
+	err = d.client.CreateNewRecord(ctx, zoneID, record)
+	if err != nil {
+		return fmt.Errorf("gigahost: create new record: %w", err)
+	}
+
+	return nil
+}
+
+// CleanUp removes the TXT record matching the specified parameters.
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
+	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("gigahost: could not find zone for domain %q: %w", domain, err)
+	}
+
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	if err != nil {
+		return fmt.Errorf("gigahost: %w", err)
+	}
+
+	zoneID, err := d.findZoneID(ctx, dns01.UnFqdn(authZone))
+	if err != nil {
+		return fmt.Errorf("gigahost: %w", err)
+	}
+
+	records, err := d.client.GetZoneRecords(ctx, zoneID)
+	if err != nil {
+		return fmt.Errorf("gigahost: get zone records: %w", err)
+	}
+
+	for _, record := range records {
+		if record.RecordType == "TXT" && record.RecordName == subDomain && record.RecordValue == info.Value {
+			err := d.client.DeleteRecord(ctx, zoneID, record.RecordID, record.RecordName, record.RecordType)
+			if err != nil {
+				return fmt.Errorf("gigahost: delete record: %w", err)
+			}
+
+			break
+		}
+	}
+
+	return nil
+}
+
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) findZoneID(ctx context.Context, authZone string) (string, error) {
+	zones, err := d.client.GetZones(ctx)
+	if err != nil {
+		return "", fmt.Errorf("get zones: %w", err)
+	}
+
+	var zoneID string
+
+	for _, zone := range zones {
+		if zone.ZoneName == authZone {
+			zoneID = zone.ZoneID
+
+			break
+		}
+	}
+
+	if zoneID == "" {
+		return "", fmt.Errorf("zone not found for %q", authZone)
+	}
+
+	return zoneID, nil
+}

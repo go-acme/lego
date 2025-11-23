@@ -76,6 +76,7 @@ func allDNSCodes() string {
 		"gandiv5",
 		"gcloud",
 		"gcore",
+		"gigahostno",
 		"glesys",
 		"godaddy",
 		"googledomains",
@@ -1549,6 +1550,29 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/gcore`)
+
+	case "gigahostno":
+		// generated from: providers/dns/gigahostno/gigahostno.toml
+		ew.writeln(`Configuration for Gigahost.`)
+		ew.writeln(`Code:	'gigahostno'`)
+		ew.writeln(`Since:	'v4.21.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "GIGAHOSTNO_PASSWORD":	Password - required for username/password auth`)
+		ew.writeln(`	- "GIGAHOSTNO_TOKEN":	Pre-generated API token - alternative to username/password`)
+		ew.writeln(`	- "GIGAHOSTNO_USERNAME":	Username (email) - required for username/password auth`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "GIGAHOSTNO_2FA_CODE":	Two-factor authentication code (optional, not recommended for automated use)`)
+		ew.writeln(`	- "GIGAHOSTNO_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "GIGAHOSTNO_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "GIGAHOSTNO_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "GIGAHOSTNO_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/gigahostno`)
 
 	case "glesys":
 		// generated from: providers/dns/glesys/glesys.toml

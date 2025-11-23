@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "meta": {
+    "status": 200,
+    "status_message": "200 OK"
+  },
+  "data": {
+    "token": "secrettoken",
+    "token_expire": "unixtimestamp",
+    "customer_id": "xxxxxx"
+  }
+}
+

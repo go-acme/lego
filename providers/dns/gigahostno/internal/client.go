@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,25 +20,18 @@ const authorizationHeader = "Authorization"
 
 // Client the Gigahost.no API client.
 type Client struct {
-	token string
-
 	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
-func NewClient(token string) (*Client, error) {
-	if token == "" {
-		return nil, errors.New("credentials missing")
-	}
-
+func NewClient() *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 
 	return &Client{
-		token:      token,
 		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-	}, nil
+	}
 }
 
 // GetZones returns all zones.
@@ -53,7 +45,7 @@ func (c *Client) GetZones(ctx context.Context) ([]Zone, error) {
 
 	var result APIResponse[[]Zone]
 
-	err = c.do(req, &result)
+	err = c.do(ctx, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +64,7 @@ func (c *Client) GetZoneRecords(ctx context.Context, zoneID string) ([]Record, e
 
 	var result APIResponse[[]Record]
 
-	err = c.do(req, &result)
+	err = c.do(ctx, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +81,7 @@ func (c *Client) CreateNewRecord(ctx context.Context, zoneID string, record Reco
 		return err
 	}
 
-	return c.do(req, nil)
+	return c.do(ctx, req, nil)
 }
 
 // DeleteRecord deletes a record.
@@ -106,13 +98,13 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID, name, recor
 		return err
 	}
 
-	return c.do(req, nil)
+	return c.do(ctx, req, nil)
 }
 
-func (c *Client) do(req *http.Request, result any) error {
+func (c *Client) do(ctx context.Context, req *http.Request, result any) error {
 	useragent.SetHeader(req.Header)
 
-	req.Header.Set(authorizationHeader, "Bearer "+c.token)
+	req.Header.Set(authorizationHeader, "Bearer "+getToken(ctx))
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

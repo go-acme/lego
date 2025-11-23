@@ -47,3 +47,15 @@ type Record struct {
 	RecordValue string `json:"record_value,omitempty"`
 	RecordTTL   int    `json:"record_ttl,omitempty"`
 }
+
+type Auth struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Code     int    `json:"code,omitempty"`
+}
+
+type Token struct {
+	Token       string `json:"token"`
+	TokenExpire string `json:"token_expire"`
+	CustomerID  string `json:"customer_id"`
+}

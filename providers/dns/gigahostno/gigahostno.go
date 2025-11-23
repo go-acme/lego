@@ -18,7 +18,9 @@ import (
 const (
 	envNamespace = "GIGAHOSTNO_"
 
-	EnvToken = envNamespace + "TOKEN"
+	EnvUsername = envNamespace + "USERNAME"
+	EnvPassword = envNamespace + "PASSWORD"
+	EnvSecret   = envNamespace + "SECRET"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -28,7 +30,9 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Token string
+	Username string
+	Password string
+	Secret   string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -51,18 +55,22 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *internal.Client
+
+	identifier *internal.Identifier
+	client     *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Gigahost.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvToken)
+	values, err := env.Get(EnvUsername, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("gigahost: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Token = values[EnvToken]
+	config.Username = values[EnvUsername]
+	config.Password = values[EnvPassword]
+	config.Secret = env.GetOrFile(EnvSecret)
 
 	return NewDNSProviderConfig(config)
 }
@@ -73,10 +81,18 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("gigahost: the configuration of the DNS provider is nil")
 	}
 
-	client, err := internal.NewClient(config.Token)
+	identifier, err := internal.NewIdentifier(config.Username, config.Password, config.Secret)
 	if err != nil {
 		return nil, fmt.Errorf("gigahost: %w", err)
 	}
+
+	if config.HTTPClient != nil {
+		identifier.HTTPClient = config.HTTPClient
+	}
+
+	identifier.HTTPClient = clientdebug.Wrap(identifier.HTTPClient)
+
+	client := internal.NewClient()
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
@@ -85,8 +101,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{
-		config: config,
-		client: client,
+		config:     config,
+		identifier: identifier,
+		client:     client,
 	}, nil
 }
 
@@ -105,6 +122,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("gigahost: %w", err)
 	}
+
+	tok, err := d.identifier.Authenticate(ctx)
+	if err != nil {
+		return fmt.Errorf("gigahost: authenticate: %w", err)
+	}
+
+	ctx = internal.WithContext(ctx, tok)
 
 	zoneID, err := d.findZoneID(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
@@ -141,6 +165,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("gigahost: %w", err)
 	}
+
+	tok, err := d.identifier.Authenticate(ctx)
+	if err != nil {
+		return fmt.Errorf("gigahost: authenticate: %w", err)
+	}
+
+	ctx = internal.WithContext(ctx, tok)
 
 	zoneID, err := d.findZoneID(ctx, dns01.UnFqdn(authZone))
 	if err != nil {

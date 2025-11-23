@@ -14,10 +14,7 @@ import (
 func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client, err := NewClient("secret")
-			if err != nil {
-				return nil, err
-			}
+			client := NewClient()
 
 			client.BaseURL, _ = url.Parse(server.URL)
 			client.HTTPClient = server.Client()
@@ -36,7 +33,7 @@ func TestClient_GetZones(t *testing.T) {
 			servermock.ResponseFromFixture("zones.json")).
 		Build(t)
 
-	zones, err := client.GetZones(t.Context())
+	zones, err := client.GetZones(mockContext(t))
 	require.NoError(t, err)
 
 	expected := []Zone{{
@@ -67,7 +64,7 @@ func TestClient_GetZones_error(t *testing.T) {
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
-	_, err := client.GetZones(t.Context())
+	_, err := client.GetZones(mockContext(t))
 	require.EqualError(t, err, "401: 401 Unauthorized: 401 Unauthorized")
 }
 
@@ -77,7 +74,7 @@ func TestClient_GetZoneRecords(t *testing.T) {
 			servermock.ResponseFromFixture("zone_records.json")).
 		Build(t)
 
-	zones, err := client.GetZoneRecords(t.Context(), "123")
+	zones, err := client.GetZoneRecords(mockContext(t), "123")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -128,7 +125,7 @@ func TestClient_CreateNewRecord(t *testing.T) {
 		RecordTTL:   120,
 	}
 
-	err := client.CreateNewRecord(t.Context(), "example.com", record)
+	err := client.CreateNewRecord(mockContext(t), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -141,6 +138,6 @@ func TestClient_DeleteRecord(t *testing.T) {
 				With("type", "TXT")).
 		Build(t)
 
-	err := client.DeleteRecord(t.Context(), "123", "abc123", "_acme-challenge", "TXT")
+	err := client.DeleteRecord(mockContext(t), "123", "abc123", "_acme-challenge", "TXT")
 	require.NoError(t, err)
 }

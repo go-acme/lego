@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v4/providers/dns/gigahostno/internal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -176,12 +177,13 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 		},
 		servermock.CheckHeader().
 			WithJSONHeaders(),
-	).Route("POST /authenticate",
-		servermock.ResponseFromInternal("authenticate.json"))
+	)
 }
 
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
+		Route("POST /authenticate",
+			servermock.ResponseFromInternal("authenticate.json")).
 		Route("GET /dns/zones",
 			servermock.ResponseFromInternal("zones.json"),
 			servermock.CheckHeader().
@@ -197,8 +199,33 @@ func TestDNSProvider_Present(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDNSProvider_Present_token_not_expired(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /dns/zones",
+			servermock.ResponseFromInternal("zones.json"),
+			servermock.CheckHeader().
+				WithAuthorization("Bearer secret-token")).
+		Route("POST /dns/zones/123/records",
+			servermock.ResponseFromInternal("create_record.json"),
+			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json"),
+			servermock.CheckHeader().
+				WithAuthorization("Bearer secret-token")).
+		Build(t)
+
+	provider.token = &internal.Token{
+		Token:       "secret-token",
+		TokenExpire: "65322892800", // 2040-01-01
+		CustomerID:  "123",
+	}
+
+	err := provider.Present("example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
+		Route("POST /authenticate",
+			servermock.ResponseFromInternal("authenticate.json")).
 		Route("GET /dns/zones",
 			servermock.ResponseFromInternal("zones.json"),
 			servermock.CheckHeader().
@@ -215,6 +242,35 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			servermock.CheckHeader().
 				WithAuthorization("Bearer secrettoken")).
 		Build(t)
+
+	err := provider.CleanUp("example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp_token_not_expired(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /dns/zones",
+			servermock.ResponseFromInternal("zones.json"),
+			servermock.CheckHeader().
+				WithAuthorization("Bearer secret-token")).
+		Route("GET /dns/zones/123/records",
+			servermock.ResponseFromInternal("zone_records.json"),
+			servermock.CheckHeader().
+				WithAuthorization("Bearer secret-token")).
+		Route("DELETE /dns/zones/123/records/jkl012",
+			servermock.ResponseFromInternal("delete_record.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "_acme-challenge").
+				With("type", "TXT"),
+			servermock.CheckHeader().
+				WithAuthorization("Bearer secret-token")).
+		Build(t)
+
+	provider.token = &internal.Token{
+		Token:       "secret-token",
+		TokenExpire: "65322892800", // 2040-01-01
+		CustomerID:  "123",
+	}
 
 	err := provider.CleanUp("example.com", "abc", "123d==")
 	require.NoError(t, err)

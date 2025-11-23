@@ -113,16 +113,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("gigahostno: could not find zone for domain %q: %w", domain, err)
-	}
-
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
-	if err != nil {
-		return fmt.Errorf("gigahostno: %w", err)
-	}
-
 	tok, err := d.identifier.Authenticate(ctx)
 	if err != nil {
 		return fmt.Errorf("gigahostno: authenticate: %w", err)
@@ -130,7 +120,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	ctx = internal.WithContext(ctx, tok)
 
-	zoneID, err := d.findZoneID(ctx, dns01.UnFqdn(authZone))
+	zone, err := d.findZone(ctx, info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("gigahostno: %w", err)
+	}
+
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.ZoneName)
 	if err != nil {
 		return fmt.Errorf("gigahostno: %w", err)
 	}
@@ -142,7 +137,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		RecordTTL:   d.config.TTL,
 	}
 
-	err = d.client.CreateNewRecord(ctx, zoneID, record)
+	err = d.client.CreateNewRecord(ctx, zone.ZoneID, record)
 	if err != nil {
 		return fmt.Errorf("gigahostno: create new record: %w", err)
 	}
@@ -156,16 +151,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("gigahostno: could not find zone for domain %q: %w", domain, err)
-	}
-
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
-	if err != nil {
-		return fmt.Errorf("gigahostno: %w", err)
-	}
-
 	tok, err := d.identifier.Authenticate(ctx)
 	if err != nil {
 		return fmt.Errorf("gigahostno: authenticate: %w", err)
@@ -173,19 +158,24 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	ctx = internal.WithContext(ctx, tok)
 
-	zoneID, err := d.findZoneID(ctx, dns01.UnFqdn(authZone))
+	zone, err := d.findZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("gigahostno: %w", err)
 	}
 
-	records, err := d.client.GetZoneRecords(ctx, zoneID)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.ZoneName)
+	if err != nil {
+		return fmt.Errorf("gigahostno: %w", err)
+	}
+
+	records, err := d.client.GetZoneRecords(ctx, zone.ZoneID)
 	if err != nil {
 		return fmt.Errorf("gigahostno: get zone records: %w", err)
 	}
 
 	for _, record := range records {
 		if record.RecordType == "TXT" && record.RecordName == subDomain && record.RecordValue == info.Value {
-			err := d.client.DeleteRecord(ctx, zoneID, record.RecordID, record.RecordName, record.RecordType)
+			err := d.client.DeleteRecord(ctx, zone.ZoneID, record.RecordID, record.RecordName, record.RecordType)
 			if err != nil {
 				return fmt.Errorf("gigahostno: delete record: %w", err)
 			}
@@ -203,25 +193,19 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) findZoneID(ctx context.Context, authZone string) (string, error) {
+func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*internal.Zone, error) {
 	zones, err := d.client.GetZones(ctx)
 	if err != nil {
-		return "", fmt.Errorf("get zones: %w", err)
+		return nil, fmt.Errorf("get zones: %w", err)
 	}
 
-	var zoneID string
-
-	for _, zone := range zones {
-		if zone.ZoneName == authZone {
-			zoneID = zone.ZoneID
-
-			break
+	for d := range dns01.UnFqdnDomainsSeq(fqdn) {
+		for _, zone := range zones {
+			if zone.ZoneName == d && zone.ZoneActive == "1" {
+				return &zone, nil
+			}
 		}
 	}
 
-	if zoneID == "" {
-		return "", fmt.Errorf("zone not found for %q", authZone)
-	}
-
-	return zoneID, nil
+	return nil, fmt.Errorf("zone not found for %q", fqdn)
 }

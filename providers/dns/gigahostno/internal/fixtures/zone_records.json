@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "status": 200,
+    "status_message": "200 OK"
+  },
+  "data": [
+    {
+      "record_id": "abc123",
+      "record_name": "@",
+      "record_type": "A",
+      "record_value": "185.125.168.166",
+      "record_ttl": 3600,
+      "record_priority": null
+    },
+    {
+      "record_id": "def456",
+      "record_name": "www",
+      "record_type": "A",
+      "record_value": "185.125.168.166",
+      "record_ttl": 3600,
+      "record_priority": null
+    },
+    {
+      "record_id": "ghi789",
+      "record_name": "@",
+      "record_type": "MX",
+      "record_value": "mail.example.no",
+      "record_ttl": 3600,
+      "record_priority": 10
+    },
+    {
+      "record_id": "jkl012",
+      "record_name": "_acme-challenge",
+      "record_type": "TXT",
+      "record_value": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "record_ttl": 120
+    }
+  ]
+}

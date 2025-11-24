@@ -1,0 +1,25 @@
+Name = "Gigahost.no"
+Description = ''''''
+URL = "https://gigahost.no/"
+Code = "gigahostno"
+Since = "v4.29.0"
+
+Example = '''
+GIGAHOSTNO_USERNAME="xxxxxxxxxxxxxxxxxxxxx" \
+GIGAHOSTNO_PASSWORD="yyyyyyyyyyyyyyyyyyyyy" \
+lego --email you@example.com --dns gigahostno -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    GIGAHOSTNO_USERNAME = "Username"
+    GIGAHOSTNO_PASSWORD = "Password"
+  [Configuration.Additional]
+    GIGAHOSTNO_SECRET = "TOTP secret"
+    GIGAHOSTNO_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    GIGAHOSTNO_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    GIGAHOSTNO_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    GIGAHOSTNO_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://gigahost.no/api-dokumentasjon"

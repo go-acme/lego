@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "status": 200,
+    "status_message": "200 OK",
+    "maintenance": false
+  },
+  "data": {
+    "token": "secrettoken",
+    "token_expire": 1577836800,
+    "customer_id": "16030",
+    "contact_id": "15182",
+    "customer_name": "Cloudline AS",
+    "contact_username": "test@example.com",
+    "contact_access_level": "admin",
+    "customer_address": "Grønland 14",
+    "customer_zipcode": "5918",
+    "customer_city": "Frekhaug",
+    "customer_province": "Vestland",
+    "ga_secret": "ga_secret",
+    "ga_enabled": "1",
+    "vat": 1
+  }
+}

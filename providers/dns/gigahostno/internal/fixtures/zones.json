@@ -19,7 +19,7 @@
       "domain_auto_renew": "1",
       "external_dns": "0",
       "record_count": 5,
-      "zone_updated": 1700000000
+      "zone_updated": false
     }
   ]
 }

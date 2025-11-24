@@ -44,7 +44,7 @@ func TestClient_GetZones(t *testing.T) {
 		Active:           "1",
 		Protected:        "1",
 		IsRegistered:     "1",
-		Updated:          1700000000,
+		Updated:          false,
 		CustomerID:       "1111",
 		DomainRegistrar:  "norid",
 		DomainStatus:     "active",

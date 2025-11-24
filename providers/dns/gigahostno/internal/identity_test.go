@@ -41,9 +41,20 @@ func TestIdentifier_Authenticate(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := &Token{
-		Token:       "secrettoken",
-		TokenExpire: 1577836800,
-		CustomerID:  "xxxxxx",
+		Token:              "secrettoken",
+		TokenExpire:        1577836800,
+		CustomerID:         "16030",
+		ContactID:          "15182",
+		CustomerName:       "Cloudline AS",
+		ContactUsername:    "test@example.com",
+		ContactAccessLevel: "admin",
+		CustomerAddress:    "Grønland 14",
+		CustomerZipcode:    "5918",
+		CustomerCity:       "Frekhaug",
+		CustomerProvince:   "Vestland",
+		GASecret:           "ga_secret",
+		GAEnabled:          "1",
+		VAT:                1,
 	}
 
 	assert.Equal(t, expected, token)

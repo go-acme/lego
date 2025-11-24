@@ -58,9 +58,20 @@ type Auth struct {
 }
 
 type Token struct {
-	Token       string `json:"token"`
-	TokenExpire int64  `json:"token_expire"`
-	CustomerID  string `json:"customer_id"`
+	Token              string `json:"token,omitempty"`
+	TokenExpire        int64  `json:"token_expire,omitempty"`
+	CustomerID         string `json:"customer_id,omitempty"`
+	ContactID          string `json:"contact_id,omitempty"`
+	CustomerName       string `json:"customer_name,omitempty"`
+	ContactUsername    string `json:"contact_username,omitempty"`
+	ContactAccessLevel string `json:"contact_access_level,omitempty"`
+	CustomerAddress    string `json:"customer_address,omitempty"`
+	CustomerZipcode    string `json:"customer_zipcode,omitempty"`
+	CustomerCity       string `json:"customer_city,omitempty"`
+	CustomerProvince   string `json:"customer_province,omitempty"`
+	GASecret           string `json:"ga_secret,omitempty"`
+	GAEnabled          string `json:"ga_enabled,omitempty"`
+	VAT                int    `json:"vat,omitempty"`
 }
 
 func (t *Token) IsExpired() bool {

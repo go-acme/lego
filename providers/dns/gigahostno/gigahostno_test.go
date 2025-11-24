@@ -214,7 +214,7 @@ func TestDNSProvider_Present_token_not_expired(t *testing.T) {
 
 	provider.token = &internal.Token{
 		Token:       "secret-token",
-		TokenExpire: "65322892800", // 2040-01-01
+		TokenExpire: 65322892800, // 2040-01-01
 		CustomerID:  "123",
 	}
 
@@ -268,7 +268,7 @@ func TestDNSProvider_CleanUp_token_not_expired(t *testing.T) {
 
 	provider.token = &internal.Token{
 		Token:       "secret-token",
-		TokenExpire: "65322892800", // 2040-01-01
+		TokenExpire: 65322892800, // 2040-01-01
 		CustomerID:  "123",
 	}
 

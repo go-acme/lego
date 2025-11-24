@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 )
 
@@ -60,7 +59,7 @@ type Auth struct {
 
 type Token struct {
 	Token       string `json:"token"`
-	TokenExpire string `json:"token_expire"`
+	TokenExpire int64  `json:"token_expire"`
 	CustomerID  string `json:"customer_id"`
 }
 
@@ -69,10 +68,5 @@ func (t *Token) IsExpired() bool {
 		return true
 	}
 
-	expire, err := strconv.ParseInt(t.TokenExpire, 10, 64)
-	if err != nil {
-		return true
-	}
-
-	return time.Now().Add(1 * time.Minute).After(time.Unix(expire, 0))
+	return time.Now().Add(1 * time.Minute).After(time.Unix(t.TokenExpire, 0))
 }

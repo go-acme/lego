@@ -6,7 +6,7 @@
   },
   "data": {
     "token": "secrettoken",
-    "token_expire": "1577836800",
+    "token_expire": 1577836800,
     "customer_id": "xxxxxx"
   }
 }

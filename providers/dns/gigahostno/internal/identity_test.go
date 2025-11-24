@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http/httptest"
 	"net/url"
-	"strconv"
 	"testing"
 	"time"
 
@@ -43,7 +42,7 @@ func TestIdentifier_Authenticate(t *testing.T) {
 
 	expected := &Token{
 		Token:       "secrettoken",
-		TokenExpire: "1577836800",
+		TokenExpire: 1577836800,
 		CustomerID:  "xxxxxx",
 	}
 
@@ -68,21 +67,21 @@ func TestToken_IsExpired(t *testing.T) {
 		{
 			desc: "not expired",
 			token: &Token{
-				TokenExpire: "65322892800", // 2040-01-01
+				TokenExpire: 65322892800, // 2040-01-01
 			},
 			assert: assert.False,
 		},
 		{
 			desc: "now",
 			token: &Token{
-				TokenExpire: strconv.FormatInt(time.Now().Unix(), 10),
+				TokenExpire: time.Now().Unix(),
 			},
 			assert: assert.True,
 		},
 		{
 			desc: "now + 2 minutes",
 			token: &Token{
-				TokenExpire: strconv.FormatInt(time.Now().Add(2*time.Minute).Unix(), 10),
+				TokenExpire: time.Now().Add(2 * time.Minute).Unix(),
 			},
 			assert: assert.False,
 		},

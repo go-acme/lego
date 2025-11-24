@@ -68,5 +68,5 @@ func (t *Token) IsExpired() bool {
 		return true
 	}
 
-	return time.Now().Add(1 * time.Minute).After(time.Unix(t.TokenExpire, 0))
+	return time.Now().UTC().Add(1 * time.Minute).After(time.Unix(t.TokenExpire, 0).UTC())
 }

@@ -25,6 +25,7 @@ const (
 	EnvSecretID     = envNamespace + "SECRET_ID"
 	EnvSecretKey    = envNamespace + "SECRET_KEY"
 	EnvRegion       = envNamespace + "REGION"
+	EnvZoneID       = envNamespace + "ZONE_ID"
 	EnvSessionToken = envNamespace + "SESSION_TOKEN"
 
 	EnvTTL                = envNamespace + "TTL"
@@ -38,6 +39,7 @@ type Config struct {
 	SecretID     string
 	SecretKey    string
 	Region       string
+	ZoneID       string
 	SessionToken string
 
 	PropagationTimeout time.Duration
@@ -76,6 +78,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.SecretID = values[EnvSecretID]
 	config.SecretKey = values[EnvSecretKey]
 	config.Region = env.GetOrDefaultString(EnvRegion, "")
+	config.ZoneID = env.GetOrDefaultString(EnvZoneID, "")
 	config.SessionToken = env.GetOrDefaultString(EnvSessionToken, "")
 
 	return NewDNSProviderConfig(config)
@@ -121,7 +124,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	ctx := context.Background()
 
-	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
+	zoneID, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("edgeone: failed to get hosted zone: %w", err)
 	}
@@ -133,7 +136,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	request := teo.NewCreateDnsRecordRequest()
 	request.Name = ptr.Pointer(punnyCoded)
-	request.ZoneId = zone.ZoneId
+	request.ZoneId = ptr.Pointer(zoneID)
 	request.Type = ptr.Pointer("TXT")
 	request.Content = ptr.Pointer(info.Value)
 	request.TTL = ptr.Pointer(int64(d.config.TTL))
@@ -156,7 +159,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	ctx := context.Background()
 
-	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
+	zoneID, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("edgeone: failed to get hosted zone: %w", err)
 	}
@@ -171,7 +174,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	request := teo.NewDeleteDnsRecordsRequest()
-	request.ZoneId = zone.ZoneId
+	request.ZoneId = ptr.Pointer(zoneID)
 	request.RecordIds = []*string{recordID}
 
 	_, err = teo.DeleteDnsRecordsWithContext(ctx, d.client, request)

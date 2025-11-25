@@ -9,8 +9,11 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvSecretID, EnvSecretKey).
-	WithDomain(envDomain)
+var envTest = tester.NewEnvTest(
+	EnvSecretID,
+	EnvSecretKey,
+	EnvZonesMapping,
+).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -23,6 +26,14 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvSecretID:  "123",
 				EnvSecretKey: "456",
+			},
+		},
+		{
+			desc: "success with zones mapping",
+			envVars: map[string]string{
+				EnvSecretID:     "123",
+				EnvSecretKey:    "456",
+				EnvZonesMapping: "example.org:id1,example.com:id2",
 			},
 		},
 		{
@@ -48,6 +59,15 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvSecretKey: "",
 			},
 			expected: "edgeone: some credentials information are missing: EDGEONE_SECRET_KEY",
+		},
+		{
+			desc: "invalid mapping",
+			envVars: map[string]string{
+				EnvSecretID:     "123",
+				EnvSecretKey:    "456",
+				EnvZonesMapping: "example.org:id1,example.com",
+			},
+			expected: "edgeone: zones mapping: incorrect pair: example.com",
 		},
 	}
 

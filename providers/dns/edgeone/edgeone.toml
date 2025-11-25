@@ -17,6 +17,7 @@ lego --email you@example.com --dns edgeone -d '*.example.com' -d example.com run
   [Configuration.Additional]
     EDGEONE_SESSION_TOKEN = "Access Key token"
     EDGEONE_REGION = "Region"
+    EDGEONE_ZONES_MAPPING = "Mapping between DNS zones and site IDs. (ex: 'example.org:id1,example.com:id2')"
     EDGEONE_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 30)"
     EDGEONE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 1200)"
     EDGEONE_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)"

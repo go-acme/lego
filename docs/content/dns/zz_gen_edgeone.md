@@ -55,6 +55,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | `EDGEONE_REGION` | Region |
 | `EDGEONE_SESSION_TOKEN` | Access Key token |
 | `EDGEONE_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 60) |
+| `EDGEONE_ZONES_MAPPING` | Mapping between DNS zones and site IDs. (ex: 'example.org:id1,example.com:id2') |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

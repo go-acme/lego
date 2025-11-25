@@ -10,9 +10,14 @@ import (
 )
 
 func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*teo.Zone, error) {
+	authZone, err := dns01.FindZoneByFqdn(domain)
+	if err != nil {
+		return nil, fmt.Errorf("could not find zone: %w", err)
+	}
+
 	request := teo.NewDescribeZonesRequest()
 
-	var domains []*teo.Zone
+	var zones []*teo.Zone
 
 	for {
 		response, err := teo.DescribeZonesWithContext(ctx, d.client, request)
@@ -20,23 +25,18 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*teo.Zo
 			return nil, fmt.Errorf("API call failed: %w", err)
 		}
 
-		domains = append(domains, response.Response.Zones...)
+		zones = append(zones, response.Response.Zones...)
 
-		if int64(len(domains)) >= ptr.Deref(response.Response.TotalCount) {
+		if int64(len(zones)) >= ptr.Deref(response.Response.TotalCount) {
 			break
 		}
 
-		request.Offset = ptr.Pointer(int64(len(domains)))
-	}
-
-	authZone, err := dns01.FindZoneByFqdn(domain)
-	if err != nil {
-		return nil, fmt.Errorf("could not find zone: %w", err)
+		request.Offset = ptr.Pointer(int64(len(zones)))
 	}
 
 	var hostedZone *teo.Zone
 
-	for _, zone := range domains {
+	for _, zone := range zones {
 		unfqdn := dns01.UnFqdn(authZone)
 		if ptr.Deref(zone.ZoneName) == unfqdn {
 			hostedZone = zone
@@ -44,7 +44,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*teo.Zo
 	}
 
 	if hostedZone == nil {
-		return nil, fmt.Errorf("zone %s not found in dnspod for domain %s", authZone, domain)
+		return nil, fmt.Errorf("zone %s not found for domain %s", authZone, domain)
 	}
 
 	return hostedZone, nil

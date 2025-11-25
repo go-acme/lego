@@ -9,10 +9,17 @@ import (
 	teo "github.com/go-acme/tencentedgdeone/v20220901"
 )
 
-func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*teo.Zone, error) {
+func (d *DNSProvider) getHostedZoneID(ctx context.Context, domain string) (*string, error) {
 	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
 		return nil, fmt.Errorf("could not find zone: %w", err)
+	}
+
+	if d.config.zonesMapping != nil {
+		zoneID, ok := d.config.zonesMapping[authZone]
+		if ok {
+			return ptr.Pointer(zoneID), nil
+		}
 	}
 
 	request := teo.NewDescribeZonesRequest()
@@ -47,5 +54,5 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*teo.Zo
 		return nil, fmt.Errorf("zone %s not found for domain %s", authZone, domain)
 	}
 
-	return hostedZone, nil
+	return hostedZone.ZoneId, nil
 }

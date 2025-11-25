@@ -61,7 +61,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success file",
 			envVars: map[string]string{
-				EnvPrivKeyFile:       mustGeneratePrivateKeyFile("secret1"),
+				EnvPrivKeyFile:       mustGeneratePrivateKeyFile(t, "secret1"),
 				EnvPrivKeyPass:       "secret1",
 				EnvTenancyOCID:       "ocid1.tenancy.oc1..secret",
 				EnvUserOCID:          "ocid1.user.oc1..secret",
@@ -383,21 +383,21 @@ func mustGeneratePrivateKey(pwd string) string {
 	return base64.StdEncoding.EncodeToString(pem.EncodeToMemory(block))
 }
 
-func mustGeneratePrivateKeyFile(pwd string) string {
-	block, err := generatePrivateKey(pwd)
-	if err != nil {
-		panic(err)
-	}
+func mustGeneratePrivateKeyFile(t *testing.T, pwd string) string {
+	t.Helper()
 
-	file, err := os.CreateTemp("", "lego_oci_*.pem")
-	if err != nil {
-		panic(err)
-	}
+	block, err := generatePrivateKey(pwd)
+	require.NoError(t, err)
+
+	file, err := os.CreateTemp(t.TempDir(), "lego_oci_*.pem")
+	require.NoError(t, err)
+
+	defer func() {
+		_ = file.Close()
+	}()
 
 	err = pem.Encode(file, block)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	return file.Name()
 }

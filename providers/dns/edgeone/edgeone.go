@@ -41,7 +41,7 @@ type Config struct {
 	Region       string
 	SessionToken string
 
-	zonesMapping map[string]string
+	ZonesMapping map[string]string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -83,7 +83,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	mapping := env.GetOrDefaultString(EnvZonesMapping, "")
 	if mapping != "" {
-		config.zonesMapping, err = env.ParsePairs(mapping)
+		config.ZonesMapping, err = env.ParsePairs(mapping)
 		if err != nil {
 			return nil, fmt.Errorf("edgeone: zones mapping: %w", err)
 		}

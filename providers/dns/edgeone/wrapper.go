@@ -15,8 +15,8 @@ func (d *DNSProvider) getHostedZoneID(ctx context.Context, domain string) (*stri
 		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
 
-	if d.config.zonesMapping != nil {
-		zoneID, ok := d.config.zonesMapping[authZone]
+	if d.config.ZonesMapping != nil {
+		zoneID, ok := d.config.ZonesMapping[authZone]
 		if ok {
 			return ptr.Pointer(zoneID), nil
 		}

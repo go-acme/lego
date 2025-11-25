@@ -1342,6 +1342,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "EDGEONE_REGION":	Region`)
 		ew.writeln(`	- "EDGEONE_SESSION_TOKEN":	Access Key token`)
 		ew.writeln(`	- "EDGEONE_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)`)
+		ew.writeln(`	- "EDGEONE_ZONES_MAPPING":	Mapping between DNS zones and site IDs. (ex: 'example.org:id1,example.com:id2')`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/edgeone`)

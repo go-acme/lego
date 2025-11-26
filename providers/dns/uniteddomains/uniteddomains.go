@@ -1,0 +1,210 @@
+// Package uniteddomains implements a DNS provider for solving the DNS-01 challenge using United-Domains.
+package uniteddomains
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/go-acme/lego/v4/challenge"
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v4/providers/dns/internal/ionos"
+)
+
+// Environment variables names.
+const (
+	envNamespace = "UNITEDDOMAINS_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
+const minTTL = 300
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
+
+// Config is used to configure the creation of the DNSProvider.
+type Config struct {
+	APIKey             string
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+	TTL                int
+	HTTPClient         *http.Client
+}
+
+// NewDefaultConfig returns a default configuration for the DNSProvider.
+func NewDefaultConfig() *Config {
+	return &Config{
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 15*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
+	}
+}
+
+// DNSProvider implements the challenge.Provider interface.
+type DNSProvider struct {
+	config *Config
+	client *ionos.Client
+}
+
+// NewDNSProvider returns a DNSProvider instance configured for United-Domains.
+func NewDNSProvider() (*DNSProvider, error) {
+	values, err := env.Get(EnvAPIKey)
+	if err != nil {
+		return nil, fmt.Errorf("uniteddomains: %w", err)
+	}
+
+	config := NewDefaultConfig()
+	config.APIKey = values[EnvAPIKey]
+
+	return NewDNSProviderConfig(config)
+}
+
+// NewDNSProviderConfig return a DNSProvider instance configured for United-Domains.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("uniteddomains: the configuration of the DNS provider is nil")
+	}
+
+	if config.APIKey == "" {
+		return nil, errors.New("uniteddomains: credentials missing")
+	}
+
+	if config.TTL < minTTL {
+		return nil, fmt.Errorf("uniteddomains: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
+	}
+
+	client, err := ionos.NewClient(config.APIKey)
+	if err != nil {
+		return nil, fmt.Errorf("uniteddomains: %w", err)
+	}
+
+	client.BaseURL, _ = url.Parse(ionos.DefaultUnitedDomainsBaseURL)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
+
+	return &DNSProvider{config: config, client: client}, nil
+}
+
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// Present creates a TXT record using the specified parameters.
+func (d *DNSProvider) Present(domain, _, keyAuth string) error {
+	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	ctx := context.Background()
+
+	zones, err := d.client.ListZones(ctx)
+	if err != nil {
+		return fmt.Errorf("uniteddomains: failed to get zones: %w", err)
+	}
+
+	name := dns01.UnFqdn(info.EffectiveFQDN)
+
+	zone := findZone(zones, name)
+	if zone == nil {
+		return errors.New("uniteddomains: no matching zone found for domain")
+	}
+
+	filter := &ionos.RecordsFilter{
+		Suffix:     name,
+		RecordType: "TXT",
+	}
+
+	records, err := d.client.GetRecords(ctx, zone.ID, filter)
+	if err != nil {
+		return fmt.Errorf("uniteddomains: failed to get records (zone=%s): %w", zone.ID, err)
+	}
+
+	records = append(records, ionos.Record{
+		Name:    name,
+		Content: info.Value,
+		TTL:     d.config.TTL,
+		Type:    "TXT",
+	})
+
+	err = d.client.ReplaceRecords(ctx, zone.ID, records)
+	if err != nil {
+		return fmt.Errorf("uniteddomains: failed to create/update records (zone=%s): %w", zone.ID, err)
+	}
+
+	return nil
+}
+
+// CleanUp removes the TXT record matching the specified parameters.
+func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
+	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	ctx := context.Background()
+
+	zones, err := d.client.ListZones(ctx)
+	if err != nil {
+		return fmt.Errorf("uniteddomains: failed to get zones: %w", err)
+	}
+
+	name := dns01.UnFqdn(info.EffectiveFQDN)
+
+	zone := findZone(zones, name)
+	if zone == nil {
+		return errors.New("uniteddomains: no matching zone found for domain")
+	}
+
+	filter := &ionos.RecordsFilter{
+		Suffix:     name,
+		RecordType: "TXT",
+	}
+
+	records, err := d.client.GetRecords(ctx, zone.ID, filter)
+	if err != nil {
+		return fmt.Errorf("uniteddomains: failed to get records (zone=%s): %w", zone.ID, err)
+	}
+
+	for _, record := range records {
+		if record.Name == name && record.Content == strconv.Quote(info.Value) {
+			err = d.client.RemoveRecord(ctx, zone.ID, record.ID)
+			if err != nil {
+				return fmt.Errorf("uniteddomains: failed to remove record (zone=%s, record=%s): %w", zone.ID, record.ID, err)
+			}
+
+			return nil
+		}
+	}
+
+	return fmt.Errorf("uniteddomains: failed to remove record, record not found (zone=%s, domain=%s, fqdn=%s, value=%s)", zone.ID, domain, info.EffectiveFQDN, info.Value)
+}
+
+func findZone(zones []ionos.Zone, domain string) *ionos.Zone {
+	var result *ionos.Zone
+
+	for _, zone := range zones {
+		if zone.Name != "" && strings.HasSuffix(domain, zone.Name) {
+			if result == nil || len(zone.Name) > len(result.Name) {
+				result = &zone
+			}
+		}
+	}
+
+	return result
+}

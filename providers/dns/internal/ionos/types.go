@@ -1,4 +1,4 @@
-package internal
+package ionos
 
 import (
 	"fmt"

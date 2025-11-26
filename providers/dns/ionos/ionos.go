@@ -14,7 +14,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v4/providers/dns/ionos/internal"
+	"github.com/go-acme/lego/v4/providers/dns/internal/ionos"
 )
 
 // Environment variables names.
@@ -57,7 +57,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *internal.Client
+	client *ionos.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Ionos.
@@ -88,7 +88,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("ionos: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	client, err := internal.NewClient(config.APIKey)
+	client, err := ionos.NewClient(config.APIKey)
 	if err != nil {
 		return nil, fmt.Errorf("ionos: %w", err)
 	}
@@ -126,7 +126,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 		return errors.New("ionos: no matching zone found for domain")
 	}
 
-	filter := &internal.RecordsFilter{
+	filter := &ionos.RecordsFilter{
 		Suffix:     name,
 		RecordType: "TXT",
 	}
@@ -136,7 +136,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("ionos: failed to get records (zone=%s): %w", zone.ID, err)
 	}
 
-	records = append(records, internal.Record{
+	records = append(records, ionos.Record{
 		Name:    name,
 		Content: info.Value,
 		TTL:     d.config.TTL,
@@ -169,7 +169,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return errors.New("ionos: no matching zone found for domain")
 	}
 
-	filter := &internal.RecordsFilter{
+	filter := &ionos.RecordsFilter{
 		Suffix:     name,
 		RecordType: "TXT",
 	}
@@ -193,8 +193,8 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	return fmt.Errorf("ionos: failed to remove record, record not found (zone=%s, domain=%s, fqdn=%s, value=%s)", zone.ID, domain, info.EffectiveFQDN, info.Value)
 }
 
-func findZone(zones []internal.Zone, domain string) *internal.Zone {
-	var result *internal.Zone
+func findZone(zones []ionos.Zone, domain string) *ionos.Zone {
+	var result *ionos.Zone
 
 	for _, zone := range zones {
 		if zone.Name != "" && strings.HasSuffix(domain, zone.Name) {

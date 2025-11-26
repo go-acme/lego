@@ -155,6 +155,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/timewebcloud"
 	"github.com/go-acme/lego/v4/providers/dns/transip"
 	"github.com/go-acme/lego/v4/providers/dns/ultradns"
+	"github.com/go-acme/lego/v4/providers/dns/uniteddomains"
 	"github.com/go-acme/lego/v4/providers/dns/variomedia"
 	"github.com/go-acme/lego/v4/providers/dns/vegadns"
 	"github.com/go-acme/lego/v4/providers/dns/vercel"
@@ -478,6 +479,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return transip.NewDNSProvider()
 	case "ultradns":
 		return ultradns.NewDNSProvider()
+	case "uniteddomains":
+		return uniteddomains.NewDNSProvider()
 	case "variomedia":
 		return variomedia.NewDNSProvider()
 	case "vegadns":

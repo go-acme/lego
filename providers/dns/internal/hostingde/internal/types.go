@@ -1,4 +1,4 @@
-package hostingde
+package internal
 
 import "encoding/json"
 

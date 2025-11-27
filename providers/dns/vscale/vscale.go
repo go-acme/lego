@@ -4,17 +4,14 @@
 package vscale
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/internal/selectel"
 )
 
@@ -31,25 +28,18 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-const minTTL = 60
+const defaultBaseURL = "https://api.vscale.io/v1/domains"
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
-type Config struct {
-	BaseURL            string
-	Token              string
-	PropagationTimeout time.Duration
-	PollingInterval    time.Duration
-	TTL                int
-	HTTPClient         *http.Client
-}
+type Config = selectel.Config
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(EnvBaseURL, selectel.DefaultVScaleBaseURL),
-		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
+		BaseURL:            env.GetOrDefaultString(EnvBaseURL, defaultBaseURL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, selectel.MinTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
@@ -60,8 +50,7 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config *Config
-	client *selectel.Client
+	prv challenge.ProviderTimeout
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Vscale Domains API.
@@ -84,58 +73,21 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("vscale: the configuration of the DNS provider is nil")
 	}
 
-	if config.Token == "" {
-		return nil, errors.New("vscale: credentials missing")
+	if config.BaseURL == "" {
+		config.BaseURL = defaultBaseURL
 	}
 
-	if config.TTL < minTTL {
-		return nil, fmt.Errorf("vscale: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
-	}
-
-	client := selectel.NewClient(config.Token)
-
-	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
-	}
-
-	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
-
-	var err error
-
-	client.BaseURL, err = url.Parse(config.BaseURL)
+	provider, err := selectel.NewDNSProviderConfig(config)
 	if err != nil {
 		return nil, fmt.Errorf("vscale: %w", err)
 	}
 
-	return &DNSProvider{config: config, client: client}, nil
+	return &DNSProvider{prv: provider}, nil
 }
 
-// Timeout returns the Timeout and interval to use when checking for DNS propagation.
-// Adjusting here to cope with spikes in propagation times.
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-// Present creates a TXT record to fulfill DNS-01 challenge.
+// Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	ctx := context.Background()
-
-	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	domainObj, err := d.client.GetDomainByName(ctx, domain)
-	if err != nil {
-		return fmt.Errorf("vscale: %w", err)
-	}
-
-	txtRecord := selectel.Record{
-		Type:    "TXT",
-		TTL:     d.config.TTL,
-		Name:    info.EffectiveFQDN,
-		Content: info.Value,
-	}
-
-	_, err = d.client.AddRecord(ctx, domainObj.ID, txtRecord)
+	err := d.prv.Present(domain, token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("vscale: %w", err)
 	}
@@ -143,36 +95,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes a TXT record used for DNS-01 challenge.
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	recordName := dns01.UnFqdn(info.EffectiveFQDN)
-
-	ctx := context.Background()
-
-	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	domainObj, err := d.client.GetDomainByName(ctx, domain)
+	err := d.prv.CleanUp(domain, token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("vscale: %w", err)
 	}
 
-	records, err := d.client.ListRecords(ctx, domainObj.ID)
-	if err != nil {
-		return fmt.Errorf("vscale: %w", err)
-	}
+	return nil
+}
 
-	// Delete records with specific FQDN
-	var lastErr error
-
-	for _, record := range records {
-		if record.Name == recordName {
-			err = d.client.DeleteRecord(ctx, domainObj.ID, record.ID)
-			if err != nil {
-				lastErr = fmt.Errorf("vscale: %w", err)
-			}
-		}
-	}
-
-	return lastErr
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.prv.Timeout()
 }

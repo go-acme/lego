@@ -1,4 +1,4 @@
-package selectel
+package internal
 
 import (
 	"bytes"
@@ -15,15 +15,11 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-// Base URL for the Selectel/VScale DNS services.
-const (
-	DefaultSelectelBaseURL = "https://api.selectel.ru/domains/v1"
-	DefaultVScaleBaseURL   = "https://api.vscale.io/v1/domains"
-)
+const defaultBaseURL = "https://api.selectel.ru/domains/v1"
 
 const tokenHeader = "X-Token"
 
-// Client represents DNS client.
+// Client represents the DNS client.
 type Client struct {
 	token string
 
@@ -33,7 +29,7 @@ type Client struct {
 
 // NewClient returns a client instance.
 func NewClient(token string) *Client {
-	baseURL, _ := url.Parse(DefaultVScaleBaseURL)
+	baseURL, _ := url.Parse(defaultBaseURL)
 
 	return &Client{
 		token:      token,

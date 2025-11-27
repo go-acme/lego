@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/providers/dns/internal/selectel"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -46,8 +47,7 @@ func TestNewDNSProvider(t *testing.T) {
 			if test.expected == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
-				assert.NotNil(t, p.config)
-				assert.NotNil(t, p.client)
+				assert.NotNil(t, p.prv)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -77,7 +77,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:     "bad TTL value",
 			token:    "123",
 			ttl:      59,
-			expected: fmt.Sprintf("selectel: invalid TTL, TTL (59) must be greater than %d", minTTL),
+			expected: fmt.Sprintf("selectel: invalid TTL, TTL (59) must be greater than %d", selectel.MinTTL),
 		},
 	}
 
@@ -92,8 +92,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			if test.expected == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
-				assert.NotNil(t, p.config)
-				assert.NotNil(t, p.client)
+				assert.NotNil(t, p.prv)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}

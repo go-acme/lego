@@ -177,7 +177,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("inwx: %w", err)
 	}
 
-	var recordID int
+	var recordID string
 
 	for _, record := range response.Records {
 		if record.Content != info.Value {
@@ -189,7 +189,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		break
 	}
 
-	if recordID == 0 {
+	if recordID == "" {
 		return errors.New("inwx: TXT record not found")
 	}
 

@@ -933,8 +933,8 @@ github.com/xdg-go/stringprep v1.0.4/go.mod h1:mPGuuIYwz7CmR2bT9j4GbQqutWS1zV24gi
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 h1:gEOO8jv9F4OT7lGCjxCBTO/36wtF6j2nSip77qHd4x4=
 github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1/go.mod h1:Ohn+xnUBiLI6FVj/9LpzZWtj1/D6lUovWYBkxHVV3aM=
-github.com/yandex-cloud/go-genproto v0.34.0 h1:qhTJpPxOTKQbV44rIqoZSdzxDtZW27fkFjAcipEy8Zs=
-github.com/yandex-cloud/go-genproto v0.34.0/go.mod h1:0LDD/IZLIUIV4iPH+YcF+jysO3jkSvADFGm4dCAuwQo=
+github.com/yandex-cloud/go-genproto v0.38.0 h1:uB3btG7mLOnu53ehYtRARCk04+80sBpxDrSkP3qC6G8=
+github.com/yandex-cloud/go-genproto v0.38.0/go.mod h1:0LDD/IZLIUIV4iPH+YcF+jysO3jkSvADFGm4dCAuwQo=
 github.com/yandex-cloud/go-sdk/services/dns v0.0.16 h1:0UYrBlQjTO2ct5xcSx6rqkQB95wRBPMVwxfqLQD1sUE=
 github.com/yandex-cloud/go-sdk/services/dns v0.0.16/go.mod h1:HlS3aIAdYEmJu2Ska/nzpcuv9LLVSMMXKGhzyLQwf5s=
 github.com/yandex-cloud/go-sdk/v2 v2.24.0 h1:G53N/RB5g/jw2xNN0egspnwd2ByHA1OVH6wbTx/tIlo=

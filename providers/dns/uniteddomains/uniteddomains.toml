@@ -1,0 +1,22 @@
+Name = "United-Domains"
+Description = ''''''
+URL = "https://www.united-domains.de/"
+Code = "uniteddomains"
+Since = "v4.29.0"
+
+Example = '''
+UNITEDDOMAINS_API_KEY=xxxxxxxx \
+lego --email you@example.com --dns uniteddomains -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    UNITEDDOMAINS_API_KEY = "API key `<prefix>.<secret>` https://www.united-domains.de/help/faq-article/getting-started-with-the-united-domains-dns-api/"
+  [Configuration.Additional]
+    UNITEDDOMAINS_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    UNITEDDOMAINS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 900)"
+    UNITEDDOMAINS_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)"
+    UNITEDDOMAINS_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://www.united-domains.de/dns-apidoc/"

@@ -1,11 +1,12 @@
-// Package ionos implements a DNS provider for solving the DNS-01 challenge using Ionos/1&1.
-package ionos
+// Package uniteddomains implements a DNS provider for solving the DNS-01 challenge using United-Domains.
+package uniteddomains
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -19,7 +20,7 @@ import (
 
 // Environment variables names.
 const (
-	envNamespace = "IONOS_"
+	envNamespace = "UNITEDDOMAINS_"
 
 	EnvAPIKey = envNamespace + "API_KEY"
 
@@ -60,12 +61,11 @@ type DNSProvider struct {
 	client *ionos.Client
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for Ionos.
-// Credentials must be passed in the environment variables: IONOS_API_KEY.
+// NewDNSProvider returns a DNSProvider instance configured for United-Domains.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAPIKey)
 	if err != nil {
-		return nil, fmt.Errorf("ionos: %w", err)
+		return nil, fmt.Errorf("uniteddomains: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -74,24 +74,26 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for Ionos.
+// NewDNSProviderConfig return a DNSProvider instance configured for United-Domains.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("ionos: the configuration of the DNS provider is nil")
+		return nil, errors.New("uniteddomains: the configuration of the DNS provider is nil")
 	}
 
 	if config.APIKey == "" {
-		return nil, errors.New("ionos: credentials missing")
+		return nil, errors.New("uniteddomains: credentials missing")
 	}
 
 	if config.TTL < minTTL {
-		return nil, fmt.Errorf("ionos: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
+		return nil, fmt.Errorf("uniteddomains: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
 	client, err := ionos.NewClient(config.APIKey)
 	if err != nil {
-		return nil, fmt.Errorf("ionos: %w", err)
+		return nil, fmt.Errorf("uniteddomains: %w", err)
 	}
+
+	client.BaseURL, _ = url.Parse(ionos.DefaultUnitedDomainsBaseURL)
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
@@ -116,14 +118,14 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	zones, err := d.client.ListZones(ctx)
 	if err != nil {
-		return fmt.Errorf("ionos: failed to get zones: %w", err)
+		return fmt.Errorf("uniteddomains: failed to get zones: %w", err)
 	}
 
 	name := dns01.UnFqdn(info.EffectiveFQDN)
 
 	zone := findZone(zones, name)
 	if zone == nil {
-		return errors.New("ionos: no matching zone found for domain")
+		return errors.New("uniteddomains: no matching zone found for domain")
 	}
 
 	filter := &ionos.RecordsFilter{
@@ -133,7 +135,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	records, err := d.client.GetRecords(ctx, zone.ID, filter)
 	if err != nil {
-		return fmt.Errorf("ionos: failed to get records (zone=%s): %w", zone.ID, err)
+		return fmt.Errorf("uniteddomains: failed to get records (zone=%s): %w", zone.ID, err)
 	}
 
 	records = append(records, ionos.Record{
@@ -145,7 +147,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	err = d.client.ReplaceRecords(ctx, zone.ID, records)
 	if err != nil {
-		return fmt.Errorf("ionos: failed to create/update records (zone=%s): %w", zone.ID, err)
+		return fmt.Errorf("uniteddomains: failed to create/update records (zone=%s): %w", zone.ID, err)
 	}
 
 	return nil
@@ -159,14 +161,14 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	zones, err := d.client.ListZones(ctx)
 	if err != nil {
-		return fmt.Errorf("ionos: failed to get zones: %w", err)
+		return fmt.Errorf("uniteddomains: failed to get zones: %w", err)
 	}
 
 	name := dns01.UnFqdn(info.EffectiveFQDN)
 
 	zone := findZone(zones, name)
 	if zone == nil {
-		return errors.New("ionos: no matching zone found for domain")
+		return errors.New("uniteddomains: no matching zone found for domain")
 	}
 
 	filter := &ionos.RecordsFilter{
@@ -176,21 +178,21 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	records, err := d.client.GetRecords(ctx, zone.ID, filter)
 	if err != nil {
-		return fmt.Errorf("ionos: failed to get records (zone=%s): %w", zone.ID, err)
+		return fmt.Errorf("uniteddomains: failed to get records (zone=%s): %w", zone.ID, err)
 	}
 
 	for _, record := range records {
 		if record.Name == name && record.Content == strconv.Quote(info.Value) {
 			err = d.client.RemoveRecord(ctx, zone.ID, record.ID)
 			if err != nil {
-				return fmt.Errorf("ionos: failed to remove record (zone=%s, record=%s): %w", zone.ID, record.ID, err)
+				return fmt.Errorf("uniteddomains: failed to remove record (zone=%s, record=%s): %w", zone.ID, record.ID, err)
 			}
 
 			return nil
 		}
 	}
 
-	return fmt.Errorf("ionos: failed to remove record, record not found (zone=%s, domain=%s, fqdn=%s, value=%s)", zone.ID, domain, info.EffectiveFQDN, info.Value)
+	return fmt.Errorf("uniteddomains: failed to remove record, record not found (zone=%s, domain=%s, fqdn=%s, value=%s)", zone.ID, domain, info.EffectiveFQDN, info.Value)
 }
 
 func findZone(zones []ionos.Zone, domain string) *ionos.Zone {

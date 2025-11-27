@@ -161,6 +161,7 @@ func allDNSCodes() string {
 		"timewebcloud",
 		"transip",
 		"ultradns",
+		"uniteddomains",
 		"variomedia",
 		"vegadns",
 		"vercel",
@@ -3382,6 +3383,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/ultradns`)
+
+	case "uniteddomains":
+		// generated from: providers/dns/uniteddomains/uniteddomains.toml
+		ew.writeln(`Configuration for United-Domains.`)
+		ew.writeln(`Code:	'uniteddomains'`)
+		ew.writeln(`Since:	'v4.29.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "UNITEDDOMAINS_API_KEY":	API key '<prefix>.<secret>' https://www.united-domains.de/help/faq-article/getting-started-with-the-united-domains-dns-api/`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "UNITEDDOMAINS_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "UNITEDDOMAINS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "UNITEDDOMAINS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 900)`)
+		ew.writeln(`	- "UNITEDDOMAINS_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/uniteddomains`)
 
 	case "variomedia":
 		// generated from: providers/dns/variomedia/variomedia.toml

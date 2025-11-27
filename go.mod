@@ -30,7 +30,7 @@ require (
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/dnsimple/dnsimple-go/v4 v4.0.0
 	github.com/exoscale/egoscale/v3 v3.1.31
-	github.com/go-acme/alidns-20150109/v4 v4.6.1
+	github.com/go-acme/alidns-20150109/v4 v4.7.0
 	github.com/go-acme/esa-20240910/v2 v2.40.1
 	github.com/go-acme/tencentclouddnspod v1.1.25
 	github.com/go-acme/tencentedgdeone v1.1.48

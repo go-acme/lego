@@ -26,7 +26,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.92.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.2
 	github.com/aziontech/azionapi-go-sdk v0.144.0
-	github.com/baidubce/bce-sdk-go v0.9.250
+	github.com/baidubce/bce-sdk-go v0.9.252
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/dnsimple/dnsimple-go/v4 v4.0.0
 	github.com/exoscale/egoscale/v3 v3.1.31

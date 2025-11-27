@@ -1,4 +1,4 @@
-package active24
+package internal
 
 import (
 	"net/http"

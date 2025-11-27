@@ -1,4 +1,4 @@
-package ionos
+package internal
 
 import (
 	"net/http"

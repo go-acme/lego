@@ -1,4 +1,4 @@
-package ionos
+package internal
 
 import (
 	"bytes"
@@ -14,10 +14,7 @@ import (
 	querystring "github.com/google/go-querystring/query"
 )
 
-const (
-	DefaultIonosBaseURL         = "https://api.hosting.ionos.com/dns"
-	DefaultUnitedDomainsBaseURL = "https://dnsapi.united-domains.de/dns"
-)
+const defaultBaseURL = "https://api.hosting.ionos.com/dns"
 
 // APIKeyHeader API key header.
 const APIKeyHeader = "X-Api-Key"
@@ -32,7 +29,7 @@ type Client struct {
 
 // NewClient creates a new Client.
 func NewClient(apiKey string) (*Client, error) {
-	baseURL, err := url.Parse(DefaultIonosBaseURL)
+	baseURL, err := url.Parse(defaultBaseURL)
 	if err != nil {
 		return nil, err
 	}

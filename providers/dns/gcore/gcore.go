@@ -1,7 +1,7 @@
+// Package gcore implements a DNS provider for solving the DNS-01 challenge using G-Core.
 package gcore
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,7 +10,6 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/internal/gcore"
 )
 
@@ -26,28 +25,17 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-const (
-	defaultPropagationTimeout = 360 * time.Second
-	defaultPollingInterval    = 20 * time.Second
-)
-
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config for DNSProvider.
-type Config struct {
-	APIToken           string
-	PropagationTimeout time.Duration
-	PollingInterval    time.Duration
-	TTL                int
-	HTTPClient         *http.Client
-}
+type Config = gcore.Config
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, gcore.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, gcore.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 		},
@@ -56,8 +44,7 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider an implementation of challenge.Provider contract.
 type DNSProvider struct {
-	config *Config
-	client *gcore.Client
+	prv challenge.ProviderTimeout
 }
 
 // NewDNSProvider returns an instance of DNSProvider configured for G-Core DNS API.
@@ -79,57 +66,29 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("gcore: the configuration of the DNS provider is nil")
 	}
 
-	if config.APIToken == "" {
-		return nil, errors.New("gcore: incomplete credentials provided")
+	provider, err := gcore.NewDNSProviderConfig(config, "")
+	if err != nil {
+		return nil, fmt.Errorf("gcore: %w", err)
 	}
 
-	client := gcore.NewClient(config.APIToken)
-
-	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
-	}
-
-	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
-
-	return &DNSProvider{
-		config: config,
-		client: client,
-	}, nil
+	return &DNSProvider{prv: provider}, nil
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	ctx := context.Background()
-
-	zone, err := d.guessZone(ctx, info.EffectiveFQDN)
+// Present creates a TXT record using the specified parameters.
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	err := d.prv.Present(domain, token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("gcore: %w", err)
-	}
-
-	err = d.client.AddRRSet(ctx, zone, dns01.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL)
-	if err != nil {
-		return fmt.Errorf("gcore: add txt record: %w", err)
 	}
 
 	return nil
 }
 
-// CleanUp removes the record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	ctx := context.Background()
-
-	zone, err := d.guessZone(ctx, info.EffectiveFQDN)
+// CleanUp removes the TXT record matching the specified parameters.
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	err := d.prv.CleanUp(domain, token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("gcore: %w", err)
-	}
-
-	err = d.client.DeleteRRSet(ctx, zone, dns01.UnFqdn(info.EffectiveFQDN))
-	if err != nil {
-		return fmt.Errorf("gcore: remove txt record: %w", err)
 	}
 
 	return nil
@@ -138,21 +97,5 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-func (d *DNSProvider) guessZone(ctx context.Context, fqdn string) (string, error) {
-	var lastErr error
-
-	for zone := range dns01.UnFqdnDomainsSeq(fqdn) {
-		dnsZone, err := d.client.GetZone(ctx, zone)
-		if err != nil {
-			lastErr = err
-			continue
-		}
-
-		return dnsZone.Name, nil
-	}
-
-	return "", fmt.Errorf("zone %q not found: %w", fqdn, lastErr)
+	return d.prv.Timeout()
 }

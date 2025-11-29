@@ -24,6 +24,7 @@ body:
         - Through Bitnami
         - Through 1Panel
         - Through Zoraxy
+        - Through Certimate
         - go install
         - Other
     validations:

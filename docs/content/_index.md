@@ -14,7 +14,7 @@ Let's Encrypt client and ACME library written in Go.
   - Support [RFC 8738](https://www.rfc-editor.org/rfc/rfc8738.html): issues certificates for IP addresses
   - Support [RFC 9773](https://www.rfc-editor.org/rfc/rfc9773.html): Renewal Information (ARI) Extension
   - Support [draft-ietf-acme-profiles-00](https://datatracker.ietf.org/doc/draft-ietf-acme-profiles/): Profiles Extension
-- Comes with about [150 DNS providers]({{% ref "dns" %}})
+- Comes with about [170 DNS providers]({{% ref "dns" %}})
 - Register with CA
 - Obtain certificates, both from scratch or with an existing CSR
 - Renew certificates

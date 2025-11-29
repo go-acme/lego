@@ -1,4 +1,4 @@
-package gcore
+package internal
 
 import "fmt"
 

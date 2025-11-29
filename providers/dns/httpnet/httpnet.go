@@ -2,18 +2,14 @@
 package httpnet
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
-	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/internal/hostingde"
 )
 
@@ -30,17 +26,12 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+const defaultBaseURL = "https://partner.http.net/api/dns/v1/json"
+
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
-type Config struct {
-	APIKey             string
-	ZoneName           string
-	PropagationTimeout time.Duration
-	PollingInterval    time.Duration
-	TTL                int
-	HTTPClient         *http.Client
-}
+type Config = hostingde.Config
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
@@ -57,11 +48,7 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config *Config
-	client *hostingde.Client
-
-	recordIDs   map[string]string
-	recordIDsMu sync.Mutex
+	prv challenge.ProviderTimeout
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for http.net.
@@ -85,84 +72,19 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("httpnet: the configuration of the DNS provider is nil")
 	}
 
-	if config.APIKey == "" {
-		return nil, errors.New("httpnet: API key missing")
+	provider, err := hostingde.NewDNSProviderConfig(config, defaultBaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("httpnet: %w", err)
 	}
 
-	client := hostingde.NewClient(config.APIKey)
-	client.BaseURL, _ = url.Parse(hostingde.DefaultHTTPNetBaseURL)
-
-	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
-	}
-
-	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
-
-	return &DNSProvider{
-		config:    config,
-		client:    client,
-		recordIDs: make(map[string]string),
-	}, nil
+	return &DNSProvider{prv: provider}, nil
 }
 
-// Timeout returns the timeout and interval to use when checking for DNS propagation.
-// Adjusting here to cope with spikes in propagation times.
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-// Present creates a TXT record to fulfill the dns-01 challenge.
+// Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	zoneName, err := d.getZoneName(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("httpnet: could not find zone for domain %q: %w", domain, err)
-	}
-
-	ctx := context.Background()
-
-	// get the ZoneConfig for that domain
-	zonesFind := hostingde.ZoneConfigsFindRequest{
-		Filter: hostingde.Filter{Field: "zoneName", Value: zoneName},
-		Limit:  1,
-		Page:   1,
-	}
-
-	zoneConfig, err := d.client.GetZone(ctx, zonesFind)
+	err := d.prv.Present(domain, token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("httpnet: %w", err)
-	}
-
-	zoneConfig.Name = zoneName
-
-	rec := []hostingde.DNSRecord{{
-		Type:    "TXT",
-		Name:    dns01.UnFqdn(info.EffectiveFQDN),
-		Content: info.Value,
-		TTL:     d.config.TTL,
-	}}
-
-	req := hostingde.ZoneUpdateRequest{
-		ZoneConfig:   *zoneConfig,
-		RecordsToAdd: rec,
-	}
-
-	response, err := d.client.UpdateZone(ctx, req)
-	if err != nil {
-		return fmt.Errorf("httpnet: %w", err)
-	}
-
-	for _, record := range response.Records {
-		if record.Name == dns01.UnFqdn(info.EffectiveFQDN) && record.Content == fmt.Sprintf(`%q`, info.Value) {
-			d.recordIDsMu.Lock()
-			d.recordIDs[info.EffectiveFQDN] = record.ID
-			d.recordIDsMu.Unlock()
-		}
-	}
-
-	if d.recordIDs[info.EffectiveFQDN] == "" {
-		return fmt.Errorf("httpnet: error getting ID of just created record, for domain %s", domain)
 	}
 
 	return nil
@@ -170,46 +92,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	zoneName, err := d.getZoneName(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("httpnet: could not find zone for domain %q: %w", domain, err)
-	}
-
-	ctx := context.Background()
-
-	// get the ZoneConfig for that domain
-	zonesFind := hostingde.ZoneConfigsFindRequest{
-		Filter: hostingde.Filter{Field: "zoneName", Value: zoneName},
-		Limit:  1,
-		Page:   1,
-	}
-
-	zoneConfig, err := d.client.GetZone(ctx, zonesFind)
-	if err != nil {
-		return fmt.Errorf("httpnet: %w", err)
-	}
-
-	zoneConfig.Name = zoneName
-
-	rec := []hostingde.DNSRecord{{
-		Type:    "TXT",
-		Name:    dns01.UnFqdn(info.EffectiveFQDN),
-		Content: `"` + info.Value + `"`,
-	}}
-
-	req := hostingde.ZoneUpdateRequest{
-		ZoneConfig:      *zoneConfig,
-		RecordsToDelete: rec,
-	}
-
-	// Delete record ID from map
-	d.recordIDsMu.Lock()
-	delete(d.recordIDs, info.EffectiveFQDN)
-	d.recordIDsMu.Unlock()
-
-	_, err = d.client.UpdateZone(ctx, req)
+	err := d.prv.CleanUp(domain, token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("httpnet: %w", err)
 	}
@@ -217,19 +100,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) getZoneName(fqdn string) (string, error) {
-	if d.config.ZoneName != "" {
-		return d.config.ZoneName, nil
-	}
-
-	zoneName, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return "", fmt.Errorf("could not find zone for %s: %w", fqdn, err)
-	}
-
-	if zoneName == "" {
-		return "", errors.New("empty zone name")
-	}
-
-	return dns01.UnFqdn(zoneName), nil
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.prv.Timeout()
 }

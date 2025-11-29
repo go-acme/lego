@@ -1,4 +1,4 @@
-package rimuhosting
+package internal
 
 import (
 	"context"
@@ -15,11 +15,7 @@ import (
 	querystring "github.com/google/go-querystring/query"
 )
 
-// Base URL for the RimuHosting DNS services.
-const (
-	DefaultZonomiBaseURL      = "https://zonomi.com/app/dns/dyndns.jsp"
-	DefaultRimuHostingBaseURL = "https://rimuhosting.com/dns/dyndns.jsp"
-)
+const defaultBaseURL = "https://rimuhosting.com/dns/dyndns.jsp"
 
 // Action names.
 const (
@@ -40,7 +36,7 @@ type Client struct {
 func NewClient(apiKey string) *Client {
 	return &Client{
 		apiKey:     apiKey,
-		BaseURL:    DefaultZonomiBaseURL,
+		BaseURL:    defaultBaseURL,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }

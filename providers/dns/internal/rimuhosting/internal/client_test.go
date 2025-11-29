@@ -1,4 +1,4 @@
-package rimuhosting
+package internal
 
 import (
 	"encoding/xml"

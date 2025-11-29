@@ -1,4 +1,4 @@
-package gcore
+package internal
 
 import (
 	"bytes"
@@ -14,10 +14,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-const (
-	DefaultGCoreBaseURL      = "https://api.gcore.com/dns"
-	DefaultEdgeCenterBaseURL = "https://api.edgecenter.ru/dns"
-)
+const defaultBaseURL = "https://api.gcore.com/dns"
 
 const (
 	authorizationHeader = "Authorization"
@@ -36,7 +33,7 @@ type Client struct {
 
 // NewClient constructor of Client.
 func NewClient(token string) *Client {
-	baseURL, _ := url.Parse(DefaultGCoreBaseURL)
+	baseURL, _ := url.Parse(defaultBaseURL)
 
 	return &Client{
 		token:      token,

@@ -1,4 +1,4 @@
-package hostingde
+package internal
 
 import (
 	"bytes"
@@ -14,10 +14,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-const (
-	DefaultHostingdeBaseURL = "https://secure.hosting.de/api/dns/v1/json"
-	DefaultHTTPNetBaseURL   = "https://partner.http.net/api/dns/v1/json"
-)
+const defaultBaseURL = "https://secure.hosting.de/api/dns/v1/json"
 
 // Client the API client for Hosting.de.
 type Client struct {
@@ -29,7 +26,7 @@ type Client struct {
 
 // NewClient creates new Client.
 func NewClient(apiKey string) *Client {
-	baseURL, _ := url.Parse(DefaultHostingdeBaseURL)
+	baseURL, _ := url.Parse(defaultBaseURL)
 
 	return &Client{
 		apiKey:     apiKey,

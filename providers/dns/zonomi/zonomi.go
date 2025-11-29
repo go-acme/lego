@@ -2,7 +2,6 @@
 package zonomi
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,7 +10,6 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/internal/rimuhosting"
 )
 
@@ -27,22 +25,17 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+const defaultBaseURL = "https://zonomi.com/app/dns/dyndns.jsp"
+
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
-type Config struct {
-	APIKey string
-
-	PropagationTimeout time.Duration
-	PollingInterval    time.Duration
-	TTL                int
-	HTTPClient         *http.Client
-}
+type Config = rimuhosting.Config
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 3600),
+		TTL:                env.GetOrDefaultInt(EnvTTL, rimuhosting.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
@@ -53,8 +46,7 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config *Config
-	client *rimuhosting.Client
+	prv challenge.ProviderTimeout
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Zonomi.
@@ -77,50 +69,19 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("zonomi: the configuration of the DNS provider is nil")
 	}
 
-	if config.APIKey == "" {
-		return nil, errors.New("zonomi: incomplete credentials, missing API key")
+	provider, err := rimuhosting.NewDNSProviderConfig(config, defaultBaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("zonomi: %w", err)
 	}
 
-	client := rimuhosting.NewClient(config.APIKey)
-	client.BaseURL = rimuhosting.DefaultZonomiBaseURL
-
-	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
-	}
-
-	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
-
-	return &DNSProvider{config: config, client: client}, nil
-}
-
-// Timeout returns the timeout and interval to use when checking for DNS propagation.
-// Adjusting here to cope with spikes in propagation times.
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.config.PropagationTimeout, d.config.PollingInterval
+	return &DNSProvider{prv: provider}, nil
 }
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	ctx := context.Background()
-
-	records, err := d.client.FindTXTRecords(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	err := d.prv.Present(domain, token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("zonomi: failed to find record(s) for %s: %w", domain, err)
-	}
-
-	actions := []rimuhosting.ActionParameter{
-		rimuhosting.NewAddRecordAction(dns01.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL),
-	}
-
-	for _, record := range records {
-		actions = append(actions, rimuhosting.NewAddRecordAction(record.Name, record.Content, d.config.TTL))
-	}
-
-	_, err = d.client.DoActions(ctx, actions...)
-	if err != nil {
-		return fmt.Errorf("zonomi: failed to add record(s) for %s: %w", domain, err)
+		return fmt.Errorf("zonomi: %w", err)
 	}
 
 	return nil
@@ -128,14 +89,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	action := rimuhosting.NewDeleteRecordAction(dns01.UnFqdn(info.EffectiveFQDN), info.Value)
-
-	_, err := d.client.DoActions(context.Background(), action)
+	err := d.prv.CleanUp(domain, token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("zonomi: failed to delete record for %s: %w", domain, err)
+		return fmt.Errorf("zonomi: %w", err)
 	}
 
 	return nil
+}
+
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.prv.Timeout()
 }

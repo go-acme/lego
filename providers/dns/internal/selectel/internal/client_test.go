@@ -1,4 +1,4 @@
-package selectel
+package internal
 
 import (
 	"net/http"

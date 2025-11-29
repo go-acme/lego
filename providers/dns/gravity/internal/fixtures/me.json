@@ -1,0 +1,16 @@
+{
+  "username": "admin",
+  "authenticated": true,
+  "permissions": [
+    {
+      "path": "/*",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "HEAD",
+        "DELETE"
+      ]
+    }
+  ]
+}

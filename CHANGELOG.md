@@ -6,6 +6,30 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v4.29.0
+
+- Release date: 2025-11-29
+- Tag: [v4.29.0](https://github.com/go-acme/lego/releases/tag/v4.29.0)
+
+### Added
+ 
+- **[dnsprovider]** Add DNS provider for United-Domains
+- **[dnsprovider]** Add DNS provider for Gigahost.no
+- **[dnsprovider]** Add DNS provider for EdgeCenter
+- **[dnsprovider]** Add DNS provider for AlibabaCloud ESA
+- **[dnsprovider]** edgeone: add zones mapping
+- **[dnsprovider]** namecheap: add experimental proxy support
+
+### Changed
+
+- **[dnsprovider]** gandiv5: update base API URL
+
+### Fixed
+
+- **[dnsprovider]** hetzner: use int64 for IDs
+- **[dnsprovider]** baiducloud: pagination and TTL
+- **[dnsprovider]** inwx: fix API breaking changes with record IDs
+
 ## v4.28.1
 
 - Release date: 2025-11-06

@@ -43,15 +43,15 @@ func NewClient(username, password string, clientContext int) *Client {
 	}
 }
 
-// AddTxtRecords adds TXT records.
-func (c *Client) AddTxtRecords(ctx context.Context, domain string, records []*ResourceRecord) (*DataZoneResponse, error) {
+// AddRecords adds records.
+func (c *Client) AddRecords(ctx context.Context, domain string, records []*ResourceRecord) (*DataZoneResponse, error) {
 	zoneStream := &ZoneStream{Adds: records}
 
 	return c.updateZone(ctx, domain, zoneStream)
 }
 
-// RemoveTXTRecords removes TXT records.
-func (c *Client) RemoveTXTRecords(ctx context.Context, domain string, records []*ResourceRecord) (*DataZoneResponse, error) {
+// RemoveRecords removes records.
+func (c *Client) RemoveRecords(ctx context.Context, domain string, records []*ResourceRecord) (*DataZoneResponse, error) {
 	zoneStream := &ZoneStream{Removes: records}
 
 	return c.updateZone(ctx, domain, zoneStream)
@@ -86,7 +86,7 @@ func (c *Client) do(req *http.Request, result any) error {
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode/100 != 2 {
-		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+		return parseError(req, resp)
 	}
 
 	if result == nil {
@@ -128,4 +128,17 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 	}
 
 	return req, nil
+}
+
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	var errAPI APIError
+
+	err := json.Unmarshal(raw, &errAPI)
+	if err != nil {
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
+	}
+
+	return &errAPI
 }

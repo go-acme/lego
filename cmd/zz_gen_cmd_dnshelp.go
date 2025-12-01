@@ -12,7 +12,6 @@ import (
 
 func allDNSCodes() string {
 	providers := []string{
-		"manual",
 		"acme-dns",
 		"active24",
 		"alidns",
@@ -110,6 +109,7 @@ func allDNSCodes() string {
 		"luadns",
 		"mailinabox",
 		"manageengine",
+		"manual",
 		"metaname",
 		"metaregistrar",
 		"mijnhost",
@@ -2270,6 +2270,16 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/manageengine`)
 
+	case "manual":
+		// generated from: providers/dns/manual/manual.toml
+		ew.writeln(`Configuration for Manual.`)
+		ew.writeln(`Code:	'manual'`)
+		ew.writeln(`Since:	'v0.3.0'`)
+		ew.writeln()
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/manual`)
+
 	case "metaname":
 		// generated from: providers/dns/metaname/metaname.toml
 		ew.writeln(`Configuration for Metaname.`)
@@ -3828,8 +3838,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/zonomi`)
 
-	case "manual":
-		ew.writeln(`Solving the DNS-01 challenge using CLI prompt.`)
 	default:
 		return fmt.Errorf("%q is not yet supported", name)
 	}

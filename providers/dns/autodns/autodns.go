@@ -147,7 +147,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Value: info.Value,
 	}}
 
-	if err := d.client.RemoveTXTRecords(context.Background(), info.EffectiveFQDN, records); err != nil {
+	_, err := d.client.RemoveTXTRecords(context.Background(), info.EffectiveFQDN, records)
+	if err != nil {
 		return fmt.Errorf("autodns: %w", err)
 	}
 

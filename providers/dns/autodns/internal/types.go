@@ -1,33 +1,42 @@
 package internal
 
+type DataZoneResponse struct {
+	STID     string            `json:"stid"`
+	CTID     string            `json:"ctid"`
+	Messages []ResponseMessage `json:"messages"`
+	Status   *ResponseStatus   `json:"status"`
+	Object   *ResponseObject   `json:"object"`
+	Data     []Zone            `json:"data"`
+}
+
 type ResponseMessage struct {
-	Text     string   `json:"text"`
-	Messages []string `json:"messages"`
-	Objects  []string `json:"objects"`
-	Code     string   `json:"code"`
-	Status   string   `json:"status"`
+	Text     string          `json:"text"`
+	Messages []string        `json:"messages"`
+	Objects  []GenericObject `json:"objects"`
+	Code     string          `json:"code"`
+	Status   string          `json:"status"`
+}
+
+type GenericObject struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
 }
 
 type ResponseStatus struct {
 	Code string `json:"code"`
 	Text string `json:"text"`
-	Type string `json:"type"`
+	Type string `json:"type"` // SUCCESS, ERROR, NOTIFY, NOTICE, NICCOM_NOTIFY
 }
 
 type ResponseObject struct {
-	Type    string `json:"type"`
-	Value   string `json:"value"`
-	Summary int32  `json:"summary"`
-	Data    string
+	Type    string              `json:"type"`
+	Value   string              `json:"value"`
+	Summary int32               `json:"summary"`
+	Data    *ResponseObjectData `json:"data"`
 }
 
-type DataZoneResponse struct {
-	STID     string             `json:"stid"`
-	CTID     string             `json:"ctid"`
-	Messages []*ResponseMessage `json:"messages"`
-	Status   *ResponseStatus    `json:"status"`
-	Object   any                `json:"object"`
-	Data     []*Zone            `json:"data"`
+type ResponseObjectData struct {
+	Description string `json:"description"`
 }
 
 // ResourceRecord holds a resource record.
@@ -43,10 +52,10 @@ type ResourceRecord struct {
 // Zone is an autodns zone record with all for us relevant fields.
 // https://help.internetx.com/display/APIXMLEN/Zone+Object
 type Zone struct {
-	Name              string            `json:"origin"`
-	ResourceRecords   []*ResourceRecord `json:"resourceRecords"`
-	Action            string            `json:"action"`
-	VirtualNameServer string            `json:"virtualNameServer"`
+	Name              string           `json:"origin"`
+	ResourceRecords   []ResourceRecord `json:"resourceRecords"`
+	Action            string           `json:"action"`
+	VirtualNameServer string           `json:"virtualNameServer"`
 }
 
 // ZoneStream body of the requests.

@@ -33,25 +33,60 @@ func TestClient_AddTxtRecords(t *testing.T) {
 				With("X-Domainrobot-Context", "123")).
 		Build(t)
 
-	records := []*ResourceRecord{{}}
+	records := []*ResourceRecord{{
+		Name:  "example.com",
+		TTL:   600,
+		Type:  "TXT",
+		Value: "txtTXTtxt",
+	}}
 
-	zone, err := client.AddTxtRecords(t.Context(), "example.com", records)
+	resp, err := client.AddTxtRecords(t.Context(), "example.com", records)
 	require.NoError(t, err)
 
-	expected := &Zone{
-		Name: "example.com",
-		ResourceRecords: []*ResourceRecord{{
-			Name:  "example.com",
-			TTL:   120,
-			Type:  "TXT",
-			Value: "txt",
-			Pref:  1,
-		}},
-		Action:            "xxx",
-		VirtualNameServer: "yyy",
+	expected := &DataZoneResponse{
+		STID: "20251121-appf4923-126284",
+		CTID: "",
+		Messages: []ResponseMessage{
+			{
+				Text: "string",
+				Messages: []string{
+					"string",
+				},
+				Objects: []GenericObject{
+					{
+						Type:  "string",
+						Value: "string",
+					},
+				},
+				Code:   "string",
+				Status: "SUCCESS",
+			},
+		},
+		Status: &ResponseStatus{
+			Code: "S0301",
+			Text: "Zone was updated successfully on the name server.",
+			Type: "SUCCESS",
+		},
+		Object: nil,
+		Data: []Zone{
+			{
+				Name: "example.com",
+				ResourceRecords: []ResourceRecord{
+					{
+						Name:  "example.com",
+						TTL:   120,
+						Type:  "TXT",
+						Value: "txt",
+						Pref:  1,
+					},
+				},
+				Action:            "xxx",
+				VirtualNameServer: "yyy",
+			},
+		},
 	}
 
-	assert.Equal(t, expected, zone)
+	assert.Equal(t, expected, resp)
 }
 
 func TestClient_RemoveTXTRecords(t *testing.T) {
@@ -63,8 +98,58 @@ func TestClient_RemoveTXTRecords(t *testing.T) {
 				With("X-Domainrobot-Context", "123")).
 		Build(t)
 
-	records := []*ResourceRecord{{}}
+	records := []*ResourceRecord{{
+		Name:  "example.com",
+		TTL:   600,
+		Type:  "TXT",
+		Value: "txtTXTtxt",
+	}}
 
-	err := client.RemoveTXTRecords(t.Context(), "example.com", records)
+	resp, err := client.RemoveTXTRecords(t.Context(), "example.com", records)
 	require.NoError(t, err)
+
+	expected := &DataZoneResponse{
+		STID: "20251121-appf4923-126284",
+		CTID: "",
+		Messages: []ResponseMessage{
+			{
+				Text: "string",
+				Messages: []string{
+					"string",
+				},
+				Objects: []GenericObject{
+					{
+						Type:  "string",
+						Value: "string",
+					},
+				},
+				Code:   "string",
+				Status: "SUCCESS",
+			},
+		},
+		Status: &ResponseStatus{
+			Code: "S0301",
+			Text: "Zone was updated successfully on the name server.",
+			Type: "SUCCESS",
+		},
+		Object: nil,
+		Data: []Zone{
+			{
+				Name: "example.com",
+				ResourceRecords: []ResourceRecord{
+					{
+						Name:  "example.com",
+						TTL:   120,
+						Type:  "TXT",
+						Value: "txt",
+						Pref:  1,
+					},
+				},
+				Action:            "xxx",
+				VirtualNameServer: "yyy",
+			},
+		},
+	}
+
+	assert.Equal(t, expected, resp)
 }

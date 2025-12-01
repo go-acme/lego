@@ -44,23 +44,21 @@ func NewClient(username, password string, clientContext int) *Client {
 }
 
 // AddTxtRecords adds TXT records.
-func (c *Client) AddTxtRecords(ctx context.Context, domain string, records []*ResourceRecord) (*Zone, error) {
+func (c *Client) AddTxtRecords(ctx context.Context, domain string, records []*ResourceRecord) (*DataZoneResponse, error) {
 	zoneStream := &ZoneStream{Adds: records}
 
 	return c.updateZone(ctx, domain, zoneStream)
 }
 
 // RemoveTXTRecords removes TXT records.
-func (c *Client) RemoveTXTRecords(ctx context.Context, domain string, records []*ResourceRecord) error {
+func (c *Client) RemoveTXTRecords(ctx context.Context, domain string, records []*ResourceRecord) (*DataZoneResponse, error) {
 	zoneStream := &ZoneStream{Removes: records}
 
-	_, err := c.updateZone(ctx, domain, zoneStream)
-
-	return err
+	return c.updateZone(ctx, domain, zoneStream)
 }
 
 // https://github.com/InterNetX/domainrobot-api/blob/bdc8fe92a2f32fcbdb29e30bf6006ab446f81223/src/domainrobot.json#L21090
-func (c *Client) updateZone(ctx context.Context, domain string, zoneStream *ZoneStream) (*Zone, error) {
+func (c *Client) updateZone(ctx context.Context, domain string, zoneStream *ZoneStream) (*DataZoneResponse, error) {
 	endpoint := c.BaseURL.JoinPath("zone", domain, "_stream")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, zoneStream)
@@ -68,12 +66,12 @@ func (c *Client) updateZone(ctx context.Context, domain string, zoneStream *Zone
 		return nil, err
 	}
 
-	var zone *Zone
-	if err := c.do(req, &zone); err != nil {
+	var resp *DataZoneResponse
+	if err := c.do(req, &resp); err != nil {
 		return nil, err
 	}
 
-	return zone, nil
+	return resp, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

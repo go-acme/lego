@@ -2,10 +2,10 @@
   "adds": null,
   "rems": [
     {
-      "name": "",
-      "ttl": 0,
-      "type": "",
-      "value": ""
+      "name": "example.com",
+      "ttl": 600,
+      "type": "TXT",
+      "value": "txtTXTtxt"
     }
   ]
 }

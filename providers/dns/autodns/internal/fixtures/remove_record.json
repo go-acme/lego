@@ -1,14 +1,41 @@
 {
-  "origin": "example.com",
-  "resourceRecords": [
+  "stid": "20251121-appf4923-126284",
+  "messages": [
     {
-      "name": "example.com",
-      "ttl": 120,
-      "type": "TXT",
-      "value": "txt",
-      "pref": 1
+      "text": "string",
+      "notice": "string",
+      "messages": [
+        "string"
+      ],
+      "objects": [
+        {
+          "type": "string",
+          "value": "string"
+        }
+      ],
+      "code": "string",
+      "status": "SUCCESS"
     }
   ],
-  "action": "xxx",
-  "virtualNameServer": "yyy"
+  "status": {
+    "code": "S0301",
+    "text": "Zone was updated successfully on the name server.",
+    "type": "SUCCESS"
+  },
+  "data": [
+    {
+      "origin": "example.com",
+      "resourceRecords": [
+        {
+          "name": "example.com",
+          "ttl": 120,
+          "type": "TXT",
+          "value": "txt",
+          "pref": 1
+        }
+      ],
+      "action": "xxx",
+      "virtualNameServer": "yyy"
+    }
+  ]
 }

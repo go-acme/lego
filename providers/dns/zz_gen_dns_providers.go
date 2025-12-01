@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/providers/dns/acmedns"
 	"github.com/go-acme/lego/v4/providers/dns/active24"
 	"github.com/go-acme/lego/v4/providers/dns/alidns"
@@ -104,6 +103,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/luadns"
 	"github.com/go-acme/lego/v4/providers/dns/mailinabox"
 	"github.com/go-acme/lego/v4/providers/dns/manageengine"
+	"github.com/go-acme/lego/v4/providers/dns/manual"
 	"github.com/go-acme/lego/v4/providers/dns/metaname"
 	"github.com/go-acme/lego/v4/providers/dns/metaregistrar"
 	"github.com/go-acme/lego/v4/providers/dns/mijnhost"
@@ -181,8 +181,6 @@ import (
 // NewDNSChallengeProviderByName Factory for DNS providers.
 func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 	switch name {
-	case "manual":
-		return dns01.NewDNSProviderManual()
 	case "acme-dns", "acmedns":
 		return acmedns.NewDNSProvider()
 	case "active24":
@@ -377,6 +375,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return mailinabox.NewDNSProvider()
 	case "manageengine":
 		return manageengine.NewDNSProvider()
+	case "manual":
+		return manual.NewDNSProvider()
 	case "metaname":
 		return metaname.NewDNSProvider()
 	case "metaregistrar":

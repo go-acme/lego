@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
 {{- range $provider := .Providers }}
      "github.com/go-acme/lego/v4/providers/dns/{{ cleanName $provider.Code }}"
 {{- end}}
@@ -15,8 +14,6 @@ import (
 // NewDNSChallengeProviderByName Factory for DNS providers.
 func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 	switch name {
-	case "manual":
-		return dns01.NewDNSProviderManual()
 {{- range $provider := .Providers }}
 	case "{{ $provider.Code }}"{{range $alias := $provider.Aliases }},"{{ $alias }}"{{end}}:
 		return {{ cleanName $provider.Code }}.NewDNSProvider()

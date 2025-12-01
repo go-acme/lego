@@ -4,14 +4,32 @@ date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: manual
 dnsprovider:
-  since: v0.3.0
-  code: manual
-  url:
+  since:    "v0.3.0"
+  code:     "manual"
+  url:      ""
 ---
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/manual/manual.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 Solving the DNS-01 challenge using CLI prompt.
 
+
 <!--more-->
+
+- Code: `manual`
+- Since: v0.3.0
+
+
+Here is an example bash command using the Manual provider:
+
+```bash
+lego --email you@example.com --dns manual -d '*.example.com' -d example.com run
+```
+
+
+
 
 ## Example
 
@@ -70,3 +88,11 @@ _acme-challenge.example.com. 120 IN TXT "hX0dPkG6Gfs9hUvBAchQclkyyoEKbShbpvJ9mY5
 ```
 
 As mentioned, you can now remove the TXT record again.
+
+
+
+
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/manual/manual.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -40,7 +40,7 @@ func setupAccount(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account,
 	if accountsStorage.ExistsAccountFilePath() {
 		account = accountsStorage.LoadAccount(privateKey)
 	} else {
-		account = &Account{Email: accountsStorage.GetUserID(), key: privateKey}
+		account = &Account{Email: accountsStorage.GetEmail(), key: privateKey}
 	}
 
 	return account, keyType
@@ -116,15 +116,6 @@ func getKeyType(ctx *cli.Context) certcrypto.KeyType {
 	log.Fatalf("Unsupported KeyType: %s", keyType)
 
 	return ""
-}
-
-func getEmail(ctx *cli.Context) string {
-	email := ctx.String(flgEmail)
-	if email == "" {
-		log.Fatalf("You have to pass an account (email address) to the program using --%s or -m", flgEmail)
-	}
-
-	return email
 }
 
 func getUserAgent(ctx *cli.Context) string {

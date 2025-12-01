@@ -16,6 +16,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+const userIDPlaceholder = "noemail@example.com"
+
 const (
 	baseAccountsRootFolderName = "accounts"
 	baseKeysFolderName         = "keys"
@@ -32,7 +34,7 @@ const (
 //
 // rootUserPath:
 //
-//	./.lego/accounts/localhost_14000/hubert@hubert.com/
+//	./.lego/accounts/localhost_14000/foo@example.com/
 //	     │      │             │             └── userID ("email" option)
 //	     │      │             └── CA server ("server" option)
 //	     │      └── root accounts directory
@@ -40,7 +42,7 @@ const (
 //
 // keysPath:
 //
-//	./.lego/accounts/localhost_14000/hubert@hubert.com/keys/
+//	./.lego/accounts/localhost_14000/foo@example.com/keys/
 //	     │      │             │             │           └── root keys directory
 //	     │      │             │             └── userID ("email" option)
 //	     │      │             └── CA server ("server" option)
@@ -49,7 +51,7 @@ const (
 //
 // accountFilePath:
 //
-//	./.lego/accounts/localhost_14000/hubert@hubert.com/account.json
+//	./.lego/accounts/localhost_14000/foo@example.com/account.json
 //	     │      │             │             │             └── account file
 //	     │      │             │             └── userID ("email" option)
 //	     │      │             └── CA server ("server" option)
@@ -57,6 +59,7 @@ const (
 //	     └── "path" option
 type AccountsStorage struct {
 	userID          string
+	email           string
 	rootPath        string
 	rootUserPath    string
 	keysPath        string
@@ -66,8 +69,13 @@ type AccountsStorage struct {
 
 // NewAccountsStorage Creates a new AccountsStorage.
 func NewAccountsStorage(ctx *cli.Context) *AccountsStorage {
-	// TODO: move to account struct? Currently MUST pass email.
-	email := getEmail(ctx)
+	// TODO: move to account struct?
+	email := ctx.String(flgEmail)
+
+	userID := email
+	if userID == "" {
+		userID = userIDPlaceholder
+	}
 
 	serverURL, err := url.Parse(ctx.String(flgServer))
 	if err != nil {
@@ -77,10 +85,11 @@ func NewAccountsStorage(ctx *cli.Context) *AccountsStorage {
 	rootPath := filepath.Join(ctx.String(flgPath), baseAccountsRootFolderName)
 	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(serverURL.Host)
 	accountsPath := filepath.Join(rootPath, serverPath)
-	rootUserPath := filepath.Join(accountsPath, email)
+	rootUserPath := filepath.Join(accountsPath, userID)
 
 	return &AccountsStorage{
-		userID:          email,
+		userID:          userID,
+		email:           email,
 		rootPath:        rootPath,
 		rootUserPath:    rootUserPath,
 		keysPath:        filepath.Join(rootUserPath, baseKeysFolderName),
@@ -112,6 +121,10 @@ func (s *AccountsStorage) GetUserID() string {
 	return s.userID
 }
 
+func (s *AccountsStorage) GetEmail() string {
+	return s.email
+}
+
 func (s *AccountsStorage) Save(account *Account) error {
 	jsonBytes, err := json.MarshalIndent(account, "", "\t")
 	if err != nil {
@@ -124,14 +137,14 @@ func (s *AccountsStorage) Save(account *Account) error {
 func (s *AccountsStorage) LoadAccount(privateKey crypto.PrivateKey) *Account {
 	fileBytes, err := os.ReadFile(s.accountFilePath)
 	if err != nil {
-		log.Fatalf("Could not load file for account %s: %v", s.userID, err)
+		log.Fatalf("Could not load file for account %s: %v", s.GetUserID(), err)
 	}
 
 	var account Account
 
 	err = json.Unmarshal(fileBytes, &account)
 	if err != nil {
-		log.Fatalf("Could not parse file for account %s: %v", s.userID, err)
+		log.Fatalf("Could not parse file for account %s: %v", s.GetUserID(), err)
 	}
 
 	account.key = privateKey
@@ -139,14 +152,14 @@ func (s *AccountsStorage) LoadAccount(privateKey crypto.PrivateKey) *Account {
 	if account.Registration == nil || account.Registration.Body.Status == "" {
 		reg, err := tryRecoverRegistration(s.ctx, privateKey)
 		if err != nil {
-			log.Fatalf("Could not load account for %s. Registration is nil: %#v", s.userID, err)
+			log.Fatalf("Could not load account for %s. Registration is nil: %#v", s.GetUserID(), err)
 		}
 
 		account.Registration = reg
 
 		err = s.Save(&account)
 		if err != nil {
-			log.Fatalf("Could not save account for %s. Registration is nil: %#v", s.userID, err)
+			log.Fatalf("Could not save account for %s. Registration is nil: %#v", s.GetUserID(), err)
 		}
 	}
 
@@ -154,15 +167,15 @@ func (s *AccountsStorage) LoadAccount(privateKey crypto.PrivateKey) *Account {
 }
 
 func (s *AccountsStorage) GetPrivateKey(keyType certcrypto.KeyType) crypto.PrivateKey {
-	accKeyPath := filepath.Join(s.keysPath, s.userID+".key")
+	accKeyPath := filepath.Join(s.keysPath, s.GetUserID()+".key")
 
 	if _, err := os.Stat(accKeyPath); os.IsNotExist(err) {
-		log.Printf("No key found for account %s. Generating a %s key.", s.userID, keyType)
+		log.Printf("No key found for account %s. Generating a %s key.", s.GetUserID(), keyType)
 		s.createKeysFolder()
 
 		privateKey, err := generatePrivateKey(accKeyPath, keyType)
 		if err != nil {
-			log.Fatalf("Could not generate RSA private account key for account %s: %v", s.userID, err)
+			log.Fatalf("Could not generate RSA private account key for account %s: %v", s.GetUserID(), err)
 		}
 
 		log.Printf("Saved key to %s", accKeyPath)
@@ -180,7 +193,7 @@ func (s *AccountsStorage) GetPrivateKey(keyType certcrypto.KeyType) crypto.Priva
 
 func (s *AccountsStorage) createKeysFolder() {
 	if err := createNonExistingFolder(s.keysPath); err != nil {
-		log.Fatalf("Could not check/create directory for account %s: %v", s.userID, err)
+		log.Fatalf("Could not check/create directory for account %s: %v", s.GetUserID(), err)
 	}
 }
 

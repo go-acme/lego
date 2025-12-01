@@ -1,0 +1,19 @@
+{
+  "zones": [
+    {
+      "name": "example.com.",
+      "handlerConfigs": [
+        {
+          "type": "memory"
+        },
+        {
+          "type": "etcd"
+        }
+      ],
+      "defaultTTL": 86400,
+      "authoritative": false,
+      "hook": "",
+      "recordCount": 1
+    }
+  ]
+}

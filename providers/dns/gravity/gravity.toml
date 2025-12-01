@@ -1,0 +1,26 @@
+Name = "Gravity"
+Description = ''''''
+URL = "https://gravity.beryju.io/"
+Code = "gravity"
+Since = "v4.30.0"
+
+Example = '''
+GRAVITY_SERVER_URL="https://example.org:1234" \
+GRAVITY_USERNAME="xxxxxxxxxxxxxxxxxxxxx" \
+GRAVITY_PASSWORD="yyyyyyyyyyyyyyyyyyyyy" \
+lego --email you@example.com --dns gravity -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    GRAVITY_SERVER_URL = "URL of the server"
+    GRAVITY_USERNAME = "Username"
+    GRAVITY_PASSWORD = "Password"
+  [Configuration.Additional]
+    GRAVITY_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    GRAVITY_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    GRAVITY_SEQUENCE_INTERVAL = "Time between sequential requests in seconds (Default: 1)"
+    GRAVITY_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://gravity.beryju.io/docs/api/reference/"

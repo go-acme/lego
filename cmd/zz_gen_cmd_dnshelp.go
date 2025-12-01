@@ -79,6 +79,7 @@ func allDNSCodes() string {
 		"glesys",
 		"godaddy",
 		"googledomains",
+		"gravity",
 		"hetzner",
 		"hostingde",
 		"hostinger",
@@ -1635,6 +1636,28 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/googledomains`)
+
+	case "gravity":
+		// generated from: providers/dns/gravity/gravity.toml
+		ew.writeln(`Configuration for Gravity.`)
+		ew.writeln(`Code:	'gravity'`)
+		ew.writeln(`Since:	'v4.30.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "GRAVITY_PASSWORD":	Password`)
+		ew.writeln(`	- "GRAVITY_SERVER_URL":	URL of the server`)
+		ew.writeln(`	- "GRAVITY_USERNAME":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "GRAVITY_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "GRAVITY_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "GRAVITY_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "GRAVITY_SEQUENCE_INTERVAL":	Time between sequential requests in seconds (Default: 1)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/gravity`)
 
 	case "hetzner":
 		// generated from: providers/dns/hetzner/hetzner.toml

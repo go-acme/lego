@@ -1,0 +1,8 @@
+{
+  "code": 0,
+  "context": {
+    "additionalProp1": "string"
+  },
+  "error": "unauthenticated",
+  "status": "UNAUTHENTICATED"
+}

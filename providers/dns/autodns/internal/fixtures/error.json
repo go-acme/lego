@@ -1,0 +1,21 @@
+{
+  "stid": "20251121-appf4923-126284",
+  "messages": [
+    {
+      "text": "Der Zusatzeintrag wurde doppelt eingetragen.",
+      "objects": [
+        {
+          "type": "OURDOMAIN.TLD@nsa7.schlundtech.de/rr[17]",
+          "value": "_acme-challenge.www.whoami.int.OURDOMAIN.TLD TXT \"rK2SJb_ZcrYefbfCKU6jZEANfEAJeOtSh1Fv8hkUoVc\""
+        }
+      ],
+      "code": "EF02022",
+      "status": "ERROR"
+    }
+  ],
+  "status": {
+    "code": "E0202002",
+    "text": "Zone konnte auf dem Nameserver nicht aktualisiert werden.",
+    "type": "ERROR"
+  }
+}

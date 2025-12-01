@@ -128,7 +128,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Value: info.Value,
 	}}
 
-	_, err := d.client.AddTxtRecords(context.Background(), info.EffectiveFQDN, records)
+	_, err := d.client.AddRecords(context.Background(), info.EffectiveFQDN, records)
 	if err != nil {
 		return fmt.Errorf("autodns: %w", err)
 	}
@@ -147,7 +147,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Value: info.Value,
 	}}
 
-	if err := d.client.RemoveTXTRecords(context.Background(), info.EffectiveFQDN, records); err != nil {
+	_, err := d.client.RemoveRecords(context.Background(), info.EffectiveFQDN, records)
+	if err != nil {
 		return fmt.Errorf("autodns: %w", err)
 	}
 

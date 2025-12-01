@@ -12,7 +12,6 @@ import (
 
 func allDNSCodes() string {
 	providers := []string{
-		"manual",
 {{- range $provider := .Providers }}
 		"{{ $provider.Code }}",
 {{- end}}
@@ -48,8 +47,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/{{ $provider.Code }}`)
 {{end}}
-    case "manual":
-		ew.writeln(`Solving the DNS-01 challenge using CLI prompt.`)
 	default:
 		return fmt.Errorf("%q is not yet supported", name)
 	}

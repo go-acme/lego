@@ -12,9 +12,14 @@ const (
 )
 
 // DNSProviderManual is an implementation of the ChallengeProvider interface.
+// TODO(ldez): move this to providers/dns/manual
+//
+// Deprecated: Use the manual.DNSProvider instead.
 type DNSProviderManual struct{}
 
 // NewDNSProviderManual returns a DNSProviderManual instance.
+//
+// Deprecated: Use the manual.NewDNSProvider instead.
 func NewDNSProviderManual() (*DNSProviderManual, error) {
 	return &DNSProviderManual{}, nil
 }

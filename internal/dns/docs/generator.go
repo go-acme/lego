@@ -190,14 +190,9 @@ func generateReadMe(models *descriptors.Providers) error {
 }
 
 func orderProviders(models *descriptors.Providers) [][]descriptors.Provider {
-	providers := append(models.Providers, descriptors.Provider{
-		Name: "Manual",
-		Code: "manual",
-	})
-
 	const nbCol = 4
 
-	slices.SortFunc(providers, func(a, b descriptors.Provider) int {
+	slices.SortFunc(models.Providers, func(a, b descriptors.Provider) int {
 		return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
 	})
 
@@ -206,13 +201,13 @@ func orderProviders(models *descriptors.Providers) [][]descriptors.Provider {
 		row    []descriptors.Provider
 	)
 
-	for i, p := range providers {
+	for i, p := range models.Providers {
 		switch {
 		case len(row) == nbCol:
 			matrix = append(matrix, row)
 			row = []descriptors.Provider{p}
 
-		case i == len(providers)-1:
+		case i == len(models.Providers)-1:
 			row = append(row, p)
 			for j := len(row); j < nbCol; j++ {
 				row = append(row, descriptors.Provider{})

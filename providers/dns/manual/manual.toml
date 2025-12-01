@@ -1,18 +1,13 @@
----
-title: "Manual"
-date: 2019-03-03T16:39:46+01:00
-draft: false
-slug: manual
-dnsprovider:
-  since: v0.3.0
-  code: manual
-  url:
----
+Name = "Manual"
+Description = '''Solving the DNS-01 challenge using CLI prompt.'''
+Code = "manual"
+Since = "v0.3.0"
 
-Solving the DNS-01 challenge using CLI prompt.
+Example = '''
+lego --email you@example.com --dns manual -d '*.example.com' -d example.com run
+'''
 
-<!--more-->
-
+Additional = '''
 ## Example
 
 To start using the CLI prompt "provider", start lego with `--dns manual`:
@@ -70,3 +65,5 @@ _acme-challenge.example.com. 120 IN TXT "hX0dPkG6Gfs9hUvBAchQclkyyoEKbShbpvJ9mY5
 ```
 
 As mentioned, you can now remove the TXT record again.
+
+'''

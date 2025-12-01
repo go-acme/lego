@@ -36,7 +36,7 @@ func createList() *cli.Command {
 			// fake email, needed by NewAccountsStorage
 			&cli.StringFlag{
 				Name:   flgEmail,
-				Value:  "unknown",
+				Value:  "",
 				Hidden: true,
 			},
 		},

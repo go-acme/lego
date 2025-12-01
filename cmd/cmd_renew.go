@@ -144,7 +144,9 @@ func renew(ctx *cli.Context) error {
 
 	bundle := !ctx.Bool(flgNoBundle)
 
-	meta := map[string]string{hookEnvAccountEmail: account.Email}
+	meta := map[string]string{
+		hookEnvAccountEmail: account.Email,
+	}
 
 	// CSR
 	if ctx.IsSet(flgCSR) {

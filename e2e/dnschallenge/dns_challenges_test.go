@@ -58,7 +58,6 @@ func TestChallengeDNS_Run(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	err := load.RunLego(
-		"-m", "hubert@hubert.com",
 		"--accept-tos",
 		"--dns", "exec",
 		"--dns.resolvers", ":8053",

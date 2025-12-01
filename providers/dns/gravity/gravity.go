@@ -175,7 +175,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Sequential All DNS challenges for this provider will be resolved sequentially.
+// Sequential implements the [dns01.sequential] interface.
+// It changes the behavior of the provider to resolve DNS challenges sequentially.
 // Returns the interval between each iteration.
 //
 // Gravity supports adding multiple records for the same domain, but the DNS server doesn't work as expected:

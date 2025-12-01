@@ -13,7 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/gravity/internal"
 	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/gofrs/uuid/v5"
+	"github.com/google/uuid"
 )
 
 // Environment variables names.
@@ -123,10 +123,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("gravity: %w", err)
 	}
 
-	id, err := uuid.NewV4()
-	if err != nil {
-		return err
-	}
+	id := uuid.New()
 
 	record := internal.Record{
 		Data:     info.Value,

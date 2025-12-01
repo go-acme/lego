@@ -263,6 +263,10 @@ linters:
         text: cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high
         linters:
           - gocyclo
+      - path: providers/dns/manual/manual.go
+        text: 'SA1019: dns01.DNSProviderManual is deprecated'
+        linters:
+          - staticcheck
       # Those elements have been replaced by non-exposed structures.
       - path: providers/dns/linode/linode_test.go
         text: 'SA1019: linodego\.(DomainsPagedResponse|DomainRecordsPagedResponse) is deprecated'

@@ -183,7 +183,7 @@ func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
 	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
 	assert.NotEmpty(t, resource.IssuerCertificate)
-	assert.Empty(t, resource.CSR)
+	assert.NotEmpty(t, resource.CSR)
 }
 
 type fakeUser struct {

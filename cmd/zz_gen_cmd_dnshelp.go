@@ -3321,7 +3321,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "SYSE_PASSWORD":	Example`)
+		ew.writeln(`	- "SYSE_CREDENTIALS":	Comma-separated list of 'zone:password' credential pairs`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

@@ -26,8 +26,11 @@ Configuration for [Syse](https://www.syse.no/).
 Here is an example bash command using the Syse provider:
 
 ```bash
-SYSE_PASSWORD="xxxxxxxxxxxxxxxxxxxxx" \
+SYSE_CREDENTIALS=example.com:password \
 lego --email you@example.com --dns syse -d '*.example.com' -d example.com run
+
+SYSE_CREDENTIALS=example.org:password1,example.com:password2 \
+lego --email you@example.com --dns syse -d '*.example.org' -d example.org -d '*.example.com' -d example.com
 ```
 
 
@@ -37,7 +40,7 @@ lego --email you@example.com --dns syse -d '*.example.com' -d example.com run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `SYSE_PASSWORD` | Example |
+| `SYSE_CREDENTIALS` | Comma-separated list of `zone:password` credential pairs |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

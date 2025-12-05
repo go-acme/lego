@@ -180,6 +180,9 @@ linters:
         text: Error return value of `fmt.Fprintln` is not checked
         linters:
           - errcheck
+      - text: "var-naming: avoid meaningless package names"
+        linters:
+          - revive
       - path: certcrypto/crypto.go
         text: (tlsFeatureExtensionOID|ocspMustStapleFeature) is a global variable
         linters:

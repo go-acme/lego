@@ -1,0 +1,8 @@
+{
+  "id": "1234",
+  "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+  "active": true,
+  "ttl": 120,
+  "prefix": "_acme-challenge",
+  "type": "TXT"
+}

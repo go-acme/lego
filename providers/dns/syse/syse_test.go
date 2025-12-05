@@ -12,7 +12,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvPassword).WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvCredentials).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -23,13 +23,49 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvPassword: "secret",
+				EnvCredentials: "example.org:123",
 			},
 		},
 		{
-			desc:     "missing credentials",
-			envVars:  map[string]string{},
-			expected: "syse: some credentials information are missing: SYSE_PASSWORD",
+			desc: "success multiple domains",
+			envVars: map[string]string{
+				EnvCredentials: "example.org:123,example.com:456,example.net:789",
+			},
+		},
+		{
+			desc: "invalid credentials",
+			envVars: map[string]string{
+				EnvCredentials: ",",
+			},
+			expected: `syse: credentials: incorrect pair: `,
+		},
+		{
+			desc: "missing password",
+			envVars: map[string]string{
+				EnvCredentials: "example.org:",
+			},
+			expected: `syse: missing password: "example.org:"`,
+		},
+		{
+			desc: "missing domain",
+			envVars: map[string]string{
+				EnvCredentials: ":123",
+			},
+			expected: `syse: missing domain: ":123"`,
+		},
+		{
+			desc: "invalid credentials, partial",
+			envVars: map[string]string{
+				EnvCredentials: "example.org:123,example.net",
+			},
+			expected: "syse: credentials: incorrect pair: example.net",
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				EnvCredentials: "",
+			},
+			expected: "syse: some credentials information are missing: SYSE_CREDENTIALS",
 		},
 	}
 
@@ -58,23 +94,41 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		password string
+		creds    map[string]string
 		expected string
 	}{
 		{
-			desc:     "success",
-			password: "secret",
+			desc:  "success",
+			creds: map[string]string{"example.org": "123"},
+		},
+		{
+			desc: "success multiple domains",
+			creds: map[string]string{
+				"example.org": "123",
+				"example.com": "456",
+				"example.net": "789",
+			},
 		},
 		{
 			desc:     "missing credentials",
-			expected: "syse: credentials missing",
+			expected: "syse: missing credentials",
+		},
+		{
+			desc:     "missing domain",
+			creds:    map[string]string{"": "123"},
+			expected: `syse: missing domain: ":123"`,
+		},
+		{
+			desc:     "missing password",
+			creds:    map[string]string{"example.org": ""},
+			expected: `syse: missing password: "example.org:"`,
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.Password = test.password
+			config.Credentials = test.creds
 
 			p, err := NewDNSProviderConfig(config)
 
@@ -122,7 +176,9 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
-			config.Password = "secret"
+			config.Credentials = map[string]string{
+				"example.org": "secret",
+			}
 			config.HTTPClient = server.Client()
 
 			p, err := NewDNSProviderConfig(config)

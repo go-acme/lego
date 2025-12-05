@@ -19,24 +19,24 @@ const defaultBaseURL = "https://www.syse.no/api"
 
 // Client the Syse API client.
 type Client struct {
-	password string
+	credentials map[string]string
 
 	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
-func NewClient(password string) (*Client, error) {
-	if password == "" {
+func NewClient(credentials map[string]string) (*Client, error) {
+	if len(credentials) == 0 {
 		return nil, errors.New("credentials missing")
 	}
 
 	baseURL, _ := url.Parse(defaultBaseURL)
 
 	return &Client{
-		password:   password,
-		BaseURL:    baseURL,
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		credentials: credentials,
+		BaseURL:     baseURL,
+		HTTPClient:  &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
 
@@ -48,7 +48,7 @@ func (c *Client) CreateRecord(ctx context.Context, zone string, record Record) (
 		return nil, err
 	}
 
-	req.SetBasicAuth(zone, c.password)
+	req.SetBasicAuth(zone, c.credentials[zone])
 
 	result := new(Record)
 
@@ -68,7 +68,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zone, recordID string) error 
 		return err
 	}
 
-	req.SetBasicAuth(zone, c.password)
+	req.SetBasicAuth(zone, c.credentials[zone])
 
 	return c.do(req, nil)
 }

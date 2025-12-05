@@ -5,13 +5,16 @@ Code = "syse"
 Since = "v4.30.0"
 
 Example = '''
-SYSE_PASSWORD="xxxxxxxxxxxxxxxxxxxxx" \
+SYSE_CREDENTIALS=example.com:password \
 lego --email you@example.com --dns syse -d '*.example.com' -d example.com run
+
+SYSE_CREDENTIALS=example.org:password1,example.com:password2 \
+lego --email you@example.com --dns syse -d '*.example.org' -d example.org -d '*.example.com' -d example.com
 '''
 
 [Configuration]
   [Configuration.Credentials]
-    SYSE_PASSWORD = "Example"
+    SYSE_CREDENTIALS = "Comma-separated list of `zone:password` credential pairs"
   [Configuration.Additional]
     SYSE_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     SYSE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"

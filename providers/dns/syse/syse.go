@@ -19,7 +19,7 @@ import (
 const (
 	envNamespace = "SYSE_"
 
-	EnvPassword = envNamespace + "PASSWORD"
+	EnvCredentials = envNamespace + "CREDENTIALS"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -29,7 +29,7 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Password string
+	Credentials map[string]string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -60,13 +60,19 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Syse.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvPassword)
+	values, err := env.Get(EnvCredentials)
 	if err != nil {
 		return nil, fmt.Errorf("syse: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Password = values[EnvPassword]
+
+	credentials, err := env.ParsePairs(values[EnvCredentials])
+	if err != nil {
+		return nil, fmt.Errorf("syse: credentials: %w", err)
+	}
+
+	config.Credentials = credentials
 
 	return NewDNSProviderConfig(config)
 }
@@ -77,7 +83,21 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("syse: the configuration of the DNS provider is nil")
 	}
 
-	client, err := internal.NewClient(config.Password)
+	if len(config.Credentials) == 0 {
+		return nil, errors.New("syse: missing credentials")
+	}
+
+	for domain, password := range config.Credentials {
+		if domain == "" {
+			return nil, fmt.Errorf(`syse: missing domain: "%s:%s"`, domain, password)
+		}
+
+		if password == "" {
+			return nil, fmt.Errorf(`syse: missing password: "%s:%s"`, domain, password)
+		}
+	}
+
+	client, err := internal.NewClient(config.Credentials)
 	if err != nil {
 		return nil, fmt.Errorf("syse: %w", err)
 	}

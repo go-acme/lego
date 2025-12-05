@@ -14,7 +14,9 @@ import (
 func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client, err := NewClient("secret")
+			client, err := NewClient(map[string]string{
+				"example.com": "secret",
+			})
 			if err != nil {
 				return nil, err
 			}

@@ -16,8 +16,8 @@ lego --email you@example.com --dns syse -d '*.example.org' -d example.org -d '*.
   [Configuration.Credentials]
     SYSE_CREDENTIALS = "Comma-separated list of `zone:password` credential pairs"
   [Configuration.Additional]
-    SYSE_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
-    SYSE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    SYSE_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 10)"
+    SYSE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 600)"
     SYSE_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
     SYSE_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 

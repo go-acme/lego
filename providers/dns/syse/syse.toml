@@ -1,0 +1,25 @@
+Name = "Syse"
+Description = ''''''
+URL = "https://www.syse.no/"
+Code = "syse"
+Since = "v4.30.0"
+
+Example = '''
+SYSE_CREDENTIALS=example.com:password \
+lego --email you@example.com --dns syse -d '*.example.com' -d example.com run
+
+SYSE_CREDENTIALS=example.org:password1,example.com:password2 \
+lego --email you@example.com --dns syse -d '*.example.org' -d example.org -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    SYSE_CREDENTIALS = "Comma-separated list of `zone:password` credential pairs"
+  [Configuration.Additional]
+    SYSE_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 10)"
+    SYSE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 1200)"
+    SYSE_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    SYSE_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://www.syse.no/api/dns"

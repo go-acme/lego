@@ -157,6 +157,7 @@ func allDNSCodes() string {
 		"sonic",
 		"spaceship",
 		"stackpath",
+		"syse",
 		"technitium",
 		"tencentcloud",
 		"timewebcloud",
@@ -3311,6 +3312,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/stackpath`)
+
+	case "syse":
+		// generated from: providers/dns/syse/syse.toml
+		ew.writeln(`Configuration for Syse.`)
+		ew.writeln(`Code:	'syse'`)
+		ew.writeln(`Since:	'v4.30.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SYSE_CREDENTIALS":	Comma-separated list of 'zone:password' credential pairs`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SYSE_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "SYSE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 10)`)
+		ew.writeln(`	- "SYSE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 1200)`)
+		ew.writeln(`	- "SYSE_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/syse`)
 
 	case "technitium":
 		// generated from: providers/dns/technitium/technitium.toml

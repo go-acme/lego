@@ -7,6 +7,16 @@ chapter: false
 
 Let's Encrypt client and ACME library written in Go.
 
+{{% notice important %}}
+lego is an independent, free, and open-source project, if you value it, consider [supporting it](https://donate.ldez.dev)! ❤️
+
+This project is not owned by a company. I'm not an employee of a company.
+
+I don't have gifted domains/accounts from DNS companies.
+
+I've been maintaining it for about 10 years.
+{{% /notice %}}
+
 ## Features
 
 - ACME v2 [RFC 8555](https://www.rfc-editor.org/rfc/rfc8555.html)

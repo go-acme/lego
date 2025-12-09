@@ -5,6 +5,16 @@ draft: false
 weight: 3
 ---
 
+{{% notice important %}}
+lego is an independent, free, and open-source project, if you value it, consider [supporting it](https://donate.ldez.dev)! ❤️
+
+This project is not owned by a company. I'm not an employee of a company.
+
+I don't have gifted domains/accounts from DNS companies.
+
+I've been maintaining it for about 10 years.
+{{% /notice %}}
+
 ## Configuration and Credentials
 
 Credentials and DNS configuration for DNS providers must be passed through environment variables.

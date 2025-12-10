@@ -1,0 +1,26 @@
+[
+  {
+    "id": 98,
+    "name": "",
+    "type": "SOA",
+    "content": "ns1.tecnocratica.net dns.tecnocratica.net 2015092102 7200 7200 1209600 1800",
+    "ttl": 7200,
+    "prio": null
+  },
+  {
+    "id": 99,
+    "name": "",
+    "type": "NS",
+    "content": "ns1.tecnocratica.net",
+    "ttl": 7200,
+    "prio": null
+  },
+  {
+    "id": 100,
+    "name": "_acme-challenge",
+    "type": "TXT",
+    "content": "test-value",
+    "ttl": 120,
+    "prio": null
+  }
+]

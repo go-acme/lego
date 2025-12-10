@@ -122,6 +122,7 @@ func allDNSCodes() string {
 		"namedotcom",
 		"namesilo",
 		"nearlyfreespeech",
+		"neodigit",
 		"netcup",
 		"netlify",
 		"nicmanager",
@@ -2533,6 +2534,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nearlyfreespeech`)
+
+	case "neodigit":
+		// generated from: providers/dns/neodigit/neodigit.toml
+		ew.writeln(`Configuration for Neodigit.`)
+		ew.writeln(`Code:	'neodigit'`)
+		ew.writeln(`Since:	'v4.30.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NEODIGIT_API_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NEODIGIT_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "NEODIGIT_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 10)`)
+		ew.writeln(`	- "NEODIGIT_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 300)`)
+		ew.writeln(`	- "NEODIGIT_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/neodigit`)
 
 	case "netcup":
 		// generated from: providers/dns/netcup/netcup.toml

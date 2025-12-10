@@ -1,5 +1,5 @@
-// Package neodigit implements a DNS provider for solving the DNS-01 challenge using Neodigit DNS.
-package neodigit
+// Package virtualname implements a DNS provider for solving the DNS-01 challenge using Virtualname DNS.
+package virtualname
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ import (
 
 // Environment variables names.
 const (
-	envNamespace = "NEODIGIT_"
+	envNamespace = "VIRTUALNAME_"
 
 	EnvToken = envNamespace + "TOKEN"
 
@@ -47,11 +47,11 @@ type DNSProvider struct {
 	prv challenge.ProviderTimeout
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for Neodigit.
+// NewDNSProvider returns a DNSProvider instance configured for Virtualname.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvToken)
 	if err != nil {
-		return nil, fmt.Errorf("neodigit: %w", err)
+		return nil, fmt.Errorf("virtualname: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -60,15 +60,15 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for Neodigit.
+// NewDNSProviderConfig return a DNSProvider instance configured for Virtualname.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("neodigit: the configuration of the DNS provider is nil")
+		return nil, errors.New("virtualname: the configuration of the DNS provider is nil")
 	}
 
 	provider, err := tecnocratica.NewDNSProviderConfig(config, "")
 	if err != nil {
-		return nil, fmt.Errorf("neodigit: %w", err)
+		return nil, fmt.Errorf("virtualname: %w", err)
 	}
 
 	return &DNSProvider{prv: provider}, nil
@@ -78,7 +78,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	err := d.prv.Present(domain, token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("neodigit: %w", err)
+		return fmt.Errorf("virtualname: %w", err)
 	}
 
 	return nil
@@ -88,7 +88,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	err := d.prv.CleanUp(domain, token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("neodigit: %w", err)
+		return fmt.Errorf("virtualname: %w", err)
 	}
 
 	return nil

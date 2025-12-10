@@ -60,7 +60,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://developers.neodigit.net/)
+- [API documentation](https://developers.neodigit.net/#dns)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/neodigit/neodigit.toml -->

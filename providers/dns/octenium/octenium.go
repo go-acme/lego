@@ -169,6 +169,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		break
 	}
 
+	d.domainIDsMu.Lock()
+	delete(d.domainIDs, token)
+	d.domainIDsMu.Unlock()
+
 	return nil
 }
 

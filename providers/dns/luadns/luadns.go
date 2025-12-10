@@ -104,10 +104,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{
-		config:    config,
-		client:    client,
-		recordsMu: sync.Mutex{},
-		records:   make(map[string]*internal.DNSRecord),
+		config:  config,
+		client:  client,
+		records: make(map[string]*internal.DNSRecord),
 	}, nil
 }
 

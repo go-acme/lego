@@ -163,6 +163,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("gravity: delete record: %w", err)
 	}
 
+	d.recordsMu.Lock()
+	delete(d.records, token)
+	d.recordsMu.Unlock()
+
 	return nil
 }
 

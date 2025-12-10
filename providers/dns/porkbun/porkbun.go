@@ -171,6 +171,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("porkbun: failed to delete record: %w", err)
 	}
 
+	d.recordIDsMu.Lock()
+	delete(d.recordIDs, token)
+	d.recordIDsMu.Unlock()
+
 	return nil
 }
 

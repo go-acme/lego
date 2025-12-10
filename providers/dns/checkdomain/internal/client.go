@@ -36,11 +36,11 @@ const maxInt = int((^uint(0)) >> 1)
 
 // Client the Autodns API client.
 type Client struct {
-	domainIDMapping map[string]int
-	domainIDMu      sync.Mutex
-
 	BaseURL    *url.URL
 	httpClient *http.Client
+
+	domainIDMapping map[string]int
+	domainIDMu      sync.Mutex
 }
 
 // NewClient creates a new Client.

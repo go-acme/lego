@@ -53,10 +53,11 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
+	config *Config
+	client *auroradns.Client
+
 	recordIDs   map[string]string
 	recordIDsMu sync.Mutex
-	config      *Config
-	client      *auroradns.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for AuroraDNS.

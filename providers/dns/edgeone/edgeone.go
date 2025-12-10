@@ -119,10 +119,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	return &DNSProvider{
-		config:      config,
-		client:      client,
-		recordIDs:   map[string]*string{},
-		recordIDsMu: sync.Mutex{},
+		config:    config,
+		client:    client,
+		recordIDs: map[string]*string{},
 	}, nil
 }
 
@@ -189,6 +188,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("edgeone: delete record failed: %w", err)
 	}
+
+	d.recordIDsMu.Lock()
+	delete(d.recordIDs, token)
+	d.recordIDsMu.Unlock()
 
 	return nil
 }

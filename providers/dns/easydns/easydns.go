@@ -190,15 +190,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
-
-	d.recordIDsMu.Lock()
-	defer delete(d.recordIDs, key)
-
-	d.recordIDsMu.Unlock()
-
 	if err != nil {
 		return fmt.Errorf("easydns: %w", err)
 	}
+
+	d.recordIDsMu.Lock()
+	delete(d.recordIDs, key)
+	d.recordIDsMu.Unlock()
 
 	return nil
 }

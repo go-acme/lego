@@ -61,8 +61,9 @@ func NewDefaultConfig() *Config {
 }
 
 type DNSProvider struct {
-	config    *Config
-	client    *internal.Client
+	config *Config
+	client *internal.Client
+
 	records   map[string]*internal.Record
 	recordsMu sync.Mutex
 }

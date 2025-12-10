@@ -208,5 +208,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("regru: failed to remove TXT records [domain: %s]: %w", dns01.UnFqdn(authZone), err)
 	}
 
+	d.zoneIDsMu.Lock()
+	delete(d.zoneIDs, token)
+	d.zoneIDsMu.Unlock()
+
 	return nil
 }

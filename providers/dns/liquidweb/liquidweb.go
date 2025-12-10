@@ -62,8 +62,9 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config      *Config
-	client      *lw.API
+	config *Config
+	client *lw.API
+
 	recordIDs   map[string]int
 	recordIDsMu sync.Mutex
 }

@@ -68,8 +68,9 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config       *Config
-	client       *gophercloud.ServiceClient
+	config *Config
+	client *gophercloud.ServiceClient
+
 	dnsEntriesMu sync.Mutex
 }
 

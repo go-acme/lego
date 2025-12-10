@@ -170,6 +170,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("mittwald: update/delete TXT record: %w", err)
 	}
 
+	d.zoneIDsMu.Lock()
+	delete(d.zoneIDs, token)
+	d.zoneIDsMu.Unlock()
+
 	return nil
 }
 

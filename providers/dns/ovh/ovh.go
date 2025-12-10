@@ -102,8 +102,9 @@ func (c *Config) hasAppKeyAuth() bool {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config      *Config
-	client      *ovh.Client
+	config *Config
+	client *ovh.Client
+
 	recordIDs   map[string]int64
 	recordIDsMu sync.Mutex
 }

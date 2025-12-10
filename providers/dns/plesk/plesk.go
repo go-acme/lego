@@ -173,5 +173,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("plesk: failed to delete record (%d): %w", recordID, err)
 	}
 
+	d.recordIDsMu.Lock()
+	delete(d.recordIDs, token)
+	d.recordIDsMu.Unlock()
+
 	return nil
 }

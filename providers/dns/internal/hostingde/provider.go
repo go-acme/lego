@@ -165,15 +165,15 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		RecordsToDelete: rec,
 	}
 
-	// Delete record ID from map
-	d.recordIDsMu.Lock()
-	delete(d.recordIDs, info.EffectiveFQDN)
-	d.recordIDsMu.Unlock()
-
 	_, err = d.client.UpdateZone(ctx, req)
 	if err != nil {
 		return err
 	}
+
+	// Delete record ID from map
+	d.recordIDsMu.Lock()
+	delete(d.recordIDs, info.EffectiveFQDN)
+	d.recordIDsMu.Unlock()
 
 	return nil
 }

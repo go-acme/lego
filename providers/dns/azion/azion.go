@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/aziontech/azionapi-go-sdk/idns"
@@ -56,9 +55,6 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config *Config
 	client *idns.APIClient
-
-	recordIDs   map[string]int32
-	recordIDsMu sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Azion.
@@ -98,9 +94,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client := idns.NewAPIClient(clientConfig)
 
 	return &DNSProvider{
-		config:    config,
-		client:    client,
-		recordIDs: make(map[string]int32),
+		config: config,
+		client: client,
 	}, nil
 }
 
@@ -161,12 +156,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return errors.New("azion: create zone record error")
 	}
 
-	results := resp.GetResults()
-
-	d.recordIDsMu.Lock()
-	d.recordIDs[token] = results.GetId()
-	d.recordIDsMu.Unlock()
-
 	return nil
 }
 
@@ -185,13 +174,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("azion: %w", err)
 	}
-
-	defer func() {
-		// Cleans the record ID.
-		d.recordIDsMu.Lock()
-		delete(d.recordIDs, token)
-		d.recordIDsMu.Unlock()
-	}()
 
 	existingRecord, err := d.findExistingTXTRecord(ctxAuth, zone.GetId(), subDomain)
 	if err != nil {

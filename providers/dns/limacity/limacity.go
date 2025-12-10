@@ -193,6 +193,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("limacity: delete record (domain ID=%d, record ID=%d): %w", domainID, recordID, err)
 	}
 
+	d.domainIDsMu.Lock()
+	delete(d.domainIDs, info.EffectiveFQDN)
+	d.domainIDsMu.Unlock()
+
 	return nil
 }
 

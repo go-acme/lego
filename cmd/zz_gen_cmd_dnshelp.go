@@ -2543,7 +2543,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "NEODIGIT_API_TOKEN":	API token`)
+		ew.writeln(`	- "NEODIGIT_TOKEN":	API token`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

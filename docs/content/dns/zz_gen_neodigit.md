@@ -26,7 +26,7 @@ Configuration for [Neodigit](https://www.neodigit.net).
 Here is an example bash command using the Neodigit provider:
 
 ```bash
-NEODIGIT_API_TOKEN=xxxxxx \
+NEODIGIT_TOKEN=xxxxxx \
 lego --email you@example.com --dns neodigit -d '*.example.com' -d example.com run
 ```
 
@@ -37,7 +37,7 @@ lego --email you@example.com --dns neodigit -d '*.example.com' -d example.com ru
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `NEODIGIT_API_TOKEN` | API token |
+| `NEODIGIT_TOKEN` | API token |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

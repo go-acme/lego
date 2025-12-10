@@ -1,0 +1,197 @@
+package internal
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"strconv"
+	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+)
+
+// DefaultBaseURL is the default API endpoint.
+const DefaultBaseURL = "https://api.neodigit.net/v1"
+
+// Client is a Neodigit API client.
+type Client struct {
+	token string
+
+	baseURL    *url.URL
+	HTTPClient *http.Client
+}
+
+// NewClient creates a new Client.
+func NewClient(token string) (*Client, error) {
+	if token == "" {
+		return nil, fmt.Errorf("credentials missing: token")
+	}
+
+	baseURL, err := url.Parse(DefaultBaseURL)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Client{
+		token:      token,
+		baseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 30 * time.Second},
+	}, nil
+}
+
+// GetZones lists all DNS zones.
+func (c *Client) GetZones(ctx context.Context) ([]Zone, error) {
+	endpoint := c.baseURL.JoinPath("dns", "zones")
+
+	req, err := c.newRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var zones []Zone
+	err = c.do(req, &zones)
+	if err != nil {
+		return nil, err
+	}
+
+	return zones, nil
+}
+
+// GetZoneByName finds a zone by its domain name.
+func (c *Client) GetZoneByName(ctx context.Context, zoneName string) (*Zone, error) {
+	zones, err := c.GetZones(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, zone := range zones {
+		if zone.Name == zoneName || zone.HumanName == zoneName {
+			return &zone, nil
+		}
+	}
+
+	return nil, fmt.Errorf("zone not found: %s", zoneName)
+}
+
+// GetRecords lists all records in a zone.
+func (c *Client) GetRecords(ctx context.Context, zoneID int, recordType string) ([]Record, error) {
+	endpoint := c.baseURL.JoinPath("dns", "zones", strconv.Itoa(zoneID), "records")
+
+	if recordType != "" {
+		query := endpoint.Query()
+		query.Set("type", recordType)
+		endpoint.RawQuery = query.Encode()
+	}
+
+	req, err := c.newRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var records []Record
+	err = c.do(req, &records)
+	if err != nil {
+		return nil, err
+	}
+
+	return records, nil
+}
+
+// CreateRecord creates a new DNS record.
+func (c *Client) CreateRecord(ctx context.Context, zoneID int, record Record) (*Record, error) {
+	endpoint := c.baseURL.JoinPath("dns", "zones", strconv.Itoa(zoneID), "records")
+
+	payload := RecordRequest{Record: record}
+
+	req, err := c.newRequest(ctx, http.MethodPost, endpoint, payload)
+	if err != nil {
+		return nil, err
+	}
+
+	var result Record
+	err = c.do(req, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+// DeleteRecord deletes a DNS record.
+func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID int) error {
+	endpoint := c.baseURL.JoinPath("dns", "zones", strconv.Itoa(zoneID), "records", strconv.Itoa(recordID))
+
+	req, err := c.newRequest(ctx, http.MethodDelete, endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return errutils.NewHTTPDoError(req, err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	}
+
+	return nil
+}
+
+func (c *Client) newRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("X-TCpanel-Token", c.token)
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
+}
+
+func (c *Client) do(req *http.Request, result any) error {
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return errutils.NewHTTPDoError(req, err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	}
+
+	if result == nil {
+		return nil
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
+
+	return nil
+}

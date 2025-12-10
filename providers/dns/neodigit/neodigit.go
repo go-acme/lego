@@ -124,7 +124,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.findZone(ctx, authZone)
 	if err != nil {
-		return fmt.Errorf("neodigit: get zone: %w", err)
+		return fmt.Errorf("neodigit: %w", err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -182,7 +182,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 func (d *DNSProvider) findZone(ctx context.Context, zoneName string) (*internal.Zone, error) {
 	zones, err := d.client.GetZones(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get zones: %w", err)
 	}
 
 	for _, zone := range zones {

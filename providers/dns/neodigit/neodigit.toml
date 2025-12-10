@@ -19,4 +19,4 @@ lego --email you@example.com --dns neodigit -d '*.example.com' -d example.com ru
     NEODIGIT_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]
-  API = "https://developers.neodigit.net/"
+  API = "https://developers.neodigit.net/#dns"

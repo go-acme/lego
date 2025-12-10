@@ -1,0 +1,10 @@
+{
+  "id": 101,
+  "name": "_acme-challenge",
+  "type": "TXT",
+  "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+  "ttl": 120,
+  "prio": null,
+  "created_at": "2015-09-21T14:40:27.127+02:00",
+  "updated_at": "2015-09-21T14:40:27.127+02:00"
+}

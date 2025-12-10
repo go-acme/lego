@@ -1,0 +1,22 @@
+Name = "Neodigit"
+Description = ''''''
+URL = "https://www.neodigit.net"
+Code = "neodigit"
+Since = "v4.30.0"
+
+Example = '''
+NEODIGIT_TOKEN=xxxxxx \
+lego --email you@example.com --dns neodigit -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    NEODIGIT_TOKEN = "API token"
+  [Configuration.Additional]
+    NEODIGIT_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 10)"
+    NEODIGIT_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 300)"
+    NEODIGIT_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    NEODIGIT_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://developers.neodigit.net/#dns"

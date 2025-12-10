@@ -1,0 +1,16 @@
+[
+  {
+    "id": 6,
+    "name": "example.com",
+    "created_at": "2015-09-21T12:19:04.000+02:00",
+    "updated_at": "2015-09-21T12:19:04.000+02:00",
+    "human_name": "example.com"
+  },
+  {
+    "id": 7,
+    "name": "example.org",
+    "created_at": "2015-09-22T10:00:00.000+02:00",
+    "updated_at": "2015-09-22T10:00:00.000+02:00",
+    "human_name": "example.org"
+  }
+]

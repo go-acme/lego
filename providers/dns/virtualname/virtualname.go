@@ -66,7 +66,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("virtualname: the configuration of the DNS provider is nil")
 	}
 
-	provider, err := tecnocratica.NewDNSProviderConfig(config, "")
+	provider, err := tecnocratica.NewDNSProviderConfig(config, "https://api.virtualname.net/v1")
 	if err != nil {
 		return nil, fmt.Errorf("virtualname: %w", err)
 	}

@@ -9,7 +9,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvAPIToken).WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvToken).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -20,13 +20,13 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAPIToken: "secret",
+				EnvToken: "secret",
 			},
 		},
 		{
 			desc: "missing credentials: api token",
 			envVars: map[string]string{
-				EnvAPIToken: "",
+				EnvToken: "",
 			},
 			expected: "neodigit: some credentials information are missing: NEODIGIT_API_TOKEN",
 		},
@@ -57,12 +57,12 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		apiToken string
+		token    string
 		expected string
 	}{
 		{
-			desc:     "success",
-			apiToken: "secret",
+			desc:  "success",
+			token: "secret",
 		},
 		{
 			desc:     "missing api token",
@@ -73,7 +73,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.APIToken = test.apiToken
+			config.Token = test.token
 
 			p, err := NewDNSProviderConfig(config)
 

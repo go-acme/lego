@@ -20,7 +20,7 @@ import (
 const (
 	envNamespace = "NEODIGIT_"
 
-	EnvAPIToken = envNamespace + "API_TOKEN"
+	EnvToken = envNamespace + "TOKEN"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -32,7 +32,8 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	APIToken           string
+	Token string
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -62,15 +63,14 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Neodigit.
-// Credentials must be passed in the environment variable: NEODIGIT_API_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIToken)
+	values, err := env.Get(EnvToken)
 	if err != nil {
 		return nil, fmt.Errorf("neodigit: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIToken = values[EnvAPIToken]
+	config.Token = values[EnvToken]
 
 	return NewDNSProviderConfig(config)
 }
@@ -81,13 +81,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("neodigit: the configuration of the DNS provider is nil")
 	}
 
-	if config.APIToken == "" {
-		return nil, errors.New("neodigit: missing credentials: API token")
+	if config.Token == "" {
+		return nil, errors.New("neodigit: missing credentials")
 	}
 
-	client, err := internal.NewClient(config.APIToken)
+	client, err := internal.NewClient(config.Token)
 	if err != nil {
-		return nil, fmt.Errorf("neodigit: failed to create client: %w", err)
+		return nil, fmt.Errorf("neodigit: create client: %w", err)
 	}
 
 	if config.HTTPClient != nil {
@@ -122,7 +122,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.client.GetZoneByName(context.Background(), authZone)
 	if err != nil {
-		return fmt.Errorf("neodigit: failed to get zone: %w", err)
+		return fmt.Errorf("neodigit: get zone: %w", err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -160,12 +160,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Unlock()
 
 	if !zoneOK || !recordOK {
-		return fmt.Errorf("neodigit: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
+		return fmt.Errorf("neodigit: unknown record ID or zone ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
 	err := d.client.DeleteRecord(context.Background(), zoneID, recordID)
 	if err != nil {
-		return fmt.Errorf("neodigit: failed to delete TXT record: fqdn=%s, zoneID=%d, recordID=%d: %w",
+		return fmt.Errorf("neodigit: delete TXT record: fqdn=%s, zoneID=%d, recordID=%d: %w",
 			info.EffectiveFQDN, zoneID, recordID, err)
 	}
 

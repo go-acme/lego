@@ -14,7 +14,7 @@ import (
 func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client, err := NewClient("test-token")
+			client, err := NewClient("secret")
 			if err != nil {
 				return nil, err
 			}
@@ -25,7 +25,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			With("X-TCpanel-Token", "test-token"))
+			With("X-TCpanel-Token", "secret"))
 }
 
 func TestClient_GetZones(t *testing.T) {
@@ -106,16 +106,39 @@ func TestClient_GetRecords(t *testing.T) {
 	records, err := client.GetRecords(t.Context(), 6, "")
 	require.NoError(t, err)
 
-	assert.Len(t, records, 3)
-	assert.Equal(t, "TXT", records[2].Type)
-	assert.Equal(t, "_acme-challenge", records[2].Name)
+	expected := []Record{
+		{
+			ID:      98,
+			Name:    "",
+			Type:    "SOA",
+			Content: "ns1.neodigit.net dns.neodigit.net 2015092102 7200 7200 1209600 1800",
+			TTL:     7200,
+		},
+		{
+			ID:      99,
+			Name:    "",
+			Type:    "NS",
+			Content: "ns1.neodigit.net",
+			TTL:     7200,
+		},
+		{
+			ID:      100,
+			Name:    "_acme-challenge",
+			Type:    "TXT",
+			Content: "test-value",
+			TTL:     120,
+		},
+	}
+
+	assert.Equal(t, expected, records)
 }
 
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/zones/6/records",
 			servermock.ResponseFromFixture("create_record.json").
-				WithStatusCode(http.StatusCreated)).
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
 		Build(t)
 
 	record := Record{
@@ -128,9 +151,15 @@ func TestClient_CreateRecord(t *testing.T) {
 	result, err := client.CreateRecord(t.Context(), 6, record)
 	require.NoError(t, err)
 
-	assert.Equal(t, 101, result.ID)
-	assert.Equal(t, "_acme-challenge", result.Name)
-	assert.Equal(t, "TXT", result.Type)
+	expected := &Record{
+		ID:      101,
+		Name:    "_acme-challenge",
+		Type:    "TXT",
+		Content: "test-value",
+		TTL:     120,
+	}
+
+	assert.Equal(t, expected, result)
 }
 
 func TestClient_CreateRecord_error(t *testing.T) {

@@ -9,12 +9,12 @@ type Zone struct {
 
 // Record represents a DNS record.
 type Record struct {
-	ID      int    `json:"id,omitempty"`
-	Name    string `json:"name,omitempty"`
-	Type    string `json:"type,omitempty"`
-	Content string `json:"content,omitempty"`
-	TTL     int    `json:"ttl,omitempty"`
-	Prio    *int   `json:"prio,omitempty"`
+	ID       int    `json:"id,omitempty"`
+	Name     string `json:"name,omitempty"`
+	Type     string `json:"type,omitempty"`
+	Content  string `json:"content,omitempty"`
+	TTL      int    `json:"ttl,omitempty"`
+	Priority int    `json:"prio,omitempty"`
 }
 
 // RecordRequest is the request body for creating/updating a record.

@@ -1,0 +1,8 @@
+{
+  "record": {
+    "name": "_acme-challenge",
+    "type": "TXT",
+    "content": "test-value",
+    "ttl": 120
+  }
+}

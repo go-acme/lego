@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 )
 
 // DefaultBaseURL is the default API endpoint.
@@ -48,7 +49,7 @@ func NewClient(token string) (*Client, error) {
 func (c *Client) GetZones(ctx context.Context) ([]Zone, error) {
 	endpoint := c.baseURL.JoinPath("dns", "zones")
 
-	req, err := c.newRequest(ctx, http.MethodGet, endpoint, nil)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +89,7 @@ func (c *Client) GetRecords(ctx context.Context, zoneID int, recordType string) 
 		endpoint.RawQuery = query.Encode()
 	}
 
-	req, err := c.newRequest(ctx, http.MethodGet, endpoint, nil)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +109,7 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID int, record Record) (*
 
 	payload := RecordRequest{Record: record}
 
-	req, err := c.newRequest(ctx, http.MethodPost, endpoint, payload)
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -126,58 +127,30 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID int, record Record) (*
 func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID int) error {
 	endpoint := c.baseURL.JoinPath("dns", "zones", strconv.Itoa(zoneID), "records", strconv.Itoa(recordID))
 
-	req, err := c.newRequest(ctx, http.MethodDelete, endpoint, nil)
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return errutils.NewHTTPDoError(req, err)
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode >= http.StatusBadRequest {
-		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
-	}
-
-	return nil
-}
-
-func (c *Client) newRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
-	buf := new(bytes.Buffer)
-
-	if payload != nil {
-		err := json.NewEncoder(buf).Encode(payload)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
-		}
-	}
-
-	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create request: %w", err)
-	}
-
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("X-TCpanel-Token", c.token)
-
-	if payload != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-
-	return req, nil
+	return c.do(req, nil)
 }
 
 func (c *Client) do(req *http.Request, result any) error {
+	useragent.SetHeader(req.Header)
+
+	req.Header.Set("X-TCpanel-Token", c.token)
+
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)
 	}
+
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode >= http.StatusBadRequest {
-		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	if resp.StatusCode/100 != 2 {
+		raw, _ := io.ReadAll(resp.Body)
+
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
 	if result == nil {
@@ -195,4 +168,28 @@ func (c *Client) do(req *http.Request, result any) error {
 	}
 
 	return nil
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
 }

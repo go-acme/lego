@@ -111,6 +111,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
@@ -120,7 +122,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone = dns01.UnFqdn(authZone)
 
-	zone, err := d.client.GetZoneByName(context.Background(), authZone)
+	zone, err := d.findZone(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("neodigit: get zone: %w", err)
 	}
@@ -137,7 +139,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:     d.config.TTL,
 	}
 
-	newRecord, err := d.client.CreateRecord(context.Background(), zone.ID, record)
+	newRecord, err := d.client.CreateRecord(ctx, zone.ID, record)
 	if err != nil {
 		return fmt.Errorf("neodigit: failed to create record: %w", err)
 	}
@@ -175,4 +177,19 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Unlock()
 
 	return nil
+}
+
+func (d *DNSProvider) findZone(ctx context.Context, zoneName string) (*internal.Zone, error) {
+	zones, err := d.client.GetZones(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, zone := range zones {
+		if zone.Name == zoneName || zone.HumanName == zoneName {
+			return &zone, nil
+		}
+	}
+
+	return nil, fmt.Errorf("zone not found: %s", zoneName)
 }

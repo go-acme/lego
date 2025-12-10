@@ -19,7 +19,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 				return nil, err
 			}
 
-			client.baseURL, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 			client.HTTPClient = server.Client()
 
 			return client, nil
@@ -45,8 +45,8 @@ func TestClient_GetZones(t *testing.T) {
 		},
 		{
 			ID:        7,
-			Name:      "test.com",
-			HumanName: "test.com",
+			Name:      "example.org",
+			HumanName: "example.org",
 		},
 	}
 
@@ -66,37 +66,6 @@ func TestClient_GetZones_error(t *testing.T) {
 	assert.Nil(t, zones)
 }
 
-func TestClient_GetZoneByName(t *testing.T) {
-	client := mockBuilder().
-		Route("GET /dns/zones",
-			servermock.ResponseFromFixture("get_zones.json")).
-		Build(t)
-
-	zone, err := client.GetZoneByName(t.Context(), "example.com")
-	require.NoError(t, err)
-
-	expected := &Zone{
-		ID:        6,
-		Name:      "example.com",
-		HumanName: "example.com",
-	}
-
-	assert.Equal(t, expected, zone)
-}
-
-func TestClient_GetZoneByName_notFound(t *testing.T) {
-	client := mockBuilder().
-		Route("GET /dns/zones",
-			servermock.ResponseFromFixture("get_zones.json")).
-		Build(t)
-
-	zone, err := client.GetZoneByName(t.Context(), "notfound.com")
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "zone not found")
-
-	assert.Nil(t, zone)
-}
-
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/zones/6/records",
@@ -111,21 +80,21 @@ func TestClient_GetRecords(t *testing.T) {
 			ID:      98,
 			Name:    "",
 			Type:    "SOA",
-			Content: "ns1.neodigit.net dns.neodigit.net 2015092102 7200 7200 1209600 1800",
+			Content: "ns1.example.org dns.example.org 2015092102 7200 7200 1209600 1800",
 			TTL:     7200,
 		},
 		{
 			ID:      99,
 			Name:    "",
 			Type:    "NS",
-			Content: "ns1.neodigit.net",
+			Content: "ns1.example.org",
 			TTL:     7200,
 		},
 		{
 			ID:      100,
 			Name:    "_acme-challenge",
 			Type:    "TXT",
-			Content: "test-value",
+			Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 			TTL:     120,
 		},
 	}
@@ -144,7 +113,7 @@ func TestClient_CreateRecord(t *testing.T) {
 	record := Record{
 		Name:    "_acme-challenge",
 		Type:    "TXT",
-		Content: "test-value",
+		Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 		TTL:     120,
 	}
 
@@ -155,7 +124,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		ID:      101,
 		Name:    "_acme-challenge",
 		Type:    "TXT",
-		Content: "test-value",
+		Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 		TTL:     120,
 	}
 
@@ -185,7 +154,7 @@ func TestClient_CreateRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns/zones/6/records/101",
-			servermock.RawStringResponse("").
+			servermock.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 

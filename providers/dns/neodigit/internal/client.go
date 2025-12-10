@@ -23,7 +23,7 @@ const DefaultBaseURL = "https://api.neodigit.net/v1"
 type Client struct {
 	token string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -40,14 +40,14 @@ func NewClient(token string) (*Client, error) {
 
 	return &Client{
 		token:      token,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 30 * time.Second},
 	}, nil
 }
 
 // GetZones lists all DNS zones.
 func (c *Client) GetZones(ctx context.Context) ([]Zone, error) {
-	endpoint := c.baseURL.JoinPath("dns", "zones")
+	endpoint := c.BaseURL.JoinPath("dns", "zones")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -55,6 +55,7 @@ func (c *Client) GetZones(ctx context.Context) ([]Zone, error) {
 	}
 
 	var zones []Zone
+
 	err = c.do(req, &zones)
 	if err != nil {
 		return nil, err
@@ -63,25 +64,9 @@ func (c *Client) GetZones(ctx context.Context) ([]Zone, error) {
 	return zones, nil
 }
 
-// GetZoneByName finds a zone by its domain name.
-func (c *Client) GetZoneByName(ctx context.Context, zoneName string) (*Zone, error) {
-	zones, err := c.GetZones(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, zone := range zones {
-		if zone.Name == zoneName || zone.HumanName == zoneName {
-			return &zone, nil
-		}
-	}
-
-	return nil, fmt.Errorf("zone not found: %s", zoneName)
-}
-
 // GetRecords lists all records in a zone.
 func (c *Client) GetRecords(ctx context.Context, zoneID int, recordType string) ([]Record, error) {
-	endpoint := c.baseURL.JoinPath("dns", "zones", strconv.Itoa(zoneID), "records")
+	endpoint := c.BaseURL.JoinPath("dns", "zones", strconv.Itoa(zoneID), "records")
 
 	if recordType != "" {
 		query := endpoint.Query()
@@ -95,6 +80,7 @@ func (c *Client) GetRecords(ctx context.Context, zoneID int, recordType string) 
 	}
 
 	var records []Record
+
 	err = c.do(req, &records)
 	if err != nil {
 		return nil, err
@@ -105,7 +91,7 @@ func (c *Client) GetRecords(ctx context.Context, zoneID int, recordType string) 
 
 // CreateRecord creates a new DNS record.
 func (c *Client) CreateRecord(ctx context.Context, zoneID int, record Record) (*Record, error) {
-	endpoint := c.baseURL.JoinPath("dns", "zones", strconv.Itoa(zoneID), "records")
+	endpoint := c.BaseURL.JoinPath("dns", "zones", strconv.Itoa(zoneID), "records")
 
 	payload := RecordRequest{Record: record}
 
@@ -115,6 +101,7 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID int, record Record) (*
 	}
 
 	var result Record
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -125,7 +112,7 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID int, record Record) (*
 
 // DeleteRecord deletes a DNS record.
 func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID int) error {
-	endpoint := c.baseURL.JoinPath("dns", "zones", strconv.Itoa(zoneID), "records", strconv.Itoa(recordID))
+	endpoint := c.BaseURL.JoinPath("dns", "zones", strconv.Itoa(zoneID), "records", strconv.Itoa(recordID))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

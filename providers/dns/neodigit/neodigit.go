@@ -141,7 +141,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	newRecord, err := d.client.CreateRecord(ctx, zone.ID, record)
 	if err != nil {
-		return fmt.Errorf("neodigit: failed to create record: %w", err)
+		return fmt.Errorf("neodigit: create record: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -167,7 +167,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err := d.client.DeleteRecord(context.Background(), zoneID, recordID)
 	if err != nil {
-		return fmt.Errorf("neodigit: delete TXT record: fqdn=%s, zoneID=%d, recordID=%d: %w",
+		return fmt.Errorf("neodigit: delete record: fqdn=%s, zoneID=%d, recordID=%d: %w",
 			info.EffectiveFQDN, zoneID, recordID, err)
 	}
 

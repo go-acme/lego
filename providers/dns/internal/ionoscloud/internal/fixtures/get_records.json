@@ -1,0 +1,18 @@
+{
+  "id": "11af3414-ebba-11e9-8df5-66fbe8a334b4",
+  "type": "collection",
+  "items": [
+    {
+      "id": "22af3414-abbe-9e11-5df5-66fbe8e334b4",
+      "type": "record",
+      "properties": {
+        "name": "string",
+        "type": "A",
+        "content": "string",
+        "ttl": 0,
+        "priority": 0,
+        "enabled": true
+      }
+    }
+  ]
+}

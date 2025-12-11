@@ -166,6 +166,7 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/inwx/">INWX</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/ionos/">Ionos</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/ionoscloud/">IONOS Cloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/ipv64/">IPv64</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/iwantmyname/">iwantmyname (Deprecated)</a></td>
 </tr><tr>

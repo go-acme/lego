@@ -40,6 +40,17 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: profile
+    attributes:
+      label: Who are you?
+      options:
+        - A customer of this DNS provider
+        - An employee of this DNS provider
+        - Other (please explain)
+    validations:
+      required: true
+
   - type: input
     id: provider-link
     attributes:

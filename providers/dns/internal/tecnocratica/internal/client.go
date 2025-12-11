@@ -16,10 +16,10 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 )
 
-// DefaultBaseURL is the default API endpoint.
-const DefaultBaseURL = "https://api.neodigit.net/v1"
+// defaultBaseURL is the default API endpoint.
+const defaultBaseURL = "https://api.neodigit.net/v1"
 
-// Client is a Neodigit API client.
+// Client is a Tecnocrática API client.
 type Client struct {
 	token string
 
@@ -33,7 +33,7 @@ func NewClient(token string) (*Client, error) {
 		return nil, errors.New("credentials missing: token")
 	}
 
-	baseURL, err := url.Parse(DefaultBaseURL)
+	baseURL, err := url.Parse(defaultBaseURL)
 	if err != nil {
 		return nil, err
 	}

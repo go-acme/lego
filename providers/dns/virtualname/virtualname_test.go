@@ -1,4 +1,4 @@
-package neodigit
+package virtualname
 
 import (
 	"testing"
@@ -28,7 +28,7 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvToken: "",
 			},
-			expected: "neodigit: some credentials information are missing: NEODIGIT_TOKEN",
+			expected: "virtualname: some credentials information are missing: VIRTUALNAME_TOKEN",
 		},
 	}
 
@@ -65,7 +65,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing token",
-			expected: "neodigit: missing credentials",
+			expected: "virtualname: missing credentials",
 		},
 	}
 

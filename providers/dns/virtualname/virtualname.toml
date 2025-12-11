@@ -1,0 +1,22 @@
+Name = "Virtualname"
+Description = ''''''
+URL = "https://www.virtualname.es/"
+Code = "virtualname"
+Since = "v4.30.0"
+
+Example = '''
+VIRTUALNAME_TOKEN=xxxxxx \
+lego --email you@example.com --dns virtualname -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    VIRTUALNAME_TOKEN = "API token"
+  [Configuration.Additional]
+    VIRTUALNAME_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 10)"
+    VIRTUALNAME_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 300)"
+    VIRTUALNAME_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    VIRTUALNAME_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://developers.virtualname.net/#dns"

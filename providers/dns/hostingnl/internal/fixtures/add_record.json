@@ -6,8 +6,8 @@
       "type": "TXT",
       "content": "\"txtxtxt\"",
       "name": "example.com",
-      "prio": "0",
-      "ttl": "3600"
+      "prio": 0,
+      "ttl": 3600
     }
   ]
 }

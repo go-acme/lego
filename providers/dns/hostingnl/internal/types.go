@@ -5,8 +5,8 @@ type Record struct {
 	Name     string `json:"name,omitempty"`
 	Type     string `json:"type,omitempty"`
 	Content  string `json:"content,omitempty"`
-	TTL      string `json:"ttl,omitempty"`
-	Priority string `json:"prio,omitempty"`
+	TTL      int    `json:"ttl,omitempty"`
+	Priority int    `json:"prio,omitempty"`
 }
 
 type APIResponse[T any] struct {

@@ -111,8 +111,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Name:     dns01.UnFqdn(info.EffectiveFQDN),
 		Type:     "TXT",
 		Content:  strconv.Quote(info.Value),
-		TTL:      strconv.Itoa(d.config.TTL),
-		Priority: "0",
+		TTL:      d.config.TTL,
+		Priority: 0,
 	}
 
 	newRecord, err := d.client.AddRecord(context.Background(), dns01.UnFqdn(authZone), record)

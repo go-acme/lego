@@ -31,17 +31,15 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/dns", servermock.ResponseFromFixture("add_record.json"),
-			servermock.CheckQueryParameter().Strict().
-				With("client_id", "0"),
+			servermock.CheckQueryParameter().Strict(),
 			servermock.CheckRequestJSONBodyFromFixture("add_record-request.json")).
 		Build(t)
 
 	record := Record{
-		Name:     "example.com",
-		Type:     "TXT",
-		Content:  strconv.Quote("txtxtxt"),
-		TTL:      "3600",
-		Priority: "0",
+		Name:    "example.com",
+		Type:    "TXT",
+		Content: strconv.Quote("txtxtxt"),
+		TTL:     3600,
 	}
 
 	newRecord, err := client.AddRecord(context.Background(), "example.com", record)
@@ -52,8 +50,8 @@ func TestClient_AddRecord(t *testing.T) {
 		Name:     "example.com",
 		Type:     "TXT",
 		Content:  `"txtxtxt"`,
-		TTL:      "3600",
-		Priority: "0",
+		TTL:      3600,
+		Priority: 0,
 	}
 
 	assert.Equal(t, expected, newRecord)
@@ -63,8 +61,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/dns",
 			servermock.ResponseFromFixture("delete_record.json"),
-			servermock.CheckQueryParameter().Strict().
-				With("client_id", "0"),
+			servermock.CheckQueryParameter().Strict(),
 			servermock.CheckRequestJSONBodyFromFixture("delete_record-request.json")).
 		Build(t)
 

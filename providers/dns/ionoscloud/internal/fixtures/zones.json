@@ -1,0 +1,40 @@
+{
+  "id": "e74d0d15-f567-4b7b-9069-26ee1f93bae3",
+  "type": "collection",
+  "href": "<RESOURCE-URI>",
+  "offset": 0,
+  "limit": 1000,
+  "_links": {
+    "prev": "http://PREVIOUS-PAGE-URI",
+    "self": "http://THIS-PAGE-URI",
+    "next": "http://NEXT-PAGE-URI"
+  },
+  "items": [
+    {
+      "id": "e74d0d15-f567-4b7b-9069-26ee1f93bae3",
+      "type": "zone",
+      "href": "<RESOURCE-URI>",
+      "metadata": {
+        "createdDate": "2022-08-21T15:52:53Z",
+        "createdBy": "ionos:iam:cloud:31960002:users/87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
+        "createdByUserId": "87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
+        "lastModifiedDate": "2022-08-21T15:52:53Z",
+        "lastModifiedBy": "ionos:iam:cloud:31960002:users/87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
+        "lastModifiedByUserId": "63cef532-26fe-4a64-a4e0-de7c8a506c90",
+        "resourceURN": "ionos:<product>:<location>:<contract>:<resource-path>",
+        "state": "PROVISIONING",
+        "nameservers": [
+          "ns-ic.ui-dns.com",
+          "ns-ic.ui-dns.de",
+          "ns-ic.ui-dns.org",
+          "ns-ic.ui-dns.biz"
+        ]
+      },
+      "properties": {
+        "zoneName": "example.com",
+        "description": "The hosted zone is used for example.com",
+        "enabled": true
+      }
+    }
+  ]
+}

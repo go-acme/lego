@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "12345",
+      "type": "TXT",
+      "content": "\"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY\"",
+      "name": "_acme-challenge.example.com",
+      "prio": 0,
+      "ttl": 120
+    }
+  ]
+}

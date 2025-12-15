@@ -18,7 +18,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("secret")
 			client.HTTPClient = server.Client()
-			client.baseURL, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
@@ -30,28 +30,28 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /domains/example.com/dns", servermock.ResponseFromFixture("add_record.json"),
+		Route("POST /domains/example.com/dns",
+			servermock.ResponseFromFixture("add_record.json"),
 			servermock.CheckQueryParameter().Strict(),
 			servermock.CheckRequestJSONBodyFromFixture("add_record-request.json")).
 		Build(t)
 
 	record := Record{
-		Name:    "example.com",
+		Name:    "_acme-challenge.example.com",
 		Type:    "TXT",
-		Content: strconv.Quote("txtxtxt"),
-		TTL:     3600,
+		Content: strconv.Quote("ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"),
+		TTL:     120,
 	}
 
 	newRecord, err := client.AddRecord(context.Background(), "example.com", record)
 	require.NoError(t, err)
 
 	expected := &Record{
-		ID:       "12345",
-		Name:     "example.com",
-		Type:     "TXT",
-		Content:  `"txtxtxt"`,
-		TTL:      3600,
-		Priority: 0,
+		ID:      "12345",
+		Name:    "_acme-challenge.example.com",
+		Type:    "TXT",
+		Content: strconv.Quote("ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"),
+		TTL:     120,
 	}
 
 	assert.Equal(t, expected, newRecord)

@@ -1,9 +1,12 @@
 package hostingnl
 
 import (
+	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -112,5 +115,53 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.APIKey = "secret"
+			config.HTTPClient = server.Client()
+
+			provider, err := NewDNSProviderConfig(config)
+			if err != nil {
+				return nil, err
+			}
+
+			provider.client.BaseURL, _ = url.Parse(server.URL)
+
+			return provider, nil
+		},
+		servermock.CheckHeader().
+			WithJSONHeaders().
+			With("API-TOKEN", "secret"),
+	)
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider := mockBuilder().
+		Route("POST /domains/example.com/dns",
+			servermock.ResponseFromInternal("add_record.json"),
+			servermock.CheckQueryParameter().Strict(),
+			servermock.CheckRequestJSONBodyFromInternal("add_record-request.json")).
+		Build(t)
+
+	err := provider.Present("example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp(t *testing.T) {
+	provider := mockBuilder().
+		Route("DELETE /domains/example.com/dns",
+			servermock.ResponseFromInternal("delete_record.json"),
+			servermock.CheckQueryParameter().Strict(),
+			servermock.CheckRequestJSONBodyFromInternal("delete_record-request.json")).
+		Build(t)
+
+	provider.recordIDs["abc"] = "12345"
+
+	err := provider.CleanUp("example.com", "abc", "123d==")
 	require.NoError(t, err)
 }

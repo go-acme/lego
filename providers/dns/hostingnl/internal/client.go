@@ -19,7 +19,7 @@ const defaultBaseURL = "https://api.hosting.nl"
 type Client struct {
 	apiKey string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -28,13 +28,13 @@ func NewClient(apiKey string) *Client {
 
 	return &Client{
 		apiKey:     apiKey,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
 
 func (c Client) AddRecord(ctx context.Context, domain string, record Record) (*Record, error) {
-	endpoint := c.baseURL.JoinPath("domains", domain, "dns")
+	endpoint := c.BaseURL.JoinPath("domains", domain, "dns")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, []Record{record})
 	if err != nil {
@@ -56,7 +56,7 @@ func (c Client) AddRecord(ctx context.Context, domain string, record Record) (*R
 }
 
 func (c Client) DeleteRecord(ctx context.Context, domain, recordID string) error {
-	endpoint := c.baseURL.JoinPath("domains", domain, "dns")
+	endpoint := c.BaseURL.JoinPath("domains", domain, "dns")
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, []Record{{ID: recordID}})
 	if err != nil {

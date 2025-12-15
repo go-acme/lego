@@ -1,8 +1,8 @@
 [
   {
-    "name": "example.com",
+    "name": "_acme-challenge.example.com",
     "type": "TXT",
-    "content": "\"txtxtxt\"",
-    "ttl": 3600
+    "content": "\"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY\"",
+    "ttl": 120
   }
 ]

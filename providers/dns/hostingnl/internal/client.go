@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
 )
 
 const defaultBaseURL = "https://api.hosting.nl"
@@ -41,6 +42,7 @@ func (c Client) AddRecord(ctx context.Context, domain string, record Record) (*R
 	}
 
 	var result APIResponse[Record]
+
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
@@ -62,6 +64,7 @@ func (c Client) DeleteRecord(ctx context.Context, domain, recordID string) error
 	}
 
 	var result APIResponse[Record]
+
 	err = c.do(req, &result)
 	if err != nil {
 		return err
@@ -71,6 +74,8 @@ func (c Client) DeleteRecord(ctx context.Context, domain, recordID string) error
 }
 
 func (c Client) do(req *http.Request, result any) error {
+	useragent.SetHeader(req.Header)
+
 	req.Header.Set("API-TOKEN", c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)
@@ -105,6 +110,7 @@ func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var apiErr APIError
+
 	err := json.Unmarshal(raw, &apiErr)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)

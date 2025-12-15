@@ -2,7 +2,7 @@ Name = "Hosting.nl"
 Description = ''''''
 URL = "https://hosting.nl"
 Code = "hostingnl"
-Since = "v4.23.0"
+Since = "v4.30.0"
 
 Example = '''
 HOSTINGNL_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \

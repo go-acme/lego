@@ -1,0 +1,22 @@
+Name = "Ionos Cloud"
+Description = ''''''
+URL = "https://cloud.ionos.de/network/cloud-dns"
+Code = "ionoscloud"
+Since = "v4.30.0"
+
+Example = '''
+IONOSCLOUD_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
+lego --email you@example.com --dns ionoscloud -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    IONOSCLOUD_API_TOKEN = "API token"
+  [Configuration.Additional]
+    IONOSCLOUD_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    IONOSCLOUD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 120)"
+    IONOSCLOUD_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    IONOSCLOUD_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://api.ionos.com/docs/dns/v1/"

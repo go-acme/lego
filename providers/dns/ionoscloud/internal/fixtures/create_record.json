@@ -1,0 +1,25 @@
+{
+  "id": "90d81ac0-3a30-44d4-95a5-12959effa6ee",
+  "type": "record",
+  "href": "<RESOURCE-URI>",
+  "metadata": {
+    "createdDate": "2022-08-21T15:52:53Z",
+    "createdBy": "ionos:iam:cloud:31960002:users/87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
+    "createdByUserId": "87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
+    "lastModifiedDate": "2022-08-21T15:52:53Z",
+    "lastModifiedBy": "ionos:iam:cloud:31960002:users/87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
+    "lastModifiedByUserId": "63cef532-26fe-4a64-a4e0-de7c8a506c90",
+    "resourceURN": "ionos:<product>:<location>:<contract>:<resource-path>",
+    "state": "PROVISIONING",
+    "fqdn": "app.example.com",
+    "zoneId": "a363f30c-4c0c-4552-9a07-298d87f219bf"
+  },
+  "properties": {
+    "name": "app",
+    "type": "A",
+    "content": "1.2.3.4",
+    "ttl": 3600,
+    "priority": 3600,
+    "enabled": true
+  }
+}

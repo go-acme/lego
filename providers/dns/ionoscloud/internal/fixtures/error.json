@@ -1,0 +1,9 @@
+{
+  "httpStatus": 401,
+  "messages": [
+    {
+      "errorCode": "paas-auth-1",
+      "message": "Unauthorized, wrong or no api key provided to process this request"
+    }
+  ]
+}

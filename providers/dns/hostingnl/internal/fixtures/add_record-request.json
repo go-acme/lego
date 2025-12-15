@@ -1,0 +1,9 @@
+[
+  {
+    "name": "example.com",
+    "type": "TXT",
+    "content": "\"txtxtxt\"",
+    "ttl": "3600",
+    "prio": "0"
+  }
+]

@@ -65,7 +65,7 @@ require (
 	github.com/nrdcg/namesilo v0.5.0
 	github.com/nrdcg/nodion v0.1.0
 	github.com/nrdcg/oci-go-sdk/common/v1065 v1065.105.1
-	github.com/nrdcg/oci-go-sdk/dns/v1065 v1065.105.0
+	github.com/nrdcg/oci-go-sdk/dns/v1065 v1065.105.1
 	github.com/nrdcg/porkbun v0.4.0
 	github.com/nrdcg/vegadns v0.3.0
 	github.com/nzdjb/go-metaname v1.0.0

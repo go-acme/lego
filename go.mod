@@ -84,7 +84,7 @@ require (
 	github.com/transip/gotransip/v6 v6.26.1
 	github.com/ultradns/ultradns-go-sdk v1.8.1-20250722213956-faef419
 	github.com/urfave/cli/v2 v2.27.7
-	github.com/vinyldns/go-vinyldns v0.9.16
+	github.com/vinyldns/go-vinyldns v0.9.17
 	github.com/volcengine/volc-sdk-golang v1.0.230
 	github.com/vultr/govultr/v3 v3.25.0
 	github.com/yandex-cloud/go-genproto v0.41.0
@@ -188,7 +188,6 @@ require (
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/smartystreets/go-aws-auth v0.0.0-20180515143844-0c1422d1fdb9 // indirect
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
 	github.com/sony/gobreaker v1.0.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect

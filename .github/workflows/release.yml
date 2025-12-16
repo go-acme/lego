@@ -67,6 +67,7 @@ jobs:
 
       # https://goreleaser.com/ci/actions/
       - name: Run GoReleaser
+        id: goreleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           version: v2.13.0
@@ -78,7 +79,7 @@ jobs:
 
       - uses: actions/attest-build-provenance@v3
         with:
-          subject-checksums: ./dist/lego_*_checksums.txt
+          subject-checksums: ./dist/lego_${{ fromJSON(steps.goreleaser.outputs.metadata).version }}_checksums.txt
           github-token: ${{ secrets.GH_TOKEN_REPO }}
       - uses: actions/attest-build-provenance@v3
         with:

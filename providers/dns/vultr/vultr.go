@@ -107,7 +107,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("vultr: %w", err)
 	}
 
-	req := govultr.DomainRecordReq{
+	req := govultr.DomainRecordCreateReq{
 		Name:     subDomain,
 		Type:     "TXT",
 		Data:     `"` + info.Value + `"`,

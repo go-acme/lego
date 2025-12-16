@@ -1,10 +1,32 @@
 # Changelog
 
-lego is an independent, free, and open-source project, if you value it, consider [supporting it](https://donate.ldez.dev)! ❤️
+lego is an independent, free, open-source project, if you value it, consider [supporting it](https://donate.ldez.dev)! ❤️
 
 Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
+
+## v4.30.0
+
+- Release date: 2025-12-16
+- Tag: [v4.30.0](https://github.com/go-acme/lego/releases/tag/v4.30.0)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Ionos Cloud
+- **[dnsprovider]** Add DNS provider for Virtualname
+- **[dnsprovider]** Add DNS Provider for Neodigit
+- **[dnsprovider]** Add DNS provider for Syse.no
+- **[dnsprovider]** Add DNS provider for Gravity
+- **[dnsprovider]** Add DNS provider for hosting.nl
+
+### Changed
+
+- **[cli]** feat: remove email requirement
+
+### Fixed
+
+- **[dnsprovider]** autodns: use the right response structure
 
 ## v4.29.0
 

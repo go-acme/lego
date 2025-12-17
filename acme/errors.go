@@ -10,6 +10,7 @@ const (
 	errNS              = "urn:ietf:params:acme:error:"
 	BadNonceErr        = errNS + "badNonce"
 	AlreadyReplacedErr = errNS + "alreadyReplaced"
+	RateLimitedErr     = errNS + "rateLimited"
 )
 
 // ProblemDetails the problem details object.
@@ -63,9 +64,30 @@ type NonceError struct {
 	*ProblemDetails
 }
 
+func (e *NonceError) Unwrap() error {
+	return e.ProblemDetails
+}
+
 // AlreadyReplacedError represents the error which is returned
-// If the Server rejects the request because the identified certificate has already been marked as replaced.
+// if the Server rejects the request because the identified certificate has already been marked as replaced.
 // - https://www.rfc-editor.org/rfc/rfc9773.html#section-5
 type AlreadyReplacedError struct {
 	*ProblemDetails
+}
+
+func (e *AlreadyReplacedError) Unwrap() error {
+	return e.ProblemDetails
+}
+
+// RateLimitedError represents the error which is returned
+// if the server rejects the request because the client has exceeded the rate limit.
+// - https://www.rfc-editor.org/rfc/rfc8555.html#section-6.6
+type RateLimitedError struct {
+	*ProblemDetails
+
+	RetryAfter string
+}
+
+func (e *RateLimitedError) Unwrap() error {
+	return e.ProblemDetails
 }

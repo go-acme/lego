@@ -120,39 +120,46 @@ func (d *Doer) formatUserAgent() string {
 }
 
 func checkError(req *http.Request, resp *http.Response) error {
-	if resp.StatusCode >= http.StatusBadRequest {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("%d :: %s :: %s :: %w", resp.StatusCode, req.Method, req.URL, err)
-		}
-
-		var errorDetails *acme.ProblemDetails
-
-		err = json.Unmarshal(body, &errorDetails)
-		if err != nil {
-			return fmt.Errorf("%d ::%s :: %s :: %w :: %s", resp.StatusCode, req.Method, req.URL, err, string(body))
-		}
-
-		errorDetails.Method = req.Method
-		errorDetails.URL = req.URL.String()
-
-		if errorDetails.HTTPStatus == 0 {
-			errorDetails.HTTPStatus = resp.StatusCode
-		}
-
-		// Check for errors we handle specifically
-		if errorDetails.HTTPStatus == http.StatusBadRequest && errorDetails.Type == acme.BadNonceErr {
-			return &acme.NonceError{ProblemDetails: errorDetails}
-		}
-
-		if errorDetails.HTTPStatus == http.StatusConflict && errorDetails.Type == acme.AlreadyReplacedErr {
-			return &acme.AlreadyReplacedError{ProblemDetails: errorDetails}
-		}
-
-		return errorDetails
+	if resp.StatusCode < http.StatusBadRequest {
+		return nil
 	}
 
-	return nil
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("%d :: %s :: %s :: %w", resp.StatusCode, req.Method, req.URL, err)
+	}
+
+	var errorDetails *acme.ProblemDetails
+
+	err = json.Unmarshal(body, &errorDetails)
+	if err != nil {
+		return fmt.Errorf("%d ::%s :: %s :: %w :: %s", resp.StatusCode, req.Method, req.URL, err, string(body))
+	}
+
+	errorDetails.Method = req.Method
+	errorDetails.URL = req.URL.String()
+
+	if errorDetails.HTTPStatus == 0 {
+		errorDetails.HTTPStatus = resp.StatusCode
+	}
+
+	// Check for errors we handle specifically
+	switch {
+	case errorDetails.HTTPStatus == http.StatusBadRequest && errorDetails.Type == acme.BadNonceErr:
+		return &acme.NonceError{ProblemDetails: errorDetails}
+
+	case errorDetails.HTTPStatus == http.StatusConflict && errorDetails.Type == acme.AlreadyReplacedErr:
+		return &acme.AlreadyReplacedError{ProblemDetails: errorDetails}
+
+	case errorDetails.HTTPStatus == http.StatusTooManyRequests && errorDetails.Type == acme.RateLimitedErr:
+		return &acme.RateLimitedError{
+			ProblemDetails: errorDetails,
+			RetryAfter:     resp.Header.Get("Retry-After"),
+		}
+
+	default:
+		return errorDetails
+	}
 }
 
 type httpsOnly struct {

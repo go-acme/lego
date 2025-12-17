@@ -25,6 +25,8 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+const defaultBaseURL = "https://api.neodigit.net/v1"
+
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
@@ -66,7 +68,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("neodigit: the configuration of the DNS provider is nil")
 	}
 
-	provider, err := tecnocratica.NewDNSProviderConfig(config, "")
+	provider, err := tecnocratica.NewDNSProviderConfig(config, defaultBaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("neodigit: %w", err)
 	}

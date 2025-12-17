@@ -27,16 +27,16 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "minimum-success",
 			envVars: map[string]string{
-				EnvUsername: "blars",
-				EnvPassword: "tacoman",
+				EnvUsername: "user",
+				EnvPassword: "secret",
 			},
 		},
 		{
 			desc: "set-everything",
 			envVars: map[string]string{
-				EnvURL:      "https://storm.com",
-				EnvUsername: "blars",
-				EnvPassword: "tacoman",
+				EnvURL:      "https://storm.example",
+				EnvUsername: "user",
+				EnvPassword: "secret",
 				EnvZone:     "blars.com",
 			},
 		},
@@ -48,16 +48,16 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				EnvPassword: "tacoman",
-				EnvZone:     "blars.com",
+				EnvPassword: "secret",
+				EnvZone:     "blars.example",
 			},
 			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_USERNAME",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				EnvUsername: "blars",
-				EnvZone:     "blars.com",
+				EnvUsername: "user",
+				EnvZone:     "blars.example",
 			},
 			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_PASSWORD",
 		},
@@ -148,13 +148,13 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockProvider(t)
 
-	err := provider.Present("tacoman.com", "", "")
+	err := provider.Present("tacoman.example", "", "")
 	require.NoError(t, err)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockProvider(t, network.DNSRecord{
-		Name:   "_acme-challenge.tacoman.com",
+		Name:   "_acme-challenge.tacoman.example",
 		RData:  "123d==",
 		Type:   "TXT",
 		TTL:    300,
@@ -164,7 +164,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	provider.recordIDs["123d=="] = 1234567
 
-	err := provider.CleanUp("tacoman.com.", "123d==", "")
+	err := provider.CleanUp("tacoman.example.", "123d==", "")
 	require.NoError(t, err)
 }
 
@@ -181,7 +181,7 @@ func TestDNSProvider(t *testing.T) {
 	}{
 		{
 			desc:    "expected successful",
-			domain:  "tacoman.com",
+			domain:  "tacoman.example",
 			token:   "123",
 			keyAuth: "456",
 			present: true,
@@ -189,7 +189,7 @@ func TestDNSProvider(t *testing.T) {
 		},
 		{
 			desc:    "other successful",
-			domain:  "banana.com",
+			domain:  "banana.example",
 			token:   "123",
 			keyAuth: "456",
 			present: true,
@@ -197,16 +197,16 @@ func TestDNSProvider(t *testing.T) {
 		},
 		{
 			desc:          "zone not on account",
-			domain:        "huckleberry.com",
+			domain:        "huckleberry.example",
 			token:         "123",
 			keyAuth:       "456",
 			present:       true,
-			expPresentErr: "no valid zone in account for certificate '_acme-challenge.huckleberry.com'",
+			expPresentErr: "no valid zone in account for certificate '_acme-challenge.huckleberry.example'",
 			cleanup:       false,
 		},
 		{
 			desc:    "ssl for domain",
-			domain:  "sundae.cherry.com",
+			domain:  "sundae.cherry.example",
 			token:   "5847953",
 			keyAuth: "34872934",
 			present: true,
@@ -214,7 +214,7 @@ func TestDNSProvider(t *testing.T) {
 		},
 		{
 			desc:    "complicated domain",
-			domain:  "always.money.stand.banana.com",
+			domain:  "always.money.stand.banana.example",
 			token:   "5847953",
 			keyAuth: "there is always money in the banana stand",
 			present: true,

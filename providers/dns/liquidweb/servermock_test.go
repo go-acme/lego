@@ -26,14 +26,14 @@ func mockProvider(t *testing.T, initRecs ...network.DNSRecord) *DNSProvider {
 	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
-			config.Username = "blars"
-			config.Password = "tacoman"
+			config.Username = "user"
+			config.Password = "secret"
 			config.BaseURL = server.URL
 
 			return NewDNSProviderConfig(config)
 		},
 		servermock.CheckHeader().
-			WithBasicAuth("blars", "tacoman"),
+			WithBasicAuth("user", "secret"),
 	).
 		Route("/v1/Network/DNS/Record/delete", mockAPIDelete(recs)).
 		Route("/v1/Network/DNS/Record/create", mockAPICreate(recs)).
@@ -172,38 +172,38 @@ func makeMockZones() (map[int]network.DNSZoneList, map[string]int) {
 			Items: []network.DNSZone{
 				{
 					ID:                1,
-					Name:              "blars.com",
+					Name:              "blars.example",
 					Active:            1,
 					DelegationStatus:  "CORRECT",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 				{
 					ID:                2,
-					Name:              "tacoman.com",
+					Name:              "tacoman.example",
 					Active:            1,
 					DelegationStatus:  "CORRECT",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 				{
 					ID:                3,
-					Name:              "storm.com",
+					Name:              "storm.example",
 					Active:            1,
 					DelegationStatus:  "CORRECT",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 				{
 					ID:                4,
-					Name:              "not-apple.com",
+					Name:              "not-apple.example",
 					Active:            1,
 					DelegationStatus:  "BAD_NAMESERVERS",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 				{
 					ID:                5,
 					Name:              "example.com",
 					Active:            1,
 					DelegationStatus:  "BAD_NAMESERVERS",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 			},
 		},
@@ -211,38 +211,38 @@ func makeMockZones() (map[int]network.DNSZoneList, map[string]int) {
 			Items: []network.DNSZone{
 				{
 					ID:                6,
-					Name:              "banana.com",
+					Name:              "banana.example",
 					Active:            1,
 					DelegationStatus:  "NXDOMAIN",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 				{
 					ID:                7,
-					Name:              "cherry.com",
+					Name:              "cherry.example",
 					Active:            1,
 					DelegationStatus:  "SERVFAIL",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 				{
 					ID:                8,
-					Name:              "dates.com",
+					Name:              "dates.example",
 					Active:            1,
 					DelegationStatus:  "SERVFAIL",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 				{
 					ID:                9,
-					Name:              "eggplant.com",
+					Name:              "eggplant.example",
 					Active:            1,
 					DelegationStatus:  "SERVFAIL",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 				{
 					ID:                10,
-					Name:              "fig.com",
+					Name:              "fig.example",
 					Active:            1,
 					DelegationStatus:  "UNKNOWN",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 			},
 		},
@@ -250,31 +250,31 @@ func makeMockZones() (map[int]network.DNSZoneList, map[string]int) {
 			Items: []network.DNSZone{
 				{
 					ID:                11,
-					Name:              "grapes.com",
+					Name:              "grapes.example",
 					Active:            1,
 					DelegationStatus:  "UNKNOWN",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 				{
 					ID:                12,
-					Name:              "money.banana.com",
+					Name:              "money.banana.example",
 					Active:            1,
 					DelegationStatus:  "UNKNOWN",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 				{
 					ID:                13,
-					Name:              "money.stand.banana.com",
+					Name:              "money.stand.banana.example",
 					Active:            1,
 					DelegationStatus:  "UNKNOWN",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 				{
 					ID:                14,
-					Name:              "stand.banana.com",
+					Name:              "stand.banana.example",
 					Active:            1,
 					DelegationStatus:  "UNKNOWN",
-					PrimaryNameserver: "ns.liquidweb.com",
+					PrimaryNameserver: "ns.example.org",
 				},
 			},
 		},

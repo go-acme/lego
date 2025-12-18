@@ -6,78 +6,102 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
+	querystring "github.com/google/go-querystring/query"
 )
 
-const ddnsScriptPath = "/ddns/update.php"
+const (
+	addAction    = "add"
+	deleteAction = "delete"
+)
 
 type Client struct {
-	endpoint   *url.URL
-	token      string
-	httpClient *http.Client
+	token string
+
+	BaseURL    string
+	HTTPClient *http.Client
 }
 
-func NewClient(endpoint string, token string, httpClient *http.Client) (*Client, error) {
-	u, err := url.Parse(endpoint)
+func NewClient(serverURL string, token string) (*Client, error) {
+	_, err := url.Parse(serverURL)
+	if err != nil {
+		return nil, fmt.Errorf("server URL: %w", err)
+	}
+
+	return &Client{
+		BaseURL:    serverURL,
+		token:      token,
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+	}, nil
+}
+
+func (c *Client) AddTXTRecord(ctx context.Context, zone, fqdn, content string) error {
+	return c.updateRecord(ctx, UpdateRecord{Action: addAction, Zone: zone, Type: "TXT", Record: fqdn, Data: content})
+}
+
+func (c *Client) DeleteTXTRecord(ctx context.Context, zone, fqdn, recordContent string) error {
+	return c.updateRecord(ctx, UpdateRecord{Action: deleteAction, Zone: zone, Type: "TXT", Record: fqdn, Data: recordContent})
+}
+
+func (c *Client) updateRecord(ctx context.Context, action UpdateRecord) error {
+	req, err := c.newRequest(ctx, action)
+	if err != nil {
+		return err
+	}
+
+	return c.do(req)
+}
+
+func (c *Client) do(req *http.Request) error {
+	useragent.SetHeader(req.Header)
+
+	req.SetBasicAuth("anonymous", c.token)
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return errutils.NewHTTPDoError(req, err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode/100 != 2 {
+		raw, _ := io.ReadAll(resp.Body)
+
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
+	}
+
+	return nil
+}
+
+func (c *Client) newRequest(ctx context.Context, action UpdateRecord) (*http.Request, error) {
+	endpoint, err := url.Parse(c.BaseURL)
 	if err != nil {
 		return nil, err
 	}
 
-	u.Path = path.Join(u.Path, ddnsScriptPath)
+	endpoint = endpoint.JoinPath("ddns", "update.php")
 
-	if httpClient == nil {
-		httpClient = &http.Client{Timeout: 10 * time.Second}
+	values, err := querystring.Values(action)
+	if err != nil {
+		return nil, err
 	}
 
-	return &Client{
-		endpoint:   u,
-		token:      token,
-		httpClient: httpClient,
-	}, nil
-}
-
-func (c *Client) AddRecord(ctx context.Context, zone, recordFQDN, recordContent string) error {
-	return c.do(ctx, "add", zone, recordFQDN, recordContent)
-}
-
-func (c *Client) DeleteRecord(ctx context.Context, zone, recordFQDN, recordContent string) error {
-	return c.do(ctx, "delete", zone, recordFQDN, recordContent)
-}
-
-func (c *Client) do(ctx context.Context, action, zone, recordFQDN, recordContent string) error {
-	query := url.Values{}
-	query.Set("action", action)
-	query.Set("zone", zone)
-	query.Set("type", "TXT")
-	query.Set("record", recordFQDN)
-	query.Set("data", recordContent)
-
-	reqURL := *c.endpoint
-	reqURL.RawQuery = query.Encode()
+	endpoint.RawQuery = values.Encode()
 
 	method := http.MethodPost
-	if action == "delete" {
+	if action.Action == deleteAction {
 		method = http.MethodDelete
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, reqURL.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	req.SetBasicAuth("anonymous", c.token)
+	req.Header.Set("Accept", "application/json")
 
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("API error: %d %s", resp.StatusCode, string(bodyBytes))
-	}
-
-	return nil
+	return req, nil
 }

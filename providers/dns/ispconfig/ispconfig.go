@@ -10,6 +10,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v4/providers/dns/ispconfig/internal"
 )
 
@@ -17,8 +18,8 @@ import (
 const (
 	envNamespace = "ISPCONFIG_"
 
-	EnvEndpoint = envNamespace + "ENDPOINT"
-	EnvToken    = envNamespace + "TOKEN"
+	EnvServerURL = envNamespace + "SERVER_URL"
+	EnvToken     = envNamespace + "TOKEN"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -30,8 +31,8 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Endpoint string
-	Token    string
+	ServerURL string
+	Token     string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -58,16 +59,14 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for ISPConfig.
-// Credentials must be passed in the environment variables:
-// ISPCONFIG_ENDPOINT, ISPCONFIG_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvEndpoint, EnvToken)
+	values, err := env.Get(EnvServerURL, EnvToken)
 	if err != nil {
 		return nil, fmt.Errorf("ispconfig: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Endpoint = values[EnvEndpoint]
+	config.ServerURL = values[EnvServerURL]
 	config.Token = values[EnvToken]
 
 	return NewDNSProviderConfig(config)
@@ -79,18 +78,24 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("ispconfig: the configuration of the DNS provider is nil")
 	}
 
-	if config.Endpoint == "" {
-		return nil, errors.New("ispconfig: missing endpoint")
+	if config.ServerURL == "" {
+		return nil, errors.New("ispconfig: missing server URL")
 	}
 
 	if config.Token == "" {
 		return nil, errors.New("ispconfig: missing token")
 	}
 
-	client, err := internal.NewClient(config.Endpoint, config.Token, config.HTTPClient)
+	client, err := internal.NewClient(config.ServerURL, config.Token)
 	if err != nil {
 		return nil, fmt.Errorf("ispconfig: %w", err)
 	}
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{
 		config: config,
@@ -112,11 +117,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("ispconfig: could not find zone for domain %q: %w", domain, err)
 	}
-	zone = dns01.UnFqdn(zone)
 
-	err = d.client.AddRecord(context.Background(), zone, info.EffectiveFQDN, info.Value)
+	err = d.client.AddTXTRecord(context.Background(), dns01.UnFqdn(zone), info.EffectiveFQDN, info.Value)
 	if err != nil {
-		return fmt.Errorf("ispconfig: failed to add record: %w", err)
+		return fmt.Errorf("ispconfig: add record: %w", err)
 	}
 
 	return nil
@@ -130,11 +134,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("ispconfig: could not find zone for domain %q: %w", domain, err)
 	}
-	zone = dns01.UnFqdn(zone)
 
-	err = d.client.DeleteRecord(context.Background(), zone, info.EffectiveFQDN, info.Value)
+	err = d.client.DeleteTXTRecord(context.Background(), dns01.UnFqdn(zone), info.EffectiveFQDN, info.Value)
 	if err != nil {
-		return fmt.Errorf("ispconfig: failed to delete record: %w", err)
+		return fmt.Errorf("ispconfig: delete record: %w", err)
 	}
 
 	return nil

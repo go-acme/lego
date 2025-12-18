@@ -1,4 +1,4 @@
-package ispconfig
+package ispconfigddns
 
 import (
 	"net/http/httptest"
@@ -33,7 +33,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvServerURL: "",
 				EnvToken:     "secret",
 			},
-			expected: "ispconfig: some credentials information are missing: ISPCONFIG_SERVER_URL",
+			expected: "ispconfig (DDNS module): some credentials information are missing: ISPCONFIG_DDNS_MODULE_SERVER_URL",
 		},
 		{
 			desc: "missing token",
@@ -41,18 +41,19 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvServerURL: "https://example.com",
 				EnvToken:     "",
 			},
-			expected: "ispconfig: some credentials information are missing: ISPCONFIG_TOKEN",
+			expected: "ispconfig (DDNS module): some credentials information are missing: ISPCONFIG_DDNS_MODULE_TOKEN",
 		},
 		{
 			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "ispconfig: some credentials information are missing: ISPCONFIG_SERVER_URL,ISPCONFIG_TOKEN",
+			expected: "ispconfig (DDNS module): some credentials information are missing: ISPCONFIG_DDNS_MODULE_SERVER_URL,ISPCONFIG_DDNS_MODULE_TOKEN",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
+
 			envTest.ClearEnv()
 
 			envTest.Apply(test.envVars)
@@ -86,13 +87,13 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:      "missing server URL",
 			serverURL: "",
 			token:     "secret",
-			expected:  "ispconfig: missing server URL",
+			expected:  "ispconfig (DDNS module): missing server URL",
 		},
 		{
 			desc:      "missing token",
 			serverURL: "https://example.com",
 			token:     "",
-			expected:  "ispconfig: missing token",
+			expected:  "ispconfig (DDNS module): missing token",
 		},
 	}
 

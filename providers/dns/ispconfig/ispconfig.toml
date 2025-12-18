@@ -1,0 +1,26 @@
+Name = "ISPConfig"
+Description = ''''''
+URL = "https://www.ispconfig.org/"
+Code = "ispconfig"
+Since = "v4.31.0"
+
+Example = '''
+ISPCONFIG_SERVER_URL="https://example.com:8080/remote/json.php" \
+ISPCONFIG_USERNAME="xxx" \
+ISPCONFIG_PASSWORD="yyy" \
+lego --email you@example.com --dns ispconfig -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    ISPCONFIG_SERVER_URL = "Server URL"
+    ISPCONFIG_USERNAME = "Username"
+    ISPCONFIG_PASSWORD = "Password"
+  [Configuration.Additional]
+    ISPCONFIG_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    ISPCONFIG_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    ISPCONFIG_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    ISPCONFIG_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/remoting_client/API-docs/index.html"

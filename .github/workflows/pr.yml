@@ -44,10 +44,10 @@ jobs:
           install-only: true
 
       - name: Install Pebble
-        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble@v2.8.0
+        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble@v2.9.0
 
       - name: Install challtestsrv
-        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble-challtestsrv@v2.8.0
+        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble-challtestsrv@v2.9.0
 
       - name: Set up a Memcached server
         uses: niden/actions-memcached@v7

@@ -19,9 +19,9 @@ const (
 )
 
 type Client struct {
-	token string
+	token     string
+	serverURL string
 
-	BaseURL    string
 	HTTPClient *http.Client
 }
 
@@ -32,7 +32,7 @@ func NewClient(serverURL, token string) (*Client, error) {
 	}
 
 	return &Client{
-		BaseURL:    serverURL,
+		serverURL:  serverURL,
 		token:      token,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}, nil
@@ -77,7 +77,7 @@ func (c *Client) do(req *http.Request) error {
 }
 
 func (c *Client) newRequest(ctx context.Context, action UpdateRecord) (*http.Request, error) {
-	endpoint, err := url.Parse(c.BaseURL)
+	endpoint, err := url.Parse(c.serverURL)
 	if err != nil {
 		return nil, err
 	}

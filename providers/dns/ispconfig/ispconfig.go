@@ -77,6 +77,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.ServerURL = values[EnvServerURL]
 	config.Username = values[EnvUsername]
 	config.Password = values[EnvPassword]
+	config.InsecureSkipVerify = env.GetOrDefaultBool(EnvInsecureSkipVerify, false)
 
 	return NewDNSProviderConfig(config)
 }

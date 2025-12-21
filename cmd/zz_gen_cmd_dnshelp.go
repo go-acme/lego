@@ -2116,15 +2116,15 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "ISPCONFIG_DDNS_MODULE_SERVER_URL":	API server URL (ex: https://panel.example.com:8080)`)
-		ew.writeln(`	- "ISPCONFIG_DDNS_MODULE_TOKEN":	DDNS API token`)
+		ew.writeln(`	- "ISPCONFIG_DDNS_SERVER_URL":	API server URL (ex: https://panel.example.com:8080)`)
+		ew.writeln(`	- "ISPCONFIG_DDNS_TOKEN":	DDNS API token`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "ISPCONFIG_DDNS_MODULE_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
-		ew.writeln(`	- "ISPCONFIG_DDNS_MODULE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
-		ew.writeln(`	- "ISPCONFIG_DDNS_MODULE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
-		ew.writeln(`	- "ISPCONFIG_DDNS_MODULE_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 3600)`)
+		ew.writeln(`	- "ISPCONFIG_DDNS_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "ISPCONFIG_DDNS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "ISPCONFIG_DDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "ISPCONFIG_DDNS_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 3600)`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/ispconfigddns`)

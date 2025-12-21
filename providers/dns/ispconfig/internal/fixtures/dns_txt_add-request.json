@@ -11,7 +11,7 @@
     "ttl": "3600",
     "active": "y",
     "stamp": "2025-12-25 01:01:01",
-    "serial": "1766624461"
+    "update_serial": true
   },
   "update_serial": true
 }

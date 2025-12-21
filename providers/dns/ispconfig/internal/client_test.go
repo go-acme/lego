@@ -2,7 +2,6 @@ package internal
 
 import (
 	"net/http/httptest"
-	"strconv"
 	"testing"
 	"time"
 
@@ -141,16 +140,16 @@ func TestClient_AddTXT(t *testing.T) {
 	now := time.Date(2025, 12, 25, 1, 1, 1, 0, time.UTC)
 
 	params := RecordParams{
-		ServerID: "serverA",
-		Zone:     "example.com.",
-		Name:     "foo.example.com.",
-		Type:     "txt",
-		Data:     "txtTXTtxt",
-		Aux:      "0",
-		TTL:      "3600",
-		Active:   "y",
-		Stamp:    now.Format("2006-01-02 15:04:05"),
-		Serial:   strconv.FormatInt(now.Unix(), 10),
+		ServerID:     "serverA",
+		Zone:         "example.com.",
+		Name:         "foo.example.com.",
+		Type:         "txt",
+		Data:         "txtTXTtxt",
+		Aux:          "0",
+		TTL:          "3600",
+		Active:       "y",
+		Stamp:        now.Format("2006-01-02 15:04:05"),
+		UpdateSerial: true,
 	}
 
 	recordID, err := client.AddTXT(t.Context(), "sessionA", "clientA", params)

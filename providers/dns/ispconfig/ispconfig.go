@@ -136,8 +136,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("ispconfig: get client id: %w", err)
 	}
 
-	now := time.Now()
-
 	params := internal.RecordParams{
 		ServerID: "serverA",
 		Zone:     zone.ID,
@@ -147,8 +145,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Aux:      "0",
 		TTL:      strconv.Itoa(d.config.TTL),
 		Active:   "y",
-		Stamp:    now.Format("2006-01-02 15:04:05"),
-		Serial:   strconv.FormatInt(now.Unix(), 10),
+		Stamp:    time.Now().Format("2006-01-02 15:04:05"),
 	}
 
 	recordID, err := d.client.AddTXT(ctx, sessionID, strconv.Itoa(clientID), params)

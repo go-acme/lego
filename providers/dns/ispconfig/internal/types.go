@@ -84,9 +84,8 @@ type RecordParams struct {
 	// 'n','y'
 	Active string `json:"active"`
 	// `2025-12-17 23:35:58`
-	Stamp string `json:"stamp"`
-	// `1766010947`
-	Serial string `json:"serial"`
+	Stamp        string `json:"stamp"`
+	UpdateSerial bool   `json:"update_serial"`
 }
 
 type DeleteTXTRequest struct {

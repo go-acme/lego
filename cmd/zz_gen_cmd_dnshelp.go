@@ -2099,6 +2099,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "ISPCONFIG_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "ISPCONFIG_INSECURE_SKIP_VERIFY":	Whether to verify the API certificate`)
 		ew.writeln(`	- "ISPCONFIG_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "ISPCONFIG_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
 		ew.writeln(`	- "ISPCONFIG_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)

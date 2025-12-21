@@ -156,7 +156,7 @@ func TestClient_AddTXT(t *testing.T) {
 	recordID, err := client.AddTXT(t.Context(), "sessionA", "clientA", params)
 	require.NoError(t, err)
 
-	assert.Equal(t, 123, recordID)
+	assert.Equal(t, "123", recordID)
 }
 
 func TestClient_DeleteTXT(t *testing.T) {

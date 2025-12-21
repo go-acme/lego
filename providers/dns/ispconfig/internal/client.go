@@ -183,7 +183,7 @@ func (c *Client) GetTXT(ctx context.Context, sessionID, name string) (*Record, e
 
 // AddTXT adds a TXT record.
 // It returns the ID of the newly created record.
-func (c *Client) AddTXT(ctx context.Context, sessionID, clientID string, params RecordParams) (int, error) {
+func (c *Client) AddTXT(ctx context.Context, sessionID, clientID string, params RecordParams) (string, error) {
 	payload := AddTXTRequest{
 		SessionID:    sessionID,
 		ClientID:     clientID,
@@ -193,24 +193,24 @@ func (c *Client) AddTXT(ctx context.Context, sessionID, clientID string, params 
 
 	endpoint, err := url.Parse(c.serverURL)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
 	endpoint.RawQuery = "dns_txt_add"
 
 	req, err := newJSONRequest(ctx, endpoint, payload)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
 	var response APIResponse
 
 	err = c.do(req, &response)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
-	return extractResponse[int](response)
+	return extractResponse[string](response)
 }
 
 // DeleteTXT deletes a TXT record.

@@ -59,7 +59,7 @@ type DNSProvider struct {
 	config *Config
 	client *internal.Client
 
-	recordIDs   map[string]int
+	recordIDs   map[string]string
 	recordIDsMu sync.Mutex
 }
 
@@ -104,8 +104,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{
-		config: config,
-		client: client,
+		config:    config,
+		client:    client,
+		recordIDs: make(map[string]string),
 	}, nil
 }
 
@@ -182,7 +183,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("ispconfig: login: %w", err)
 	}
 
-	_, err = d.client.DeleteTXT(ctx, sessionID, strconv.Itoa(recordID))
+	_, err = d.client.DeleteTXT(ctx, sessionID, recordID)
 	if err != nil {
 		return fmt.Errorf("ispconfig: delete txt record: %w", err)
 	}

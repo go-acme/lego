@@ -1,5 +1,5 @@
 ---
-title: "ISPConfig"
+title: "ISPConfig 3"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: ispconfig
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [ISPConfig](https://www.ispconfig.org/).
+Configuration for [ISPConfig 3](https://www.ispconfig.org/).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Configuration for [ISPConfig](https://www.ispconfig.org/).
 - Since: v4.31.0
 
 
-Here is an example bash command using the ISPConfig provider:
+Here is an example bash command using the ISPConfig 3 provider:
 
 ```bash
 ISPCONFIG_SERVER_URL="https://example.com:8080/remote/json.php" \

@@ -2087,7 +2087,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "ispconfig":
 		// generated from: providers/dns/ispconfig/ispconfig.toml
-		ew.writeln(`Configuration for ISPConfig.`)
+		ew.writeln(`Configuration for ISPConfig 3.`)
 		ew.writeln(`Code:	'ispconfig'`)
 		ew.writeln(`Since:	'v4.31.0'`)
 		ew.writeln()

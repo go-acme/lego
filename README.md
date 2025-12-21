@@ -169,7 +169,7 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
   <td><a href="https://go-acme.github.io/lego/dns/ionoscloud/">Ionos Cloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/ipv64/">IPv64</a></td>
 </tr><tr>
-  <td><a href="https://go-acme.github.io/lego/dns/ispconfig/">ISPConfig</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/ispconfig/">ISPConfig 3</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/ispconfigddns/">ISPConfig 3 - Dynamic DNS (DDNS) Module</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/iwantmyname/">iwantmyname (Deprecated)</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/joker/">Joker</a></td>

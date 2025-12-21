@@ -17,7 +17,7 @@ import (
 
 // Environment variables names.
 const (
-	envNamespace = "ISPCONFIG_DDNS_MODULE_"
+	envNamespace = "ISPCONFIG_DDNS_"
 
 	EnvServerURL = envNamespace + "SERVER_URL"
 	EnvToken     = envNamespace + "TOKEN"

@@ -125,7 +125,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("ispconfig: login: %w", err)
 	}
 
-	zoneID, err := d.client.GetZoneID(ctx, sessionID, authZone)
+	zoneID, err := d.client.GetZoneID(ctx, sessionID, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("ispconfig: get zone id: %w", err)
 	}

@@ -2,9 +2,9 @@
 
 ```json
 {
-  "code":  <TODO>,
-  "message":  <TODO>,
-  "response": <TODO>
+  "code":  "<TODO>",
+  "message":  "<TODO>",
+  "response": false
 }
 ```
 
@@ -32,14 +32,6 @@
 {
   "code": "ok",
   "message": "foo",
-  "response": <TODO>
-}
-```
-
-```json
-{
-  "code": "ok",
-  "message": "foo",
   "response": "abc"
 }
 ```
@@ -51,6 +43,8 @@
 * URL: `<server>?client_get_id`
 * HTTP Method: `POST`
 
+- function `client_get_id`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/interface/lib/classes/remote.d/client.inc.php#L97
+- TABLE `sys_user`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/install/sql/ispconfig3.sql?ref_type=heads#L1852
 - https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/remoting_client/API-docs/client_get_id.html
 - https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/remoting_client/examples/client_get_id.php
 
@@ -69,9 +63,28 @@
 {
   "code": "ok",
   "message": "foo",
-  "response": <TODO>
+  "response": 123
 }
 ```
+
+## DNS Zone Get ID Endpoint
+
+* URL: `<server>?dns_zone_get_id`
+* HTTP Method: `POST`
+
+- function `dns_zone_get_id`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/interface/lib/classes/remote.d/dns.inc.php#L142
+- TABLE `dns_soa`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/install/sql/ispconfig3.sql?ref_type=heads#L615
+
+### Request Body (JSON)
+
+```json
+{
+  "session_id": "<session_id>",
+  "origin": "<zone_name>"
+}
+```
+
+### Response Body (JSON)
 
 ```json
 {
@@ -86,9 +99,12 @@
 * URL: `<server>?dns_zone_get`
 * HTTP Method: `POST`
 
+- function `dns_zone_get`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/interface/lib/classes/remote.d/dns.inc.php#L87
+- function `getDataRecord`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/interface/lib/classes/remoting_lib.inc.php#L248
+- TABLE `dns_soa`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/install/sql/ispconfig3.sql?ref_type=heads#L615
+- Depending on the request, the response may be an array or an object (`primary_id` can be a string, an array or an object).
 - https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/remoting_client/API-docs/dns_zone_get.html
 - https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/remoting_client/examples/dns_zone_get.php
-- TABLE `dns_soa`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/install/sql/ispconfig3.sql?ref_type=heads#L615
 
 ### Request Body (JSON)
 
@@ -100,14 +116,6 @@
 ```
 
 ### Response Body (JSON)
-
-```json
-{
-  "code": "ok",
-  "message": "foo",
-  "response": <TODO>
-}
-```
 
 ```json
 {
@@ -126,6 +134,10 @@
 * URL: `<server>?dns_txt_get`
 * HTTP Method: `POST`
 
+- function `dns_txt_get`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/interface/lib/classes/remote.d/dns.inc.php#L640
+- function `dns_rr_get`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/interface/lib/classes/remote.d/dns.inc.php#L195
+- form: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/interface/web/dns/form/dns_txt.tform.php
+- TABLE `dns_rr`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/install/sql/ispconfig3.sql?ref_type=heads#L490
 - https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/remoting_client/API-docs/dns_txt_get.html
 - https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/remoting_client/examples/dns_txt_get.php
 
@@ -147,14 +159,6 @@
 {
   "code": "ok",
   "message": "foo",
-  "response": <TODO>
-}
-```
-
-```json
-{
-  "code": "ok",
-  "message": "foo",
   "response": {
     "id": 123
   }
@@ -166,6 +170,9 @@
 * URL: `<server>?dns_txt_add`
 * HTTP Method: `POST`
 
+- function `dns_txt_add`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/interface/lib/classes/remote.d/dns.inc.php#L645
+- function `dns_rr_add` https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/interface/lib/classes/remote.d/dns.inc.php#L212
+- form: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/interface/web/dns/form/dns_txt.tform.php
 - https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/remoting_client/API-docs/dns_txt_add.html
 - https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/remoting_client/examples/dns_txt_add.php
 
@@ -200,14 +207,6 @@
 {
   "code": "ok",
   "message": "foo",
-  "response": <TODO>
-}
-```
-
-```json
-{
-  "code": "ok",
-  "message": "foo",
   "response": 123
 }
 ```
@@ -217,6 +216,9 @@
 * URL: `<server>?dns_txt_delete`
 * HTTP Method: `POST`
 
+- function `dns_txt_delete`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/interface/lib/classes/remote.d/dns.inc.php#L655
+- function `dns_rr_delete`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/interface/lib/classes/remote.d/dns.inc.php#L247
+- form: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/interface/web/dns/form/dns_txt.tform.php
 - https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/remoting_client/API-docs/dns_txt_delete.html
 - https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/remoting_client/examples/dns_txt_delete.php
 
@@ -236,14 +238,6 @@
 {
   "code": "ok",
   "message": "foo",
-  "response": <TODO>
-}
-```
-
-```json
-{
-  "code": "ok",
-  "message": "foo",
   "response": 1
 }
 ```
@@ -253,8 +247,3 @@
 https://www.ispconfig.org/
 https://git.ispconfig.org/ispconfig/ispconfig3
 https://forum.howtoforge.com/#ispconfig-3.23
-
-
-https://github.com/tbrehm
-https://github.com/ispconfig
-

@@ -90,7 +90,6 @@ func (c *Client) GetClientID(ctx context.Context, sessionID, sysUserID string) (
 }
 
 // GetZoneID returns the zone ID for the given name.
-// `name` must be a fully qualified domain name, e.g. "example.com.".
 func (c *Client) GetZoneID(ctx context.Context, sessionID, name string) (int, error) {
 	payload := map[string]any{
 		"session_id": sessionID,
@@ -184,6 +183,8 @@ func (c *Client) GetTXT(ctx context.Context, sessionID, name string) (*Record, e
 	return extractResponse[*Record](response)
 }
 
+// AddTXT adds a TXT record.
+// It returns the ID of the newly created record.
 func (c *Client) AddTXT(ctx context.Context, sessionID, clientID string, params RecordParams) (int, error) {
 	payload := AddTXTRequest{
 		SessionID:    sessionID,
@@ -214,6 +215,8 @@ func (c *Client) AddTXT(ctx context.Context, sessionID, clientID string, params 
 	return extractResponse[int](response)
 }
 
+// DeleteTXT deletes a TXT record.
+// It returns the number of deleted records.
 func (c *Client) DeleteTXT(ctx context.Context, sessionID, recordID string) (int, error) {
 	payload := DeleteTXTRequest{
 		SessionID:    sessionID,

@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -8,19 +9,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func setupClient(server *httptest.Server) (*Client, error) {
+	client, err := NewClient(server.URL, "secret")
+	if err != nil {
+		return nil, err
+	}
+
+	client.HTTPClient = server.Client()
+
+	return client, nil
+}
+
 func TestClient_AddTXTRecord(t *testing.T) {
-	client := servermock.NewBuilder[*Client](
-		func(server *httptest.Server) (*Client, error) {
-			client, err := NewClient(server.URL, "secret")
-			if err != nil {
-				return nil, err
-			}
-
-			client.HTTPClient = server.Client()
-
-			return client, nil
-		}).
-		Route("POST /ddns/update.php", servermock.Noop(),
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /ddns/update.php",
+			servermock.Noop(),
 			servermock.CheckHeader().
 				WithBasicAuth("anonymous", "secret"),
 			servermock.CheckQueryParameter().Strict().
@@ -36,19 +39,22 @@ func TestClient_AddTXTRecord(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestClient_AddTXTRecord_error(t *testing.T) {
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /ddns/update.php",
+			servermock.RawStringResponse("Missing or invalid token.").
+				WithStatusCode(http.StatusUnauthorized),
+		).
+		Build(t)
+
+	err := client.AddTXTRecord(t.Context(), "example.com", "_acme-challenge.example.com.", "token")
+	require.EqualError(t, err, "unexpected status code: [status code: 401] body: Missing or invalid token.")
+}
+
 func TestClient_DeleteTXTRecord(t *testing.T) {
-	client := servermock.NewBuilder[*Client](
-		func(server *httptest.Server) (*Client, error) {
-			client, err := NewClient(server.URL, "secret")
-			if err != nil {
-				return nil, err
-			}
-
-			client.HTTPClient = server.Client()
-
-			return client, nil
-		}).
-		Route("DELETE /ddns/update.php", servermock.Noop(),
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("DELETE /ddns/update.php",
+			servermock.Noop(),
 			servermock.CheckHeader().
 				WithBasicAuth("anonymous", "secret"),
 			servermock.CheckQueryParameter().Strict().
@@ -62,4 +68,16 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 
 	err := client.DeleteTXTRecord(t.Context(), "example.com", "_acme-challenge.example.com.", "token")
 	require.NoError(t, err)
+}
+
+func TestClient_DeleteTXTRecord_error(t *testing.T) {
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("DELETE /ddns/update.php",
+			servermock.RawStringResponse("Missing or invalid token.").
+				WithStatusCode(http.StatusUnauthorized),
+		).
+		Build(t)
+
+	err := client.DeleteTXTRecord(t.Context(), "example.com", "_acme-challenge.example.com.", "token")
+	require.EqualError(t, err, "unexpected status code: [status code: 401] body: Missing or invalid token.")
 }

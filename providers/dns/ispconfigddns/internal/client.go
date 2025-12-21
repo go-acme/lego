@@ -67,6 +67,10 @@ func (c *Client) do(req *http.Request) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
+	// The endpoint uses the `DefaultDdnsResponseWriter`,
+	// and this writer uses HTTP status code to determine if the request was successful or not.
+	// - https://github.com/mhofer117/ispconfig-ddns-module/blob/8b011a5bb138881d9f13360a5c4fec10c0084613/lib/updater/DdnsUpdater.php#L53-L57
+	// - https://github.com/mhofer117/ispconfig-ddns-module/blob/master/lib/updater/response/DefaultDdnsResponseWriter.php
 	if resp.StatusCode/100 != 2 {
 		raw, _ := io.ReadAll(resp.Body)
 

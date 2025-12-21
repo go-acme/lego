@@ -145,7 +145,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Aux:      "0",
 		TTL:      strconv.Itoa(d.config.TTL),
 		Active:   "y",
-		Stamp:    time.Now().Format("2006-01-02 15:04:05"),
+		Stamp:    time.Now().UTC().Format("2006-01-02 15:04:05"),
 	}
 
 	recordID, err := d.client.AddTXT(ctx, sessionID, strconv.Itoa(clientID), params)

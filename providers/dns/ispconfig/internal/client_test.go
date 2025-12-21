@@ -68,6 +68,22 @@ func TestClient_GetClientID(t *testing.T) {
 	assert.Equal(t, 123, id)
 }
 
+func TestClient_GetZoneID(t *testing.T) {
+	client := mockBuilder().
+		Route("POST /",
+			servermock.ResponseFromFixture("dns_zone_get_id.json"),
+			servermock.CheckRequestJSONBodyFromFixture("dns_zone_get_id-request.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("dns_zone_get_id", ""),
+		).
+		Build(t)
+
+	zoneID, err := client.GetZoneID(t.Context(), "sessionA", "example.com.")
+	require.NoError(t, err)
+
+	assert.Equal(t, 123, zoneID)
+}
+
 func TestClient_GetZone(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
@@ -82,9 +98,9 @@ func TestClient_GetZone(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := &Zone{
-		ID:        456,
-		ServerID:  123,
-		SysUserID: 789,
+		ID:        "456",
+		ServerID:  "123",
+		SysUserID: "789",
 	}
 
 	assert.Equal(t, expected, zone)

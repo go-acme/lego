@@ -1,6 +1,4 @@
 {
-  "session_id": "sessionA",
-  "primary_id": {
-    "origin": "example.com."
-  }
+  "primary_id": "example.com.",
+  "session_id": "sessionA"
 }

@@ -89,16 +89,41 @@ func (c *Client) GetClientID(ctx context.Context, sessionID, sysUserID string) (
 	return extractResponse[int](response)
 }
 
-// GetZone returns the zone information for the given name.
+// GetZoneID returns the zone ID for the given name.
 // `name` must be a fully qualified domain name, e.g. "example.com.".
-func (c *Client) GetZone(ctx context.Context, sessionID, name string) (*Zone, error) {
-	payload := ZoneInfoRequest{
-		SessionID: sessionID,
-		PrimaryID: struct {
-			Origin string `json:"origin"`
-		}{
-			Origin: name,
-		},
+func (c *Client) GetZoneID(ctx context.Context, sessionID, name string) (int, error) {
+	payload := map[string]any{
+		"session_id": sessionID,
+		"origin":     name,
+	}
+
+	endpoint, err := url.Parse(c.serverURL)
+	if err != nil {
+		return 0, err
+	}
+
+	endpoint.RawQuery = "dns_zone_get_id"
+
+	req, err := newJSONRequest(ctx, endpoint, payload)
+	if err != nil {
+		return 0, err
+	}
+
+	var response APIResponse
+
+	err = c.do(req, &response)
+	if err != nil {
+		return 0, err
+	}
+
+	return extractResponse[int](response)
+}
+
+// GetZone returns the zone information for the zone ID.
+func (c *Client) GetZone(ctx context.Context, sessionID, zoneID string) (*Zone, error) {
+	payload := map[string]any{
+		"session_id": sessionID,
+		"primary_id": zoneID,
 	}
 
 	endpoint, err := url.Parse(c.serverURL)

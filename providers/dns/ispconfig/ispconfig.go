@@ -125,12 +125,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("ispconfig: login: %w", err)
 	}
 
-	zone, err := d.client.GetZone(ctx, sessionID, authZone)
+	zoneID, err := d.client.GetZoneID(ctx, sessionID, authZone)
+	if err != nil {
+		return fmt.Errorf("ispconfig: get zone id: %w", err)
+	}
+
+	zone, err := d.client.GetZone(ctx, sessionID, strconv.Itoa(zoneID))
 	if err != nil {
 		return fmt.Errorf("ispconfig: get zone: %w", err)
 	}
 
-	clientID, err := d.client.GetClientID(ctx, sessionID, strconv.Itoa(zone.SysUserID))
+	clientID, err := d.client.GetClientID(ctx, sessionID, zone.SysUserID)
 	if err != nil {
 		return fmt.Errorf("ispconfig: get client id: %w", err)
 	}
@@ -174,7 +179,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Unlock()
 
 	if !ok {
-		return fmt.Errorf("hostingnl: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
+		return fmt.Errorf("ispconfig: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
 	sessionID, err := d.client.Login(ctx, d.config.Username, d.config.Password)

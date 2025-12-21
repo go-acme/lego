@@ -19,17 +19,10 @@ type ClientIDRequest struct {
 	SysUserID string `json:"sys_userid"`
 }
 
-type ZoneInfoRequest struct {
-	SessionID string `json:"session_id"`
-	PrimaryID struct {
-		Origin string `json:"origin"`
-	} `json:"primary_id"`
-}
-
 type Zone struct {
-	ID        int `json:"id"`
-	ServerID  int `json:"server_id"`
-	SysUserID int `json:"sys_userid"`
+	ID        string `json:"id"`
+	ServerID  string `json:"server_id"`
+	SysUserID string `json:"sys_userid"`
 }
 
 type GetTXTRequest struct {

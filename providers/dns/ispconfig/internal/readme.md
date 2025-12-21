@@ -88,15 +88,14 @@
 
 - https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/remoting_client/API-docs/dns_zone_get.html
 - https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/remoting_client/examples/dns_zone_get.php
+- TABLE `dns_soa`: https://git.ispconfig.org/ispconfig/ispconfig3/-/blob/develop/install/sql/ispconfig3.sql?ref_type=heads#L615
 
 ### Request Body (JSON)
 
 ```json
 {
   "session_id": "<session_id>",
-  "primary_id": {
-    "origin": "<curZone>."
-  }
+  "primary_id": "<zone_id>"
 }
 ```
 

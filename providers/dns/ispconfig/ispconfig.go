@@ -3,6 +3,7 @@ package ispconfig
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
@@ -28,6 +29,7 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvInsecureSkipVerify = envNamespace + "INSECURE_SKIP_VERIFY"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -40,6 +42,7 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
+	InsecureSkipVerify bool
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -99,6 +102,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
+	}
+
+	if config.InsecureSkipVerify {
+		client.HTTPClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
 	}
 
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)

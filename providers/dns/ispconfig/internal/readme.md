@@ -192,7 +192,7 @@
     "ttl": "3600",
     "active": "y",
     "stamp": "<curStamp>",
-    "serial": "<curSerial>"
+    "update_serial": true
   },
   "update_serial": true
 }
@@ -207,7 +207,7 @@
 {
   "code": "ok",
   "message": "foo",
-  "response": 123
+  "response": "123"
 }
 ```
 

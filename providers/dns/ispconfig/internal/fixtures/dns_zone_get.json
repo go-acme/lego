@@ -1,0 +1,32 @@
+{
+  "code": "ok",
+  "message": "foo",
+  "response": {
+    "id": "456",
+    "sys_userid": "789",
+    "sys_groupid": "2",
+    "sys_perm_user": "riud",
+    "sys_perm_group": "riud",
+    "sys_perm_other": "",
+    "server_id": "123",
+    "origin": "example.com.",
+    "ns": "ns1.example.org.",
+    "mbox": "support.example.net.",
+    "serial": "2025102902",
+    "refresh": "7200",
+    "retry": "540",
+    "expire": "604800",
+    "minimum": "3600",
+    "ttl": "3600",
+    "active": "Y",
+    "xfer": "",
+    "also_notify": "",
+    "update_acl": "",
+    "dnssec_initialized": "N",
+    "dnssec_wanted": "N",
+    "dnssec_algo": "ECDSAP256SHA256",
+    "dnssec_last_signed": "0",
+    "dnssec_info": "",
+    "rendered_zone": ""
+  }
+}

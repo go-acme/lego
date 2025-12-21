@@ -1,0 +1,17 @@
+{
+  "session_id": "sessionA",
+  "client_id": "clientA",
+  "params": {
+    "server_id": "serverA",
+    "zone": "example.com.",
+    "name": "foo.example.com.",
+    "type": "txt",
+    "data": "txtTXTtxt",
+    "aux": "0",
+    "ttl": "3600",
+    "active": "y",
+    "stamp": "2025-12-25 01:01:01",
+    "update_serial": true
+  },
+  "update_serial": true
+}

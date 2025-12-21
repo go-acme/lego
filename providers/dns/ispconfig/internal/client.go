@@ -4,12 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
@@ -303,21 +301,9 @@ func newJSONRequest(ctx context.Context, endpoint *url.URL, payload any) (*http.
 
 func extractResponse[T any](response APIResponse) (T, error) {
 	if response.Code != "ok" {
-		var msg strings.Builder
-
-		msg.WriteString("code: " + response.Code)
-
-		if response.Message != "" {
-			msg.WriteString(", message: " + response.Message)
-		}
-
-		if len(response.Response) > 0 {
-			msg.WriteString(", response: " + string(response.Response))
-		}
-
 		var zero T
 
-		return zero, errors.New(msg.String())
+		return zero, &APIError{APIResponse: response}
 	}
 
 	var result T

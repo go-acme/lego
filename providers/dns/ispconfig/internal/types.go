@@ -1,6 +1,29 @@
 package internal
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
+)
+
+type APIError struct {
+	APIResponse
+}
+
+func (e *APIError) Error() string {
+	var msg strings.Builder
+
+	msg.WriteString("code: " + e.Code)
+
+	if e.Message != "" {
+		msg.WriteString(", message: " + e.Message)
+	}
+
+	if len(e.Response) > 0 {
+		msg.WriteString(", response: " + string(e.Response))
+	}
+
+	return msg.String()
+}
 
 type APIResponse struct {
 	Code     string          `json:"code"`
@@ -20,9 +43,13 @@ type ClientIDRequest struct {
 }
 
 type Zone struct {
-	ID        string `json:"id"`
-	ServerID  string `json:"server_id"`
-	SysUserID string `json:"sys_userid"`
+	ID         string `json:"id"`
+	ServerID   string `json:"server_id"`
+	SysUserID  string `json:"sys_userid"`
+	SysGroupID string `json:"sys_groupid"`
+	Origin     string `json:"origin"`
+	Serial     string `json:"serial"`
+	Active     string `json:"active"`
 }
 
 type GetTXTRequest struct {

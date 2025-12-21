@@ -78,7 +78,7 @@ func TestClient_GetZoneID(t *testing.T) {
 		).
 		Build(t)
 
-	zoneID, err := client.GetZoneID(t.Context(), "sessionA", "example.com.")
+	zoneID, err := client.GetZoneID(t.Context(), "sessionA", "example.com")
 	require.NoError(t, err)
 
 	assert.Equal(t, 123, zoneID)
@@ -98,9 +98,13 @@ func TestClient_GetZone(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := &Zone{
-		ID:        "456",
-		ServerID:  "123",
-		SysUserID: "789",
+		ID:         "456",
+		ServerID:   "123",
+		SysUserID:  "789",
+		SysGroupID: "2",
+		Origin:     "example.com.",
+		Serial:     "2025102902",
+		Active:     "Y",
 	}
 
 	assert.Equal(t, expected, zone)

@@ -115,17 +115,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("ispconfig: could not find zone for domain %q: %w", domain, err)
-	}
-
 	sessionID, err := d.client.Login(ctx, d.config.Username, d.config.Password)
 	if err != nil {
 		return fmt.Errorf("ispconfig: login: %w", err)
 	}
 
-	zoneID, err := d.client.GetZoneID(ctx, sessionID, dns01.UnFqdn(authZone))
+	zoneID, err := d.findZone(ctx, sessionID, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ispconfig: get zone id: %w", err)
 	}
@@ -144,7 +139,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	params := internal.RecordParams{
 		ServerID: "serverA",
-		Zone:     authZone,
+		Zone:     zone.ID,
 		Name:     info.EffectiveFQDN,
 		Type:     "txt",
 		Data:     info.Value,
@@ -203,4 +198,15 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) findZone(ctx context.Context, sessionID, fqdn string) (int, error) {
+	for domain := range dns01.UnFqdnDomainsSeq(fqdn) {
+		zoneID, err := d.client.GetZoneID(ctx, sessionID, domain)
+		if err == nil {
+			return zoneID, nil
+		}
+	}
+
+	return 0, fmt.Errorf("zone not found for %q", fqdn)
 }

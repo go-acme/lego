@@ -1,0 +1,32 @@
+Name = "ISPConfig 3 - Dynamic DNS (DDNS) Module"
+Description = ''''''
+URL = "https://www.ispconfig.org/"
+Code = "ispconfigddns"
+Since = "v4.31.0"
+
+Example = '''
+ISPCONFIG_DDNS_SERVER_URL="https://panel.example.com:8080" \
+ISPCONFIG_DDNS_TOKEN=xxxxxx \
+lego --email you@example.com --dns ispconfigddns -d '*.example.com' -d example.com run
+'''
+
+Additional = '''
+ISPConfig DNS provider supports leveraging the [ISPConfig 3 Dynamic DNS (DDNS) Module](https://github.com/mhofer117/ispconfig-ddns-module).
+
+Requires the DDNS module described at https://www.ispconfig.org/ispconfig/download/
+
+See https://www.howtoforge.com/community/threads/ispconfig-3-danymic-dns-ddns-module.87967/ for additional details.
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    ISPCONFIG_DDNS_SERVER_URL = "API server URL (ex: https://panel.example.com:8080)"
+    ISPCONFIG_DDNS_TOKEN = "DDNS API token"
+  [Configuration.Additional]
+    ISPCONFIG_DDNS_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    ISPCONFIG_DDNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    ISPCONFIG_DDNS_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 3600)"
+    ISPCONFIG_DDNS_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://github.com/mhofer117/ispconfig-ddns-module/tree/master/lib/updater"

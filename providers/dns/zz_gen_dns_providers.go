@@ -95,6 +95,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/ionoscloud"
 	"github.com/go-acme/lego/v4/providers/dns/ipv64"
 	"github.com/go-acme/lego/v4/providers/dns/ispconfig"
+	"github.com/go-acme/lego/v4/providers/dns/ispconfigddns"
 	"github.com/go-acme/lego/v4/providers/dns/iwantmyname"
 	"github.com/go-acme/lego/v4/providers/dns/joker"
 	"github.com/go-acme/lego/v4/providers/dns/keyhelp"
@@ -366,6 +367,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return ipv64.NewDNSProvider()
 	case "ispconfig":
 		return ispconfig.NewDNSProvider()
+	case "ispconfigddns":
+		return ispconfigddns.NewDNSProvider()
 	case "iwantmyname":
 		return iwantmyname.NewDNSProvider()
 	case "joker":

@@ -1449,6 +1449,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "F5XC_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "F5XC_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "F5XC_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "F5XC_SERVER":	Server domain (Default: console.ves.volterra.io)`)
 		ew.writeln(`	- "F5XC_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
 
 		ew.writeln()

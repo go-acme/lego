@@ -14,7 +14,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-const defaultHost = "console.ves.volterra.io"
+const defaultServer = "console.ves.volterra.io"
 
 const authorizationHeader = "Authorization"
 
@@ -27,18 +27,14 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(apiToken, tenantName string) (*Client, error) {
+func NewClient(apiToken, tenantName, server string) (*Client, error) {
 	if apiToken == "" {
 		return nil, errors.New("credentials missing")
 	}
 
-	if tenantName == "" {
-		return nil, errors.New("missing tenant name")
-	}
-
-	baseURL, err := url.Parse(fmt.Sprintf("https://%s.%s", tenantName, defaultHost))
+	baseURL, err := createBaseURL(tenantName, server)
 	if err != nil {
-		return nil, fmt.Errorf("parse base URL: %w", err)
+		return nil, err
 	}
 
 	return &Client{
@@ -208,4 +204,21 @@ func parseError(req *http.Request, resp *http.Response) error {
 	}
 
 	return &apiErr
+}
+
+func createBaseURL(tenant, server string) (*url.URL, error) {
+	if tenant == "" {
+		return nil, errors.New("missing tenant name")
+	}
+
+	if server == "" {
+		server = defaultServer
+	}
+
+	baseURL, err := url.Parse(fmt.Sprintf("https://%s.%s", tenant, server))
+	if err != nil {
+		return nil, fmt.Errorf("parse base URL: %w", err)
+	}
+
+	return baseURL, nil
 }

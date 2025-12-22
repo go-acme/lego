@@ -17,6 +17,7 @@ lego --email you@example.com --dns f5xc -d '*.example.com' -d example.com run
     F5XC_TENANT_NAME = "XC Tenant shortname"
     F5XC_GROUP_NAME = "Group name"
   [Configuration.Additional]
+    F5XC_SERVER = "Server domain (Default: console.ves.volterra.io)"
     F5XC_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     F5XC_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
     F5XC_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"

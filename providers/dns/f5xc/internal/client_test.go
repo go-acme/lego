@@ -14,7 +14,7 @@ import (
 func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client, err := NewClient("secret", "shortname")
+			client, err := NewClient("secret", "shortname", "")
 			if err != nil {
 				return nil, err
 			}
@@ -28,7 +28,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 			WithAuthorization("APIToken secret"))
 }
 
-func TestClient_Create(t *testing.T) {
+func TestClient_CreateRRSet(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA",
 			servermock.ResponseFromFixture("create.json"),
@@ -62,7 +62,7 @@ func TestClient_Create(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestClient_Create_error(t *testing.T) {
+func TestClient_CreateRRSet_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA",
 			servermock.Noop().WithStatusCode(http.StatusBadRequest)).
@@ -81,7 +81,7 @@ func TestClient_Create_error(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestClient_Get(t *testing.T) {
+func TestClient_GetRRSet(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
 			servermock.ResponseFromFixture("get.json")).
@@ -108,7 +108,7 @@ func TestClient_Get(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestClient_Get_not_found(t *testing.T) {
+func TestClient_GetRRSet_not_found(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
 			servermock.ResponseFromFixture("error_404.json").WithStatusCode(http.StatusNotFound)).
@@ -120,7 +120,7 @@ func TestClient_Get_not_found(t *testing.T) {
 	assert.Nil(t, result)
 }
 
-func TestClient_Get_error(t *testing.T) {
+func TestClient_GetRRSet_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
 			servermock.Noop().WithStatusCode(http.StatusBadRequest)).
@@ -130,7 +130,7 @@ func TestClient_Get_error(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestClient_Delete(t *testing.T) {
+func TestClient_DeleteRRSet(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
 			servermock.ResponseFromFixture("get.json")).
@@ -157,7 +157,7 @@ func TestClient_Delete(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestClient_Delete_error(t *testing.T) {
+func TestClient_DeleteRRSet_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
 			servermock.Noop().WithStatusCode(http.StatusBadRequest)).
@@ -167,7 +167,7 @@ func TestClient_Delete_error(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestClient_Replace(t *testing.T) {
+func TestClient_ReplaceRRSet(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
 			servermock.ResponseFromFixture("get.json"),
@@ -204,7 +204,7 @@ func TestClient_Replace(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestClient_Replace_error(t *testing.T) {
+func TestClient_ReplaceRRSet_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
 			servermock.Noop().WithStatusCode(http.StatusBadRequest)).
@@ -221,4 +221,71 @@ func TestClient_Replace_error(t *testing.T) {
 
 	_, err := client.ReplaceRRSet(t.Context(), "example.com", "groupA", "www", "TXT", rrSet)
 	require.Error(t, err)
+}
+
+func Test_createBaseURL(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		tenant   string
+		server   string
+		expected string
+	}{
+		{
+			desc:     "only tenant",
+			tenant:   "foo",
+			expected: "https://foo.console.ves.volterra.io",
+		},
+		{
+			desc:     "custom server",
+			tenant:   "foo",
+			server:   "example.com",
+			expected: "https://foo.example.com",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			baseURL, err := createBaseURL(test.tenant, test.server)
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expected, baseURL.String())
+		})
+	}
+}
+
+func Test_createBaseURL_error(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		tenant   string
+		server   string
+		expected string
+	}{
+		{
+			desc:     "no tenant",
+			tenant:   "",
+			expected: "missing tenant name",
+		},
+		{
+			desc:     "invalid tenant",
+			tenant:   "%31",
+			expected: `parse base URL: parse "https://%31.console.ves.volterra.io": invalid URL escape "%31"`,
+		},
+		{
+			desc:     "invalid host",
+			tenant:   "foo",
+			server:   "192.168.0.%31",
+			expected: `parse base URL: parse "https://foo.192.168.0.%31": invalid URL escape "%31"`,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := createBaseURL(test.tenant, test.server)
+			require.EqualError(t, err, test.expected)
+		})
+	}
 }

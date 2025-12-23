@@ -22,6 +22,7 @@ const (
 
 	EnvToken      = envNamespace + "API_TOKEN"
 	EnvTenantName = envNamespace + "TENANT_NAME"
+	EnvServer     = envNamespace + "SERVER"
 	EnvGroupName  = envNamespace + "GROUP_NAME"
 
 	EnvTTL                = envNamespace + "TTL"
@@ -34,6 +35,7 @@ const (
 type Config struct {
 	APIToken   string
 	TenantName string
+	Server     string
 	GroupName  string
 
 	PropagationTimeout time.Duration
@@ -71,6 +73,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.APIToken = values[EnvToken]
 	config.TenantName = values[EnvTenantName]
 	config.GroupName = values[EnvGroupName]
+	config.Server = env.GetOrFile(EnvServer)
 
 	return NewDNSProviderConfig(config)
 }
@@ -85,7 +88,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("f5xc: missing group name")
 	}
 
-	client, err := internal.NewClient(config.APIToken, config.TenantName)
+	client, err := internal.NewClient(config.APIToken, config.TenantName, config.Server)
 	if err != nil {
 		return nil, fmt.Errorf("f5xc: %w", err)
 	}

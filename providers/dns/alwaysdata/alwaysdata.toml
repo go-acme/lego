@@ -6,7 +6,7 @@ Since = "v4.31.0"
 
 Example = '''
 ALWAYSDATA_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns alwaysdata -d '*.example.com' -d example.com run
+lego --dns alwaysdata -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

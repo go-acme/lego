@@ -7,7 +7,7 @@ Since = "v4.15.0"
 
 Example = '''
 WEBNAMESRU_API_KEY=xxxxxx \
-lego --email you@example.com --dns webnamesru -d '*.example.com' -d example.com run
+lego --dns webnamesru -d '*.example.com' -d example.com run
 '''
 
 Additional = '''

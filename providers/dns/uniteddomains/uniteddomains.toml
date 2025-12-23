@@ -6,7 +6,7 @@ Since = "v4.29.0"
 
 Example = '''
 UNITEDDOMAINS_API_KEY=xxxxxxxx \
-lego --email you@example.com --dns uniteddomains -d '*.example.com' -d example.com run
+lego --dns uniteddomains -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

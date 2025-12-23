@@ -6,7 +6,7 @@ Since = "v4.29.0"
 
 Example = '''
 EDGECENTER_PERMANENT_API_TOKEN=xxxxx \
-lego --email you@example.com --dns edgecenter -d '*.example.com' -d example.com run
+lego --dns edgecenter -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

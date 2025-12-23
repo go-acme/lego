@@ -8,18 +8,18 @@ Example = '''
 # Using a service account file
 GCE_PROJECT="gc-project-id" \
 GCE_SERVICE_ACCOUNT_FILE="/path/to/svc/account/file.json" \
-lego --email you@example.com --dns gcloud -d '*.example.com' -d example.com run
+lego --dns gcloud -d '*.example.com' -d example.com run
 
 # Using default credentials with impersonation
 GCE_PROJECT="gc-project-id" \
 GCE_IMPERSONATE_SERVICE_ACCOUNT="target-sa@gc-project-id.iam.gserviceaccount.com" \
-lego --email you@example.com --dns gcloud -d '*.example.com' -d example.com run
+lego --dns gcloud -d '*.example.com' -d example.com run
 
 # Using service account key with impersonation
 GCE_PROJECT="gc-project-id" \
 GCE_SERVICE_ACCOUNT_FILE="/path/to/svc/account/file.json" \
 GCE_IMPERSONATE_SERVICE_ACCOUNT="target-sa@gc-project-id.iam.gserviceaccount.com" \
-lego --email you@example.com --dns gcloud -d '*.example.com' -d example.com run
+lego --dns gcloud -d '*.example.com' -d example.com run
 '''
 
 Additional = '''

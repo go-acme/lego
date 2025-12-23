@@ -7,7 +7,7 @@ Since = "v4.25.0"
 Example = '''
 ZONEEDIT_USER="xxxxxxxxxxxxxxxxxxxxx" \
 ZONEEDIT_AUTH_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns zoneedit -d '*.example.com' -d example.com run
+lego --dns zoneedit -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

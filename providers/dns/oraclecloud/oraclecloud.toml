@@ -13,13 +13,13 @@ OCI_USER_OCID="ocid1.user.oc1..secret" \
 OCI_FINGERPRINT="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" \
 OCI_REGION="us-phoenix-1" \
 OCI_COMPARTMENT_OCID="ocid1.tenancy.oc1..secret" \
-lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com run
+lego --dns oraclecloud -d '*.example.com' -d example.com run
 
 # Using Instance Principal authentication (when running on OCI compute instances):
 # https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
 OCI_AUTH_TYPE="instance_principal" \
 OCI_COMPARTMENT_OCID="ocid1.tenancy.oc1..secret" \
-lego --email you@example.com --dns oraclecloud -d '*.example.com' -d example.com run
+lego --dns oraclecloud -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

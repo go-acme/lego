@@ -6,7 +6,7 @@ Since = "v4.9.0"
 
 Example = '''
 CIVO_TOKEN=xxxxxx \
-lego --email you@example.com --dns civo -d '*.example.com' -d example.com run
+lego --dns civo -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

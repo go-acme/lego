@@ -7,7 +7,7 @@ Since = "v4.22.0"
 Example = '''
 SPACESHIP_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
 SPACESHIP_API_SECRET="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns spaceship -d '*.example.com' -d example.com run
+lego --dns spaceship -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

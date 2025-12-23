@@ -6,7 +6,7 @@ Since = "v4.26.0"
 
 Example = '''
 BINARYLANE_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns binarylane -d '*.example.com' -d example.com run
+lego --dns binarylane -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

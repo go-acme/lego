@@ -17,9 +17,6 @@ import (
 // defaultBaseURL endpoint is the Gandi API endpoint used by Present and CleanUp.
 const defaultBaseURL = "https://api.gandi.net/v5/livedns"
 
-// APIKeyHeader API key header.
-const APIKeyHeader = "X-Api-Key"
-
 // Related to Personal Access Token.
 const authorizationHeader = "Authorization"
 
@@ -133,7 +130,7 @@ func (c *Client) DeleteTXTRecord(ctx context.Context, domain, name string) error
 
 func (c *Client) do(req *http.Request, result any) error {
 	if c.apiKey != "" {
-		req.Header.Set(APIKeyHeader, c.apiKey)
+		req.Header.Set(authorizationHeader, "Apikey "+c.apiKey)
 	}
 
 	if c.pat != "" {

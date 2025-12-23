@@ -1,0 +1,16 @@
+[
+  {
+    "id": 132,
+    "name": "example.com",
+    "annotation": "test"
+  },
+  {
+    "id": 133,
+    "name": "example.net",
+    "is_internal": true
+  },
+  {
+    "id": 134,
+    "name": "example.org"
+  }
+]

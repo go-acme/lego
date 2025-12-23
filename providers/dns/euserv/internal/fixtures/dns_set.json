@@ -1,0 +1,9 @@
+{
+  "message": "success",
+  "code": "100",
+  "result": {
+    "sess_id": {
+      "value": "cd52d8bc00c7ad0ec14abcd8d6f9fd1e1010052291546606942"
+    }
+  }
+}

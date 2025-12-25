@@ -1,4 +1,4 @@
-package curanet
+package dandomain
 
 import (
 	"testing"
@@ -26,7 +26,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "curanet: some credentials information are missing: CURANET_API_KEY",
+			expected: "dandomain: some credentials information are missing: DANDOMAIN_API_KEY",
 		},
 	}
 
@@ -63,7 +63,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "curanet: credentials missing",
+			expected: "dandomain: credentials missing",
 		},
 	}
 

@@ -1,5 +1,5 @@
-// Package curanet implements a DNS provider for solving the DNS-01 challenge using Curanet.
-package curanet
+// Package dandomain implements a DNS provider for solving the DNS-01 challenge using DanDomain.
+package dandomain
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ import (
 
 // Environment variables names.
 const (
-	envNamespace = "CURANET_"
+	envNamespace = "DANDOMAIN_"
 
 	EnvAPIKey = envNamespace + "API_KEY"
 
@@ -45,11 +45,11 @@ type DNSProvider struct {
 	prv challenge.ProviderTimeout
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for Curanet.
+// NewDNSProvider returns a DNSProvider instance configured for DanDomain.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAPIKey)
 	if err != nil {
-		return nil, fmt.Errorf("curanet: %w", err)
+		return nil, fmt.Errorf("dandomain: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -58,15 +58,15 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for Curanet.
+// NewDNSProviderConfig return a DNSProvider instance configured for DanDomain.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("curanet: the configuration of the DNS provider is nil")
+		return nil, errors.New("dandomain: the configuration of the DNS provider is nil")
 	}
 
 	provider, err := curanet.NewDNSProviderConfig(config, "")
 	if err != nil {
-		return nil, fmt.Errorf("curanet: %w", err)
+		return nil, fmt.Errorf("dandomain: %w", err)
 	}
 
 	return &DNSProvider{prv: provider}, nil
@@ -76,7 +76,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	err := d.prv.Present(domain, token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("curanet: %w", err)
+		return fmt.Errorf("dandomain: %w", err)
 	}
 
 	return nil
@@ -86,7 +86,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	err := d.prv.CleanUp(domain, token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("curanet: %w", err)
+		return fmt.Errorf("dandomain: %w", err)
 	}
 
 	return nil

@@ -1,0 +1,22 @@
+Name = "ScanNet"
+Description = ''''''
+URL = "https://www.scannet.dk/"
+Code = "scannet"
+Since = "v4.32.0"
+
+Example = '''
+SCANNET_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+lego --dns scannet -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    SCANNET_API_KEY = "API key"
+  [Configuration.Additional]
+    SCANNET_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    SCANNET_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    SCANNET_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    SCANNET_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://api.scannet.dk/dns/swagger/index.html"

@@ -1,0 +1,22 @@
+Name = "NederHost"
+Description = ''''''
+URL = "https://www.nederhost.nl/"
+Code = "nederhost"
+Since = "v5.0.0"
+
+Example = '''
+NEDERHOST_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+lego --dns nederhost -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    NEDERHOST_API_KEY = "API key"
+  [Configuration.Additional]
+    NEDERHOST_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    NEDERHOST_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    NEDERHOST_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    NEDERHOST_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://www.nederhost.nl/kennisbank/domeinnamen/DNS/REST_DNS-API"

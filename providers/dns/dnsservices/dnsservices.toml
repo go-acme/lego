@@ -1,0 +1,25 @@
+Name = "DNS.services"
+Description = ''''''
+URL = "https://dns.services/"
+Code = "dnsservices"
+Since = "v5.0.0"
+
+Example = '''
+DNSSERVICES_USERNAME="xxxxxxxxxxxxxxxxxxxxx" \
+DNSSERVICES_PASSWORD="xxxxxxxxxxxxxxxxxxxxx" \
+lego --dns dnsservices -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    DNSSERVICES_USERNAME = "Username"
+    DNSSERVICES_PASSWORD = "Password"
+  [Configuration.Additional]
+    DNSSERVICES_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    DNSSERVICES_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    DNSSERVICES_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    DNSSERVICES_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://dns.services/userapi#dns-85"
+  Swagger = "https://dns.services/?cmd=userapi&action=swagger&display=true"

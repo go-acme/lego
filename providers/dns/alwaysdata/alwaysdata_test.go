@@ -174,7 +174,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			servermock.ResponseFromInternal("domains.json")).
 		Route("GET /record/",
 			servermock.ResponseFromInternal("records.json")).
-		Route("DELETE /record/789",
+		Route("DELETE /record/789/",
 			servermock.Noop()).
 		Build(t)
 

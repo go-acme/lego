@@ -78,7 +78,7 @@ func (c *Client) AddRecord(ctx context.Context, record RecordRequest) error {
 }
 
 func (c *Client) DeleteRecord(ctx context.Context, recordID int64) error {
-	endpoint := c.BaseURL.JoinPath("record", strconv.FormatInt(recordID, 10))
+	endpoint := c.BaseURL.JoinPath("record", strconv.FormatInt(recordID, 10), "/")
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

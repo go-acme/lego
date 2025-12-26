@@ -73,7 +73,7 @@ func TestClient_AddRecord(t *testing.T) {
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /record/789",
+		Route("DELETE /record/789/",
 			servermock.Noop()).
 		Build(t)
 

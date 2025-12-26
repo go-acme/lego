@@ -173,7 +173,11 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		Route("GET /domain/",
 			servermock.ResponseFromInternal("domains.json")).
 		Route("GET /record/",
-			servermock.ResponseFromInternal("records.json")).
+			servermock.ResponseFromInternal("records.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("domain", "132").
+				With("name", "_acme-challenge"),
+		).
 		Route("DELETE /record/789/",
 			servermock.Noop()).
 		Build(t)

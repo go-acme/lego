@@ -85,10 +85,13 @@ func TestClient_ListRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /record/",
 			servermock.ResponseFromFixture("records.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("domain", "132").
+				With("name", "_acme-challenge"),
 		).
 		Build(t)
 
-	result, err := client.ListRecords(t.Context(), 123, "_acme-")
+	result, err := client.ListRecords(t.Context(), 132, "_acme-challenge")
 	require.NoError(t, err)
 
 	expected := []Record{

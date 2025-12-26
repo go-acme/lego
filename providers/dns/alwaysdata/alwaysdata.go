@@ -156,7 +156,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		if err != nil {
 			return fmt.Errorf("alwaysdata: delete TXT record: %w", err)
 		}
-
 	}
 
 	return nil

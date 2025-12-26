@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -55,9 +54,6 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config *Config
 	client *internal.Client
-
-	recordIDs   map[string]int64
-	recordIDsMu sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Alwaysdata.
@@ -92,9 +88,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{
-		config:    config,
-		client:    client,
-		recordIDs: make(map[string]int64),
+		config: config,
+		client: client,
 	}, nil
 }
 
@@ -123,50 +118,46 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Annotation: "lego",
 	}
 
-	records, err := d.client.AddRecord(ctx, record)
+	err = d.client.AddRecord(ctx, record)
 	if err != nil {
 		return fmt.Errorf("alwaysdata: add TXT record: %w", err)
 	}
-
-	var recordID int64
-
-	for _, r := range records {
-		if r.Name == subDomain && r.Type == "TXT" && r.Value == info.Value {
-			recordID = r.ID
-		}
-	}
-
-	if recordID == 0 {
-		return errors.New("alwaysdata: could not find new TXT record ID")
-	}
-
-	d.recordIDsMu.Lock()
-	d.recordIDs[token] = recordID
-	d.recordIDsMu.Unlock()
 
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	d.recordIDsMu.Lock()
-	recordID, recordOK := d.recordIDs[token]
-	d.recordIDsMu.Unlock()
-
-	if !recordOK {
-		return fmt.Errorf("alwaysdata: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
-	}
-
-	err := d.client.DeleteRecord(context.Background(), recordID)
+	zone, err := d.findZone(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("alwaysdata: delete TXT record: %w", err)
+		return fmt.Errorf("alwaysdata: %w", err)
 	}
 
-	d.recordIDsMu.Lock()
-	delete(d.recordIDs, token)
-	d.recordIDsMu.Unlock()
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
+	if err != nil {
+		return fmt.Errorf("alwaysdata: %w", err)
+	}
+
+	records, err := d.client.ListRecords(ctx, zone.Name, subDomain)
+	if err != nil {
+		return fmt.Errorf("alwaysdata: list records: %w", err)
+	}
+
+	for _, record := range records {
+		if record.Type != "TXT" || record.Value != info.Value {
+			continue
+		}
+
+		err = d.client.DeleteRecord(ctx, record.ID)
+		if err != nil {
+			return fmt.Errorf("alwaysdata: delete TXT record: %w", err)
+		}
+
+	}
 
 	return nil
 }

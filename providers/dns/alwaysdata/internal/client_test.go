@@ -1,11 +1,13 @@
 package internal
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -19,7 +21,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 			}
 
 			client.BaseURL, _ = url.Parse(server.URL)
-			client.HTTPClient = server.Client()
+			client.HTTPClient = clientdebug.Wrap(server.Client())
 
 			return client, nil
 		},
@@ -31,7 +33,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 func TestClient_ListDomains(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /domain",
+		Route("GET /domain/",
 			servermock.ResponseFromFixture("domains.json")).
 		Build(t)
 
@@ -48,9 +50,11 @@ func TestClient_ListDomains(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
+	t.Setenv("LEGO_DEBUG_DNS_API_HTTP_CLIENT", "true")
+
 	client := mockBuilder().
-		Route("POST /record",
-			servermock.ResponseFromFixture("record.json"),
+		Route("POST /record/",
+			servermock.Noop().WithStatusCode(http.StatusCreated),
 			servermock.CheckRequestJSONBodyFromFixture("record_add-request.json")).
 		Build(t)
 
@@ -63,36 +67,8 @@ func TestClient_AddRecord(t *testing.T) {
 		Annotation: "lego",
 	}
 
-	result, err := client.AddRecord(t.Context(), record)
+	err := client.AddRecord(t.Context(), record)
 	require.NoError(t, err)
-
-	expected := []Record{
-		{
-			ID: 789,
-			Domain: &Domain{
-				Href: "/v1/domain/132/",
-			},
-			Type:       "TXT",
-			Name:       "_acme-challenge",
-			Value:      "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
-			TTL:        120,
-			Annotation: "lego",
-		},
-		{
-			ID: 11619270,
-			Domain: &Domain{
-				Href: "/v1/domain/118935/",
-			},
-			Type:          "A",
-			Name:          "home",
-			Value:         "149.202.90.65",
-			TTL:           300,
-			IsUserDefined: true,
-			IsActive:      true,
-		},
-	}
-
-	assert.Equal(t, expected, result)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
@@ -108,7 +84,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_ListRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /record/",
-			servermock.ResponseFromFixture("record.json"),
+			servermock.ResponseFromFixture("records.json"),
 		).
 		Build(t)
 

@@ -1,6 +1,7 @@
 package alwaysdata
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -156,10 +157,10 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
-		Route("GET /domain",
+		Route("GET /domain/",
 			servermock.ResponseFromInternal("domains.json")).
-		Route("POST /record",
-			servermock.ResponseFromInternal("record.json"),
+		Route("POST /record/",
+			servermock.Noop().WithStatusCode(http.StatusCreated),
 			servermock.CheckRequestJSONBodyFromInternal("record_add-request.json")).
 		Build(t)
 
@@ -169,11 +170,13 @@ func TestDNSProvider_Present(t *testing.T) {
 
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
+		Route("GET /domain/",
+			servermock.ResponseFromInternal("domains.json")).
+		Route("GET /record/",
+			servermock.ResponseFromInternal("records.json")).
 		Route("DELETE /record/789",
 			servermock.Noop()).
 		Build(t)
-
-	provider.recordIDs["abc"] = 789
 
 	err := provider.CleanUp("example.com", "abc", "123d==")
 	require.NoError(t, err)

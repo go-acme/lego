@@ -136,6 +136,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}
 	}
 
+	if recordID == 0 {
+		return errors.New("alwaysdata: could not find new TXT record ID")
+	}
+
 	d.recordIDsMu.Lock()
 	d.recordIDs[token] = recordID
 	d.recordIDsMu.Unlock()

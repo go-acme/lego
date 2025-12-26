@@ -1,0 +1,179 @@
+package internal
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"time"
+
+	"github.com/go-acme/lego/v5/internal/errutils"
+	"github.com/go-acme/lego/v5/internal/useragent"
+)
+
+const defaultBaseURL = "https://secure.veesp.com/api"
+
+// Client the Veesp API client.
+type Client struct {
+	username string
+	password string
+
+	BaseURL    *url.URL
+	HTTPClient *http.Client
+}
+
+// NewClient creates a new Client.
+func NewClient(username, password string) (*Client, error) {
+	if username == "" || password == "" {
+		return nil, errors.New("credentials missing")
+	}
+
+	baseURL, _ := url.Parse(defaultBaseURL)
+
+	return &Client{
+		username:   username,
+		password:   password,
+		BaseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+	}, nil
+}
+
+// AddRecord creates a new record in the DNS zone.
+// https://secure.veesp.com/userapi#add-dns-record-102
+func (c *Client) AddRecord(ctx context.Context, serviceID, zoneID string, record Record) error {
+	endpoint := c.BaseURL.JoinPath("service", serviceID, "dns", zoneID, "records")
+
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
+	if err != nil {
+		return err
+	}
+
+	return c.do(req, nil)
+}
+
+// RemoveRecord deletes the selected DNS zone.
+// https://secure.veesp.com/userapi#remove-dns-record-104
+func (c *Client) RemoveRecord(ctx context.Context, serviceID, zoneID, recordID string) error {
+	endpoint := c.BaseURL.JoinPath("service", serviceID, "dns", zoneID, "records", recordID)
+
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	return c.do(req, nil)
+}
+
+// ListZones lists all DNS zones.
+// https://secure.veesp.com/userapi#list-dns-97
+func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
+	endpoint := c.BaseURL.JoinPath("dns")
+
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	zones := Zones{}
+
+	err = c.do(req, &zones)
+	if err != nil {
+		return nil, err
+	}
+
+	return zones.Zones, nil
+}
+
+// GetRecords returns details of the DNS zone.
+// https://secure.veesp.com/userapi#get-dns-details-100
+func (c *Client) GetRecords(ctx context.Context, serviceID, zoneID string) ([]Record, error) {
+	endpoint := c.BaseURL.JoinPath("service", serviceID, "dns", zoneID)
+
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	records := Records{}
+
+	err = c.do(req, &records)
+	if err != nil {
+		return nil, err
+	}
+
+	return records.Records, nil
+}
+
+func (c *Client) do(req *http.Request, result any) error {
+	useragent.SetHeader(req.Header)
+
+	req.SetBasicAuth(c.username, c.password)
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return errutils.NewHTTPDoError(req, err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode/100 != 2 {
+		return parseError(req, resp)
+	}
+
+	if result == nil {
+		return nil
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
+
+	return nil
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
+}
+
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	var errAPI APIError
+
+	err := json.Unmarshal(raw, &errAPI)
+	if err != nil {
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
+	}
+
+	return &errAPI
+}

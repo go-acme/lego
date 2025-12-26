@@ -1,0 +1,25 @@
+Name = "Veesp"
+Description = ''''''
+URL = "https://veesp.com"
+Code = "veesp"
+Since = "v5.0.0"
+
+Example = '''
+VEESP_USERNAME="xxxxxxxxxxxxxxxxxxxxx" \
+VEESP_PASSWORD="xxxxxxxxxxxxxxxxxxxxx" \
+lego --dns vessp -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    VEESP_USERNAME = "Username"
+    VEESP_PASSWORD = "Password"
+  [Configuration.Additional]
+    VEESP_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    VEESP_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    VEESP_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    VEESP_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://secure.veesp.com/userapi#dns-96"
+  Swagger = "https://secure.veesp.com/?cmd=userapi&action=swagger&display=true"

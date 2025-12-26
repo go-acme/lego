@@ -1,0 +1,28 @@
+[
+  {
+    "id": 789,
+    "domain": {
+      "href": "/v1/domain/132/"
+    },
+    "name": "_acme-challenge",
+    "type": "TXT",
+    "value": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "ttl": 120,
+    "annotation": "lego"
+  },
+  {
+    "id": 11619270,
+    "domain": {
+      "href": "/v1/domain/118935/"
+    },
+    "type": "A",
+    "name": "home",
+    "value": "149.202.90.65",
+    "priority": null,
+    "ttl": 300,
+    "href": "/v1/record/11619270/",
+    "annotation": "",
+    "is_user_defined": true,
+    "is_active": true
+  }
+]

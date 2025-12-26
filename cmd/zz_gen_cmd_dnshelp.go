@@ -17,6 +17,7 @@ func allDNSCodes() string {
 		"alidns",
 		"aliesa",
 		"allinkl",
+		"alwaysdata",
 		"anexia",
 		"arvancloud",
 		"auroradns",
@@ -305,6 +306,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/allinkl`)
+
+	case "alwaysdata":
+		// generated from: providers/dns/alwaysdata/alwaysdata.toml
+		ew.writeln(`Configuration for Alwaysdata.`)
+		ew.writeln(`Code:	'alwaysdata'`)
+		ew.writeln(`Since:	'v4.31.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ALWAYSDATA_API_KEY":	API Key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ALWAYSDATA_ACCOUNT":	Account name`)
+		ew.writeln(`	- "ALWAYSDATA_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "ALWAYSDATA_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "ALWAYSDATA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "ALWAYSDATA_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/alwaysdata`)
 
 	case "anexia":
 		// generated from: providers/dns/anexia/anexia.toml

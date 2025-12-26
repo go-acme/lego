@@ -1,12 +1,5 @@
 package internal
 
-type APIError struct{}
-
-func (a *APIError) Error() string {
-	// TODO implement me
-	panic("implement me")
-}
-
 type RecordRequest struct {
 	ID            int64  `json:"id,omitempty"`
 	DomainID      int64  `json:"domain,omitempty"`

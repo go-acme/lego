@@ -130,7 +130,9 @@ func (c *Client) do(req *http.Request, result any) error {
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode/100 != 2 {
-		return parseError(req, resp)
+		raw, _ := io.ReadAll(resp.Body)
+
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
 	if result == nil {
@@ -172,17 +174,4 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 	}
 
 	return req, nil
-}
-
-func parseError(req *http.Request, resp *http.Response) error {
-	raw, _ := io.ReadAll(resp.Body)
-
-	var errAPI APIError
-
-	err := json.Unmarshal(raw, &errAPI)
-	if err != nil {
-		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
-	}
-
-	return &errAPI
 }

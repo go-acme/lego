@@ -61,7 +61,7 @@ func (c *Client) ListDomains(ctx context.Context) ([]Domain, error) {
 	return result, nil
 }
 
-func (c *Client) AddRecord(ctx context.Context, record Record) (*Record, error) {
+func (c *Client) AddRecord(ctx context.Context, record RecordRequest) ([]Record, error) {
 	endpoint := c.BaseURL.JoinPath("record")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
@@ -69,9 +69,9 @@ func (c *Client) AddRecord(ctx context.Context, record Record) (*Record, error) 
 		return nil, err
 	}
 
-	result := &Record{}
+	var result []Record
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +88,29 @@ func (c *Client) DeleteRecord(ctx context.Context, recordID int64) error {
 	}
 
 	return c.do(req, nil)
+}
+
+func (c *Client) ListRecords(ctx context.Context, domain, name string) ([]Record, error) {
+	endpoint := c.BaseURL.JoinPath("record")
+
+	query := endpoint.Query()
+	query.Set("domain", domain)
+	query.Set("name", name)
+	endpoint.RawQuery = query.Encode()
+
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []Record
+
+	err = c.do(req, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

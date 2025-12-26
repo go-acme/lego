@@ -54,9 +54,9 @@ func TestClient_AddRecord(t *testing.T) {
 			servermock.CheckRequestJSONBodyFromFixture("record_add-request.json")).
 		Build(t)
 
-	record := Record{
+	record := RecordRequest{
 		DomainID:   132,
-		Name:       "_acme-challenge.example.com.",
+		Name:       "_acme-challenge",
 		Type:       "TXT",
 		Value:      "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 		TTL:        120,
@@ -66,14 +66,30 @@ func TestClient_AddRecord(t *testing.T) {
 	result, err := client.AddRecord(t.Context(), record)
 	require.NoError(t, err)
 
-	expected := &Record{
-		ID:         789,
-		DomainID:   132,
-		Name:       "_acme-challenge.example.com.",
-		Type:       "TXT",
-		Value:      "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
-		TTL:        120,
-		Annotation: "lego",
+	expected := []Record{
+		{
+			ID: 789,
+			Domain: &Domain{
+				Href: "/v1/domain/132/",
+			},
+			Type:       "TXT",
+			Name:       "_acme-challenge",
+			Value:      "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+			TTL:        120,
+			Annotation: "lego",
+		},
+		{
+			ID: 11619270,
+			Domain: &Domain{
+				Href: "/v1/domain/118935/",
+			},
+			Type:          "A",
+			Name:          "home",
+			Value:         "149.202.90.65",
+			TTL:           300,
+			IsUserDefined: true,
+			IsActive:      true,
+		},
 	}
 
 	assert.Equal(t, expected, result)
@@ -87,4 +103,43 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 	err := client.DeleteRecord(t.Context(), 789)
 	require.NoError(t, err)
+}
+
+func TestClient_ListRecords(t *testing.T) {
+	client := mockBuilder().
+		Route("GET /record/",
+			servermock.ResponseFromFixture("record.json"),
+		).
+		Build(t)
+
+	result, err := client.ListRecords(t.Context(), "example.com", "_acme-")
+	require.NoError(t, err)
+
+	expected := []Record{
+		{
+			ID: 789,
+			Domain: &Domain{
+				Href: "/v1/domain/132/",
+			},
+			Type:       "TXT",
+			Name:       "_acme-challenge",
+			Value:      "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+			TTL:        120,
+			Annotation: "lego",
+		},
+		{
+			ID: 11619270,
+			Domain: &Domain{
+				Href: "/v1/domain/118935/",
+			},
+			Name:          "home",
+			Type:          "A",
+			Value:         "149.202.90.65",
+			TTL:           300,
+			IsUserDefined: true,
+			IsActive:      true,
+		},
+	}
+
+	assert.Equal(t, expected, result)
 }

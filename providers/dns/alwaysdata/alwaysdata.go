@@ -104,27 +104,40 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneID, err := d.findZoneID(ctx, info.EffectiveFQDN)
+	zone, err := d.findZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("alwaysdata: %w", err)
 	}
 
-	record := internal.Record{
-		DomainID:   zoneID,
-		Name:       info.EffectiveFQDN,
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
+	if err != nil {
+		return fmt.Errorf("alwaysdata: %w", err)
+	}
+
+	record := internal.RecordRequest{
+		DomainID:   zone.ID,
+		Name:       subDomain,
 		Type:       "TXT",
 		Value:      info.Value,
 		TTL:        d.config.TTL,
 		Annotation: "lego",
 	}
 
-	newRecord, err := d.client.AddRecord(ctx, record)
+	records, err := d.client.AddRecord(ctx, record)
 	if err != nil {
 		return fmt.Errorf("alwaysdata: add TXT record: %w", err)
 	}
 
+	var recordID int64
+
+	for _, r := range records {
+		if r.Name == subDomain && r.Type == "TXT" && r.Value == info.Value {
+			recordID = r.ID
+		}
+	}
+
 	d.recordIDsMu.Lock()
-	d.recordIDs[token] = newRecord.ID
+	d.recordIDs[token] = recordID
 	d.recordIDsMu.Unlock()
 
 	return nil
@@ -160,19 +173,19 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) findZoneID(ctx context.Context, fqdn string) (int64, error) {
+func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*internal.Domain, error) {
 	domains, err := d.client.ListDomains(ctx)
 	if err != nil {
-		return 0, fmt.Errorf("list domains: %w", err)
+		return nil, fmt.Errorf("list domains: %w", err)
 	}
 
 	for a := range dns01.UnFqdnDomainsSeq(fqdn) {
 		for _, domain := range domains {
 			if a == domain.Name {
-				return domain.ID, nil
+				return &domain, nil
 			}
 		}
 	}
 
-	return 0, errors.New("domain not found")
+	return nil, errors.New("domain not found")
 }

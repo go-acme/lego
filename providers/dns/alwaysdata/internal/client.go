@@ -88,11 +88,11 @@ func (c *Client) DeleteRecord(ctx context.Context, recordID int64) error {
 	return c.do(req, nil)
 }
 
-func (c *Client) ListRecords(ctx context.Context, domain, name string) ([]Record, error) {
+func (c *Client) ListRecords(ctx context.Context, domainID int64, name string) ([]Record, error) {
 	endpoint := c.BaseURL.JoinPath("record", "/")
 
 	query := endpoint.Query()
-	query.Set("domain", domain)
+	query.Set("domain", strconv.FormatInt(domainID, 10))
 	query.Set("name", name)
 	endpoint.RawQuery = query.Encode()
 

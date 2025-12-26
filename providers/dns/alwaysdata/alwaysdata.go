@@ -142,7 +142,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("alwaysdata: %w", err)
 	}
 
-	records, err := d.client.ListRecords(ctx, zone.Name, subDomain)
+	records, err := d.client.ListRecords(ctx, zone.ID, subDomain)
 	if err != nil {
 		return fmt.Errorf("alwaysdata: list records: %w", err)
 	}

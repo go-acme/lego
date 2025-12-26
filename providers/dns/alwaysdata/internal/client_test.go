@@ -88,7 +88,7 @@ func TestClient_ListRecords(t *testing.T) {
 		).
 		Build(t)
 
-	result, err := client.ListRecords(t.Context(), "example.com", "_acme-")
+	result, err := client.ListRecords(t.Context(), 123, "_acme-")
 	require.NoError(t, err)
 
 	expected := []Record{

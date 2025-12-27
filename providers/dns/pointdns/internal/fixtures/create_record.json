@@ -1,0 +1,11 @@
+{
+  "zone_record": {
+    "id": 141,
+    "name": "_acme-challenge.example.com.",
+    "data": "txtTXTtxt",
+    "aux": null,
+    "record_type": "TXT",
+    "ttl": 120,
+    "zone_id": 1
+  }
+}

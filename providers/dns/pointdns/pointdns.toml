@@ -1,0 +1,24 @@
+Name = "PointDNS/PointHQ"
+Description = ''''''
+URL = "https://pointhq.com/"
+Code = "pointdns"
+Since = "v5.0.0"
+
+Example = '''
+POINTDNS_USERNAME="xxx" \
+POINTDNS_PASSWORD="yyy" \
+lego --dns pointdns -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    POINTDNS_USERNAME = "Username"
+    POINTDNS_PASSWORD = "Password"
+  [Configuration.Additional]
+    POINTDNS_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    POINTDNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    POINTDNS_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    POINTDNS_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://w.pointhq.com/api/docs"

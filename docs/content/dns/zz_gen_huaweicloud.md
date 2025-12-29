@@ -29,7 +29,7 @@ Here is an example bash command using the Huawei Cloud provider:
 HUAWEICLOUD_ACCESS_KEY_ID=your-access-key-id \
 HUAWEICLOUD_SECRET_ACCESS_KEY=your-secret-access-key \
 HUAWEICLOUD_REGION=cn-south-1 \
-lego --email you@example.com --dns huaweicloud -d '*.example.com' -d example.com run
+lego --dns huaweicloud -d '*.example.com' -d example.com run
 ```
 
 

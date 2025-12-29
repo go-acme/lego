@@ -29,7 +29,7 @@ Here is an example bash command using the Internet Initiative Japan provider:
 IIJ_API_ACCESS_KEY=xxxxxxxx \
 IIJ_API_SECRET_KEY=yyyyyy \
 IIJ_DO_SERVICE_CODE=zzzzzz \
-lego --email you@example.com --dns iij -d '*.example.com' -d example.com run
+lego --dns iij -d '*.example.com' -d example.com run
 ```
 
 

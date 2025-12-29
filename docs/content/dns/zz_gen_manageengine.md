@@ -28,7 +28,7 @@ Here is an example bash command using the ManageEngine CloudDNS provider:
 ```bash
 MANAGEENGINE_CLIENT_ID="xxx" \
 MANAGEENGINE_CLIENT_SECRET="yyy" \
-lego --email you@example.com --dns manageengine -d '*.example.com' -d example.com run
+lego --dns manageengine -d '*.example.com' -d example.com run
 ```
 
 

@@ -28,7 +28,7 @@ Here is an example bash command using the Active24 provider:
 ```bash
 ACTIVE24_API_KEY="xxx" \
 ACTIVE24_SECRET="yyy" \
-lego --email you@example.com --dns active24 -d '*.example.com' -d example.com run
+lego --dns active24 -d '*.example.com' -d example.com run
 ```
 
 

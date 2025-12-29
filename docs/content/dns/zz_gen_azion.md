@@ -27,7 +27,7 @@ Here is an example bash command using the Azion provider:
 
 ```bash
 AZION_PERSONAL_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --email you@example.com --dns azion -d '*.example.com' -d example.com run
+lego --dns azion -d '*.example.com' -d example.com run
 ```
 
 

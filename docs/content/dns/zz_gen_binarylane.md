@@ -27,7 +27,7 @@ Here is an example bash command using the Binary Lane provider:
 
 ```bash
 BINARYLANE_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns binarylane -d '*.example.com' -d example.com run
+lego --dns binarylane -d '*.example.com' -d example.com run
 ```
 
 

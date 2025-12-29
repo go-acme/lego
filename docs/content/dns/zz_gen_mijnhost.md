@@ -27,7 +27,7 @@ Here is an example bash command using the mijn.host provider:
 
 ```bash
 MIJNHOST_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns mijnhost -d '*.example.com' -d example.com run
+lego --dns mijnhost -d '*.example.com' -d example.com run
 ```
 
 

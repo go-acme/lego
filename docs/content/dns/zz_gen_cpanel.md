@@ -31,7 +31,7 @@ Here is an example bash command using the CPanel/WHM provider:
 CPANEL_USERNAME="yyyy" \
 CPANEL_TOKEN="xxxx" \
 CPANEL_BASE_URL="https://example.com:2083" \
-lego --email you@example.com --dns cpanel -d '*.example.com' -d example.com run
+lego --dns cpanel -d '*.example.com' -d example.com run
 
 ## WHM
 
@@ -39,7 +39,7 @@ CPANEL_MODE=whm \
 CPANEL_USERNAME="yyyy" \
 CPANEL_TOKEN="xxxx" \
 CPANEL_BASE_URL="https://example.com:2087" \
-lego --email you@example.com --dns cpanel -d '*.example.com' -d example.com run
+lego --dns cpanel -d '*.example.com' -d example.com run
 ```
 
 

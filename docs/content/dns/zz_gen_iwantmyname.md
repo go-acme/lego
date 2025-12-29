@@ -30,7 +30,7 @@ Here is an example bash command using the iwantmyname (Deprecated) provider:
 ```bash
 IWANTMYNAME_USERNAME=xxxxxxxx \
 IWANTMYNAME_PASSWORD=xxxxxxxx \
-lego --email you@example.com --dns iwantmyname -d '*.example.com' -d example.com run
+lego --dns iwantmyname -d '*.example.com' -d example.com run
 ```
 
 

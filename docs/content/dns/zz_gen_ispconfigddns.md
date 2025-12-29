@@ -28,7 +28,7 @@ Here is an example bash command using the ISPConfig 3 - Dynamic DNS (DDNS) Modul
 ```bash
 ISPCONFIG_DDNS_SERVER_URL="https://panel.example.com:8080" \
 ISPCONFIG_DDNS_TOKEN=xxxxxx \
-lego --email you@example.com --dns ispconfigddns -d '*.example.com' -d example.com run
+lego --dns ispconfigddns -d '*.example.com' -d example.com run
 ```
 
 

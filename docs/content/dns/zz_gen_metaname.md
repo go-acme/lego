@@ -28,7 +28,7 @@ Here is an example bash command using the Metaname provider:
 ```bash
 METANAME_ACCOUNT_REFERENCE=xxxx \
 METANAME_API_KEY=yyyyyyy \
-lego --email you@example.com --dns metaname -d '*.example.com' -d example.com run
+lego --dns metaname -d '*.example.com' -d example.com run
 ```
 
 

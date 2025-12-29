@@ -29,7 +29,7 @@ Here is an example bash command using the plesk.com provider:
 PLESK_SERVER_BASE_URL="https://plesk.myserver.com:8443" \
 PLESK_USERNAME=xxxxxx \
 PLESK_PASSWORD=yyyyyy \
-lego --email you@example.com --dns plesk -d '*.example.com' -d example.com run
+lego --dns plesk -d '*.example.com' -d example.com run
 ```
 
 

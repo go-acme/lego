@@ -30,7 +30,7 @@ OTC_DOMAIN_NAME=domain_name \
 OTC_USER_NAME=user_name \
 OTC_PASSWORD=password \
 OTC_PROJECT_NAME=project_name \
-lego --email you@example.com --dns otc -d '*.example.com' -d example.com run
+lego --dns otc -d '*.example.com' -d example.com run
 ```
 
 

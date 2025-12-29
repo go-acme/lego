@@ -29,7 +29,7 @@ Here is an example bash command using the Netcup provider:
 NETCUP_CUSTOMER_NUMBER=xxxx \
 NETCUP_API_KEY=yyyy \
 NETCUP_API_PASSWORD=zzzz \
-lego --email you@example.com --dns netcup -d '*.example.com' -d example.com run
+lego --dns netcup -d '*.example.com' -d example.com run
 ```
 
 

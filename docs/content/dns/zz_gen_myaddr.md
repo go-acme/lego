@@ -27,7 +27,7 @@ Here is an example bash command using the myaddr.{tools,dev,io} provider:
 
 ```bash
 MYADDR_PRIVATE_KEYS_MAPPING="example:123,test:456" \
-lego --email you@example.com --dns myaddr -d '*.example.com' -d example.com run
+lego --dns myaddr -d '*.example.com' -d example.com run
 ```
 
 

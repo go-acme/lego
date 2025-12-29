@@ -28,7 +28,7 @@ Here is an example bash command using the KeyHelp provider:
 ```bash
 KEYHELP_BASE_URL="https://keyhelp.example.com" \
 KEYHELP_API_KEY="xxx" \
-lego --email you@example.com --dns keyhelp -d '*.example.com' -d example.com run
+lego --dns keyhelp -d '*.example.com' -d example.com run
 ```
 
 

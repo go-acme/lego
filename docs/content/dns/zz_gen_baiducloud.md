@@ -28,7 +28,7 @@ Here is an example bash command using the Baidu Cloud provider:
 ```bash
 BAIDUCLOUD_ACCESS_KEY_ID="xxx" \
 BAIDUCLOUD_SECRET_ACCESS_KEY="yyy" \
-lego --email you@example.com --dns baiducloud -d '*.example.com' -d example.com run
+lego --dns baiducloud -d '*.example.com' -d example.com run
 ```
 
 

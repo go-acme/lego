@@ -27,7 +27,7 @@ Here is an example bash command using the Variomedia provider:
 
 ```bash
 VARIOMEDIA_API_TOKEN=xxxx \
-lego --email you@example.com --dns variomedia -d '*.example.com' -d example.com run
+lego --dns variomedia -d '*.example.com' -d example.com run
 ```
 
 

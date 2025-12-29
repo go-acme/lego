@@ -28,7 +28,7 @@ Here is an example bash command using the Tencent EdgeOne provider:
 ```bash
 EDGEONE_SECRET_ID=abcdefghijklmnopqrstuvwx \
 EDGEONE_SECRET_KEY=your-secret-key \
-lego --email you@example.com --dns edgeone -d '*.example.com' -d example.com run
+lego --dns edgeone -d '*.example.com' -d example.com run
 ```
 
 

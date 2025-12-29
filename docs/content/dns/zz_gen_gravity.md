@@ -29,7 +29,7 @@ Here is an example bash command using the Gravity provider:
 GRAVITY_SERVER_URL="https://example.org:1234" \
 GRAVITY_USERNAME="xxxxxxxxxxxxxxxxxxxxx" \
 GRAVITY_PASSWORD="yyyyyyyyyyyyyyyyyyyyy" \
-lego --email you@example.com --dns gravity -d '*.example.com' -d example.com run
+lego --dns gravity -d '*.example.com' -d example.com run
 ```
 
 

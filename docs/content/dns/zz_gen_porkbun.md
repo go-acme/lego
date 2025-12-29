@@ -28,7 +28,7 @@ Here is an example bash command using the Porkbun provider:
 ```bash
 PORKBUN_SECRET_API_KEY=xxxxxx \
 PORKBUN_API_KEY=yyyyyy \
-lego --email you@example.com --dns porkbun -d '*.example.com' -d example.com run
+lego --dns porkbun -d '*.example.com' -d example.com run
 ```
 
 

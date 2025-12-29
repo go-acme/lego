@@ -28,7 +28,7 @@ Here is an example bash command using the Ultradns provider:
 ```bash
 ULTRADNS_USERNAME=username \
 ULTRADNS_PASSWORD=password \
-lego --email you@example.com --dns ultradns -d '*.example.com' -d example.com run
+lego --dns ultradns -d '*.example.com' -d example.com run
 ```
 
 

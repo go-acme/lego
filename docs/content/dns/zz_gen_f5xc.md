@@ -29,7 +29,7 @@ Here is an example bash command using the F5 XC provider:
 F5XC_API_TOKEN="xxx" \
 F5XC_TENANT_NAME="yyy" \
 F5XC_GROUP_NAME="zzz" \
-lego --email you@example.com --dns f5xc -d '*.example.com' -d example.com run
+lego --dns f5xc -d '*.example.com' -d example.com run
 ```
 
 

@@ -28,7 +28,7 @@ Here is an example bash command using the ClouDNS provider:
 ```bash
 CLOUDNS_AUTH_ID=xxxx \
 CLOUDNS_AUTH_PASSWORD=yyyy \
-lego --email you@example.com --dns cloudns -d '*.example.com' -d example.com run
+lego --dns cloudns -d '*.example.com' -d example.com run
 ```
 
 

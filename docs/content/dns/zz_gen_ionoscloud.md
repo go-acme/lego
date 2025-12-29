@@ -27,7 +27,7 @@ Here is an example bash command using the Ionos Cloud provider:
 
 ```bash
 IONOSCLOUD_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns ionoscloud -d '*.example.com' -d example.com run
+lego --dns ionoscloud -d '*.example.com' -d example.com run
 ```
 
 

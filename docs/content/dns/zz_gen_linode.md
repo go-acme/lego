@@ -27,7 +27,7 @@ Here is an example bash command using the Linode (v4) provider:
 
 ```bash
 LINODE_TOKEN=xxxxx \
-lego --email you@example.com --dns linode -d '*.example.com' -d example.com run
+lego --dns linode -d '*.example.com' -d example.com run
 ```
 
 

@@ -30,7 +30,7 @@ SELECTELV2_USERNAME=trex \
 SELECTELV2_PASSWORD=xxxxx \
 SELECTELV2_ACCOUNT_ID=1234567 \
 SELECTELV2_PROJECT_ID=111a11111aaa11aa1a11aaa11111aa1a \
-lego --email you@example.com --dns selectelv2 -d '*.example.com' -d example.com run
+lego --dns selectelv2 -d '*.example.com' -d example.com run
 ```
 
 

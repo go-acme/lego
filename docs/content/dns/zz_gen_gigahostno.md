@@ -28,7 +28,7 @@ Here is an example bash command using the Gigahost.no provider:
 ```bash
 GIGAHOSTNO_USERNAME="xxxxxxxxxxxxxxxxxxxxx" \
 GIGAHOSTNO_PASSWORD="yyyyyyyyyyyyyyyyyyyyy" \
-lego --email you@example.com --dns gigahostno -d '*.example.com' -d example.com run
+lego --dns gigahostno -d '*.example.com' -d example.com run
 ```
 
 

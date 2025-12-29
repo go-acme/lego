@@ -27,7 +27,7 @@ Here is an example bash command using the Digital Ocean provider:
 
 ```bash
 DO_AUTH_TOKEN=xxxxxx \
-lego --email you@example.com --dns digitalocean -d '*.example.com' -d example.com run
+lego --dns digitalocean -d '*.example.com' -d example.com run
 ```
 
 

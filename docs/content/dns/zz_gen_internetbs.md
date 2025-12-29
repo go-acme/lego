@@ -28,7 +28,7 @@ Here is an example bash command using the Internet.bs provider:
 ```bash
 INTERNET_BS_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxx \
 INTERNET_BS_PASSWORD=yyyyyyyyyyyyyyyyyyyyyyyyyy \
-lego --email you@example.com --dns internetbs -d '*.example.com' -d example.com run
+lego --dns internetbs -d '*.example.com' -d example.com run
 ```
 
 

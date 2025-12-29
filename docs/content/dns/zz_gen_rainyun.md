@@ -27,7 +27,7 @@ Here is an example bash command using the Rain Yun/雨云 provider:
 
 ```bash
 RAINYUN_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns rainyun -d '*.example.com' -d example.com run
+lego --dns rainyun -d '*.example.com' -d example.com run
 ```
 
 

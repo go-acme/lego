@@ -28,7 +28,7 @@ Here is an example bash command using the Yandex Cloud provider:
 ```bash
 YANDEX_CLOUD_IAM_TOKEN=<base64_IAM_token> \
 YANDEX_CLOUD_FOLDER_ID=<folder/project_id> \
-lego --email you@example.com --dns yandexcloud -d '*.example.com' -d example.com run
+lego --dns yandexcloud -d '*.example.com' -d example.com run
 
 # ---
 
@@ -41,7 +41,7 @@ YANDEX_CLOUD_IAM_TOKEN=$(echo '{ \
   "private_key": "-----BEGIN PRIVATE KEY-----<rsa private key>-----END PRIVATE KEY-----" \
 }' | base64) \
 YANDEX_CLOUD_FOLDER_ID=<yandex cloud folder(project) id> \
-lego --email you@example.com --dns yandexcloud -d '*.example.com' -d example.com run
+lego --dns yandexcloud -d '*.example.com' -d example.com run
 ```
 
 

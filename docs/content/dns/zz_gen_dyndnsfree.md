@@ -28,7 +28,7 @@ Here is an example bash command using the DynDnsFree.de provider:
 ```bash
 DYNDNSFREE_USERNAME="xxx" \
 DYNDNSFREE_PASSWORD="yyy" \
-lego --email you@example.com --dns dyndnsfree -d '*.example.com' -d example.com run
+lego --dns dyndnsfree -d '*.example.com' -d example.com run
 ```
 
 

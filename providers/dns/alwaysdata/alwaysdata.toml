@@ -1,0 +1,26 @@
+Name = "Alwaysdata"
+Description = ''''''
+URL = "https://alwaysdata.com/"
+Code = "alwaysdata"
+Since = "v4.31.0"
+
+Example = '''
+ALWAYSDATA_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+lego --email you@example.com --dns alwaysdata -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    ALWAYSDATA_API_KEY = "API Key"
+  [Configuration.Additional]
+    ALWAYSDATA_ACCOUNT = "Account name"
+    ALWAYSDATA_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    ALWAYSDATA_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    ALWAYSDATA_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    ALWAYSDATA_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://help.alwaysdata.com/en/api/resources/"
+  APIDocDomains = "https://api.alwaysdata.com/v1/domain/doc/"
+  APIDocRecords = "https://api.alwaysdata.com/v1/record/doc/"
+  APIExamples = "https://help.alwaysdata.com/en/api/examples/"

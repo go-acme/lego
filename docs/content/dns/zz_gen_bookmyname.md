@@ -28,7 +28,7 @@ Here is an example bash command using the BookMyName provider:
 ```bash
 BOOKMYNAME_USERNAME="xxx" \
 BOOKMYNAME_PASSWORD="yyy" \
-lego --email you@example.com --dns bookmyname -d '*.example.com' -d example.com run
+lego --dns bookmyname -d '*.example.com' -d example.com run
 ```
 
 

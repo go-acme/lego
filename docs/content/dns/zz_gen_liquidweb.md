@@ -28,7 +28,7 @@ Here is an example bash command using the Liquid Web provider:
 ```bash
 LWAPI_USERNAME=someuser \
 LWAPI_PASSWORD=somepass \
-lego --email you@example.com --dns liquidweb -d '*.example.com' -d example.com run
+lego --dns liquidweb -d '*.example.com' -d example.com run
 ```
 
 

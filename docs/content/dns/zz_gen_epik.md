@@ -27,7 +27,7 @@ Here is an example bash command using the Epik provider:
 
 ```bash
 EPIK_SIGNATURE=xxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --email you@example.com --dns epik -d '*.example.com' -d example.com run
+lego --dns epik -d '*.example.com' -d example.com run
 ```
 
 

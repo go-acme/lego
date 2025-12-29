@@ -27,7 +27,7 @@ Here is an example bash command using the webnames.ru provider:
 
 ```bash
 WEBNAMESRU_API_KEY=xxxxxx \
-lego --email you@example.com --dns webnamesru -d '*.example.com' -d example.com run
+lego --dns webnamesru -d '*.example.com' -d example.com run
 ```
 
 

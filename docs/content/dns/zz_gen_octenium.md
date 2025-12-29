@@ -27,7 +27,7 @@ Here is an example bash command using the Octenium provider:
 
 ```bash
 OCTENIUM_API_KEY="xxx" \
-lego --email you@example.com --dns octenium -d '*.example.com' -d example.com run
+lego --dns octenium -d '*.example.com' -d example.com run
 ```
 
 

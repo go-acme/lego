@@ -25,7 +25,7 @@ Solving the DNS-01 challenge using CLI prompt.
 Here is an example bash command using the Manual provider:
 
 ```bash
-lego --email you@example.com --dns manual -d '*.example.com' -d example.com run
+lego --dns manual -d '*.example.com' -d example.com run
 ```
 
 
@@ -36,7 +36,7 @@ lego --email you@example.com --dns manual -d '*.example.com' -d example.com run
 To start using the CLI prompt "provider", start lego with `--dns manual`:
 
 ```console
-$ lego --email "you@example.com" --domains="example.com" --dns "manual" run
+$ lego --dns manual -d example.com run
 ```
 
 What follows are a few log print-outs, interspersed with some prompts, asking for you to do perform some actions:

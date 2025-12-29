@@ -29,7 +29,7 @@ Here is an example bash command using the CloudDNS provider:
 CLOUDDNS_CLIENT_ID=bLsdFAks23429841238feb177a572aX \
 CLOUDDNS_EMAIL=you@example.com \
 CLOUDDNS_PASSWORD=b9841238feb177a84330f \
-lego --email you@example.com --dns clouddns -d '*.example.com' -d example.com run
+lego --dns clouddns -d '*.example.com' -d example.com run
 ```
 
 

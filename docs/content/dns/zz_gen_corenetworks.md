@@ -28,7 +28,7 @@ Here is an example bash command using the Core-Networks provider:
 ```bash
 CORENETWORKS_LOGIN="xxxx" \
 CORENETWORKS_PASSWORD="yyyy" \
-lego --email you@example.com --dns corenetworks -d '*.example.com' -d example.com run
+lego --dns corenetworks -d '*.example.com' -d example.com run
 ```
 
 

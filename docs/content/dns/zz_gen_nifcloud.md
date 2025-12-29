@@ -28,7 +28,7 @@ Here is an example bash command using the NIFCloud provider:
 ```bash
 NIFCLOUD_ACCESS_KEY_ID=xxxx \
 NIFCLOUD_SECRET_ACCESS_KEY=yyyy \
-lego --email you@example.com --dns nifcloud -d '*.example.com' -d example.com run
+lego --dns nifcloud -d '*.example.com' -d example.com run
 ```
 
 

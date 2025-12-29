@@ -27,7 +27,7 @@ Here is an example bash command using the Hosting.nl provider:
 
 ```bash
 HOSTINGNL_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns hostingnl -d '*.example.com' -d example.com run
+lego --dns hostingnl -d '*.example.com' -d example.com run
 ```
 
 

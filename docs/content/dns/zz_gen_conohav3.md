@@ -29,7 +29,7 @@ Here is an example bash command using the ConoHa v3 provider:
 CONOHAV3_TENANT_ID=487727e3921d44e3bfe7ebb337bf085e \
 CONOHAV3_API_USER_ID=xxxx \
 CONOHAV3_API_PASSWORD=yyyy \
-lego --email you@example.com --dns conohav3 -d '*.example.com' -d example.com run
+lego --dns conohav3 -d '*.example.com' -d example.com run
 ```
 
 

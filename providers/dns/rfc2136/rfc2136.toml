@@ -9,7 +9,7 @@ RFC2136_NAMESERVER=127.0.0.1 \
 RFC2136_TSIG_KEY=example.com \
 RFC2136_TSIG_ALGORITHM=hmac-sha256. \
 RFC2136_TSIG_SECRET=YWJjZGVmZGdoaWprbG1ub3BxcnN0dXZ3eHl6MTIzNDU= \
-lego --email you@example.com --dns rfc2136 -d '*.example.com' -d example.com run
+lego --dns rfc2136 -d '*.example.com' -d example.com run
 
 ## ---
 
@@ -17,7 +17,7 @@ keyname=example.com; keyfile=example.com.key; tsig-keygen $keyname > $keyfile
 
 RFC2136_NAMESERVER=127.0.0.1 \
 RFC2136_TSIG_FILE="$keyfile" \
-lego --email you@example.com --dns rfc2136 -d '*.example.com' -d example.com run
+lego --dns rfc2136 -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

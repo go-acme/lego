@@ -28,7 +28,7 @@ Here is an example bash command using the Spaceship provider:
 ```bash
 SPACESHIP_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
 SPACESHIP_API_SECRET="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns spaceship -d '*.example.com' -d example.com run
+lego --dns spaceship -d '*.example.com' -d example.com run
 ```
 
 

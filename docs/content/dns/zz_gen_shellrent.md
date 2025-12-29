@@ -28,7 +28,7 @@ Here is an example bash command using the Shellrent provider:
 ```bash
 SHELLRENT_USERNAME=xxxx \
 SHELLRENT_TOKEN=yyyy \
-lego --email you@example.com --dns shellrent -d '*.example.com' -d example.com run
+lego --dns shellrent -d '*.example.com' -d example.com run
 ```
 
 

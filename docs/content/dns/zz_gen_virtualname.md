@@ -27,7 +27,7 @@ Here is an example bash command using the Virtualname provider:
 
 ```bash
 VIRTUALNAME_TOKEN=xxxxxx \
-lego --email you@example.com --dns virtualname -d '*.example.com' -d example.com run
+lego --dns virtualname -d '*.example.com' -d example.com run
 ```
 
 

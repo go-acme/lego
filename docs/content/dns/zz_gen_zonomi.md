@@ -27,7 +27,7 @@ Here is an example bash command using the Zonomi provider:
 
 ```bash
 ZONOMI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --email you@example.com --dns zonomi -d '*.example.com' -d example.com run
+lego --dns zonomi -d '*.example.com' -d example.com run
 ```
 
 

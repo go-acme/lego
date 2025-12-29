@@ -28,7 +28,7 @@ Here is an example bash command using the Technitium provider:
 ```bash
 TECHNITIUM_SERVER_BASE_URL="https://localhost:5380" \
 TECHNITIUM_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns technitium -d '*.example.com' -d example.com run
+lego --dns technitium -d '*.example.com' -d example.com run
 ```
 
 

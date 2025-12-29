@@ -6,7 +6,7 @@ Since = "v4.30.0"
 
 Example = '''
 VIRTUALNAME_TOKEN=xxxxxx \
-lego --email you@example.com --dns virtualname -d '*.example.com' -d example.com run
+lego --dns virtualname -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

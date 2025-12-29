@@ -28,7 +28,7 @@ Here is an example bash command using the Go Daddy provider:
 ```bash
 GODADDY_API_KEY=xxxxxxxx \
 GODADDY_API_SECRET=yyyyyyyy \
-lego --email you@example.com --dns godaddy -d '*.example.com' -d example.com run
+lego --dns godaddy -d '*.example.com' -d example.com run
 ```
 
 

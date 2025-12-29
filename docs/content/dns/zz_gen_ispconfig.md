@@ -29,7 +29,7 @@ Here is an example bash command using the ISPConfig 3 provider:
 ISPCONFIG_SERVER_URL="https://example.com:8080/remote/json.php" \
 ISPCONFIG_USERNAME="xxx" \
 ISPCONFIG_PASSWORD="yyy" \
-lego --email you@example.com --dns ispconfig -d '*.example.com' -d example.com run
+lego --dns ispconfig -d '*.example.com' -d example.com run
 ```
 
 

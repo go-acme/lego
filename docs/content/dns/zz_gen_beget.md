@@ -28,7 +28,7 @@ Here is an example bash command using the Beget.com provider:
 ```bash
 BEGET_USERNAME=xxxxxx \
 BEGET_PASSWORD=yyyyyy \
-lego --email you@example.com --dns beget -d '*.example.com' -d example.com run
+lego --dns beget -d '*.example.com' -d example.com run
 ```
 
 

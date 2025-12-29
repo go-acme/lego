@@ -30,7 +30,7 @@ NICRU_USER="<your_user>" \
 NICRU_PASSWORD="<your_password>" \
 NICRU_SERVICE_ID="<service_id>" \
 NICRU_SECRET="<service_secret>" \
-lego --dns nicru --domains "*.example.com" --email you@example.com run
+lego --dns nicru -d '*.example.com' -d example.com run
 ```
 
 

@@ -28,7 +28,7 @@ Here is an example bash command using the Tencent Cloud DNS provider:
 ```bash
 TENCENTCLOUD_SECRET_ID=abcdefghijklmnopqrstuvwx \
 TENCENTCLOUD_SECRET_KEY=your-secret-key \
-lego --email you@example.com --dns tencentcloud -d '*.example.com' -d example.com run
+lego --dns tencentcloud -d '*.example.com' -d example.com run
 ```
 
 

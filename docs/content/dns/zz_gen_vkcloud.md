@@ -29,7 +29,7 @@ Here is an example bash command using the VK Cloud provider:
 VK_CLOUD_PROJECT_ID="<your_project_id>" \
 VK_CLOUD_USERNAME="<your_email>" \
 VK_CLOUD_PASSWORD="<your_password>" \
-lego --email you@example.com --dns vkcloud -d '*.example.com' -d example.com run
+lego --dns vkcloud -d '*.example.com' -d example.com run
 ```
 
 

@@ -29,7 +29,7 @@ Here is an example bash command using the Infoblox provider:
 INFOBLOX_USERNAME=api-user-529 \
 INFOBLOX_PASSWORD=b9841238feb177a84330febba8a83208921177bffe733 \
 INFOBLOX_HOST=infoblox.example.org
-lego --email you@example.com --dns infoblox -d '*.example.com' -d example.com run
+lego --dns infoblox -d '*.example.com' -d example.com run
 ```
 
 

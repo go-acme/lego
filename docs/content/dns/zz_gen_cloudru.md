@@ -29,7 +29,7 @@ Here is an example bash command using the Cloud.ru provider:
 CLOUDRU_SERVICE_INSTANCE_ID=ppp \
 CLOUDRU_KEY_ID=xxx \
 CLOUDRU_SECRET=yyy \
-lego --email you@example.com --dns cloudru -d '*.example.com' -d example.com run
+lego --dns cloudru -d '*.example.com' -d example.com run
 ```
 
 

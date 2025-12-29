@@ -28,7 +28,7 @@ Here is an example bash command using the Axelname provider:
 ```bash
 AXELNAME_NICKNAME="yyy" \
 AXELNAME_TOKEN="xxx" \
-lego --email you@example.com --dns axelname -d '*.example.com' -d example.com run
+lego --dns axelname -d '*.example.com' -d example.com run
 ```
 
 

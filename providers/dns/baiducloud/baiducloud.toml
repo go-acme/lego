@@ -7,7 +7,7 @@ Since = "v4.23.0"
 Example = '''
 BAIDUCLOUD_ACCESS_KEY_ID="xxx" \
 BAIDUCLOUD_SECRET_ACCESS_KEY="yyy" \
-lego --email you@example.com --dns baiducloud -d '*.example.com' -d example.com run
+lego --dns baiducloud -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

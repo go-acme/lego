@@ -7,7 +7,7 @@ Since = "v4.21.0"
 Example = '''
 MANAGEENGINE_CLIENT_ID="xxx" \
 MANAGEENGINE_CLIENT_SECRET="yyy" \
-lego --email you@example.com --dns manageengine -d '*.example.com' -d example.com run
+lego --dns manageengine -d '*.example.com' -d example.com run
 '''
 
 [Configuration]

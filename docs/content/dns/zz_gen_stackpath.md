@@ -29,7 +29,7 @@ Here is an example bash command using the Stackpath provider:
 STACKPATH_CLIENT_ID=xxxxx \
 STACKPATH_CLIENT_SECRET=yyyyy \
 STACKPATH_STACK_ID=zzzzz \
-lego --email you@example.com --dns stackpath -d '*.example.com' -d example.com run
+lego --dns stackpath -d '*.example.com' -d example.com run
 ```
 
 

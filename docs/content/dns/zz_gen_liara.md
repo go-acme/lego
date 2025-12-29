@@ -27,7 +27,7 @@ Here is an example bash command using the Liara provider:
 
 ```bash
 LIARA_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns liara -d '*.example.com' -d example.com run
+lego --dns liara -d '*.example.com' -d example.com run
 ```
 
 

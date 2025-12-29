@@ -7,7 +7,7 @@ Since = "v4.20.0"
 Example = '''
 TECHNITIUM_SERVER_BASE_URL="https://localhost:5380" \
 TECHNITIUM_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --email you@example.com --dns technitium -d '*.example.com' -d example.com run
+lego --dns technitium -d '*.example.com' -d example.com run
 '''
 
 Additional = '''

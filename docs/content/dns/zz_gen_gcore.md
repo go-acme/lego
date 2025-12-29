@@ -27,7 +27,7 @@ Here is an example bash command using the G-Core provider:
 
 ```bash
 GCORE_PERMANENT_API_TOKEN=xxxxx \
-lego --email you@example.com --dns gcore -d '*.example.com' -d example.com run
+lego --dns gcore -d '*.example.com' -d example.com run
 ```
 
 

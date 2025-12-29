@@ -28,7 +28,7 @@ Here is an example bash command using the webnames.ca provider:
 ```bash
 WEBNAMESCA_API_USER="xxx" \
 WEBNAMESCA_API_KEY="yyy" \
-lego --email you@example.com --dns webnamesca -d '*.example.com' -d example.com run
+lego --dns webnamesca -d '*.example.com' -d example.com run
 ```
 
 

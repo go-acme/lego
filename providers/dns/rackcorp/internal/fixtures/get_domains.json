@@ -1,0 +1,59 @@
+{
+  "code": "OK",
+  "data": [
+    {
+      "id": 123,
+      "name": "example.com",
+      "status": "ACTIVE",
+      "customerid": 42,
+      "stdname": "yyy",
+      "serial": "xxx",
+      "records": [
+        {
+          "id": 789,
+          "name": "string",
+          "status": "ACTIVE",
+          "type": "A",
+          "regionid": 0,
+          "regionname": "string",
+          "lookup": "string",
+          "priority": 0,
+          "weight": 0,
+          "port": 0,
+          "caatag": 0,
+          "caaflag": 0,
+          "customerid": 0,
+          "stdname": "string",
+          "serial": "string"
+        }
+      ]
+    },
+    {
+      "id": 369,
+      "name": "example.org",
+      "status": "ACTIVE",
+      "customerid": 42,
+      "stdname": "yyy",
+      "serial": "xxx",
+      "records": [
+        {
+          "id": 789,
+          "name": "string",
+          "status": "ACTIVE",
+          "type": "A",
+          "regionid": 0,
+          "regionname": "string",
+          "lookup": "string",
+          "priority": 0,
+          "weight": 0,
+          "port": 0,
+          "caatag": 0,
+          "caaflag": 0,
+          "customerid": 0,
+          "stdname": "string",
+          "serial": "string"
+        }
+      ]
+    }
+  ]
+}

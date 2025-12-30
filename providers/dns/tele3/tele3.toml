@@ -1,0 +1,24 @@
+Name = "Tele3"
+Description = ''''''
+URL = "https://www.tele3.cz"
+Code = "tele3"
+Since = "v5.0.0"
+
+Example = '''
+TELE3_KEY="xxx" \
+TELE3_SECRET="yyy" \
+lego --dns tele3 -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    TELE3_KEY = "Key"
+    TELE3_SECRET = "Secret"
+  [Configuration.Additional]
+    TELE3_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    TELE3_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    TELE3_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    TELE3_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://www.tele3.cz/system-acme-api.html"

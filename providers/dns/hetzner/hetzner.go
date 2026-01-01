@@ -4,7 +4,6 @@ package hetzner
 import (
 	"errors"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -62,10 +61,9 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for hetzner.
-// Credentials must be passed in the environment variable: HETZNER_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	_, foundAPIToken := os.LookupEnv(EnvAPIToken)
-	_, foundAPIKey := os.LookupEnv(EnvAPIKey)
+	foundAPIToken := env.GetOrFile(EnvAPIToken) != ""
+	foundAPIKey := env.GetOrFile(EnvAPIKey) != ""
 
 	switch {
 	case foundAPIToken:

@@ -1,0 +1,24 @@
+Name = "Rage4"
+Description = ''''''
+URL = "https://rage4.com/"
+Code = "rage4"
+Since = "v5.0.0"
+
+Example = '''
+RAGE4_USERNAME="xxx" \
+RAGE4_PASSWORD="yyy" \
+lego --dns rage4 -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    RAGE4_USERNAME = "Username"
+    RAGE4_PASSWORD = "Password"
+  [Configuration.Additional]
+    RAGE4_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    RAGE4_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    RAGE4_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    RAGE4_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://rage4.com/swagger/index.html?urls.primaryName=dns-legacy#/DNS"

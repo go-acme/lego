@@ -1,0 +1,25 @@
+[
+  {
+    "id": 123,
+    "name": "example.com",
+    "owner_email": "user@example.com",
+    "default_ns1": "ns1.r4ns.com",
+    "default_ns2": "ns2.r4ns.net",
+    "master": null,
+    "soa_refresh": 10800,
+    "soa_expiry": 604800,
+    "soa_retry": 3600,
+    "soa_nx": 3600,
+    "ns_ttl": 3600,
+    "online": true,
+    "secure": true,
+    "locked": false,
+    "api_access": true,
+    "created": "2024-12-09T12:35:02.7511573Z",
+    "updated": "2025-12-09T10:35:02.7511584Z",
+    "subnet_mask": -32768,
+    "type": "NATIVE",
+    "notified_serial": null,
+    "last_check": null
+  }
+]

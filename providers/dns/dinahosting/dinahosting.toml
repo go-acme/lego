@@ -1,0 +1,24 @@
+Name = "Dinahosting"
+Description = ''''''
+URL = "https://en.dinahosting.com"
+Code = "dinahosting"
+Since = "v5.0.0"
+
+Example = '''
+DINAHOSTING_USERNAME="xxx" \
+DINAHOSTING_PASSWORD="yyy" \
+lego --dns dinahosting -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    DINAHOSTING_USERNAME = "Username"
+    DINAHOSTING_PASSWORD = "Password"
+  [Configuration.Additional]
+    DINAHOSTING_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    DINAHOSTING_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    DINAHOSTING_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    DINAHOSTING_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://en.dinahosting.com/api"

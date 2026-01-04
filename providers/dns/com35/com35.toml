@@ -1,0 +1,24 @@
+Name = "35.com/三五互联"
+Description = ''''''
+URL = "https://www.35.cn/"
+Code = "com35"
+Since = "v4.31.0"
+
+Example = '''
+COM35_USERNAME="xxx" \
+COM35_PASSWORD="yyy" \
+lego --dns com35 -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    COM35_USERNAME = "Username"
+    COM35_PASSWORD = "API password"
+  [Configuration.Additional]
+    COM35_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 10)"
+    COM35_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 120)"
+    COM35_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)"
+    COM35_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://api.35.cn/CustomerCenter/doc/domain_v2.html"

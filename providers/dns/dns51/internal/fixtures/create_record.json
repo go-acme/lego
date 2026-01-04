@@ -1,0 +1,15 @@
+{
+  "code": 0,
+  "message": "foo",
+  "data": {
+    "domainID": 123,
+    "type": "TXT",
+    "viewID": 456,
+    "value": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "ttl": 120,
+    "remark": "Created by go-acme/lego",
+    "recordID": 1333,
+    "state": 0,
+    "record": "_acme-challenge.example.com"
+  }
+}

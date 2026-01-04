@@ -24,7 +24,7 @@ So if you think that lego is worth it, please consider [donating](https://donate
   - Support [RFC 8738](https://www.rfc-editor.org/rfc/rfc8738.html): certificates for IP addresses
   - Support [RFC 9773](https://www.rfc-editor.org/rfc/rfc9773.html): Renewal Information (ARI) Extension
   - Support [draft-ietf-acme-profiles-00](https://datatracker.ietf.org/doc/draft-ietf-acme-profiles/): Profiles Extension
-- Comes with about [170 DNS providers](https://go-acme.github.io/lego/dns)
+- Comes with about [180 DNS providers](https://go-acme.github.io/lego/dns)
 - Register with CA
 - Obtain certificates, both from scratch or with an existing CSR
 - Renew certificates
@@ -55,6 +55,8 @@ Documentation is hosted live at https://go-acme.github.io/lego/.
 ## DNS providers
 
 Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
+
+If your DNS provider is not supported, please open an [issue](https://github.com/go-acme/lego/issues/new?assignees=&labels=enhancement%2C+new-provider&template=new_dns_provider.yml).
 
 <!-- START DNS PROVIDERS LIST -->
 

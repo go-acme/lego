@@ -1,0 +1,10 @@
+{
+  "rows": [
+    {
+      "id": "d123",
+      "domainName": "example.com"
+    }
+  ],
+  "Type": "string",
+  "StatusCode": "string"
+}

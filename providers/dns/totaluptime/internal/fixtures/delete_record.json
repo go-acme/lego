@@ -1,0 +1,14 @@
+{
+  "id": "r123",
+  "options": "string",
+  "data": [
+    {
+      "Type": "string",
+      "StatusCode": "string"
+    }
+  ],
+  "message": "string",
+  "status": "string",
+  "Type": "string",
+  "StatusCode": "string"
+}

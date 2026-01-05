@@ -1,0 +1,55 @@
+{
+  "requestId": "azerty",
+  "error": {
+    "code": 0,
+    "status": "",
+    "message": ""
+  },
+  "result": {
+    "dataList": [
+      {
+        "id": 11,
+        "domainName": "11.example"
+      },
+      {
+        "id": 12,
+        "domainName": "12.example"
+      },
+      {
+        "id": 13,
+        "domainName": "13.example"
+      },
+      {
+        "id": 14,
+        "domainName": "14.example"
+      },
+      {
+        "id": 15,
+        "domainName": "15.example"
+      },
+      {
+        "id": 16,
+        "domainName": "16.example"
+      },
+      {
+        "id": 17,
+        "domainName": "17.example"
+      },
+      {
+        "id": 18,
+        "domainName": "18.example"
+      },
+      {
+        "id": 19,
+        "domainName": "19.example"
+      },
+      {
+        "id": 20,
+        "domainName": "example.com"
+      }
+    ],
+    "currentCount": 10,
+    "totalCount": 20,
+    "totalPage": 2
+  }
+}

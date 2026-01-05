@@ -1,0 +1,25 @@
+{
+  "requestId": "azerty",
+  "error": {
+    "code": 0,
+    "status": "",
+    "message": ""
+  },
+  "result": {
+    "dataList": {
+      "id": 123,
+      "hostRecord": "_acme-challenge",
+      "hostValue": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "jcloudRes": false,
+      "mxPriority": 0,
+      "port": 0,
+      "ttl": 120,
+      "type": "TXT",
+      "weight": 0,
+      "viewValue": [
+        1,
+        2
+      ]
+    }
+  }
+}

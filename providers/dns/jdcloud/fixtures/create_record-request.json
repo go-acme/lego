@@ -1,0 +1,15 @@
+{
+  "domainId": "20",
+  "regionId": "cn-north-1",
+  "req": {
+    "hostRecord": "_acme-challenge",
+    "hostValue": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "jcloudRes": null,
+    "mxPriority": null,
+    "port": null,
+    "ttl": 120,
+    "type": "TXT",
+    "viewValue": -1,
+    "weight": null
+  }
+}

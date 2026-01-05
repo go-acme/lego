@@ -46,6 +46,7 @@ require (
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.180
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/infobloxopen/infoblox-go-client/v2 v2.10.0
+	github.com/jdcloud-api/jdcloud-sdk-go v1.64.0
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/ldez/grignotin v0.10.1
 	github.com/linode/linodego v1.62.0
@@ -154,6 +155,7 @@ require (
 	github.com/go-resty/resty/v2 v2.17.0 // indirect
 	github.com/goccy/go-yaml v1.9.8 // indirect
 	github.com/gofrs/flock v0.13.0 // indirect
+	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect

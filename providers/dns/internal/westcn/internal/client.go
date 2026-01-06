@@ -30,7 +30,7 @@ type Client struct {
 
 	encoder *encoding.Encoder
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -46,7 +46,7 @@ func NewClient(username, password string) (*Client, error) {
 		username:   username,
 		password:   password,
 		encoder:    simplifiedchinese.GBK.NewEncoder(),
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
@@ -116,7 +116,7 @@ func (c *Client) newRequest(ctx context.Context, p, act string, form url.Values)
 		return nil, err
 	}
 
-	endpoint := c.baseURL.JoinPath(p, "/")
+	endpoint := c.BaseURL.JoinPath(p, "/")
 
 	query := endpoint.Query()
 	query.Set("act", act)

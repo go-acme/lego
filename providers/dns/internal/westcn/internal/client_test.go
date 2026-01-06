@@ -21,7 +21,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 			}
 
 			client.HTTPClient = server.Client()
-			client.baseURL, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
@@ -69,7 +69,8 @@ func TestClientAddRecord_error(t *testing.T) {
 			servermock.ResponseFromFixture("error.json").
 				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
 			servermock.CheckQueryParameter().Strict().
-				With("act", "adddnsrecord")).
+				With("act", "adddnsrecord"),
+		).
 		Build(t)
 
 	record := Record{

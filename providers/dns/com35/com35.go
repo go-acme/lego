@@ -1,5 +1,5 @@
-// Package westcn implements a DNS provider for solving the DNS-01 challenge using West.cn/西部数码.
-package westcn
+// Package com35 implements a DNS provider for solving the DNS-01 challenge using 35.com/三五互联.
+package com35
 
 import (
 	"errors"
@@ -14,7 +14,7 @@ import (
 
 // Environment variables names.
 const (
-	envNamespace = "WESTCN_"
+	envNamespace = "COM35_"
 
 	EnvUsername = envNamespace + "USERNAME"
 	EnvPassword = envNamespace + "PASSWORD"
@@ -25,7 +25,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-const defaultBaseURL = "https://api.west.cn/api/v2"
+const defaultBaseURL = "https://api.35.cn/api/v2"
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
@@ -49,11 +49,11 @@ type DNSProvider struct {
 	prv challenge.ProviderTimeout
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for West.cn/西部数码.
+// NewDNSProvider returns a DNSProvider instance configured for 35.com/三五互联.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvUsername, EnvPassword)
 	if err != nil {
-		return nil, fmt.Errorf("westcn: %w", err)
+		return nil, fmt.Errorf("35com: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -63,15 +63,15 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for West.cn/西部数码.
+// NewDNSProviderConfig return a DNSProvider instance configured for 35.com/三五互联.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("westcn: the configuration of the DNS provider is nil")
+		return nil, errors.New("35com: the configuration of the DNS provider is nil")
 	}
 
 	provider, err := westcn.NewDNSProviderConfig(config, defaultBaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("westcn: %w", err)
+		return nil, fmt.Errorf("35com: %w", err)
 	}
 
 	return &DNSProvider{prv: provider}, nil
@@ -81,7 +81,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	err := d.prv.Present(domain, token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("westcn: %w", err)
+		return fmt.Errorf("35com: %w", err)
 	}
 
 	return nil
@@ -91,7 +91,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	err := d.prv.CleanUp(domain, token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("westcn: %w", err)
+		return fmt.Errorf("35com: %w", err)
 	}
 
 	return nil

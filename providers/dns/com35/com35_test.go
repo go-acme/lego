@@ -1,4 +1,4 @@
-package westcn
+package com35
 
 import (
 	"testing"
@@ -30,7 +30,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvUsername: "",
 				EnvPassword: "secret",
 			},
-			expected: "westcn: some credentials information are missing: WESTCN_USERNAME",
+			expected: "35com: some credentials information are missing: COM35_USERNAME",
 		},
 		{
 			desc: "missing password",
@@ -38,12 +38,12 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvUsername: "user",
 				EnvPassword: "",
 			},
-			expected: "westcn: some credentials information are missing: WESTCN_PASSWORD",
+			expected: "35com: some credentials information are missing: COM35_PASSWORD",
 		},
 		{
 			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "westcn: some credentials information are missing: WESTCN_USERNAME,WESTCN_PASSWORD",
+			expected: "35com: some credentials information are missing: COM35_USERNAME,COM35_PASSWORD",
 		},
 	}
 
@@ -83,16 +83,16 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc:     "missing username",
 			password: "secret",
-			expected: "westcn: credentials missing",
+			expected: "35com: credentials missing",
 		},
 		{
 			desc:     "missing password",
 			username: "user",
-			expected: "westcn: credentials missing",
+			expected: "35com: credentials missing",
 		},
 		{
 			desc:     "missing credentials",
-			expected: "westcn: credentials missing",
+			expected: "35com: credentials missing",
 		},
 	}
 

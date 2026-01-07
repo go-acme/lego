@@ -99,6 +99,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/ispconfig"
 	"github.com/go-acme/lego/v4/providers/dns/ispconfigddns"
 	"github.com/go-acme/lego/v4/providers/dns/iwantmyname"
+	"github.com/go-acme/lego/v4/providers/dns/jdcloud"
 	"github.com/go-acme/lego/v4/providers/dns/joker"
 	"github.com/go-acme/lego/v4/providers/dns/keyhelp"
 	"github.com/go-acme/lego/v4/providers/dns/liara"
@@ -377,6 +378,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return ispconfigddns.NewDNSProvider()
 	case "iwantmyname":
 		return iwantmyname.NewDNSProvider()
+	case "jdcloud":
+		return jdcloud.NewDNSProvider()
 	case "joker":
 		return joker.NewDNSProvider()
 	case "keyhelp":

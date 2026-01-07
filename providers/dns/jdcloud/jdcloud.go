@@ -8,12 +8,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/jdcloud-sdk-go/core"
+	"github.com/go-acme/jdcloud-sdk-go/services/domainservice/apis"
+	jdcclient "github.com/go-acme/jdcloud-sdk-go/services/domainservice/client"
+	domainservice "github.com/go-acme/jdcloud-sdk-go/services/domainservice/models"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/jdcloud-api/jdcloud-sdk-go/core"
-	"github.com/jdcloud-api/jdcloud-sdk-go/services/domainservice/apis"
-	jdcclient "github.com/jdcloud-api/jdcloud-sdk-go/services/domainservice/client"
-	domainservice "github.com/jdcloud-api/jdcloud-sdk-go/services/domainservice/models"
 )
 
 // Environment variables names.
@@ -135,7 +135,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		},
 	)
 
-	record, err := d.client.CreateResourceRecord(crrr)
+	record, err := jdcclient.CreateResourceRecord(d.client, crrr)
 	if err != nil {
 		return fmt.Errorf("jdcloud: create resource record: %w", err)
 	}
@@ -172,7 +172,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		strconv.Itoa(recordID),
 	)
 
-	_, err := d.client.DeleteResourceRecord(drrr)
+	_, err := jdcclient.DeleteResourceRecord(d.client, drrr)
 	if err != nil {
 		return fmt.Errorf("jdcloud: delete resource record: %w", err)
 	}
@@ -195,7 +195,7 @@ func (d *DNSProvider) findZone(zone string) (*domainservice.DomainInfo, error) {
 	ddr.SetDomainName(zone)
 
 	for {
-		response, err := d.client.DescribeDomains(ddr)
+		response, err := jdcclient.DescribeDomains(d.client, ddr)
 		if err != nil {
 			return nil, fmt.Errorf("describe domains: %w", err)
 		}

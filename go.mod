@@ -32,6 +32,7 @@ require (
 	github.com/exoscale/egoscale/v3 v3.1.31
 	github.com/go-acme/alidns-20150109/v4 v4.7.0
 	github.com/go-acme/esa-20240910/v2 v2.40.3
+	github.com/go-acme/jdcloud-sdk-go v1.64.0
 	github.com/go-acme/tencentclouddnspod v1.1.25
 	github.com/go-acme/tencentedgdeone v1.1.48
 	github.com/go-jose/go-jose/v4 v4.1.3
@@ -46,7 +47,6 @@ require (
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.180
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/infobloxopen/infoblox-go-client/v2 v2.10.0
-	github.com/jdcloud-api/jdcloud-sdk-go v1.64.0
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/ldez/grignotin v0.10.1
 	github.com/linode/linodego v1.62.0

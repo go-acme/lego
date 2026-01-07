@@ -32,6 +32,7 @@ require (
 	github.com/exoscale/egoscale/v3 v3.1.31
 	github.com/go-acme/alidns-20150109/v4 v4.7.0
 	github.com/go-acme/esa-20240910/v2 v2.40.3
+	github.com/go-acme/jdcloud-sdk-go v1.64.0
 	github.com/go-acme/tencentclouddnspod v1.1.25
 	github.com/go-acme/tencentedgdeone v1.1.48
 	github.com/go-jose/go-jose/v4 v4.1.3
@@ -154,6 +155,7 @@ require (
 	github.com/go-resty/resty/v2 v2.17.0 // indirect
 	github.com/goccy/go-yaml v1.9.8 // indirect
 	github.com/gofrs/flock v0.13.0 // indirect
+	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect

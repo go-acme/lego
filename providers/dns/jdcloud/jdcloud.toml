@@ -1,0 +1,27 @@
+Name = "JD Cloud"
+Description = ''''''
+URL = "https://www.jdcloud.com/"
+Code = "jdcloud"
+Since = "v4.31.0"
+
+Example = '''
+JDCLOUD_ACCESS_KEY_ID="xxx" \
+JDCLOUD_ACCESS_KEY_SECRET="yyy" \
+lego --dns jdcloud -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    JDCLOUD_ACCESS_KEY_ID = "Access key ID"
+    JDCLOUD_ACCESS_KEY_SECRET = "Access key secret"
+  [Configuration.Additional]
+    JDCLOUD_REGION_ID = "Region ID (Default: cn-north-1)"
+    JDCLOUD_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    JDCLOUD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    JDCLOUD_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    JDCLOUD_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://docs.jdcloud.com/cn/jd-cloud-dns/api/overview"
+  Common = "https://docs.jdcloud.com/en/common-declaration/api/introduction"
+  GoClient = "https://github.com/jdcloud-api/jdcloud-sdk-go"

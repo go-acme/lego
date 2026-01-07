@@ -105,6 +105,7 @@ func allDNSCodes() string {
 		"ispconfig",
 		"ispconfigddns",
 		"iwantmyname",
+		"jdcloud",
 		"joker",
 		"keyhelp",
 		"liara",
@@ -2194,6 +2195,28 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/iwantmyname`)
+
+	case "jdcloud":
+		// generated from: providers/dns/jdcloud/jdcloud.toml
+		ew.writeln(`Configuration for JD Cloud.`)
+		ew.writeln(`Code:	'jdcloud'`)
+		ew.writeln(`Since:	'v4.31.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "JDCLOUD_ACCESS_KEY_ID":	Access key ID`)
+		ew.writeln(`	- "JDCLOUD_ACCESS_KEY_SECRET":	Access key secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "JDCLOUD_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "JDCLOUD_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "JDCLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "JDCLOUD_REGION_ID":	Region ID (Default: cn-north-1)`)
+		ew.writeln(`	- "JDCLOUD_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/jdcloud`)
 
 	case "joker":
 		// generated from: providers/dns/joker/joker.toml

@@ -1,0 +1,24 @@
+Name = "Gehirn"
+Description = ''''''
+URL = "https://www.gehirn.jp/"
+Code = "gehirn"
+Since = "v5.0.0"
+
+Example = '''
+GEHIRN_TOKEN_ID="xxx" \
+GEHIRN_TOKEN_SECRET="xxx" \
+lego --dns gehirn -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    GEHIRN_TOKEN_ID = "Token ID"
+    GEHIRN_TOKEN_SECRET = "Token secret"
+  [Configuration.Additional]
+    GEHIRN_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    GEHIRN_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    GEHIRN_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    GEHIRN_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://support.gehirn.jp/apidocs/dns/index.html"

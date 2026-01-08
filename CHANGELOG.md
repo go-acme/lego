@@ -6,6 +6,30 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v4.31.0
+
+- Release date: 2026-01-08
+- Tag: [v4.31.0](https://github.com/go-acme/lego/releases/tag/v4.31.0)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for ISPConfig
+- **[dnsprovider]** Add DNS Provider for ISPConfig (DDNS Module)
+- **[dnsprovider]** Add DNS provider for Alwaysdata
+- **[dnsprovider]** Add DNS provider for JDCloud
+- **[dnsprovider]** Add DNS provider for 35.com/三五互联
+- **[dnsprovider]** f5xc: add an option to configure the domain of the server
+
+### Changed
+
+- **[lib]** feat: improve ACME error types
+- **[dnsprovider,cname]** namedotcom: follow CNAME
+
+### Fixed
+
+- **[dnsprovider]** hetzner: fix compatibility with _FILE suffix
+- **[dnsprovider]** gandiv5: fix API Key header
+
 ## v4.30.1
 
 - Release date: 2025-12-16

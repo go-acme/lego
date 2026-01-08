@@ -13,43 +13,43 @@ require (
 	github.com/Azure/go-autorest/autorest v0.11.30
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
 	github.com/Azure/go-autorest/autorest/to v0.4.1
-	github.com/BurntSushi/toml v1.5.0
+	github.com/BurntSushi/toml v1.6.0
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v11 v11.1.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.13
-	github.com/alibabacloud-go/tea v1.3.14
+	github.com/alibabacloud-go/tea v1.4.0
 	github.com/aliyun/credentials-go v1.4.7
 	github.com/aws/aws-sdk-go-v2 v1.41.0
-	github.com/aws/aws-sdk-go-v2/config v1.32.5
-	github.com/aws/aws-sdk-go-v2/credentials v1.19.5
+	github.com/aws/aws-sdk-go-v2/config v1.32.6
+	github.com/aws/aws-sdk-go-v2/credentials v1.19.6
 	github.com/aws/aws-sdk-go-v2/service/lightsail v1.50.10
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.62.0
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.94.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.95.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.5
 	github.com/aziontech/azionapi-go-sdk v0.144.0
-	github.com/baidubce/bce-sdk-go v0.9.254
+	github.com/baidubce/bce-sdk-go v0.9.256
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/dnsimple/dnsimple-go/v4 v4.0.0
-	github.com/exoscale/egoscale/v3 v3.1.31
+	github.com/exoscale/egoscale/v3 v3.1.33
 	github.com/go-acme/alidns-20150109/v4 v4.7.0
-	github.com/go-acme/esa-20240910/v2 v2.40.3
+	github.com/go-acme/esa-20240910/v2 v2.44.0
 	github.com/go-acme/jdcloud-sdk-go v1.64.0
 	github.com/go-acme/tencentclouddnspod v1.1.25
 	github.com/go-acme/tencentedgdeone v1.1.48
 	github.com/go-jose/go-jose/v4 v4.1.3
 	github.com/go-viper/mapstructure/v2 v2.4.0
 	github.com/google/go-cmp v0.7.0
-	github.com/google/go-querystring v1.1.0
+	github.com/google/go-querystring v1.2.0
 	github.com/google/uuid v1.6.0
 	github.com/gophercloud/gophercloud v1.14.1
 	github.com/gophercloud/utils v0.0.0-20231010081019-80377eca5d56
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/hashicorp/go-version v1.8.0
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.180
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.182
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/infobloxopen/infoblox-go-client/v2 v2.10.0
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/ldez/grignotin v0.10.1
-	github.com/linode/linodego v1.62.0
+	github.com/linode/linodego v1.64.0
 	github.com/liquidweb/liquidweb-go v1.6.4
 	github.com/mattn/go-isatty v0.0.20
 	github.com/miekg/dns v1.1.69
@@ -65,8 +65,8 @@ require (
 	github.com/nrdcg/mailinabox v0.3.0
 	github.com/nrdcg/namesilo v0.5.0
 	github.com/nrdcg/nodion v0.1.0
-	github.com/nrdcg/oci-go-sdk/common/v1065 v1065.105.1
-	github.com/nrdcg/oci-go-sdk/dns/v1065 v1065.105.1
+	github.com/nrdcg/oci-go-sdk/common/v1065 v1065.105.2
+	github.com/nrdcg/oci-go-sdk/dns/v1065 v1065.105.2
 	github.com/nrdcg/porkbun v0.4.0
 	github.com/nrdcg/vegadns v0.3.0
 	github.com/nzdjb/go-metaname v1.0.0
@@ -76,34 +76,34 @@ require (
 	github.com/regfish/regfish-dnsapi-go v0.1.1
 	github.com/sacloud/api-client-go v0.3.3
 	github.com/sacloud/iaas-api-go v1.23.1
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.35
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.36
 	github.com/selectel/domains-go v1.1.0
 	github.com/selectel/go-selvpcclient/v4 v4.1.0
 	github.com/softlayer/softlayer-go v1.2.1
 	github.com/stretchr/testify v1.11.1
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.12
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.28
 	github.com/transip/gotransip/v6 v6.26.1
 	github.com/ultradns/ultradns-go-sdk v1.8.1-20250722213956-faef419
 	github.com/urfave/cli/v2 v2.27.7
 	github.com/vinyldns/go-vinyldns v0.9.17
-	github.com/volcengine/volc-sdk-golang v1.0.230
-	github.com/vultr/govultr/v3 v3.26.0
-	github.com/yandex-cloud/go-genproto v0.41.0
-	github.com/yandex-cloud/go-sdk/services/dns v0.0.23
-	github.com/yandex-cloud/go-sdk/v2 v2.33.0
+	github.com/volcengine/volc-sdk-golang v1.0.233
+	github.com/vultr/govultr/v3 v3.26.1
+	github.com/yandex-cloud/go-genproto v0.43.0
+	github.com/yandex-cloud/go-sdk/services/dns v0.0.25
+	github.com/yandex-cloud/go-sdk/v2 v2.37.0
 	golang.org/x/crypto v0.46.0
 	golang.org/x/net v0.48.0
 	golang.org/x/oauth2 v0.34.0
 	golang.org/x/text v0.32.0
 	golang.org/x/time v0.14.0
-	google.golang.org/api v0.257.0
+	google.golang.org/api v0.259.0
 	gopkg.in/ns1/ns1-go.v2 v2.16.0
 	gopkg.in/yaml.v2 v2.4.0
-	software.sslmate.com/src/go-pkcs12 v0.6.0
+	software.sslmate.com/src/go-pkcs12 v0.7.0
 )
 
 require (
-	cloud.google.com/go/auth v0.17.0 // indirect
+	cloud.google.com/go/auth v0.18.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	github.com/AdamSLevy/jsonrpc2/v14 v14.1.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.11.2 // indirect
@@ -129,7 +129,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.16 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.16 // indirect
 	github.com/aws/aws-sdk-go-v2/service/signin v1.0.4 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.30.7 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.30.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.12 // indirect
 	github.com/aws/smithy-go v1.24.0 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
@@ -152,7 +152,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.23.0 // indirect
-	github.com/go-resty/resty/v2 v2.17.0 // indirect
+	github.com/go-resty/resty/v2 v2.17.1 // indirect
 	github.com/goccy/go-yaml v1.9.8 // indirect
 	github.com/gofrs/flock v0.13.0 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
@@ -161,7 +161,7 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.7 // indirect
-	github.com/googleapis/gax-go/v2 v2.15.0 // indirect
+	github.com/googleapis/gax-go/v2 v2.16.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -217,10 +217,10 @@ require (
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/tools v0.39.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20251022142026-3a174f9686a8 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251124214823-79d6a2a48846 // indirect
-	google.golang.org/grpc v1.77.0 // indirect
-	google.golang.org/protobuf v1.36.10 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20251202230838-ff82c1b0f217 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251222181119-0a764e51fe1b // indirect
+	google.golang.org/grpc v1.78.0 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

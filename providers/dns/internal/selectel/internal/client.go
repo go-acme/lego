@@ -53,8 +53,8 @@ func (c *Client) GetDomainByName(ctx context.Context, domainName string) (*Domai
 	if err != nil {
 		if statusCode == http.StatusNotFound && strings.Count(domainName, ".") > 1 {
 			// Look up for the next subdomain
-			subIndex := strings.Index(domainName, ".")
-			return c.GetDomainByName(ctx, domainName[subIndex+1:])
+			_, after, _ := strings.Cut(domainName, ".")
+			return c.GetDomainByName(ctx, after)
 		}
 
 		return nil, err

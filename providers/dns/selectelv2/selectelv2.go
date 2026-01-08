@@ -297,10 +297,10 @@ func (w *clientWrapper) getZone(ctx context.Context, name string) (*selectelapi.
 		return nil, fmt.Errorf("zone '%s' for challenge has not been found", name)
 	}
 
-	// -1 can not be returned since if no dots present we exit above
-	i := strings.Index(name, ".")
+	// after is always defined since if no dots present we exit above.
+	_, after, _ := strings.Cut(name, ".")
 
-	return w.getZone(ctx, name[i+1:])
+	return w.getZone(ctx, after)
 }
 
 func (w *clientWrapper) getRRset(ctx context.Context, name, zoneID string) (*selectelapi.RRSet, error) {

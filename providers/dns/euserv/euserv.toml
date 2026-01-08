@@ -1,0 +1,26 @@
+Name = "EUserv"
+Description = ''''''
+URL = "https://www.euserv.com/en/"
+Code = "euserv"
+Since = "v4.32.0"
+
+Example = '''
+EUSERV_EMAIL="user@example.com" \
+EUSERV_PASSWORD="xxx" \
+EUSERV_ORDER_ID="yyy" \
+lego --email you@example.com --dns euserv -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    EUSERV_EMAIL = "The customer email address. You can also use the customer id instead."
+    EUSERV_PASSWORD = "The customer account password."
+    EUSERV_ORDER_ID = "The order ID of the API contract that you want to use for this login session."
+  [Configuration.Additional]
+    EUSERV_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    EUSERV_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    EUSERV_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    EUSERV_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://support.euserv.com/api-doc/"

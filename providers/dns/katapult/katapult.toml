@@ -1,0 +1,23 @@
+Name = "Katapult"
+Description = ''''''
+URL = "https://katapult.io/"
+Code = "katapult"
+Since = "v5.0.0"
+
+Example = '''
+KATAPULT_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+lego --dns katapult -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    KATAPULT_API_KEY = "API key"
+  [Configuration.Additional]
+    KATAPULT_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    KATAPULT_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    KATAPULT_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    KATAPULT_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://docs.katapult.io/docs/api/core/post-dns-zone-records"
+  GoClient = "https://github.com/krystal/go-katapult"

@@ -1,0 +1,15 @@
+{
+  "dns_record": {
+    "id": "abc123",
+    "name": "_acme-challenge",
+    "full_name": "_acme-challenge.example.com",
+    "ttl": 120,
+    "type": "TXT",
+    "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "content_attributes": {
+      "TXT": {
+        "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+Name = "Nitrado"
+Description = ''''''
+URL = "https://server.nitrado.net/"
+Code = "nitrado"
+Since = "v4.32.0"
+
+Example = '''
+NITRADO_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
+lego --dns nitrado -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    NITRADO_TOKEN = "Token"
+  [Configuration.Additional]
+    NITRADO_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    NITRADO_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    NITRADO_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    NITRADO_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://doc.nitrado.net/"

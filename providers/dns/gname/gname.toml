@@ -1,0 +1,24 @@
+Name = "Gname"
+Description = ''''''
+URL = "https://www.gname.com/"
+Code = "gname"
+Since = "v5.0.0"
+
+Example = '''
+GNAME_APP_ID="xxx" \
+GNAME_APP_KEY="yyy" \
+lego --dns gname -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    GNAME_APP_ID = "App ID"
+    GNAME_APP_KEY = "App key"
+  [Configuration.Additional]
+    GNAME_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    GNAME_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    GNAME_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    GNAME_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://www.gname.com/domain/api/jiexi/add"

@@ -164,7 +164,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	records = append(records, record)
 
 	for _, h := range records {
-		log.Debug(fmt.Sprintf("%-5.5s %-30.30s %-6s %-70.70s", h.Type, h.Name, h.TTL, h.Address))
+		log.Debugf(log.LazySprintf("%-5.5s %-30.30s %-6s %-70.70s", h.Type, h.Name, h.TTL, h.Address))
 	}
 
 	err = d.client.SetHosts(ctx, pr.sld, pr.tld, records)

@@ -170,7 +170,7 @@ func setupDNS(ctx *cli.Context, client *lego.Client) error {
 
 func checkPropagationExclusiveOptions(ctx *cli.Context) error {
 	if ctx.IsSet(flgDNSDisableCP) {
-		log.Warn(fmt.Sprintf("The flag '%s' is deprecated use '%s' instead.", flgDNSDisableCP, flgDNSPropagationDisableANS))
+		log.Warnf(log.LazySprintf("The flag '%s' is deprecated use '%s' instead.", flgDNSDisableCP, flgDNSPropagationDisableANS))
 	}
 
 	if (isSetBool(ctx, flgDNSDisableCP) || isSetBool(ctx, flgDNSPropagationDisableANS)) && ctx.IsSet(flgDNSPropagationWait) {

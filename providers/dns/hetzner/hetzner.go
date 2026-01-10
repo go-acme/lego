@@ -3,7 +3,6 @@ package hetzner
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -119,7 +118,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return &DNSProvider{provider: provider}, nil
 
 	case config.APIKey != "":
-		log.Warn(fmt.Sprintf("%s (legacy Hetzner DNS API) is deprecated, please use %s (Hetzner Cloud API) instead.", EnvAPIKey, EnvAPIToken))
+		log.Warnf(log.LazySprintf("%s (legacy Hetzner DNS API) is deprecated, please use %s (Hetzner Cloud API) instead.", EnvAPIKey, EnvAPIToken))
 
 		cfg := &legacy.Config{
 			APIKey:             config.APIKey,

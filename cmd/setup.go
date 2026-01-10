@@ -202,7 +202,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			}
 
 		default:
-			log.Warn(fmt.Sprintf("retry: %v", errorDetails))
+			log.Warnf(log.LazySprintf("retry: %v", errorDetails))
 
 			return rt, errorDetails
 		}

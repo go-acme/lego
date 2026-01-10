@@ -382,7 +382,7 @@ func needRenewal(x509Cert *x509.Certificate, domain string, days int, dynamic bo
 		return true
 	}
 
-	log.Info(fmt.Sprintf("Skip renewal: the certificate expires in %d days, the number of days defined to perform the renewal is %d.",
+	log.Infof(log.LazySprintf("Skip renewal: the certificate expires in %d days, the number of days defined to perform the renewal is %d.",
 		notAfter, days), "domain", domain)
 
 	return false
@@ -402,7 +402,7 @@ func needRenewalDynamic(x509Cert *x509.Certificate, domain string, now time.Time
 		return true
 	}
 
-	log.Info(fmt.Sprintf("Skip renewal: The certificate expires at %s, the renewal can be performed in %s.",
+	log.Infof(log.LazySprintf("Skip renewal: The certificate expires at %s, the renewal can be performed in %s.",
 		x509Cert.NotAfter.Format(time.RFC3339), dueDate.Sub(now)), "domain", domain)
 
 	return false

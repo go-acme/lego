@@ -9,11 +9,9 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 	"golang.org/x/oauth2"
 )
@@ -72,17 +70,9 @@ func (c *Client) DeleteDNSRecord(ctx context.Context, domainID uint64, recordID 
 
 // GetDomainByName gets a Domain object from its name.
 func (c *Client) GetDomainByName(ctx context.Context, name string) (*DNSDomain, error) {
-	name = dns01.UnFqdn(name)
-
 	// Try to find the most specific domain
-	// starts with the FQDN, then remove each left label until we have a match
-	for {
-		i := strings.Index(name, ".")
-		if i == -1 {
-			break
-		}
-
-		domain, err := c.getDomainByName(ctx, name)
+	for n := range dns01.UnFqdnDomainsSeq(dns01.UnFqdn(name)) {
+		domain, err := c.getDomainByName(ctx, n)
 		if err != nil {
 			return nil, err
 		}
@@ -90,10 +80,6 @@ func (c *Client) GetDomainByName(ctx context.Context, name string) (*DNSDomain, 
 		if domain != nil {
 			return domain, nil
 		}
-
-		log.Infof("domain %q not found, trying with %q", name, name[i+1:])
-
-		name = name[i+1:]
 	}
 
 	return nil, fmt.Errorf("domain not found %s", name)

@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 )
 
@@ -99,10 +98,6 @@ func (c *Client) addTXTRecord(ctx context.Context, domain, name string, newRecor
 		return fmt.Errorf("unable to create TXT record for domain %s and name %s: %w", domain, name, err)
 	}
 
-	if message.Message != "" {
-		log.Infof("API response: %s", message.Message)
-	}
-
 	return nil
 }
 
@@ -119,10 +114,6 @@ func (c *Client) DeleteTXTRecord(ctx context.Context, domain, name string) error
 	err = c.do(req, &message)
 	if err != nil {
 		return fmt.Errorf("unable to delete TXT record for domain %s and name %s: %w", domain, name, err)
-	}
-
-	if message.Message != "" {
-		log.Infof("API response: %s", message.Message)
 	}
 
 	return nil

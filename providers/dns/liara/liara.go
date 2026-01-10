@@ -106,7 +106,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		retryClient.HTTPClient = config.HTTPClient
 	}
 
-	retryClient.Logger = log.Logger
+	retryClient.Logger = log.Default()
 
 	client := internal.NewClient(
 		clientdebug.Wrap(

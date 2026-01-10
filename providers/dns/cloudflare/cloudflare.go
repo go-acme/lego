@@ -13,7 +13,6 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/cloudflare/internal"
 )
@@ -185,8 +184,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	d.recordIDs[token] = response.ID
 	d.recordIDsMu.Unlock()
 
-	log.Infof("cloudflare: new record for %s, ID %s", domain, response.ID)
-
 	return nil
 }
 
@@ -217,7 +214,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.client.DeleteDNSRecord(ctx, zoneID, recordID)
 	if err != nil {
-		log.Printf("cloudflare: failed to delete TXT record: %v", err)
+		return fmt.Errorf("cloudflare: failed to delete TXT record: %w", err)
 	}
 
 	// Delete record ID from map

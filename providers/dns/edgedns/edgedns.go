@@ -15,7 +15,6 @@ import (
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/session"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/config/env"
 )
 
@@ -158,8 +157,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	if record != nil {
-		log.Infof("TXT record already exists. Updating target")
-
 		if containsValue(record.Target, info.Value) {
 			// have a record and have entry already
 			return nil

@@ -1,31 +1,30 @@
 package exec
 
-import "github.com/stretchr/testify/mock"
+import (
+	"context"
+	"log/slog"
 
-type LogRecorder struct {
+	"github.com/stretchr/testify/mock"
+)
+
+type LogHandler struct {
 	mock.Mock
 }
 
-func (*LogRecorder) Fatal(args ...any) {
+func (l *LogHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	return true
+}
+
+func (l *LogHandler) Handle(ctx context.Context, record slog.Record) error {
+	l.Called(ctx, record)
+
+	return nil
+}
+
+func (l *LogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	panic("implement me")
 }
 
-func (*LogRecorder) Fatalln(args ...any) {
-	panic("implement me")
-}
-
-func (*LogRecorder) Fatalf(format string, args ...any) {
-	panic("implement me")
-}
-
-func (*LogRecorder) Print(args ...any) {
-	panic("implement me")
-}
-
-func (l *LogRecorder) Println(args ...any) {
-	l.Called(args...)
-}
-
-func (*LogRecorder) Printf(format string, args ...any) {
+func (l *LogHandler) WithGroup(name string) slog.Handler {
 	panic("implement me")
 }

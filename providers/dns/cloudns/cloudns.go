@@ -176,7 +176,7 @@ func (d *DNSProvider) waitNameservers(ctx context.Context, domain string, zone *
 				return fmt.Errorf("nameserver sync on %s: %w", domain, err)
 			}
 
-			log.Infof("[%s] Sync %d/%d complete", domain, syncProgress.Updated, syncProgress.Total)
+			log.Info(fmt.Sprintf("Sync %d/%d complete", syncProgress.Updated, syncProgress.Total), "domain", domain)
 
 			if !syncProgress.Complete {
 				return fmt.Errorf("nameserver sync on %s not complete", domain)

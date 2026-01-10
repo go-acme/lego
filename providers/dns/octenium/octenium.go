@@ -91,7 +91,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 5
 	retryClient.HTTPClient = client.HTTPClient
-	retryClient.Logger = log.Logger
+	retryClient.Logger = log.Default()
 
 	client.HTTPClient = clientdebug.Wrap(retryClient.StandardClient())
 

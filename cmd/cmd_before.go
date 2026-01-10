@@ -1,22 +1,24 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v2"
 )
 
 func Before(ctx *cli.Context) error {
 	if ctx.String(flgPath) == "" {
-		log.Fatalf("Could not determine current working directory. Please pass --%s.", flgPath)
+		log.Fatal(fmt.Sprintf("Could not determine the current working directory. Please pass --%s.", flgPath))
 	}
 
 	err := createNonExistingFolder(ctx.String(flgPath))
 	if err != nil {
-		log.Fatalf("Could not check/create path: %v", err)
+		log.Fatal("Could not check/create the path.", "flag", flgPath, "filepath", ctx.String(flgPath), "error", err)
 	}
 
 	if ctx.String(flgServer) == "" {
-		log.Fatalf("Could not determine current working server. Please pass --%s.", flgServer)
+		log.Fatal(fmt.Sprintf("Could not determine the current working server. Please pass --%s.", flgServer))
 	}
 
 	return nil

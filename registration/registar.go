@@ -54,7 +54,7 @@ func (r *Registrar) Register(ctx context.Context, options RegisterOptions) (*Res
 	}
 
 	if r.user.GetEmail() != "" {
-		log.Infof("acme: Registering account for %s", r.user.GetEmail())
+		log.Info("acme: Registering the account.", "email", r.user.GetEmail())
 		accMsg.Contact = []string{mailTo + r.user.GetEmail()}
 	}
 
@@ -78,7 +78,7 @@ func (r *Registrar) RegisterWithExternalAccountBinding(ctx context.Context, opti
 	}
 
 	if r.user.GetEmail() != "" {
-		log.Infof("acme: Registering account for %s", r.user.GetEmail())
+		log.Info("acme: Registering the account.", "email", r.user.GetEmail())
 		accMsg.Contact = []string{mailTo + r.user.GetEmail()}
 	}
 
@@ -104,7 +104,7 @@ func (r *Registrar) QueryRegistration(ctx context.Context) (*Resource, error) {
 	}
 
 	// Log the URL here instead of the email as the email may not be set
-	log.Infof("acme: Querying account for %s", r.user.GetRegistration().URI)
+	log.Info("acme: Querying the account.", "registrationURI", r.user.GetRegistration().URI)
 
 	account, err := r.core.Accounts.Get(ctx, r.user.GetRegistration().URI)
 	if err != nil {
@@ -130,7 +130,7 @@ func (r *Registrar) UpdateRegistration(ctx context.Context, options RegisterOpti
 	}
 
 	if r.user.GetEmail() != "" {
-		log.Infof("acme: Registering account for %s", r.user.GetEmail())
+		log.Info("acme: Registering the account.", "email", r.user.GetEmail())
 		accMsg.Contact = []string{mailTo + r.user.GetEmail()}
 	}
 
@@ -150,7 +150,7 @@ func (r *Registrar) DeleteRegistration(ctx context.Context) error {
 		return errors.New("acme: cannot unregister a nil client or user")
 	}
 
-	log.Infof("acme: Deleting account for %s", r.user.GetEmail())
+	log.Info("acme: Deleting the account.", "email", r.user.GetEmail())
 
 	return r.core.Accounts.Deactivate(ctx, r.user.GetRegistration().URI)
 }
@@ -158,7 +158,7 @@ func (r *Registrar) DeleteRegistration(ctx context.Context) error {
 // ResolveAccountByKey will attempt to look up an account using the given account key
 // and return its registration resource.
 func (r *Registrar) ResolveAccountByKey(ctx context.Context) (*Resource, error) {
-	log.Infof("acme: Trying to resolve account by key")
+	log.Info("acme: Trying to resolve the account by key")
 
 	accMsg := acme.Account{OnlyReturnExisting: true}
 

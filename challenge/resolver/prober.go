@@ -63,7 +63,7 @@ func (p *Prober) Solve(ctx context.Context, authorizations []acme.Authorization)
 		domain := challenge.GetTargetedDomain(authz)
 		if authz.Status == acme.StatusValid {
 			// Boulder might recycle recent validated authz (see issue #267)
-			log.Infof("[%s] acme: authorization already valid; skipping challenge", domain)
+			log.Info("acme: authorization already valid; skipping challenge.", "domain", domain)
 			continue
 		}
 
@@ -130,7 +130,7 @@ func sequentialSolve(ctx context.Context, authSolvers []*selectedAuthSolver, fai
 		if len(authSolvers)-1 > i {
 			solvr := authSolver.solver.(sequential)
 			_, interval := solvr.Sequential()
-			log.Infof("sequence: wait for %s", interval)
+			log.Info("sequence: wait.", "interval", interval)
 			time.Sleep(interval)
 		}
 	}
@@ -178,7 +178,7 @@ func cleanUp(solvr solver, authz acme.Authorization) {
 
 		err := solvr.CleanUp(authz)
 		if err != nil {
-			log.Warnf("[%s] acme: cleaning up failed: %v ", domain, err)
+			log.Warn("acme: cleaning up failed.", "domain", domain, "error", err)
 		}
 	}
 }

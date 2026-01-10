@@ -120,12 +120,16 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 				return
 			}
 
-			log.Infof("[%s] Served key authentication", domain)
+			log.Info("Served key authentication.", "domain", domain)
 
 			return
 		}
 
-		log.Warnf("Received request for domain %s with method %s but the domain did not match any challenge. Please ensure you are passing the %s header properly.", r.Host, r.Method, s.matcher.name())
+		log.Warn("Received request but the domain did not match any challenge. Please ensure you are passing the header properly.",
+			"domain", r.Host,
+			"method", r.Method,
+			"header", s.matcher.name(),
+		)
 
 		_, err := w.Write([]byte("TEST"))
 		if err != nil {
@@ -142,7 +146,7 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 
 	err := httpServer.Serve(s.listener)
 	if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
-		log.Println(err)
+		log.Warn("HTTP server serve.", "error", err)
 	}
 
 	s.done <- true

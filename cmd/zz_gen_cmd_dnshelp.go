@@ -3577,7 +3577,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "todaynic":
 		// generated from: providers/dns/todaynic/todaynic.toml
-		ew.writeln(`Configuration for TodayNIC.`)
+		ew.writeln(`Configuration for TodayNIC/时代互联.`)
 		ew.writeln(`Code:	'todaynic'`)
 		ew.writeln(`Since:	'v4.32.0'`)
 		ew.writeln()

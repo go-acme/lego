@@ -256,7 +256,7 @@ If your DNS provider is not supported, please open an [issue](https://github.com
   <td><a href="https://go-acme.github.io/lego/dns/edgeone/">Tencent EdgeOne</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/timewebcloud/">Timeweb Cloud</a></td>
 </tr><tr>
-  <td><a href="https://go-acme.github.io/lego/dns/todaynic/">TodayNIC</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/todaynic/">TodayNIC/时代互联</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/transip/">TransIP</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/safedns/">UKFast SafeDNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/ultradns/">Ultradns</a></td>

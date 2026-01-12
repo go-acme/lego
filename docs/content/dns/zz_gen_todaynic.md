@@ -1,5 +1,5 @@
 ---
-title: "TodayNIC"
+title: "TodayNIC/时代互联"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: todaynic
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [TodayNIC](https://www.todaynic.com/).
+Configuration for [TodayNIC/时代互联](https://www.todaynic.com/).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Configuration for [TodayNIC](https://www.todaynic.com/).
 - Since: v4.32.0
 
 
-Here is an example bash command using the TodayNIC provider:
+Here is an example bash command using the TodayNIC/时代互联 provider:
 
 ```bash
 TODAYNIC_AUTH_USER_ID="xxx" \

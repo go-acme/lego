@@ -169,6 +169,7 @@ func allDNSCodes() string {
 		"technitium",
 		"tencentcloud",
 		"timewebcloud",
+		"todaynic",
 		"transip",
 		"ultradns",
 		"uniteddomains",
@@ -3573,6 +3574,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/timewebcloud`)
+
+	case "todaynic":
+		// generated from: providers/dns/todaynic/todaynic.toml
+		ew.writeln(`Configuration for TodayNIC/时代互联.`)
+		ew.writeln(`Code:	'todaynic'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "TODAYNIC_API_KEY":	API key`)
+		ew.writeln(`	- "TODAYNIC_AUTH_USER_ID":	account ID`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "TODAYNIC_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "TODAYNIC_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "TODAYNIC_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "TODAYNIC_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/todaynic`)
 
 	case "transip":
 		// generated from: providers/dns/transip/transip.toml

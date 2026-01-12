@@ -1,0 +1,25 @@
+Name = "TodayNIC/时代互联"
+Description = ''''''
+URL = "https://www.todaynic.com/"
+Code = "todaynic"
+Since = "v4.32.0"
+
+Example = '''
+TODAYNIC_AUTH_USER_ID="xxx" \
+TODAYNIC_API_KEY="yyy" \
+lego --dns todaynic -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    TODAYNIC_AUTH_USER_ID = "account ID"
+    TODAYNIC_API_KEY = "API key"
+  [Configuration.Additional]
+    TODAYNIC_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    TODAYNIC_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    TODAYNIC_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)"
+    TODAYNIC_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://www.todaynic.com/partner/mode_Http_Api_detail.php"
+  apipost =  "https://docs.apipost.net/docs/detail/49dcef10a876000?target_id=0"

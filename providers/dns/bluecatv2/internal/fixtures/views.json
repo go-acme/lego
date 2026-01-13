@@ -1,0 +1,22 @@
+{
+  "count": 0,
+  "totalCount": 0,
+  "data": [
+    {
+      "id": 12345,
+      "type": "View",
+      "name": "myView",
+      "userDefinedFields": {
+        "udf1": "value1",
+        "udf2": "value2"
+      },
+      "configuration": {
+        "id": 12345,
+        "type": "Configuration",
+        "name": "name"
+      },
+      "deviceRegistrationEnabled": true,
+      "deviceRegistrationPortalAddress": "10.10.10.10"
+    }
+  ]
+}

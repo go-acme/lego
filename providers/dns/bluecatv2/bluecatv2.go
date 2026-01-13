@@ -1,0 +1,279 @@
+// Package bluecatv2 implements a DNS provider for solving the DNS-01 challenge using Bluecat v2.
+package bluecatv2
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"sync"
+	"time"
+
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/bluecatv2/internal"
+	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+)
+
+// Environment variables names.
+const (
+	envNamespace = "BLUECATV2_"
+
+	EnvServerURL  = envNamespace + "SERVER_URL"
+	EnvUsername   = envNamespace + "USERNAME"
+	EnvPassword   = envNamespace + "PASSWORD"
+	EnvConfigName = envNamespace + "CONFIG_NAME"
+	EnvViewName   = envNamespace + "VIEW_NAME"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
+// Config is used to configure the creation of the DNSProvider.
+type Config struct {
+	ServerURL  string
+	Username   string
+	Password   string
+	ConfigName string
+	ViewName   string
+
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+	TTL                int
+	HTTPClient         *http.Client
+}
+
+// NewDefaultConfig returns a default configuration for the DNSProvider.
+func NewDefaultConfig() *Config {
+	return &Config{
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
+	}
+}
+
+// DNSProvider implements the challenge.Provider interface.
+type DNSProvider struct {
+	config *Config
+	client *internal.Client
+
+	recordIDs   map[string]int64
+	recordIDsMu sync.Mutex
+}
+
+// NewDNSProvider returns a DNSProvider instance configured for Bluecat v2.
+func NewDNSProvider() (*DNSProvider, error) {
+	values, err := env.Get(EnvServerURL, EnvUsername, EnvPassword, EnvConfigName, EnvViewName)
+	if err != nil {
+		return nil, fmt.Errorf("bluecatv2: %w", err)
+	}
+
+	config := NewDefaultConfig()
+	config.ServerURL = values[EnvServerURL]
+	config.Username = values[EnvUsername]
+	config.Password = values[EnvPassword]
+	config.ConfigName = values[EnvConfigName]
+	config.ViewName = values[EnvViewName]
+
+	return NewDNSProviderConfig(config)
+}
+
+// NewDNSProviderConfig return a DNSProvider instance configured for Bluecat v2.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("bluecatv2: the configuration of the DNS provider is nil")
+	}
+
+	if config.ServerURL == "" {
+		return nil, errors.New("bluecatv2: missing server URL")
+	}
+
+	if config.ConfigName == "" {
+		return nil, errors.New("bluecatv2: missing configuration name")
+	}
+
+	if config.ViewName == "" {
+		return nil, errors.New("bluecatv2: missing view name")
+	}
+
+	client, err := internal.NewClient(config.ServerURL, config.Username, config.Password)
+	if err != nil {
+		return nil, fmt.Errorf("bluecatv2: %w", err)
+	}
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
+
+	return &DNSProvider{
+		config:    config,
+		client:    client,
+		recordIDs: make(map[string]int64),
+	}, nil
+}
+
+// Present creates a TXT record using the specified parameters.
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	if err != nil {
+		return fmt.Errorf("bluecatv2: %w", err)
+	}
+
+	zone, err := d.findZone(ctx, info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("bluecatv2: %w", err)
+	}
+
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.AbsoluteName)
+	if err != nil {
+		return fmt.Errorf("bluecatv2: %w", err)
+	}
+
+	record := internal.RecordTXT{
+		CommonResource: internal.CommonResource{
+			Type: "TXTRecord",
+			Name: subDomain,
+		},
+		Text:       info.Value,
+		TTL:        d.config.TTL,
+		RecordType: "TXT",
+	}
+
+	newRecord, err := d.client.CreateZoneResourceRecord(ctx, zone.ID, record)
+	if err != nil {
+		return fmt.Errorf("bluecatv2: create resource record: %w", err)
+	}
+
+	d.recordIDsMu.Lock()
+	d.recordIDs[token] = newRecord.ID
+	d.recordIDsMu.Unlock()
+
+	return nil
+}
+
+// CleanUp removes the TXT record matching the specified parameters.
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	d.recordIDsMu.Lock()
+	recordID, ok := d.recordIDs[token]
+	d.recordIDsMu.Unlock()
+
+	if !ok {
+		return fmt.Errorf("todaynic: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
+	}
+
+	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	if err != nil {
+		return fmt.Errorf("bluecatv2: %w", err)
+	}
+
+	err = d.client.DeleteResourceRecord(ctx, recordID)
+	if err != nil {
+		return fmt.Errorf("bluecatv2: delete resource record: %w", err)
+	}
+
+	return nil
+}
+
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*internal.ZoneResource, error) {
+	configuration, err := d.findConfiguration(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	view, err := d.findConfigurationView(ctx, configuration.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	zone, err := d.findViewZone(ctx, view.ID, fqdn)
+	if err != nil {
+		return nil, err
+	}
+
+	return zone, nil
+}
+
+func (d *DNSProvider) findConfiguration(ctx context.Context) (*internal.CommonResource, error) {
+	options := internal.CollectionOptions{
+		Filter: internal.Eq("name", d.config.ConfigName).String(),
+	}
+
+	configurations, err := d.client.RetrieveConfigurations(ctx, &options)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve configurations: %w", err)
+	}
+
+	if len(configurations) == 0 {
+		return nil, fmt.Errorf("zero configuration found with name: %s", d.config.ConfigName)
+	}
+
+	for _, configuration := range configurations {
+		if configuration.Name == d.config.ConfigName {
+			return &configuration, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no configuration found with name: %s", d.config.ConfigName)
+}
+
+func (d *DNSProvider) findConfigurationView(ctx context.Context, configurationID int64) (*internal.CommonResource, error) {
+	options := internal.CollectionOptions{
+		Filter: internal.Eq("name", d.config.ViewName).String(),
+	}
+
+	views, err := d.client.RetrieveConfigurationViews(ctx, configurationID, &options)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve views: %w", err)
+	}
+
+	if len(views) == 0 {
+		return nil, fmt.Errorf("zero view found with name: %s", d.config.ViewName)
+	}
+
+	for _, view := range views {
+		if view.Name == d.config.ViewName {
+			return &view, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no view found with name: %s", d.config.ViewName)
+}
+
+func (d *DNSProvider) findViewZone(ctx context.Context, viewID int64, fqdn string) (*internal.ZoneResource, error) {
+	for name := range dns01.UnFqdnDomainsSeq(fqdn) {
+		options := internal.CollectionOptions{
+			Filter: internal.Eq("absoluteName", name).String(),
+		}
+
+		zones, err := d.client.RetrieveViewZones(ctx, viewID, &options)
+		if err != nil {
+			// TODO (ldez) maybe add a log in v5.
+			continue
+		}
+
+		for _, zone := range zones {
+			if zone.AbsoluteName == name {
+				return &zone, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("no zone found for fqdn: %s", fqdn)
+}

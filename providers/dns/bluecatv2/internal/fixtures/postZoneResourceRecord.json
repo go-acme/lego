@@ -1,0 +1,25 @@
+{
+  "id": 12345,
+  "type": "ResourceRecord",
+  "name": "name",
+  "userDefinedFields": {
+    "udf1": "value1",
+    "udf2": "value2"
+  },
+  "configuration": {
+    "id": 12345,
+    "type": "Configuration",
+    "name": "name"
+  },
+  "ttl": 3600,
+  "absoluteName": "host1.example.com",
+  "comment": "Sample comment.",
+  "dynamic": true,
+  "recordType": "CNAME",
+  "linkedRecord": {
+    "id": 12345,
+    "type": "ResourceRecord",
+    "name": "name",
+    "absoluteName": "host1.example.com"
+  }
+}

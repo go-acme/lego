@@ -1,0 +1,185 @@
+{
+  "count": 0,
+  "totalCount": 0,
+  "data": [
+    {
+      "id": 12345,
+      "type": "ENUMZone",
+      "name": "5678",
+      "userDefinedFields": {
+        "udf1": "value1",
+        "udf2": "value2"
+      },
+      "configuration": {
+        "id": 12345,
+        "type": "Configuration",
+        "name": "name"
+      },
+      "view": {
+        "id": 12345,
+        "type": "View",
+        "name": "default",
+        "userDefinedFields": {
+          "udf1": "value1",
+          "udf2": "value2"
+        },
+        "configuration": {
+          "id": 12345,
+          "type": "Configuration",
+          "name": "name"
+        },
+        "deviceRegistrationEnabled": true,
+        "deviceRegistrationPortalAddress": "10.10.10.10"
+      },
+      "deploymentEnabled": true,
+      "absoluteName": "string"
+    },
+    {
+      "id": 12345,
+      "type": "ExternalHostsZone",
+      "name": "name",
+      "userDefinedFields": {
+        "udf1": "value1",
+        "udf2": "value2"
+      },
+      "configuration": {
+        "id": 12345,
+        "type": "Configuration",
+        "name": "name"
+      },
+      "view": {
+        "id": 12345,
+        "type": "View",
+        "name": "default",
+        "userDefinedFields": {
+          "udf1": "value1",
+          "udf2": "value2"
+        },
+        "configuration": {
+          "id": 12345,
+          "type": "Configuration",
+          "name": "name"
+        },
+        "deviceRegistrationEnabled": true,
+        "deviceRegistrationPortalAddress": "10.10.10.10"
+      }
+    },
+    {
+      "id": 12345,
+      "type": "InternalRootZone",
+      "name": "name",
+      "userDefinedFields": {
+        "udf1": "value1",
+        "udf2": "value2"
+      },
+      "configuration": {
+        "id": 12345,
+        "type": "Configuration",
+        "name": "name"
+      },
+      "view": {
+        "id": 12345,
+        "type": "View",
+        "name": "default",
+        "userDefinedFields": {
+          "udf1": "value1",
+          "udf2": "value2"
+        },
+        "configuration": {
+          "id": 12345,
+          "type": "Configuration",
+          "name": "name"
+        },
+        "deviceRegistrationEnabled": true,
+        "deviceRegistrationPortalAddress": "10.10.10.10"
+      },
+      "deploymentEnabled": true
+    },
+    {
+      "id": 12345,
+      "type": "ResponsePolicyZone",
+      "name": "name",
+      "userDefinedFields": {
+        "udf1": "value1",
+        "udf2": "value2"
+      },
+      "configuration": {
+        "id": 12345,
+        "type": "Configuration",
+        "name": "name"
+      },
+      "view": {
+        "id": 12345,
+        "type": "View",
+        "name": "default",
+        "userDefinedFields": {
+          "udf1": "value1",
+          "udf2": "value2"
+        },
+        "configuration": {
+          "id": 12345,
+          "type": "Configuration",
+          "name": "name"
+        },
+        "deviceRegistrationEnabled": true,
+        "deviceRegistrationPortalAddress": "10.10.10.10"
+      },
+      "responsePolicyZoneType": "LOCAL",
+      "responsePolicy": {
+        "id": 12345,
+        "type": "ResponsePolicy",
+        "name": "Block Response Policy"
+      },
+      "overridePolicyType": "ALLOWLIST",
+      "overrideRefreshTime": "string",
+      "redirectTarget": "string",
+      "feedCategories": [
+        "string"
+      ]
+    },
+    {
+      "id": 12345,
+      "type": "Zone",
+      "name": "example.com",
+      "userDefinedFields": {
+        "udf1": "value1",
+        "udf2": "value2"
+      },
+      "configuration": {
+        "id": 12345,
+        "type": "Configuration",
+        "name": "name"
+      },
+      "view": {
+        "id": 12345,
+        "type": "View",
+        "name": "default",
+        "userDefinedFields": {
+          "udf1": "value1",
+          "udf2": "value2"
+        },
+        "configuration": {
+          "id": 12345,
+          "type": "Configuration",
+          "name": "name"
+        },
+        "deviceRegistrationEnabled": true,
+        "deviceRegistrationPortalAddress": "10.10.10.10"
+      },
+      "deploymentEnabled": true,
+      "dynamicUpdateEnabled": true,
+      "template": {
+        "id": 12345,
+        "type": "ZoneTemplate",
+        "name": "name"
+      },
+      "signed": true,
+      "signingPolicy": {
+        "id": 12345,
+        "type": "DNSSECSigningPolicy",
+        "name": "name"
+      },
+      "absoluteName": "example.com"
+    }
+  ]
+}

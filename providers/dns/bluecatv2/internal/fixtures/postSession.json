@@ -1,0 +1,50 @@
+{
+  "id": 12345,
+  "type": "UserSession",
+  "apiToken": "VZoO2Z0BjBaJyvuhE4vNJRWqI9upwDHk70UNi0Ez",
+  "apiTokenExpirationDateTime": "2022-09-15T17:52:07Z",
+  "basicAuthenticationCredentials": "YXBpOlQ0OExOT3VIRGhDcnVBNEo1bGFES3JuS3hTZC9QK3pjczZXTzBJMDY=",
+  "remoteAddress": "192.168.1.1",
+  "readOnly": true,
+  "loginDateTime": "2022-09-14T17:45:03Z",
+  "logoutDateTime": "2022-09-14T19:45:03Z",
+  "state": "LOGGED_IN",
+  "response": "Authentication Error: Ensure that your username and password are correct.",
+  "user": {
+    "id": 103307,
+    "type": "User",
+    "name": "admin",
+    "userDefinedFields": {
+      "udf1": "value1",
+      "udf2": "value2"
+    },
+    "authenticator": {
+      "id": 12345,
+      "type": "Authenticator",
+      "name": "LDAP authenticator"
+    },
+    "email": "user@example.com",
+    "phoneNumber": "555-1234",
+    "securityPrivilege": "NO_ACCESS",
+    "historyPrivilege": "HIDE",
+    "accessType": "GUI",
+    "passwordResetRequired": true,
+    "accountLocked": true,
+    "x509Required": true,
+    "administrativeAccessRights": [
+      {
+        "resourceType": "Event",
+        "accessLevel": "HIDE"
+      }
+    ]
+  },
+  "authenticator": {
+    "id": 12345,
+    "type": "Authenticator",
+    "name": "LDAP authenticator",
+    "userDefinedFields": {
+      "udf1": "value1",
+      "udf2": "value2"
+    }
+  }
+}

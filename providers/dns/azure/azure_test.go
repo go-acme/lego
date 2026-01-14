@@ -14,6 +14,7 @@ import (
 const envDomain = envNamespace + "DOMAIN"
 
 var envTest = tester.NewEnvTest(
+	EnvLegoAzureBypassDeprecation,
 	EnvEnvironment,
 	EnvClientID,
 	EnvClientSecret,
@@ -56,6 +57,8 @@ func TestNewDNSProvider(t *testing.T) {
 			defer envTest.RestoreEnv()
 
 			envTest.ClearEnv()
+
+			test.envVars[EnvLegoAzureBypassDeprecation] = "true"
 
 			envTest.Apply(test.envVars)
 
@@ -139,6 +142,11 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			},
 		},
 	}
+
+	defer envTest.RestoreEnv()
+
+	envTest.ClearEnv()
+	envTest.Apply(map[string]string{EnvLegoAzureBypassDeprecation: "true"})
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {

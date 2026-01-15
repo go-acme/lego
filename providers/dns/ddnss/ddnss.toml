@@ -1,0 +1,23 @@
+Name = "DDnss (DynDNS Service)"
+Description = ''''''
+URL = "https://ddnss.de/"
+Code = "ddnss"
+Since = "v4.32.0"
+
+Example = '''
+DDNSS_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+lego --dns ddnss -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    DDNSS_KEY = "Update key"
+  [Configuration.Additional]
+    DDNSS_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    DDNSS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    DDNSS_SEQUENCE_INTERVAL = "Time between sequential requests in seconds (Default: 60)"
+    DDNSS_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    DDNSS_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://ddnss.de/info.php"

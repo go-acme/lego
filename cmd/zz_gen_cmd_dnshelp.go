@@ -47,6 +47,7 @@ func allDNSCodes() string {
 		"constellix",
 		"corenetworks",
 		"cpanel",
+		"ddnss",
 		"derak",
 		"desec",
 		"designate",
@@ -972,6 +973,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/cpanel`)
+
+	case "ddnss":
+		// generated from: providers/dns/ddnss/ddnss.toml
+		ew.writeln(`Configuration for DDnss (DynDNS Service).`)
+		ew.writeln(`Code:	'ddnss'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DDNSS_KEY":	Update key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DDNSS_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "DDNSS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "DDNSS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "DDNSS_SEQUENCE_INTERVAL":	Time between sequential requests in seconds (Default: 60)`)
+		ew.writeln(`	- "DDNSS_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/ddnss`)
 
 	case "derak":
 		// generated from: providers/dns/derak/derak.toml

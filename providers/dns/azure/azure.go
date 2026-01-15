@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/Azure/go-autorest/autorest"
@@ -36,6 +37,8 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
+
+const EnvLegoAzureBypassDeprecation = "LEGO_AZURE_BYPASS_DEPRECATION"
 
 const defaultMetadataEndpoint = "http://169.254.169.254"
 
@@ -131,6 +134,18 @@ func NewDNSProvider() (*DNSProvider, error) {
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("azure: the configuration of the DNS provider is nil")
+	}
+
+	if !env.GetOrDefaultBool(EnvLegoAzureBypassDeprecation, false) {
+		var msg strings.Builder
+
+		msg.WriteString("azure: ")
+		msg.WriteString("The `azure` provider has been deprecated since 2023, and replaced by `azuredns` provider. ")
+		msg.WriteString("It can be TEMPORARILY reactivated by using the environment variable `LEGO_AZURE_BYPASS_DEPRECATION=true`. ")
+		msg.WriteString("The `azure` provider will be removed in a future release, please migrate to the `azuredns` provider. ")
+		msg.WriteString("The documentation of the `azuredns` provider can be found at https://go-acme.github.io/lego/dns/azuredns/")
+
+		return nil, errors.New(msg.String())
 	}
 
 	if config.HTTPClient == nil {

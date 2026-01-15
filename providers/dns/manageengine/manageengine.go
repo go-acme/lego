@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/manageengine/internal"
@@ -40,9 +40,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 	}
 }
 
@@ -90,9 +90,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("manageengine: could not find zone for domain %q: %w", domain, err)
 	}
@@ -161,9 +161,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("manageengine: could not find zone for domain %q: %w", domain, err)
 	}
@@ -262,5 +262,5 @@ func (d *DNSProvider) findZoneRecord(ctx context.Context, zoneID int, fqdn strin
 		}
 	}
 
-	return nil, nil
+	return nil, fmt.Errorf("no zone record found (zoneID=%d, fqdn=%s)", zoneID, fqdn)
 }

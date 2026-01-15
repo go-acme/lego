@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/civo/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -106,23 +106,22 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
 	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("civo: could not find zone for domain %q: %w", domain, err)
 	}
 
-	zone := dns01.UnFqdn(authZone)
+	zone := dnsnew.UnFqdn(authZone)
 
 	domainID, err := d.getDomainIDByName(ctx, zone)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
@@ -142,16 +141,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
 	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("civo: could not find zone for domain %q: %w", domain, err)
 	}
 
-	zone := dns01.UnFqdn(authZone)
+	zone := dnsnew.UnFqdn(authZone)
 
 	domainID, err := d.getDomainIDByName(ctx, zone)
 	if err != nil {
@@ -163,7 +161,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("civo: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}

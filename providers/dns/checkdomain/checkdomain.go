@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/checkdomain/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -116,7 +116,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("checkdomain: %w", err)
 	}
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	err = d.client.CreateRecord(ctx, domainID, &internal.Record{
 		Name:  info.EffectiveFQDN,
@@ -146,7 +146,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("checkdomain: %w", err)
 	}
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	defer d.client.CleanCache(info.EffectiveFQDN)
 

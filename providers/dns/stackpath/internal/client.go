@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 	"golang.org/x/net/publicsuffix"
 )
@@ -45,7 +45,7 @@ func (c *Client) GetZones(ctx context.Context, domain string) (*Zone, error) {
 		return nil, err
 	}
 
-	tld, err := publicsuffix.EffectiveTLDPlusOne(dns01.UnFqdn(domain))
+	tld, err := publicsuffix.EffectiveTLDPlusOne(dnsnew.UnFqdn(domain))
 	if err != nil {
 		return nil, err
 	}

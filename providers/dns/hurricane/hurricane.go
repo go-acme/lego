@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/hurricane/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -41,8 +41,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 300*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
+		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dnsnew.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -96,9 +96,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present updates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	err := d.client.UpdateTxtRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
+	err := d.client.UpdateTxtRecord(ctx, dnsnew.UnFqdn(info.EffectiveFQDN), info.Value)
 	if err != nil {
 		return fmt.Errorf("hurricane: %w", err)
 	}
@@ -108,9 +109,10 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 // CleanUp updates the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	err := d.client.UpdateTxtRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), ".")
+	err := d.client.UpdateTxtRecord(ctx, dnsnew.UnFqdn(info.EffectiveFQDN), ".")
 	if err != nil {
 		return fmt.Errorf("hurricane: %w", err)
 	}

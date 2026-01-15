@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/providers/dns/internal/active24/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
@@ -58,19 +58,19 @@ func NewDNSProviderConfig(config *Config, baseAPIDomain string) (*DNSProvider, e
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return err
 	}
 
-	serviceID, err := d.findServiceID(ctx, dns01.UnFqdn(authZone))
+	serviceID, err := d.findServiceID(ctx, dnsnew.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("find service ID: %w", err)
 	}
@@ -94,14 +94,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("could not find zone for domain %q: %w", domain, err)
 	}
 
-	serviceID, err := d.findServiceID(ctx, dns01.UnFqdn(authZone))
+	serviceID, err := d.findServiceID(ctx, dnsnew.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("find service ID: %w", err)
 	}
@@ -146,10 +146,10 @@ func (d *DNSProvider) findServiceID(ctx context.Context, domain string) (int, er
 	return 0, fmt.Errorf("service not found for domain: %s", domain)
 }
 
-func (d *DNSProvider) findRecordID(ctx context.Context, serviceID string, info dns01.ChallengeInfo) (int, error) {
+func (d *DNSProvider) findRecordID(ctx context.Context, serviceID string, info dnsnew.ChallengeInfo) (int, error) {
 	// NOTE(ldez): Despite the API documentation, the filter doesn't seem to work.
 	filter := internal.RecordFilter{
-		Name:    dns01.UnFqdn(info.EffectiveFQDN),
+		Name:    dnsnew.UnFqdn(info.EffectiveFQDN),
 		Type:    []string{"TXT"},
 		Content: info.Value,
 	}
@@ -164,7 +164,7 @@ func (d *DNSProvider) findRecordID(ctx context.Context, serviceID string, info d
 			continue
 		}
 
-		if record.Name != dns01.UnFqdn(info.EffectiveFQDN) {
+		if record.Name != dnsnew.UnFqdn(info.EffectiveFQDN) {
 			continue
 		}
 

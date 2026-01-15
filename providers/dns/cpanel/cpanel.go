@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/cpanel/internal/cpanel"
 	"github.com/go-acme/lego/v5/providers/dns/cpanel/internal/shared"
@@ -62,7 +62,7 @@ func NewDefaultConfig() *Config {
 		Mode:               env.GetOrDefaultString(EnvMode, "cpanel"),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -126,14 +126,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("arvancloud: could not find zone for domain %q: %w", domain, err)
 	}
 
-	zone := dns01.UnFqdn(authZone)
+	zone := dnsnew.UnFqdn(authZone)
 
 	zoneInfo, err := d.client.FetchZoneInformation(ctx, zone)
 	if err != nil {
@@ -204,14 +204,14 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("arvancloud: could not find zone for domain %q: %w", domain, err)
 	}
 
-	zone := dns01.UnFqdn(authZone)
+	zone := dnsnew.UnFqdn(authZone)
 
 	zoneInfo, err := d.client.FetchZoneInformation(ctx, zone)
 	if err != nil {

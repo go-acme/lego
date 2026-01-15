@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/edgegrid"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/tester"
 	"github.com/stretchr/testify/require"
 )
@@ -181,7 +181,7 @@ func TestNewDefaultConfig(t *testing.T) {
 		{
 			desc: "default configuration",
 			expected: &Config{
-				TTL:                dns01.DefaultTTL,
+				TTL:                dnsnew.DefaultTTL,
 				PropagationTimeout: 3 * time.Minute,
 				PollingInterval:    15 * time.Second,
 				Config: &edgegrid.Config{
@@ -244,7 +244,7 @@ func Test_findZone(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			zone, err := getZone(test.domain)
+			zone, err := getZone(t.Context(), test.domain)
 			require.NoError(t, err)
 			require.Equal(t, test.expected, zone)
 		})

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/infomaniak/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -116,11 +116,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
 	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	ikDomain, err := d.client.GetDomainByName(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	ikDomain, err := d.client.GetDomainByName(ctx, dnsnew.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("infomaniak: could not get domain %q: %w", info.EffectiveFQDN, err)
 	}
@@ -129,7 +128,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	d.domainIDs[token] = ikDomain.ID
 	d.domainIDsMu.Unlock()
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, ikDomain.CustomerName)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, ikDomain.CustomerName)
 	if err != nil {
 		return fmt.Errorf("infomaniak: %w", err)
 	}
@@ -155,7 +154,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
@@ -173,9 +173,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("infomaniak: unknown domain ID for '%s'", info.EffectiveFQDN)
 	}
 
-	err := d.client.DeleteDNSRecord(context.Background(), domainID, recordID)
+	err := d.client.DeleteDNSRecord(ctx, domainID, recordID)
 	if err != nil {
-		return fmt.Errorf("infomaniak: could not delete record %q: %w", dns01.UnFqdn(info.EffectiveFQDN), err)
+		return fmt.Errorf("infomaniak: could not delete record %q: %w", dnsnew.UnFqdn(info.EffectiveFQDN), err)
 	}
 
 	// Delete record ID from map

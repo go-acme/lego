@@ -12,7 +12,7 @@ import (
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/anexia/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -51,7 +51,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 5*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -125,9 +125,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("anexia: could not find zone for domain %q: %w", domain, err)
 	}
@@ -137,7 +137,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("anexia: %w", err)
 	}
 
-	zoneName := dns01.UnFqdn(authZone)
+	zoneName := dnsnew.UnFqdn(authZone)
 
 	recordReq := internal.Record{
 		Name:  recordName,
@@ -160,9 +160,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("anexia: could not find zone for domain %q: %w", domain, err)
 	}
@@ -172,12 +172,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("anexia: %w", err)
 	}
 
-	recordID, err := d.findRecordID(ctx, dns01.UnFqdn(authZone), recordName, info.Value)
+	recordID, err := d.findRecordID(ctx, dnsnew.UnFqdn(authZone), recordName, info.Value)
 	if err != nil {
 		return fmt.Errorf("anexia: %w", err)
 	}
 
-	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
+	err = d.client.DeleteRecord(ctx, dnsnew.UnFqdn(authZone), recordID)
 	if err != nil {
 		return fmt.Errorf("anexia: delete TXT record: %w", err)
 	}
@@ -228,10 +228,10 @@ func findRecordIdentifier(zone *internal.Zone, recordName, rdata string) string 
 }
 
 func extractRecordName(fqdn, authZone string) (string, error) {
-	if dns01.UnFqdn(fqdn) == dns01.UnFqdn(authZone) {
+	if dnsnew.UnFqdn(fqdn) == dnsnew.UnFqdn(authZone) {
 		// "@" for the root domain instead of an empty string.
 		return "@", nil
 	}
 
-	return dns01.ExtractSubDomain(fqdn, authZone)
+	return dnsnew.ExtractSubDomain(fqdn, authZone)
 }

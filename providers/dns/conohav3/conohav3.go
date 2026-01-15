@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/conohav3/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -49,8 +49,8 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		Region:             env.GetOrDefaultString(EnvRegion, "c3j1"),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -139,14 +139,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("conohav3: could not find zone for domain %q: %w", domain, err)
 	}
-
-	ctx := context.Background()
 
 	id, err := d.client.GetDomainID(ctx, authZone)
 	if err != nil {
@@ -170,14 +170,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp clears ConoHa DNS TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("conohav3: could not find zone for domain %q: %w", domain, err)
 	}
-
-	ctx := context.Background()
 
 	domID, err := d.client.GetDomainID(ctx, authZone)
 	if err != nil {

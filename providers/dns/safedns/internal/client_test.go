@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,7 +37,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Name:    "_acme-challenge.example.com",
 		Type:    "TXT",
 		Content: `"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"`,
-		TTL:     dns01.DefaultTTL,
+		TTL:     dnsnew.DefaultTTL,
 	}
 
 	response, err := client.AddRecord(t.Context(), "example.com", record)
@@ -70,7 +70,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Name:    "_acme-challenge.example.com",
 		Type:    "TXT",
 		Content: `"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"`,
-		TTL:     dns01.DefaultTTL,
+		TTL:     dnsnew.DefaultTTL,
 	}
 
 	_, err := client.AddRecord(t.Context(), "example.com", record)

@@ -11,7 +11,7 @@ import (
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/platform/wait"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -48,9 +48,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -113,7 +113,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	err := d.changeRecord(ctx, "CREATE", info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
@@ -127,7 +127,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	err := d.changeRecord(ctx, "DELETE", info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
@@ -144,12 +144,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) changeRecord(ctx context.Context, action, fqdn, value string, ttl int) error {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return fmt.Errorf("could not find zone: %w", err)
 	}
 
-	name := dns01.UnFqdn(fqdn)
+	name := dnsnew.UnFqdn(fqdn)
 	if authZone == fqdn {
 		name = "@"
 	}
@@ -180,7 +180,7 @@ func (d *DNSProvider) changeRecord(ctx context.Context, action, fqdn, value stri
 		},
 	}
 
-	resp, err := d.client.ChangeResourceRecordSets(ctx, dns01.UnFqdn(authZone), reqParams)
+	resp, err := d.client.ChangeResourceRecordSets(ctx, dnsnew.UnFqdn(authZone), reqParams)
 	if err != nil {
 		return fmt.Errorf("failed to change record set: %w", err)
 	}

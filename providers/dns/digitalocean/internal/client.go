@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 	"golang.org/x/oauth2"
 )
@@ -37,7 +37,7 @@ func NewClient(hc *http.Client) *Client {
 }
 
 func (c *Client) AddTxtRecord(ctx context.Context, zone string, record Record) (*TxtRecordResponse, error) {
-	endpoint := c.BaseURL.JoinPath("v2", "domains", dns01.UnFqdn(zone), "records")
+	endpoint := c.BaseURL.JoinPath("v2", "domains", dnsnew.UnFqdn(zone), "records")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
@@ -55,7 +55,7 @@ func (c *Client) AddTxtRecord(ctx context.Context, zone string, record Record) (
 }
 
 func (c *Client) RemoveTxtRecord(ctx context.Context, zone string, recordID int) error {
-	endpoint := c.BaseURL.JoinPath("v2", "domains", dns01.UnFqdn(zone), "records", strconv.Itoa(recordID))
+	endpoint := c.BaseURL.JoinPath("v2", "domains", dnsnew.UnFqdn(zone), "records", strconv.Itoa(recordID))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

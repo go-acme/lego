@@ -47,7 +47,7 @@ var testCases = []testCase{
 func TestDNSProvider_Present(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			ch, _ := newPseudoRecord(test.domain, "")
+			ch, _ := newPseudoRecord(t.Context(), test.domain, "")
 
 			provider := mockBuilder().
 				Route("GET /",
@@ -87,7 +87,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			ch, _ := newPseudoRecord(test.domain, "")
+			ch, _ := newPseudoRecord(t.Context(), test.domain, "")
 
 			provider := mockBuilder().
 				Route("GET /",
@@ -153,7 +153,7 @@ func Test_newPseudoRecord_domainSplit(t *testing.T) {
 		t.Run(test.domain, func(t *testing.T) {
 			valid := true
 
-			ch, err := newPseudoRecord(test.domain, "")
+			ch, err := newPseudoRecord(t.Context(), test.domain, "")
 			if err != nil {
 				valid = false
 			}

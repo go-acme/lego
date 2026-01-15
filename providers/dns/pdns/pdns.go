@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -52,7 +52,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		ServerName:         env.GetOrDefaultString(EnvServerName, "localhost"),
 		APIVersion:         env.GetOrDefaultInt(EnvAPIVersion, 0),
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		HTTPClient: &http.Client{
@@ -130,9 +130,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("pdns: could not find zone for domain %q: %w", domain, err)
 	}
@@ -145,7 +145,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	name := info.EffectiveFQDN
 	if d.client.APIVersion() == 0 {
 		// pre-v1 API wants non-fqdn
-		name = dns01.UnFqdn(info.EffectiveFQDN)
+		name = dnsnew.UnFqdn(info.EffectiveFQDN)
 	}
 
 	// Look for existing records.
@@ -194,9 +194,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("pdns: could not find zone for domain %q: %w", domain, err)
 	}
@@ -248,7 +248,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 func findTxtRecord(zone *internal.HostedZone, fqdn string) *internal.RRSet {
 	for _, set := range zone.RRSets {
-		if set.Type == "TXT" && (set.Name == dns01.UnFqdn(fqdn) || set.Name == fqdn) {
+		if set.Type == "TXT" && (set.Name == dnsnew.UnFqdn(fqdn) || set.Name == fqdn) {
 			return &set
 		}
 	}

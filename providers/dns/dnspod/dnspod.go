@@ -2,6 +2,7 @@
 package dnspod
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/nrdcg/dnspod-go"
@@ -42,8 +43,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, 600),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -95,9 +96,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zoneID, zoneName, err := d.getHostedZone(info.EffectiveFQDN)
+	zoneID, zoneName, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
@@ -117,9 +119,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zoneID, zoneName, err := d.getHostedZone(info.EffectiveFQDN)
+	zoneID, zoneName, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
@@ -145,13 +148,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
+func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string, string, error) {
 	zones, _, err := d.client.Domains.List()
 	if err != nil {
 		return "", "", fmt.Errorf("API call failed: %w", err)
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(domain)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, domain)
 	if err != nil {
 		return "", "", fmt.Errorf("could not find zone: %w", err)
 	}
@@ -159,7 +162,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 	var hostedZone dnspod.Domain
 
 	for _, zone := range zones {
-		if zone.Name == dns01.UnFqdn(authZone) {
+		if zone.Name == dnsnew.UnFqdn(authZone) {
 			hostedZone = zone
 		}
 	}
@@ -172,7 +175,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 }
 
 func (d *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) (*dnspod.Record, error) {
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dnsnew.ExtractSubDomain(fqdn, zone)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +190,7 @@ func (d *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) (*dnspod.R
 }
 
 func (d *DNSProvider) findTxtRecords(fqdn, zoneID, zoneName string) ([]dnspod.Record, error) {
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
+	subDomain, err := dnsnew.ExtractSubDomain(fqdn, zoneName)
 	if err != nil {
 		return nil, err
 	}

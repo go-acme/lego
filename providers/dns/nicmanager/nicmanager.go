@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/nicmanager/internal"
@@ -57,7 +57,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 5*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 		},
@@ -142,16 +142,16 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	rootDomain, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	rootDomain, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("nicmanager: could not find zone for domain %q: %w", domain, err)
 	}
 
-	ctx := context.Background()
-
-	zone, err := d.client.GetZone(ctx, dns01.UnFqdn(rootDomain))
+	zone, err := d.client.GetZone(ctx, dnsnew.UnFqdn(rootDomain))
 	if err != nil {
 		return fmt.Errorf("nicmanager: failed to get zone %q: %w", rootDomain, err)
 	}
@@ -175,21 +175,21 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	rootDomain, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	rootDomain, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("nicmanager: could not find zone for domain %q: %w", domain, err)
 	}
 
-	ctx := context.Background()
-
-	zone, err := d.client.GetZone(ctx, dns01.UnFqdn(rootDomain))
+	zone, err := d.client.GetZone(ctx, dnsnew.UnFqdn(rootDomain))
 	if err != nil {
 		return fmt.Errorf("nicmanager: failed to get zone %q: %w", rootDomain, err)
 	}
 
-	name := dns01.UnFqdn(info.EffectiveFQDN)
+	name := dnsnew.UnFqdn(info.EffectiveFQDN)
 
 	var (
 		existingRecord      internal.Record

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/beget/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -106,9 +106,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	records, err := d.client.GetTXTRecords(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	records, err := d.client.GetTXTRecords(ctx, dnsnew.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("beget: get TXT records: %w", err)
 	}
@@ -120,10 +120,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:      d.config.TTL,
 	})
 
-	err = d.client.ChangeTXTRecord(ctx, dns01.UnFqdn(info.EffectiveFQDN), records)
+	err = d.client.ChangeTXTRecord(ctx, dnsnew.UnFqdn(info.EffectiveFQDN), records)
 	if err != nil {
 		return fmt.Errorf("beget: failed to create TXT records [domain: %s]: %w",
-			dns01.UnFqdn(info.EffectiveFQDN), err)
+			dnsnew.UnFqdn(info.EffectiveFQDN), err)
 	}
 
 	return nil
@@ -133,9 +133,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	records, err := d.client.GetTXTRecords(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	records, err := d.client.GetTXTRecords(ctx, dnsnew.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("beget: get TXT records: %w", err)
 	}
@@ -154,10 +154,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		updatedRecords = append(updatedRecords, record)
 	}
 
-	err = d.client.ChangeTXTRecord(ctx, dns01.UnFqdn(info.EffectiveFQDN), updatedRecords)
+	err = d.client.ChangeTXTRecord(ctx, dnsnew.UnFqdn(info.EffectiveFQDN), updatedRecords)
 	if err != nil {
 		return fmt.Errorf("beget: failed to remove TXT records [domain: %s]: %w",
-			dns01.UnFqdn(info.EffectiveFQDN), err)
+			dnsnew.UnFqdn(info.EffectiveFQDN), err)
 	}
 
 	return nil

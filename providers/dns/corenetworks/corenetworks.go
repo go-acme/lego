@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/corenetworks/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -45,9 +45,9 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, 3600),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
+		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dnsnew.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -110,19 +110,20 @@ func (d *DNSProvider) Sequential() time.Duration {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
 	if err != nil {
 		return fmt.Errorf("create authentication token: %w", err)
 	}
 
-	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	zone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctxAuth, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("corenetworks: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("corenetworks: %w", err)
 	}
@@ -134,12 +135,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Data: info.Value,
 	}
 
-	err = d.client.AddRecord(ctx, dns01.UnFqdn(zone), record)
+	err = d.client.AddRecord(ctxAuth, dnsnew.UnFqdn(zone), record)
 	if err != nil {
 		return fmt.Errorf("corenetworks: add record: %w", err)
 	}
 
-	err = d.client.CommitRecords(ctx, dns01.UnFqdn(zone))
+	err = d.client.CommitRecords(ctxAuth, dnsnew.UnFqdn(zone))
 	if err != nil {
 		return fmt.Errorf("corenetworks: commit records: %w", err)
 	}
@@ -149,19 +150,20 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
 	if err != nil {
 		return fmt.Errorf("create authentication token: %w", err)
 	}
 
-	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	zone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctxAuth, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("corenetworks: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("corenetworks: %w", err)
 	}
@@ -173,12 +175,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Data: info.Value,
 	}
 
-	err = d.client.DeleteRecords(ctx, dns01.UnFqdn(zone), record)
+	err = d.client.DeleteRecords(ctxAuth, dnsnew.UnFqdn(zone), record)
 	if err != nil {
 		return fmt.Errorf("corenetworks: delete records: %w", err)
 	}
 
-	err = d.client.CommitRecords(ctx, dns01.UnFqdn(zone))
+	err = d.client.CommitRecords(ctxAuth, dnsnew.UnFqdn(zone))
 	if err != nil {
 		return fmt.Errorf("corenetworks: commit records: %w", err)
 	}

@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 	querystring "github.com/google/go-querystring/query"
 )
@@ -47,7 +47,7 @@ func NewClient(login, apiKey string) *Client {
 }
 
 func (c *Client) AddRecord(ctx context.Context, domain string, record Record) error {
-	endpoint := c.baseURL.JoinPath("dns", dns01.UnFqdn(domain), "addRR")
+	endpoint := c.baseURL.JoinPath("dns", dnsnew.UnFqdn(domain), "addRR")
 
 	params, err := querystring.Values(record)
 	if err != nil {
@@ -58,7 +58,7 @@ func (c *Client) AddRecord(ctx context.Context, domain string, record Record) er
 }
 
 func (c *Client) RemoveRecord(ctx context.Context, domain string, record Record) error {
-	endpoint := c.baseURL.JoinPath("dns", dns01.UnFqdn(domain), "removeRR")
+	endpoint := c.baseURL.JoinPath("dns", dnsnew.UnFqdn(domain), "removeRR")
 
 	params, err := querystring.Values(record)
 	if err != nil {

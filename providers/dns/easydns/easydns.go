@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/easydns/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -51,10 +51,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
+		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dnsnew.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -125,9 +125,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	authZone, err := d.findZone(ctx, dnsnew.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("easydns: %w", err)
 	}
@@ -136,7 +136,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("easydns: could not find zone for domain %q", domain)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("easydns: %w", err)
 	}
@@ -150,7 +150,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Priority: "0",
 	}
 
-	recordID, err := d.client.AddRecord(ctx, dns01.UnFqdn(authZone), record)
+	recordID, err := d.client.AddRecord(ctx, dnsnew.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("easydns: error adding zone record: %w", err)
 	}
@@ -168,7 +168,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	key := getMapKey(info.EffectiveFQDN, info.Value)
 
@@ -180,7 +180,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	authZone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	authZone, err := d.findZone(ctx, dnsnew.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("easydns: %w", err)
 	}
@@ -189,7 +189,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("easydns: could not find zone for domain %q", domain)
 	}
 
-	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
+	err = d.client.DeleteRecord(ctx, dnsnew.UnFqdn(authZone), recordID)
 	if err != nil {
 		return fmt.Errorf("easydns: %w", err)
 	}

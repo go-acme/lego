@@ -2,13 +2,14 @@
 package ns1
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"gopkg.in/ns1/ns1-go.v2/rest"
@@ -41,9 +42,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 		},
@@ -92,20 +93,21 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ns1: %w", err)
 	}
 
-	record, _, err := d.client.Records.Get(zone.Zone, dns01.UnFqdn(info.EffectiveFQDN), "TXT")
+	record, _, err := d.client.Records.Get(zone.Zone, dnsnew.UnFqdn(info.EffectiveFQDN), "TXT")
 
 	// Create a new record
 	if errors.Is(err, rest.ErrRecordMissing) || record == nil {
 		// Work through a bug in the NS1 API library that causes 400 Input validation failed (Value None for field '<obj>.filters' is not of type ...)
 		// So the `tags` and `blockedTags` parameters should be initialized to empty.
-		record = dns.NewRecord(zone.Zone, dns01.UnFqdn(info.EffectiveFQDN), "TXT", make(map[string]string), make([]string, 0))
+		record = dns.NewRecord(zone.Zone, dnsnew.UnFqdn(info.EffectiveFQDN), "TXT", make(map[string]string), make([]string, 0))
 		record.TTL = d.config.TTL
 		record.Answers = []*dns.Answer{{Rdata: []string{info.Value}}}
 
@@ -134,14 +136,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ns1: %w", err)
 	}
 
-	name := dns01.UnFqdn(info.EffectiveFQDN)
+	name := dnsnew.UnFqdn(info.EffectiveFQDN)
 
 	_, err = d.client.Records.Delete(zone.Zone, name, "TXT")
 	if err != nil {
@@ -157,13 +160,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) getHostedZone(fqdn string) (*dns.Zone, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+func (d *DNSProvider) getHostedZone(ctx context.Context, fqdn string) (*dns.Zone, error) {
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
 
-	authZone = dns01.UnFqdn(authZone)
+	authZone = dnsnew.UnFqdn(authZone)
 
 	zone, _, err := d.client.Zones.Get(authZone, false)
 	if err != nil {

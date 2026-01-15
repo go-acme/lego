@@ -2,6 +2,7 @@
 package ovh
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/internal/useragent"
@@ -87,9 +88,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, ovh.DefaultTimeout),
 		},
@@ -173,16 +174,18 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ovh: could not find zone for domain %q: %w", domain, err)
 	}
 
-	authZone = dns01.UnFqdn(authZone)
+	authZone = dnsnew.UnFqdn(authZone)
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("ovh: %w", err)
 	}
@@ -193,7 +196,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// Create TXT record
 	var respData Record
 
-	err = d.client.Post(reqURL, reqData, &respData)
+	err = d.client.PostWithContext(ctx, reqURL, reqData, &respData)
 	if err != nil {
 		return fmt.Errorf("ovh: error when call api to add record (%s): %w", reqURL, err)
 	}
@@ -201,7 +204,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// Apply the change
 	reqURL = fmt.Sprintf("/domain/zone/%s/refresh", authZone)
 
-	err = d.client.Post(reqURL, nil, nil)
+	err = d.client.PostWithContext(ctx, reqURL, nil, nil)
 	if err != nil {
 		return fmt.Errorf("ovh: error when call api to refresh zone (%s): %w", reqURL, err)
 	}
@@ -215,7 +218,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
@@ -226,16 +231,16 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("ovh: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ovh: could not find zone for domain %q: %w", domain, err)
 	}
 
-	authZone = dns01.UnFqdn(authZone)
+	authZone = dnsnew.UnFqdn(authZone)
 
 	reqURL := fmt.Sprintf("/domain/zone/%s/record/%d", authZone, recordID)
 
-	err = d.client.Delete(reqURL, nil)
+	err = d.client.DeleteWithContext(ctx, reqURL, nil)
 	if err != nil {
 		return fmt.Errorf("ovh: error when call OVH api to delete challenge record (%s): %w", reqURL, err)
 	}
@@ -243,7 +248,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// Apply the change
 	reqURL = fmt.Sprintf("/domain/zone/%s/refresh", authZone)
 
-	err = d.client.Post(reqURL, nil, nil)
+	err = d.client.PostWithContext(ctx, reqURL, nil, nil)
 	if err != nil {
 		return fmt.Errorf("ovh: error when call api to refresh zone (%s): %w", reqURL, err)
 	}

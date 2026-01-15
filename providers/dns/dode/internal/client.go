@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 )
 
@@ -41,7 +41,7 @@ func (c *Client) UpdateTxtRecord(ctx context.Context, fqdn, txt string, clearRec
 
 	query := endpoint.Query()
 	query.Set("token", c.token)
-	query.Set("domain", dns01.UnFqdn(fqdn))
+	query.Set("domain", dnsnew.UnFqdn(fqdn))
 
 	// api call differs per set/delete
 	if clearRecord {

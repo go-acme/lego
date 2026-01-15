@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/internal/tecnocratica/internal"
 )
@@ -83,21 +83,21 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("could not find zone for domain %q: %w", domain, err)
 	}
 
-	authZone = dns01.UnFqdn(authZone)
+	authZone = dnsnew.UnFqdn(authZone)
 
 	zone, err := d.findZone(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -124,7 +124,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	d.recordIDsMu.Lock()
 	zoneID, zoneOK := d.zoneIDs[token]
@@ -135,7 +136,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("unknown record ID or zone ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err := d.client.DeleteRecord(context.Background(), zoneID, recordID)
+	err := d.client.DeleteRecord(ctx, zoneID, recordID)
 	if err != nil {
 		return fmt.Errorf("delete record: fqdn=%s, zoneID=%d, recordID=%d: %w",
 			info.EffectiveFQDN, zoneID, recordID, err)

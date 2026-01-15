@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/gandi/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -73,7 +73,7 @@ type DNSProvider struct {
 	// findZoneByFqdn determines the DNS zone of a FQDN.
 	// It is overridden during tests.
 	// only for testing purpose.
-	findZoneByFqdn func(fqdn string) (string, error)
+	findZoneByFqdn func(ctx context.Context, fqdn string) (string, error)
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Gandi.
@@ -117,7 +117,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		client:              client,
 		inProgressFQDNs:     make(map[string]inProgressInfo),
 		inProgressAuthZones: make(map[string]struct{}),
-		findZoneByFqdn:      dns01.FindZoneByFqdn,
+		findZoneByFqdn:      dnsnew.DefaultClient().FindZoneByFqdn,
 	}, nil
 }
 
@@ -125,19 +125,19 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // does this by creating and activating a new temporary Gandi DNS
 // zone. This new zone contains the TXT record.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	if d.config.TTL < minTTL {
 		d.config.TTL = minTTL // 300 is gandi minimum value for ttl
 	}
 
 	// find authZone and Gandi zone_id for fqdn
-	authZone, err := d.findZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := d.findZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("gandi: could not find zone for domain %q: %w", domain, err)
 	}
-
-	ctx := context.Background()
 
 	zoneID, err := d.client.GetZoneID(ctx, authZone)
 	if err != nil {
@@ -145,7 +145,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	// determine name of TXT record
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("gandi: %w", err)
 	}
@@ -161,7 +161,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// perform API actions to create and activate new gandi zone
 	// containing the required TXT record
-	newZoneName := fmt.Sprintf("%s [ACME Challenge %s]", dns01.UnFqdn(authZone), time.Now().Format(time.RFC822Z))
+	newZoneName := fmt.Sprintf("%s [ACME Challenge %s]", dnsnew.UnFqdn(authZone), time.Now().Format(time.RFC822Z))
 
 	newZoneID, err := d.client.CloneZone(ctx, zoneID, newZoneName)
 	if err != nil {
@@ -203,7 +203,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // parameters. It does this by restoring the old Gandi DNS zone and
 // removing the temporary one created by Present.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// acquire lock and retrieve zoneID, newZoneID and authZone
 	d.inProgressMu.Lock()
@@ -219,8 +220,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	authZone := d.inProgressFQDNs[info.EffectiveFQDN].authZone
 	delete(d.inProgressFQDNs, info.EffectiveFQDN)
 	delete(d.inProgressAuthZones, authZone)
-
-	ctx := context.Background()
 
 	// perform API actions to restore old gandi zone for authZone
 	err := d.client.SetZone(ctx, authZone, zoneID)

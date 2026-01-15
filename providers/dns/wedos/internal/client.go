@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 )
 
@@ -39,7 +39,7 @@ func NewClient(username, password string) *Client {
 // https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-rows-list/
 func (c *Client) GetRecords(ctx context.Context, zone string) ([]DNSRow, error) {
 	payload := map[string]any{
-		"domain": dns01.UnFqdn(zone),
+		"domain": dnsnew.UnFqdn(zone),
 	}
 
 	req, err := c.newRequest(ctx, commandDNSRowsList, payload)
@@ -62,7 +62,7 @@ func (c *Client) GetRecords(ctx context.Context, zone string) ([]DNSRow, error) 
 // https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-row-update/
 func (c *Client) AddRecord(ctx context.Context, zone string, record DNSRow) error {
 	payload := DNSRowRequest{
-		Domain: dns01.UnFqdn(zone),
+		Domain: dnsnew.UnFqdn(zone),
 		TTL:    record.TTL,
 		Type:   record.Type,
 		Data:   record.Data,
@@ -90,7 +90,7 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record DNSRow) erro
 // https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-row-delete/
 func (c *Client) DeleteRecord(ctx context.Context, zone, recordID string) error {
 	payload := DNSRowRequest{
-		Domain: dns01.UnFqdn(zone),
+		Domain: dnsnew.UnFqdn(zone),
 		ID:     recordID,
 	}
 
@@ -106,7 +106,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zone, recordID string) error 
 // https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-domain-commit/
 func (c *Client) Commit(ctx context.Context, zone string) error {
 	payload := map[string]any{
-		"name": dns01.UnFqdn(zone),
+		"name": dnsnew.UnFqdn(zone),
 	}
 
 	req, err := c.newRequest(ctx, commandDNSDomainCommit, payload)

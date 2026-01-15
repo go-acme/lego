@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/webnamesca/internal"
@@ -41,9 +41,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -95,14 +95,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("webnamesca: could not find zone for domain %q: %w", domain, err)
 	}
 
-	_, err = d.client.AddTXTRecord(context.Background(), dns01.UnFqdn(authZone), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
+	_, err = d.client.AddTXTRecord(ctx, dnsnew.UnFqdn(authZone), dnsnew.UnFqdn(info.EffectiveFQDN), info.Value)
 	if err != nil {
 		return fmt.Errorf("webnamesca: add TXT record: %w", err)
 	}
@@ -112,14 +114,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("webnamesca: could not find zone for domain %q: %w", domain, err)
 	}
 
-	_, err = d.client.DeleteTXTRecord(context.Background(), dns01.UnFqdn(authZone), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
+	_, err = d.client.DeleteTXTRecord(ctx, dnsnew.UnFqdn(authZone), dnsnew.UnFqdn(info.EffectiveFQDN), info.Value)
 	if err != nil {
 		return fmt.Errorf("webnamesca: delete TXT record: %w", err)
 	}

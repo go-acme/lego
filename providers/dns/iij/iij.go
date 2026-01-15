@@ -2,6 +2,7 @@
 package iij
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"slices"
@@ -9,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/iij/doapi"
 	"github.com/iij/doapi/protocol"
@@ -91,7 +92,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	err := d.addTxtRecord(domain, info.Value)
@@ -104,7 +106,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	err := d.deleteTxtRecord(domain, info.Value)
@@ -228,7 +231,7 @@ func (d *DNSProvider) listZones() ([]string, error) {
 }
 
 func splitDomain(domain string, zones []string) (string, string, error) {
-	base := dns01.UnFqdn(domain)
+	base := dnsnew.UnFqdn(domain)
 
 	for _, index := range dns.Split(base) {
 		zone := base[index:]
@@ -239,7 +242,7 @@ func splitDomain(domain string, zones []string) (string, string, error) {
 				baseOwner = "." + baseOwner
 			}
 
-			return "_acme-challenge" + dns01.UnFqdn(baseOwner), zone, nil
+			return "_acme-challenge" + dnsnew.UnFqdn(baseOwner), zone, nil
 		}
 	}
 

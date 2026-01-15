@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 )
 
@@ -80,12 +80,12 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID string) erro
 
 // GetHostedZoneID performs a lookup to get the DNS zone which needs modifying for a given FQDN.
 func (c *Client) GetHostedZoneID(ctx context.Context, fqdn string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone: %w", err)
 	}
 
-	zoneSearchResponse, err := c.listDomainsByName(ctx, dns01.UnFqdn(authZone))
+	zoneSearchResponse, err := c.listDomainsByName(ctx, dnsnew.UnFqdn(authZone))
 	if err != nil {
 		return "", err
 	}
@@ -124,7 +124,7 @@ func (c *Client) listDomainsByName(ctx context.Context, domain string) (*ZoneSea
 
 // FindTxtRecord searches a DNS zone for a TXT record with a specific name.
 func (c *Client) FindTxtRecord(ctx context.Context, fqdn, zoneID string) (*Record, error) {
-	records, err := c.searchRecords(ctx, zoneID, dns01.UnFqdn(fqdn), "TXT")
+	records, err := c.searchRecords(ctx, zoneID, dnsnew.UnFqdn(fqdn), "TXT")
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/domeneshop/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -100,14 +100,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	zone, host, err := d.splitDomain(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	zone, host, err := d.splitDomain(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
-
-	ctx := context.Background()
 
 	domainInstance, err := d.client.GetDomainByName(ctx, zone)
 	if err != nil {
@@ -124,14 +124,14 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	zone, host, err := d.splitDomain(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	zone, host, err := d.splitDomain(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
-
-	ctx := context.Background()
 
 	domainInstance, err := d.client.GetDomainByName(ctx, zone)
 	if err != nil {
@@ -146,16 +146,16 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 }
 
 // splitDomain splits the hostname from the authoritative zone, and returns both parts (non-fqdn).
-func (d *DNSProvider) splitDomain(fqdn string) (string, string, error) {
-	zone, err := dns01.FindZoneByFqdn(fqdn)
+func (d *DNSProvider) splitDomain(ctx context.Context, fqdn string) (string, string, error) {
+	zone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", "", fmt.Errorf("could not find zone: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dnsnew.ExtractSubDomain(fqdn, zone)
 	if err != nil {
 		return "", "", err
 	}
 
-	return dns01.UnFqdn(zone), subDomain, nil
+	return dnsnew.UnFqdn(zone), subDomain, nil
 }

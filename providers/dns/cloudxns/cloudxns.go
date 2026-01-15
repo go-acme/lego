@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 )
 
 // Environment variables names.
@@ -63,5 +63,5 @@ func (d *DNSProvider) CleanUp(_, _, _ string) error {
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return dns01.DefaultPropagationTimeout, dns01.DefaultPollingInterval
+	return dnsnew.DefaultPropagationTimeout, dnsnew.DefaultPollingInterval
 }

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/servercow/internal"
@@ -45,9 +45,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -102,21 +102,21 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := getAuthZone(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := getAuthZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
-
-	ctx := context.Background()
 
 	records, err := d.client.GetRecords(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
 
-	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	recordName, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
@@ -161,21 +161,21 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record previously created.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := getAuthZone(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := getAuthZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
-
-	ctx := context.Background()
 
 	records, err := d.client.GetRecords(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("servercow: failed to get TXT records: %w", err)
 	}
 
-	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	recordName, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
@@ -219,13 +219,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func getAuthZone(domain string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(domain)
+func getAuthZone(ctx context.Context, domain string) (string, error) {
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, domain)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone: %w", err)
 	}
 
-	return dns01.UnFqdn(authZone), nil
+	return dnsnew.UnFqdn(authZone), nil
 }
 
 func findRecords(records []internal.Record, name string) *internal.Record {

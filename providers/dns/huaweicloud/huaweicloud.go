@@ -12,7 +12,7 @@ import (
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/platform/wait"
 	"github.com/go-acme/lego/v5/providers/dns/huaweicloud/internal"
@@ -56,8 +56,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                int32(env.GetOrDefaultInt(EnvTTL, 300)),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 	}
 }
@@ -129,9 +129,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("huaweicloud: could not find zone for domain %q: %w", domain, err)
 	}
@@ -150,7 +152,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	d.recordIDs[token] = recordSetID
 	d.recordIDsMu.Unlock()
 
-	err = wait.Retry(context.Background(),
+	err = wait.Retry(ctx,
 		func() error {
 			rs, errShow := d.client.ShowRecordSet(&hwmodel.ShowRecordSetRequest{
 				ZoneId:      zoneID,
@@ -178,7 +180,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// gets the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
@@ -189,7 +192,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("huaweicloud: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("huaweicloud: could not find zone for domain %q: %w", domain, err)
 	}
@@ -222,7 +225,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dns01.ChallengeInfo) (string, error) {
+func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dnsnew.ChallengeInfo) (string, error) {
 	records, err := d.client.ListRecordSetsByZone(&hwmodel.ListRecordSetsByZoneRequest{
 		ZoneId: zoneID,
 		Name:   ptr.Pointer(info.EffectiveFQDN),

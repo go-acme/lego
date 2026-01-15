@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/dyn/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -45,9 +45,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 		},
@@ -100,56 +100,60 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("dyn: could not find zone for domain %q: %w", domain, err)
 	}
 
-	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
 	if err != nil {
 		return fmt.Errorf("dyn: %w", err)
 	}
 
-	err = d.client.AddTXTRecord(ctx, authZone, info.EffectiveFQDN, info.Value, d.config.TTL)
+	err = d.client.AddTXTRecord(ctxAuth, authZone, info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("dyn: %w", err)
 	}
 
-	err = d.client.Publish(ctx, authZone, "Added TXT record for ACME dns-01 challenge using lego client")
+	err = d.client.Publish(ctxAuth, authZone, "Added TXT record for ACME dns-01 challenge using lego client")
 	if err != nil {
 		return fmt.Errorf("dyn: %w", err)
 	}
 
-	return d.client.Logout(ctx)
+	return d.client.Logout(ctxAuth)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("dyn: could not find zone for domain %q: %w", domain, err)
 	}
 
-	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
 	if err != nil {
 		return fmt.Errorf("dyn: %w", err)
 	}
 
-	err = d.client.RemoveTXTRecord(ctx, authZone, info.EffectiveFQDN)
+	err = d.client.RemoveTXTRecord(ctxAuth, authZone, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("dyn: %w", err)
 	}
 
-	err = d.client.Publish(ctx, authZone, "Removed TXT record for ACME dns-01 challenge using lego client")
+	err = d.client.Publish(ctxAuth, authZone, "Removed TXT record for ACME dns-01 challenge using lego client")
 	if err != nil {
 		return fmt.Errorf("dyn: %w", err)
 	}
 
-	return d.client.Logout(ctx)
+	return d.client.Logout(ctxAuth)
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

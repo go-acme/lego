@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	dnspod "github.com/go-acme/tencentclouddnspod/v20210323"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	errorsdk "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
@@ -32,7 +32,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*dnspod
 		request.Offset = common.Int64Ptr(int64(len(domains)))
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(domain)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, domain)
 	if err != nil {
 		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
@@ -40,7 +40,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*dnspod
 	var hostedZone *dnspod.DomainListItem
 
 	for _, zone := range domains {
-		unfqdn := dns01.UnFqdn(authZone)
+		unfqdn := dnsnew.UnFqdn(authZone)
 		if *zone.Name == unfqdn || *zone.Punycode == unfqdn {
 			hostedZone = zone
 		}
@@ -87,7 +87,7 @@ func extractRecordName(fqdn, zone string) (string, error) {
 		return "", fmt.Errorf("fail to convert punycode: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, asciiDomain)
+	subDomain, err := dnsnew.ExtractSubDomain(fqdn, asciiDomain)
 	if err != nil {
 		return "", err
 	}

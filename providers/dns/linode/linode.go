@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/internal/useragent"
@@ -133,7 +133,7 @@ func (d *DNSProvider) Timeout() (time.Duration, time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZoneInfo(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -141,7 +141,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	createOpts := linodego.DomainRecordCreateOptions{
-		Name:   dns01.UnFqdn(info.EffectiveFQDN),
+		Name:   dnsnew.UnFqdn(info.EffectiveFQDN),
 		Target: info.Value,
 		TTLSec: d.config.TTL,
 		Type:   linodego.RecordTypeTXT,
@@ -156,7 +156,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZoneInfo(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -173,7 +173,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// Remove the specified resource, if it exists.
 	for _, resource := range resources {
-		if (resource.Name == dns01.UnFqdn(info.EffectiveFQDN) || resource.Name == zone.resourceName) &&
+		if (resource.Name == dnsnew.UnFqdn(info.EffectiveFQDN) || resource.Name == zone.resourceName) &&
 			resource.Target == info.Value {
 			if err := d.client.DeleteDomainRecord(ctx, zone.domainID, resource.ID); err != nil {
 				return err
@@ -186,13 +186,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 func (d *DNSProvider) getHostedZoneInfo(ctx context.Context, fqdn string) (*hostedZoneInfo, error) {
 	// Lookup the zone that handles the specified FQDN.
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
 
 	// Query the authority zone.
-	filter, err := json.Marshal(map[string]string{"domain": dns01.UnFqdn(authZone)})
+	filter, err := json.Marshal(map[string]string{"domain": dnsnew.UnFqdn(authZone)})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create JSON filter: %w", err)
 	}
@@ -208,7 +208,7 @@ func (d *DNSProvider) getHostedZoneInfo(ctx context.Context, fqdn string) (*host
 		return nil, errors.New("domain not found")
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dnsnew.ExtractSubDomain(fqdn, authZone)
 	if err != nil {
 		return nil, err
 	}

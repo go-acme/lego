@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/brandit/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -47,7 +47,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, 600),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 10*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -110,19 +110,19 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("brandit: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("brandit: %w", err)
 	}
-
-	ctx := context.Background()
 
 	record := internal.Record{
 		Type:    "TXT",
@@ -132,18 +132,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	// find the account associated with the domain
-	account, err := d.client.StatusDomain(ctx, dns01.UnFqdn(authZone))
+	account, err := d.client.StatusDomain(ctx, dnsnew.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("brandit: status domain: %w", err)
 	}
 
 	// Find the next record id
-	recordID, err := d.client.ListRecords(ctx, account.Registrar[0], dns01.UnFqdn(authZone))
+	recordID, err := d.client.ListRecords(ctx, account.Registrar[0], dnsnew.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("brandit: list records: %w", err)
 	}
 
-	result, err := d.client.AddRecord(ctx, dns01.UnFqdn(authZone), account.Registrar[0], strconv.Itoa(recordID.Total[0]), record)
+	result, err := d.client.AddRecord(ctx, dnsnew.UnFqdn(authZone), account.Registrar[0], strconv.Itoa(recordID.Total[0]), record)
 	if err != nil {
 		return fmt.Errorf("brandit: add record: %w", err)
 	}
@@ -157,9 +157,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("brandit: could not find zone for domain %q: %w", domain, err)
 	}
@@ -173,15 +175,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("brandit: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	ctx := context.Background()
-
 	// find the account associated with the domain
-	account, err := d.client.StatusDomain(ctx, dns01.UnFqdn(authZone))
+	account, err := d.client.StatusDomain(ctx, dnsnew.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("brandit: status domain: %w", err)
 	}
 
-	records, err := d.client.ListRecords(ctx, account.Registrar[0], dns01.UnFqdn(authZone))
+	records, err := d.client.ListRecords(ctx, account.Registrar[0], dnsnew.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("brandit: list records: %w", err)
 	}
@@ -194,7 +194,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 	}
 
-	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), account.Registrar[0], dnsRecord, strconv.Itoa(recordID))
+	err = d.client.DeleteRecord(ctx, dnsnew.UnFqdn(authZone), account.Registrar[0], dnsRecord, strconv.Itoa(recordID))
 	if err != nil {
 		return fmt.Errorf("brandit: delete record: %w", err)
 	}

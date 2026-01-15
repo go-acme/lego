@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/shellrent/internal"
@@ -122,14 +122,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	zone, err := d.findZone(ctx, dnsnew.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("shellrent: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.DomainName)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zone.DomainName)
 	if err != nil {
 		return fmt.Errorf("shellrent: %w", err)
 	}
@@ -156,7 +156,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// gets the record's unique ID from when we created it
 	d.recordIDsMu.Lock()

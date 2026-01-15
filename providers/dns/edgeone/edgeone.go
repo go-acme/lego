@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/ptr"
 	teo "github.com/go-acme/tencentedgdeone/v20220901"
@@ -127,16 +127,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
 	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zoneID, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("edgeone: failed to get hosted zone: %w", err)
 	}
 
-	punnyCoded, err := idna.ToASCII(dns01.UnFqdn(info.EffectiveFQDN))
+	punnyCoded, err := idna.ToASCII(dnsnew.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("edgeone: fail to convert punycode: %w", err)
 	}
@@ -162,9 +161,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
 	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zoneID, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
 	if err != nil {

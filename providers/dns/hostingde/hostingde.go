@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/hostingde"
 )
@@ -35,9 +35,9 @@ type Config = hostingde.Config
 func NewDefaultConfig() *Config {
 	return &Config{
 		ZoneName:           env.GetOrFile(EnvZoneName),
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},

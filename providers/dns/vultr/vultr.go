@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/vultr/govultr/v3"
@@ -45,9 +45,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 	}
 }
@@ -94,7 +94,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	zoneDomain, err := d.getHostedZone(ctx, domain)
@@ -102,7 +102,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("vultr: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zoneDomain)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zoneDomain)
 	if err != nil {
 		return fmt.Errorf("vultr: %w", err)
 	}
@@ -127,7 +127,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	zoneDomain, records, err := d.findTxtRecords(ctx, domain, info.EffectiveFQDN)
@@ -198,7 +198,7 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 		return "", nil, err
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneDomain)
+	subDomain, err := dnsnew.ExtractSubDomain(fqdn, zoneDomain)
 	if err != nil {
 		return "", nil, err
 	}

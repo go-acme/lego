@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 	"github.com/miekg/dns"
 )
@@ -90,7 +90,7 @@ func (c *Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clearR
 // not in format subsubdomain.subdomain.duckdns.org.
 // So strip off everything that is not top 3 levels.
 func getMainDomain(domain string) string {
-	domain = dns01.UnFqdn(domain)
+	domain = dnsnew.UnFqdn(domain)
 
 	split := dns.Split(domain)
 	if strings.HasSuffix(strings.ToLower(domain), "duckdns.org") {

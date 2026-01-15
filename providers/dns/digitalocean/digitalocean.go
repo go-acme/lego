@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/digitalocean/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -47,7 +47,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		BaseURL:            env.GetOrDefaultString(EnvAPIUrl, internal.DefaultBaseURL),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 30),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
@@ -119,16 +119,18 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("digitalocean: could not find zone for domain %q: %w", domain, err)
 	}
 
 	record := internal.Record{Type: "TXT", Name: info.EffectiveFQDN, Data: info.Value, TTL: d.config.TTL}
 
-	respData, err := d.client.AddTxtRecord(context.Background(), authZone, record)
+	respData, err := d.client.AddTxtRecord(ctx, authZone, record)
 	if err != nil {
 		return fmt.Errorf("digitalocean: %w", err)
 	}
@@ -142,9 +144,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("digitalocean: could not find zone for domain %q: %w", domain, err)
 	}
@@ -158,7 +162,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("digitalocean: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
-	err = d.client.RemoveTxtRecord(context.Background(), authZone, recordID)
+	err = d.client.RemoveTxtRecord(ctx, authZone, recordID)
 	if err != nil {
 		return fmt.Errorf("digitalocean: %w", err)
 	}

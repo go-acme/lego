@@ -1,8 +1,6 @@
 package manual
 
-import (
-	"github.com/go-acme/lego/v5/challenge/dns01"
-)
+import "github.com/go-acme/lego/v5/challenge/dns01"
 
 // DNSProvider is an implementation of the ChallengeProvider interface.
 type DNSProvider = dns01.DNSProviderManual

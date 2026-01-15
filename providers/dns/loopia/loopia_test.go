@@ -1,6 +1,7 @@
 package loopia
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -22,7 +23,7 @@ var envTest = tester.NewEnvTest(
 
 func TestSplitDomain(t *testing.T) {
 	provider := &DNSProvider{
-		findZoneByFqdn: func(fqdn string) (string, error) {
+		findZoneByFqdn: func(ctx context.Context, fqdn string) (string, error) {
 			return "example.com.", nil
 		},
 	}
@@ -55,7 +56,7 @@ func TestSplitDomain(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			subdomain, domain, err := provider.splitDomain(test.fqdn)
+			subdomain, domain, err := provider.splitDomain(t.Context(), test.fqdn)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.subdomain, subdomain)

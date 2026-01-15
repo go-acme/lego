@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/dynu/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -101,28 +101,27 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
 	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	rootDomain, err := d.client.GetRootDomain(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	rootDomain, err := d.client.GetRootDomain(ctx, dnsnew.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("dynu: could not find root domain for %s: %w", domain, err)
 	}
 
-	records, err := d.client.GetRecords(ctx, dns01.UnFqdn(info.EffectiveFQDN), "TXT")
+	records, err := d.client.GetRecords(ctx, dnsnew.UnFqdn(info.EffectiveFQDN), "TXT")
 	if err != nil {
 		return fmt.Errorf("dynu: failed to get records for %s: %w", domain, err)
 	}
 
 	for _, record := range records {
 		// the record already exist
-		if record.Hostname == dns01.UnFqdn(info.EffectiveFQDN) && record.TextData == info.Value {
+		if record.Hostname == dnsnew.UnFqdn(info.EffectiveFQDN) && record.TextData == info.Value {
 			return nil
 		}
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, rootDomain.DomainName)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, rootDomain.DomainName)
 	if err != nil {
 		return fmt.Errorf("dynu: %w", err)
 	}
@@ -130,7 +129,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	record := internal.DNSRecord{
 		Type:       "TXT",
 		DomainName: rootDomain.DomainName,
-		Hostname:   dns01.UnFqdn(info.EffectiveFQDN),
+		Hostname:   dnsnew.UnFqdn(info.EffectiveFQDN),
 		NodeName:   subDomain,
 		TextData:   info.Value,
 		State:      true,
@@ -147,22 +146,21 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
 	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
-	rootDomain, err := d.client.GetRootDomain(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	rootDomain, err := d.client.GetRootDomain(ctx, dnsnew.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("dynu: could not find root domain for %s: %w", domain, err)
 	}
 
-	records, err := d.client.GetRecords(ctx, dns01.UnFqdn(info.EffectiveFQDN), "TXT")
+	records, err := d.client.GetRecords(ctx, dnsnew.UnFqdn(info.EffectiveFQDN), "TXT")
 	if err != nil {
 		return fmt.Errorf("dynu: failed to get records for %s: %w", domain, err)
 	}
 
 	for _, record := range records {
-		if record.Hostname == dns01.UnFqdn(info.EffectiveFQDN) && record.TextData == info.Value {
+		if record.Hostname == dnsnew.UnFqdn(info.EffectiveFQDN) && record.TextData == info.Value {
 			err = d.client.DeleteRecord(ctx, rootDomain.ID, record.ID)
 			if err != nil {
 				return fmt.Errorf("dynu: failed to remove TXT record for %s: %w", domain, err)

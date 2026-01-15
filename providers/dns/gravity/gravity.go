@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/gravity/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -45,8 +45,8 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
 		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, 1*time.Second),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
@@ -106,7 +106,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	_, err := d.client.Login(ctx)
 	if err != nil {
@@ -118,7 +118,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("gravity: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("gravity: %w", err)
 	}
@@ -148,7 +148,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	d.recordsMu.Lock()
 	record, ok := d.records[token]
@@ -158,7 +159,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("gravity: unknown record for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err := d.client.DeleteDNSRecord(context.Background(), record.Fqdn, record)
+	err := d.client.DeleteDNSRecord(ctx, record.Fqdn, record)
 	if err != nil {
 		return fmt.Errorf("gravity: delete record: %w", err)
 	}
@@ -176,7 +177,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Sequential implements the [dns01.sequential] interface.
+// Sequential implements the [dnsnew.sequential] interface.
 // It changes the behavior of the provider to resolve DNS challenges sequentially.
 // Returns the interval between each iteration.
 //
@@ -189,7 +190,7 @@ func (d *DNSProvider) Sequential() time.Duration {
 func (d *DNSProvider) findZone(ctx context.Context, effectiveFQDN string) (string, error) {
 	var zone string
 
-	for fqdn := range dns01.DomainsSeq(effectiveFQDN) {
+	for fqdn := range dnsnew.DomainsSeq(effectiveFQDN) {
 		zones, err := d.client.GetDNSZones(ctx, fqdn)
 		if err != nil {
 			return "", fmt.Errorf("get DNS zones: %w", err)

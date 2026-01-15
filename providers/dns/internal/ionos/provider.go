@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	ionos "github.com/go-acme/lego/v5/providers/dns/internal/ionos/internal"
 )
@@ -75,16 +75,15 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
 	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zones, err := d.client.ListZones(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get zones: %w", err)
 	}
 
-	name := dns01.UnFqdn(info.EffectiveFQDN)
+	name := dnsnew.UnFqdn(info.EffectiveFQDN)
 
 	zone := findZone(zones, name)
 	if zone == nil {
@@ -118,16 +117,15 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
 	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zones, err := d.client.ListZones(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get zones: %w", err)
 	}
 
-	name := dns01.UnFqdn(info.EffectiveFQDN)
+	name := dnsnew.UnFqdn(info.EffectiveFQDN)
 
 	zone := findZone(zones, name)
 	if zone == nil {

@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/syse/internal"
@@ -40,7 +40,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 1200*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
 		HTTPClient: &http.Client{
@@ -117,14 +117,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("syse: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("syse: %w", err)
 	}
@@ -137,7 +139,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Active:  true,
 	}
 
-	newRecord, err := d.client.CreateRecord(context.Background(), dns01.UnFqdn(authZone), record)
+	newRecord, err := d.client.CreateRecord(ctx, dnsnew.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("syse: create record: %w", err)
 	}
@@ -151,9 +153,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("syse: could not find zone for domain %q: %w", domain, err)
 	}
@@ -167,7 +171,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("syse: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err = d.client.DeleteRecord(context.Background(), dns01.UnFqdn(authZone), recordID)
+	err = d.client.DeleteRecord(ctx, dnsnew.UnFqdn(authZone), recordID)
 	if err != nil {
 		return fmt.Errorf("syse: delete record: %w", err)
 	}

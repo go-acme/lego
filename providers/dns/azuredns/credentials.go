@@ -10,7 +10,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 )
 
 const (
@@ -106,12 +106,12 @@ func (w *timeoutTokenCredential) GetToken(ctx context.Context, opts policy.Token
 	return tk, err
 }
 
-func getZoneName(config *Config, fqdn string) (string, error) {
+func getZoneName(ctx context.Context, config *Config, fqdn string) (string, error) {
 	if config.ZoneName != "" {
 		return config.ZoneName, nil
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone for %s: %w", fqdn, err)
 	}

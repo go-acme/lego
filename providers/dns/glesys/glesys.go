@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/glesys/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -111,15 +111,17 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// find authZone
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("glesys: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("glesys: %w", err)
 	}
@@ -129,7 +131,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	defer d.inProgressMu.Unlock()
 
 	// add TXT record into authZone
-	recordID, err := d.client.AddTXTRecord(context.Background(), dns01.UnFqdn(authZone), subDomain, info.Value, d.config.TTL)
+	recordID, err := d.client.AddTXTRecord(ctx, dnsnew.UnFqdn(authZone), subDomain, info.Value, d.config.TTL)
 	if err != nil {
 		return err
 	}
@@ -142,7 +144,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// acquire lock and retrieve authZone
 	d.inProgressMu.Lock()
@@ -157,7 +160,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	delete(d.activeRecords, info.EffectiveFQDN)
 
 	// delete TXT record from authZone
-	return d.client.DeleteTXTRecord(context.Background(), recordID)
+	return d.client.DeleteTXTRecord(ctx, recordID)
 }
 
 // Timeout returns the values (20*time.Minute, 20*time.Second) which

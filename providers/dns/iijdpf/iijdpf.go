@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/miekg/dns"
 	dpfapi "github.com/mimuret/golang-iij-dpf/pkg/api"
@@ -98,7 +98,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zoneID, err := dpfapiutils.GetZoneIdFromServiceCode(ctx, d.client, d.config.ServiceCode)
 	if err != nil {
@@ -122,7 +122,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zoneID, err := dpfapiutils.GetZoneIdFromServiceCode(ctx, d.client, d.config.ServiceCode)
 	if err != nil {

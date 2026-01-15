@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 	"golang.org/x/oauth2"
 )
@@ -41,7 +41,7 @@ func NewClient(hc *http.Client) *Client {
 // CreateRecord creates a DNS record.
 // https://timeweb.cloud/api-docs#tag/Domeny/operation/createDomainDNSRecord
 func (c *Client) CreateRecord(ctx context.Context, zone string, record DNSRecord) (*DNSRecord, error) {
-	endpoint := c.baseURL.JoinPath("v1", "domains", dns01.UnFqdn(zone), "dns-records")
+	endpoint := c.baseURL.JoinPath("v1", "domains", dnsnew.UnFqdn(zone), "dns-records")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
@@ -61,7 +61,7 @@ func (c *Client) CreateRecord(ctx context.Context, zone string, record DNSRecord
 // DeleteRecord deletes a DNS record.
 // https://timeweb.cloud/api-docs#tag/Domeny/operation/deleteDomainDNSRecord
 func (c *Client) DeleteRecord(ctx context.Context, zone string, recordID int) error {
-	endpoint := c.baseURL.JoinPath("v1", "domains", dns01.UnFqdn(zone), "dns-records", strconv.Itoa(recordID))
+	endpoint := c.baseURL.JoinPath("v1", "domains", dnsnew.UnFqdn(zone), "dns-records", strconv.Itoa(recordID))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

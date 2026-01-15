@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnsnew"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/mittwald/internal"
@@ -123,7 +123,7 @@ func (d *DNSProvider) Sequential() time.Duration {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getOrCreateZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -152,7 +152,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// get the record's unique ID from when we created it
 	d.zoneIDsMu.Lock()
@@ -194,7 +194,7 @@ func (d *DNSProvider) getOrCreateZone(ctx context.Context, fqdn string) (*intern
 	}
 
 	for _, zone := range zones {
-		if zone.Domain == dns01.UnFqdn(fqdn) {
+		if zone.Domain == dnsnew.UnFqdn(fqdn) {
 			return &zone, nil
 		}
 	}
@@ -206,7 +206,7 @@ func (d *DNSProvider) getOrCreateZone(ctx context.Context, fqdn string) (*intern
 		return nil, fmt.Errorf("find zone: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, parentZone.Domain)
+	subDomain, err := dnsnew.ExtractSubDomain(fqdn, parentZone.Domain)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +225,7 @@ func (d *DNSProvider) getOrCreateZone(ctx context.Context, fqdn string) (*intern
 }
 
 func findDomain(domains []internal.Domain, fqdn string) (internal.Domain, error) {
-	for domain := range dns01.UnFqdnDomainsSeq(fqdn) {
+	for domain := range dnsnew.UnFqdnDomainsSeq(fqdn) {
 		for _, dom := range domains {
 			if dom.Domain == domain {
 				return dom, nil
@@ -237,7 +237,7 @@ func findDomain(domains []internal.Domain, fqdn string) (internal.Domain, error)
 }
 
 func findZone(zones []internal.DNSZone, fqdn string) (internal.DNSZone, error) {
-	for domain := range dns01.UnFqdnDomainsSeq(fqdn) {
+	for domain := range dnsnew.UnFqdnDomainsSeq(fqdn) {
 		for _, zon := range zones {
 			if zon.Domain == domain {
 				return zon, nil

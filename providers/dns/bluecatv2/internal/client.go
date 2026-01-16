@@ -97,6 +97,41 @@ func (c *Client) RetrieveZones(ctx context.Context, opts *CollectionOptions) ([]
 	return collection.Data, nil
 }
 
+// RetrieveZoneDeployments retrieves all deployments for a zone.
+func (c *Client) RetrieveZoneDeployments(ctx context.Context, zoneID int64, opts *CollectionOptions) ([]QuickDeployment, error) {
+	endpoint := c.baseURL.JoinPath("api", "v2", "zones", strconv.FormatInt(zoneID, 10), "deployments")
+
+	collection, err := retrieveCollection[QuickDeployment](ctx, c, endpoint, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return collection.Data, nil
+}
+
+// CreateZoneDeployment creates a new deployment for a zone.
+func (c *Client) CreateZoneDeployment(ctx context.Context, zoneID int64) (*QuickDeployment, error) {
+	endpoint := c.baseURL.JoinPath("api", "v2", "zones", strconv.FormatInt(zoneID, 10), "deployments")
+
+	payload := CommonResource{
+		Type: "QuickDeployment",
+	}
+
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, payload)
+	if err != nil {
+		return nil, err
+	}
+
+	result := new(QuickDeployment)
+
+	err = c.doAuthenticated(ctx, req, result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // CreateZoneResourceRecord creates a new TXT record in a zone.
 func (c *Client) CreateZoneResourceRecord(ctx context.Context, zoneID int64, record RecordTXT) (*RecordTXT, error) {
 	endpoint := c.baseURL.JoinPath("api", "v2", "zones", strconv.FormatInt(zoneID, 10), "resourceRecords")

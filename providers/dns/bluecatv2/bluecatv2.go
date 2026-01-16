@@ -24,6 +24,7 @@ const (
 	EnvPassword   = envNamespace + "PASSWORD"
 	EnvConfigName = envNamespace + "CONFIG_NAME"
 	EnvViewName   = envNamespace + "VIEW_NAME"
+	EnvSkipDeploy = envNamespace + "SKIP_DEPLOY"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -38,6 +39,7 @@ type Config struct {
 	Password   string
 	ConfigName string
 	ViewName   string
+	SkipDeploy bool
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -48,6 +50,8 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
+		SkipDeploy: env.GetOrDefaultBool(EnvSkipDeploy, false),
+
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
@@ -62,6 +66,7 @@ type DNSProvider struct {
 	config *Config
 	client *internal.Client
 
+	zoneIDs     map[string]int64
 	recordIDs   map[string]int64
 	recordIDsMu sync.Mutex
 }
@@ -116,6 +121,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config:    config,
 		client:    client,
 		recordIDs: make(map[string]int64),
+		zoneIDs:   make(map[string]int64),
 	}, nil
 }
 
@@ -154,8 +160,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	d.recordIDsMu.Lock()
+	d.zoneIDs[token] = zone.ID
 	d.recordIDs[token] = newRecord.ID
 	d.recordIDsMu.Unlock()
+
+	if d.config.SkipDeploy {
+		return nil
+	}
+
+	_, err = d.client.CreateZoneDeployment(ctx, zone.ID)
+	if err != nil {
+		return fmt.Errorf("bluecat: deploy zone: %w", err)
+	}
 
 	return nil
 }
@@ -165,11 +181,16 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	d.recordIDsMu.Lock()
-	recordID, ok := d.recordIDs[token]
+	recordID, recordOK := d.recordIDs[token]
+	zoneID, zoneOK := d.zoneIDs[token]
 	d.recordIDsMu.Unlock()
 
-	if !ok {
-		return fmt.Errorf("todaynic: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
+	if !recordOK {
+		return fmt.Errorf("bluecatv2: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
+	}
+
+	if !zoneOK {
+		return fmt.Errorf("bluecatv2: unknown zone ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
 	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
@@ -180,6 +201,15 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	err = d.client.DeleteResourceRecord(ctx, recordID)
 	if err != nil {
 		return fmt.Errorf("bluecatv2: delete resource record: %w", err)
+	}
+
+	if d.config.SkipDeploy {
+		return nil
+	}
+
+	_, err = d.client.CreateZoneDeployment(ctx, zoneID)
+	if err != nil {
+		return fmt.Errorf("bluecat: deploy zone: %w", err)
 	}
 
 	return nil

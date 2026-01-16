@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
@@ -177,6 +178,67 @@ func TestClient_RetrieveZones(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, result)
+}
+
+func TestClient_RetrieveZoneDeployments(t *testing.T) {
+	client := mockBuilderAuthenticated().
+		Route("GET /api/v2/zones/456789/deployments",
+			servermock.ResponseFromFixture("getZoneDeployments.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("filter", "id:eq('12345')"),
+		).
+		Build(t)
+
+	// NOTE(ldez): I don't know if this approach works
+	opts := &CollectionOptions{
+		Filter: Eq("id", "12345").String(),
+	}
+
+	result, err := client.RetrieveZoneDeployments(mockToken(t.Context()), 456789, opts)
+	require.NoError(t, err)
+
+	expected := []QuickDeployment{
+		{
+			CommonResource:     CommonResource{ID: 12345, Type: "QuickDeployment", Name: ""},
+			State:              "PENDING",
+			Status:             "CANCEL",
+			Message:            "string",
+			PercentComplete:    50,
+			CreationDateTime:   time.Date(2022, time.November, 23, 2, 53, 0, 0, time.UTC),
+			StartDateTime:      time.Date(2022, time.November, 23, 2, 53, 3, 0, time.UTC),
+			CompletionDateTime: time.Date(2022, time.November, 23, 2, 54, 5, 0, time.UTC),
+			Method:             "SCHEDULED",
+		},
+	}
+
+	assert.Equal(t, expected, result)
+}
+
+func TestClient_CreateZoneDeployment(t *testing.T) {
+	client := mockBuilderAuthenticated().
+		Route("POST /api/v2/zones/12345/deployments",
+			servermock.ResponseFromFixture("postZoneDeployment.json").
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromFixture("postZoneDeployment-request.json"),
+		).
+		Build(t)
+
+	quickDeployment, err := client.CreateZoneDeployment(mockToken(t.Context()), 12345)
+	require.NoError(t, err)
+
+	expected := &QuickDeployment{
+		CommonResource:     CommonResource{ID: 12345, Type: "QuickDeployment"},
+		State:              "PENDING",
+		Status:             "CANCEL",
+		Message:            "string",
+		PercentComplete:    50,
+		CreationDateTime:   time.Date(2022, time.November, 23, 2, 53, 0, 0, time.UTC),
+		StartDateTime:      time.Date(2022, time.November, 23, 2, 53, 3, 0, time.UTC),
+		CompletionDateTime: time.Date(2022, time.November, 23, 2, 54, 5, 0, time.UTC),
+		Method:             "SCHEDULED",
+	}
+
+	assert.Equal(t, expected, quickDeployment)
 }
 
 func TestClient_CreateZoneResourceRecord(t *testing.T) {

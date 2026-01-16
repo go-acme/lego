@@ -40,7 +40,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 
 	registrar := NewRegistrar(core, user)
 
-	res, err := registrar.ResolveAccountByKey()
+	res, err := registrar.ResolveAccountByKey(t.Context())
 	require.NoError(t, err, "Unexpected error resolving account by key")
 
 	assert.Equal(t, "valid", res.Body.Status, "Unexpected account status")

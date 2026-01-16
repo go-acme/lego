@@ -3,7 +3,7 @@ package dns01
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/dnsmock"
+	"github.com/go-acme/lego/v5/platform/tester/dnsmock"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

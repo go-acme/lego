@@ -10,7 +10,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/go-acme/lego/v4/acme"
+	"github.com/go-acme/lego/v5/acme"
 )
 
 // RenewalInfoRequest contains the necessary renewal information.

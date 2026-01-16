@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	ionos "github.com/go-acme/lego/v4/providers/dns/internal/ionos/internal"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	ionos "github.com/go-acme/lego/v5/providers/dns/internal/ionos/internal"
 )
 
 const MinTTL = 300

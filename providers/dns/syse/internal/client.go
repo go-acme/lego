@@ -11,8 +11,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
-	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
+	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v5/providers/dns/internal/useragent"
 )
 
 const defaultBaseURL = "https://www.syse.no/api"

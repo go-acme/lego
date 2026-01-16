@@ -5,8 +5,8 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/providers/dns/cloudflare/internal"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/providers/dns/cloudflare/internal"
 )
 
 type metaClient struct {

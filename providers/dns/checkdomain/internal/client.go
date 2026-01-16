@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 	"golang.org/x/oauth2"
 )
 

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 )
 
 // defaultBaseURL represents the API endpoint to call.

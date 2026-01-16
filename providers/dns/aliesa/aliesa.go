@@ -12,9 +12,9 @@ import (
 	"github.com/alibabacloud-go/tea/dara"
 	"github.com/aliyun/credentials-go/credentials"
 	esa "github.com/go-acme/esa-20240910/v2/client"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/config/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/ptr"
 )
 
 // Environment variables names.

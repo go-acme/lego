@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v4/log"
-	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v5/log"
+	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 )
 
 const getIPURL = "https://dynamicdns.park-your-domain.com/getip"

@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/go-acme/lego/v4/challenge/http01"
+	"github.com/go-acme/lego/v5/challenge/http01"
 )
 
 // HTTPProvider implements ChallengeProvider for `http-01` challenge.

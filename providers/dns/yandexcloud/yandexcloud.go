@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/config/env"
 	ycdnsproto "github.com/yandex-cloud/go-genproto/yandex/cloud/dns/v1"
 	ycdns "github.com/yandex-cloud/go-sdk/services/dns/v1"
 	ycsdk "github.com/yandex-cloud/go-sdk/v2"

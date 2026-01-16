@@ -1,4 +1,4 @@
-module github.com/go-acme/lego/v4
+module github.com/go-acme/lego/v5
 
 go 1.24.0
 
@@ -224,5 +224,3 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-retract v4.30.0 // Problem related to misuse of sycalls by aliyun/credentials-go

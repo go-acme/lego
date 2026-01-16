@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
-	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 )
 
 const defaultBaseURL = "https://secure.hosting.de/api/dns/v1/json"

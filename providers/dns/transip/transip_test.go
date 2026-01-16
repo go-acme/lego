@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v5/platform/tester"
 	"github.com/stretchr/testify/require"
 )
 

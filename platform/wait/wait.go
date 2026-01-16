@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
-	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v5/log"
 )
 
 // For polls the given function 'f', once every 'interval', up to 'timeout'.

@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 )
 
 const defaultBaseURL string = "https://api.domeneshop.no/v0"

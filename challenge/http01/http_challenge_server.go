@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v5/log"
 )
 
 // ProviderServer implements ChallengeProvider for `http-01` challenge.

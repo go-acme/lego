@@ -80,7 +80,7 @@ Requirements:
 To install the latest version from sources, just run:
 
 ```bash
-go install github.com/go-acme/lego/v4/cmd/lego@latest
+go install github.com/go-acme/lego/v5/cmd/lego@latest
 ```
 
 or

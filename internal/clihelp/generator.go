@@ -10,7 +10,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/go-acme/lego/v4/cmd"
+	"github.com/go-acme/lego/v5/cmd"
 	"github.com/urfave/cli/v2"
 )
 

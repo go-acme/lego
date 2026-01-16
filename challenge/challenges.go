@@ -3,7 +3,7 @@ package challenge
 import (
 	"fmt"
 
-	"github.com/go-acme/lego/v4/acme"
+	"github.com/go-acme/lego/v5/acme"
 )
 
 // Type is a string that identifies a particular challenge type and version of ACME challenge.

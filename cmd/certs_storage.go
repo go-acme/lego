@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v4/certcrypto"
-	"github.com/go-acme/lego/v4/certificate"
-	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/net/idna"
 	"software.sslmate.com/src/go-pkcs12"

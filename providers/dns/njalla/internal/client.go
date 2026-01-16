@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 )
 
 const apiEndpoint = "https://njal.la/api/1/"

@@ -10,11 +10,11 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/platform/wait"
-	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal/hetznerv1/internal"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/config/env"
+	"github.com/go-acme/lego/v5/platform/wait"
+	"github.com/go-acme/lego/v5/providers/dns/hetzner/internal/hetznerv1/internal"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"golang.org/x/net/idna"
 )
 

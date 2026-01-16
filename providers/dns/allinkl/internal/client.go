@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -15,7 +16,9 @@ import (
 	"github.com/go-viper/mapstructure/v2"
 )
 
-const apiEndpoint = "https://kasapi.kasserver.com/soap/KasApi.php"
+const defaultBaseURL = "https://kasapi.kasserver.com/soap/"
+
+const apiPath = "KasApi.php"
 
 type Authentication interface {
 	Authentication(ctx context.Context, sessionLifetime int, sessionUpdateLifetime bool) (string, error)
@@ -28,15 +31,17 @@ type Client struct {
 	floodTime   time.Time
 	muFloodTime sync.Mutex
 
-	baseURL    string
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
 func NewClient(login string) *Client {
+	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Client{
 		login:      login,
-		baseURL:    apiEndpoint,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
@@ -124,7 +129,9 @@ func (c *Client) newRequest(ctx context.Context, action string, requestParams an
 
 	payload := []byte(strings.TrimSpace(fmt.Sprintf(kasAPIEnvelope, body)))
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL, bytes.NewReader(payload))
+	endpoint := c.BaseURL.JoinPath(apiPath)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), bytes.NewReader(payload))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}

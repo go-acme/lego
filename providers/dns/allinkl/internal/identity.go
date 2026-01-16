@@ -6,14 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-// authEndpoint represents the Identity API endpoint to call.
-const authEndpoint = "https://kasapi.kasserver.com/soap/KasAuth.php"
+const authPath = "KasAuth.php"
 
 type token string
 
@@ -24,17 +24,19 @@ type Identifier struct {
 	login    string
 	password string
 
-	authEndpoint string
-	HTTPClient   *http.Client
+	BaseURL    *url.URL
+	HTTPClient *http.Client
 }
 
 // NewIdentifier creates a new Identifier.
 func NewIdentifier(login, password string) *Identifier {
+	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Identifier{
-		login:        login,
-		password:     password,
-		authEndpoint: authEndpoint,
-		HTTPClient:   &http.Client{Timeout: 10 * time.Second},
+		login:      login,
+		password:   password,
+		BaseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
@@ -62,7 +64,9 @@ func (c *Identifier) Authentication(ctx context.Context, sessionLifetime int, se
 
 	payload := []byte(strings.TrimSpace(fmt.Sprintf(kasAuthEnvelope, body)))
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.authEndpoint, bytes.NewReader(payload))
+	endpoint := c.BaseURL.JoinPath(authPath)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), bytes.NewReader(payload))
 	if err != nil {
 		return "", fmt.Errorf("unable to create request: %w", err)
 	}

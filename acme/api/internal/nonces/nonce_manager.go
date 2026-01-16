@@ -1,6 +1,7 @@
 package nonces
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -55,11 +56,13 @@ func (n *Manager) Nonce() (string, error) {
 		return nonce, nil
 	}
 
-	return n.getNonce()
+	// TODO(ldez): the Nonce method signature cannot be changed because it must implement jose.NonceSource.
+	// Maybe use a dirty context struct field in this case.
+	return n.getNonce(context.Background())
 }
 
-func (n *Manager) getNonce() (string, error) {
-	resp, err := n.do.Head(n.nonceURL)
+func (n *Manager) getNonce(ctx context.Context) (string, error) {
+	resp, err := n.do.Head(ctx, n.nonceURL)
 	if err != nil {
 		return "", fmt.Errorf("failed to get nonce from HTTP HEAD: %w", err)
 	}

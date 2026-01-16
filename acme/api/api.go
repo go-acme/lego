@@ -38,7 +38,8 @@ type Core struct {
 func New(httpClient *http.Client, userAgent, caDirURL, kid string, privateKey crypto.PrivateKey) (*Core, error) {
 	doer := sender.NewDoer(httpClient, userAgent)
 
-	dir, err := getDirectory(doer, caDirURL)
+	// NOTE(ldez) add context as a parameter of the constructor?
+	dir, err := getDirectory(context.Background(), doer, caDirURL)
 	if err != nil {
 		return nil, err
 	}
@@ -61,31 +62,29 @@ func New(httpClient *http.Client, userAgent, caDirURL, kid string, privateKey cr
 
 // post performs an HTTP POST request and parses the response body as JSON,
 // into the provided respBody object.
-func (a *Core) post(uri string, reqBody, response any) (*http.Response, error) {
+func (a *Core) post(ctx context.Context, uri string, reqBody, response any) (*http.Response, error) {
 	content, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, errors.New("failed to marshal message")
 	}
 
-	return a.retrievablePost(uri, content, response)
+	return a.retrievablePost(ctx, uri, content, response)
 }
 
 // postAsGet performs an HTTP POST ("POST-as-GET") request.
 // https://www.rfc-editor.org/rfc/rfc8555.html#section-6.3
-func (a *Core) postAsGet(uri string, response any) (*http.Response, error) {
-	return a.retrievablePost(uri, []byte{}, response)
+func (a *Core) postAsGet(ctx context.Context, uri string, response any) (*http.Response, error) {
+	return a.retrievablePost(ctx, uri, []byte{}, response)
 }
 
-func (a *Core) retrievablePost(uri string, content []byte, response any) (*http.Response, error) {
-	ctx := context.Background()
-
+func (a *Core) retrievablePost(ctx context.Context, uri string, content []byte, response any) (*http.Response, error) {
 	// during tests, allow to support ~90% of bad nonce with a minimum of attempts.
 	bo := backoff.NewExponentialBackOff()
 	bo.InitialInterval = 200 * time.Millisecond
 	bo.MaxInterval = 5 * time.Second
 
 	operation := func() (*http.Response, error) {
-		resp, err := a.signedPost(uri, content, response)
+		resp, err := a.signedPost(ctx, uri, content, response)
 		if err != nil {
 			// Retry if the nonce was invalidated
 			var e *acme.NonceError
@@ -109,7 +108,7 @@ func (a *Core) retrievablePost(uri string, content []byte, response any) (*http.
 		backoff.WithNotify(notify))
 }
 
-func (a *Core) signedPost(uri string, content []byte, response any) (*http.Response, error) {
+func (a *Core) signedPost(ctx context.Context, uri string, content []byte, response any) (*http.Response, error) {
 	signedContent, err := a.jws.SignContent(uri, content)
 	if err != nil {
 		return nil, fmt.Errorf("failed to post JWS message: failed to sign content: %w", err)
@@ -117,7 +116,7 @@ func (a *Core) signedPost(uri string, content []byte, response any) (*http.Respo
 
 	signedBody := bytes.NewBufferString(signedContent.FullSerialize())
 
-	resp, err := a.doer.Post(uri, signedBody, "application/jose+json", response)
+	resp, err := a.doer.Post(ctx, uri, signedBody, "application/jose+json", response)
 
 	// nonceErr is ignored to keep the root error.
 	nonce, nonceErr := nonces.GetFromResponse(resp)
@@ -146,9 +145,9 @@ func (a *Core) GetDirectory() acme.Directory {
 	return a.directory
 }
 
-func getDirectory(do *sender.Doer, caDirURL string) (acme.Directory, error) {
+func getDirectory(ctx context.Context, do *sender.Doer, caDirURL string) (acme.Directory, error) {
 	var dir acme.Directory
-	if _, err := do.Get(caDirURL, &dir); err != nil {
+	if _, err := do.Get(ctx, caDirURL, &dir); err != nil {
 		return dir, fmt.Errorf("get directory at '%s': %w", caDirURL, err)
 	}
 

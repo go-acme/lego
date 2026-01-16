@@ -83,7 +83,7 @@ func TestCertificateService_Get_issuerRelUp(t *testing.T) {
 	core, err := New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
-	cert, issuer, err := core.Certificates.Get(server.URL+"/certificate", true)
+	cert, issuer, err := core.Certificates.Get(t.Context(), server.URL+"/certificate", true)
 	require.NoError(t, err)
 	assert.Equal(t, certResponseMock, string(cert), "Certificate")
 	assert.Equal(t, issuerMock, string(issuer), "IssuerCertificate")
@@ -100,7 +100,7 @@ func TestCertificateService_Get_embeddedIssuer(t *testing.T) {
 	core, err := New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
-	cert, issuer, err := core.Certificates.Get(server.URL+"/certificate", true)
+	cert, issuer, err := core.Certificates.Get(t.Context(), server.URL+"/certificate", true)
 	require.NoError(t, err)
 	assert.Equal(t, certResponseMock, string(cert), "Certificate")
 	assert.Equal(t, issuerMock, string(issuer), "IssuerCertificate")

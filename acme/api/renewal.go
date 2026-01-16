@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"net/http"
 )
@@ -15,7 +16,7 @@ var ErrNoARI = errors.New("renewalInfo[get/post]: server does not advertise a re
 // This method will return api.ErrNoARI if the server does not advertise a renewal info endpoint.
 //
 // https://www.rfc-editor.org/rfc/rfc9773.html
-func (c *CertificateService) GetRenewalInfo(certID string) (*http.Response, error) {
+func (c *CertificateService) GetRenewalInfo(ctx context.Context, certID string) (*http.Response, error) {
 	if c.core.GetDirectory().RenewalInfo == "" {
 		return nil, ErrNoARI
 	}
@@ -24,5 +25,10 @@ func (c *CertificateService) GetRenewalInfo(certID string) (*http.Response, erro
 		return nil, errors.New("renewalInfo[get]: 'certID' cannot be empty")
 	}
 
-	return c.core.HTTPClient.Get(c.core.GetDirectory().RenewalInfo + "/" + certID)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.core.GetDirectory().RenewalInfo+"/"+certID, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.core.HTTPClient.Do(req)
 }

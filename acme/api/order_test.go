@@ -93,7 +93,7 @@ func TestOrderService_NewWithOptions(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			order, err := core.Orders.NewWithOptions([]string{"example.com"}, test.opts)
+			order, err := core.Orders.NewWithOptions(t.Context(), []string{"example.com"}, test.opts)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, order)

@@ -5,6 +5,22 @@ import (
 	"time"
 )
 
+// Quick deployment states.
+//
+//nolint:misspell // US vs UK
+const (
+	QDStatePending               = "PENDING"
+	QDStateQueued                = "QUEUED"
+	QDStateRunning               = "RUNNING"
+	QDStateCancelled             = "CANCELLED"
+	QDStateCancelling            = "CANCELLING"
+	QDStateCompleted             = "COMPLETED"
+	QDStateCompletedWithErrors   = "COMPLETED_WITH_ERRORS"
+	QDStateCompletedWithWarnings = "COMPLETED_WITH_WARNINGS"
+	QDStateFailed                = "FAILED"
+	QDStateUnknown               = "UNKNOWN"
+)
+
 // APIError represents an error.
 // https://docs.bluecatnetworks.com/r/Address-Manager-RESTful-v2-API-Guide/Errors/9.6.0
 type APIError struct {
@@ -67,6 +83,19 @@ type ZoneResource struct {
 	CommonResource
 
 	AbsoluteName string `json:"absoluteName,omitempty"`
+}
+
+type QuickDeployment struct {
+	CommonResource
+
+	State              string    `json:"state,omitempty"`
+	Status             string    `json:"status,omitempty"`
+	Message            string    `json:"message,omitempty"`
+	PercentComplete    int       `json:"percentComplete,omitempty"`
+	CreationDateTime   time.Time `json:"creationDateTime,omitzero"`
+	StartDateTime      time.Time `json:"startDateTime,omitzero"`
+	CompletionDateTime time.Time `json:"completionDateTime,omitzero"`
+	Method             string    `json:"method,omitempty"`
 }
 
 // LoginInfo represents the login information.

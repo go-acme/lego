@@ -21,6 +21,7 @@ lego --dns bluecatv2 -d '*.example.com' -d example.com run
     BLUECATV2_CONFIG_NAME = "Configuration name"
     BLUECATV2_VIEW_NAME = "DNS View Name"
   [Configuration.Additional]
+    BLUECATV2_SKIP_DEPLOY = "Skip quick deployements"
     BLUECATV2_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     BLUECATV2_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
     BLUECATV2_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"

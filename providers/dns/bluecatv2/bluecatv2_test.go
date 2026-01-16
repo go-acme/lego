@@ -295,6 +295,11 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.ResponseFromInternal("postZoneResourceRecord.json"),
 			servermock.CheckRequestJSONBodyFromInternal("postZoneResourceRecord-request.json"),
 		).
+		Route("POST /api/v2/zones/12345/deployments",
+			servermock.ResponseFromInternal("postZoneDeployment.json").
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromInternal("postZoneDeployment-request.json"),
+		).
 		Build(t)
 
 	err := provider.Present("example.com", "abc", "123d==")
@@ -310,8 +315,14 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		Route("DELETE /api/v2/resourceRecords/12345",
 			servermock.ResponseFromInternal("deleteResourceRecord.json"),
 		).
+		Route("POST /api/v2/zones/456789/deployments",
+			servermock.ResponseFromInternal("postZoneDeployment.json").
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromInternal("postZoneDeployment-request.json"),
+		).
 		Build(t)
 
+	provider.zoneIDs["abc"] = 456789
 	provider.recordIDs["abc"] = 12345
 
 	err := provider.CleanUp("example.com", "abc", "123d==")

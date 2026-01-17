@@ -106,7 +106,7 @@ func TestProber_Solve(t *testing.T) {
 				solverManager: &SolverManager{solvers: test.solvers},
 			}
 
-			err := prober.Solve(test.authz)
+			err := prober.Solve(t.Context(), test.authz)
 			if test.expectedError != "" {
 				require.EqualError(t, err, test.expectedError)
 			} else {

@@ -1,6 +1,7 @@
 package tlsalpn01
 
 import (
+	"context"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/tls"
@@ -20,7 +21,7 @@ import (
 // Reference: https://www.rfc-editor.org/rfc/rfc8737.html#section-6.1
 var idPeAcmeIdentifierV1 = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 31}
 
-type ValidateFunc func(core *api.Core, domain string, chlng acme.Challenge) error
+type ValidateFunc func(ctx context.Context, core *api.Core, domain string, chlng acme.Challenge) error
 
 type ChallengeOption func(*Challenge) error
 
@@ -61,7 +62,7 @@ func (c *Challenge) SetProvider(provider challenge.Provider) {
 }
 
 // Solve manages the provider to validate and solve the challenge.
-func (c *Challenge) Solve(authz acme.Authorization) error {
+func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	domain := authz.Identifier.Value
 	log.Infof("[%s] acme: Trying to solve TLS-ALPN-01", challenge.GetTargetedDomain(authz))
 
@@ -94,7 +95,7 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 
 	chlng.KeyAuthorization = keyAuth
 
-	return c.validate(c.core, domain, chlng)
+	return c.validate(ctx, c.core, domain, chlng)
 }
 
 // ChallengeBlocks returns PEM blocks (certPEMBlock, keyPEMBlock) with the acmeValidation-v1 extension

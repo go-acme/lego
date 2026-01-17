@@ -71,7 +71,7 @@ func TestChallenge(t *testing.T) {
 
 	providerServer := NewProviderServer("", "23457")
 
-	validate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
+	validate := func(_ context.Context, _ *api.Core, _ string, chlng acme.Challenge) error {
 		uri := "http://localhost" + providerServer.GetAddress() + ChallengePath(chlng.Token)
 
 		resp, err := http.DefaultClient.Get(uri)
@@ -115,7 +115,7 @@ func TestChallenge(t *testing.T) {
 		},
 	}
 
-	err = solver.Solve(authz)
+	err = solver.Solve(t.Context(), authz)
 	require.NoError(t, err)
 }
 
@@ -133,7 +133,7 @@ func TestChallengeUnix(t *testing.T) {
 
 	providerServer := NewUnixProviderServer(socket, fs.ModeSocket|0o666)
 
-	validate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
+	validate := func(_ context.Context, _ *api.Core, _ string, chlng acme.Challenge) error {
 		// any uri will do, as we hijack the dial
 		uri := "http://localhost" + ChallengePath(chlng.Token)
 
@@ -185,7 +185,7 @@ func TestChallengeUnix(t *testing.T) {
 		},
 	}
 
-	err = solver.Solve(authz)
+	err = solver.Solve(t.Context(), authz)
 	require.NoError(t, err)
 }
 
@@ -198,7 +198,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
-	validate := func(_ *api.Core, _ string, _ acme.Challenge) error { return nil }
+	validate := func(_ context.Context, _ *api.Core, _ string, _ acme.Challenge) error { return nil }
 
 	solver := NewChallenge(core, validate, NewProviderServer("", "123456"))
 
@@ -211,7 +211,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 		},
 	}
 
-	err = solver.Solve(authz)
+	err = solver.Solve(t.Context(), authz)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid port")
 	assert.Contains(t, err.Error(), "123456")
@@ -381,10 +381,10 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 		providerServer.SetProxyHeader(header.name)
 	}
 
-	validate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
+	validate := func(ctx context.Context, _ *api.Core, _ string, chlng acme.Challenge) error {
 		uri := "http://" + providerServer.GetAddress() + ChallengePath(chlng.Token)
 
-		req, err := http.NewRequest(http.MethodGet, uri, nil)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
 		if err != nil {
 			return err
 		}
@@ -399,7 +399,7 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 		defer resp.Body.Close()
 
 		if want := "text/plain"; resp.Header.Get("Content-Type") != want {
-			return fmt.Errorf("Get(%q) Content-Type: got %q, want %q", uri, resp.Header.Get("Content-Type"), want)
+			return fmt.Errorf("GET(%q) Content-Type: got %q, want %q", uri, resp.Header.Get("Content-Type"), want)
 		}
 
 		body, err := io.ReadAll(resp.Body)
@@ -410,7 +410,7 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 		bodyStr := string(body)
 
 		if bodyStr != chlng.KeyAuthorization {
-			return fmt.Errorf("Get(%q) Body: got %q, want %q", uri, bodyStr, chlng.KeyAuthorization)
+			return fmt.Errorf("GET(%q) Body: got %q, want %q", uri, bodyStr, chlng.KeyAuthorization)
 		}
 
 		return nil
@@ -433,7 +433,7 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 		},
 	}
 
-	err = solver.Solve(authz)
+	err = solver.Solve(t.Context(), authz)
 	if expectError {
 		require.Error(t, err)
 	} else {

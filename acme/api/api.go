@@ -109,7 +109,7 @@ func (a *Core) retrievablePost(ctx context.Context, uri string, content []byte, 
 }
 
 func (a *Core) signedPost(ctx context.Context, uri string, content []byte, response any) (*http.Response, error) {
-	signedContent, err := a.jws.SignContent(uri, content)
+	signedContent, err := a.jws.SignContent(ctx, uri, content)
 	if err != nil {
 		return nil, fmt.Errorf("failed to post JWS message: failed to sign content: %w", err)
 	}

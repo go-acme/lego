@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/go-acme/lego/v5/acme/api/internal/sender"
+	"github.com/go-jose/go-jose/v4"
 )
 
 // Manager Manages nonces.
@@ -27,6 +28,14 @@ func NewManager(do *sender.Doer, nonceURL string) *Manager {
 	}
 }
 
+// Push Pushes nonce.
+func (n *Manager) Push(nonce string) {
+	n.Lock()
+	defer n.Unlock()
+
+	n.nonces = append(n.nonces, nonce)
+}
+
 // Pop Pops a nonce.
 func (n *Manager) Pop() (string, bool) {
 	n.Lock()
@@ -42,26 +51,11 @@ func (n *Manager) Pop() (string, bool) {
 	return nonce, true
 }
 
-// Push Pushes a nonce.
-func (n *Manager) Push(nonce string) {
-	n.Lock()
-	defer n.Unlock()
-
-	n.nonces = append(n.nonces, nonce)
-}
-
-// Nonce implement jose.NonceSource.
-func (n *Manager) Nonce() (string, error) {
+func (n *Manager) getNonce(ctx context.Context) (string, error) {
 	if nonce, ok := n.Pop(); ok {
 		return nonce, nil
 	}
 
-	// TODO(ldez): the Nonce method signature cannot be changed because it must implement jose.NonceSource.
-	// Maybe use a dirty context struct field in this case.
-	return n.getNonce(context.Background())
-}
-
-func (n *Manager) getNonce(ctx context.Context) (string, error) {
 	resp, err := n.do.Head(ctx, n.nonceURL)
 	if err != nil {
 		return "", fmt.Errorf("failed to get nonce from HTTP HEAD: %w", err)
@@ -70,7 +64,7 @@ func (n *Manager) getNonce(ctx context.Context) (string, error) {
 	return GetFromResponse(resp)
 }
 
-// GetFromResponse Extracts a nonce from an HTTP response.
+// GetFromResponse Extracts nonce from an HTTP response.
 func GetFromResponse(resp *http.Response) (string, error) {
 	if resp == nil {
 		return "", errors.New("nil response")
@@ -82,4 +76,23 @@ func GetFromResponse(resp *http.Response) (string, error) {
 	}
 
 	return nonce, nil
+}
+
+var _ jose.NonceSource = (*NonceSource)(nil)
+
+// NonceSource implements [jose.NonceSource].
+//
+//nolint:containedctx // This is the only way to use the context in this case.
+type NonceSource struct {
+	ctx context.Context
+	m   *Manager
+}
+
+// NewNonceSource Creates a new NonceSource.
+func NewNonceSource(ctx context.Context, manager *Manager) *NonceSource {
+	return &NonceSource{ctx: ctx, m: manager}
+}
+
+func (n *NonceSource) Nonce() (string, error) {
+	return n.m.getNonce(n.ctx)
 }

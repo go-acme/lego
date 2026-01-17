@@ -233,18 +233,18 @@ func loadPrivateKey(file string) (crypto.PrivateKey, error) {
 	return privateKey, nil
 }
 
-func tryRecoverRegistration(ctx *cli.Context, privateKey crypto.PrivateKey) (*registration.Resource, error) {
+func tryRecoverRegistration(cliCtx *cli.Context, privateKey crypto.PrivateKey) (*registration.Resource, error) {
 	// couldn't load account but got a key. Try to look the account up.
 	config := lego.NewConfig(&Account{key: privateKey})
-	config.CADirURL = ctx.String(flgServer)
-	config.UserAgent = getUserAgent(ctx)
+	config.CADirURL = cliCtx.String(flgServer)
+	config.UserAgent = getUserAgent(cliCtx)
 
 	client, err := lego.NewClient(config)
 	if err != nil {
 		return nil, err
 	}
 
-	reg, err := client.Registration.ResolveAccountByKey()
+	reg, err := client.Registration.ResolveAccountByKey(cliCtx.Context)
 	if err != nil {
 		return nil, err
 	}

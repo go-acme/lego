@@ -9,7 +9,7 @@ import (
 )
 
 func Test_launchHook(t *testing.T) {
-	err := launchHook("echo foo", 1*time.Second, map[string]string{})
+	err := launchHook(t.Context(), "echo foo", 1*time.Second, map[string]string{})
 	require.NoError(t, err)
 }
 
@@ -54,7 +54,7 @@ func Test_launchHook_errors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			err := launchHook(test.hook, test.timeout, map[string]string{})
+			err := launchHook(t.Context(), test.hook, test.timeout, map[string]string{})
 			require.EqualError(t, err, test.expected)
 		})
 	}

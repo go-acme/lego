@@ -100,7 +100,9 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 		dns01.DisableAuthoritativeNssPropagationRequirement())
 	require.NoError(t, err)
 
-	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	ctx := t.Context()
+
+	reg, err := client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
 
 	user.registration = reg
@@ -116,7 +118,7 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 		Bundle:     true,
 		PrivateKey: privateKeyCSR,
 	}
-	resource, err := client.Certificate.Obtain(request)
+	resource, err := client.Certificate.Obtain(ctx, request)
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
@@ -157,7 +159,9 @@ func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
 		dns01.DisableAuthoritativeNssPropagationRequirement())
 	require.NoError(t, err)
 
-	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	ctx := t.Context()
+
+	reg, err := client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
 
 	user.registration = reg
@@ -174,7 +178,7 @@ func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
 		PrivateKey: privateKeyCSR,
 		Profile:    "shortlived",
 	}
-	resource, err := client.Certificate.Obtain(request)
+	resource, err := client.Certificate.Obtain(ctx, request)
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)

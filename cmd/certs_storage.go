@@ -65,7 +65,7 @@ func NewCertificatesStorage(ctx *cli.Context) *CertificatesStorage {
 	switch pfxFormat {
 	case "DES", "RC2", "SHA256":
 	default:
-		log.Fatalf("Invalid PFX format: %s", pfxFormat)
+		log.Fatal("Invalid PFX format.", "format", pfxFormat)
 	}
 
 	return &CertificatesStorage{
@@ -82,14 +82,14 @@ func NewCertificatesStorage(ctx *cli.Context) *CertificatesStorage {
 func (s *CertificatesStorage) CreateRootFolder() {
 	err := createNonExistingFolder(s.rootPath)
 	if err != nil {
-		log.Fatalf("Could not check/create path: %v", err)
+		log.Fatal("Could not check/create the root folder", "filepath", s.rootPath, "error", err)
 	}
 }
 
 func (s *CertificatesStorage) CreateArchiveFolder() {
 	err := createNonExistingFolder(s.archivePath)
 	if err != nil {
-		log.Fatalf("Could not check/create path: %v", err)
+		log.Fatal("Could not check/create the archive folder.", "filepath", s.archivePath, "error", err)
 	}
 }
 
@@ -104,13 +104,13 @@ func (s *CertificatesStorage) SaveResource(certRes *certificate.Resource) {
 	// as web servers would not be able to work with a combined file.
 	err := s.WriteFile(domain, certExt, certRes.Certificate)
 	if err != nil {
-		log.Fatalf("Unable to save Certificate for domain %s\n\t%v", domain, err)
+		log.Fatal("Unable to save Certificate.", "domain", domain, "error", err)
 	}
 
 	if certRes.IssuerCertificate != nil {
 		err = s.WriteFile(domain, issuerExt, certRes.IssuerCertificate)
 		if err != nil {
-			log.Fatalf("Unable to save IssuerCertificate for domain %s\n\t%v", domain, err)
+			log.Fatal("Unable to save IssuerCertificate.", "domain", domain, "error", err)
 		}
 	}
 
@@ -118,33 +118,33 @@ func (s *CertificatesStorage) SaveResource(certRes *certificate.Resource) {
 	if certRes.PrivateKey != nil {
 		err = s.WriteCertificateFiles(domain, certRes)
 		if err != nil {
-			log.Fatalf("Unable to save PrivateKey for domain %s\n\t%v", domain, err)
+			log.Fatal("Unable to save PrivateKey.", "domain", domain, "error", err)
 		}
 	} else if s.pem || s.pfx {
 		// we don't have the private key; can't write the .pem or .pfx file
-		log.Fatalf("Unable to save PEM or PFX without private key for domain %s. Are you using a CSR?", domain)
+		log.Fatal("Unable to save PEM or PFX without the private key. Are you using a CSR?", "domain", domain)
 	}
 
 	jsonBytes, err := json.MarshalIndent(certRes, "", "\t")
 	if err != nil {
-		log.Fatalf("Unable to marshal CertResource for domain %s\n\t%v", domain, err)
+		log.Fatal("Unable to marshal CertResource.", "domain", domain, "error", err)
 	}
 
 	err = s.WriteFile(domain, resourceExt, jsonBytes)
 	if err != nil {
-		log.Fatalf("Unable to save CertResource for domain %s\n\t%v", domain, err)
+		log.Fatal("Unable to save CertResource.", "domain", domain, "error", err)
 	}
 }
 
 func (s *CertificatesStorage) ReadResource(domain string) certificate.Resource {
 	raw, err := s.ReadFile(domain, resourceExt)
 	if err != nil {
-		log.Fatalf("Error while loading the meta data for domain %s\n\t%v", domain, err)
+		log.Fatal("Error while loading the metadata.", "domain", domain, "error", err)
 	}
 
 	var resource certificate.Resource
 	if err = json.Unmarshal(raw, &resource); err != nil {
-		log.Fatalf("Error while marshaling the meta data for domain %s\n\t%v", domain, err)
+		log.Fatal("Error while marshaling the metadata.", "domain", domain, "error", err)
 	}
 
 	return resource
@@ -156,7 +156,7 @@ func (s *CertificatesStorage) ExistsFile(domain, extension string) bool {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return false
 	} else if err != nil {
-		log.Fatal(err)
+		log.Fatal("File stat", "filepath", filePath, "error", err)
 	}
 
 	return true
@@ -319,7 +319,7 @@ func getPFXEncoder(pfxFormat string) (*pkcs12.Encoder, error) {
 func sanitizedDomain(domain string) string {
 	safe, err := idna.ToASCII(strings.NewReplacer(":", "-", "*", "_").Replace(domain))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Could not sanitize the domain.", "domain", domain, "error", err)
 	}
 
 	return safe

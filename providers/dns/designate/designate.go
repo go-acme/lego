@@ -4,7 +4,6 @@ package designate
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"slices"
 	"sync"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
@@ -155,7 +155,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	if existingRecord != nil {
 		if slices.Contains(existingRecord.Records, info.Value) {
-			log.Printf("designate: the record already exists: %s", info.Value)
+			log.Debug("designate: the record already exists.", "value", info.Value)
 			return nil
 		}
 
@@ -229,7 +229,7 @@ func (d *DNSProvider) createRecord(zoneID, fqdn, value string) error {
 
 func (d *DNSProvider) updateRecord(record *recordsets.RecordSet, value string) error {
 	if slices.Contains(record.Records, value) {
-		log.Printf("skip: the record already exists: %s", value)
+		log.Debug("skip: the record already exists.", "value", value)
 		return nil
 	}
 

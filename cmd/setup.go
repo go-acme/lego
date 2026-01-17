@@ -78,18 +78,18 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 	retryClient.Logger = nil
 
 	if _, v := os.LookupEnv("LEGO_DEBUG_ACME_HTTP_CLIENT"); v {
-		retryClient.Logger = log.Logger
+		retryClient.Logger = log.Default()
 	}
 
 	config.HTTPClient = retryClient.StandardClient()
 
 	client, err := lego.NewClient(config)
 	if err != nil {
-		log.Fatalf("Could not create client: %v", err)
+		log.Fatal("Could not create client.", "error", err)
 	}
 
 	if client.GetExternalAccountRequired() && !ctx.IsSet(flgEAB) {
-		log.Fatalf("Server requires External Account Binding. Use --%s with --%s and --%s.", flgEAB, flgKID, flgHMAC)
+		log.Fatal(fmt.Sprintf("Server requires External Account Binding. Use --%s with --%s and --%s.", flgEAB, flgKID, flgHMAC))
 	}
 
 	return client
@@ -113,7 +113,7 @@ func getKeyType(ctx *cli.Context) certcrypto.KeyType {
 		return certcrypto.EC384
 	}
 
-	log.Fatalf("Unsupported KeyType: %s", keyType)
+	log.Fatal("Unsupported KeyType.", "keyType", keyType)
 
 	return ""
 }
@@ -202,7 +202,7 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			}
 
 		default:
-			log.Warnf("retry: %v", errorDetails)
+			log.Warnf(log.LazySprintf("retry: %v", errorDetails))
 
 			return rt, errorDetails
 		}

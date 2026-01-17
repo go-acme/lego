@@ -69,6 +69,8 @@ func (c *Client) SendRequest(ctx context.Context, zone, label, value string) err
 		return errutils.NewHTTPDoError(req, err)
 	}
 
+	defer func() { _ = resp.Body.Close() }()
+
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return errutils.NewReadResponseError(req, resp.StatusCode, err)

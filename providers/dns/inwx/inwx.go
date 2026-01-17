@@ -87,7 +87,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.Sandbox {
-		log.Infof("inwx: sandbox mode is enabled")
+		log.Info("inwx: sandbox mode is enabled.")
 	}
 
 	client := goinwx.NewClient(config.Username, config.Password, &goinwx.ClientOptions{Sandbox: config.Sandbox})
@@ -112,7 +112,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	defer func() {
 		errL := d.client.Account.Logout()
 		if errL != nil {
-			log.Infof("inwx: failed to log out: %v", errL)
+			log.Warn("inwx: failed to log out.", "error", errL)
 		}
 	}()
 
@@ -159,7 +159,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	defer func() {
 		errL := d.client.Account.Logout()
 		if errL != nil {
-			log.Infof("inwx: failed to log out: %v", errL)
+			log.Warn("inwx: failed to log out.", "error", errL)
 		}
 	}()
 
@@ -220,7 +220,7 @@ func (d *DNSProvider) twoFactorAuth(info *goinwx.LoginResponse) error {
 	// To avoid using the same TAN twice, we wait until the next TOTP period.
 	sleep := d.computeSleep(time.Now())
 	if sleep != 0 {
-		log.Infof("inwx: waiting %s for next TOTP token", sleep)
+		log.Info("inwx: waiting for the next TOTP token", "sleep", sleep)
 		time.Sleep(sleep)
 	}
 

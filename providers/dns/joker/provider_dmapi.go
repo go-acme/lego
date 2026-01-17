@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/joker/internal/dmapi"
@@ -62,8 +61,6 @@ func newDmapiProviderConfig(config *Config) (*dmapiProvider, error) {
 		Password: config.Password,
 	})
 
-	client.Debug = config.Debug
-
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
 	}
@@ -93,13 +90,9 @@ func (d *dmapiProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	if d.config.Debug {
-		log.Infof("[%s] joker: adding TXT record %q to zone %q with value %q", domain, subDomain, zone, info.Value)
-	}
-
 	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
 	if err != nil {
-		return err
+		return fmt.Errorf("joker: create authenticated context: %w", err)
 	}
 
 	response, err := d.client.GetZone(ctx, zone)
@@ -131,13 +124,9 @@ func (d *dmapiProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	if d.config.Debug {
-		log.Infof("[%s] joker: removing entry %q from zone %q", domain, subDomain, zone)
-	}
-
 	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
 	if err != nil {
-		return err
+		return fmt.Errorf("joker: create authenticated context: %w", err)
 	}
 
 	defer func() {

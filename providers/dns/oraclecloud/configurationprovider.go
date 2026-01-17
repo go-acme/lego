@@ -133,7 +133,7 @@ func getEnvFileWithStrictFallback(keys ...string) []byte {
 
 		fileContents, err := os.ReadFile(fileVarValue)
 		if err != nil {
-			log.Printf("Failed to read the file %s (defined by env var %s): %s", fileVarValue, key, err)
+			log.Debug("Failed to read the file.", "filepath", fileVarValue, "envVar", key, "error", err)
 			return nil
 		}
 

@@ -45,7 +45,7 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 	for _, opt := range opts {
 		err := opt(chlg)
 		if err != nil {
-			log.Infof("challenge option error: %v", err)
+			log.Warn("Challenge option skipped.", "error", err)
 		}
 	}
 
@@ -58,7 +58,7 @@ func (c *Challenge) SetProvider(provider challenge.Provider) {
 
 func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
-	log.Infof("[%s] acme: Trying to solve HTTP-01", domain)
+	log.Info("acme: Trying to solve HTTP-01.", "domain", domain)
 
 	chlng, err := challenge.FindChallenge(challenge.HTTP01, authz)
 	if err != nil {
@@ -79,7 +79,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	defer func() {
 		err := c.provider.CleanUp(authz.Identifier.Value, chlng.Token, keyAuth)
 		if err != nil {
-			log.Warnf("[%s] acme: cleaning up failed: %v", domain, err)
+			log.Warn("acme: cleaning up failed.", "domain", domain, "error", err)
 		}
 	}()
 

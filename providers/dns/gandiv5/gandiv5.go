@@ -96,7 +96,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIKey != "" {
-		log.Print("gandiv5: API Key is deprecated, use Personal Access Token instead")
+		log.Warn("gandiv5: API Key is deprecated, use Personal Access Token instead")
 	}
 
 	if config.APIKey == "" && config.PersonalAccessToken == "" {

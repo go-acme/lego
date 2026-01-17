@@ -119,12 +119,12 @@ func run(cliCtx *cli.Context) error {
 	if account.Registration == nil {
 		reg, err := register(cliCtx, client)
 		if err != nil {
-			log.Fatalf("Could not complete registration\n\t%v", err)
+			log.Fatal("Could not complete registration.", "error", err)
 		}
 
 		account.Registration = reg
 		if err = accountsStorage.Save(account); err != nil {
-			log.Fatal(err)
+			log.Fatal("Could not save the account file.", "error", err)
 		}
 
 		fmt.Printf(rootPathWarningMessage, accountsStorage.GetRootPath())
@@ -137,7 +137,7 @@ func run(cliCtx *cli.Context) error {
 	if err != nil {
 		// Make sure to return a non-zero exit code if ObtainSANCertificate returned at least one error.
 		// Due to us not returning partial certificate we can just exit here instead of at the end.
-		log.Fatalf("Could not obtain certificates:\n\t%v", err)
+		log.Fatal("Could not obtain certificates", "error", err)
 	}
 
 	certsStorage.SaveResource(cert)
@@ -159,14 +159,14 @@ func handleTOS(ctx *cli.Context, client *lego.Client) bool {
 
 	reader := bufio.NewReader(os.Stdin)
 
-	log.Printf("Please review the TOS at %s", client.GetToSURL())
+	log.Warn("Please review the TOS", "url", client.GetToSURL())
 
 	for {
 		fmt.Println("Do you accept the TOS? Y/n")
 
 		text, err := reader.ReadString('\n')
 		if err != nil {
-			log.Fatalf("Could not read from console: %v", err)
+			log.Fatal("Could not read from the console", "error", err)
 		}
 
 		text = strings.Trim(text, "\r\n")
@@ -192,7 +192,7 @@ func register(cliCtx *cli.Context, client *lego.Client) (*registration.Resource,
 		hmacEncoded := cliCtx.String(flgHMAC)
 
 		if kid == "" || hmacEncoded == "" {
-			log.Fatalf("Requires arguments --%s and --%s.", flgKID, flgHMAC)
+			log.Fatal(fmt.Sprintf("Requires arguments --%s and --%s.", flgKID, flgHMAC))
 		}
 
 		return client.Registration.RegisterWithExternalAccountBinding(cliCtx.Context, registration.RegisterEABOptions{

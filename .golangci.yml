@@ -101,9 +101,9 @@ linters:
             - Print
             - Printf
             - Warn
-            - Warnf
             - Fatal
             - Fatalf
+            - LazySprintf
     misspell:
       locale: US
       ignore-rules:
@@ -280,6 +280,9 @@ linters:
         text: 'SA1019: linodego\.(DomainsPagedResponse|DomainRecordsPagedResponse) is deprecated'
         linters:
           - staticcheck
+      - path: log/logger.go
+        linters:
+          - gochecknoinits
 
 issues:
   max-issues-per-linter: 0

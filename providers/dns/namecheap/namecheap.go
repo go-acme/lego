@@ -39,7 +39,6 @@ const (
 	EnvAPIKey  = envNamespace + "API_KEY"
 
 	EnvSandbox = envNamespace + "SANDBOX"
-	EnvDebug   = envNamespace + "DEBUG"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -51,7 +50,6 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Debug              bool
 	BaseURL            string
 	APIUser            string
 	APIKey             string
@@ -71,7 +69,6 @@ func NewDefaultConfig() *Config {
 
 	return &Config{
 		BaseURL:            baseURL,
-		Debug:              env.GetOrDefaultBool(EnvDebug, false),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, time.Hour),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
@@ -115,7 +112,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.ClientIP == "" {
-		clientIP, err := internal.GetClientIP(context.Background(), config.HTTPClient, config.Debug)
+		clientIP, err := internal.GetClientIP(context.Background(), config.HTTPClient)
 		if err != nil {
 			return nil, fmt.Errorf("namecheap: %w", err)
 		}
@@ -166,10 +163,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	records = append(records, record)
 
-	if d.config.Debug {
-		for _, h := range records {
-			log.Printf("%-5.5s %-30.30s %-6s %-70.70s", h.Type, h.Name, h.TTL, h.Address)
-		}
+	for _, h := range records {
+		log.Debugf(log.LazySprintf("%-5.5s %-30.30s %-6s %-70.70s", h.Type, h.Name, h.TTL, h.Address))
 	}
 
 	err = d.client.SetHosts(ctx, pr.sld, pr.tld, records)

@@ -18,7 +18,6 @@ const (
 	EnvAPIKey   = envNamespace + "API_KEY"
 	EnvUsername = envNamespace + "USERNAME"
 	EnvPassword = envNamespace + "PASSWORD"
-	EnvDebug    = envNamespace + "DEBUG"
 	EnvMode     = envNamespace + "API_MODE"
 
 	EnvTTL                = envNamespace + "TTL"
@@ -35,7 +34,6 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Debug              bool
 	APIKey             string
 	Username           string
 	Password           string
@@ -51,7 +49,6 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		APIMode:            env.GetOrDefaultString(EnvMode, modeDMAPI),
-		Debug:              env.GetOrDefaultBool(EnvDebug, false),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),

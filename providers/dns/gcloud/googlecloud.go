@@ -212,7 +212,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			rrd = append(rrd, data)
 
 			if data == info.Value {
-				log.Printf("skip: the record already exists: %s", info.Value)
 				return nil
 			}
 		}
@@ -257,7 +256,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) applyChanges(ctx context.Context, zone string, change *gdns.Change) error {
 	if d.config.Debug {
 		data, _ := json.Marshal(change)
-		log.Printf("change (Create): %s", string(data))
+		log.Info("change (Create)", "data", string(data))
 	}
 
 	chg, err := d.client.Changes.Create(d.config.Project, zone, change).Do()
@@ -283,7 +282,7 @@ func (d *DNSProvider) applyChanges(ctx context.Context, zone string, change *gdn
 		func() error {
 			if d.config.Debug {
 				data, _ := json.Marshal(change)
-				log.Printf("change (Get): %s", string(data))
+				log.Info("change (Get)", "data", string(data))
 			}
 
 			chg, err = d.client.Changes.Get(d.config.Project, zone, chgID).Do()

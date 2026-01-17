@@ -135,7 +135,7 @@ func (d *DNSProvider) run(ctx context.Context, command, domain, token, keyAuth s
 
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
-		log.Println(scanner.Text())
+		log.Info(scanner.Text())
 	}
 
 	err = cmd.Wait()

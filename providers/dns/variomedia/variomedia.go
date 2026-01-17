@@ -13,7 +13,6 @@ import (
 	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/platform/wait"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -194,8 +193,6 @@ func (d *DNSProvider) waitJob(ctx context.Context, domain, id string) error {
 			if err != nil {
 				return fmt.Errorf("apply change on %s: %w", domain, err)
 			}
-
-			log.Infof("variomedia: [%s] %s: %s %s", domain, result.Data.ID, result.Data.Attributes.JobType, result.Data.Attributes.Status)
 
 			if result.Data.Attributes.Status != "done" {
 				return fmt.Errorf("apply change on %s: status: %s", domain, result.Data.Attributes.Status)

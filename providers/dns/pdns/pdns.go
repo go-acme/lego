@@ -113,7 +113,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.APIVersion <= 0 {
 		err := client.SetAPIVersion(context.Background())
 		if err != nil {
-			log.Warnf("pdns: failed to get API version %v", err)
+			log.Warn("pdns: failed to get API version.", "error", err)
 		}
 	}
 

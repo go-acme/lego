@@ -118,7 +118,7 @@ func TestValidate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			statuses = test.statuses
 
-			err := validate(core, "example.com", acme.Challenge{Type: "http-01", Token: "token", URL: server.URL + "/chlg"})
+			err := validate(t.Context(), core, "example.com", acme.Challenge{Type: "http-01", Token: "token", URL: server.URL + "/chlg"})
 			if test.want == "" {
 				require.NoError(t, err)
 			} else {

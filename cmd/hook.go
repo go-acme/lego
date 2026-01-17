@@ -23,12 +23,12 @@ const (
 	hookEnvCertPFXPath       = "LEGO_CERT_PFX_PATH"
 )
 
-func launchHook(hook string, timeout time.Duration, meta map[string]string) error {
+func launchHook(ctx context.Context, hook string, timeout time.Duration, meta map[string]string) error {
 	if hook == "" {
 		return nil
 	}
 
-	ctxCmd, cancel := context.WithTimeout(context.Background(), timeout)
+	ctxCmd, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	parts := strings.Fields(hook)

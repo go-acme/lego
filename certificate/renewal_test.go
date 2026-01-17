@@ -65,7 +65,7 @@ func TestCertifier_GetRenewalInfo(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	ri, err := certifier.GetRenewalInfo(RenewalInfoRequest{leaf})
+	ri, err := certifier.GetRenewalInfo(t.Context(), RenewalInfoRequest{leaf})
 	require.NoError(t, err)
 	require.NotNil(t, ri)
 	assert.Equal(t, "2020-03-17T17:51:09Z", ri.SuggestedWindow.Start.Format(time.RFC3339))
@@ -125,7 +125,7 @@ func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
 
 			certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-			response, err := certifier.GetRenewalInfo(test.request)
+			response, err := certifier.GetRenewalInfo(t.Context(), test.request)
 			require.Error(t, err)
 			assert.Nil(t, response)
 		})

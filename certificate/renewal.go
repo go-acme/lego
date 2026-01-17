@@ -1,6 +1,7 @@
 package certificate
 
 import (
+	"context"
 	"crypto/x509"
 	"encoding/asn1"
 	"encoding/base64"
@@ -72,13 +73,13 @@ func (r *RenewalInfoResponse) ShouldRenewAt(now time.Time, willingToSleep time.D
 // This method will return api.ErrNoARI if the server does not advertise a renewal info endpoint.
 //
 // https://www.rfc-editor.org/rfc/rfc9773.html
-func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse, error) {
+func (c *Certifier) GetRenewalInfo(ctx context.Context, req RenewalInfoRequest) (*RenewalInfoResponse, error) {
 	certID, err := MakeARICertID(req.Cert)
 	if err != nil {
 		return nil, fmt.Errorf("error making certID: %w", err)
 	}
 
-	resp, err := c.core.Certificates.GetRenewalInfo(certID)
+	resp, err := c.core.Certificates.GetRenewalInfo(ctx, certID)
 	if err != nil {
 		return nil, err
 	}

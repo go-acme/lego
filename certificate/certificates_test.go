@@ -1,6 +1,7 @@
 package certificate
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
@@ -195,7 +196,7 @@ func Test_checkResponse(t *testing.T) {
 	}
 	certRes := &Resource{}
 
-	valid, err := certifier.checkResponse(order, certRes, true, "")
+	valid, err := certifier.checkResponse(t.Context(), order, certRes, true, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
@@ -229,7 +230,7 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 	}
 	certRes := &Resource{}
 
-	valid, err := certifier.checkResponse(order, certRes, true, "")
+	valid, err := certifier.checkResponse(t.Context(), order, certRes, true, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
@@ -263,7 +264,7 @@ func Test_checkResponse_no_bundle(t *testing.T) {
 	}
 	certRes := &Resource{}
 
-	valid, err := certifier.checkResponse(order, certRes, false, "")
+	valid, err := certifier.checkResponse(t.Context(), order, certRes, false, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
@@ -306,7 +307,7 @@ func Test_checkResponse_alternate(t *testing.T) {
 		Domain: "example.com",
 	}
 
-	valid, err := certifier.checkResponse(order, certRes, true, "DST Root CA X3")
+	valid, err := certifier.checkResponse(t.Context(), order, certRes, true, "DST Root CA X3")
 	require.NoError(t, err)
 
 	assert.True(t, valid)
@@ -333,7 +334,7 @@ func Test_Get(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	certRes, err := certifier.Get(server.URL+"/acme/cert/test-cert", true)
+	certRes, err := certifier.Get(t.Context(), server.URL+"/acme/cert/test-cert", true)
 	require.NoError(t, err)
 
 	assert.NotNil(t, certRes)
@@ -395,6 +396,6 @@ type resolverMock struct {
 	error error
 }
 
-func (r *resolverMock) Solve(_ []acme.Authorization) error {
+func (r *resolverMock) Solve(_ context.Context, _ []acme.Authorization) error {
 	return r.error
 }

@@ -1,6 +1,7 @@
 package resolver
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme"
@@ -13,11 +14,11 @@ type preSolverMock struct {
 	cleanUp  map[string]error
 }
 
-func (s *preSolverMock) PreSolve(authorization acme.Authorization) error {
+func (s *preSolverMock) PreSolve(ctx context.Context, authorization acme.Authorization) error {
 	return s.preSolve[authorization.Identifier.Value]
 }
 
-func (s *preSolverMock) Solve(authorization acme.Authorization) error {
+func (s *preSolverMock) Solve(ctx context.Context, authorization acme.Authorization) error {
 	return s.solve[authorization.Identifier.Value]
 }
 

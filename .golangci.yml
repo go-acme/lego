@@ -187,6 +187,11 @@ linters:
         text: (tlsFeatureExtensionOID|ocspMustStapleFeature) is a global variable
         linters:
           - gochecknoglobals
+      # The complexity is related to HTTP calls, and so we don't need to reduce the complexity for now.
+      - path: certificate/certificates.go
+        text: "cyclomatic complexity \\d+ of func `\\(\\*Certifier\\)\\.GetOCSP` is high"
+        linters:
+          - gocyclo
       - path: challenge/dns01/nameserver.go
         text: (defaultNameservers|recursiveNameservers|fqdnSoaCache|muFqdnSoaCache) is a global variable
         linters:

@@ -1,13 +1,14 @@
 package certificate
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/log"
 )
 
-func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authorization, error) {
+func (c *Certifier) getAuthorizations(ctx context.Context, order acme.ExtendedOrder) ([]acme.Authorization, error) {
 	resc, errc := make(chan acme.Authorization), make(chan domainError)
 
 	delay := time.Second / time.Duration(c.overallRequestLimit)
@@ -16,7 +17,7 @@ func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authoriz
 		time.Sleep(delay)
 
 		go func(authzURL string) {
-			authz, err := c.core.Authorizations.Get(authzURL)
+			authz, err := c.core.Authorizations.Get(ctx, authzURL)
 			if err != nil {
 				errc <- domainError{Domain: authz.Identifier.Value, Error: err}
 				return
@@ -49,9 +50,9 @@ func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authoriz
 	return responses, failures.Join()
 }
 
-func (c *Certifier) deactivateAuthorizations(order acme.ExtendedOrder, force bool) {
+func (c *Certifier) deactivateAuthorizations(ctx context.Context, order acme.ExtendedOrder, force bool) {
 	for _, authzURL := range order.Authorizations {
-		auth, err := c.core.Authorizations.Get(authzURL)
+		auth, err := c.core.Authorizations.Get(ctx, authzURL)
 		if err != nil {
 			log.Infof("Unable to get the authorization for %s: %v", authzURL, err)
 			continue
@@ -64,7 +65,7 @@ func (c *Certifier) deactivateAuthorizations(order acme.ExtendedOrder, force boo
 
 		log.Infof("Deactivating auth: %s", authzURL)
 
-		if c.core.Authorizations.Deactivate(authzURL) != nil {
+		if c.core.Authorizations.Deactivate(ctx, authzURL) != nil {
 			log.Infof("Unable to deactivate the authorization: %s", authzURL)
 		}
 	}

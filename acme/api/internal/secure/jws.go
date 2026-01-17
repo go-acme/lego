@@ -1,6 +1,7 @@
 package secure
 
 import (
+	"context"
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -34,7 +35,7 @@ func (j *JWS) SetKid(kid string) {
 }
 
 // SignContent Signs a content with the JWS.
-func (j *JWS) SignContent(url string, content []byte) (*jose.JSONWebSignature, error) {
+func (j *JWS) SignContent(ctx context.Context, url string, content []byte) (*jose.JSONWebSignature, error) {
 	var alg jose.SignatureAlgorithm
 
 	switch k := j.privKey.(type) {
@@ -54,7 +55,7 @@ func (j *JWS) SignContent(url string, content []byte) (*jose.JSONWebSignature, e
 	}
 
 	options := jose.SignerOptions{
-		NonceSource: j.nonces,
+		NonceSource: nonces.NewNonceSource(ctx, j.nonces),
 		ExtraHeaders: map[jose.HeaderKey]any{
 			"url": url,
 		},

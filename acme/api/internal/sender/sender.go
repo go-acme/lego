@@ -1,6 +1,7 @@
 package sender
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -37,8 +38,8 @@ func NewDoer(client *http.Client, userAgent string) *Doer {
 
 // Get performs a GET request with a proper User-Agent string.
 // If "response" is not provided, callers should close resp.Body when done reading from it.
-func (d *Doer) Get(url string, response any) (*http.Response, error) {
-	req, err := d.newRequest(http.MethodGet, url, nil)
+func (d *Doer) Get(ctx context.Context, url string, response any) (*http.Response, error) {
+	req, err := d.newRequest(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +49,8 @@ func (d *Doer) Get(url string, response any) (*http.Response, error) {
 
 // Head performs a HEAD request with a proper User-Agent string.
 // The response body (resp.Body) is already closed when this function returns.
-func (d *Doer) Head(url string) (*http.Response, error) {
-	req, err := d.newRequest(http.MethodHead, url, nil)
+func (d *Doer) Head(ctx context.Context, url string) (*http.Response, error) {
+	req, err := d.newRequest(ctx, http.MethodHead, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +60,8 @@ func (d *Doer) Head(url string) (*http.Response, error) {
 
 // Post performs a POST request with a proper User-Agent string.
 // If "response" is not provided, callers should close resp.Body when done reading from it.
-func (d *Doer) Post(url string, body io.Reader, bodyType string, response any) (*http.Response, error) {
-	req, err := d.newRequest(http.MethodPost, url, body, contentType(bodyType))
+func (d *Doer) Post(ctx context.Context, url string, body io.Reader, bodyType string, response any) (*http.Response, error) {
+	req, err := d.newRequest(ctx, http.MethodPost, url, body, contentType(bodyType))
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +69,8 @@ func (d *Doer) Post(url string, body io.Reader, bodyType string, response any) (
 	return d.do(req, response)
 }
 
-func (d *Doer) newRequest(method, uri string, body io.Reader, opts ...RequestOption) (*http.Request, error) {
-	req, err := http.NewRequest(method, uri, body)
+func (d *Doer) newRequest(ctx context.Context, method, uri string, body io.Reader, opts ...RequestOption) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx, method, uri, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

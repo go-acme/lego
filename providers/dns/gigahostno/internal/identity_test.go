@@ -37,7 +37,7 @@ func TestIdentifier_Authenticate(t *testing.T) {
 			servermock.CheckRequestJSONBodyFromFixture("authenticate-request.json")).
 		Build(t)
 
-	token, err := identifier.Authenticate(context.Background())
+	token, err := identifier.Authenticate(t.Context())
 	require.NoError(t, err)
 
 	expected := &Token{

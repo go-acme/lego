@@ -74,7 +74,7 @@ func TestDNSProvider_Present(t *testing.T) {
 				).
 				Build(t)
 
-			err := provider.Present(test.domain, "", "dummyKey")
+			err := provider.Present(t.Context(), test.domain, "", "dummyKey")
 			if test.errString != "" {
 				assert.EqualError(t, err, "namecheap: "+test.errString)
 			} else {
@@ -114,7 +114,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 				).
 				Build(t)
 
-			err := provider.CleanUp(test.domain, "", "dummyKey")
+			err := provider.CleanUp(t.Context(), test.domain, "", "dummyKey")
 			if test.errString != "" {
 				assert.EqualError(t, err, "namecheap: "+test.errString)
 			} else {

@@ -54,7 +54,7 @@ func TestMemcachedPresentSingleHost(t *testing.T) {
 
 	challengePath := path.Join("/", http01.ChallengePath(token))
 
-	err = p.Present(domain, token, keyAuth)
+	err = p.Present(t.Context(), domain, token, keyAuth)
 	require.NoError(t, err)
 	mc, err := memcache.New(memcachedHosts[0])
 	require.NoError(t, err)
@@ -73,7 +73,7 @@ func TestMemcachedPresentMultiHost(t *testing.T) {
 
 	challengePath := path.Join("/", http01.ChallengePath(token))
 
-	err = p.Present(domain, token, keyAuth)
+	err = p.Present(t.Context(), domain, token, keyAuth)
 	require.NoError(t, err)
 
 	for _, host := range memcachedHosts {
@@ -96,7 +96,7 @@ func TestMemcachedPresentPartialFailureMultiHost(t *testing.T) {
 
 	challengePath := path.Join("/", http01.ChallengePath(token))
 
-	err = p.Present(domain, token, keyAuth)
+	err = p.Present(t.Context(), domain, token, keyAuth)
 	require.NoError(t, err)
 
 	for _, host := range memcachedHosts {
@@ -115,5 +115,5 @@ func TestMemcachedCleanup(t *testing.T) {
 
 	p, err := NewMemcachedProvider(memcachedHosts)
 	require.NoError(t, err)
-	require.NoError(t, p.CleanUp(domain, token, keyAuth))
+	require.NoError(t, p.CleanUp(t.Context(), domain, token, keyAuth))
 }

@@ -77,7 +77,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			provider, err := NewDNSProviderConfig(test.config)
 			require.NoError(t, err)
 
-			err = provider.Present("domain", "token", "keyAuth")
+			err = provider.Present(t.Context(), "domain", "token", "keyAuth")
 			if test.expected.error {
 				require.Error(t, err)
 			} else {
@@ -152,7 +152,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			provider, err := NewDNSProviderConfig(test.config)
 			require.NoError(t, err)
 
-			err = provider.CleanUp("domain", "token", "keyAuth")
+			err = provider.CleanUp(t.Context(), "domain", "token", "keyAuth")
 			if test.expected.error {
 				require.Error(t, err)
 			} else {

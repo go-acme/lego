@@ -121,7 +121,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.CheckRequestJSONBodyFromInternal("update_dns_records-request.json")).
 		Build(t)
 
-	err := provider.Present("example.com", "", "123d==")
+	err := provider.Present(t.Context(), "example.com", "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -134,7 +134,7 @@ func TestDNSProvider_CleanUp_update(t *testing.T) {
 			servermock.CheckRequestJSONBodyFromInternal("update_dns_records_base-request.json")).
 		Build(t)
 
-	err := provider.CleanUp("example.com", "", "123d==")
+	err := provider.CleanUp(t.Context(), "example.com", "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -147,7 +147,7 @@ func TestDNSProvider_CleanUp_delete(t *testing.T) {
 			servermock.CheckRequestJSONBody(`{"filters":[{"name":"_acme-challenge","type":"TXT"}]}`)).
 		Build(t)
 
-	err := provider.CleanUp("example.com", "", "123d==")
+	err := provider.CleanUp(t.Context(), "example.com", "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -161,7 +161,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -175,6 +175,6 @@ func TestLiveCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

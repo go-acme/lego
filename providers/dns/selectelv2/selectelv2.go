@@ -147,9 +147,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill DNS-01 challenge.
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) error {
 	client, err := d.authorize(ctx)
 	if err != nil {
 		return fmt.Errorf("selectelv2: authorize: %w", err)
@@ -194,9 +192,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 }
 
 // CleanUp removes a TXT record used for DNS-01 challenge.
-func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) error {
 	client, err := d.authorize(ctx)
 	if err != nil {
 		return fmt.Errorf("selectelv2: authorize: %w", err)

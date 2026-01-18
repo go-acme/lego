@@ -164,9 +164,7 @@ func (e ErrCNAMERequired) Error() string {
 // If there is not an account for the given domain present in the DNSProvider storage
 // one will be created and registered with the ACME DNS server and an ErrCNAMERequired error is returned.
 // This will halt issuance and indicate to the user that a one-time manual setup is required for the domain.
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) error {
 	// Compute the challenge response FQDN and TXT value for the domain based on the keyAuth.
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
@@ -191,7 +189,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 // CleanUp removes the record matching the specified parameters. It is not
 // implemented for the ACME-DNS provider.
-func (d *DNSProvider) CleanUp(_, _, _ string) error {
+func (d *DNSProvider) CleanUp(_ context.Context, _, _, _ string) error {
 	// ACME-DNS doesn't support the notion of removing a record.
 	// For users of ACME-DNS it is expected the stale records remain in-place.
 	return nil

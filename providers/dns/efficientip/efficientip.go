@@ -122,8 +122,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{config: config, client: client}, nil
 }
 
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	r := internal.ResourceRecord{
@@ -142,8 +141,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	params := internal.DeleteInputParameters{

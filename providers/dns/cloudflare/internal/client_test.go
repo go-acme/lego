@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -88,7 +87,7 @@ func TestClient_DeleteDNSRecord(t *testing.T) {
 			servermock.ResponseFromFixture("delete_record.json")).
 		Build(t)
 
-	err := client.DeleteDNSRecord(context.Background(), "023e105f4ecef8ad9ca31a8372d0c353", "xxx")
+	err := client.DeleteDNSRecord(t.Context(), "023e105f4ecef8ad9ca31a8372d0c353", "xxx")
 	require.NoError(t, err)
 }
 
@@ -99,7 +98,7 @@ func TestClient_DeleteDNSRecord_error(t *testing.T) {
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
-	err := client.DeleteDNSRecord(context.Background(), "023e105f4ecef8ad9ca31a8372d0c353", "xxx")
+	err := client.DeleteDNSRecord(t.Context(), "023e105f4ecef8ad9ca31a8372d0c353", "xxx")
 	require.EqualError(t, err, "[status code 400] 6003: Invalid request headers; 6103: Invalid format for X-Auth-Key header")
 }
 
@@ -112,7 +111,7 @@ func TestClient_ZonesByName(t *testing.T) {
 				With("per_page", "50")).
 		Build(t)
 
-	zones, err := client.ZonesByName(context.Background(), "example.com")
+	zones, err := client.ZonesByName(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := []Zone{
@@ -171,6 +170,6 @@ func TestClient_ZonesByName_error(t *testing.T) {
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
-	_, err := client.ZonesByName(context.Background(), "example.com")
+	_, err := client.ZonesByName(t.Context(), "example.com")
 	require.EqualError(t, err, "[status code 400] 6003: Invalid request headers; 6103: Invalid format for X-Auth-Key header")
 }

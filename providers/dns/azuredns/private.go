@@ -47,8 +47,7 @@ func (d *DNSProviderPrivate) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProviderPrivate) Present(domain, _, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProviderPrivate) Present(ctx context.Context, domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
@@ -100,8 +99,7 @@ func (d *DNSProviderPrivate) Present(domain, _, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProviderPrivate) CleanUp(domain, _, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProviderPrivate) CleanUp(ctx context.Context, domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)

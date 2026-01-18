@@ -139,9 +139,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present installs a TXT record for the DNS challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	pr, err := newPseudoRecord(ctx, domain, keyAuth)
 	if err != nil {
@@ -176,9 +174,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes a TXT record used for a previous DNS challenge.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	pr, err := newPseudoRecord(ctx, domain, keyAuth)
 	if err != nil {

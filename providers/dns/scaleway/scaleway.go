@@ -140,8 +140,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill DNS-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	records := []*scwdomain.Record{{
@@ -161,7 +160,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		DisallowNewZoneCreation: true,
 	}
 
-	_, err := d.client.UpdateDNSZoneRecords(req)
+	_, err := d.client.UpdateDNSZoneRecords(req, scw.WithContext(ctx))
 	if err != nil {
 		return fmt.Errorf("scaleway: %w", err)
 	}
@@ -170,8 +169,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes a TXT record used for DNS-01 challenge.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	recordIdentifier := &scwdomain.RecordIdentifier{
@@ -189,7 +187,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		DisallowNewZoneCreation: true,
 	}
 
-	_, err := d.client.UpdateDNSZoneRecords(req)
+	_, err := d.client.UpdateDNSZoneRecords(req, scw.WithContext(ctx))
 	if err != nil {
 		return fmt.Errorf("scaleway: %w", err)
 	}

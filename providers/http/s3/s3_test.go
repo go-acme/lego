@@ -50,7 +50,7 @@ func TestLiveNewHTTPProvider(t *testing.T) {
 
 	// Present
 
-	err = provider.Present(domain, token, keyAuth)
+	err = provider.Present(t.Context(), domain, token, keyAuth)
 	require.NoError(t, err)
 
 	chlgPath := fmt.Sprintf("http://%s.s3.%s.amazonaws.com%s",
@@ -68,7 +68,7 @@ func TestLiveNewHTTPProvider(t *testing.T) {
 
 	// CleanUp
 
-	err = provider.CleanUp(domain, token, keyAuth)
+	err = provider.CleanUp(t.Context(), domain, token, keyAuth)
 	require.NoError(t, err)
 
 	cleanupResp, err := http.Get(chlgPath)

@@ -153,7 +153,7 @@ func (m *mockStorage) WithPutError(err error) *mockStorage {
 }
 
 func (m *mockStorage) WithSaveError(err error) *mockStorage {
-	m.save = func(ctx context.Context) error {
+	m.save = func(_ context.Context) error {
 		return err
 	}
 

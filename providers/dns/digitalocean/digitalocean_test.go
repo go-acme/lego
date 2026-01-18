@@ -123,7 +123,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.CheckRequestJSONBody(`{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`)).
 		Build(t)
 
-	err := provider.Present("example.com", "", "foobar")
+	err := provider.Present(t.Context(), "example.com", "", "foobar")
 	require.NoError(t, err)
 }
 
@@ -138,6 +138,6 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	provider.recordIDs["token"] = 1234567
 	provider.recordIDsMu.Unlock()
 
-	err := provider.CleanUp("example.com", "token", "")
+	err := provider.CleanUp(t.Context(), "example.com", "token", "")
 	require.NoError(t, err)
 }

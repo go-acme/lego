@@ -78,7 +78,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json")).
 		Build(t)
 
-	err := provider.Present("example.com", "abc", "123d==")
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 }
 
@@ -94,6 +94,6 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	provider.recordIDs[token] = 123
 	provider.zoneIDs[token] = 456
 
-	err := provider.CleanUp("example.com", token, "123d==")
+	err := provider.CleanUp(t.Context(), "example.com", token, "123d==")
 	require.NoError(t, err)
 }

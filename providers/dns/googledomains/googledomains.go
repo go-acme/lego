@@ -2,6 +2,7 @@
 package googledomains
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"time"
@@ -47,11 +48,11 @@ func NewDNSProviderConfig(_ *Config) (*DNSProvider, error) {
 	return nil, errors.New("googledomains: provider has shut down")
 }
 
-func (d *DNSProvider) Present(_, _, _ string) error {
+func (d *DNSProvider) Present(_ context.Context, _, _, _ string) error {
 	return nil
 }
 
-func (d *DNSProvider) CleanUp(_, _, _ string) error {
+func (d *DNSProvider) CleanUp(_ context.Context, _, _, _ string) error {
 	return nil
 }
 

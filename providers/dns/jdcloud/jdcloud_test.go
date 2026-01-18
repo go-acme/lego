@@ -139,7 +139,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -153,7 +153,7 @@ func TestLiveCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -212,7 +212,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		).
 		Build(t)
 
-	err := provider.Present("example.com", "abc", "123d==")
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 
 	require.Len(t, provider.domainIDs, 1)
@@ -237,6 +237,6 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	provider.domainIDs["abc"] = 20
 	provider.recordIDs["abc"] = 123
 
-	err := provider.CleanUp("example.com", "abc", "123d==")
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 }

@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -45,7 +44,7 @@ func TestClient_AddRecord(t *testing.T) {
 		TTL:     2,
 	}
 
-	err := client.AddRecord(context.Background(), "example.com", record)
+	err := client.AddRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -65,7 +64,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Overwrite: true,
 	}
 
-	err := client.AddRecord(context.Background(), "example.com", record)
+	err := client.AddRecord(t.Context(), "example.com", record)
 	require.Error(t, err)
 
 	require.EqualError(t, err, "JSON Defined Record Type not Supported (code=6)")
@@ -85,7 +84,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
-	err := client.DeleteRecord(context.Background(), "example.com", record)
+	err := client.DeleteRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -103,7 +102,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 		Content: "txtTXTtxt",
 	}
 
-	err := client.DeleteRecord(context.Background(), "example.com", record)
+	err := client.DeleteRecord(t.Context(), "example.com", record)
 
 	require.Error(t, err)
 

@@ -1,6 +1,7 @@
 package http01
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"net"
@@ -75,7 +76,7 @@ func NewUnixProviderServer(socketPath string, socketMode fs.FileMode) *ProviderS
 }
 
 // Present starts a web server and makes the token available at `ChallengePath(token)` for web requests.
-func (s *ProviderServer) Present(domain, token, keyAuth string) error {
+func (s *ProviderServer) Present(ctx context.Context, domain, token, keyAuth string) error {
 	var err error
 
 	s.listener, err = net.Listen(s.network, s.GetAddress())
@@ -97,7 +98,7 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp closes the HTTP server and removes the token from `ChallengePath(token)`.
-func (s *ProviderServer) CleanUp(domain, token, keyAuth string) error {
+func (s *ProviderServer) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	if s.listener == nil {
 		return nil
 	}

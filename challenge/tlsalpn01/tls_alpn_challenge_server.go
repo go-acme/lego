@@ -1,6 +1,7 @@
 package tlsalpn01
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -66,7 +67,7 @@ func NewProviderServer(host, port string) *ProviderServer {
 
 // Present generates a certificate with an SHA-256 digest of the keyAuth provided
 // as the acmeValidation-v1 extension value to conform to the ACME-TLS-ALPN spec.
-func (s *ProviderServer) Present(domain, token, keyAuth string) error {
+func (s *ProviderServer) Present(ctx context.Context, domain, token, keyAuth string) error {
 	// Generate the challenge certificate using the provided keyAuth and domain.
 	cert, err := ChallengeCert(domain, keyAuth)
 	if err != nil {
@@ -101,7 +102,7 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp closes the HTTPS server.
-func (s *ProviderServer) CleanUp(domain, token, keyAuth string) error {
+func (s *ProviderServer) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	if s.listener == nil {
 		return nil
 	}

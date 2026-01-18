@@ -23,7 +23,7 @@ type preSolver interface {
 
 // Interface for challenges like dns, where we can solve all the challenges before to delete them.
 type cleanup interface {
-	CleanUp(authorization acme.Authorization) error
+	CleanUp(ctx context.Context, authorization acme.Authorization) error
 }
 
 type sequential interface {
@@ -108,7 +108,7 @@ func sequentialSolve(ctx context.Context, authSolvers []*selectedAuthSolver, fai
 			if err != nil {
 				failures[domain] = err
 
-				cleanUp(authSolver.solver, authSolver.authz)
+				cleanUp(ctx, authSolver.solver, authSolver.authz)
 
 				continue
 			}
@@ -119,13 +119,13 @@ func sequentialSolve(ctx context.Context, authSolvers []*selectedAuthSolver, fai
 		if err != nil {
 			failures[domain] = err
 
-			cleanUp(authSolver.solver, authSolver.authz)
+			cleanUp(ctx, authSolver.solver, authSolver.authz)
 
 			continue
 		}
 
 		// Clean challenge
-		cleanUp(authSolver.solver, authSolver.authz)
+		cleanUp(ctx, authSolver.solver, authSolver.authz)
 
 		if len(authSolvers)-1 > i {
 			solvr := authSolver.solver.(sequential)
@@ -151,7 +151,7 @@ func parallelSolve(ctx context.Context, authSolvers []*selectedAuthSolver, failu
 	defer func() {
 		// Clean all created TXT records
 		for _, authSolver := range authSolvers {
-			cleanUp(authSolver.solver, authSolver.authz)
+			cleanUp(ctx, authSolver.solver, authSolver.authz)
 		}
 	}()
 
@@ -172,11 +172,11 @@ func parallelSolve(ctx context.Context, authSolvers []*selectedAuthSolver, failu
 	}
 }
 
-func cleanUp(solvr solver, authz acme.Authorization) {
+func cleanUp(ctx context.Context, solvr solver, authz acme.Authorization) {
 	if solvr, ok := solvr.(cleanup); ok {
 		domain := challenge.GetTargetedDomain(authz)
 
-		err := solvr.CleanUp(authz)
+		err := solvr.CleanUp(ctx, authz)
 		if err != nil {
 			log.Warn("acme: cleaning up failed.", "domain", domain, "error", err)
 		}

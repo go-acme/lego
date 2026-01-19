@@ -119,7 +119,7 @@ func listAccount(_ context.Context, cmd *cli.Command) error {
 	}
 
 	if len(matches) == 0 {
-		fmt.Println("No accounts found.")
+		fmt.Println("No accounts were found.")
 		return nil
 	}
 

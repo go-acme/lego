@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"runtime"
 
 	"github.com/go-acme/lego/v5/cmd"
@@ -15,19 +14,12 @@ import (
 )
 
 func main() {
-	var defaultPath string
-
-	cwd, err := os.Getwd()
-	if err == nil {
-		defaultPath = filepath.Join(cwd, ".lego")
-	}
-
 	app := &cli.Command{
 		Name:                  "lego",
 		Usage:                 "Let's Encrypt client written in Go",
 		Version:               getVersion(),
 		EnableShellCompletion: true,
-		Flags:                 cmd.CreateFlags(defaultPath),
+		Flags:                 cmd.CreateFlags(""),
 		Before:                cmd.Before,
 		Commands:              cmd.CreateCommands(),
 	}
@@ -38,9 +30,7 @@ func main() {
 
 	app.Commands = cmd.CreateCommands()
 
-	ctx := context.Background()
-
-	err = app.Run(ctx, os.Args)
+	err := app.Run(context.Background(), os.Args)
 	if err != nil {
 		log.Fatal("Error", "error", err)
 	}

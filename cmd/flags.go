@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/lego"
@@ -64,6 +66,13 @@ const (
 )
 
 func CreateFlags(defaultPath string) []cli.Flag {
+	if defaultPath == "" {
+		cwd, err := os.Getwd()
+		if err == nil {
+			defaultPath = filepath.Join(cwd, ".lego")
+		}
+	}
+
 	return []cli.Flag{
 		&cli.StringSliceFlag{
 			Name:    flgDomains,

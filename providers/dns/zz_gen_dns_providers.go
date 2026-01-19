@@ -42,6 +42,8 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/constellix"
 	"github.com/go-acme/lego/v4/providers/dns/corenetworks"
 	"github.com/go-acme/lego/v4/providers/dns/cpanel"
+	"github.com/go-acme/lego/v4/providers/dns/curanet"
+	"github.com/go-acme/lego/v4/providers/dns/dandomain"
 	"github.com/go-acme/lego/v4/providers/dns/ddnss"
 	"github.com/go-acme/lego/v4/providers/dns/derak"
 	"github.com/go-acme/lego/v4/providers/dns/desec"
@@ -153,6 +155,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/safedns"
 	"github.com/go-acme/lego/v4/providers/dns/sakuracloud"
 	"github.com/go-acme/lego/v4/providers/dns/scaleway"
+	"github.com/go-acme/lego/v4/providers/dns/scannet"
 	"github.com/go-acme/lego/v4/providers/dns/selectel"
 	"github.com/go-acme/lego/v4/providers/dns/selectelv2"
 	"github.com/go-acme/lego/v4/providers/dns/selfhostde"
@@ -180,6 +183,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/volcengine"
 	"github.com/go-acme/lego/v4/providers/dns/vscale"
 	"github.com/go-acme/lego/v4/providers/dns/vultr"
+	"github.com/go-acme/lego/v4/providers/dns/wannafind"
 	"github.com/go-acme/lego/v4/providers/dns/webnames"
 	"github.com/go-acme/lego/v4/providers/dns/webnamesca"
 	"github.com/go-acme/lego/v4/providers/dns/websupport"
@@ -268,6 +272,10 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return corenetworks.NewDNSProvider()
 	case "cpanel":
 		return cpanel.NewDNSProvider()
+	case "curanet":
+		return curanet.NewDNSProvider()
+	case "dandomain":
+		return dandomain.NewDNSProvider()
 	case "ddnss":
 		return ddnss.NewDNSProvider()
 	case "derak":
@@ -490,6 +498,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return sakuracloud.NewDNSProvider()
 	case "scaleway":
 		return scaleway.NewDNSProvider()
+	case "scannet":
+		return scannet.NewDNSProvider()
 	case "selectel":
 		return selectel.NewDNSProvider()
 	case "selectelv2":
@@ -544,6 +554,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return vscale.NewDNSProvider()
 	case "vultr":
 		return vultr.NewDNSProvider()
+	case "wannafind":
+		return wannafind.NewDNSProvider()
 	case "webnames", "webnamesru":
 		return webnames.NewDNSProvider()
 	case "webnamesca":

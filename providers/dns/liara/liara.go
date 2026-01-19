@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -50,8 +50,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, 3600),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -131,14 +131,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("liara: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("liara: %w", err)
 	}
@@ -150,7 +150,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:      d.config.TTL,
 	}
 
-	newRecord, err := d.client.CreateRecord(ctx, dnsnew.UnFqdn(authZone), record)
+	newRecord, err := d.client.CreateRecord(ctx, dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("liara: failed to create TXT record, fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
@@ -166,9 +166,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("liara: could not find zone for domain %q: %w", domain, err)
 	}
@@ -182,7 +182,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("liara: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err = d.client.DeleteRecord(ctx, dnsnew.UnFqdn(authZone), recordID)
+	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
 	if err != nil {
 		return fmt.Errorf("liara: failed to delete TXT record, id=%s: %w", recordID, err)
 	}

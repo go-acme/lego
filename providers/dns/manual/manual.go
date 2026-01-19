@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 )
 
 const (
@@ -25,15 +25,15 @@ func NewDNSProvider() (*DNSProvider, error) {
 // Present prints instructions for manually creating the TXT record.
 func (*DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("manual: could not find zone: %w", err)
 	}
 
 	fmt.Printf("lego: Please create the following TXT record in your %s zone:\n", authZone)
-	fmt.Printf(dnsTemplate+"\n", info.EffectiveFQDN, dnsnew.DefaultTTL, info.Value)
+	fmt.Printf(dnsTemplate+"\n", info.EffectiveFQDN, dns01.DefaultTTL, info.Value)
 	fmt.Printf("lego: Press 'Enter' when you are done\n")
 
 	_, err = bufio.NewReader(os.Stdin).ReadBytes('\n')
@@ -47,15 +47,15 @@ func (*DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp prints instructions for manually removing the TXT record.
 func (*DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("manual: could not find zone: %w", err)
 	}
 
 	fmt.Printf("lego: You can now remove this TXT record from your %s zone:\n", authZone)
-	fmt.Printf(dnsTemplate+"\n", info.EffectiveFQDN, dnsnew.DefaultTTL, "...")
+	fmt.Printf(dnsTemplate+"\n", info.EffectiveFQDN, dns01.DefaultTTL, "...")
 
 	return nil
 }
@@ -63,5 +63,5 @@ func (*DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Sequential All DNS challenges for this provider will be resolved sequentially.
 // Returns the interval between each iteration.
 func (d *DNSProvider) Sequential() time.Duration {
-	return dnsnew.DefaultPropagationTimeout
+	return dns01.DefaultPropagationTimeout
 }

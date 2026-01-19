@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/internal/hostingde/internal"
 )
@@ -76,7 +76,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zoneName, err := d.getZoneName(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -99,7 +99,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	rec := []internal.DNSRecord{{
 		Type:    "TXT",
-		Name:    dnsnew.UnFqdn(info.EffectiveFQDN),
+		Name:    dns01.UnFqdn(info.EffectiveFQDN),
 		Content: info.Value,
 		TTL:     d.config.TTL,
 	}}
@@ -115,7 +115,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	for _, record := range response.Records {
-		if record.Name == dnsnew.UnFqdn(info.EffectiveFQDN) && record.Content == fmt.Sprintf(`%q`, info.Value) {
+		if record.Name == dns01.UnFqdn(info.EffectiveFQDN) && record.Content == fmt.Sprintf(`%q`, info.Value) {
 			d.recordIDsMu.Lock()
 			d.recordIDs[info.EffectiveFQDN] = record.ID
 			d.recordIDsMu.Unlock()
@@ -133,7 +133,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zoneName, err := d.getZoneName(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -156,7 +156,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	rec := []internal.DNSRecord{{
 		Type:    "TXT",
-		Name:    dnsnew.UnFqdn(info.EffectiveFQDN),
+		Name:    dns01.UnFqdn(info.EffectiveFQDN),
 		Content: `"` + info.Value + `"`,
 	}}
 
@@ -183,7 +183,7 @@ func (d *DNSProvider) getZoneName(ctx context.Context, fqdn string) (string, err
 		return d.config.ZoneName, nil
 	}
 
-	zoneName, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, fqdn)
+	zoneName, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone for %s: %w", fqdn, err)
 	}
@@ -192,5 +192,5 @@ func (d *DNSProvider) getZoneName(ctx context.Context, fqdn string) (string, err
 		return "", errors.New("empty zone name")
 	}
 
-	return dnsnew.UnFqdn(zoneName), nil
+	return dns01.UnFqdn(zoneName), nil
 }

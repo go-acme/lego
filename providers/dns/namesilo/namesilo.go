@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/nrdcg/namesilo"
@@ -44,8 +44,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
 }
 
@@ -96,16 +96,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("namesilo: could not find zone for domain %q: %w", domain, err)
 	}
 
-	zoneName := dnsnew.UnFqdn(zone)
+	zoneName := dns01.UnFqdn(zone)
 
-	subdomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zoneName)
+	subdomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zoneName)
 	if err != nil {
 		return fmt.Errorf("namesilo: %w", err)
 	}
@@ -128,27 +128,27 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("namesilo: could not find zone for domain %q: %w", domain, err)
 	}
 
-	zoneName := dnsnew.UnFqdn(zone)
+	zoneName := dns01.UnFqdn(zone)
 
 	resp, err := d.client.DnsListRecords(ctx, &namesilo.DnsListRecordsParams{Domain: zoneName})
 	if err != nil {
 		return fmt.Errorf("namesilo: %w", err)
 	}
 
-	subdomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zoneName)
+	subdomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zoneName)
 	if err != nil {
 		return fmt.Errorf("namesilo: %w", err)
 	}
 
 	for _, r := range resp.Reply.ResourceRecord {
-		if r.Type == "TXT" && r.Value == info.Value && (r.Host == subdomain || r.Host == dnsnew.UnFqdn(info.EffectiveFQDN)) {
+		if r.Type == "TXT" && r.Value == info.Value && (r.Host == subdomain || r.Host == dns01.UnFqdn(info.EffectiveFQDN)) {
 			_, err := d.client.DnsDeleteRecord(ctx, &namesilo.DnsDeleteRecordParams{Domain: zoneName, ID: r.RecordID})
 			if err != nil {
 				return fmt.Errorf("namesilo: %w", err)

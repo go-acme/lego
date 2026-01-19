@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/namedotcom/go/v4/namecom"
@@ -116,10 +116,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	if info.EffectiveFQDN != info.FQDN {
-		domain = dnsnew.UnFqdn(info.EffectiveFQDN)
+		domain = dns01.UnFqdn(info.EffectiveFQDN)
 	}
 
 	domainDetails, err := d.client.GetDomain(&namecom.GetDomainRequest{DomainName: domain})
@@ -127,7 +127,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("namedotcom: API call failed: %w", err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, domainDetails.DomainName)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, domainDetails.DomainName)
 	if err != nil {
 		return fmt.Errorf("namedotcom: %w", err)
 	}
@@ -151,10 +151,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	if info.EffectiveFQDN != info.FQDN {
-		domain = dnsnew.UnFqdn(info.EffectiveFQDN)
+		domain = dns01.UnFqdn(info.EffectiveFQDN)
 	}
 
 	records, err := d.getRecords(domain)

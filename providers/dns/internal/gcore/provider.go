@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/internal/gcore/internal"
 )
@@ -68,14 +68,14 @@ func NewDNSProviderConfig(config *Config, baseURL string) (*DNSProvider, error) 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.guessZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
 
-	err = d.client.AddRRSet(ctx, zone, dnsnew.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL)
+	err = d.client.AddRRSet(ctx, zone, dns01.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("add txt record: %w", err)
 	}
@@ -86,14 +86,14 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.guessZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
 
-	err = d.client.DeleteRRSet(ctx, zone, dnsnew.UnFqdn(info.EffectiveFQDN))
+	err = d.client.DeleteRRSet(ctx, zone, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("remove txt record: %w", err)
 	}
@@ -110,7 +110,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) guessZone(ctx context.Context, fqdn string) (string, error) {
 	var lastErr error
 
-	for zone := range dnsnew.UnFqdnDomainsSeq(fqdn) {
+	for zone := range dns01.UnFqdnDomainsSeq(fqdn) {
 		dnsZone, err := d.client.GetZone(ctx, zone)
 		if err != nil {
 			lastErr = err

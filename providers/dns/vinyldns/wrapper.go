@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cenkalti/backoff/v5"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/wait"
 	"github.com/vinyldns/go-vinyldns/vinyldns"
 )
@@ -119,12 +119,12 @@ func (d *DNSProvider) waitForChanges(ctx context.Context, operation string, resp
 
 // splitDomain splits the hostname from the authoritative zone, and returns both parts.
 func splitDomain(ctx context.Context, fqdn string) (string, string, error) {
-	zone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, fqdn)
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", "", fmt.Errorf("could not find zone: %w", err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
 	if err != nil {
 		return "", "", err
 	}

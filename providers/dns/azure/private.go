@@ -10,7 +10,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/privatedns/mgmt/privatedns"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 )
 
 // dnsProviderPrivate implements the challenge.Provider interface for Azure Private Zone DNS.
@@ -28,7 +28,7 @@ func (d *dnsProviderPrivate) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *dnsProviderPrivate) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -38,7 +38,7 @@ func (d *dnsProviderPrivate) Present(domain, token, keyAuth string) error {
 	rsc := privatedns.NewRecordSetsClientWithBaseURI(d.config.ResourceManagerEndpoint, d.config.SubscriptionID)
 	rsc.Authorizer = d.authorizer
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("azure: %w", err)
 	}
@@ -89,14 +89,14 @@ func (d *dnsProviderPrivate) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *dnsProviderPrivate) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azure: %w", err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("azure: %w", err)
 	}
@@ -118,7 +118,7 @@ func (d *dnsProviderPrivate) getHostedZoneID(ctx context.Context, fqdn string) (
 		return d.config.ZoneName, nil
 	}
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, fqdn)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone: %w", err)
 	}
@@ -126,7 +126,7 @@ func (d *dnsProviderPrivate) getHostedZoneID(ctx context.Context, fqdn string) (
 	dc := privatedns.NewPrivateZonesClientWithBaseURI(d.config.ResourceManagerEndpoint, d.config.SubscriptionID)
 	dc.Authorizer = d.authorizer
 
-	zone, err := dc.Get(ctx, d.config.ResourceGroup, dnsnew.UnFqdn(authZone))
+	zone, err := dc.Get(ctx, d.config.ResourceGroup, dns01.UnFqdn(authZone))
 	if err != nil {
 		return "", err
 	}

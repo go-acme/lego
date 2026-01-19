@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 	"golang.org/x/oauth2"
 )
@@ -71,7 +71,7 @@ func (c *Client) DeleteDNSRecord(ctx context.Context, domainID uint64, recordID 
 // GetDomainByName gets a Domain object from its name.
 func (c *Client) GetDomainByName(ctx context.Context, name string) (*DNSDomain, error) {
 	// Try to find the most specific domain
-	for n := range dnsnew.UnFqdnDomainsSeq(dnsnew.UnFqdn(name)) {
+	for n := range dns01.UnFqdnDomainsSeq(dns01.UnFqdn(name)) {
 		domain, err := c.getDomainByName(ctx, n)
 		if err != nil {
 			return nil, err

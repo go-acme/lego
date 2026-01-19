@@ -1,6 +1,6 @@
 //go:build !windows
 
-package dnsnew
+package dns01
 
 import "time"
 

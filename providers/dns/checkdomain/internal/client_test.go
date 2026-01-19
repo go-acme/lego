@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -113,7 +113,7 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 			servermock.CheckRequestJSONBodyFromFixture("delete_txt_record-request.json")).
 		Build(t)
 
-	info := dnsnew.GetChallengeInfo(t.Context(), domainName, "abc")
+	info := dns01.GetChallengeInfo(t.Context(), domainName, "abc")
 
 	err := client.DeleteTXTRecord(t.Context(), 1, info.EffectiveFQDN, recordValue)
 	require.NoError(t, err)

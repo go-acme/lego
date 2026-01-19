@@ -12,7 +12,7 @@ import (
 	"github.com/alibabacloud-go/tea/dara"
 	"github.com/aliyun/credentials-go/credentials"
 	esa "github.com/go-acme/esa-20240910/v2/client"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/ptr"
 )
@@ -52,9 +52,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 	}
 }
@@ -161,7 +161,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	siteID, err := d.getSiteID(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -171,7 +171,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	crReq := new(esa.CreateRecordRequest).
 		SetSiteId(siteID).
 		SetType("TXT").
-		SetRecordName(dnsnew.UnFqdn(info.EffectiveFQDN)).
+		SetRecordName(dns01.UnFqdn(info.EffectiveFQDN)).
 		SetTtl(int32(d.config.TTL)).
 		SetData(new(esa.CreateRecordRequestData).SetValue(info.Value))
 
@@ -192,7 +192,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// gets the record's unique ID
 	d.recordIDsMu.Lock()
@@ -226,13 +226,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) getSiteID(ctx context.Context, fqdn string) (int64, error) {
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, fqdn)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return 0, fmt.Errorf("aliesa: could not find zone for domain %q: %w", fqdn, err)
 	}
 
 	lsReq := new(esa.ListSitesRequest).
-		SetSiteName(dnsnew.UnFqdn(authZone)).
+		SetSiteName(dns01.UnFqdn(authZone)).
 		SetSiteSearchType("suffix")
 
 	// https://www.alibabacloud.com/help/en/edge-security-acceleration/esa/api-esa-2024-09-10-listsites
@@ -241,7 +241,7 @@ func (d *DNSProvider) getSiteID(ctx context.Context, fqdn string) (int64, error)
 		return 0, fmt.Errorf("list sites: %w", err)
 	}
 
-	for f := range dnsnew.UnFqdnDomainsSeq(fqdn) {
+	for f := range dns01.UnFqdnDomainsSeq(fqdn) {
 		for _, site := range lsResp.Body.GetSites() {
 			if ptr.Deref(site.GetSiteName()) == f {
 				return ptr.Deref(site.GetSiteId()), nil

@@ -14,7 +14,7 @@ import (
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/edgegrid"
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/session"
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 )
 
@@ -61,7 +61,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollInterval),
 		Config:             &edgegrid.Config{MaxBody: maxBody},
@@ -129,7 +129,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	sess, err := session.New(session.WithSigner(d.config))
 	if err != nil {
@@ -203,7 +203,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	sess, err := session.New(session.WithSigner(d.config))
 	if err != nil {
@@ -278,12 +278,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func getZone(ctx context.Context, domain string) (string, error) {
-	zone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, domain)
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, domain)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone for FQDN %q: %w", domain, err)
 	}
 
-	return dnsnew.UnFqdn(zone), nil
+	return dns01.UnFqdn(zone), nil
 }
 
 func containsValue(values []string, value string) bool {
@@ -302,7 +302,7 @@ func isNotFound(err error) bool {
 	return errors.As(err, &e) && e.StatusCode == http.StatusNotFound
 }
 
-func filterRData(existingRec *edgegriddns.GetRecordResponse, info dnsnew.ChallengeInfo) []string {
+func filterRData(existingRec *edgegriddns.GetRecordResponse, info dns01.ChallengeInfo) []string {
 	var newRData []string
 
 	for _, val := range existingRec.Target {

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/nrdcg/goinwx"
@@ -48,7 +48,7 @@ func NewDefaultConfig() *Config {
 		TTL: env.GetOrDefaultInt(EnvTTL, 300),
 		// INWX has rather unstable propagation delays, thus using a larger default value
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 6*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		Sandbox:            env.GetOrDefaultBool(EnvSandbox, false),
 	}
 }
@@ -99,9 +99,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("inwx: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
@@ -124,8 +124,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	request := &goinwx.NameserverRecordRequest{
-		Domain:  dnsnew.UnFqdn(authZone),
-		Name:    dnsnew.UnFqdn(info.EffectiveFQDN),
+		Domain:  dns01.UnFqdn(authZone),
+		Name:    dns01.UnFqdn(info.EffectiveFQDN),
 		Type:    "TXT",
 		Content: info.Value,
 		TTL:     d.config.TTL,
@@ -147,9 +147,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("inwx: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
@@ -172,8 +172,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	response, err := d.client.Nameservers.Info(&goinwx.NameserverInfoRequest{
-		Domain: dnsnew.UnFqdn(authZone),
-		Name:   dnsnew.UnFqdn(info.EffectiveFQDN),
+		Domain: dns01.UnFqdn(authZone),
+		Name:   dns01.UnFqdn(info.EffectiveFQDN),
 		Type:   "TXT",
 	})
 	if err != nil {

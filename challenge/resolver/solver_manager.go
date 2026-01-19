@@ -12,7 +12,7 @@ import (
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/challenge/http01"
 	"github.com/go-acme/lego/v5/challenge/tlsalpn01"
 	"github.com/go-acme/lego/v5/log"
@@ -50,8 +50,8 @@ func (c *SolverManager) SetTLSALPN01Provider(p challenge.Provider, opts ...tlsal
 }
 
 // SetDNS01Provider specifies a custom provider p that can solve the given DNS-01 challenge.
-func (c *SolverManager) SetDNS01Provider(p challenge.Provider, opts ...dnsnew.ChallengeOption) error {
-	c.solvers[challenge.DNS01] = dnsnew.NewChallenge(c.core, validate, p, opts...)
+func (c *SolverManager) SetDNS01Provider(p challenge.Provider, opts ...dns01.ChallengeOption) error {
+	c.solvers[challenge.DNS01] = dns01.NewChallenge(c.core, validate, p, opts...)
 	return nil
 }
 

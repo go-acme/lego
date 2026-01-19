@@ -5,7 +5,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/providers/dns/cloudflare/internal"
 )
 
@@ -86,7 +86,7 @@ func (m *metaClient) ZoneIDByName(ctx context.Context, fdqn string) (string, err
 		return id, nil
 	}
 
-	zones, err := m.clientRead.ZonesByName(ctx, dnsnew.UnFqdn(fdqn))
+	zones, err := m.clientRead.ZonesByName(ctx, dns01.UnFqdn(fdqn))
 	if err != nil {
 		return "", err
 	}

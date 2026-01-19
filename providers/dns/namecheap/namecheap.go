@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -69,7 +69,7 @@ func NewDefaultConfig() *Config {
 
 	return &Config{
 		BaseURL:            baseURL,
-		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, time.Hour),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
 		HTTPClient: &http.Client{
@@ -229,7 +229,7 @@ type pseudoRecord struct {
 
 // newPseudoRecord builds a challenge record from a domain name and a challenge authentication key.
 func newPseudoRecord(ctx context.Context, domain, keyAuth string) (*pseudoRecord, error) {
-	domain = dnsnew.UnFqdn(domain)
+	domain = dns01.UnFqdn(domain)
 
 	tld, _ := publicsuffix.PublicSuffix(domain)
 	if tld == domain {
@@ -245,7 +245,7 @@ func newPseudoRecord(ctx context.Context, domain, keyAuth string) (*pseudoRecord
 		host = strings.Join(parts[:longest-1], ".")
 	}
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	return &pseudoRecord{
 		domain:   domain,

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/rainyun/internal"
@@ -43,9 +43,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -97,19 +97,19 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("rainyun: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("rainyun: %w", err)
 	}
 
-	domainID, err := d.findDomainID(ctx, dnsnew.UnFqdn(authZone))
+	domainID, err := d.findDomainID(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("rainyun: find domain ID: %w", err)
 	}
@@ -134,14 +134,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("rainyun: could not find zone for domain %q: %w", domain, err)
 	}
 
-	domainID, err := d.findDomainID(ctx, dnsnew.UnFqdn(authZone))
+	domainID, err := d.findDomainID(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("rainyun: find domain ID: %w", err)
 	}
@@ -180,13 +180,13 @@ func (d *DNSProvider) findDomainID(ctx context.Context, domain string) (int, err
 	return 0, fmt.Errorf("domain not found: %s", domain)
 }
 
-func (d *DNSProvider) findRecordID(ctx context.Context, domainID int, info dnsnew.ChallengeInfo) (int, error) {
+func (d *DNSProvider) findRecordID(ctx context.Context, domainID int, info dns01.ChallengeInfo) (int, error) {
 	records, err := d.client.ListRecords(ctx, domainID)
 	if err != nil {
 		return 0, fmt.Errorf("list records: %w", err)
 	}
 
-	zone := dnsnew.UnFqdn(info.EffectiveFQDN)
+	zone := dns01.UnFqdn(info.EffectiveFQDN)
 
 	for _, record := range records {
 		if strings.HasPrefix(zone, record.Host) && record.Value == info.Value {

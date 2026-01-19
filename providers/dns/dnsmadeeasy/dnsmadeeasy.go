@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/dnsmadeeasy/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -58,9 +58,9 @@ func NewDefaultConfig() *Config {
 	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout:   env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 			Transport: tr,
@@ -134,9 +134,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domainName, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domainName, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("dnsmadeeasy: could not find zone for domain %q: %w", domainName, err)
 	}
@@ -163,9 +163,9 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domainName, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domainName, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("dnsmadeeasy: could not find zone for domain %q: %w", domainName, err)
 	}

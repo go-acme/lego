@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/joker/internal/svc"
@@ -63,19 +63,19 @@ func (d *svcProvider) Timeout() (timeout, interval time.Duration) {
 func (d *svcProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("joker: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	err = d.client.SendRequest(context.Background(), dnsnew.UnFqdn(zone), subDomain, info.Value)
+	err = d.client.SendRequest(context.Background(), dns01.UnFqdn(zone), subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("joker: send request: %w", err)
 	}
@@ -87,19 +87,19 @@ func (d *svcProvider) Present(domain, token, keyAuth string) error {
 func (d *svcProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("joker: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	err = d.client.SendRequest(context.Background(), dnsnew.UnFqdn(zone), subDomain, "")
+	err = d.client.SendRequest(context.Background(), dns01.UnFqdn(zone), subDomain, "")
 	if err != nil {
 		return fmt.Errorf("joker: send request: %w", err)
 	}

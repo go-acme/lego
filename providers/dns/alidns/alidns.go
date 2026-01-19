@@ -12,7 +12,7 @@ import (
 	"github.com/aliyun/credentials-go/credentials"
 	alidns "github.com/go-acme/alidns-20150109/v4/client"
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/ptr"
 	"golang.org/x/net/idna"
@@ -55,8 +55,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, 600),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 	}
 }
@@ -154,7 +154,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zoneName, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -178,7 +178,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	records, err := d.findTxtRecords(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -228,7 +228,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string,
 		startPage++
 	}
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, domain)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, domain)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone: %w", err)
 	}
@@ -236,7 +236,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string,
 	var hostedZone *alidns.DescribeDomainsResponseBodyDomainsDomain
 
 	for _, zone := range domains {
-		if ptr.Deref(zone.DomainName) == dnsnew.UnFqdn(authZone) || ptr.Deref(zone.PunyCode) == dnsnew.UnFqdn(authZone) {
+		if ptr.Deref(zone.DomainName) == dns01.UnFqdn(authZone) || ptr.Deref(zone.PunyCode) == dns01.UnFqdn(authZone) {
 			hostedZone = zone
 		}
 	}
@@ -299,7 +299,7 @@ func extractRecordName(fqdn, zone string) (string, error) {
 		return "", fmt.Errorf("fail to convert punycode: %w", err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(fqdn, asciiDomain)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, asciiDomain)
 	if err != nil {
 		return "", err
 	}

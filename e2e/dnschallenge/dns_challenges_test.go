@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/certificate"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/e2e/loader"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/providers/dns"
@@ -98,7 +98,7 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 	mockDefault(t)
 
 	err = client.Challenge.SetDNS01Provider(provider,
-		dnsnew.DisableAuthoritativeNssPropagationRequirement())
+		dns01.DisableAuthoritativeNssPropagationRequirement())
 	require.NoError(t, err)
 
 	ctx := t.Context()
@@ -158,7 +158,7 @@ func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
 	mockDefault(t)
 
 	err = client.Challenge.SetDNS01Provider(provider,
-		dnsnew.DisableAuthoritativeNssPropagationRequirement())
+		dns01.DisableAuthoritativeNssPropagationRequirement())
 	require.NoError(t, err)
 
 	ctx := t.Context()
@@ -205,11 +205,11 @@ func (f *fakeUser) GetPrivateKey() crypto.PrivateKey        { return f.privateKe
 func mockDefault(t *testing.T) {
 	t.Helper()
 
-	backup := dnsnew.DefaultClient()
+	backup := dns01.DefaultClient()
 
 	t.Cleanup(func() {
-		dnsnew.SetDefaultClient(backup)
+		dns01.SetDefaultClient(backup)
 	})
 
-	dnsnew.SetDefaultClient(dnsnew.NewClient(&dnsnew.Options{RecursiveNameservers: []string{":8053"}}))
+	dns01.SetDefaultClient(dns01.NewClient(&dns01.Options{RecursiveNameservers: []string{":8053"}}))
 }

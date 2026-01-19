@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/nrdcg/vegadns"
@@ -111,14 +111,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	domainID, err := d.findDomainID(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("vegadns: find domain ID for %s: %w", info.EffectiveFQDN, err)
 	}
 
-	err = d.client.CreateTXTRecord(ctx, domainID, dnsnew.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL)
+	err = d.client.CreateTXTRecord(ctx, domainID, dns01.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("vegadns: create TXT record: %w", err)
 	}
@@ -130,14 +130,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	domainID, err := d.findDomainID(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("vegadns: find domain ID for %s: %w", info.EffectiveFQDN, err)
 	}
 
-	recordID, err := d.findRecordID(ctx, domainID, dnsnew.UnFqdn(info.EffectiveFQDN))
+	recordID, err := d.findRecordID(ctx, domainID, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("vegadns: find record ID for %d: %w", domainID, err)
 	}
@@ -151,7 +151,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func (d *DNSProvider) findDomainID(ctx context.Context, fqdn string) (int, error) {
-	for host := range dnsnew.UnFqdnDomainsSeq(fqdn) {
+	for host := range dns01.UnFqdnDomainsSeq(fqdn) {
 		id, err := d.client.GetDomainID(ctx, host)
 		if err != nil {
 			continue

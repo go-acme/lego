@@ -13,7 +13,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns"
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/providers/dns/internal/ptr"
 )
 
@@ -49,7 +49,7 @@ func (d *DNSProviderPrivate) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProviderPrivate) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -61,7 +61,7 @@ func (d *DNSProviderPrivate) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -102,7 +102,7 @@ func (d *DNSProviderPrivate) Present(domain, _, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProviderPrivate) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -114,7 +114,7 @@ func (d *DNSProviderPrivate) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -134,7 +134,7 @@ func (d *DNSProviderPrivate) getHostedZone(ctx context.Context, fqdn string) (Se
 		return ServiceDiscoveryZone{}, err
 	}
 
-	azureZone, exists := d.serviceDiscoveryZones[dnsnew.UnFqdn(authZone)]
+	azureZone, exists := d.serviceDiscoveryZones[dns01.UnFqdn(authZone)]
 	if !exists {
 		return ServiceDiscoveryZone{}, fmt.Errorf("could not find zone (from discovery): %s", authZone)
 	}

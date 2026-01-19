@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/versio/internal"
@@ -56,9 +56,9 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		BaseURL:            baseURL,
 		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
-		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dnsnew.DefaultPropagationTimeout),
+		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -126,9 +126,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("versio: could not find zone for domain %q: %w", domain, err)
 	}
@@ -137,7 +137,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	d.dnsEntriesMu.Lock()
 	defer d.dnsEntriesMu.Unlock()
 
-	zoneName := dnsnew.UnFqdn(authZone)
+	zoneName := dns01.UnFqdn(authZone)
 
 	domains, err := d.client.GetDomain(ctx, zoneName)
 	if err != nil {
@@ -168,9 +168,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("versio: could not find zone for domain %q: %w", domain, err)
 	}
@@ -179,7 +179,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.dnsEntriesMu.Lock()
 	defer d.dnsEntriesMu.Unlock()
 
-	zoneName := dnsnew.UnFqdn(authZone)
+	zoneName := dns01.UnFqdn(authZone)
 
 	domains, err := d.client.GetDomain(ctx, zoneName)
 	if err != nil {

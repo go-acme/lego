@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/edgegrid"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/tester"
 	"github.com/stretchr/testify/require"
 )
@@ -181,7 +181,7 @@ func TestNewDefaultConfig(t *testing.T) {
 		{
 			desc: "default configuration",
 			expected: &Config{
-				TTL:                dnsnew.DefaultTTL,
+				TTL:                dns01.DefaultTTL,
 				PropagationTimeout: 3 * time.Minute,
 				PollingInterval:    15 * time.Second,
 				Config: &edgegrid.Config{

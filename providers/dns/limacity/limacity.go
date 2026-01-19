@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/limacity/internal"
@@ -119,7 +119,7 @@ func (d *DNSProvider) Sequential() time.Duration {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	domains, err := d.client.GetDomains(ctx)
 	if err != nil {
@@ -131,7 +131,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("limacity: find domain: %w", err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, dom.UnicodeFqdn)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, dom.UnicodeFqdn)
 	if err != nil {
 		return fmt.Errorf("limacity: %w", err)
 	}
@@ -159,7 +159,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// gets the domain's unique ID
 	d.domainIDsMu.Lock()
@@ -201,8 +201,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func findDomain(domains []internal.Domain, fqdn string) (internal.Domain, error) {
-	for f := range dnsnew.DomainsSeq(fqdn) {
-		domain := dnsnew.UnFqdn(f)
+	for f := range dns01.DomainsSeq(fqdn) {
+		domain := dns01.UnFqdn(f)
 
 		for _, dom := range domains {
 			if dom.UnicodeFqdn == domain || dom.UnicodeFqdn == f {

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/gandiv5/internal"
@@ -128,7 +128,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config:          config,
 		client:          client,
 		inProgressFQDNs: make(map[string]inProgressInfo),
-		findZoneByFqdn:  dnsnew.DefaultClient().FindZoneByFqdn,
+		findZoneByFqdn:  dns01.DefaultClient().FindZoneByFqdn,
 	}, nil
 }
 
@@ -136,7 +136,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// find authZone
 	authZone, err := d.findZoneByFqdn(ctx, info.EffectiveFQDN)
@@ -145,7 +145,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	// determine name of TXT record
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("gandiv5: %w", err)
 	}
@@ -156,7 +156,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	defer d.inProgressMu.Unlock()
 
 	// add TXT record into authZone
-	err = d.client.AddTXTRecord(ctx, dnsnew.UnFqdn(authZone), subDomain, info.Value, d.config.TTL)
+	err = d.client.AddTXTRecord(ctx, dns01.UnFqdn(authZone), subDomain, info.Value, d.config.TTL)
 	if err != nil {
 		return err
 	}
@@ -173,7 +173,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// acquire lock and retrieve authZone
 	d.inProgressMu.Lock()
@@ -189,7 +189,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	delete(d.inProgressFQDNs, info.EffectiveFQDN)
 
 	// delete TXT record from authZone
-	err := d.client.DeleteTXTRecord(ctx, dnsnew.UnFqdn(authZone), fieldName)
+	err := d.client.DeleteTXTRecord(ctx, dns01.UnFqdn(authZone), fieldName)
 	if err != nil {
 		return fmt.Errorf("gandiv5: %w", err)
 	}

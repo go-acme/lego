@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/zoneee/internal"
@@ -127,17 +127,17 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("zoneee: could not find zone for domain %q: %w", domain, err)
 	}
 
-	authZone = dnsnew.UnFqdn(authZone)
+	authZone = dns01.UnFqdn(authZone)
 
 	record := internal.TXTRecord{
-		Name:        dnsnew.UnFqdn(info.EffectiveFQDN),
+		Name:        dns01.UnFqdn(info.EffectiveFQDN),
 		Destination: info.Value,
 	}
 
@@ -153,14 +153,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("zoneee: could not find zone for domain %q: %w", domain, err)
 	}
 
-	authZone = dnsnew.UnFqdn(authZone)
+	authZone = dns01.UnFqdn(authZone)
 
 	records, err := d.client.GetTxtRecords(ctx, authZone)
 	if err != nil {

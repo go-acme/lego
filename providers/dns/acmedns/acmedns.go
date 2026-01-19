@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/acmedns/internal"
 	"github.com/nrdcg/goacmedns"
@@ -168,7 +168,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
 
 	// Compute the challenge response FQDN and TXT value for the domain based on the keyAuth.
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// Check if credentials were previously saved for this domain.
 	account, err := d.storage.Fetch(ctx, domain)

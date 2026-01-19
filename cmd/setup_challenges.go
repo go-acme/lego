@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/challenge/http01"
 	"github.com/go-acme/lego/v5/challenge/tlsalpn01"
 	"github.com/go-acme/lego/v5/lego"
@@ -170,25 +170,25 @@ func setupDNS(ctx *cli.Context, client *lego.Client) error {
 		return err
 	}
 
-	opts := &dnsnew.Options{RecursiveNameservers: ctx.StringSlice(flgDNSResolvers)}
+	opts := &dns01.Options{RecursiveNameservers: ctx.StringSlice(flgDNSResolvers)}
 
 	if ctx.IsSet(flgDNSTimeout) {
 		opts.Timeout = time.Duration(ctx.Int(flgDNSTimeout)) * time.Second
 	}
 
-	dnsnew.SetDefaultClient(dnsnew.NewClient(opts))
+	dns01.SetDefaultClient(dns01.NewClient(opts))
 
 	err = client.Challenge.SetDNS01Provider(provider,
-		dnsnew.CondOption(ctx.Bool(flgDNSDisableCP) || ctx.Bool(flgDNSPropagationDisableANS),
-			dnsnew.DisableAuthoritativeNssPropagationRequirement()),
+		dns01.CondOption(ctx.Bool(flgDNSDisableCP) || ctx.Bool(flgDNSPropagationDisableANS),
+			dns01.DisableAuthoritativeNssPropagationRequirement()),
 
-		dnsnew.CondOption(ctx.Duration(flgDNSPropagationWait) > 0,
+		dns01.CondOption(ctx.Duration(flgDNSPropagationWait) > 0,
 			// TODO(ldez): inside the next major version we will use flgDNSDisableCP here.
 			// This will change the meaning of this flag to really disable all propagation checks.
-			dnsnew.PropagationWait(wait, true)),
+			dns01.PropagationWait(wait, true)),
 
-		dnsnew.CondOption(ctx.Bool(flgDNSPropagationRNS),
-			dnsnew.RecursiveNSsPropagationRequirement()),
+		dns01.CondOption(ctx.Bool(flgDNSPropagationRNS),
+			dns01.RecursiveNSsPropagationRequirement()),
 	)
 
 	return err

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/directadmin/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -115,14 +115,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	authZone, err := d.getZoneName(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("directadmin: [domain: %q] %w", domain, err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("directadmin: %w", err)
 	}
@@ -134,7 +134,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:   d.config.TTL,
 	}
 
-	err = d.client.SetRecord(ctx, dnsnew.UnFqdn(authZone), record)
+	err = d.client.SetRecord(ctx, dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("directadmin: set record for zone %s and subdomain %s: %w", authZone, subDomain, err)
 	}
@@ -146,14 +146,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	authZone, err := d.getZoneName(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("directadmin: [domain: %q] %w", domain, err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("directadmin: %w", err)
 	}
@@ -164,7 +164,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Value: info.Value,
 	}
 
-	err = d.client.DeleteRecord(ctx, dnsnew.UnFqdn(authZone), record)
+	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("directadmin: delete record for zone %s and subdomain %s: %w", authZone, subDomain, err)
 	}
@@ -177,7 +177,7 @@ func (d *DNSProvider) getZoneName(ctx context.Context, fqdn string) (string, err
 		return d.config.ZoneName, nil
 	}
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, fqdn)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone for %s: %w", fqdn, err)
 	}

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/constellix/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -47,7 +47,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
@@ -112,19 +112,19 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("constellix: could not find zone for domain %q: %w", domain, err)
 	}
 
-	dom, err := d.client.Domains.GetByName(ctx, dnsnew.UnFqdn(authZone))
+	dom, err := d.client.Domains.GetByName(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("constellix: failed to get domain (%s): %w", authZone, err)
 	}
 
-	recordName, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("constellix: %w", err)
 	}
@@ -155,19 +155,19 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("constellix: could not find zone for domain %q: %w", domain, err)
 	}
 
-	dom, err := d.client.Domains.GetByName(ctx, dnsnew.UnFqdn(authZone))
+	dom, err := d.client.Domains.GetByName(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("constellix: failed to get domain (%s): %w", authZone, err)
 	}
 
-	recordName, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("constellix: %w", err)
 	}

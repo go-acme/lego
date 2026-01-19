@@ -1,4 +1,4 @@
-package dnsnew
+package dns01
 
 import (
 	"testing"

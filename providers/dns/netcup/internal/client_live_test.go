@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -35,12 +35,12 @@ func TestClient_GetDNSRecords_Live(t *testing.T) {
 	ctx, err := client.CreateSessionContext(t.Context())
 	require.NoError(t, err)
 
-	info := dnsnew.GetChallengeInfo(ctx, envTest.GetDomain(), "123d==")
+	info := dns01.GetChallengeInfo(ctx, envTest.GetDomain(), "123d==")
 
-	zone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	require.NoError(t, err)
 
-	zone = dnsnew.UnFqdn(zone)
+	zone = dns01.UnFqdn(zone)
 
 	// TestMethod
 	_, err = client.GetDNSRecords(ctx, zone)
@@ -68,9 +68,9 @@ func TestClient_UpdateDNSRecord_Live(t *testing.T) {
 	ctx, err := client.CreateSessionContext(t.Context())
 	require.NoError(t, err)
 
-	info := dnsnew.GetChallengeInfo(ctx, envTest.GetDomain(), "123d==")
+	info := dns01.GetChallengeInfo(ctx, envTest.GetDomain(), "123d==")
 
-	zone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	require.NotErrorIs(t, err, fmt.Errorf("error finding DNSZone, %w", err))
 
 	hostname := strings.Replace(info.EffectiveFQDN, "."+zone, "", 1)
@@ -83,7 +83,7 @@ func TestClient_UpdateDNSRecord_Live(t *testing.T) {
 	}
 
 	// test
-	zone = dnsnew.UnFqdn(zone)
+	zone = dns01.UnFqdn(zone)
 
 	err = client.UpdateDNSRecord(ctx, zone, []DNSRecord{record})
 	require.NoError(t, err)

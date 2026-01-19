@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/hostinger/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -40,9 +40,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -95,14 +95,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("hostinger: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("hostinger: %w", err)
 	}
@@ -119,7 +119,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}},
 	}
 
-	err = d.client.UpdateDNSRecords(ctx, dnsnew.UnFqdn(authZone), request)
+	err = d.client.UpdateDNSRecords(ctx, dns01.UnFqdn(authZone), request)
 	if err != nil {
 		return fmt.Errorf("hostinger: update DNS records (add): %w", err)
 	}
@@ -131,14 +131,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("hostinger: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("hostinger: %w", err)
 	}
@@ -166,7 +166,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			Zone:      []internal.RecordSet{recordSet},
 		}
 
-		err = d.client.UpdateDNSRecords(ctx, dnsnew.UnFqdn(authZone), request)
+		err = d.client.UpdateDNSRecords(ctx, dns01.UnFqdn(authZone), request)
 		if err != nil {
 			return fmt.Errorf("hostinger: update DNS records (delete): %w", err)
 		}
@@ -179,7 +179,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Type: "TXT",
 	}}
 
-	err = d.client.DeleteDNSRecords(ctx, dnsnew.UnFqdn(authZone), filters)
+	err = d.client.DeleteDNSRecords(ctx, dns01.UnFqdn(authZone), filters)
 	if err != nil {
 		return fmt.Errorf("hostinger: delete DNS records: %w", err)
 	}
@@ -194,7 +194,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) findRecordSet(ctx context.Context, authZone, subDomain string) (internal.RecordSet, error) {
-	recordSets, err := d.client.GetDNSRecords(ctx, dnsnew.UnFqdn(authZone))
+	recordSets, err := d.client.GetDNSRecords(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return internal.RecordSet{}, fmt.Errorf("get DNS records: %w", err)
 	}

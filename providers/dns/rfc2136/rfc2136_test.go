@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/tester"
 	"github.com/go-acme/lego/v5/platform/tester/dnsmock"
 	"github.com/miekg/dns"
@@ -162,7 +162,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present_success(t *testing.T) {
-	dnsnew.DefaultClient().ClearFqdnCache()
+	dns01.DefaultClient().ClearFqdnCache()
 
 	addr := dnsmock.NewServer().
 		Query(fakeZone+" SOA", dnsmock.SOA("")).
@@ -180,7 +180,7 @@ func TestDNSProvider_Present_success(t *testing.T) {
 }
 
 func TestDNSProvider_Present_success_updatePacket(t *testing.T) {
-	dnsnew.DefaultClient().ClearFqdnCache()
+	dns01.DefaultClient().ClearFqdnCache()
 
 	reqChan := make(chan *dns.Msg, 1)
 
@@ -237,7 +237,7 @@ func TestDNSProvider_Present_success_updatePacket(t *testing.T) {
 }
 
 func TestDNSProvider_Present_error(t *testing.T) {
-	dnsnew.DefaultClient().ClearFqdnCache()
+	dns01.DefaultClient().ClearFqdnCache()
 
 	addr := dnsmock.NewServer().
 		Query(fakeZone+" SOA", dnsmock.Error(dns.RcodeNotZone)).
@@ -258,7 +258,7 @@ func TestDNSProvider_Present_error(t *testing.T) {
 }
 
 func TestDNSProvider_Present_tsig_success(t *testing.T) {
-	dnsnew.DefaultClient().ClearFqdnCache()
+	dns01.DefaultClient().ClearFqdnCache()
 
 	addr := dnsmock.NewServer().
 		Query(fakeZone+" SOA", dnsmock.SOA("")).
@@ -282,7 +282,7 @@ func TestDNSProvider_Present_tsig_success(t *testing.T) {
 }
 
 func TestDNSProvider_Present_tsig_error(t *testing.T) {
-	dnsnew.DefaultClient().ClearFqdnCache()
+	dns01.DefaultClient().ClearFqdnCache()
 
 	addr := dnsmock.NewServer().
 		Query(fakeZone+" SOA", dnsmock.SOA("")).

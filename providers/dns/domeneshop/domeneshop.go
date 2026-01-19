@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/domeneshop/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -102,7 +102,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, host, err := d.splitDomain(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -126,7 +126,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, host, err := d.splitDomain(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -147,15 +147,15 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 // splitDomain splits the hostname from the authoritative zone, and returns both parts (non-fqdn).
 func (d *DNSProvider) splitDomain(ctx context.Context, fqdn string) (string, string, error) {
-	zone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, fqdn)
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", "", fmt.Errorf("could not find zone: %w", err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
 	if err != nil {
 		return "", "", err
 	}
 
-	return dnsnew.UnFqdn(zone), subDomain, nil
+	return dns01.UnFqdn(zone), subDomain, nil
 }

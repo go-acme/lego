@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/rfc2136/internal"
 	"github.com/miekg/dns"
@@ -58,10 +58,10 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TSIGAlgorithm:      env.GetOrDefaultString(EnvTSIGAlgorithm, dns.HmacSHA1),
-		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, env.GetOrDefaultSecond("RFC2136_TIMEOUT", dnsnew.DefaultPropagationTimeout)),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
-		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dnsnew.DefaultPropagationTimeout),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, env.GetOrDefaultSecond("RFC2136_TIMEOUT", dns01.DefaultPropagationTimeout)),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 		DNSTimeout:         env.GetOrDefaultSecond(EnvDNSTimeout, 10*time.Second),
 	}
 }
@@ -167,7 +167,7 @@ func (d *DNSProvider) Sequential() time.Duration {
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	err := d.changeRecord(ctx, "INSERT", info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
@@ -180,7 +180,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	err := d.changeRecord(ctx, "REMOVE", info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
@@ -192,7 +192,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 func (d *DNSProvider) changeRecord(ctx context.Context, action, fqdn, value string, ttl int) error {
 	// Find the zone for the given fqdn
-	zone, err := dnsnew.DefaultClient().FindZoneByFqdnCustom(ctx, fqdn, []string{d.config.Nameserver})
+	zone, err := dns01.DefaultClient().FindZoneByFqdnCustom(ctx, fqdn, []string{d.config.Nameserver})
 	if err != nil {
 		return err
 	}

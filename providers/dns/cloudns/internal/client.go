@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 )
 
@@ -53,12 +53,12 @@ func NewClient(authID, subAuthID, authPassword string) (*Client, error) {
 
 // GetZone Get domain name information for a FQDN.
 func (c *Client) GetZone(ctx context.Context, authFQDN string) (*Zone, error) {
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, authFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, authFQDN)
 	if err != nil {
 		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
 
-	authZoneName := dnsnew.UnFqdn(authZone)
+	authZoneName := dns01.UnFqdn(authZone)
 
 	endpoint := c.BaseURL.JoinPath("get-zone-info.json")
 
@@ -93,7 +93,7 @@ func (c *Client) GetZone(ctx context.Context, authFQDN string) (*Zone, error) {
 
 // FindTxtRecord returns the TXT record a zone ID and a FQDN.
 func (c *Client) FindTxtRecord(ctx context.Context, zoneName, fqdn string) (*TXTRecord, error) {
-	subDomain, err := dnsnew.ExtractSubDomain(fqdn, zoneName)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (c *Client) FindTxtRecord(ctx context.Context, zoneName, fqdn string) (*TXT
 
 // ListTxtRecords returns the TXT records a zone ID and a FQDN.
 func (c *Client) ListTxtRecords(ctx context.Context, zoneName, fqdn string) ([]TXTRecord, error) {
-	subDomain, err := dnsnew.ExtractSubDomain(fqdn, zoneName)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +183,7 @@ func (c *Client) ListTxtRecords(ctx context.Context, zoneName, fqdn string) ([]T
 
 // AddTxtRecord adds a TXT record.
 func (c *Client) AddTxtRecord(ctx context.Context, zoneName, fqdn, value string, ttl int) error {
-	subDomain, err := dnsnew.ExtractSubDomain(fqdn, zoneName)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
 	if err != nil {
 		return err
 	}

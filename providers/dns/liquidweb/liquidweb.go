@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	lw "github.com/liquidweb/liquidweb-go/client"
 	"github.com/liquidweb/liquidweb-go/network"
@@ -56,7 +56,7 @@ func NewDefaultConfig() *Config {
 		BaseURL:            defaultBaseURL,
 		TTL:                env.GetOneWithFallback(EnvTTL, 300, strconv.Atoi, altEnvName(EnvTTL)),
 		PropagationTimeout: env.GetOneWithFallback(EnvPropagationTimeout, 2*time.Minute, env.ParseSecond, altEnvName(EnvPropagationTimeout)),
-		PollingInterval:    env.GetOneWithFallback(EnvPollingInterval, dnsnew.DefaultPollingInterval, env.ParseSecond, altEnvName(EnvPollingInterval)),
+		PollingInterval:    env.GetOneWithFallback(EnvPollingInterval, dns01.DefaultPollingInterval, env.ParseSecond, altEnvName(EnvPollingInterval)),
 		HTTPTimeout:        env.GetOneWithFallback(EnvHTTPTimeout, 1*time.Minute, env.ParseSecond, altEnvName(EnvHTTPTimeout)),
 	}
 }
@@ -120,10 +120,10 @@ func (d *DNSProvider) Timeout() (time.Duration, time.Duration) {
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	params := &network.DNSRecordParams{
-		Name:  dnsnew.UnFqdn(info.EffectiveFQDN),
+		Name:  dns01.UnFqdn(info.EffectiveFQDN),
 		RData: strconv.Quote(info.Value),
 		Type:  "TXT",
 		Zone:  d.config.Zone,

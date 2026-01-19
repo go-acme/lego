@@ -8,7 +8,7 @@ import (
 
 	edgegriddns "github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/dns"
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/session"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -95,7 +95,7 @@ func TestLiveTTL(t *testing.T) {
 		t.Run(fmt.Sprintf("testing record set %d", i), func(t *testing.T) {
 			assert.Equal(t, fqdn, rrset.Name)
 			assert.Equal(t, "TXT", rrset.Type)
-			assert.Equal(t, dnsnew.DefaultTTL, rrset.TTL)
+			assert.Equal(t, dns01.DefaultTTL, rrset.TTL)
 		})
 	}
 }

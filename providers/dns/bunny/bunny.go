@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/internal/ptr"
@@ -50,7 +50,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -115,14 +115,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.findZone(ctx, dnsnew.UnFqdn(info.EffectiveFQDN))
+	zone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, ptr.Deref(zone.Domain))
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, ptr.Deref(zone.Domain))
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}
@@ -144,14 +144,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.findZone(ctx, dnsnew.UnFqdn(info.EffectiveFQDN))
+	zone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}
 
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, ptr.Deref(zone.Domain))
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, ptr.Deref(zone.Domain))
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}
@@ -220,13 +220,13 @@ func possibleDomains(domain string) []string {
 	var domains []string
 
 	tld, _ := publicsuffix.PublicSuffix(domain)
-	for d := range dnsnew.DomainsSeq(domain) {
+	for d := range dns01.DomainsSeq(domain) {
 		if tld == d {
 			// skip the TLD
 			break
 		}
 
-		domains = append(domains, dnsnew.UnFqdn(d))
+		domains = append(domains, dns01.UnFqdn(d))
 	}
 
 	return domains

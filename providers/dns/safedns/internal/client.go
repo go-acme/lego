@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 )
 
@@ -40,7 +40,7 @@ func NewClient(authToken string) *Client {
 
 // AddRecord adds a DNS record.
 func (c *Client) AddRecord(ctx context.Context, zone string, record Record) (*AddRecordResponse, error) {
-	endpoint := c.baseURL.JoinPath("zones", dnsnew.UnFqdn(zone), "records")
+	endpoint := c.baseURL.JoinPath("zones", dns01.UnFqdn(zone), "records")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
@@ -59,7 +59,7 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record Record) (*Ad
 
 // RemoveRecord removes a DNS record.
 func (c *Client) RemoveRecord(ctx context.Context, zone string, recordID int) error {
-	endpoint := c.baseURL.JoinPath("zones", dnsnew.UnFqdn(zone), "records", strconv.Itoa(recordID))
+	endpoint := c.baseURL.JoinPath("zones", dns01.UnFqdn(zone), "records", strconv.Itoa(recordID))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

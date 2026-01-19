@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/internal/useragent"
@@ -155,14 +155,14 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("selectelv2: authorize: %w", err)
 	}
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := client.getZone(ctx, domain)
 	if err != nil {
 		return fmt.Errorf("selectelv2: get zone: %w", err)
 	}
 
-	rrset, err := client.getRRset(ctx, dnsnew.UnFqdn(info.EffectiveFQDN), zone.ID)
+	rrset, err := client.getRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
 		if !errors.Is(err, errNotFound) {
 			return fmt.Errorf("selectelv2: get RRSet: %w", err)
@@ -202,14 +202,14 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("selectelv2: authorize: %w", err)
 	}
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := client.getZone(ctx, domain)
 	if err != nil {
 		return fmt.Errorf("selectelv2: get zone: %w", err)
 	}
 
-	rrset, err := client.getRRset(ctx, dnsnew.UnFqdn(info.EffectiveFQDN), zone.ID)
+	rrset, err := client.getRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
 		return fmt.Errorf("selectelv2: get RRSet: %w", err)
 	}
@@ -293,7 +293,7 @@ func (w *clientWrapper) getZone(ctx context.Context, name string) (*selectelapi.
 		}
 	}
 
-	if len(strings.Split(dnsnew.UnFqdn(name), ".")) == 1 {
+	if len(strings.Split(dns01.UnFqdn(name), ".")) == 1 {
 		return nil, fmt.Errorf("zone '%s' for challenge has not been found", name)
 	}
 

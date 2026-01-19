@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/aziontech/azionapi-go-sdk/idns"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
@@ -42,9 +42,9 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		PageSize:           env.GetOrDefaultInt(EnvPageSize, 50),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dnsnew.DefaultPollingInterval),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dnsnew.DefaultPropagationTimeout),
-		TTL:                env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -107,7 +107,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	ctxAuth := authContext(ctx, d.config.PersonalToken)
 
@@ -163,7 +163,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	ctxAuth := authContext(ctx, d.config.PersonalToken)
 
@@ -236,7 +236,7 @@ func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*idns.Zone, er
 		return nil, errors.New("get zones: no results")
 	}
 
-	for domain := range dnsnew.UnFqdnDomainsSeq(fqdn) {
+	for domain := range dns01.UnFqdnDomainsSeq(fqdn) {
 		for _, zone := range resp.GetResults() {
 			if zone.GetDomain() == domain {
 				return &zone, nil
@@ -295,8 +295,8 @@ func authContext(ctx context.Context, key string) context.Context {
 	})
 }
 
-func extractSubDomain(info dnsnew.ChallengeInfo, zone *idns.Zone) (string, error) {
-	subDomain, err := dnsnew.ExtractSubDomain(info.EffectiveFQDN, zone.GetName())
+func extractSubDomain(info dns01.ChallengeInfo, zone *idns.Zone) (string, error) {
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.GetName())
 	if err != nil {
 		return "", err
 	}

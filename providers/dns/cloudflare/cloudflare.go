@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/cloudflare/internal"
 )
@@ -68,7 +68,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOneWithFallback(EnvTTL, minTTL, strconv.Atoi, altEnvName(EnvTTL)),
 		PropagationTimeout: env.GetOneWithFallback(EnvPropagationTimeout, 2*time.Minute, env.ParseSecond, altEnvName(EnvPropagationTimeout)),
-		PollingInterval:    env.GetOneWithFallback(EnvPollingInterval, dnsnew.DefaultPollingInterval, env.ParseSecond, altEnvName(EnvPollingInterval)),
+		PollingInterval:    env.GetOneWithFallback(EnvPollingInterval, dns01.DefaultPollingInterval, env.ParseSecond, altEnvName(EnvPollingInterval)),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOneWithFallback(EnvHTTPTimeout, 30*time.Second, env.ParseSecond, altEnvName(EnvHTTPTimeout)),
 		},
@@ -156,9 +156,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("cloudflare: could not find zone for domain %q: %w", domain, err)
 	}
@@ -170,7 +170,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	dnsRecord := internal.Record{
 		Type:    "TXT",
-		Name:    dnsnew.UnFqdn(info.EffectiveFQDN),
+		Name:    dns01.UnFqdn(info.EffectiveFQDN),
 		Content: `"` + info.Value + `"`,
 		TTL:     d.config.TTL,
 	}
@@ -191,9 +191,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("cloudflare: could not find zone for domain %q: %w", domain, err)
 	}

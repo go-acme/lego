@@ -14,7 +14,7 @@ import (
 	"cloud.google.com/go/compute/metadata"
 	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnsnew"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/platform/wait"
@@ -68,7 +68,7 @@ func NewDefaultConfig() *Config {
 		ZoneID:                    env.GetOrDefaultString(EnvZoneID, ""),
 		AllowPrivateZone:          env.GetOrDefaultBool(EnvAllowPrivateZone, false),
 		ImpersonateServiceAccount: env.GetOrDefaultString(EnvImpersonateServiceAccount, ""),
-		TTL:                       env.GetOrDefaultInt(EnvTTL, dnsnew.DefaultTTL),
+		TTL:                       env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout:        env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
 		PollingInterval:           env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
 	}
@@ -191,7 +191,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -305,7 +305,7 @@ func (d *DNSProvider) applyChanges(ctx context.Context, zone string, change *gdn
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	info := dnsnew.GetChallengeInfo(ctx, domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -382,7 +382,7 @@ func (d *DNSProvider) lookupHostedZoneID(ctx context.Context, domain string) (st
 		return zone.DnsName, []*gdns.ManagedZone{zone}, nil
 	}
 
-	authZone, err := dnsnew.DefaultClient().FindZoneByFqdn(ctx, dns.Fqdn(domain))
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, dns.Fqdn(domain))
 	if err != nil {
 		return "", nil, fmt.Errorf("could not find zone: %w", err)
 	}

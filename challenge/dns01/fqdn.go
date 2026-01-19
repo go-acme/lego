@@ -6,13 +6,6 @@ import (
 	"github.com/miekg/dns"
 )
 
-// ToFqdn converts the name into a fqdn appending a trailing dot.
-//
-// Deprecated: Use [github.com/miekg/dns.Fqdn] directly.
-func ToFqdn(name string) string {
-	return dns.Fqdn(name)
-}
-
 // UnFqdn converts the fqdn into a name removing the trailing dot.
 func UnFqdn(name string) string {
 	n := len(name)

@@ -76,7 +76,7 @@ func TestChallenge(t *testing.T) {
 	solver := NewChallenge(
 		core,
 		mockValidate,
-		&ProviderServer{port: port},
+		NewProviderServerWithOptions(Options{Host: domain, Port: port}),
 	)
 
 	authz := acme.Authorization{
@@ -105,7 +105,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 	solver := NewChallenge(
 		core,
 		func(_ context.Context, _ *api.Core, _ string, _ acme.Challenge) error { return nil },
-		&ProviderServer{port: "123456"},
+		NewProviderServerWithOptions(Options{Host: "127.0.0.1", Port: "123456"}),
 	)
 
 	authz := acme.Authorization{
@@ -183,7 +183,7 @@ func TestChallengeIPaddress(t *testing.T) {
 	solver := NewChallenge(
 		core,
 		mockValidate,
-		&ProviderServer{port: port},
+		NewProviderServerWithOptions(Options{Host: domain, Port: port}),
 	)
 
 	authz := acme.Authorization{

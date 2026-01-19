@@ -9,15 +9,25 @@ import (
 	"os"
 	"strings"
 
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/log"
 )
+
+var _ challenge.Provider = (*ProviderServer)(nil)
+
+type Options struct {
+	Network      string
+	NetworkStack challenge.NetworkStack
+	Address      string
+	SocketMode   fs.FileMode
+}
 
 // ProviderServer implements ChallengeProvider for `http-01` challenge.
 // It may be instantiated without using the NewProviderServer function if
 // you want only to use the default values.
 type ProviderServer struct {
-	address string
 	network string // must be valid argument to net.Listen
+	address string
 
 	socketMode fs.FileMode
 
@@ -26,19 +36,42 @@ type ProviderServer struct {
 	listener net.Listener
 }
 
+// NewProviderServerWithOptions creates a new ProviderServer.
+func NewProviderServerWithOptions(opts Options) *ProviderServer {
+	if opts.Network == "" {
+		opts.Network = "tcp"
+	}
+
+	return &ProviderServer{
+		network:    opts.NetworkStack.Network(opts.Network),
+		address:    opts.Address,
+		socketMode: opts.SocketMode,
+		matcher:    &hostMatcher{},
+	}
+}
+
 // NewProviderServer creates a new ProviderServer on the selected interface and port.
-// Setting iface and / or port to an empty string will make the server fall back to
+// Setting host and / or port to an empty string will make the server fall back to
 // the "any" interface and port 80 respectively.
-func NewProviderServer(iface, port string) *ProviderServer {
+func NewProviderServer(host, port string) *ProviderServer {
 	if port == "" {
+		// Fallback to port 80 if the port was not provided.
 		port = "80"
 	}
 
-	return &ProviderServer{network: "tcp", address: net.JoinHostPort(iface, port), matcher: &hostMatcher{}}
+	return NewProviderServerWithOptions(Options{
+		Network: "tcp",
+		Address: net.JoinHostPort(host, port),
+	})
 }
 
-func NewUnixProviderServer(socketPath string, mode fs.FileMode) *ProviderServer {
-	return &ProviderServer{network: "unix", address: socketPath, socketMode: mode, matcher: &hostMatcher{}}
+// NewUnixProviderServer creates a new ProviderServer.
+func NewUnixProviderServer(socketPath string, socketMode fs.FileMode) *ProviderServer {
+	return NewProviderServerWithOptions(Options{
+		Network:    "unix",
+		Address:    socketPath,
+		SocketMode: socketMode,
+	})
 }
 
 // Present starts a web server and makes the token available at `ChallengePath(token)` for web requests.
@@ -63,10 +96,6 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (s *ProviderServer) GetAddress() string {
-	return s.address
-}
-
 // CleanUp closes the HTTP server and removes the token from `ChallengePath(token)`.
 func (s *ProviderServer) CleanUp(domain, token, keyAuth string) error {
 	if s.listener == nil {
@@ -78,6 +107,10 @@ func (s *ProviderServer) CleanUp(domain, token, keyAuth string) error {
 	<-s.done
 
 	return nil
+}
+
+func (s *ProviderServer) GetAddress() string {
+	return s.address
 }
 
 // SetProxyHeader changes the validation of incoming requests.

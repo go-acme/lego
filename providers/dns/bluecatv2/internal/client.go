@@ -49,42 +49,6 @@ func NewClient(serverURL, username, password string) (*Client, error) {
 	}, nil
 }
 
-// RetrieveConfigurations retrieves all configurations.
-func (c *Client) RetrieveConfigurations(ctx context.Context, opts *CollectionOptions) ([]CommonResource, error) {
-	endpoint := c.baseURL.JoinPath("api", "v2", "configurations")
-
-	collection, err := retrieveCollection[CommonResource](ctx, c, endpoint, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return collection.Data, nil
-}
-
-// RetrieveConfigurationViews retrieves all views for a configuration.
-func (c *Client) RetrieveConfigurationViews(ctx context.Context, configurationID int64, opts *CollectionOptions) ([]CommonResource, error) {
-	endpoint := c.baseURL.JoinPath("api", "v2", "configurations", strconv.FormatInt(configurationID, 10), "views")
-
-	collection, err := retrieveCollection[CommonResource](ctx, c, endpoint, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return collection.Data, nil
-}
-
-// RetrieveViewZones retrieves all zones for a view.
-func (c *Client) RetrieveViewZones(ctx context.Context, viewID int64, opts *CollectionOptions) ([]ZoneResource, error) {
-	endpoint := c.baseURL.JoinPath("api", "v2", "views", strconv.FormatInt(viewID, 10), "zones")
-
-	collection, err := retrieveCollection[ZoneResource](ctx, c, endpoint, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return collection.Data, nil
-}
-
 // RetrieveZones retrieves all zones.
 func (c *Client) RetrieveZones(ctx context.Context, opts *CollectionOptions) ([]ZoneResource, error) {
 	endpoint := c.baseURL.JoinPath("api", "v2", "zones")

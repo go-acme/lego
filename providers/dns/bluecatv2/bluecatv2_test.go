@@ -308,6 +308,58 @@ func TestDNSProvider_Present(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDNSProvider_Present_skipDeploy(t *testing.T) {
+	defer envTest.RestoreEnv()
+
+	envTest.ClearEnv()
+
+	envTest.Apply(map[string]string{
+		EnvSkipDeploy: "true",
+	})
+
+	provider := mockBuilder().
+		Route("POST /api/v2/sessions",
+			servermock.ResponseFromInternal("postSession.json"),
+			servermock.CheckRequestJSONBodyFromInternal("postSession-request.json"),
+		).
+		Route("GET /api/v2/configurations",
+			servermock.ResponseFromInternal("configurations.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("filter", "name:eq('myConfiguration')"),
+		).
+		Route("GET /api/v2/configurations/12345/views",
+			servermock.ResponseFromInternal("views.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("filter", "name:eq('myView')"),
+		).
+		Route("GET /api/v2/zones",
+			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				filter := req.URL.Query().Get("filter")
+
+				if strings.Contains(filter, internal.Eq("absoluteName", "example.com").String()) {
+					servermock.ResponseFromInternal("zones.json").ServeHTTP(rw, req)
+
+					return
+				}
+
+				servermock.ResponseFromInternal("error.json").
+					WithStatusCode(http.StatusNotFound).ServeHTTP(rw, req)
+			}),
+		).
+		Route("POST /api/v2/zones/12345/resourceRecords",
+			servermock.ResponseFromInternal("postZoneResourceRecord.json"),
+			servermock.CheckRequestJSONBodyFromInternal("postZoneResourceRecord-request.json"),
+		).
+		Route("POST /api/v2/zones/456789/deployments",
+			servermock.Noop().
+				WithStatusCode(http.StatusUnauthorized),
+		).
+		Build(t)
+
+	err := provider.Present("example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /api/v2/sessions",
@@ -321,6 +373,36 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			servermock.ResponseFromInternal("postZoneDeployment.json").
 				WithStatusCode(http.StatusCreated),
 			servermock.CheckRequestJSONBodyFromInternal("postZoneDeployment-request.json"),
+		).
+		Build(t)
+
+	provider.zoneIDs["abc"] = 456789
+	provider.recordIDs["abc"] = 12345
+
+	err := provider.CleanUp("example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp_skipDeploy(t *testing.T) {
+	defer envTest.RestoreEnv()
+
+	envTest.ClearEnv()
+
+	envTest.Apply(map[string]string{
+		EnvSkipDeploy: "true",
+	})
+
+	provider := mockBuilder().
+		Route("POST /api/v2/sessions",
+			servermock.ResponseFromInternal("postSession.json"),
+			servermock.CheckRequestJSONBodyFromInternal("postSession-request.json"),
+		).
+		Route("DELETE /api/v2/resourceRecords/12345",
+			servermock.ResponseFromInternal("deleteResourceRecord.json"),
+		).
+		Route("POST /api/v2/zones/456789/deployments",
+			servermock.Noop().
+				WithStatusCode(http.StatusUnauthorized),
 		).
 		Build(t)
 

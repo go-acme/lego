@@ -54,7 +54,7 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 		KeyType:             keyType,
 		Timeout:             time.Duration(ctx.Int(flgCertTimeout)) * time.Second,
 		OverallRequestLimit: ctx.Int(flgOverallRequestLimit),
-		DisableCommonName:   ctx.Bool(flgDisableCommonName),
+		EnableCommonName:    !ctx.Bool(flgDisableCommonName),
 	}
 	config.UserAgent = getUserAgent(ctx)
 

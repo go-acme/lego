@@ -126,7 +126,7 @@ type CertifierOptions struct {
 	KeyType             certcrypto.KeyType
 	Timeout             time.Duration
 	OverallRequestLimit int
-	DisableCommonName   bool
+	EnableCommonName    bool
 }
 
 // Certifier A service to obtain/renew/revoke certificates.
@@ -305,7 +305,7 @@ func (c *Certifier) getForOrder(ctx context.Context, domains []string, order acm
 	}
 
 	commonName := ""
-	if len(domains[0]) <= 64 && !c.options.DisableCommonName {
+	if len(domains[0]) <= 64 && c.options.EnableCommonName {
 		commonName = domains[0]
 	}
 

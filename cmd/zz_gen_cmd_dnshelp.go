@@ -140,6 +140,7 @@ func allDNSCodes() string {
 		"nifcloud",
 		"njalla",
 		"nodion",
+		"noip",
 		"ns1",
 		"octenium",
 		"oraclecloud",
@@ -2931,6 +2932,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nodion`)
+
+	case "noip":
+		// generated from: providers/dns/noip/noip.toml
+		ew.writeln(`Configuration for No-IP.`)
+		ew.writeln(`Code:	'noip'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NOIP_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NOIP_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "NOIP_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "NOIP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "NOIP_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/noip`)
 
 	case "ns1":
 		// generated from: providers/dns/ns1/ns1.toml

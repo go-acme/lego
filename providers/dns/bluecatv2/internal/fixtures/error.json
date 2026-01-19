@@ -1,0 +1,6 @@
+{
+  "status": 401,
+  "reason": "Unauthorized",
+  "code": "InvalidAuthorizationToken",
+  "message": "The provided authorization token is invalid"
+}

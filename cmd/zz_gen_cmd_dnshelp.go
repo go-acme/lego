@@ -31,6 +31,7 @@ func allDNSCodes() string {
 		"binarylane",
 		"bindman",
 		"bluecat",
+		"bluecatv2",
 		"bookmyname",
 		"brandit",
 		"bunny",
@@ -622,6 +623,31 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/bluecat`)
+
+	case "bluecatv2":
+		// generated from: providers/dns/bluecatv2/bluecatv2.toml
+		ew.writeln(`Configuration for Bluecat v2.`)
+		ew.writeln(`Code:	'bluecatv2'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "BLUECATV2_CONFIG_NAME":	Configuration name`)
+		ew.writeln(`	- "BLUECATV2_PASSWORD":	API password`)
+		ew.writeln(`	- "BLUECATV2_USERNAME":	API username`)
+		ew.writeln(`	- "BLUECATV2_VIEW_NAME":	DNS View Name`)
+		ew.writeln(`	- "BLUECAT_SERVER_URL":	The server URL: it should have a scheme, hostname, and port (if required) of the authoritative Bluecat BAM serve`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "BLUECATV2_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "BLUECATV2_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "BLUECATV2_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "BLUECATV2_SKIP_DEPLOY":	Skip quick deployements`)
+		ew.writeln(`	- "BLUECATV2_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/bluecatv2`)
 
 	case "bookmyname":
 		// generated from: providers/dns/bookmyname/bookmyname.toml

@@ -1,0 +1,75 @@
+{
+  "id": 12345,
+  "type": "WorkflowRequest",
+  "state": "APPROVED",
+  "operation": "ADD_ALIAS_RECORD",
+  "creator": {
+    "id": 103307,
+    "type": "User",
+    "name": "admin",
+    "userDefinedFields": {
+      "udf1": "value1",
+      "udf2": "value2"
+    },
+    "authenticator": {
+      "id": 12345,
+      "type": "Authenticator",
+      "name": "LDAP authenticator"
+    },
+    "email": "user@example.com",
+    "phoneNumber": "555-1234",
+    "securityPrivilege": "NO_ACCESS",
+    "historyPrivilege": "HIDE",
+    "accessType": "GUI",
+    "passwordResetRequired": true,
+    "accountLocked": true,
+    "x509Required": true,
+    "administrativeAccessRights": [
+      {
+        "resourceType": "Event",
+        "accessLevel": "HIDE"
+      }
+    ]
+  },
+  "resourceId": 0,
+  "resourceType": "ACL",
+  "fieldUpdates": [
+    {
+      "name": "string",
+      "value": {},
+      "previousValue": {}
+    }
+  ],
+  "dependentRequest": "string",
+  "modifier": {
+    "id": 103307,
+    "type": "User",
+    "name": "admin",
+    "userDefinedFields": {
+      "udf1": "value1",
+      "udf2": "value2"
+    },
+    "authenticator": {
+      "id": 12345,
+      "type": "Authenticator",
+      "name": "LDAP authenticator"
+    },
+    "email": "user@example.com",
+    "phoneNumber": "555-1234",
+    "securityPrivilege": "NO_ACCESS",
+    "historyPrivilege": "HIDE",
+    "accessType": "GUI",
+    "passwordResetRequired": true,
+    "accountLocked": true,
+    "x509Required": true,
+    "administrativeAccessRights": [
+      {
+        "resourceType": "Event",
+        "accessLevel": "HIDE"
+      }
+    ]
+  },
+  "creationDateTime": "2022-10-17T19:11:45Z",
+  "modificationDateTime": "2022-10-18T19:11:45Z",
+  "comment": "Sample comment."
+}

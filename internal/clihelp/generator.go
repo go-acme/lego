@@ -4,6 +4,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -11,7 +12,7 @@ import (
 	"text/template"
 
 	"github.com/go-acme/lego/v5/cmd"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const outputFile = "../../docs/data/zz_cli_help.toml"
@@ -35,7 +36,7 @@ type commandHelp struct {
 func main() {
 	log.SetFlags(0)
 
-	err := generate()
+	err := generate(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,7 +44,7 @@ func main() {
 	log.Println("cli_help.toml updated")
 }
 
-func generate() error {
+func generate(ctx context.Context) error {
 	app := createStubApp()
 
 	outputTpl := template.Must(template.New("output").Parse(baseTemplate))
@@ -59,7 +60,7 @@ func generate() error {
 		{"lego", "help", "list"},
 		{"lego", "dnshelp"},
 	} {
-		content, err := run(app, args)
+		content, err := run(ctx, app, args)
 		if err != nil {
 			return fmt.Errorf("running %s failed: %w", args, err)
 		}
@@ -88,18 +89,16 @@ func generate() error {
 // - substitute "." for CWD in default config path, as the user will very likely see a different path
 // - do not include version information, because we're likely running against a snapshot
 // - skip DNS help and provider list, as initialization takes time, and we don't generate `lego dns --help` here.
-func createStubApp() *cli.App {
-	app := cli.NewApp()
-	app.Name = "lego"
-	app.HelpName = "lego"
-	app.Usage = "Let's Encrypt client written in Go"
-	app.Flags = cmd.CreateFlags("./.lego")
-	app.Commands = cmd.CreateCommands()
-
-	return app
+func createStubApp() *cli.Command {
+	return &cli.Command{
+		Name:     "lego",
+		Usage:    "Let's Encrypt client written in Go",
+		Flags:    cmd.CreateFlags("./.lego"),
+		Commands: cmd.CreateCommands(),
+	}
 }
 
-func run(app *cli.App, args []string) (h commandHelp, err error) {
+func run(ctx context.Context, app *cli.Command, args []string) (h commandHelp, err error) {
 	w := app.Writer
 
 	defer func() { app.Writer = w }()
@@ -108,7 +107,11 @@ func run(app *cli.App, args []string) (h commandHelp, err error) {
 
 	app.Writer = &buf
 
-	if err := app.Run(args); err != nil {
+	if app.Command(args[1]) != nil {
+		app.Command(args[1]).Writer = app.Writer
+	}
+
+	if err := app.Run(ctx, args); err != nil {
 		return h, err
 	}
 

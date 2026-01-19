@@ -16,30 +16,30 @@ import (
 	"github.com/go-acme/lego/v5/providers/http/memcached"
 	"github.com/go-acme/lego/v5/providers/http/s3"
 	"github.com/go-acme/lego/v5/providers/http/webroot"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
-func setupChallenges(ctx *cli.Context, client *lego.Client) {
-	if !ctx.Bool(flgHTTP) && !ctx.Bool(flgTLS) && !ctx.IsSet(flgDNS) {
+func setupChallenges(cmd *cli.Command, client *lego.Client) {
+	if !cmd.Bool(flgHTTP) && !cmd.Bool(flgTLS) && !cmd.IsSet(flgDNS) {
 		log.Fatal(fmt.Sprintf("No challenge selected. You must specify at least one challenge: `--%s`, `--%s`, `--%s`.", flgHTTP, flgTLS, flgDNS))
 	}
 
-	if ctx.Bool(flgHTTP) {
-		err := client.Challenge.SetHTTP01Provider(setupHTTPProvider(ctx), http01.SetDelay(ctx.Duration(flgHTTPDelay)))
+	if cmd.Bool(flgHTTP) {
+		err := client.Challenge.SetHTTP01Provider(setupHTTPProvider(cmd), http01.SetDelay(cmd.Duration(flgHTTPDelay)))
 		if err != nil {
 			log.Fatal("Could not set HTTP challenge provider.", "error", err)
 		}
 	}
 
-	if ctx.Bool(flgTLS) {
-		err := client.Challenge.SetTLSALPN01Provider(setupTLSProvider(ctx), tlsalpn01.SetDelay(ctx.Duration(flgTLSDelay)))
+	if cmd.Bool(flgTLS) {
+		err := client.Challenge.SetTLSALPN01Provider(setupTLSProvider(cmd), tlsalpn01.SetDelay(cmd.Duration(flgTLSDelay)))
 		if err != nil {
 			log.Fatal("Could not set TLS challenge provider.", "error", err)
 		}
 	}
 
-	if ctx.IsSet(flgDNS) {
-		err := setupDNS(ctx, client)
+	if cmd.IsSet(flgDNS) {
+		err := setupDNS(cmd, client)
 		if err != nil {
 			log.Fatal("Could not set DNS challenge provider.", "error", err)
 		}
@@ -47,42 +47,42 @@ func setupChallenges(ctx *cli.Context, client *lego.Client) {
 }
 
 //nolint:gocyclo // the complexity is expected.
-func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
+func setupHTTPProvider(cmd *cli.Command) challenge.Provider {
 	switch {
-	case ctx.IsSet(flgHTTPWebroot):
-		ps, err := webroot.NewHTTPProvider(ctx.String(flgHTTPWebroot))
+	case cmd.IsSet(flgHTTPWebroot):
+		ps, err := webroot.NewHTTPProvider(cmd.String(flgHTTPWebroot))
 		if err != nil {
 			log.Fatal("Could not create the webroot provider.",
-				"flag", flgHTTPWebroot, "webRoot", ctx.String(flgHTTPWebroot), "error", err)
+				"flag", flgHTTPWebroot, "webRoot", cmd.String(flgHTTPWebroot), "error", err)
 		}
 
 		return ps
 
-	case ctx.IsSet(flgHTTPMemcachedHost):
-		ps, err := memcached.NewMemcachedProvider(ctx.StringSlice(flgHTTPMemcachedHost))
+	case cmd.IsSet(flgHTTPMemcachedHost):
+		ps, err := memcached.NewMemcachedProvider(cmd.StringSlice(flgHTTPMemcachedHost))
 		if err != nil {
 			log.Fatal("Could not create the memcached provider.",
-				"flag", flgHTTPMemcachedHost, "memcachedHosts", strings.Join(ctx.StringSlice(flgHTTPMemcachedHost), ", "), "error", err)
+				"flag", flgHTTPMemcachedHost, "memcachedHosts", strings.Join(cmd.StringSlice(flgHTTPMemcachedHost), ", "), "error", err)
 		}
 
 		return ps
 
-	case ctx.IsSet(flgHTTPS3Bucket):
-		ps, err := s3.NewHTTPProvider(ctx.String(flgHTTPS3Bucket))
+	case cmd.IsSet(flgHTTPS3Bucket):
+		ps, err := s3.NewHTTPProvider(cmd.String(flgHTTPS3Bucket))
 		if err != nil {
 			log.Fatal("Could not create the S3 provider.",
-				"flag", flgHTTPS3Bucket, "bucket", ctx.String(flgHTTPS3Bucket), "error", err)
+				"flag", flgHTTPS3Bucket, "bucket", cmd.String(flgHTTPS3Bucket), "error", err)
 		}
 
 		return ps
 
-	case ctx.IsSet(flgHTTPPort):
-		iface := ctx.String(flgHTTPPort)
+	case cmd.IsSet(flgHTTPPort):
+		iface := cmd.String(flgHTTPPort)
 
 		if !strings.Contains(iface, ":") {
 			log.Fatal(
 				fmt.Sprintf("The --%s switch only accepts interface:port or :port for its argument.", flgHTTPPort),
-				"flag", flgHTTPPort, "port", ctx.String(flgHTTPPort),
+				"flag", flgHTTPPort, "port", cmd.String(flgHTTPPort),
 			)
 		}
 
@@ -97,20 +97,20 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 			Address: net.JoinHostPort(host, port),
 		})
 
-		if header := ctx.String(flgHTTPProxyHeader); header != "" {
+		if header := cmd.String(flgHTTPProxyHeader); header != "" {
 			srv.SetProxyHeader(header)
 		}
 
 		return srv
 
-	case ctx.Bool(flgHTTP):
+	case cmd.Bool(flgHTTP):
 		srv := http01.NewProviderServerWithOptions(http01.Options{
 			// TODO(ldez): set network stack
 			Network: "tcp",
 			Address: net.JoinHostPort("", ":80"),
 		})
 
-		if header := ctx.String(flgHTTPProxyHeader); header != "" {
+		if header := cmd.String(flgHTTPProxyHeader); header != "" {
 			srv.SetProxyHeader(header)
 		}
 
@@ -122,10 +122,10 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 	}
 }
 
-func setupTLSProvider(ctx *cli.Context) challenge.Provider {
+func setupTLSProvider(cmd *cli.Command) challenge.Provider {
 	switch {
-	case ctx.IsSet(flgTLSPort):
-		iface := ctx.String(flgTLSPort)
+	case cmd.IsSet(flgTLSPort):
+		iface := cmd.String(flgTLSPort)
 		if !strings.Contains(iface, ":") {
 			log.Fatal(fmt.Sprintf("The --%s switch only accepts interface:port or :port for its argument.", flgTLSPort))
 		}
@@ -142,7 +142,7 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 			Port:    port,
 		})
 
-	case ctx.Bool(flgTLS):
+	case cmd.Bool(flgTLS):
 		return tlsalpn01.NewProviderServerWithOptions(tlsalpn01.Options{
 			// TODO(ldez): set network stack
 			Network: "tcp",
@@ -154,62 +154,62 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 	}
 }
 
-func setupDNS(ctx *cli.Context, client *lego.Client) error {
-	err := checkPropagationExclusiveOptions(ctx)
+func setupDNS(cmd *cli.Command, client *lego.Client) error {
+	err := checkPropagationExclusiveOptions(cmd)
 	if err != nil {
 		return err
 	}
 
-	wait := ctx.Duration(flgDNSPropagationWait)
+	wait := cmd.Duration(flgDNSPropagationWait)
 	if wait < 0 {
 		return fmt.Errorf("'%s' cannot be negative", flgDNSPropagationWait)
 	}
 
-	provider, err := dns.NewDNSChallengeProviderByName(ctx.String(flgDNS))
+	provider, err := dns.NewDNSChallengeProviderByName(cmd.String(flgDNS))
 	if err != nil {
 		return err
 	}
 
-	opts := &dns01.Options{RecursiveNameservers: ctx.StringSlice(flgDNSResolvers)}
+	opts := &dns01.Options{RecursiveNameservers: cmd.StringSlice(flgDNSResolvers)}
 
-	if ctx.IsSet(flgDNSTimeout) {
-		opts.Timeout = time.Duration(ctx.Int(flgDNSTimeout)) * time.Second
+	if cmd.IsSet(flgDNSTimeout) {
+		opts.Timeout = time.Duration(cmd.Int(flgDNSTimeout)) * time.Second
 	}
 
 	dns01.SetDefaultClient(dns01.NewClient(opts))
 
 	err = client.Challenge.SetDNS01Provider(provider,
-		dns01.CondOption(ctx.Bool(flgDNSDisableCP) || ctx.Bool(flgDNSPropagationDisableANS),
+		dns01.CondOption(cmd.Bool(flgDNSDisableCP) || cmd.Bool(flgDNSPropagationDisableANS),
 			dns01.DisableAuthoritativeNssPropagationRequirement()),
 
-		dns01.CondOption(ctx.Duration(flgDNSPropagationWait) > 0,
+		dns01.CondOption(cmd.Duration(flgDNSPropagationWait) > 0,
 			// TODO(ldez): inside the next major version we will use flgDNSDisableCP here.
 			// This will change the meaning of this flag to really disable all propagation checks.
 			dns01.PropagationWait(wait, true)),
 
-		dns01.CondOption(ctx.Bool(flgDNSPropagationRNS),
+		dns01.CondOption(cmd.Bool(flgDNSPropagationRNS),
 			dns01.RecursiveNSsPropagationRequirement()),
 	)
 
 	return err
 }
 
-func checkPropagationExclusiveOptions(ctx *cli.Context) error {
-	if ctx.IsSet(flgDNSDisableCP) {
+func checkPropagationExclusiveOptions(cmd *cli.Command) error {
+	if cmd.IsSet(flgDNSDisableCP) {
 		log.Warnf(log.LazySprintf("The flag '%s' is deprecated use '%s' instead.", flgDNSDisableCP, flgDNSPropagationDisableANS))
 	}
 
-	if (isSetBool(ctx, flgDNSDisableCP) || isSetBool(ctx, flgDNSPropagationDisableANS)) && ctx.IsSet(flgDNSPropagationWait) {
+	if (isSetBool(cmd, flgDNSDisableCP) || isSetBool(cmd, flgDNSPropagationDisableANS)) && cmd.IsSet(flgDNSPropagationWait) {
 		return fmt.Errorf("'%s' and '%s' are mutually exclusive", flgDNSPropagationDisableANS, flgDNSPropagationWait)
 	}
 
-	if isSetBool(ctx, flgDNSPropagationRNS) && ctx.IsSet(flgDNSPropagationWait) {
+	if isSetBool(cmd, flgDNSPropagationRNS) && cmd.IsSet(flgDNSPropagationWait) {
 		return fmt.Errorf("'%s' and '%s' are mutually exclusive", flgDNSPropagationRNS, flgDNSPropagationWait)
 	}
 
 	return nil
 }
 
-func isSetBool(ctx *cli.Context, name string) bool {
-	return ctx.IsSet(name) && ctx.Bool(name)
+func isSetBool(cmd *cli.Command, name string) bool {
+	return cmd.IsSet(name) && cmd.Bool(name)
 }

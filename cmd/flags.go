@@ -2,11 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/lego"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"software.sslmate.com/src/go-pkcs12"
 )
 
@@ -74,7 +73,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		&cli.StringFlag{
 			Name:    flgServer,
 			Aliases: []string{"s"},
-			EnvVars: []string{envServer},
+			Sources: cli.EnvVars(envServer),
 			Usage:   "CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.",
 			Value:   lego.LEDirectoryProduction,
 		},
@@ -86,7 +85,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		&cli.StringFlag{
 			Name:    flgEmail,
 			Aliases: []string{"m"},
-			EnvVars: []string{envEmail},
+			Sources: cli.EnvVars(envEmail),
 			Usage:   "Email used for registration and recovery contact.",
 		},
 		&cli.BoolFlag{
@@ -100,17 +99,17 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		&cli.BoolFlag{
 			Name:    flgEAB,
-			EnvVars: []string{envEAB},
+			Sources: cli.EnvVars(envEAB),
 			Usage:   "Use External Account Binding for account registration. Requires --kid and --hmac.",
 		},
 		&cli.StringFlag{
 			Name:    flgKID,
-			EnvVars: []string{envEABKID},
+			Sources: cli.EnvVars(envEABKID),
 			Usage:   "Key identifier from External CA. Used for External Account Binding.",
 		},
 		&cli.StringFlag{
 			Name:    flgHMAC,
-			EnvVars: []string{envEABHMAC},
+			Sources: cli.EnvVars(envEABHMAC),
 			Usage:   "MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.",
 		},
 		&cli.StringFlag{
@@ -125,7 +124,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		&cli.StringFlag{
 			Name:    flgPath,
-			EnvVars: []string{envPath},
+			Sources: cli.EnvVars(envPath),
 			Usage:   "Directory to use for storing the data.",
 			Value:   defaultPath,
 		},
@@ -222,19 +221,19 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		&cli.BoolFlag{
 			Name:    flgPFX,
 			Usage:   "Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together.",
-			EnvVars: []string{envPFX},
+			Sources: cli.EnvVars(envPFX),
 		},
 		&cli.StringFlag{
 			Name:    flgPFXPass,
 			Usage:   "The password used to encrypt the .pfx (PCKS#12) file.",
 			Value:   pkcs12.DefaultPassword,
-			EnvVars: []string{envPFXPassword},
+			Sources: cli.EnvVars(envPFXPassword),
 		},
 		&cli.StringFlag{
 			Name:    flgPFXFormat,
 			Usage:   "The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256.",
 			Value:   "RC2",
-			EnvVars: []string{envPFXFormat},
+			Sources: cli.EnvVars(envPFXFormat),
 		},
 		&cli.IntFlag{
 			Name:  flgCertTimeout,
@@ -251,13 +250,4 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage: "Add to the user-agent sent to the CA to identify an application embedding lego-cli",
 		},
 	}
-}
-
-func getTime(ctx *cli.Context, name string) time.Time {
-	value := ctx.Timestamp(name)
-	if value == nil {
-		return time.Time{}
-	}
-
-	return *value
 }

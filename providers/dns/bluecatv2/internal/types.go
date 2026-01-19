@@ -51,7 +51,7 @@ type Collection[T any] struct {
 }
 
 type CollectionOptions struct {
-	// https://docs.bluecatnetworks.com/r/Address-Manager-RESTful-v2-API-Guide/Referencing-fields/9.6.0
+	// https://docs.bluecatnetworks.com/r/Address-Manager-RESTful-v2-API-Guide/Fields/9.6.0
 	Fields string `url:"fields,omitempty"`
 
 	// https://docs.bluecatnetworks.com/r/Address-Manager-RESTful-v2-API-Guide/Pagination/9.6.0

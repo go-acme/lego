@@ -3,6 +3,7 @@ package bluecatv2
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
@@ -19,6 +20,7 @@ var envTest = tester.NewEnvTest(
 	EnvPassword,
 	EnvConfigName,
 	EnvViewName,
+	EnvSkipDeploy,
 ).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -262,6 +264,8 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
+	t.Skip("wip on alt")
+
 	provider := mockBuilder().
 		Route("POST /api/v2/sessions",
 			servermock.ResponseFromInternal("postSession.json"),
@@ -307,6 +311,76 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
+	t.Skip("wip on alt")
+
+	provider := mockBuilder().
+		Route("POST /api/v2/sessions",
+			servermock.ResponseFromInternal("postSession.json"),
+			servermock.CheckRequestJSONBodyFromInternal("postSession-request.json"),
+		).
+		Route("DELETE /api/v2/resourceRecords/12345",
+			servermock.ResponseFromInternal("deleteResourceRecord.json"),
+		).
+		Route("POST /api/v2/zones/456789/deployments",
+			servermock.ResponseFromInternal("postZoneDeployment.json").
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromInternal("postZoneDeployment-request.json"),
+		).
+		Build(t)
+
+	provider.zoneIDs["abc"] = 456789
+	provider.recordIDs["abc"] = 12345
+
+	err := provider.CleanUp("example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_Present_alt(t *testing.T) {
+	provider := mockBuilder().
+		Route("POST /api/v2/sessions",
+			servermock.ResponseFromInternal("postSession.json"),
+			servermock.CheckRequestJSONBodyFromInternal("postSession-request.json"),
+		).
+		Route("GET /api/v2/configurations",
+			servermock.ResponseFromInternal("configurations.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("filter", "name:eq('myConfiguration')"),
+		).
+		Route("GET /api/v2/configurations/12345/views",
+			servermock.ResponseFromInternal("views.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("filter", "name:eq('myView')"),
+		).
+		Route("GET /api/v2/zones",
+			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				filter := req.URL.Query().Get("filter")
+
+				if strings.Contains(filter, internal.Eq("absoluteName", "example.com").String()) {
+					servermock.ResponseFromInternal("zones.json").ServeHTTP(rw, req)
+
+					return
+				}
+
+				servermock.ResponseFromInternal("error.json").
+					WithStatusCode(http.StatusNotFound).ServeHTTP(rw, req)
+			}),
+		).
+		Route("POST /api/v2/zones/12345/resourceRecords",
+			servermock.ResponseFromInternal("postZoneResourceRecord.json"),
+			servermock.CheckRequestJSONBodyFromInternal("postZoneResourceRecord-request.json"),
+		).
+		Route("POST /api/v2/zones/12345/deployments",
+			servermock.ResponseFromInternal("postZoneDeployment.json").
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromInternal("postZoneDeployment-request.json"),
+		).
+		Build(t)
+
+	err := provider.Present("example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp_alt(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /api/v2/sessions",
 			servermock.ResponseFromInternal("postSession.json"),

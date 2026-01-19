@@ -134,7 +134,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("bluecatv2: %w", err)
 	}
 
-	zone, err := d.findZone(ctx, info.EffectiveFQDN)
+	zone, err := d.findZoneAlt(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("bluecatv2: %w", err)
 	}
@@ -221,6 +221,32 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
+func (d *DNSProvider) findZoneAlt(ctx context.Context, fqdn string) (*internal.ZoneResource, error) {
+	for name := range dns01.UnFqdnDomainsSeq(fqdn) {
+		opts := &internal.CollectionOptions{
+			Filter: internal.And(
+				internal.Eq("absoluteName", name),
+				internal.Eq("configuration.name", d.config.ConfigName),
+				internal.Eq("view.name", d.config.ViewName),
+			).String(),
+		}
+
+		zones, err := d.client.RetrieveZones(ctx, opts)
+		if err != nil {
+			// TODO(ldez) maybe add a log in v5.
+			continue
+		}
+
+		for _, zone := range zones {
+			if zone.AbsoluteName == name {
+				return &zone, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("no zone found for fqdn: %s", fqdn)
+}
+
 func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*internal.ZoneResource, error) {
 	configuration, err := d.findConfiguration(ctx)
 	if err != nil {
@@ -294,7 +320,7 @@ func (d *DNSProvider) findViewZone(ctx context.Context, viewID int64, fqdn strin
 
 		zones, err := d.client.RetrieveViewZones(ctx, viewID, &options)
 		if err != nil {
-			// TODO (ldez) maybe add a log in v5.
+			// TODO(ldez) maybe add a log in v5.
 			continue
 		}
 

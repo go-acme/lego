@@ -2,6 +2,7 @@ package exec
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 	"testing"
@@ -13,14 +14,14 @@ import (
 )
 
 func TestDNSProvider_Present(t *testing.T) {
-	backupLogger := log.Logger
+	backupLogger := log.Default()
 
 	defer func() {
-		log.Logger = backupLogger
+		log.SetDefault(backupLogger)
 	}()
 
-	logRecorder := &LogRecorder{}
-	log.Logger = logRecorder
+	logHandler := &LogHandler{}
+	log.SetDefault(slog.New(logHandler))
 
 	type expected struct {
 		args  string
@@ -64,8 +65,8 @@ func TestDNSProvider_Present(t *testing.T) {
 
 	var message string
 
-	logRecorder.On("Println", mock.Anything).Run(func(args mock.Arguments) {
-		message = args.String(0)
+	logHandler.On("Handle", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+		message = args.Get(1).(slog.Record).Message
 		fmt.Fprintln(os.Stdout, "XXX", message)
 	})
 
@@ -88,14 +89,14 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	backupLogger := log.Logger
+	backupLogger := log.Default()
 
 	defer func() {
-		log.Logger = backupLogger
+		log.SetDefault(backupLogger)
 	}()
 
-	logRecorder := &LogRecorder{}
-	log.Logger = logRecorder
+	logHandler := &LogHandler{}
+	log.SetDefault(slog.New(logHandler))
 
 	type expected struct {
 		args  string
@@ -139,8 +140,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	var message string
 
-	logRecorder.On("Println", mock.Anything).Run(func(args mock.Arguments) {
-		message = args.String(0)
+	logHandler.On("Handle", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+		message = args.Get(1).(slog.Record).Message
 		fmt.Fprintln(os.Stdout, "XXX", message)
 	})
 

@@ -99,7 +99,7 @@ func (a *Core) retrievablePost(ctx context.Context, uri string, content []byte, 
 	}
 
 	notify := func(err error, duration time.Duration) {
-		log.Infof("retry due to: %v", err)
+		log.Warn("Retry.", "error", err)
 	}
 
 	return backoff.Retry(ctx, operation,

@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 )
 
@@ -45,7 +44,6 @@ type Client struct {
 	token   *Token
 	muToken sync.Mutex
 
-	Debug      bool
 	BaseURL    string
 	HTTPClient *http.Client
 }
@@ -88,10 +86,6 @@ func (c *Client) postRequest(ctx context.Context, cmd string, data url.Values) (
 
 	if getSessionID(ctx) != "" {
 		data.Set("auth-sid", getSessionID(ctx))
-	}
-
-	if c.Debug {
-		log.Infof("postRequest:\n\tURL: %q\n\tData: %v", endpoint, data)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, strings.NewReader(data.Encode()))

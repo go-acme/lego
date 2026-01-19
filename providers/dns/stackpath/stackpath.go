@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/stackpath/internal"
@@ -105,7 +104,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.client.GetZones(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("stackpath: %w", err)
+		return fmt.Errorf("stackpath: get zones: %w", err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Domain)
@@ -120,7 +119,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Data: info.Value,
 	}
 
-	return d.client.CreateZoneRecord(ctx, zone, record)
+	err = d.client.CreateZoneRecord(ctx, zone, record)
+	if err != nil {
+		return fmt.Errorf("stackpath: create zone record: %w", err)
+	}
+
+	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
@@ -131,7 +135,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zone, err := d.client.GetZones(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("stackpath: %w", err)
+		return fmt.Errorf("stackpath: get zones: %w", err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Domain)
@@ -141,13 +145,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	records, err := d.client.GetZoneRecords(ctx, subDomain, zone)
 	if err != nil {
-		return err
+		return fmt.Errorf("stackpath: get zone records: %w", err)
 	}
 
 	for _, record := range records {
 		err = d.client.DeleteZoneRecord(ctx, zone, record)
 		if err != nil {
-			log.Printf("stackpath: failed to delete TXT record: %v", err)
+			return fmt.Errorf("stackpath: delete zone record: %w", err)
 		}
 	}
 

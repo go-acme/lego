@@ -74,7 +74,7 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	go func() {
 		err := http.Serve(s.listener, nil)
 		if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
-			log.Println(err)
+			log.Warn("HTTP server serve.", "error", err)
 		}
 	}()
 

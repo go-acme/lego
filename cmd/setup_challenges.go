@@ -21,27 +21,27 @@ import (
 
 func setupChallenges(ctx *cli.Context, client *lego.Client) {
 	if !ctx.Bool(flgHTTP) && !ctx.Bool(flgTLS) && !ctx.IsSet(flgDNS) {
-		log.Fatalf("No challenge selected. You must specify at least one challenge: `--%s`, `--%s`, `--%s`.", flgHTTP, flgTLS, flgDNS)
+		log.Fatal(fmt.Sprintf("No challenge selected. You must specify at least one challenge: `--%s`, `--%s`, `--%s`.", flgHTTP, flgTLS, flgDNS))
 	}
 
 	if ctx.Bool(flgHTTP) {
 		err := client.Challenge.SetHTTP01Provider(setupHTTPProvider(ctx), http01.SetDelay(ctx.Duration(flgHTTPDelay)))
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Could not set HTTP challenge provider.", "error", err)
 		}
 	}
 
 	if ctx.Bool(flgTLS) {
 		err := client.Challenge.SetTLSALPN01Provider(setupTLSProvider(ctx), tlsalpn01.SetDelay(ctx.Duration(flgTLSDelay)))
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Could not set TLS challenge provider.", "error", err)
 		}
 	}
 
 	if ctx.IsSet(flgDNS) {
 		err := setupDNS(ctx, client)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Could not set DNS challenge provider.", "error", err)
 		}
 	}
 }
@@ -52,33 +52,39 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 	case ctx.IsSet(flgHTTPWebroot):
 		ps, err := webroot.NewHTTPProvider(ctx.String(flgHTTPWebroot))
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Could not create the webroot provider.",
+				"flag", flgHTTPWebroot, "webRoot", ctx.String(flgHTTPWebroot), "error", err)
 		}
 
 		return ps
 	case ctx.IsSet(flgHTTPMemcachedHost):
 		ps, err := memcached.NewMemcachedProvider(ctx.StringSlice(flgHTTPMemcachedHost))
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Could not create the memcached provider.",
+				"flag", flgHTTPMemcachedHost, "memcachedHosts", strings.Join(ctx.StringSlice(flgHTTPMemcachedHost), ", "), "error", err)
 		}
 
 		return ps
 	case ctx.IsSet(flgHTTPS3Bucket):
 		ps, err := s3.NewHTTPProvider(ctx.String(flgHTTPS3Bucket))
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Could not create the S3 provider.",
+				"flag", flgHTTPS3Bucket, "bucket", ctx.String(flgHTTPS3Bucket), "error", err)
 		}
 
 		return ps
 	case ctx.IsSet(flgHTTPPort):
 		iface := ctx.String(flgHTTPPort)
 		if !strings.Contains(iface, ":") {
-			log.Fatalf("The --%s switch only accepts interface:port or :port for its argument.", flgHTTPPort)
+			log.Fatal(
+				fmt.Sprintf("The --%s switch only accepts interface:port or :port for its argument.", flgHTTPPort),
+				"flag", flgHTTPPort, "port", ctx.String(flgHTTPPort),
+			)
 		}
 
 		host, port, err := net.SplitHostPort(iface)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Could not split host and port.", "iface", iface, "error", err)
 		}
 
 		srv := http01.NewProviderServer(host, port)
@@ -105,12 +111,12 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 	case ctx.IsSet(flgTLSPort):
 		iface := ctx.String(flgTLSPort)
 		if !strings.Contains(iface, ":") {
-			log.Fatalf("The --%s switch only accepts interface:port or :port for its argument.", flgTLSPort)
+			log.Fatal(fmt.Sprintf("The --%s switch only accepts interface:port or :port for its argument.", flgTLSPort))
 		}
 
 		host, port, err := net.SplitHostPort(iface)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Could not split host and port.", "iface", iface, "error", err)
 		}
 
 		return tlsalpn01.NewProviderServer(host, port)
@@ -164,7 +170,7 @@ func setupDNS(ctx *cli.Context, client *lego.Client) error {
 
 func checkPropagationExclusiveOptions(ctx *cli.Context) error {
 	if ctx.IsSet(flgDNSDisableCP) {
-		log.Printf("The flag '%s' is deprecated use '%s' instead.", flgDNSDisableCP, flgDNSPropagationDisableANS)
+		log.Warnf(log.LazySprintf("The flag '%s' is deprecated use '%s' instead.", flgDNSDisableCP, flgDNSPropagationDisableANS))
 	}
 
 	if (isSetBool(ctx, flgDNSDisableCP) || isSetBool(ctx, flgDNSPropagationDisableANS)) && ctx.IsSet(flgDNSPropagationWait) {

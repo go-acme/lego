@@ -138,7 +138,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	if d.config.Debug {
-		log.Infof("fqdn: %s; viewID: %d; ZoneID: %d; zone: %s", info.EffectiveFQDN, viewID, parentZoneID, name)
+		log.Info("bluecat: debug information.", "fqdn", info.EffectiveFQDN, "viewID", viewID, "zoneID", parentZoneID, "zone", name)
 	}
 
 	txtRecord := internal.Entity{

@@ -41,7 +41,7 @@ func revoke(cliCtx *cli.Context) error {
 	account, keyType := setupAccount(cliCtx, NewAccountsStorage(cliCtx))
 
 	if account.Registration == nil {
-		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", account.Email)
+		log.Fatal("Account is not registered. Use 'run' to register a new account.", "email", account.Email)
 	}
 
 	client := newClient(cliCtx, account, keyType)
@@ -50,21 +50,21 @@ func revoke(cliCtx *cli.Context) error {
 	certsStorage.CreateRootFolder()
 
 	for _, domain := range cliCtx.StringSlice(flgDomains) {
-		log.Printf("Trying to revoke certificate for domain %s", domain)
+		log.Info("Trying to revoke the certificate.", "domain", domain)
 
 		certBytes, err := certsStorage.ReadFile(domain, certExt)
 		if err != nil {
-			log.Fatalf("Error while revoking the certificate for domain %s\n\t%v", domain, err)
+			log.Fatal("Error while revoking the certificate.", "domain", domain, "error", err)
 		}
 
 		reason := cliCtx.Uint(flgReason)
 
 		err = client.Certificate.RevokeWithReason(cliCtx.Context, certBytes, &reason)
 		if err != nil {
-			log.Fatalf("Error while revoking the certificate for domain %s\n\t%v", domain, err)
+			log.Fatal("Error while revoking the certificate.", "domain", domain, "error", err)
 		}
 
-		log.Println("Certificate was revoked.")
+		log.Info("Certificate was revoked.", "domain", domain)
 
 		if cliCtx.Bool(flgKeep) {
 			return nil
@@ -77,7 +77,7 @@ func revoke(cliCtx *cli.Context) error {
 			return err
 		}
 
-		log.Println("Certificate was archived for domain:", domain)
+		log.Info("Certificate was archived", "domain", domain)
 	}
 
 	return nil

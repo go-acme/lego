@@ -119,7 +119,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	defer func() {
 		err = d.client.Logout(ctx)
 		if err != nil {
-			log.Printf("netcup: %v", err)
+			log.Warn("netcup: failed to logout.", "error", err)
 		}
 	}()
 
@@ -135,7 +135,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	records, err := d.client.GetDNSRecords(ctx, zone)
 	if err != nil {
 		// skip no existing records
-		log.Infof("no existing records, error ignored: %v", err)
+		log.Info("No existing records, error ignored.", "zone", zone, "error", err)
 	}
 
 	records = append(records, record)
@@ -165,7 +165,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	defer func() {
 		err = d.client.Logout(ctx)
 		if err != nil {
-			log.Printf("netcup: %v", err)
+			log.Warn("netcup: failed to logout.", "error", err)
 		}
 	}()
 

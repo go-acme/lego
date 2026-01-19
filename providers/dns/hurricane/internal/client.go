@@ -5,13 +5,13 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 	"golang.org/x/time/rate"
 )
@@ -108,7 +108,7 @@ func evaluateBody(body, hostname string) error {
 	case codeGood:
 		return nil
 	case codeNoChg:
-		log.Printf("%s: unchanged content written to TXT record %s", body, hostname)
+		log.Debug("unchanged content written to TXT record.", "hostname", hostname, "body", body)
 		return nil
 	case codeAbuse:
 		return fmt.Errorf("%s: blocked hostname for abuse: %s", body, hostname)

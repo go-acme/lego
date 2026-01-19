@@ -66,7 +66,7 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 	for _, opt := range opts {
 		err := opt(chlg)
 		if err != nil {
-			log.Infof("challenge option error: %v", err)
+			log.Warn("Challenge option skipped.", "error", err)
 		}
 	}
 
@@ -77,7 +77,7 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 // It does not validate record propagation, or do anything at all with the acme server.
 func (c *Challenge) PreSolve(ctx context.Context, authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
-	log.Infof("[%s] acme: Preparing to solve DNS-01", domain)
+	log.Info("acme: Preparing to solve DNS-01.", "domain", domain)
 
 	chlng, err := challenge.FindChallenge(challenge.DNS01, authz)
 	if err != nil {
@@ -104,7 +104,7 @@ func (c *Challenge) PreSolve(ctx context.Context, authz acme.Authorization) erro
 
 func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
-	log.Infof("[%s] acme: Trying to solve DNS-01", domain)
+	log.Info("acme: Trying to solve DNS-01.", "domain", domain)
 
 	chlng, err := challenge.FindChallenge(challenge.DNS01, authz)
 	if err != nil {
@@ -128,14 +128,14 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		timeout, interval = DefaultPropagationTimeout, DefaultPollingInterval
 	}
 
-	log.Infof("[%s] acme: Checking DNS record propagation. [nameservers=%s]", domain, strings.Join(recursiveNameservers, ","))
+	log.Info("acme: Checking DNS record propagation.", "domain", domain, "nameservers", strings.Join(recursiveNameservers, ","))
 
 	time.Sleep(interval)
 
 	err = wait.For("propagation", timeout, interval, func() (bool, error) {
 		stop, errP := c.preCheck.call(domain, info.EffectiveFQDN, info.Value)
 		if !stop || errP != nil {
-			log.Infof("[%s] acme: Waiting for DNS record propagation.", domain)
+			log.Info("acme: Waiting for DNS record propagation.", "domain", domain)
 		}
 
 		return stop, errP
@@ -151,7 +151,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 
 // CleanUp cleans the challenge.
 func (c *Challenge) CleanUp(authz acme.Authorization) error {
-	log.Infof("[%s] acme: Cleaning DNS-01 challenge", challenge.GetTargetedDomain(authz))
+	log.Info("acme: Cleaning DNS-01 challenge.", "domain", challenge.GetTargetedDomain(authz))
 
 	chlng, err := challenge.FindChallenge(challenge.DNS01, authz)
 	if err != nil {
@@ -237,7 +237,7 @@ func getChallengeFQDN(domain string, followCNAME bool) string {
 			break
 		}
 
-		log.Infof("Found CNAME entry for %q: %q", fqdn, cname)
+		log.Info("Found CNAME entry.", "fqdn", fqdn, "cname", cname)
 
 		fqdn = cname
 	}

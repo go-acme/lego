@@ -39,7 +39,7 @@ type EnvLoader struct {
 	lego          string
 }
 
-func (l *EnvLoader) MainTest(m *testing.M) int {
+func (l *EnvLoader) MainTest(ctx context.Context, m *testing.M) int {
 	if _, e2e := os.LookupEnv("LEGO_E2E_TESTS"); !e2e {
 		fmt.Fprintln(os.Stderr, "skipping test: e2e tests are disabled. (no 'LEGO_E2E_TESTS' env var)")
 		fmt.Println("PASS")
@@ -72,13 +72,13 @@ func (l *EnvLoader) MainTest(m *testing.M) int {
 		}
 	}
 
-	pebbleTearDown := l.launchPebble()
+	pebbleTearDown := l.launchPebble(ctx)
 	defer pebbleTearDown()
 
-	challSrvTearDown := l.launchChallSrv()
+	challSrvTearDown := l.launchChallSrv(ctx)
 	defer challSrvTearDown()
 
-	legoBinary, tearDown, err := buildLego()
+	legoBinary, tearDown, err := buildLego(ctx)
 	defer tearDown()
 
 	if err != nil {
@@ -95,8 +95,8 @@ func (l *EnvLoader) MainTest(m *testing.M) int {
 	return m.Run()
 }
 
-func (l *EnvLoader) RunLegoCombinedOutput(arg ...string) ([]byte, error) {
-	cmd := exec.Command(l.lego, arg...)
+func (l *EnvLoader) RunLegoCombinedOutput(ctx context.Context, arg ...string) ([]byte, error) {
+	cmd := exec.CommandContext(ctx, l.lego, arg...)
 	cmd.Env = l.LegoOptions
 
 	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
@@ -104,8 +104,8 @@ func (l *EnvLoader) RunLegoCombinedOutput(arg ...string) ([]byte, error) {
 	return cmd.CombinedOutput()
 }
 
-func (l *EnvLoader) RunLego(arg ...string) error {
-	cmd := exec.Command(l.lego, arg...)
+func (l *EnvLoader) RunLego(ctx context.Context, arg ...string) error {
+	cmd := exec.CommandContext(ctx, l.lego, arg...)
 	cmd.Env = l.LegoOptions
 
 	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
@@ -135,12 +135,12 @@ func (l *EnvLoader) RunLego(arg ...string) error {
 	return nil
 }
 
-func (l *EnvLoader) launchPebble() func() {
+func (l *EnvLoader) launchPebble(ctx context.Context) func() {
 	if l.PebbleOptions == nil {
 		return func() {}
 	}
 
-	pebble, outPebble := l.cmdPebble()
+	pebble, outPebble := l.cmdPebble(ctx)
 
 	go func() {
 		err := pebble.Run()
@@ -159,8 +159,8 @@ func (l *EnvLoader) launchPebble() func() {
 	}
 }
 
-func (l *EnvLoader) cmdPebble() (*exec.Cmd, *bytes.Buffer) {
-	cmd := exec.Command(cmdNamePebble, l.PebbleOptions.Args...)
+func (l *EnvLoader) cmdPebble(ctx context.Context) (*exec.Cmd, *bytes.Buffer) {
+	cmd := exec.CommandContext(ctx, cmdNamePebble, l.PebbleOptions.Args...)
 	cmd.Env = l.PebbleOptions.Env
 
 	dir, err := filepath.Abs(l.PebbleOptions.Dir)
@@ -200,12 +200,12 @@ func pebbleHealthCheck(options *CmdOption) {
 	}
 }
 
-func (l *EnvLoader) launchChallSrv() func() {
+func (l *EnvLoader) launchChallSrv(ctx context.Context) func() {
 	if l.ChallSrv == nil {
 		return func() {}
 	}
 
-	challtestsrv, outChalSrv := l.cmdChallSrv()
+	challtestsrv, outChalSrv := l.cmdChallSrv(ctx)
 
 	go func() {
 		err := challtestsrv.Run()
@@ -224,8 +224,8 @@ func (l *EnvLoader) launchChallSrv() func() {
 	}
 }
 
-func (l *EnvLoader) cmdChallSrv() (*exec.Cmd, *bytes.Buffer) {
-	cmd := exec.Command(cmdNameChallSrv, l.ChallSrv.Args...)
+func (l *EnvLoader) cmdChallSrv(ctx context.Context) (*exec.Cmd, *bytes.Buffer) {
+	cmd := exec.CommandContext(ctx, cmdNameChallSrv, l.ChallSrv.Args...)
 
 	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
 
@@ -237,7 +237,7 @@ func (l *EnvLoader) cmdChallSrv() (*exec.Cmd, *bytes.Buffer) {
 	return cmd, &b
 }
 
-func buildLego() (string, func(), error) {
+func buildLego(ctx context.Context) (string, func(), error) {
 	here, err := os.Getwd()
 	if err != nil {
 		return "", func() {}, err
@@ -250,7 +250,7 @@ func buildLego() (string, func(), error) {
 		return "", func() {}, err
 	}
 
-	projectRoot, err := getProjectRoot()
+	projectRoot, err := getProjectRoot(ctx)
 	if err != nil {
 		return "", func() {}, err
 	}
@@ -264,7 +264,7 @@ func buildLego() (string, func(), error) {
 
 	binary := filepath.Join(buildPath, "lego")
 
-	err = build(binary)
+	err = build(ctx, binary)
 	if err != nil {
 		return "", func() {}, err
 	}
@@ -277,12 +277,12 @@ func buildLego() (string, func(), error) {
 	return binary, func() {
 		_ = os.RemoveAll(buildPath)
 
-		CleanLegoFiles()
+		CleanLegoFiles(ctx)
 	}, nil
 }
 
-func getProjectRoot() (string, error) {
-	git := exec.Command("git", "rev-parse", "--show-toplevel")
+func getProjectRoot(ctx context.Context) (string, error) {
+	git := exec.CommandContext(ctx, "git", "rev-parse", "--show-toplevel")
 
 	output, err := git.CombinedOutput()
 	if err != nil {
@@ -293,13 +293,13 @@ func getProjectRoot() (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-func build(binary string) error {
-	toolPath, err := goToolPath()
+func build(ctx context.Context, binary string) error {
+	toolPath, err := goToolPath(ctx)
 	if err != nil {
 		return err
 	}
 
-	cmd := exec.Command(toolPath, "build", "-o", binary)
+	cmd := exec.CommandContext(ctx, toolPath, "build", "-o", binary)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -310,7 +310,7 @@ func build(binary string) error {
 	return nil
 }
 
-func goToolPath() (string, error) {
+func goToolPath(ctx context.Context) (string, error) {
 	// inspired by go1.11.1/src/internal/testenv/testenv.go
 	if os.Getenv("GO_GCFLAGS") != "" {
 		return "", errors.New("'go build' not compatible with setting $GO_GCFLAGS")
@@ -320,16 +320,16 @@ func goToolPath() (string, error) {
 		return "", fmt.Errorf("skipping test: 'go build' not available on %s/%s", runtime.GOOS, runtime.GOARCH)
 	}
 
-	return goTool()
+	return goTool(ctx)
 }
 
-func goTool() (string, error) {
+func goTool(ctx context.Context) (string, error) {
 	var exeSuffix string
 	if runtime.GOOS == "windows" {
 		exeSuffix = ".exe"
 	}
 
-	goRoot, err := goenv.GetOne(context.Background(), goenv.GOROOT)
+	goRoot, err := goenv.GetOne(ctx, goenv.GOROOT)
 	if err != nil {
 		return "", fmt.Errorf("cannot find go root: %w", err)
 	}
@@ -347,8 +347,8 @@ func goTool() (string, error) {
 	return goBin, nil
 }
 
-func CleanLegoFiles() {
-	cmd := exec.Command("rm", "-rf", ".lego")
+func CleanLegoFiles(ctx context.Context) {
+	cmd := exec.CommandContext(ctx, "rm", "-rf", ".lego")
 	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
 
 	output, err := cmd.CombinedOutput()

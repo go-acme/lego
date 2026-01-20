@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -124,12 +125,12 @@ func run(ctx context.Context, cmd *cli.Command) error {
 	if account.Registration == nil {
 		reg, err := register(ctx, cmd, client)
 		if err != nil {
-			log.Fatal("Could not complete registration.", "error", err)
+			log.Fatal("Could not complete registration.", log.ErrorAttr(err))
 		}
 
 		account.Registration = reg
 		if err = accountsStorage.Save(account); err != nil {
-			log.Fatal("Could not save the account file.", "error", err)
+			log.Fatal("Could not save the account file.", log.ErrorAttr(err))
 		}
 
 		fmt.Printf(rootPathWarningMessage, accountsStorage.GetRootPath())
@@ -142,7 +143,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 	if err != nil {
 		// Make sure to return a non-zero exit code if ObtainSANCertificate returned at least one error.
 		// Due to us not returning partial certificate we can just exit here instead of at the end.
-		log.Fatal("Could not obtain certificates", "error", err)
+		log.Fatal("Could not obtain certificates", log.ErrorAttr(err))
 	}
 
 	certsStorage.SaveResource(cert)
@@ -164,14 +165,14 @@ func handleTOS(cmd *cli.Command, client *lego.Client) bool {
 
 	reader := bufio.NewReader(os.Stdin)
 
-	log.Warn("Please review the TOS", "url", client.GetToSURL())
+	log.Warn("Please review the TOS", slog.String("url", client.GetToSURL()))
 
 	for {
 		fmt.Println("Do you accept the TOS? Y/n")
 
 		text, err := reader.ReadString('\n')
 		if err != nil {
-			log.Fatal("Could not read from the console", "error", err)
+			log.Fatal("Could not read from the console", log.ErrorAttr(err))
 		}
 
 		text = strings.Trim(text, "\r\n")

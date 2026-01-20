@@ -3,6 +3,7 @@ package env
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
@@ -160,7 +161,12 @@ func GetOrFile(envVar string) string {
 
 	fileContents, err := os.ReadFile(fileVarValue)
 	if err != nil {
-		log.Warn("Failed to read the file.", "filepath", fileVarValue, "envVar", fileVar, "error", err)
+		log.Warn("Failed to read the file.",
+			slog.String("filepath", fileVarValue),
+			slog.String("envVar", fileVar),
+			log.ErrorAttr(err),
+		)
+
 		return ""
 	}
 

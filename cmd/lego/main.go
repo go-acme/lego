@@ -32,6 +32,6 @@ func main() {
 
 	err := app.Run(context.Background(), os.Args)
 	if err != nil {
-		log.Fatal("Error", "error", err)
+		log.Fatal("Error", log.ErrorAttr(err))
 	}
 }

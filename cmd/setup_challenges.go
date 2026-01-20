@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log/slog"
 	"net"
 	"strings"
 	"time"
@@ -27,21 +28,21 @@ func setupChallenges(cmd *cli.Command, client *lego.Client) {
 	if cmd.Bool(flgHTTP) {
 		err := client.Challenge.SetHTTP01Provider(setupHTTPProvider(cmd), http01.SetDelay(cmd.Duration(flgHTTPDelay)))
 		if err != nil {
-			log.Fatal("Could not set HTTP challenge provider.", "error", err)
+			log.Fatal("Could not set HTTP challenge provider.", log.ErrorAttr(err))
 		}
 	}
 
 	if cmd.Bool(flgTLS) {
 		err := client.Challenge.SetTLSALPN01Provider(setupTLSProvider(cmd), tlsalpn01.SetDelay(cmd.Duration(flgTLSDelay)))
 		if err != nil {
-			log.Fatal("Could not set TLS challenge provider.", "error", err)
+			log.Fatal("Could not set TLS challenge provider.", log.ErrorAttr(err))
 		}
 	}
 
 	if cmd.IsSet(flgDNS) {
 		err := setupDNS(cmd, client)
 		if err != nil {
-			log.Fatal("Could not set DNS challenge provider.", "error", err)
+			log.Fatal("Could not set DNS challenge provider.", log.ErrorAttr(err))
 		}
 	}
 }
@@ -53,7 +54,10 @@ func setupHTTPProvider(cmd *cli.Command) challenge.Provider {
 		ps, err := webroot.NewHTTPProvider(cmd.String(flgHTTPWebroot))
 		if err != nil {
 			log.Fatal("Could not create the webroot provider.",
-				"flag", flgHTTPWebroot, "webRoot", cmd.String(flgHTTPWebroot), "error", err)
+				slog.String("flag", flgHTTPWebroot),
+				slog.String("webRoot", cmd.String(flgHTTPWebroot)),
+				log.ErrorAttr(err),
+			)
 		}
 
 		return ps
@@ -62,7 +66,10 @@ func setupHTTPProvider(cmd *cli.Command) challenge.Provider {
 		ps, err := memcached.NewMemcachedProvider(cmd.StringSlice(flgHTTPMemcachedHost))
 		if err != nil {
 			log.Fatal("Could not create the memcached provider.",
-				"flag", flgHTTPMemcachedHost, "memcachedHosts", strings.Join(cmd.StringSlice(flgHTTPMemcachedHost), ", "), "error", err)
+				slog.String("flag", flgHTTPMemcachedHost),
+				slog.String("memcachedHosts", strings.Join(cmd.StringSlice(flgHTTPMemcachedHost), ", ")),
+				log.ErrorAttr(err),
+			)
 		}
 
 		return ps
@@ -71,7 +78,10 @@ func setupHTTPProvider(cmd *cli.Command) challenge.Provider {
 		ps, err := s3.NewHTTPProvider(cmd.String(flgHTTPS3Bucket))
 		if err != nil {
 			log.Fatal("Could not create the S3 provider.",
-				"flag", flgHTTPS3Bucket, "bucket", cmd.String(flgHTTPS3Bucket), "error", err)
+				slog.String("flag", flgHTTPS3Bucket),
+				slog.String("bucket", cmd.String(flgHTTPS3Bucket)),
+				log.ErrorAttr(err),
+			)
 		}
 
 		return ps
@@ -82,13 +92,14 @@ func setupHTTPProvider(cmd *cli.Command) challenge.Provider {
 		if !strings.Contains(iface, ":") {
 			log.Fatal(
 				fmt.Sprintf("The --%s switch only accepts interface:port or :port for its argument.", flgHTTPPort),
-				"flag", flgHTTPPort, "port", cmd.String(flgHTTPPort),
+				slog.String("flag", flgHTTPPort),
+				slog.String("port", cmd.String(flgHTTPPort)),
 			)
 		}
 
 		host, port, err := net.SplitHostPort(iface)
 		if err != nil {
-			log.Fatal("Could not split host and port.", "iface", iface, "error", err)
+			log.Fatal("Could not split host and port.", slog.String("iface", iface), log.ErrorAttr(err))
 		}
 
 		srv := http01.NewProviderServerWithOptions(http01.Options{
@@ -132,7 +143,7 @@ func setupTLSProvider(cmd *cli.Command) challenge.Provider {
 
 		host, port, err := net.SplitHostPort(iface)
 		if err != nil {
-			log.Fatal("Could not split host and port.", "iface", iface, "error", err)
+			log.Fatal("Could not split host and port.", slog.String("iface", iface), log.ErrorAttr(err))
 		}
 
 		return tlsalpn01.NewProviderServerWithOptions(tlsalpn01.Options{

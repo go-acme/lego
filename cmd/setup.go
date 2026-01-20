@@ -7,6 +7,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -85,7 +86,7 @@ func newClient(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyTy
 
 	client, err := lego.NewClient(config)
 	if err != nil {
-		log.Fatal("Could not create client.", "error", err)
+		log.Fatal("Could not create client.", log.ErrorAttr(err))
 	}
 
 	if client.GetExternalAccountRequired() && !cmd.IsSet(flgEAB) {
@@ -113,7 +114,7 @@ func getKeyType(cmd *cli.Command) certcrypto.KeyType {
 		return certcrypto.EC384
 	}
 
-	log.Fatal("Unsupported KeyType.", "keyType", keyType)
+	log.Fatal("Unsupported KeyType.", slog.String("keyType", keyType))
 
 	return ""
 }

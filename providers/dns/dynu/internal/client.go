@@ -122,7 +122,7 @@ func (c *Client) doRetry(ctx context.Context, method, uri string, body []byte, r
 	}
 
 	notify := func(err error, duration time.Duration) {
-		log.Warn("client retries.", "error", err)
+		log.Warn("client retries.", log.ErrorAttr(err))
 	}
 
 	bo := backoff.NewExponentialBackOff()

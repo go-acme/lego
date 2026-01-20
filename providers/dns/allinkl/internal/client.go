@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
+	"github.com/go-acme/lego/v4/platform/wait"
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	"github.com/go-viper/mapstructure/v2"
 )
@@ -31,6 +33,8 @@ type Client struct {
 	floodTime   time.Time
 	muFloodTime sync.Mutex
 
+	maxElapsedTime time.Duration
+
 	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
@@ -40,9 +44,10 @@ func NewClient(login string) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 
 	return &Client{
-		login:      login,
-		BaseURL:    baseURL,
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		login:          login,
+		BaseURL:        baseURL,
+		maxElapsedTime: 3 * time.Minute,
+		HTTPClient:     &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
@@ -63,7 +68,7 @@ func (c *Client) GetDNSSettings(ctx context.Context, zone, recordID string) ([]R
 
 	var g APIResponse[GetDNSSettingsResponse]
 
-	err = c.do(req, &g)
+	err = c.doRetry(ctx, req, &g)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +87,7 @@ func (c *Client) AddDNSSettings(ctx context.Context, record DNSRequest) (string,
 
 	var g APIResponse[AddDNSSettingsResponse]
 
-	err = c.do(req, &g)
+	err = c.doRetry(ctx, req, &g)
 	if err != nil {
 		return "", err
 	}
@@ -103,7 +108,7 @@ func (c *Client) DeleteDNSSettings(ctx context.Context, recordID string) (string
 
 	var g APIResponse[DeleteDNSSettingsResponse]
 
-	err = c.do(req, &g)
+	err = c.doRetry(ctx, req, &g)
 	if err != nil {
 		return "", err
 	}
@@ -139,6 +144,16 @@ func (c *Client) newRequest(ctx context.Context, action string, requestParams an
 	return req, nil
 }
 
+func (c *Client) doRetry(ctx context.Context, req *http.Request, result any) error {
+	return wait.Retry(ctx,
+		func() error {
+			return c.do(req, result)
+		},
+		backoff.WithBackOff(&backoff.ZeroBackOff{}),
+		backoff.WithMaxElapsedTime(c.maxElapsedTime),
+	)
+}
+
 func (c *Client) do(req *http.Request, result any) error {
 	c.muFloodTime.Lock()
 	time.Sleep(time.Until(c.floodTime))
@@ -146,29 +161,40 @@ func (c *Client) do(req *http.Request, result any) error {
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return errutils.NewHTTPDoError(req, err)
+		return backoff.Permanent(errutils.NewHTTPDoError(req, err))
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+		return backoff.Permanent(errutils.NewUnexpectedResponseStatusCodeError(req, resp))
 	}
 
 	envlp, err := decodeXML[KasAPIResponseEnvelope](resp.Body)
 	if err != nil {
-		return err
+		return backoff.Permanent(err)
 	}
 
 	if envlp.Body.Fault != nil {
-		return envlp.Body.Fault
+		if envlp.Body.Fault.Message == "flood_protection" {
+			ft, errP := strconv.ParseFloat(envlp.Body.Fault.Detail, 64)
+			if errP != nil {
+				return fmt.Errorf("parse flood protection delay: %w", envlp.Body.Fault)
+			}
+
+			c.updateFloodTime(ft * 2)
+
+			return envlp.Body.Fault
+		}
+
+		return backoff.Permanent(envlp.Body.Fault)
 	}
 
 	raw := getValue(envlp.Body.KasAPIResponse.Return)
 
 	err = mapstructure.Decode(raw, result)
 	if err != nil {
-		return fmt.Errorf("response struct decode: %w", err)
+		return backoff.Permanent(fmt.Errorf("response struct decode: %w", err))
 	}
 
 	return nil

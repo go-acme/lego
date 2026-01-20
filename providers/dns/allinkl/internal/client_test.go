@@ -4,6 +4,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
@@ -14,6 +15,8 @@ func setupClient(server *httptest.Server) (*Client, error) {
 	client := NewClient("user")
 	client.BaseURL, _ = url.Parse(server.URL)
 	client.HTTPClient = server.Client()
+
+	client.maxElapsedTime = 1 * time.Second
 
 	return client, nil
 }
@@ -95,6 +98,21 @@ func TestClient_GetDNSSettings(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, records)
+}
+
+func TestClient_GetDNSSettings_error_flood_protection(t *testing.T) {
+	client := servermock.NewBuilder[*Client](setupClient).
+		Route("POST /KasApi.php",
+			servermock.ResponseFromFixture("flood_protection.xml"),
+		).
+		Build(t)
+
+	assert.Zero(t, client.floodTime)
+
+	_, err := client.GetDNSSettings(mockContext(t), "example.com", "")
+	require.EqualError(t, err, "KasApi: SOAP-ENV:Server: flood_protection: 0.0688529014587")
+
+	assert.NotZero(t, client.floodTime)
 }
 
 func TestClient_AddDNSSettings(t *testing.T) {

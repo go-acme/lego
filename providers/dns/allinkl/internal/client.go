@@ -61,7 +61,7 @@ func (c *Client) GetDNSSettings(ctx context.Context, zone, recordID string) ([]R
 		return nil, err
 	}
 
-	var g GetDNSSettingsAPIResponse
+	var g APIResponse[GetDNSSettingsResponse]
 
 	err = c.do(req, &g)
 	if err != nil {
@@ -80,7 +80,7 @@ func (c *Client) AddDNSSettings(ctx context.Context, record DNSRequest) (string,
 		return "", err
 	}
 
-	var g AddDNSSettingsAPIResponse
+	var g APIResponse[AddDNSSettingsResponse]
 
 	err = c.do(req, &g)
 	if err != nil {
@@ -101,7 +101,7 @@ func (c *Client) DeleteDNSSettings(ctx context.Context, recordID string) (string
 		return "", err
 	}
 
-	var g DeleteDNSSettingsAPIResponse
+	var g APIResponse[DeleteDNSSettingsResponse]
 
 	err = c.do(req, &g)
 	if err != nil {

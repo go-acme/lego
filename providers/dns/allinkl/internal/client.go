@@ -61,14 +61,9 @@ func (c *Client) GetDNSSettings(ctx context.Context, zone, recordID string) ([]R
 		requestParams["record_id"] = recordID
 	}
 
-	req, err := c.newRequest(ctx, "get_dns_settings", requestParams)
-	if err != nil {
-		return nil, err
-	}
-
 	var g APIResponse[GetDNSSettingsResponse]
 
-	err = c.doRetry(ctx, req, &g)
+	err := c.doRequest(ctx, "get_dns_settings", requestParams, &g)
 	if err != nil {
 		return nil, err
 	}
@@ -80,14 +75,9 @@ func (c *Client) GetDNSSettings(ctx context.Context, zone, recordID string) ([]R
 
 // AddDNSSettings Creation of a DNS resource record.
 func (c *Client) AddDNSSettings(ctx context.Context, record DNSRequest) (string, error) {
-	req, err := c.newRequest(ctx, "add_dns_settings", record)
-	if err != nil {
-		return "", err
-	}
-
 	var g APIResponse[AddDNSSettingsResponse]
 
-	err = c.doRetry(ctx, req, &g)
+	err := c.doRequest(ctx, "add_dns_settings", record, &g)
 	if err != nil {
 		return "", err
 	}
@@ -101,14 +91,9 @@ func (c *Client) AddDNSSettings(ctx context.Context, record DNSRequest) (string,
 func (c *Client) DeleteDNSSettings(ctx context.Context, recordID string) (string, error) {
 	requestParams := map[string]string{"record_id": recordID}
 
-	req, err := c.newRequest(ctx, "delete_dns_settings", requestParams)
-	if err != nil {
-		return "", err
-	}
-
 	var g APIResponse[DeleteDNSSettingsResponse]
 
-	err = c.doRetry(ctx, req, &g)
+	err := c.doRequest(ctx, "delete_dns_settings", requestParams, &g)
 	if err != nil {
 		return "", err
 	}
@@ -144,9 +129,14 @@ func (c *Client) newRequest(ctx context.Context, action string, requestParams an
 	return req, nil
 }
 
-func (c *Client) doRetry(ctx context.Context, req *http.Request, result any) error {
+func (c *Client) doRequest(ctx context.Context, action string, requestParams any, result any) error {
 	return wait.Retry(ctx,
 		func() error {
+			req, err := c.newRequest(ctx, action, requestParams)
+			if err != nil {
+				return backoff.Permanent(err)
+			}
+
 			return c.do(req, result)
 		},
 		backoff.WithBackOff(&backoff.ZeroBackOff{}),

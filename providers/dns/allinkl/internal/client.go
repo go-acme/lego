@@ -6,16 +6,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
+	"github.com/go-acme/lego/v4/platform/wait"
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	"github.com/go-viper/mapstructure/v2"
 )
 
-const apiEndpoint = "https://kasapi.kasserver.com/soap/KasApi.php"
+const defaultBaseURL = "https://kasapi.kasserver.com/soap/"
+
+const apiPath = "KasApi.php"
 
 type Authentication interface {
 	Authentication(ctx context.Context, sessionLifetime int, sessionUpdateLifetime bool) (string, error)
@@ -28,16 +33,21 @@ type Client struct {
 	floodTime   time.Time
 	muFloodTime sync.Mutex
 
-	baseURL    string
+	maxElapsedTime time.Duration
+
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
 func NewClient(login string) *Client {
+	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Client{
-		login:      login,
-		baseURL:    apiEndpoint,
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		login:          login,
+		BaseURL:        baseURL,
+		maxElapsedTime: 3 * time.Minute,
+		HTTPClient:     &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
@@ -51,14 +61,9 @@ func (c *Client) GetDNSSettings(ctx context.Context, zone, recordID string) ([]R
 		requestParams["record_id"] = recordID
 	}
 
-	req, err := c.newRequest(ctx, "get_dns_settings", requestParams)
-	if err != nil {
-		return nil, err
-	}
+	var g APIResponse[GetDNSSettingsResponse]
 
-	var g GetDNSSettingsAPIResponse
-
-	err = c.do(req, &g)
+	err := c.doRequest(ctx, "get_dns_settings", requestParams, &g)
 	if err != nil {
 		return nil, err
 	}
@@ -70,14 +75,9 @@ func (c *Client) GetDNSSettings(ctx context.Context, zone, recordID string) ([]R
 
 // AddDNSSettings Creation of a DNS resource record.
 func (c *Client) AddDNSSettings(ctx context.Context, record DNSRequest) (string, error) {
-	req, err := c.newRequest(ctx, "add_dns_settings", record)
-	if err != nil {
-		return "", err
-	}
+	var g APIResponse[AddDNSSettingsResponse]
 
-	var g AddDNSSettingsAPIResponse
-
-	err = c.do(req, &g)
+	err := c.doRequest(ctx, "add_dns_settings", record, &g)
 	if err != nil {
 		return "", err
 	}
@@ -91,14 +91,9 @@ func (c *Client) AddDNSSettings(ctx context.Context, record DNSRequest) (string,
 func (c *Client) DeleteDNSSettings(ctx context.Context, recordID string) (string, error) {
 	requestParams := map[string]string{"record_id": recordID}
 
-	req, err := c.newRequest(ctx, "delete_dns_settings", requestParams)
-	if err != nil {
-		return "", err
-	}
+	var g APIResponse[DeleteDNSSettingsResponse]
 
-	var g DeleteDNSSettingsAPIResponse
-
-	err = c.do(req, &g)
+	err := c.doRequest(ctx, "delete_dns_settings", requestParams, &g)
 	if err != nil {
 		return "", err
 	}
@@ -124,12 +119,29 @@ func (c *Client) newRequest(ctx context.Context, action string, requestParams an
 
 	payload := []byte(strings.TrimSpace(fmt.Sprintf(kasAPIEnvelope, body)))
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL, bytes.NewReader(payload))
+	endpoint := c.BaseURL.JoinPath(apiPath)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), bytes.NewReader(payload))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
 	return req, nil
+}
+
+func (c *Client) doRequest(ctx context.Context, action string, requestParams, result any) error {
+	return wait.Retry(ctx,
+		func() error {
+			req, err := c.newRequest(ctx, action, requestParams)
+			if err != nil {
+				return backoff.Permanent(err)
+			}
+
+			return c.do(req, result)
+		},
+		backoff.WithBackOff(&backoff.ZeroBackOff{}),
+		backoff.WithMaxElapsedTime(c.maxElapsedTime),
+	)
 }
 
 func (c *Client) do(req *http.Request, result any) error {
@@ -139,29 +151,40 @@ func (c *Client) do(req *http.Request, result any) error {
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return errutils.NewHTTPDoError(req, err)
+		return backoff.Permanent(errutils.NewHTTPDoError(req, err))
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+		return backoff.Permanent(errutils.NewUnexpectedResponseStatusCodeError(req, resp))
 	}
 
 	envlp, err := decodeXML[KasAPIResponseEnvelope](resp.Body)
 	if err != nil {
-		return err
+		return backoff.Permanent(err)
 	}
 
 	if envlp.Body.Fault != nil {
-		return envlp.Body.Fault
+		if envlp.Body.Fault.Message == "flood_protection" {
+			ft, errP := strconv.ParseFloat(envlp.Body.Fault.Detail, 64)
+			if errP != nil {
+				return fmt.Errorf("parse flood protection delay: %w", envlp.Body.Fault)
+			}
+
+			c.updateFloodTime(ft)
+
+			return envlp.Body.Fault
+		}
+
+		return backoff.Permanent(envlp.Body.Fault)
 	}
 
 	raw := getValue(envlp.Body.KasAPIResponse.Return)
 
 	err = mapstructure.Decode(raw, result)
 	if err != nil {
-		return fmt.Errorf("response struct decode: %w", err)
+		return backoff.Permanent(fmt.Errorf("response struct decode: %w", err))
 	}
 
 	return nil

@@ -53,8 +53,8 @@ type DNSRequest struct {
 
 // ---
 
-type GetDNSSettingsAPIResponse struct {
-	Response GetDNSSettingsResponse `json:"Response" mapstructure:"Response"`
+type APIResponse[T any] struct {
+	Response T `json:"Response" mapstructure:"Response"`
 }
 
 type GetDNSSettingsResponse struct {
@@ -73,18 +73,10 @@ type ReturnInfo struct {
 	Aux        int    `json:"record_aux,omitempty" mapstructure:"record_aux"`
 }
 
-type AddDNSSettingsAPIResponse struct {
-	Response AddDNSSettingsResponse `json:"Response" mapstructure:"Response"`
-}
-
 type AddDNSSettingsResponse struct {
 	KasFloodDelay float64 `json:"KasFloodDelay" mapstructure:"KasFloodDelay"`
 	ReturnInfo    string  `json:"ReturnInfo" mapstructure:"ReturnInfo"`
 	ReturnString  string  `json:"ReturnString" mapstructure:"ReturnString"`
-}
-
-type DeleteDNSSettingsAPIResponse struct {
-	Response DeleteDNSSettingsResponse `json:"Response"`
 }
 
 type DeleteDNSSettingsResponse struct {

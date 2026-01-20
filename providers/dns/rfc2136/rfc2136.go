@@ -2,6 +2,7 @@
 package rfc2136
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -165,9 +166,10 @@ func (d *DNSProvider) Sequential() time.Duration {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	err := d.changeRecord("INSERT", info.EffectiveFQDN, info.Value, d.config.TTL)
+	err := d.changeRecord(ctx, "INSERT", info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("rfc2136: failed to insert: %w", err)
 	}
@@ -177,9 +179,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	err := d.changeRecord("REMOVE", info.EffectiveFQDN, info.Value, d.config.TTL)
+	err := d.changeRecord(ctx, "REMOVE", info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("rfc2136: failed to remove: %w", err)
 	}
@@ -187,9 +190,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
+func (d *DNSProvider) changeRecord(ctx context.Context, action, fqdn, value string, ttl int) error {
 	// Find the zone for the given fqdn
-	zone, err := dns01.FindZoneByFqdnCustom(fqdn, []string{d.config.Nameserver})
+	zone, err := dns01.DefaultClient().FindZoneByFqdnCustom(ctx, fqdn, []string{d.config.Nameserver})
 	if err != nil {
 		return err
 	}
@@ -226,7 +229,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	}
 
 	// Send the query
-	reply, _, err := c.Exchange(m, d.config.Nameserver)
+	reply, _, err := c.ExchangeContext(ctx, m, d.config.Nameserver)
 	if err != nil {
 		return fmt.Errorf("DNS update failed: %w", err)
 	}

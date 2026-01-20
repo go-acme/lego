@@ -1,6 +1,7 @@
 package gandiv5
 
 import (
+	"context"
 	"net/http/httptest"
 	"testing"
 
@@ -115,7 +116,7 @@ func TestDNSProvider(t *testing.T) {
 	fakeKeyAuth := "XXXX"
 
 	// define function to override findZoneByFqdn with
-	fakeFindZoneByFqdn := func(fqdn string) (string, error) {
+	fakeFindZoneByFqdn := func(ctx context.Context, fqdn string) (string, error) {
 		return "example.com.", nil
 	}
 

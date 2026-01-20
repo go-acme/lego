@@ -156,9 +156,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	zoneNameOrID, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	zoneNameOrID, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("oraclecloud: could not find zone for domain %q: %w", domain, err)
 	}
@@ -181,7 +183,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		},
 	}
 
-	_, err = d.client.PatchDomainRecords(context.Background(), request)
+	_, err = d.client.PatchDomainRecords(ctx, request)
 	if err != nil {
 		return fmt.Errorf("oraclecloud: %w", err)
 	}
@@ -191,9 +193,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	zoneNameOrID, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	zoneNameOrID, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("oraclecloud: could not find zone for domain %q: %w", domain, err)
 	}
@@ -205,8 +209,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		CompartmentId: common.String(d.config.CompartmentID),
 		Rtype:         common.String("TXT"),
 	}
-
-	ctx := context.Background()
 
 	domainRecords, err := d.client.GetDomainRecords(ctx, getRequest)
 	if err != nil {

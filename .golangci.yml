@@ -192,18 +192,6 @@ linters:
         text: "cyclomatic complexity \\d+ of func `\\(\\*Certifier\\)\\.GetOCSP` is high"
         linters:
           - gocyclo
-      - path: challenge/dns01/nameserver.go
-        text: (defaultNameservers|recursiveNameservers|fqdnSoaCache|muFqdnSoaCache) is a global variable
-        linters:
-          - gochecknoglobals
-      - path: challenge/dns01/nameserver_.+.go
-        text: dnsTimeout is a global variable
-        linters:
-          - gochecknoglobals
-      - path: challenge/dns01/precheck.go
-        text: defaultNameserverPort is a global variable
-        linters:
-          - gochecknoglobals
       - path: challenge/http01/domain_matcher.go
         text: cyclomatic complexity \d+ of func `parseForwardedHeader` is high
         linters:
@@ -271,16 +259,20 @@ linters:
         text: cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high
         linters:
           - gocyclo
-      - path: providers/dns/manual/manual.go
-        text: 'SA1019: dns01.DNSProviderManual is deprecated'
-        linters:
-          - staticcheck
       # Those elements have been replaced by non-exposed structures.
       - path: providers/dns/linode/linode_test.go
         text: 'SA1019: linodego\.(DomainsPagedResponse|DomainRecordsPagedResponse) is deprecated'
         linters:
           - staticcheck
       - path: log/logger.go
+        linters:
+          - gochecknoinits
+      - path: challenge/dns01/client.go
+        text: defaultClient is a global variable
+        linters:
+          - gochecknoglobals
+      - path: challenge/dns01/client.go
+        text: don't use `init` function
         linters:
           - gochecknoinits
 

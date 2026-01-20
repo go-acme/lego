@@ -115,7 +115,7 @@ func (d *DNSProvider) run(ctx context.Context, command, domain, token, keyAuth s
 	if d.config.Mode == "RAW" {
 		args = []string{command, "--", domain, token, keyAuth}
 	} else {
-		info := dns01.GetChallengeInfo(domain, keyAuth)
+		info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 		args = []string{command, info.EffectiveFQDN, info.Value}
 	}
 

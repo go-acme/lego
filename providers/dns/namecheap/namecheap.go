@@ -140,13 +140,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present installs a TXT record for the DNS challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	pr, err := newPseudoRecord(domain, keyAuth)
+	pr, err := newPseudoRecord(ctx, domain, keyAuth)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)
 	}
-
-	ctx := context.Background()
 
 	records, err := d.client.GetHosts(ctx, pr.sld, pr.tld)
 	if err != nil {
@@ -177,13 +177,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes a TXT record used for a previous DNS challenge.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	pr, err := newPseudoRecord(domain, keyAuth)
+	pr, err := newPseudoRecord(ctx, domain, keyAuth)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)
 	}
-
-	ctx := context.Background()
 
 	records, err := d.client.GetHosts(ctx, pr.sld, pr.tld)
 	if err != nil {
@@ -228,7 +228,7 @@ type pseudoRecord struct {
 }
 
 // newPseudoRecord builds a challenge record from a domain name and a challenge authentication key.
-func newPseudoRecord(domain, keyAuth string) (*pseudoRecord, error) {
+func newPseudoRecord(ctx context.Context, domain, keyAuth string) (*pseudoRecord, error) {
 	domain = dns01.UnFqdn(domain)
 
 	tld, _ := publicsuffix.PublicSuffix(domain)
@@ -245,7 +245,7 @@ func newPseudoRecord(domain, keyAuth string) (*pseudoRecord, error) {
 		host = strings.Join(parts[:longest-1], ".")
 	}
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	return &pseudoRecord{
 		domain:   domain,

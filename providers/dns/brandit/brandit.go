@@ -110,9 +110,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("brandit: could not find zone for domain %q: %w", domain, err)
 	}
@@ -121,8 +123,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("brandit: %w", err)
 	}
-
-	ctx := context.Background()
 
 	record := internal.Record{
 		Type:    "TXT",
@@ -157,9 +157,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("brandit: could not find zone for domain %q: %w", domain, err)
 	}
@@ -172,8 +174,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if !ok {
 		return fmt.Errorf("brandit: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
-
-	ctx := context.Background()
 
 	// find the account associated with the domain
 	account, err := d.client.StatusDomain(ctx, dns01.UnFqdn(authZone))

@@ -2,6 +2,7 @@
 package designate
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -132,9 +133,10 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.getZoneName(info.EffectiveFQDN)
+	zone, err := d.getZoneName(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("designate: %w", err)
 	}
@@ -172,9 +174,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.getZoneName(info.EffectiveFQDN)
+	zone, err := d.getZoneName(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("designate: %w", err)
 	}
@@ -295,12 +298,12 @@ func (d *DNSProvider) getRecord(zoneID, wanted string) (*recordsets.RecordSet, e
 	return nil, nil
 }
 
-func (d *DNSProvider) getZoneName(fqdn string) (string, error) {
+func (d *DNSProvider) getZoneName(ctx context.Context, fqdn string) (string, error) {
 	if d.config.ZoneName != "" {
 		return d.config.ZoneName, nil
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone for %s: %w", fqdn, err)
 	}

@@ -73,7 +73,7 @@ type DNSProvider struct {
 	inProgressMu   sync.Mutex
 
 	// only for testing purpose.
-	findZoneByFqdn func(fqdn string) (string, error)
+	findZoneByFqdn func(ctx context.Context, fqdn string) (string, error)
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Loopia.
@@ -123,7 +123,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{
 		config:         config,
 		client:         client,
-		findZoneByFqdn: dns01.FindZoneByFqdn,
+		findZoneByFqdn: dns01.DefaultClient().FindZoneByFqdn,
 		inProgressInfo: make(map[string]int),
 	}, nil
 }
@@ -136,14 +136,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	subDomain, authZone, err := d.splitDomain(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	subDomain, authZone, err := d.splitDomain(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("loopia: %w", err)
 	}
-
-	ctx := context.Background()
 
 	err = d.client.AddTXTRecord(ctx, authZone, subDomain, d.config.TTL, info.Value)
 	if err != nil {
@@ -170,17 +170,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	subDomain, authZone, err := d.splitDomain(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	subDomain, authZone, err := d.splitDomain(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("loopia: %w", err)
 	}
 
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
-
-	ctx := context.Background()
 
 	err = d.client.RemoveTXTRecord(ctx, authZone, subDomain, d.inProgressInfo[token])
 	if err != nil {
@@ -204,8 +204,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) splitDomain(fqdn string) (string, string, error) {
-	authZone, err := d.findZoneByFqdn(fqdn)
+func (d *DNSProvider) splitDomain(ctx context.Context, fqdn string) (string, string, error) {
+	authZone, err := d.findZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", "", fmt.Errorf("could not find zone: %w", err)
 	}

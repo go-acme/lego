@@ -49,9 +49,9 @@ func (d *DNSProviderPublic) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProviderPublic) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -101,9 +101,9 @@ func (d *DNSProviderPublic) Present(domain, _, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProviderPublic) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -127,8 +127,8 @@ func (d *DNSProviderPublic) CleanUp(domain, _, keyAuth string) error {
 }
 
 // Checks that azure has a zone for this domain name.
-func (d *DNSProviderPublic) getHostedZone(fqdn string) (ServiceDiscoveryZone, error) {
-	authZone, err := getZoneName(d.config, fqdn)
+func (d *DNSProviderPublic) getHostedZone(ctx context.Context, fqdn string) (ServiceDiscoveryZone, error) {
+	authZone, err := getZoneName(ctx, d.config, fqdn)
 	if err != nil {
 		return ServiceDiscoveryZone{}, err
 	}

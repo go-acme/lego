@@ -104,20 +104,22 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("netcup: could not find zone for domain %q: %w", domain, err)
 	}
 
-	ctx, err := d.client.CreateSessionContext(context.Background())
+	ctxAuth, err := d.client.CreateSessionContext(ctx)
 	if err != nil {
 		return fmt.Errorf("netcup: %w", err)
 	}
 
 	defer func() {
-		err = d.client.Logout(ctx)
+		err = d.client.Logout(ctxAuth)
 		if err != nil {
 			log.Warn("netcup: failed to logout.", "error", err)
 		}
@@ -132,7 +134,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone = dns01.UnFqdn(zone)
 
-	records, err := d.client.GetDNSRecords(ctx, zone)
+	records, err := d.client.GetDNSRecords(ctxAuth, zone)
 	if err != nil {
 		// skip no existing records
 		log.Info("No existing records, error ignored.", "zone", zone, "error", err)
@@ -140,7 +142,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	records = append(records, record)
 
-	err = d.client.UpdateDNSRecord(ctx, zone, records)
+	err = d.client.UpdateDNSRecord(ctxAuth, zone, records)
 	if err != nil {
 		return fmt.Errorf("netcup: failed to add TXT-Record: %w", err)
 	}
@@ -150,20 +152,22 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("netcup: could not find zone for domain %q: %w", domain, err)
 	}
 
-	ctx, err := d.client.CreateSessionContext(context.Background())
+	ctxAuth, err := d.client.CreateSessionContext(ctx)
 	if err != nil {
 		return fmt.Errorf("netcup: %w", err)
 	}
 
 	defer func() {
-		err = d.client.Logout(ctx)
+		err = d.client.Logout(ctxAuth)
 		if err != nil {
 			log.Warn("netcup: failed to logout.", "error", err)
 		}
@@ -173,7 +177,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zone = dns01.UnFqdn(zone)
 
-	records, err := d.client.GetDNSRecords(ctx, zone)
+	records, err := d.client.GetDNSRecords(ctxAuth, zone)
 	if err != nil {
 		return fmt.Errorf("netcup: %w", err)
 	}
@@ -191,7 +195,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	records[idx].DeleteRecord = true
 
-	err = d.client.UpdateDNSRecord(ctx, zone, []internal.DNSRecord{records[idx]})
+	err = d.client.UpdateDNSRecord(ctxAuth, zone, []internal.DNSRecord{records[idx]})
 	if err != nil {
 		return fmt.Errorf("netcup: %w", err)
 	}

@@ -102,9 +102,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("myaddr: could not find zone for domain %q: %w", domain, err)
 	}
@@ -119,7 +121,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("myaddr: subdomain not found in: %q (%s)", fullSubdomain, info.EffectiveFQDN)
 	}
 
-	err = d.client.AddTXTRecord(context.Background(), after, info.Value)
+	err = d.client.AddTXTRecord(ctx, after, info.Value)
 	if err != nil {
 		return fmt.Errorf("myaddr: add TXT record: %w", err)
 	}

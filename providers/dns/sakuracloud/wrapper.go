@@ -82,7 +82,7 @@ func (d *DNSProvider) cleanupTXTRecord(ctx context.Context, fqdn, value string) 
 }
 
 func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*iaas.DNS, error) {
-	authZone, err := dns01.FindZoneByFqdn(domain)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, domain)
 	if err != nil {
 		return nil, fmt.Errorf("could not find zone: %w", err)
 	}

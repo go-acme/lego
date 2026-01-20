@@ -78,9 +78,11 @@ func (d *dmapiProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *dmapiProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("joker: could not find zone for domain %q: %w", domain, err)
 	}
@@ -90,19 +92,19 @@ func (d *dmapiProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(context.Background())
 	if err != nil {
 		return fmt.Errorf("joker: create authenticated context: %w", err)
 	}
 
-	response, err := d.client.GetZone(ctx, zone)
+	response, err := d.client.GetZone(ctxAuth, zone)
 	if err != nil || response.StatusCode != 0 {
 		return formatResponseError(response, err)
 	}
 
 	dnsZone := dmapi.AddTxtEntryToZone(response.Body, subDomain, info.Value, d.config.TTL)
 
-	response, err = d.client.PutZone(ctx, zone, dnsZone)
+	response, err = d.client.PutZone(ctxAuth, zone, dnsZone)
 	if err != nil || response.StatusCode != 0 {
 		return formatResponseError(response, err)
 	}
@@ -112,9 +114,11 @@ func (d *dmapiProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *dmapiProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("joker: could not find zone for domain %q: %w", domain, err)
 	}
@@ -124,30 +128,30 @@ func (d *dmapiProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(context.Background())
 	if err != nil {
 		return fmt.Errorf("joker: create authenticated context: %w", err)
 	}
 
 	defer func() {
 		// Try to log out in case of errors
-		_, _ = d.client.Logout(ctx)
+		_, _ = d.client.Logout(ctxAuth)
 	}()
 
-	response, err := d.client.GetZone(ctx, zone)
+	response, err := d.client.GetZone(ctxAuth, zone)
 	if err != nil || response.StatusCode != 0 {
 		return formatResponseError(response, err)
 	}
 
 	dnsZone, modified := dmapi.RemoveTxtEntryFromZone(response.Body, subDomain)
 	if modified {
-		response, err = d.client.PutZone(ctx, zone, dnsZone)
+		response, err = d.client.PutZone(ctxAuth, zone, dnsZone)
 		if err != nil || response.StatusCode != 0 {
 			return formatResponseError(response, err)
 		}
 	}
 
-	response, err = d.client.Logout(ctx)
+	response, err = d.client.Logout(ctxAuth)
 	if err != nil {
 		return formatResponseError(response, err)
 	}

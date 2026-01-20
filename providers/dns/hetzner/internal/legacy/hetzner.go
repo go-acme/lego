@@ -105,16 +105,16 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("hetzner (legacy): could not find zone for domain %q: %w", domain, err)
 	}
 
 	zone := dns01.UnFqdn(authZone)
-
-	ctx := context.Background()
 
 	zoneID, err := d.client.GetZoneID(ctx, zone)
 	if err != nil {
@@ -143,16 +143,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("hetzner (legacy): could not find zone for domain %q: %w", domain, err)
 	}
 
 	zone := dns01.UnFqdn(authZone)
-
-	ctx := context.Background()
 
 	zoneID, err := d.client.GetZoneID(ctx, zone)
 	if err != nil {

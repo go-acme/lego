@@ -107,9 +107,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zoneName, recordName, err := d.findZoneAndRecordName(info.EffectiveFQDN)
+	zoneName, recordName, err := d.findZoneAndRecordName(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("exoscale: %w", err)
 	}
@@ -147,9 +147,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zoneName, recordName, err := d.findZoneAndRecordName(info.EffectiveFQDN)
+	zoneName, recordName, err := d.findZoneAndRecordName(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("exoscale: %w", err)
 	}
@@ -227,8 +227,8 @@ func (d *DNSProvider) findExistingRecordID(ctx context.Context, zoneID egoscale.
 }
 
 // findZoneAndRecordName Extract DNS zone and DNS entry name.
-func (d *DNSProvider) findZoneAndRecordName(fqdn string) (string, string, error) {
-	zone, err := dns01.FindZoneByFqdn(fqdn)
+func (d *DNSProvider) findZoneAndRecordName(ctx context.Context, fqdn string) (string, string, error) {
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", "", fmt.Errorf("could not find zone: %w", err)
 	}

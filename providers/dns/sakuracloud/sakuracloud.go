@@ -115,9 +115,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	err := d.addTXTRecord(context.Background(), info.EffectiveFQDN, info.Value, d.config.TTL)
+	err := d.addTXTRecord(ctx, info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("sakuracloud: %w", err)
 	}
@@ -127,9 +128,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	err := d.cleanupTXTRecord(context.Background(), info.EffectiveFQDN, info.Value)
+	err := d.cleanupTXTRecord(ctx, info.EffectiveFQDN, info.Value)
 	if err != nil {
 		return fmt.Errorf("sakuracloud: %w", err)
 	}

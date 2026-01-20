@@ -32,7 +32,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*dnspod
 		request.Offset = common.Int64Ptr(int64(len(domains)))
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(domain)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, domain)
 	if err != nil {
 		return nil, fmt.Errorf("could not find zone: %w", err)
 	}

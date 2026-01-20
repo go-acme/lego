@@ -2,6 +2,7 @@
 package iij
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"slices"
@@ -91,7 +92,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	err := d.addTxtRecord(domain, info.Value)
@@ -104,7 +106,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	err := d.deleteTxtRecord(domain, info.Value)

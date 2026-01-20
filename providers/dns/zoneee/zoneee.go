@@ -125,9 +125,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("zoneee: could not find zone for domain %q: %w", domain, err)
 	}
@@ -139,7 +141,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Destination: info.Value,
 	}
 
-	_, err = d.client.AddTxtRecord(context.Background(), authZone, record)
+	_, err = d.client.AddTxtRecord(ctx, authZone, record)
 	if err != nil {
 		return fmt.Errorf("zoneee: %w", err)
 	}
@@ -149,16 +151,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record previously created.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("zoneee: could not find zone for domain %q: %w", domain, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
-
-	ctx := context.Background()
 
 	records, err := d.client.GetTxtRecords(ctx, authZone)
 	if err != nil {

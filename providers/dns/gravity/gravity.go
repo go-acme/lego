@@ -106,7 +106,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	_, err := d.client.Login(ctx)
 	if err != nil {
@@ -148,7 +148,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	d.recordsMu.Lock()
 	record, ok := d.records[token]
@@ -158,7 +159,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("gravity: unknown record for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err := d.client.DeleteDNSRecord(context.Background(), record.Fqdn, record)
+	err := d.client.DeleteDNSRecord(ctx, record.Fqdn, record)
 	if err != nil {
 		return fmt.Errorf("gravity: delete record: %w", err)
 	}
@@ -176,7 +177,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Sequential implements the [dns01.sequential] interface.
+// Sequential implements the [dnsnew.sequential] interface.
 // It changes the behavior of the provider to resolve DNS challenges sequentially.
 // Returns the interval between each iteration.
 //

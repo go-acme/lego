@@ -2,6 +2,7 @@
 package dnspod
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -95,9 +96,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zoneID, zoneName, err := d.getHostedZone(info.EffectiveFQDN)
+	zoneID, zoneName, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
@@ -117,9 +119,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zoneID, zoneName, err := d.getHostedZone(info.EffectiveFQDN)
+	zoneID, zoneName, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
@@ -145,13 +148,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
+func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string, string, error) {
 	zones, _, err := d.client.Domains.List()
 	if err != nil {
 		return "", "", fmt.Errorf("API call failed: %w", err)
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(domain)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, domain)
 	if err != nil {
 		return "", "", fmt.Errorf("could not find zone: %w", err)
 	}

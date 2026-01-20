@@ -191,9 +191,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("googlecloud: %w", err)
 	}
@@ -304,9 +304,10 @@ func (d *DNSProvider) applyChanges(ctx context.Context, zone string, change *gdn
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("googlecloud: %w", err)
 	}
@@ -335,8 +336,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // getHostedZone returns the managed-zone.
-func (d *DNSProvider) getHostedZone(domain string) (string, error) {
-	authZone, zones, err := d.lookupHostedZoneID(domain)
+func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string, error) {
+	authZone, zones, err := d.lookupHostedZoneID(ctx, domain)
 	if err != nil {
 		return "", err
 	}
@@ -370,7 +371,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 //	(gcloud projects get-iam-policy $project_id) (a role with permission dns.managedZones.list)
 //
 // If we force a zone list to succeed, we demand more permissions than needed.
-func (d *DNSProvider) lookupHostedZoneID(domain string) (string, []*gdns.ManagedZone, error) {
+func (d *DNSProvider) lookupHostedZoneID(ctx context.Context, domain string) (string, []*gdns.ManagedZone, error) {
 	// GCE_ZONE_ID override for service accounts to avoid needing zones-list permission
 	if d.config.ZoneID != "" {
 		zone, err := d.client.ManagedZones.Get(d.config.Project, d.config.ZoneID).Do()
@@ -381,7 +382,7 @@ func (d *DNSProvider) lookupHostedZoneID(domain string) (string, []*gdns.Managed
 		return zone.DnsName, []*gdns.ManagedZone{zone}, nil
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(dns.Fqdn(domain))
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, dns.Fqdn(domain))
 	if err != nil {
 		return "", nil, fmt.Errorf("could not find zone: %w", err)
 	}

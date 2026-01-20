@@ -18,7 +18,7 @@ const (
 )
 
 func TestDNSProvider_Present(t *testing.T) {
-	mockedFindZoneByFqdn := func(fqdn string) (string, error) {
+	mockedFindZoneByFqdn := func(ctx context.Context, fqdn string) (string, error) {
 		return exampleDomain + ".", nil
 	}
 
@@ -108,7 +108,7 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_Cleanup(t *testing.T) {
-	mockedFindZoneByFqdn := func(fqdn string) (string, error) {
+	mockedFindZoneByFqdn := func(ctx context.Context, fqdn string) (string, error) {
 		return "example.com.", nil
 	}
 

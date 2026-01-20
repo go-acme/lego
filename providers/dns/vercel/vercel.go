@@ -109,9 +109,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("vercel: could not find zone for domain %q: %w", domain, err)
 	}
@@ -123,7 +125,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:   d.config.TTL,
 	}
 
-	respData, err := d.client.CreateRecord(context.Background(), authZone, record)
+	respData, err := d.client.CreateRecord(ctx, authZone, record)
 	if err != nil {
 		return fmt.Errorf("vercel: %w", err)
 	}
@@ -137,9 +139,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("vercel: could not find zone for domain %q: %w", domain, err)
 	}
@@ -153,7 +157,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("vercel: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
-	err = d.client.DeleteRecord(context.Background(), authZone, recordID)
+	err = d.client.DeleteRecord(ctx, authZone, recordID)
 	if err != nil {
 		return fmt.Errorf("vercel: %w", err)
 	}

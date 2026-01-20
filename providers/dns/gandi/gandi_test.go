@@ -1,6 +1,7 @@
 package gandi
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -152,7 +153,7 @@ func TestDNSProvider(t *testing.T) {
 	fakeKeyAuth := "XXXX"
 
 	// define function to override findZoneByFqdn with
-	fakeFindZoneByFqdn := func(fqdn string) (string, error) {
+	fakeFindZoneByFqdn := func(ctx context.Context, fqdn string) (string, error) {
 		return "example.com.", nil
 	}
 

@@ -32,50 +32,47 @@ func fakeTXT(name, value string) *dns.TXT {
 }
 
 // mockResolver modifies the default DNS resolver to use a custom network address during the test execution.
-// IMPORTANT: it modifying global variables.
-func mockResolver(t *testing.T, addr net.Addr) {
-	t.Helper()
+// IMPORTANT: it modifying std global variables.
+func mockResolver(authoritativeNS net.Addr) func(t *testing.T, client *Client) {
+	return func(t *testing.T, client *Client) {
+		t.Helper()
 
-	_, port, err := net.SplitHostPort(addr.String())
-	require.NoError(t, err)
+		_, port, err := net.SplitHostPort(authoritativeNS.String())
+		require.NoError(t, err)
 
-	originalDefaultNameserverPort := defaultNameserverPort
+		client.authoritativeNSPort = port
 
-	t.Cleanup(func() {
-		defaultNameserverPort = originalDefaultNameserverPort
-	})
+		originalResolver := net.DefaultResolver
 
-	defaultNameserverPort = port
+		t.Cleanup(func() {
+			net.DefaultResolver = originalResolver
+		})
 
-	originalResolver := net.DefaultResolver
+		net.DefaultResolver = &net.Resolver{
+			PreferGo: true,
+			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				d := net.Dialer{Timeout: 1 * time.Second}
 
-	t.Cleanup(func() {
-		net.DefaultResolver = originalResolver
-	})
-
-	net.DefaultResolver = &net.Resolver{
-		PreferGo: true,
-		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-			d := net.Dialer{Timeout: 1 * time.Second}
-
-			return d.DialContext(ctx, network, addr.String())
-		},
+				return d.DialContext(ctx, network, authoritativeNS.String())
+			},
+		}
 	}
 }
 
-func useAsNameserver(t *testing.T, addr net.Addr) {
+func mockDefault(t *testing.T, recursiveNS net.Addr, opts ...func(t *testing.T, client *Client)) {
 	t.Helper()
 
-	ClearFqdnCache()
-	t.Cleanup(func() {
-		ClearFqdnCache()
-	})
-
-	originalRecursiveNameservers := recursiveNameservers
+	backup := DefaultClient()
 
 	t.Cleanup(func() {
-		recursiveNameservers = originalRecursiveNameservers
+		SetDefaultClient(backup)
 	})
 
-	recursiveNameservers = ParseNameservers([]string{addr.String()})
+	client := NewClient(&Options{RecursiveNameservers: []string{recursiveNS.String()}})
+
+	for _, opt := range opts {
+		opt(t, client)
+	}
+
+	SetDefaultClient(client)
 }

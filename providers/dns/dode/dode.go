@@ -93,14 +93,18 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-	return d.client.UpdateTxtRecord(context.Background(), info.EffectiveFQDN, info.Value, false)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	return d.client.UpdateTxtRecord(ctx, info.EffectiveFQDN, info.Value, false)
 }
 
 // CleanUp clears TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-	return d.client.UpdateTxtRecord(context.Background(), info.EffectiveFQDN, "", true)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	return d.client.UpdateTxtRecord(ctx, info.EffectiveFQDN, "", true)
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

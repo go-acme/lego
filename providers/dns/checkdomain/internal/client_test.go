@@ -113,7 +113,8 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 			servermock.CheckRequestJSONBodyFromFixture("delete_txt_record-request.json")).
 		Build(t)
 
-	info := dns01.GetChallengeInfo(domainName, "abc")
+	info := dns01.GetChallengeInfo(t.Context(), domainName, "abc")
+
 	err := client.DeleteTXTRecord(t.Context(), 1, info.EffectiveFQDN, recordValue)
 	require.NoError(t, err)
 }

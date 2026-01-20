@@ -95,8 +95,9 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 	provider, err := dns.NewDNSChallengeProviderByName("exec")
 	require.NoError(t, err)
 
+	mockDefault(t)
+
 	err = client.Challenge.SetDNS01Provider(provider,
-		dns01.AddRecursiveNameservers([]string{":8053"}),
 		dns01.DisableAuthoritativeNssPropagationRequirement())
 	require.NoError(t, err)
 
@@ -154,8 +155,9 @@ func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
 	provider, err := dns.NewDNSChallengeProviderByName("exec")
 	require.NoError(t, err)
 
+	mockDefault(t)
+
 	err = client.Challenge.SetDNS01Provider(provider,
-		dns01.AddRecursiveNameservers([]string{":8053"}),
 		dns01.DisableAuthoritativeNssPropagationRequirement())
 	require.NoError(t, err)
 
@@ -199,3 +201,15 @@ type fakeUser struct {
 func (f *fakeUser) GetEmail() string                        { return f.email }
 func (f *fakeUser) GetRegistration() *registration.Resource { return f.registration }
 func (f *fakeUser) GetPrivateKey() crypto.PrivateKey        { return f.privateKey }
+
+func mockDefault(t *testing.T) {
+	t.Helper()
+
+	backup := dns01.DefaultClient()
+
+	t.Cleanup(func() {
+		dns01.SetDefaultClient(backup)
+	})
+
+	dns01.SetDefaultClient(dns01.NewClient(&dns01.Options{RecursiveNameservers: []string{":8053"}}))
+}

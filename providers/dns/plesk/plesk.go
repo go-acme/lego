@@ -125,14 +125,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("plesk: could not find zone for domain %q: %w", domain, err)
 	}
-
-	ctx := context.Background()
 
 	siteID, err := d.client.GetSite(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
@@ -158,7 +158,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
@@ -168,7 +169,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("plesk: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	_, err := d.client.DeleteRecord(context.Background(), recordID)
+	_, err := d.client.DeleteRecord(ctx, recordID)
 	if err != nil {
 		return fmt.Errorf("plesk: failed to delete record (%d): %w", recordID, err)
 	}

@@ -139,14 +139,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("conohav3: could not find zone for domain %q: %w", domain, err)
 	}
-
-	ctx := context.Background()
 
 	id, err := d.client.GetDomainID(ctx, authZone)
 	if err != nil {
@@ -170,14 +170,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp clears ConoHa DNS TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("conohav3: could not find zone for domain %q: %w", domain, err)
 	}
-
-	ctx := context.Background()
 
 	domID, err := d.client.GetDomainID(ctx, authZone)
 	if err != nil {

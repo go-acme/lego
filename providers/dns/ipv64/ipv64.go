@@ -93,14 +93,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	sub, root, err := splitDomain(dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("ipv64: %w", err)
 	}
 
-	err = d.client.AddRecord(context.Background(), root, sub, "TXT", info.Value)
+	err = d.client.AddRecord(ctx, root, sub, "TXT", info.Value)
 	if err != nil {
 		return fmt.Errorf("ipv64: %w", err)
 	}
@@ -110,14 +111,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp clears IPv64 TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	sub, root, err := splitDomain(dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("ipv64: %w", err)
 	}
 
-	err = d.client.DeleteRecord(context.Background(), root, sub, "TXT", info.Value)
+	err = d.client.DeleteRecord(ctx, root, sub, "TXT", info.Value)
 	if err != nil {
 		return fmt.Errorf("ipv64: %w", err)
 	}

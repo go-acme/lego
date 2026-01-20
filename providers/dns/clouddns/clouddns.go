@@ -107,19 +107,21 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("clouddns: could not find zone for domain %q: %w", domain, err)
 	}
 
-	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	err = d.client.AddRecord(ctx, authZone, info.EffectiveFQDN, info.Value)
+	err = d.client.AddRecord(ctxAuth, authZone, info.EffectiveFQDN, info.Value)
 	if err != nil {
 		return fmt.Errorf("clouddns: add record: %w", err)
 	}
@@ -129,19 +131,21 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("clouddns: could not find zone for domain %q: %w", domain, err)
 	}
 
-	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	err = d.client.DeleteRecord(ctx, authZone, info.EffectiveFQDN)
+	err = d.client.DeleteRecord(ctxAuth, authZone, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("clouddns: delete record: %w", err)
 	}

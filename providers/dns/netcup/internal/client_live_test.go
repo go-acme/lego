@@ -35,9 +35,9 @@ func TestClient_GetDNSRecords_Live(t *testing.T) {
 	ctx, err := client.CreateSessionContext(t.Context())
 	require.NoError(t, err)
 
-	info := dns01.GetChallengeInfo(envTest.GetDomain(), "123d==")
+	info := dns01.GetChallengeInfo(ctx, envTest.GetDomain(), "123d==")
 
-	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	require.NoError(t, err)
 
 	zone = dns01.UnFqdn(zone)
@@ -68,9 +68,9 @@ func TestClient_UpdateDNSRecord_Live(t *testing.T) {
 	ctx, err := client.CreateSessionContext(t.Context())
 	require.NoError(t, err)
 
-	info := dns01.GetChallengeInfo(envTest.GetDomain(), "123d==")
+	info := dns01.GetChallengeInfo(ctx, envTest.GetDomain(), "123d==")
 
-	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	require.NotErrorIs(t, err, fmt.Errorf("error finding DNSZone, %w", err))
 
 	hostname := strings.Replace(info.EffectiveFQDN, "."+zone, "", 1)

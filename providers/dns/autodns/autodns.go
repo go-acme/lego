@@ -119,7 +119,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	records := []*internal.ResourceRecord{{
 		Name:  info.EffectiveFQDN,
@@ -128,7 +129,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Value: info.Value,
 	}}
 
-	_, err := d.client.AddRecords(context.Background(), info.EffectiveFQDN, records)
+	_, err := d.client.AddRecords(ctx, info.EffectiveFQDN, records)
 	if err != nil {
 		return fmt.Errorf("autodns: add record: %w", err)
 	}
@@ -138,7 +139,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record previously created.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	records := []*internal.ResourceRecord{{
 		Name:  info.EffectiveFQDN,
@@ -147,7 +149,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Value: info.Value,
 	}}
 
-	_, err := d.client.RemoveRecords(context.Background(), info.EffectiveFQDN, records)
+	_, err := d.client.RemoveRecords(ctx, info.EffectiveFQDN, records)
 	if err != nil {
 		return fmt.Errorf("autodns: remove record: %w", err)
 	}

@@ -10,8 +10,8 @@ import (
 	"github.com/vinyldns/go-vinyldns/vinyldns"
 )
 
-func (d *DNSProvider) getRecordSet(fqdn string) (*vinyldns.RecordSet, error) {
-	zoneName, hostName, err := splitDomain(fqdn)
+func (d *DNSProvider) getRecordSet(ctx context.Context, fqdn string) (*vinyldns.RecordSet, error) {
+	zoneName, hostName, err := splitDomain(ctx, fqdn)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (d *DNSProvider) getRecordSet(fqdn string) (*vinyldns.RecordSet, error) {
 }
 
 func (d *DNSProvider) createRecordSet(ctx context.Context, fqdn string, records []vinyldns.Record) error {
-	zoneName, hostName, err := splitDomain(fqdn)
+	zoneName, hostName, err := splitDomain(ctx, fqdn)
 	if err != nil {
 		return err
 	}
@@ -118,8 +118,8 @@ func (d *DNSProvider) waitForChanges(ctx context.Context, operation string, resp
 }
 
 // splitDomain splits the hostname from the authoritative zone, and returns both parts.
-func splitDomain(fqdn string) (string, string, error) {
-	zone, err := dns01.FindZoneByFqdn(fqdn)
+func splitDomain(ctx context.Context, fqdn string) (string, string, error) {
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", "", fmt.Errorf("could not find zone: %w", err)
 	}

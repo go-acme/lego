@@ -109,9 +109,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("f5xc: could not find zone for domain %q: %w", domain, err)
 	}
@@ -174,9 +174,11 @@ func (d *DNSProvider) waitFor(ctx context.Context, operation func() error) error
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("f5xc: could not find zone for domain %q: %w", domain, err)
 	}
@@ -186,7 +188,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("f5xc: %w", err)
 	}
 
-	_, err = d.client.DeleteRRSet(context.Background(), dns01.UnFqdn(authZone), d.config.GroupName, subDomain, "TXT")
+	_, err = d.client.DeleteRRSet(ctx, dns01.UnFqdn(authZone), d.config.GroupName, subDomain, "TXT")
 	if err != nil {
 		return fmt.Errorf("f5xc: delete RR set: %w", err)
 	}

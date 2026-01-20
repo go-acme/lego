@@ -80,7 +80,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID string) erro
 
 // GetHostedZoneID performs a lookup to get the DNS zone which needs modifying for a given FQDN.
 func (c *Client) GetHostedZoneID(ctx context.Context, fqdn string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone: %w", err)
 	}

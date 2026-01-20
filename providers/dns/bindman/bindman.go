@@ -2,6 +2,7 @@
 package bindman
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -93,7 +94,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // This will *not* create a subzone to contain the TXT record,
 // so make sure the FQDN specified is within an extant zone.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	if err := d.client.AddRecord(info.EffectiveFQDN, "TXT", info.Value); err != nil {
 		return fmt.Errorf("bindman: %w", err)
@@ -104,7 +106,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	if err := d.client.RemoveRecord(info.EffectiveFQDN, "TXT"); err != nil {
 		return fmt.Errorf("bindman: %w", err)

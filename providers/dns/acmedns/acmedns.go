@@ -168,7 +168,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
 
 	// Compute the challenge response FQDN and TXT value for the domain based on the keyAuth.
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// Check if credentials were previously saved for this domain.
 	account, err := d.storage.Fetch(ctx, domain)

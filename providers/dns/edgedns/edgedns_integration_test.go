@@ -70,7 +70,7 @@ func TestLiveTTL(t *testing.T) {
 	}()
 
 	fqdn := "_acme-challenge." + domain + "."
-	zone, err := getZone(fqdn)
+	zone, err := getZone(t.Context(), fqdn)
 	require.NoError(t, err)
 
 	ctx := context.Background()

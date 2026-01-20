@@ -123,9 +123,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
 	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	r := internal.ResourceRecord{
 		RRName:      dns01.UnFqdn(info.EffectiveFQDN),
@@ -144,9 +143,8 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 }
 
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
 	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	params := internal.DeleteInputParameters{
 		RRName:      dns01.UnFqdn(info.EffectiveFQDN),

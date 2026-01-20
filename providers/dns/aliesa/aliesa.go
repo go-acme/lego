@@ -161,7 +161,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	siteID, err := d.getSiteID(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -192,7 +192,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// gets the record's unique ID
 	d.recordIDsMu.Lock()
@@ -226,7 +226,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) getSiteID(ctx context.Context, fqdn string) (int64, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return 0, fmt.Errorf("aliesa: could not find zone for domain %q: %w", fqdn, err)
 	}
@@ -242,10 +242,8 @@ func (d *DNSProvider) getSiteID(ctx context.Context, fqdn string) (int64, error)
 	}
 
 	for f := range dns01.UnFqdnDomainsSeq(fqdn) {
-		domain := dns01.UnFqdn(f)
-
 		for _, site := range lsResp.Body.GetSites() {
-			if ptr.Deref(site.GetSiteName()) == domain {
+			if ptr.Deref(site.GetSiteName()) == f {
 				return ptr.Deref(site.GetSiteId()), nil
 			}
 		}

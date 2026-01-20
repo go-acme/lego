@@ -100,10 +100,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// find authZone
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("epik: could not find zone for domain %q: %w", domain, err)
 	}
@@ -120,7 +122,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:  d.config.TTL,
 	}
 
-	_, err = d.client.CreateHostRecord(context.Background(), dns01.UnFqdn(authZone), record)
+	_, err = d.client.CreateHostRecord(ctx, dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("epik: %w", err)
 	}
@@ -130,17 +132,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// find authZone
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("epik: could not find zone for domain %q: %w", domain, err)
 	}
 
 	dom := dns01.UnFqdn(authZone)
-
-	ctx := context.Background()
 
 	records, err := d.client.GetDNSRecords(ctx, dom)
 	if err != nil {

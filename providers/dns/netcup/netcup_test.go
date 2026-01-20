@@ -163,9 +163,11 @@ func TestLivePresentAndCleanup(t *testing.T) {
 	p, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	info := dns01.GetChallengeInfo(envTest.GetDomain(), "123d==")
+	ctx := t.Context()
 
-	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, envTest.GetDomain(), "123d==")
+
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	require.NoError(t, err)
 
 	zone = dns01.UnFqdn(zone)

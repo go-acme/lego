@@ -170,12 +170,15 @@ func setupDNS(ctx *cli.Context, client *lego.Client) error {
 		return err
 	}
 
-	servers := ctx.StringSlice(flgDNSResolvers)
+	opts := &dns01.Options{RecursiveNameservers: ctx.StringSlice(flgDNSResolvers)}
+
+	if ctx.IsSet(flgDNSTimeout) {
+		opts.Timeout = time.Duration(ctx.Int(flgDNSTimeout)) * time.Second
+	}
+
+	dns01.SetDefaultClient(dns01.NewClient(opts))
 
 	err = client.Challenge.SetDNS01Provider(provider,
-		dns01.CondOption(len(servers) > 0,
-			dns01.AddRecursiveNameservers(dns01.ParseNameservers(ctx.StringSlice(flgDNSResolvers)))),
-
 		dns01.CondOption(ctx.Bool(flgDNSDisableCP) || ctx.Bool(flgDNSPropagationDisableANS),
 			dns01.DisableAuthoritativeNssPropagationRequirement()),
 
@@ -186,9 +189,6 @@ func setupDNS(ctx *cli.Context, client *lego.Client) error {
 
 		dns01.CondOption(ctx.Bool(flgDNSPropagationRNS),
 			dns01.RecursiveNSsPropagationRequirement()),
-
-		dns01.CondOption(ctx.IsSet(flgDNSTimeout),
-			dns01.AddDNSTimeout(time.Duration(ctx.Int(flgDNSTimeout))*time.Second)),
 	)
 
 	return err

@@ -101,9 +101,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ionoscloud: could not find zone for domain %q: %w", domain, err)
 	}
@@ -146,7 +146,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	d.recordIDsMu.Lock()
 	zoneID, ok := d.zoneIDs[token]
@@ -164,7 +165,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("ionoscloud: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err := d.client.DeleteRecord(context.Background(), zoneID, recordID)
+	err := d.client.DeleteRecord(ctx, zoneID, recordID)
 	if err != nil {
 		return fmt.Errorf("ionoscloud: delete record: %w", err)
 	}

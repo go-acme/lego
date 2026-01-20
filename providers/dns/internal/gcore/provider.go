@@ -67,9 +67,8 @@ func NewDNSProviderConfig(config *Config, baseURL string) (*DNSProvider, error) 
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
 	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.guessZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -86,9 +85,8 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
 	ctx := context.Background()
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.guessZone(ctx, info.EffectiveFQDN)
 	if err != nil {

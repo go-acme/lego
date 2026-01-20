@@ -165,7 +165,7 @@ func TestDNSProvider_FindZoneAndRecordName(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			zone, recordName, err := provider.findZoneAndRecordName(test.fqdn)
+			zone, recordName, err := provider.findZoneAndRecordName(t.Context(), test.fqdn)
 			require.NoError(t, err)
 			assert.Equal(t, test.expected.zone, zone)
 			assert.Equal(t, test.expected.recordName, recordName)

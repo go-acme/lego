@@ -126,9 +126,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("mythicbeasts: could not find zone for domain %q: %w", domain, err)
 	}
@@ -140,12 +142,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone = dns01.UnFqdn(authZone)
 
-	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
 	if err != nil {
 		return fmt.Errorf("mythicbeasts: login: %w", err)
 	}
 
-	err = d.client.CreateTXTRecord(ctx, authZone, subDomain, info.Value, d.config.TTL)
+	err = d.client.CreateTXTRecord(ctxAuth, authZone, subDomain, info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("mythicbeasts: CreateTXTRecord: %w", err)
 	}
@@ -155,9 +157,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	ctx := context.Background()
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("mythicbeasts: could not find zone for domain %q: %w", domain, err)
 	}
@@ -169,12 +173,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone = dns01.UnFqdn(authZone)
 
-	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
 	if err != nil {
 		return fmt.Errorf("mythicbeasts: login: %w", err)
 	}
 
-	err = d.client.RemoveTXTRecord(ctx, authZone, subDomain, info.Value)
+	err = d.client.RemoveTXTRecord(ctxAuth, authZone, subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("mythicbeasts: RemoveTXTRecord: %w", err)
 	}

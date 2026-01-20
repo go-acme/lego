@@ -1,6 +1,7 @@
 package log
 
 import (
+	"context"
 	"log/slog"
 	"os"
 	"sync/atomic"
@@ -22,27 +23,27 @@ func SetDefault(l *slog.Logger) {
 }
 
 // Fatal calls [Logger.Error] on the default logger and exit with code 1.
-func Fatal(msg string, args ...any) {
-	Default().Error(msg, args...)
+func Fatal(msg string, args ...slog.Attr) {
+	Error(msg, args...)
 	os.Exit(1)
 }
 
 // Debug calls [Logger.Debug] on the default logger.
-func Debug(msg string, args ...any) {
-	Default().Debug(msg, args...)
+func Debug(msg string, args ...slog.Attr) {
+	Default().LogAttrs(context.Background(), slog.LevelDebug, msg, args...)
 }
 
 // Info calls [Logger.Info] on the default logger.
-func Info(msg string, args ...any) {
-	Default().Info(msg, args...)
+func Info(msg string, args ...slog.Attr) {
+	Default().LogAttrs(context.Background(), slog.LevelInfo, msg, args...)
 }
 
 // Warn calls [Logger.Warn] on the default logger.
-func Warn(msg string, args ...any) {
-	Default().Warn(msg, args...)
+func Warn(msg string, args ...slog.Attr) {
+	Default().LogAttrs(context.Background(), slog.LevelWarn, msg, args...)
 }
 
 // Error calls [Logger.Error] on the default logger.
-func Error(msg string, args ...any) {
-	Default().Error(msg, args...)
+func Error(msg string, args ...slog.Attr) {
+	Default().LogAttrs(context.Background(), slog.LevelError, msg, args...)
 }

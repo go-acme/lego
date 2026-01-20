@@ -5,6 +5,7 @@
             <faultcode>SOAP-ENV:Server</faultcode>
             <faultstring>zone_not_found</faultstring>
             <faultactor>KasApi</faultactor>
+            <detail>example.com</detail>
         </SOAP-ENV:Fault>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>

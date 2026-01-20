@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-acme/lego/v5/challenge/http01"
-	"github.com/rainycape/memcache"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -56,8 +56,9 @@ func TestMemcachedPresentSingleHost(t *testing.T) {
 
 	err = p.Present(t.Context(), domain, token, keyAuth)
 	require.NoError(t, err)
-	mc, err := memcache.New(memcachedHosts[0])
-	require.NoError(t, err)
+
+	mc := memcache.New(memcachedHosts[0])
+
 	i, err := mc.Get(challengePath)
 	require.NoError(t, err)
 	assert.Equal(t, i.Value, []byte(keyAuth))
@@ -77,8 +78,8 @@ func TestMemcachedPresentMultiHost(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, host := range memcachedHosts {
-		mc, err := memcache.New(host)
-		require.NoError(t, err)
+		mc := memcache.New(host)
+
 		i, err := mc.Get(challengePath)
 		require.NoError(t, err)
 		assert.Equal(t, i.Value, []byte(keyAuth))
@@ -100,8 +101,8 @@ func TestMemcachedPresentPartialFailureMultiHost(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, host := range memcachedHosts {
-		mc, err := memcache.New(host)
-		require.NoError(t, err)
+		mc := memcache.New(host)
+
 		i, err := mc.Get(challengePath)
 		require.NoError(t, err)
 		assert.Equal(t, i.Value, []byte(keyAuth))

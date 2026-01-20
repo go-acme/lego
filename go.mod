@@ -27,6 +27,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.5
 	github.com/aziontech/azionapi-go-sdk v0.144.0
 	github.com/baidubce/bce-sdk-go v0.9.256
+	github.com/bradfitz/gomemcache v0.0.0-20250403215159-8d39553ac7cf
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/dnsimple/dnsimple-go/v4 v4.0.0
 	github.com/exoscale/egoscale/v3 v3.1.33
@@ -72,7 +73,6 @@ require (
 	github.com/nzdjb/go-metaname v1.0.0
 	github.com/ovh/go-ovh v1.9.0
 	github.com/pquerna/otp v1.5.0
-	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/regfish/regfish-dnsapi-go v0.1.1
 	github.com/sacloud/api-client-go v0.3.3
 	github.com/sacloud/iaas-api-go v1.23.1

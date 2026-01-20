@@ -182,7 +182,7 @@ func (c *Client) do(req *http.Request, result any) error {
 				return fmt.Errorf("parse flood protection delay: %w", envlp.Body.Fault)
 			}
 
-			c.updateFloodTime(ft * 2)
+			c.updateFloodTime(ft)
 
 			return envlp.Body.Fault
 		}

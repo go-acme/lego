@@ -129,7 +129,7 @@ func (c *Client) newRequest(ctx context.Context, action string, requestParams an
 	return req, nil
 }
 
-func (c *Client) doRequest(ctx context.Context, action string, requestParams any, result any) error {
+func (c *Client) doRequest(ctx context.Context, action string, requestParams, result any) error {
 	return wait.Retry(ctx,
 		func() error {
 			req, err := c.newRequest(ctx, action, requestParams)

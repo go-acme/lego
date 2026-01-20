@@ -136,7 +136,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	for z := range dns01.DomainsSeq(info.EffectiveFQDN) {
 		_, errG := d.client.GetDNSSettings(ctx, z, "")
 		if errG != nil {
-			log.Infof("allinkl: get DNS settings zone[%s] %v", z, errG)
+			log.Infof("allinkl: get DNS settings zone[%q] %v", z, errG)
 			continue
 		}
 

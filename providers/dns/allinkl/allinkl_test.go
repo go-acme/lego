@@ -224,7 +224,7 @@ func TestDNSProvider_Present(t *testing.T) {
 				case "get_dns_settings":
 					params := kReq.RequestParams.(map[string]any)
 
-					if params["zone_host"] == "_acme-challenge.example.com" {
+					if params["zone_host"] == "_acme-challenge.example.com." {
 						servermock.ResponseFromInternal("get_dns_settings_not_found.xml").ServeHTTP(rw, req)
 					} else {
 						servermock.ResponseFromInternal("get_dns_settings.xml").ServeHTTP(rw, req)

@@ -1,6 +1,7 @@
 package dnschallenge
 
 import (
+	"context"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -41,11 +42,11 @@ var load = loader.EnvLoader{
 }
 
 func TestMain(m *testing.M) {
-	os.Exit(load.MainTest(m))
+	os.Exit(load.MainTest(context.Background(), m))
 }
 
 func TestDNSHelp(t *testing.T) {
-	output, err := load.RunLegoCombinedOutput("dnshelp")
+	output, err := load.RunLegoCombinedOutput(t.Context(), "dnshelp")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", output)
 		t.Fatal(err)
@@ -55,9 +56,9 @@ func TestDNSHelp(t *testing.T) {
 }
 
 func TestChallengeDNS_Run(t *testing.T) {
-	loader.CleanLegoFiles()
+	loader.CleanLegoFiles(t.Context())
 
-	err := load.RunLego(
+	err := load.RunLego(t.Context(),
 		"--accept-tos",
 		"--dns", "exec",
 		"--dns.resolvers", ":8053",

@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"context"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -48,11 +49,11 @@ var load = loader.EnvLoader{
 }
 
 func TestMain(m *testing.M) {
-	os.Exit(load.MainTest(m))
+	os.Exit(load.MainTest(context.Background(), m))
 }
 
 func TestHelp(t *testing.T) {
-	output, err := load.RunLegoCombinedOutput("-h")
+	output, err := load.RunLegoCombinedOutput(t.Context(), "-h")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", output)
 		t.Fatal(err)
@@ -62,9 +63,9 @@ func TestHelp(t *testing.T) {
 }
 
 func TestChallengeHTTP_Run(t *testing.T) {
-	loader.CleanLegoFiles()
+	loader.CleanLegoFiles(t.Context())
 
-	err := load.RunLego(
+	err := load.RunLego(t.Context(),
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -78,9 +79,9 @@ func TestChallengeHTTP_Run(t *testing.T) {
 }
 
 func TestChallengeTLS_Run_Domains(t *testing.T) {
-	loader.CleanLegoFiles()
+	loader.CleanLegoFiles(t.Context())
 
-	err := load.RunLego(
+	err := load.RunLego(t.Context(),
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -94,9 +95,9 @@ func TestChallengeTLS_Run_Domains(t *testing.T) {
 }
 
 func TestChallengeTLS_Run_IP(t *testing.T) {
-	loader.CleanLegoFiles()
+	loader.CleanLegoFiles(t.Context())
 
-	err := load.RunLego(
+	err := load.RunLego(t.Context(),
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -110,11 +111,11 @@ func TestChallengeTLS_Run_IP(t *testing.T) {
 }
 
 func TestChallengeTLS_Run_CSR(t *testing.T) {
-	loader.CleanLegoFiles()
+	loader.CleanLegoFiles(t.Context())
 
 	csrPath := createTestCSRFile(t, true)
 
-	err := load.RunLego(
+	err := load.RunLego(t.Context(),
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -128,11 +129,11 @@ func TestChallengeTLS_Run_CSR(t *testing.T) {
 }
 
 func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
-	loader.CleanLegoFiles()
+	loader.CleanLegoFiles(t.Context())
 
 	csrPath := createTestCSRFile(t, false)
 
-	err := load.RunLego(
+	err := load.RunLego(t.Context(),
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -146,9 +147,9 @@ func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
 }
 
 func TestChallengeTLS_Run_Revoke(t *testing.T) {
-	loader.CleanLegoFiles()
+	loader.CleanLegoFiles(t.Context())
 
-	err := load.RunLego(
+	err := load.RunLego(t.Context(),
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -161,7 +162,7 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = load.RunLego(
+	err = load.RunLego(t.Context(),
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -175,9 +176,9 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 }
 
 func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
-	loader.CleanLegoFiles()
+	loader.CleanLegoFiles(t.Context())
 
-	err := load.RunLego(
+	err := load.RunLego(t.Context(),
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -189,7 +190,7 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = load.RunLego(
+	err = load.RunLego(t.Context(),
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",

@@ -7,9 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"math/rand"
 	"os"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme/api"
@@ -435,7 +437,7 @@ func needRenewalDynamic(x509Cert *x509.Certificate, domain string, now time.Time
 	}
 
 	log.Infof(log.LazySprintf("Skip renewal: The certificate expires at %s, the renewal can be performed in %s.",
-		x509Cert.NotAfter.Format(time.RFC3339), dueDate.Sub(now)), log.DomainAttr(domain))
+		x509Cert.NotAfter.Format(time.RFC3339), FormattableDuration(dueDate.Sub(now))), log.DomainAttr(domain))
 
 	return false
 }
@@ -495,4 +497,40 @@ func merge(prevDomains, nextDomains []string) []string {
 	}
 
 	return prevDomains
+}
+
+type FormattableDuration time.Duration
+
+func (f FormattableDuration) String() string {
+	d := time.Duration(f)
+
+	days := int(math.Trunc(d.Hours() / 24))
+	hours := int(d.Hours()) % 24
+	minutes := int(d.Minutes()) % 60
+	seconds := int(d.Seconds()) % 60
+	ns := int(d.Nanoseconds()) % int(time.Second)
+
+	var s strings.Builder
+
+	if days > 0 {
+		s.WriteString(fmt.Sprintf("%dd", days))
+	}
+
+	if hours > 0 {
+		s.WriteString(fmt.Sprintf("%dh", hours))
+	}
+
+	if minutes > 0 {
+		s.WriteString(fmt.Sprintf("%dm", minutes))
+	}
+
+	if seconds > 0 {
+		s.WriteString(fmt.Sprintf("%ds", seconds))
+	}
+
+	if ns > 0 {
+		s.WriteString(fmt.Sprintf("%dns", ns))
+	}
+
+	return s.String()
 }

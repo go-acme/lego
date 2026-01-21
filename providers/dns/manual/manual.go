@@ -23,8 +23,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 }
 
 // Present prints instructions for manually creating the TXT record.
-func (*DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
+func (*DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
@@ -45,8 +44,7 @@ func (*DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp prints instructions for manually removing the TXT record.
-func (*DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
+func (*DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)

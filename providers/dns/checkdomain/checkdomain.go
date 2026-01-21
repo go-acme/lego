@@ -102,9 +102,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	domainID, err := d.client.GetDomainIDByName(ctx, domain)
 	if err != nil {
@@ -132,9 +130,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record previously created.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	domainID, err := d.client.GetDomainIDByName(ctx, domain)
 	if err != nil {

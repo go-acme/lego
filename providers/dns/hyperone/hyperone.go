@@ -110,8 +110,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
@@ -143,8 +142,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters and recordset if no other records are remaining.
 // There is a small possibility that race will cause to delete recordset with records for other DNS Challenges.
-func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)

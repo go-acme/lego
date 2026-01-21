@@ -101,7 +101,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -115,7 +115,7 @@ func TestLiveCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -152,7 +152,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json")).
 		Build(t)
 
-	err := provider.Present("example.com", "abc", "123d==")
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 }
 
@@ -168,6 +168,6 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	provider.zoneIDs[token] = "e74d0d15-f567-4b7b-9069-26ee1f93bae3"
 	provider.recordIDs[token] = "90d81ac0-3a30-44d4-95a5-12959effa6ee"
 
-	err := provider.CleanUp("example.com", token, "123d==")
+	err := provider.CleanUp(t.Context(), "example.com", token, "123d==")
 	require.NoError(t, err)
 }

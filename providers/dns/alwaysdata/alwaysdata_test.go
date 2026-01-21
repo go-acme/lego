@@ -115,7 +115,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -129,7 +129,7 @@ func TestLiveCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -164,7 +164,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.CheckRequestJSONBodyFromInternal("record_add-request.json")).
 		Build(t)
 
-	err := provider.Present("example.com", "abc", "123d==")
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 }
 
@@ -182,6 +182,6 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			servermock.Noop()).
 		Build(t)
 
-	err := provider.CleanUp("example.com", "abc", "123d==")
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 }

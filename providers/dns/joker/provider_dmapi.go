@@ -77,9 +77,7 @@ func (d *dmapiProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *dmapiProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *dmapiProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
@@ -92,7 +90,7 @@ func (d *dmapiProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	ctxAuth, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
 	if err != nil {
 		return fmt.Errorf("joker: create authenticated context: %w", err)
 	}
@@ -113,9 +111,7 @@ func (d *dmapiProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *dmapiProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *dmapiProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
@@ -128,7 +124,7 @@ func (d *dmapiProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	ctxAuth, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
 	if err != nil {
 		return fmt.Errorf("joker: create authenticated context: %w", err)
 	}

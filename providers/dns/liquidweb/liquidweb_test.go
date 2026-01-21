@@ -148,7 +148,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockProvider(t)
 
-	err := provider.Present("tacoman.example", "", "")
+	err := provider.Present(t.Context(), "tacoman.example", "", "")
 	require.NoError(t, err)
 }
 
@@ -164,7 +164,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	provider.recordIDs["123d=="] = 1234567
 
-	err := provider.CleanUp("tacoman.example.", "123d==", "")
+	err := provider.CleanUp(t.Context(), "tacoman.example.", "123d==", "")
 	require.NoError(t, err)
 }
 
@@ -227,7 +227,7 @@ func TestDNSProvider(t *testing.T) {
 			provider := mockProvider(t, test.initRecs...)
 
 			if test.present {
-				err := provider.Present(test.domain, test.token, test.keyAuth)
+				err := provider.Present(t.Context(), test.domain, test.token, test.keyAuth)
 				if test.expPresentErr == "" {
 					require.NoError(t, err)
 				} else {
@@ -236,7 +236,7 @@ func TestDNSProvider(t *testing.T) {
 			}
 
 			if test.cleanup {
-				err := provider.CleanUp(test.domain, test.token, test.keyAuth)
+				err := provider.CleanUp(t.Context(), test.domain, test.token, test.keyAuth)
 				require.NoError(t, err)
 			}
 		})
@@ -253,7 +253,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -269,6 +269,6 @@ func TestLiveCleanUp(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

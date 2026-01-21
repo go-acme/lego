@@ -47,13 +47,13 @@ func TestDNSProviderManual(t *testing.T) {
 			manualProvider, err := NewDNSProvider()
 			require.NoError(t, err)
 
-			err = manualProvider.Present("example.com", "", "")
+			err = manualProvider.Present(t.Context(), "example.com", "", "")
 			if test.expectError {
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
 
-				err = manualProvider.CleanUp("example.com", "", "")
+				err = manualProvider.CleanUp(t.Context(), "example.com", "", "")
 				require.NoError(t, err)
 			}
 		})

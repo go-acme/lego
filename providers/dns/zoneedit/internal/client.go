@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -41,15 +42,15 @@ func NewClient(user, authToken string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) CreateTXTRecord(domain, rdata string) error {
-	return c.perform("txt-create.php", domain, rdata)
+func (c *Client) CreateTXTRecord(ctx context.Context, domain, rdata string) error {
+	return c.perform(ctx, "txt-create.php", domain, rdata)
 }
 
-func (c *Client) DeleteTXTRecord(domain, rdata string) error {
-	return c.perform("txt-delete.php", domain, rdata)
+func (c *Client) DeleteTXTRecord(ctx context.Context, domain, rdata string) error {
+	return c.perform(ctx, "txt-delete.php", domain, rdata)
 }
 
-func (c *Client) perform(actionPath, domain, rdata string) error {
+func (c *Client) perform(ctx context.Context, actionPath, domain, rdata string) error {
 	endpoint := c.baseURL.JoinPath(actionPath)
 
 	query := endpoint.Query()
@@ -57,7 +58,7 @@ func (c *Client) perform(actionPath, domain, rdata string) error {
 	query.Set("rdata", rdata)
 	endpoint.RawQuery = query.Encode()
 
-	req, err := http.NewRequest(http.MethodGet, endpoint.String(), http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), http.NoBody)
 	if err != nil {
 		return err
 	}

@@ -77,7 +77,7 @@ func (c *Challenge) PreSolve(ctx context.Context, authz acme.Authorization) erro
 		return err
 	}
 
-	err = c.provider.Present(authz.Identifier.Value, chlng.Token, keyAuth)
+	err = c.provider.Present(ctx, authz.Identifier.Value, chlng.Token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("[%s] acme: error presenting token: %w", domain, err)
 	}
@@ -134,7 +134,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 }
 
 // CleanUp cleans the challenge.
-func (c *Challenge) CleanUp(authz acme.Authorization) error {
+func (c *Challenge) CleanUp(ctx context.Context, authz acme.Authorization) error {
 	log.Info("acme: Cleaning DNS-01 challenge.", "domain", challenge.GetTargetedDomain(authz))
 
 	chlng, err := challenge.FindChallenge(challenge.DNS01, authz)
@@ -147,7 +147,7 @@ func (c *Challenge) CleanUp(authz acme.Authorization) error {
 		return err
 	}
 
-	return c.provider.CleanUp(authz.Identifier.Value, chlng.Token, keyAuth)
+	return c.provider.CleanUp(ctx, authz.Identifier.Value, chlng.Token, keyAuth)
 }
 
 func (c *Challenge) Sequential() (bool, time.Duration) {

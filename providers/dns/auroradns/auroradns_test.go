@@ -160,7 +160,7 @@ func TestDNSProvider_Present(t *testing.T) {
 				WithStatusCode(http.StatusCreated)).
 		Build(t)
 
-	err := provider.Present("example.com", "", "foobar")
+	err := provider.Present(t.Context(), "example.com", "", "foobar")
 	require.NoError(t, err)
 }
 
@@ -185,9 +185,9 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 				WithStatusCode(http.StatusCreated)).
 		Build(t)
 
-	err := provider.Present("example.com", "", "foobar")
+	err := provider.Present(t.Context(), "example.com", "", "foobar")
 	require.NoError(t, err)
 
-	err = provider.CleanUp("example.com", "", "foobar")
+	err = provider.CleanUp(t.Context(), "example.com", "", "foobar")
 	require.NoError(t, err)
 }

@@ -73,13 +73,13 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		return err
 	}
 
-	err = c.provider.Present(domain, chlng.Token, keyAuth)
+	err = c.provider.Present(ctx, domain, chlng.Token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("[%s] acme: error presenting token: %w", challenge.GetTargetedDomain(authz), err)
 	}
 
 	defer func() {
-		err := c.provider.CleanUp(domain, chlng.Token, keyAuth)
+		err := c.provider.CleanUp(ctx, domain, chlng.Token, keyAuth)
 		if err != nil {
 			log.Warn("acme: cleaning up failed.", "domain", challenge.GetTargetedDomain(authz), err)
 		}

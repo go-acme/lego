@@ -186,7 +186,7 @@ func TestDNSProvider_Present(t *testing.T) {
 	domain := "example.com"
 	keyAuth := "123456d=="
 
-	err := provider.Present(domain, "", keyAuth)
+	err := provider.Present(t.Context(), domain, "", keyAuth)
 	require.NoError(t, err)
 }
 

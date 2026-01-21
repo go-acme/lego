@@ -193,7 +193,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 
 	domain := "example.com"
 
-	err := provider.Present(domain, "", "")
+	err := provider.Present(t.Context(), domain, "", "")
 	require.NoError(t, err)
 }
 
@@ -266,7 +266,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 
 	domain := "example.com"
 
-	err := provider.Present(domain, "", "")
+	err := provider.Present(t.Context(), domain, "", "")
 	require.NoError(t, err)
 }
 
@@ -302,7 +302,7 @@ func TestPresentSkipExistingRR(t *testing.T) {
 
 	domain := "example.com"
 
-	err := provider.Present(domain, "", "")
+	err := provider.Present(t.Context(), domain, "", "")
 	require.NoError(t, err)
 }
 
@@ -315,7 +315,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProviderCredentials(envTest.GetValue(EnvProject))
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -330,10 +330,10 @@ func TestLivePresentMultiple(t *testing.T) {
 	require.NoError(t, err)
 
 	// Check that we're able to create multiple entries
-	err = provider.Present(envTest.GetDomain(), "1", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "1", "123d==")
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "2", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "2", "123d==")
 	require.NoError(t, err)
 }
 
@@ -349,7 +349,7 @@ func TestLiveCleanUp(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 

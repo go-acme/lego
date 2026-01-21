@@ -137,7 +137,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	assert.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	assert.NoError(t, err)
 }
 
@@ -151,7 +151,7 @@ func TestLiveCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	assert.NoError(t, err)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	assert.NoError(t, err)
 }
 
@@ -194,7 +194,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		).
 		Build(t)
 
-	err := provider.Present("example.com", "", "123d==")
+	err := provider.Present(t.Context(), "example.com", "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -212,7 +212,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		).
 		Build(t)
 
-	err := provider.CleanUp("example.com", "", "123d==")
+	err := provider.CleanUp(t.Context(), "example.com", "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -227,6 +227,6 @@ func TestDNSProvider_CleanUp_empty(t *testing.T) {
 			servermock.Noop().WithStatusCode(http.StatusInternalServerError)).
 		Build(t)
 
-	err := provider.CleanUp("example.com", "", "123d==")
+	err := provider.CleanUp(t.Context(), "example.com", "", "123d==")
 	require.NoError(t, err)
 }

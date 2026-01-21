@@ -2,6 +2,7 @@
 package cloudxns
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"time"
@@ -51,12 +52,12 @@ func NewDNSProviderConfig(_ *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(_, _, _ string) error {
+func (d *DNSProvider) Present(ctx context.Context, _, _, _ string) error {
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(_, _, _ string) error {
+func (d *DNSProvider) CleanUp(ctx context.Context, _, _, _ string) error {
 	return nil
 }
 

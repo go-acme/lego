@@ -50,15 +50,15 @@ func getOIDCAssertion(config *Config) func(ctx context.Context) (string, error) 
 		}
 
 		if token == "" && config.OIDCRequestURL != "" && config.OIDCRequestToken != "" {
-			return getOIDCToken(config)
+			return getOIDCToken(ctx, config)
 		}
 
 		return token, nil
 	}
 }
 
-func getOIDCToken(config *Config) (string, error) {
-	req, err := http.NewRequest(http.MethodGet, config.OIDCRequestURL, http.NoBody)
+func getOIDCToken(ctx context.Context, config *Config) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, config.OIDCRequestURL, http.NoBody)
 	if err != nil {
 		return "", fmt.Errorf("azuredns: failed to build OIDC request: %w", err)
 	}

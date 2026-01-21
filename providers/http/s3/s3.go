@@ -43,9 +43,7 @@ func NewHTTPProvider(bucket string) (*HTTPProvider, error) {
 }
 
 // Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given s3 bucket.
-func (s *HTTPProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
+func (s *HTTPProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	params := &s3.PutObjectInput{
 		ACL:    "public-read",
 		Bucket: aws.String(s.bucket),
@@ -62,9 +60,7 @@ func (s *HTTPProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the file created for the challenge.
-func (s *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
+func (s *HTTPProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	params := &s3.DeleteObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(strings.Trim(http01.ChallengePath(token), "/")),

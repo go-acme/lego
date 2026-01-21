@@ -168,7 +168,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			provider := test.builder.Build(t)
 
-			err := provider.Present(domain, "", keyAuth)
+			err := provider.Present(t.Context(), domain, "", keyAuth)
 			if test.expectedError == "" {
 				assert.NoError(t, err)
 			} else {
@@ -287,7 +287,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			provider := test.builder.Build(t)
 
-			err := provider.CleanUp(domain, "", keyAuth)
+			err := provider.CleanUp(t.Context(), domain, "", keyAuth)
 			if test.expectedError == "" {
 				assert.NoError(t, err)
 			} else {

@@ -175,7 +175,7 @@ func TestDNSProvider_Present_success(t *testing.T) {
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	err = provider.Present(fakeDomain, "", fakeKeyAuth)
+	err = provider.Present(t.Context(), fakeDomain, "", fakeKeyAuth)
 	require.NoError(t, err)
 }
 
@@ -200,7 +200,7 @@ func TestDNSProvider_Present_success_updatePacket(t *testing.T) {
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	err = provider.Present(fakeDomain, "", fakeKeyAuth)
+	err = provider.Present(t.Context(), fakeDomain, "", fakeKeyAuth)
 	require.NoError(t, err)
 
 	select {
@@ -249,7 +249,7 @@ func TestDNSProvider_Present_error(t *testing.T) {
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	err = provider.Present(fakeDomain, "", fakeKeyAuth)
+	err = provider.Present(t.Context(), fakeDomain, "", fakeKeyAuth)
 	require.Error(t, err)
 
 	if !strings.Contains(err.Error(), "NOTZONE") {
@@ -277,7 +277,7 @@ func TestDNSProvider_Present_tsig_success(t *testing.T) {
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	err = provider.Present(fakeDomain, "", fakeKeyAuth)
+	err = provider.Present(t.Context(), fakeDomain, "", fakeKeyAuth)
 	require.NoError(t, err)
 }
 
@@ -301,7 +301,7 @@ func TestDNSProvider_Present_tsig_error(t *testing.T) {
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	err = provider.Present(fakeDomain, "", fakeKeyAuth)
+	err = provider.Present(t.Context(), fakeDomain, "", fakeKeyAuth)
 	require.Error(t, err)
 	require.EqualError(t, err, "rfc2136: failed to insert: DNS update failed: server replied: NOTZONE")
 }

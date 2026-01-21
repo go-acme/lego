@@ -85,14 +85,14 @@ func TestDNSProvider_Present(t *testing.T) {
 			provider.client = client
 
 			if test.callAddTXTRecord {
-				client.On("AddTXTRecord", exampleDomain, exampleSubDomain, config.TTL, exampleRdata).Return(test.addTXTRecordError)
+				client.On("AddTXTRecord", mock.Anything, exampleDomain, exampleSubDomain, config.TTL, exampleRdata).Return(test.addTXTRecordError)
 			}
 
 			if test.callGetTXTRecords {
-				client.On("GetTXTRecords", exampleDomain, exampleSubDomain).Return(test.getTXTRecordsReturn, test.getTXTRecordsError)
+				client.On("GetTXTRecords", mock.Anything, exampleDomain, exampleSubDomain).Return(test.getTXTRecordsReturn, test.getTXTRecordsError)
 			}
 
-			err = provider.Present(exampleDomain, "token", "key")
+			err = provider.Present(t.Context(), exampleDomain, "token", "key")
 
 			client.AssertExpectations(t)
 
@@ -186,18 +186,18 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			provider.inProgressInfo["token"] = 12345678
 
 			if test.callAddTXTRecord {
-				client.On("RemoveTXTRecord", "example.com", "_acme-challenge", 12345678).Return(test.removeTXTRecordError)
+				client.On("RemoveTXTRecord", mock.Anything, "example.com", "_acme-challenge", 12345678).Return(test.removeTXTRecordError)
 			}
 
 			if test.callGetTXTRecords {
-				client.On("GetTXTRecords", "example.com", "_acme-challenge").Return(test.getTXTRecordsReturn, test.getTXTRecordsError)
+				client.On("GetTXTRecords", mock.Anything, "example.com", "_acme-challenge").Return(test.getTXTRecordsReturn, test.getTXTRecordsError)
 			}
 
 			if test.callRemoveSubdomain {
-				client.On("RemoveSubdomain", "example.com", "_acme-challenge").Return(test.removeSubdomainError)
+				client.On("RemoveSubdomain", mock.Anything, "example.com", "_acme-challenge").Return(test.removeSubdomainError)
 			}
 
-			err = provider.CleanUp("example.com", "token", "key")
+			err = provider.CleanUp(t.Context(), "example.com", "token", "key")
 
 			client.AssertExpectations(t)
 
@@ -216,21 +216,21 @@ type mockedClient struct {
 }
 
 func (c *mockedClient) RemoveTXTRecord(ctx context.Context, domain, subdomain string, recordID int) error {
-	args := c.Called(domain, subdomain, recordID)
+	args := c.Called(ctx, domain, subdomain, recordID)
 	return args.Error(0)
 }
 
 func (c *mockedClient) AddTXTRecord(ctx context.Context, domain, subdomain string, ttl int, value string) error {
-	args := c.Called(domain, subdomain, ttl, value)
+	args := c.Called(ctx, domain, subdomain, ttl, value)
 	return args.Error(0)
 }
 
 func (c *mockedClient) GetTXTRecords(ctx context.Context, domain, subdomain string) ([]internal.RecordObj, error) {
-	args := c.Called(domain, subdomain)
+	args := c.Called(ctx, domain, subdomain)
 	return args.Get(0).([]internal.RecordObj), args.Error(1)
 }
 
 func (c *mockedClient) RemoveSubdomain(ctx context.Context, domain, subdomain string) error {
-	args := c.Called(domain, subdomain)
+	args := c.Called(ctx, domain, subdomain)
 	return args.Error(0)
 }

@@ -21,7 +21,7 @@ func TestHTTPProvider(t *testing.T) {
 	provider, err := NewHTTPProvider(webroot)
 	require.NoError(t, err)
 
-	err = provider.Present(domain, token, keyAuth)
+	err = provider.Present(t.Context(), domain, token, keyAuth)
 	require.NoError(t, err)
 
 	if _, err = os.Stat(challengeFilePath); os.IsNotExist(err) {
@@ -36,6 +36,6 @@ func TestHTTPProvider(t *testing.T) {
 	dataStr := string(data)
 	assert.Equal(t, keyAuth, dataStr)
 
-	err = provider.CleanUp(domain, token, keyAuth)
+	err = provider.CleanUp(t.Context(), domain, token, keyAuth)
 	require.NoError(t, err)
 }

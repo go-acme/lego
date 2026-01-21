@@ -44,7 +44,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.CheckRequestJSONBody(`{"records":[{"name":"_acme-challenge.example.com","type":"TXT","data":"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM","ttl":300}]}`)).
 		Build(t)
 
-	err := provider.Present("example.com", "token", "keyAuth")
+	err := provider.Present(t.Context(), "example.com", "token", "keyAuth")
 	require.NoError(t, err)
 }
 
@@ -65,7 +65,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 				With("id", "TXT-654321")).
 		Build(t)
 
-	err := provider.CleanUp("example.com", "token", "keyAuth")
+	err := provider.CleanUp(t.Context(), "example.com", "token", "keyAuth")
 	require.NoError(t, err)
 }
 
@@ -92,7 +92,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "112233445566==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "112233445566==")
 	require.NoError(t, err)
 }
 
@@ -108,7 +108,7 @@ func TestLiveCleanUp(t *testing.T) {
 
 	time.Sleep(15 * time.Second)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "112233445566==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "112233445566==")
 	require.NoError(t, err)
 }
 

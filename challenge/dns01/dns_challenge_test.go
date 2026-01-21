@@ -21,17 +21,17 @@ type providerMock struct {
 	present, cleanUp error
 }
 
-func (p *providerMock) Present(domain, token, keyAuth string) error { return p.present }
-func (p *providerMock) CleanUp(domain, token, keyAuth string) error { return p.cleanUp }
+func (p *providerMock) Present(_ context.Context, _, _, _ string) error { return p.present }
+func (p *providerMock) CleanUp(_ context.Context, _, _, _ string) error { return p.cleanUp }
 
 type providerTimeoutMock struct {
 	present, cleanUp  error
 	timeout, interval time.Duration
 }
 
-func (p *providerTimeoutMock) Present(domain, token, keyAuth string) error { return p.present }
-func (p *providerTimeoutMock) CleanUp(domain, token, keyAuth string) error { return p.cleanUp }
-func (p *providerTimeoutMock) Timeout() (time.Duration, time.Duration)     { return p.timeout, p.interval }
+func (p *providerTimeoutMock) Present(_ context.Context, _, _, _ string) error { return p.present }
+func (p *providerTimeoutMock) CleanUp(_ context.Context, _, _, _ string) error { return p.cleanUp }
+func (p *providerTimeoutMock) Timeout() (time.Duration, time.Duration)         { return p.timeout, p.interval }
 
 func TestChallenge_PreSolve(t *testing.T) {
 	server := tester.MockACMEServer().BuildHTTPS(t)
@@ -285,7 +285,7 @@ func TestChallenge_CleanUp(t *testing.T) {
 				},
 			}
 
-			err = chlg.CleanUp(authz)
+			err = chlg.CleanUp(t.Context(), authz)
 			if test.expectError {
 				require.Error(t, err)
 			} else {

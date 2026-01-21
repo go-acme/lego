@@ -3,6 +3,7 @@
 package azure
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -197,13 +198,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	return d.provider.Present(domain, token, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	return d.provider.Present(ctx, domain, token, keyAuth)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	return d.provider.CleanUp(domain, token, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	return d.provider.CleanUp(ctx, domain, token, keyAuth)
 }
 
 func getAuthorizer(config *Config) (autorest.Authorizer, error) {

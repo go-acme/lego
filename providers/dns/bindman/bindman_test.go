@@ -155,7 +155,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			provider := test.mock.Build(t)
 
-			err := provider.Present(test.domain, test.token, test.keyAuth)
+			err := provider.Present(t.Context(), test.domain, test.token, test.keyAuth)
 			if test.expectError {
 				require.Error(t, err)
 			} else {
@@ -200,7 +200,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			provider := test.mock.Build(t)
 
-			err := provider.CleanUp(test.domain, test.token, test.keyAuth)
+			err := provider.CleanUp(t.Context(), test.domain, test.token, test.keyAuth)
 			if test.expectError {
 				require.ErrorContains(t, err, "bindman: ERROR (400): bar; ")
 			} else {
@@ -220,7 +220,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -236,6 +236,6 @@ func TestLiveCleanUp(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

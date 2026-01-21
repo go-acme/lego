@@ -1,7 +1,6 @@
 package edgedns
 
 import (
-	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -23,11 +22,11 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 
 	// Present Twice to handle create / update
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -43,7 +42,7 @@ func TestLiveCleanUp(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -59,21 +58,21 @@ func TestLiveTTL(t *testing.T) {
 
 	domain := envTest.GetDomain()
 
-	err = provider.Present(domain, "foo", "bar")
+	ctx := t.Context()
+
+	err = provider.Present(ctx, domain, "foo", "bar")
 	require.NoError(t, err)
 
 	defer func() {
-		e := provider.CleanUp(domain, "foo", "bar")
+		e := provider.CleanUp(ctx, domain, "foo", "bar")
 		if e != nil {
 			t.Log(e)
 		}
 	}()
 
 	fqdn := "_acme-challenge." + domain + "."
-	zone, err := getZone(t.Context(), fqdn)
+	zone, err := getZone(ctx, fqdn)
 	require.NoError(t, err)
-
-	ctx := context.Background()
 
 	sess, err := session.New(session.WithSigner(provider.config))
 	require.NoError(t, err)

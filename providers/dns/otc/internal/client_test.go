@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"net/http/httptest"
 	"net/url"
 	"strconv"
@@ -33,7 +32,7 @@ func TestClient_GetZoneID(t *testing.T) {
 				With("name", "example.com.")).
 		Build(t)
 
-	zoneID, err := client.GetZoneID(context.Background(), "example.com.", false)
+	zoneID, err := client.GetZoneID(t.Context(), "example.com.", false)
 	require.NoError(t, err)
 
 	assert.Equal(t, "123123", zoneID)
@@ -48,7 +47,7 @@ func TestClient_GetZoneID_private(t *testing.T) {
 				With("type", "private")).
 		Build(t)
 
-	zoneID, err := client.GetZoneID(context.Background(), "example.com.", true)
+	zoneID, err := client.GetZoneID(t.Context(), "example.com.", true)
 	require.NoError(t, err)
 
 	assert.Equal(t, "123123", zoneID)
@@ -62,7 +61,7 @@ func TestClient_GetZoneID_error(t *testing.T) {
 				With("name", "example.com.")).
 		Build(t)
 
-	_, err := client.GetZoneID(context.Background(), "example.com.", false)
+	_, err := client.GetZoneID(t.Context(), "example.com.", false)
 	require.EqualError(t, err, "zone example.com. not found")
 }
 
@@ -76,7 +75,7 @@ func TestClient_GetRecordSetID(t *testing.T) {
 		).
 		Build(t)
 
-	recordSetID, err := client.GetRecordSetID(context.Background(), "123123", "example.com.")
+	recordSetID, err := client.GetRecordSetID(t.Context(), "123123", "example.com.")
 	require.NoError(t, err)
 
 	assert.Equal(t, "321321", recordSetID)
@@ -92,7 +91,7 @@ func TestClient_GetRecordSetID_error(t *testing.T) {
 		).
 		Build(t)
 
-	_, err := client.GetRecordSetID(context.Background(), "123123", "example.com.")
+	_, err := client.GetRecordSetID(t.Context(), "123123", "example.com.")
 	require.EqualError(t, err, "record not found")
 }
 
@@ -110,7 +109,7 @@ func TestClient_CreateRecordSet(t *testing.T) {
 		TTL:         300,
 		Records:     []string{strconv.Quote("ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")},
 	}
-	err := client.CreateRecordSet(context.Background(), "123123", rs)
+	err := client.CreateRecordSet(t.Context(), "123123", rs)
 	require.NoError(t, err)
 }
 
@@ -120,6 +119,6 @@ func TestClient_DeleteRecordSet(t *testing.T) {
 			servermock.ResponseFromFixture("zones-recordsets_DELETE.json")).
 		Build(t)
 
-	err := client.DeleteRecordSet(context.Background(), "123123", "321321")
+	err := client.DeleteRecordSet(t.Context(), "123123", "321321")
 	require.NoError(t, err)
 }

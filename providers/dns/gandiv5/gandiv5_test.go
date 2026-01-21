@@ -130,10 +130,10 @@ func TestDNSProvider(t *testing.T) {
 	provider.findZoneByFqdn = fakeFindZoneByFqdn
 
 	// run Present
-	err := provider.Present("abc.def.example.com", "", fakeKeyAuth)
+	err := provider.Present(t.Context(), "abc.def.example.com", "", fakeKeyAuth)
 	require.NoError(t, err)
 
 	// run CleanUp
-	err = provider.CleanUp("abc.def.example.com", "", fakeKeyAuth)
+	err = provider.CleanUp(t.Context(), "abc.def.example.com", "", fakeKeyAuth)
 	require.NoError(t, err)
 }

@@ -196,7 +196,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -212,7 +212,7 @@ func TestLiveCleanUp(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -227,7 +227,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.CheckRequestJSONBodyFromInternal("zones-recordsets_POST-request.json")).
 		Build(t)
 
-	err := provider.Present("example.com", "", "123d==")
+	err := provider.Present(t.Context(), "example.com", "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -243,7 +243,7 @@ func TestDNSProvider_Present_private(t *testing.T) {
 			servermock.CheckRequestJSONBodyFromInternal("zones-recordsets_POST-request.json")).
 		Build(t)
 
-	err := provider.Present("example.com", "", "123d==")
+	err := provider.Present(t.Context(), "example.com", "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -255,7 +255,7 @@ func TestDNSProvider_Present_emptyZone(t *testing.T) {
 				With("name", "example.com.")).
 		Build(t)
 
-	err := provider.Present("example.com", "", "123d==")
+	err := provider.Present(t.Context(), "example.com", "", "123d==")
 	require.EqualError(t, err, "otc: unable to get zone: zone example.com. not found")
 }
 
@@ -274,7 +274,7 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			servermock.ResponseFromInternal("zones-recordsets_DELETE.json")).
 		Build(t)
 
-	err := provider.CleanUp("example.com", "", "123d==")
+	err := provider.CleanUp(t.Context(), "example.com", "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -294,7 +294,7 @@ func TestDNSProvider_Cleanup_private(t *testing.T) {
 			servermock.ResponseFromInternal("zones-recordsets_DELETE.json")).
 		Build(t)
 
-	err := provider.CleanUp("example.com", "", "123d==")
+	err := provider.CleanUp(t.Context(), "example.com", "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -311,7 +311,7 @@ func TestDNSProvider_Cleanup_emptyRecordset(t *testing.T) {
 				With("type", "TXT")).
 		Build(t)
 
-	err := provider.CleanUp("example.com", "", "123d==")
+	err := provider.CleanUp(t.Context(), "example.com", "", "123d==")
 	require.EqualError(t, err, "otc: unable to get record _acme-challenge.example.com. for zone example.com: record not found")
 }
 

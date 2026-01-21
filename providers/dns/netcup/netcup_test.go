@@ -181,10 +181,10 @@ func TestLivePresentAndCleanup(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(fmt.Sprintf("domain(%s)", test), func(t *testing.T) {
-			err = p.Present(test, "987d", "123d==")
+			err = p.Present(t.Context(), test, "987d", "123d==")
 			require.NoError(t, err)
 
-			err = p.CleanUp(test, "987d", "123d==")
+			err = p.CleanUp(t.Context(), test, "987d", "123d==")
 			require.NoError(t, err)
 		})
 	}

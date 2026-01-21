@@ -22,7 +22,7 @@ func TestLiveTTL(t *testing.T) {
 
 	domain := envTest.GetDomain()
 
-	err = provider.Present(domain, "foo", "bar")
+	err = provider.Present(t.Context(), domain, "foo", "bar")
 	require.NoError(t, err)
 
 	// we need a separate Lightsail client here as the one in the DNS provider is unexported.
@@ -38,7 +38,7 @@ func TestLiveTTL(t *testing.T) {
 	require.NoError(t, err)
 
 	defer func() {
-		errC := provider.CleanUp(domain, "foo", "bar")
+		errC := provider.CleanUp(t.Context(), domain, "foo", "bar")
 		if errC != nil {
 			t.Log(errC)
 		}

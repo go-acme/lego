@@ -1,14 +1,17 @@
 package challenge
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 // Provider enables implementing a custom challenge
 // provider. Present presents the solution to a challenge available to
 // be solved. CleanUp will be called by the challenge if Present ends
 // in a non-error state.
 type Provider interface {
-	Present(domain, token, keyAuth string) error
-	CleanUp(domain, token, keyAuth string) error
+	Present(ctx context.Context, domain, token, keyAuth string) error
+	CleanUp(ctx context.Context, domain, token, keyAuth string) error
 }
 
 // ProviderTimeout allows for implementing a

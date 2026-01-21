@@ -2,6 +2,7 @@
 package rimuhosting
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -76,8 +77,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	err := d.prv.Present(domain, token, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	err := d.prv.Present(ctx, domain, token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("rimuhosting: %w", err)
 	}
@@ -86,8 +87,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	err := d.prv.CleanUp(domain, token, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	err := d.prv.CleanUp(ctx, domain, token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("rimuhosting: %w", err)
 	}

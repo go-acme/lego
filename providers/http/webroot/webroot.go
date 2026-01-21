@@ -2,6 +2,7 @@
 package webroot
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -25,7 +26,7 @@ func NewHTTPProvider(path string) (*HTTPProvider, error) {
 }
 
 // Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given webroot path.
-func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
+func (w *HTTPProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	var err error
 
 	challengeFilePath := filepath.Join(w.path, http01.ChallengePath(token))
@@ -44,7 +45,7 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the file created for the challenge.
-func (w *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
+func (w *HTTPProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	err := os.Remove(filepath.Join(w.path, http01.ChallengePath(token)))
 	if err != nil {
 		return fmt.Errorf("could not remove file in webroot after HTTP challenge: %w", err)

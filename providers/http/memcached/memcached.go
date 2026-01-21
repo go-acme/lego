@@ -2,6 +2,7 @@
 package memcached
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"path"
@@ -29,7 +30,7 @@ func NewMemcachedProvider(hosts []string) (*HTTPProvider, error) {
 }
 
 // Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given webroot path.
-func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
+func (w *HTTPProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	var errs []error
 
 	challengePath := path.Join("/", http01.ChallengePath(token))
@@ -56,7 +57,7 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the file created for the challenge.
-func (w *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
+func (w *HTTPProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	// Memcached will clean up itself, that's what expiration is for.
 	return nil
 }

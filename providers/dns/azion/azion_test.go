@@ -1,7 +1,6 @@
 package azion
 
 import (
-	"context"
 	"net/http/httptest"
 	"testing"
 
@@ -104,7 +103,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -118,7 +117,7 @@ func TestLiveCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -168,7 +167,7 @@ func TestDNSProvider_findZone(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			zone, err := provider.findZone(context.Background(), test.fqdn)
+			zone, err := provider.findZone(t.Context(), test.fqdn)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, zone)
@@ -203,7 +202,7 @@ func TestDNSProvider_findZone_error(t *testing.T) {
 				Route("GET /intelligent_dns", servermock.ResponseFromFixture(test.response)).
 				Build(t)
 
-			zone, err := provider.findZone(context.Background(), test.fqdn)
+			zone, err := provider.findZone(t.Context(), test.fqdn)
 			require.EqualError(t, err, test.expected)
 
 			assert.Nil(t, zone)

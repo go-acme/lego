@@ -60,9 +60,7 @@ func (d *svcProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *svcProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *svcProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
@@ -75,7 +73,7 @@ func (d *svcProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	err = d.client.SendRequest(context.Background(), dns01.UnFqdn(zone), subDomain, info.Value)
+	err = d.client.SendRequest(ctx, dns01.UnFqdn(zone), subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("joker: send request: %w", err)
 	}
@@ -84,9 +82,7 @@ func (d *svcProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *svcProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *svcProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
@@ -99,7 +95,7 @@ func (d *svcProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	err = d.client.SendRequest(context.Background(), dns01.UnFqdn(zone), subDomain, "")
+	err = d.client.SendRequest(ctx, dns01.UnFqdn(zone), subDomain, "")
 	if err != nil {
 		return fmt.Errorf("joker: send request: %w", err)
 	}

@@ -122,7 +122,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		).
 		Build(t)
 
-	err := provider.Present("example.com", "", fakeChallengeToken)
+	err := provider.Present(t.Context(), "example.com", "", fakeChallengeToken)
 	require.NoError(t, err)
 }
 
@@ -132,7 +132,7 @@ func TestDNSProvider_PresentFailed(t *testing.T) {
 			servermock.RawStringResponse(`{"data":"record_already_exists_remove_first","result":"error"}`)).
 		Build(t)
 
-	err := provider.Present("example.com", "", fakeChallengeToken)
+	err := provider.Present(t.Context(), "example.com", "", fakeChallengeToken)
 	require.EqualError(t, err, "dreamhost: add TXT record failed: record_already_exists_remove_first")
 }
 
@@ -151,7 +151,7 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 		).
 		Build(t)
 
-	err := provider.CleanUp("example.com", "", fakeChallengeToken)
+	err := provider.CleanUp(t.Context(), "example.com", "", fakeChallengeToken)
 	require.NoError(t, err)
 }
 
@@ -165,11 +165,11 @@ func TestLivePresentAndCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

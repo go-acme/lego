@@ -218,7 +218,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			provider := test.builder.Build(t)
 
-			err := provider.Present(targetDomain, "token"+test.keyAuth, test.keyAuth)
+			err := provider.Present(t.Context(), targetDomain, "token"+test.keyAuth, test.keyAuth)
 			require.NoError(t, err)
 		})
 	}
@@ -237,7 +237,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			servermock.ResponseFromFixture("recordSetChange-delete.json")).
 		Build(t)
 
-	err := provider.CleanUp(targetDomain, "123456d==", "123456d==")
+	err := provider.CleanUp(t.Context(), targetDomain, "123456d==", "123456d==")
 	require.NoError(t, err)
 }
 
@@ -251,7 +251,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -267,6 +267,6 @@ func TestLiveCleanUp(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

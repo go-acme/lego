@@ -29,7 +29,7 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 			servermock.ResponseFromFixture("success.xml")).
 		Build(t)
 
-	err := client.CreateTXTRecord("_acme-challenge.example.com", "value")
+	err := client.CreateTXTRecord(t.Context(), "_acme-challenge.example.com", "value")
 	require.NoError(t, err)
 }
 
@@ -39,7 +39,7 @@ func TestClient_CreateTXTRecord_error(t *testing.T) {
 			servermock.ResponseFromFixture("error.xml")).
 		Build(t)
 
-	err := client.CreateTXTRecord("_acme-challenge.example.com", "value")
+	err := client.CreateTXTRecord(t.Context(), "_acme-challenge.example.com", "value")
 	require.EqualError(t, err, "[status code: 200] 708: Failed Login: user (_acme-challenge.example.com)")
 }
 
@@ -49,7 +49,7 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 			servermock.ResponseFromFixture("success.xml")).
 		Build(t)
 
-	err := client.DeleteTXTRecord("_acme-challenge.example.com", "value")
+	err := client.DeleteTXTRecord(t.Context(), "_acme-challenge.example.com", "value")
 	require.NoError(t, err)
 }
 
@@ -59,6 +59,6 @@ func TestClient_DeleteTXTRecord_error(t *testing.T) {
 			servermock.ResponseFromFixture("error.xml")).
 		Build(t)
 
-	err := client.DeleteTXTRecord("_acme-challenge.example.com", "value")
+	err := client.DeleteTXTRecord(t.Context(), "_acme-challenge.example.com", "value")
 	require.EqualError(t, err, "[status code: 200] 708: Failed Login: user (_acme-challenge.example.com)")
 }

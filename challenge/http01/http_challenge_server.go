@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/textproto"
@@ -154,15 +155,15 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 				return
 			}
 
-			log.Info("Served key authentication.", "domain", domain)
+			log.Info("Served key authentication.", log.DomainAttr(domain))
 
 			return
 		}
 
 		log.Warn("Received request but the domain did not match any challenge. Please ensure you are passing the header properly.",
-			"domain", r.Host,
-			"method", r.Method,
-			"header", s.matcher.name(),
+			log.DomainAttr(r.Host),
+			slog.String("method", r.Method),
+			slog.String("header", s.matcher.name()),
 		)
 
 		_, err := w.Write([]byte("TEST"))
@@ -180,7 +181,7 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 
 	err := httpServer.Serve(s.listener)
 	if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
-		log.Warn("HTTP server serve.", "error", err)
+		log.Warn("HTTP server serve.", log.ErrorAttr(err))
 	}
 
 	s.done <- true

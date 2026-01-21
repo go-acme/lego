@@ -2,6 +2,7 @@ package dns01
 
 import (
 	"context"
+	"log/slog"
 	"slices"
 	"strings"
 
@@ -27,7 +28,10 @@ func (c *Client) lookupCNAME(ctx context.Context, fqdn string) string {
 			break
 		}
 
-		log.Info("Found CNAME entry.", "fqdn", fqdn, "cname", cname)
+		log.Info("Found CNAME entry.",
+			slog.String("fqdn", fqdn),
+			slog.String("cname", cname),
+		)
 
 		fqdn = cname
 	}

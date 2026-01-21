@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -108,7 +109,11 @@ func evaluateBody(body, hostname string) error {
 	case codeGood:
 		return nil
 	case codeNoChg:
-		log.Debug("unchanged content written to TXT record.", "hostname", hostname, "body", body)
+		log.Debug("unchanged content written to TXT record.",
+			slog.String("hostname", hostname),
+			slog.String("body", body),
+		)
+
 		return nil
 	case codeAbuse:
 		return fmt.Errorf("%s: blocked hostname for abuse: %s", body, hostname)

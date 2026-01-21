@@ -3,6 +3,7 @@ package resolver
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme"
@@ -63,7 +64,7 @@ func (p *Prober) Solve(ctx context.Context, authorizations []acme.Authorization)
 		domain := challenge.GetTargetedDomain(authz)
 		if authz.Status == acme.StatusValid {
 			// Boulder might recycle recent validated authz (see issue #267)
-			log.Info("acme: authorization already valid; skipping challenge.", "domain", domain)
+			log.Info("acme: authorization already valid; skipping challenge.", log.DomainAttr(domain))
 			continue
 		}
 
@@ -130,7 +131,7 @@ func sequentialSolve(ctx context.Context, authSolvers []*selectedAuthSolver, fai
 		if len(authSolvers)-1 > i {
 			solvr := authSolver.solver.(sequential)
 			_, interval := solvr.Sequential()
-			log.Info("sequence: wait.", "interval", interval)
+			log.Info("sequence: wait.", slog.Duration("interval", interval))
 			time.Sleep(interval)
 		}
 	}
@@ -178,7 +179,7 @@ func cleanUp(ctx context.Context, solvr solver, authz acme.Authorization) {
 
 		err := solvr.CleanUp(ctx, authz)
 		if err != nil {
-			log.Warn("acme: cleaning up failed.", "domain", domain, "error", err)
+			log.Warn("acme: cleaning up failed.", log.DomainAttr(domain), log.ErrorAttr(err))
 		}
 	}
 }

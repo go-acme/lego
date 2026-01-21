@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
@@ -113,7 +114,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	defer func() {
 		errL := d.client.Account.Logout()
 		if errL != nil {
-			log.Warn("inwx: failed to log out.", "error", errL)
+			log.Warn("inwx: failed to log out.", log.ErrorAttr(errL))
 		}
 	}()
 
@@ -160,7 +161,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	defer func() {
 		errL := d.client.Account.Logout()
 		if errL != nil {
-			log.Warn("inwx: failed to log out.", "error", errL)
+			log.Warn("inwx: failed to log out.", log.ErrorAttr(errL))
 		}
 	}()
 
@@ -221,7 +222,7 @@ func (d *DNSProvider) twoFactorAuth(info *goinwx.LoginResponse) error {
 	// To avoid using the same TAN twice, we wait until the next TOTP period.
 	sleep := d.computeSleep(time.Now())
 	if sleep != 0 {
-		log.Info("inwx: waiting for the next TOTP token", "sleep", sleep)
+		log.Info("inwx: waiting for the next TOTP token", slog.Duration("sleep", sleep))
 		time.Sleep(sleep)
 	}
 

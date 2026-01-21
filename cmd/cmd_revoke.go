@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/log"
@@ -43,7 +44,7 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 	account, keyType := setupAccount(ctx, cmd, NewAccountsStorage(cmd))
 
 	if account.Registration == nil {
-		log.Fatal("Account is not registered. Use 'run' to register a new account.", "email", account.Email)
+		log.Fatal("Account is not registered. Use 'run' to register a new account.", slog.String("email", account.Email))
 	}
 
 	client := newClient(cmd, account, keyType)
@@ -52,21 +53,21 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 	certsStorage.CreateRootFolder()
 
 	for _, domain := range cmd.StringSlice(flgDomains) {
-		log.Info("Trying to revoke the certificate.", "domain", domain)
+		log.Info("Trying to revoke the certificate.", log.DomainAttr(domain))
 
 		certBytes, err := certsStorage.ReadFile(domain, certExt)
 		if err != nil {
-			log.Fatal("Error while revoking the certificate.", "domain", domain, "error", err)
+			log.Fatal("Error while revoking the certificate.", log.DomainAttr(domain), log.ErrorAttr(err))
 		}
 
 		reason := cmd.Uint(flgReason)
 
 		err = client.Certificate.RevokeWithReason(ctx, certBytes, &reason)
 		if err != nil {
-			log.Fatal("Error while revoking the certificate.", "domain", domain, "error", err)
+			log.Fatal("Error while revoking the certificate.", log.DomainAttr(domain), log.ErrorAttr(err))
 		}
 
-		log.Info("Certificate was revoked.", "domain", domain)
+		log.Info("Certificate was revoked.", log.DomainAttr(domain))
 
 		if cmd.Bool(flgKeep) {
 			return nil
@@ -79,7 +80,7 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 			return err
 		}
 
-		log.Info("Certificate was archived", "domain", domain)
+		log.Info("Certificate was archived", log.DomainAttr(domain))
 	}
 
 	return nil

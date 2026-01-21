@@ -3,6 +3,7 @@ package wait
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
@@ -11,7 +12,10 @@ import (
 
 // For polls the given function 'f', once every 'interval', up to 'timeout'.
 func For(msg string, timeout, interval time.Duration, f func() (bool, error)) error {
-	log.Infof(log.LazySprintf("Wait for %s.", msg), "timeout", timeout, "interval", interval)
+	log.Infof(log.LazySprintf("Wait for %s.", msg),
+		slog.Duration("timeout", timeout),
+		slog.Duration("interval", interval),
+	)
 
 	var lastErr error
 

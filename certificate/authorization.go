@@ -2,6 +2,7 @@ package certificate
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme"
@@ -41,7 +42,10 @@ func (c *Certifier) getAuthorizations(ctx context.Context, order acme.ExtendedOr
 	}
 
 	for i, auth := range order.Authorizations {
-		log.Info("Authorization", "url", order.Identifiers[i].Value, "authz", auth)
+		log.Info("Authorization",
+			slog.String("url", order.Identifiers[i].Value),
+			slog.String("authz", auth),
+		)
 	}
 
 	close(resc)
@@ -54,19 +58,24 @@ func (c *Certifier) deactivateAuthorizations(ctx context.Context, order acme.Ext
 	for _, authzURL := range order.Authorizations {
 		auth, err := c.core.Authorizations.Get(ctx, authzURL)
 		if err != nil {
-			log.Info("Unable to get the authorization.", "url", authzURL, "error", err)
+			log.Info("Unable to get the authorization.",
+				slog.String("url", authzURL),
+				log.ErrorAttr(err),
+			)
+
 			continue
 		}
 
 		if auth.Status == acme.StatusValid && !force {
-			log.Info("Skipping deactivating of valid authorization.", "url", authzURL)
+			log.Info("Skipping deactivating of valid authorization.", slog.String("url", authzURL))
+
 			continue
 		}
 
-		log.Info("Deactivating authorization.", "url", authzURL)
+		log.Info("Deactivating authorization.", slog.String("url", authzURL))
 
 		if c.core.Authorizations.Deactivate(ctx, authzURL) != nil {
-			log.Info("Unable to deactivate the authorization.", "url", authzURL)
+			log.Info("Unable to deactivate the authorization.", slog.String("url", authzURL))
 		}
 	}
 }

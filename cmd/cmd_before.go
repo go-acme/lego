@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
@@ -15,7 +16,11 @@ func Before(ctx context.Context, cmd *cli.Command) (context.Context, error) {
 
 	err := createNonExistingFolder(cmd.String(flgPath))
 	if err != nil {
-		log.Fatal("Could not check/create the path.", "flag", flgPath, "filepath", cmd.String(flgPath), "error", err)
+		log.Fatal("Could not check/create the path.",
+			slog.String("flag", flgPath),
+			slog.String("filepath", cmd.String(flgPath)),
+			log.ErrorAttr(err),
+		)
 	}
 
 	if cmd.String(flgServer) == "" {

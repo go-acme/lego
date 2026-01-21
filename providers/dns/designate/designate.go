@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"slices"
 	"sync"
@@ -156,7 +157,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	if existingRecord != nil {
 		if slices.Contains(existingRecord.Records, info.Value) {
-			log.Debug("designate: the record already exists.", "value", info.Value)
+			log.Debug("designate: the record already exists.", slog.String("value", info.Value))
 			return nil
 		}
 
@@ -230,7 +231,7 @@ func (d *DNSProvider) createRecord(zoneID, fqdn, value string) error {
 
 func (d *DNSProvider) updateRecord(record *recordsets.RecordSet, value string) error {
 	if slices.Contains(record.Records, value) {
-		log.Debug("skip: the record already exists.", "value", value)
+		log.Debug("skip: the record already exists.", slog.String("value", value))
 		return nil
 	}
 

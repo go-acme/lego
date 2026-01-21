@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -138,7 +139,13 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	}
 
 	if d.config.Debug {
-		log.Info("bluecat: debug information.", "fqdn", info.EffectiveFQDN, "viewID", viewID, "zoneID", parentZoneID, "zone", name)
+		log.Info(
+			"bluecat: debug information.",
+			slog.String("fqdn", info.EffectiveFQDN),
+			slog.Uint64("viewID", uint64(viewID)),
+			slog.Uint64("zoneID", uint64(parentZoneID)),
+			slog.String("zone", name),
+		)
 	}
 
 	txtRecord := internal.Entity{

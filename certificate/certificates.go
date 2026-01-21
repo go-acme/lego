@@ -9,8 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme"
@@ -165,9 +165,9 @@ func (c *Certifier) Obtain(ctx context.Context, request ObtainRequest) (*Resourc
 	domains := sanitizeDomain(request.Domains)
 
 	if request.Bundle {
-		log.Info("acme: Obtaining bundled SAN certificate.", "domains", strings.Join(domains, ", "))
+		log.Info("acme: Obtaining bundled SAN certificate.", log.DomainsAttr(domains))
 	} else {
-		log.Info("acme: Obtaining SAN certificate.", "domains", strings.Join(domains, ", "))
+		log.Info("acme: Obtaining SAN certificate.", log.DomainsAttr(domains))
 	}
 
 	orderOpts := &api.OrderOptions{
@@ -196,7 +196,7 @@ func (c *Certifier) Obtain(ctx context.Context, request ObtainRequest) (*Resourc
 		return nil, err
 	}
 
-	log.Info("acme: Validations succeeded; requesting certificates.", "domains", strings.Join(domains, ", "))
+	log.Info("acme: Validations succeeded; requesting certificates.", log.DomainsAttr(domains))
 
 	failures := newObtainError()
 
@@ -233,9 +233,9 @@ func (c *Certifier) ObtainForCSR(ctx context.Context, request ObtainForCSRReques
 	domains := certcrypto.ExtractDomainsCSR(request.CSR)
 
 	if request.Bundle {
-		log.Info("acme: Obtaining bundled SAN certificate given a CSR.", "domains", strings.Join(domains, ", "))
+		log.Info("acme: Obtaining bundled SAN certificate given a CSR.", log.DomainsAttr(domains))
 	} else {
-		log.Info("acme: Obtaining SAN certificate given a CSR.", "domains", strings.Join(domains, ", "))
+		log.Info("acme: Obtaining SAN certificate given a CSR.", log.DomainsAttr(domains))
 	}
 
 	orderOpts := &api.OrderOptions{
@@ -264,7 +264,7 @@ func (c *Certifier) ObtainForCSR(ctx context.Context, request ObtainForCSRReques
 		return nil, err
 	}
 
-	log.Info("acme: Validations succeeded; requesting certificates.", "domains", strings.Join(domains, ", "))
+	log.Info("acme: Validations succeeded; requesting certificates.", log.DomainsAttr(domains))
 
 	failures := newObtainError()
 
@@ -414,7 +414,7 @@ func (c *Certifier) checkResponse(ctx context.Context, order acme.ExtendedOrder,
 	certRes.CertStableURL = order.Certificate
 
 	if preferredChain == "" {
-		log.Info("Server responded with a certificate.", "domain", certRes.Domain)
+		log.Info("Server responded with a certificate.", log.DomainAttr(certRes.Domain))
 
 		return true, nil
 	}
@@ -426,7 +426,10 @@ func (c *Certifier) checkResponse(ctx context.Context, order acme.ExtendedOrder,
 		}
 
 		if ok {
-			log.Info("Server responded with a certificate.", "domain", certRes.Domain, "preferredChain", preferredChain)
+			log.Info("Server responded with a certificate.",
+				log.DomainAttr(certRes.Domain),
+				slog.String("preferredChain", preferredChain),
+			)
 
 			certRes.IssuerCertificate = cert.Issuer
 			certRes.Certificate = cert.Cert
@@ -437,7 +440,9 @@ func (c *Certifier) checkResponse(ctx context.Context, order acme.ExtendedOrder,
 		}
 	}
 
-	log.Info("lego has been configured to prefer certificate chains with issuer, but no chain from the CA matched this issuer. Using the default certificate chain instead.", "preferredChain", preferredChain)
+	log.Info("lego has been configured to prefer certificate chains with issuer, but no chain from the CA matched this issuer. Using the default certificate chain instead.",
+		slog.String("preferredChain", preferredChain),
+	)
 
 	return true, nil
 }
@@ -529,7 +534,10 @@ func (c *Certifier) RenewWithOptions(ctx context.Context, certRes Resource, opti
 
 	// This is just meant to be informal for the user.
 	timeLeft := x509Cert.NotAfter.Sub(time.Now().UTC())
-	log.Info("acme: Trying renewal.", "domain", certRes.Domain, "hoursRemaining", int(timeLeft.Hours()))
+	log.Info("acme: Trying renewal.",
+		log.DomainAttr(certRes.Domain),
+		slog.Int("hoursRemaining", int(timeLeft.Hours())),
+	)
 
 	// We always need to request a new certificate to renew.
 	// Start by checking to see if the certificate was based off a CSR,
@@ -742,7 +750,10 @@ func sanitizeDomain(domains []string) []string {
 	for _, domain := range domains {
 		sanitizedDomain, err := idna.ToASCII(domain)
 		if err != nil {
-			log.Warn("skip domain: unable to sanitize (punnycode).", "domain", domain, "error", err)
+			log.Warn("skip domain: unable to sanitize (punnycode).",
+				log.DomainAttr(domain),
+				log.ErrorAttr(err),
+			)
 		} else {
 			sanitizedDomains = append(sanitizedDomains, sanitizedDomain)
 		}

@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"log/slog"
 	"math/rand"
 	"os"
 	"slices"
@@ -143,7 +144,7 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 	account, keyType := setupAccount(ctx, cmd, NewAccountsStorage(cmd))
 
 	if account.Registration == nil {
-		log.Fatal("The account is not registered. Use 'run' to register a new account.", "email", account.Email)
+		log.Fatal("The account is not registered. Use 'run' to register a new account.", slog.String("email", account.Email))
 	}
 
 	certsStorage := NewCertificatesStorage(cmd)
@@ -172,7 +173,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *Account, ke
 	// as web servers would not be able to work with a combined file.
 	certificates, err := certsStorage.ReadCertificate(domain, certExt)
 	if err != nil {
-		log.Fatal("Error while loading the certificate.", "domain", domain, "error", err)
+		log.Fatal("Error while loading the certificate.", log.DomainAttr(domain), log.ErrorAttr(err))
 	}
 
 	cert := certificates[0]
@@ -193,14 +194,18 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *Account, ke
 
 			// Figure out if we need to sleep before renewing.
 			if ariRenewalTime.After(now) {
-				log.Info("Sleeping until renewal time", "domain", domain, "sleep", ariRenewalTime.Sub(now), "renewalTime", ariRenewalTime)
+				log.Info("Sleeping until renewal time",
+					log.DomainAttr(domain),
+					slog.Duration("sleep", ariRenewalTime.Sub(now)),
+					slog.Time("renewalTime", *ariRenewalTime),
+				)
 				time.Sleep(ariRenewalTime.Sub(now))
 			}
 		}
 
 		replacesCertID, err = certificate.MakeARICertID(cert)
 		if err != nil {
-			log.Fatal("Error while construction the ARI CertID.", "domain", domain, "error", err)
+			log.Fatal("Error while construction the ARI CertID.", log.DomainAttr(domain), log.ErrorAttr(err))
 		}
 	}
 
@@ -219,14 +224,20 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *Account, ke
 
 	// This is just meant to be informal for the user.
 	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
-	log.Info("acme: Trying renewal.", "domain", domain, "hoursRemaining", int(timeLeft.Hours()))
+	log.Info("acme: Trying renewal.",
+		log.DomainAttr(domain),
+		slog.Int("hoursRemaining", int(timeLeft.Hours())),
+	)
 
 	var privateKey crypto.PrivateKey
 
 	if cmd.Bool(flgReuseKey) {
 		keyBytes, errR := certsStorage.ReadFile(domain, keyExt)
 		if errR != nil {
-			log.Fatal("Error while loading the private key.", "domain", domain, "error", errR)
+			log.Fatal("Error while loading the private key.",
+				log.DomainAttr(domain),
+				log.ErrorAttr(errR),
+			)
 		}
 
 		privateKey, errR = certcrypto.ParsePEMPrivateKey(keyBytes)
@@ -244,7 +255,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *Account, ke
 		rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 		sleepTime := time.Duration(rnd.Int63n(int64(jitter)))
 
-		log.Info("renewal: random delay.", "sleep", sleepTime)
+		log.Info("renewal: random delay.", slog.Duration("sleep", sleepTime))
 		time.Sleep(sleepTime)
 	}
 
@@ -271,7 +282,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *Account, ke
 
 	certRes, err := client.Certificate.Obtain(ctx, request)
 	if err != nil {
-		log.Fatal("Could not obtain the certificate.", "error", err)
+		log.Fatal("Could not obtain the certificate.", log.ErrorAttr(err))
 	}
 
 	certRes.Domain = domain
@@ -286,12 +297,16 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *Account, ke
 func renewForCSR(ctx context.Context, cmd *cli.Command, account *Account, keyType certcrypto.KeyType, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
 	csr, err := readCSRFile(cmd.String(flgCSR))
 	if err != nil {
-		log.Fatal("Could not read CSR file.", "flag", flgCSR, "filepath", cmd.String(flgCSR), "error", err)
+		log.Fatal("Could not read CSR file.",
+			slog.String("flag", flgCSR),
+			slog.String("filepath", cmd.String(flgCSR)),
+			log.ErrorAttr(err),
+		)
 	}
 
 	domain, err := certcrypto.GetCSRMainDomain(csr)
 	if err != nil {
-		log.Fatal("Could not get CSR main domain.", "error", err)
+		log.Fatal("Could not get CSR main domain.", log.ErrorAttr(err))
 	}
 
 	// load the cert resource from files.
@@ -299,7 +314,10 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *Account, keyTyp
 	// as web servers would not be able to work with a combined file.
 	certificates, err := certsStorage.ReadCertificate(domain, certExt)
 	if err != nil {
-		log.Fatal("Error while loading the certificate.", "domain", domain, "error", err)
+		log.Fatal("Error while loading the certificate.",
+			log.DomainAttr(domain),
+			log.ErrorAttr(err),
+		)
 	}
 
 	cert := certificates[0]
@@ -320,14 +338,17 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *Account, keyTyp
 
 			// Figure out if we need to sleep before renewing.
 			if ariRenewalTime.After(now) {
-				log.Info("Sleeping until renewal time", "domain", domain, "sleep", ariRenewalTime.Sub(now), "renewalTime", ariRenewalTime)
+				log.Info("Sleeping until renewal time",
+					log.DomainAttr(domain),
+					slog.Duration("sleep", ariRenewalTime.Sub(now)),
+					slog.Time("renewalTime", *ariRenewalTime))
 				time.Sleep(ariRenewalTime.Sub(now))
 			}
 		}
 
 		replacesCertID, err = certificate.MakeARICertID(cert)
 		if err != nil {
-			log.Fatal("Error while construction the ARI CertID.", "domain", domain, "error", err)
+			log.Fatal("Error while construction the ARI CertID.", log.DomainAttr(domain), log.ErrorAttr(err))
 		}
 	}
 
@@ -341,7 +362,10 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *Account, keyTyp
 
 	// This is just meant to be informal for the user.
 	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
-	log.Info("acme: Trying renewal.", "domain", domain, "hoursRemaining", int(timeLeft.Hours()))
+	log.Info("acme: Trying renewal.",
+		log.DomainAttr(domain),
+		slog.Int("hoursRemaining", int(timeLeft.Hours())),
+	)
 
 	request := certificate.ObtainForCSRRequest{
 		CSR:                            csr,
@@ -359,7 +383,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *Account, keyTyp
 
 	certRes, err := client.Certificate.ObtainForCSR(ctx, request)
 	if err != nil {
-		log.Fatal("Could not obtain the certificate fro CSR.", "error", err)
+		log.Fatal("Could not obtain the certificate for CSR.", log.ErrorAttr(err))
 	}
 
 	certsStorage.SaveResource(certRes)
@@ -371,7 +395,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *Account, keyTyp
 
 func needRenewal(x509Cert *x509.Certificate, domain string, days int, dynamic bool) bool {
 	if x509Cert.IsCA {
-		log.Fatal("Certificate bundle starts with a CA certificate.", "domain", domain)
+		log.Fatal("Certificate bundle starts with a CA certificate.", log.DomainAttr(domain))
 	}
 
 	if dynamic {
@@ -387,8 +411,11 @@ func needRenewal(x509Cert *x509.Certificate, domain string, days int, dynamic bo
 		return true
 	}
 
-	log.Infof(log.LazySprintf("Skip renewal: the certificate expires in %d days, the number of days defined to perform the renewal is %d.",
-		notAfter, days), "domain", domain)
+	log.Infof(
+		log.LazySprintf("Skip renewal: the certificate expires in %d days, the number of days defined to perform the renewal is %d.",
+			notAfter, days),
+		log.DomainAttr(domain),
+	)
 
 	return false
 }
@@ -408,7 +435,7 @@ func needRenewalDynamic(x509Cert *x509.Certificate, domain string, now time.Time
 	}
 
 	log.Infof(log.LazySprintf("Skip renewal: The certificate expires at %s, the renewal can be performed in %s.",
-		x509Cert.NotAfter.Format(time.RFC3339), dueDate.Sub(now)), "domain", domain)
+		x509Cert.NotAfter.Format(time.RFC3339), dueDate.Sub(now)), log.DomainAttr(domain))
 
 	return false
 }
@@ -416,17 +443,24 @@ func needRenewalDynamic(x509Cert *x509.Certificate, domain string, now time.Time
 // getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.
 func getARIRenewalTime(ctx context.Context, cmd *cli.Command, cert *x509.Certificate, domain string, client *lego.Client) *time.Time {
 	if cert.IsCA {
-		log.Fatal("Certificate bundle starts with a CA certificate.", "domain", domain)
+		log.Fatal("Certificate bundle starts with a CA certificate.", log.DomainAttr(domain))
 	}
 
 	renewalInfo, err := client.Certificate.GetRenewalInfo(ctx, certificate.RenewalInfoRequest{Cert: cert})
 	if err != nil {
 		if errors.Is(err, api.ErrNoARI) {
-			log.Warn("acme: the server does not advertise a renewal info endpoint.", "domain", domain, "errorr", err)
+			log.Warn("acme: the server does not advertise a renewal info endpoint.",
+				log.DomainAttr(domain),
+				log.ErrorAttr(err),
+			)
+
 			return nil
 		}
 
-		log.Warn("acme: calling renewal info endpoint", "domain", domain, "error", err)
+		log.Warn("acme: calling renewal info endpoint",
+			log.DomainAttr(domain),
+			log.ErrorAttr(err),
+		)
 
 		return nil
 	}
@@ -435,14 +469,17 @@ func getARIRenewalTime(ctx context.Context, cmd *cli.Command, cert *x509.Certifi
 
 	renewalTime := renewalInfo.ShouldRenewAt(now, cmd.Duration(flgARIWaitToRenewDuration))
 	if renewalTime == nil {
-		log.Info("acme: renewalInfo endpoint indicates that renewal is not needed.", "domain", domain)
+		log.Info("acme: renewalInfo endpoint indicates that renewal is not needed.", log.DomainAttr(domain))
 		return nil
 	}
 
-	log.Info("acme: renewalInfo endpoint indicates that renewal is needed.", "domain", domain)
+	log.Info("acme: renewalInfo endpoint indicates that renewal is needed.", log.DomainAttr(domain))
 
 	if renewalInfo.ExplanationURL != "" {
-		log.Info("acme: renewalInfo endpoint provided an explanation.", "domain", domain, "explanationURL", renewalInfo.ExplanationURL)
+		log.Info("acme: renewalInfo endpoint provided an explanation.",
+			log.DomainAttr(domain),
+			slog.String("explanationURL", renewalInfo.ExplanationURL),
+		)
 	}
 
 	return renewalTime

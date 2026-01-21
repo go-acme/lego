@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
@@ -254,7 +255,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 func (d *DNSProvider) applyChanges(ctx context.Context, zone string, change *gdns.Change) error {
 	if d.config.Debug {
 		data, _ := json.Marshal(change)
-		log.Info("change (Create)", "data", string(data))
+		log.Info("change (Create)", slog.String("data", string(data)))
 	}
 
 	chg, err := d.client.Changes.Create(d.config.Project, zone, change).Do()
@@ -280,7 +281,7 @@ func (d *DNSProvider) applyChanges(ctx context.Context, zone string, change *gdn
 		func() error {
 			if d.config.Debug {
 				data, _ := json.Marshal(change)
-				log.Info("change (Get)", "data", string(data))
+				log.Info("change (Get)", slog.String("data", string(data)))
 			}
 
 			chg, err = d.client.Changes.Get(d.config.Project, zone, chgID).Do()

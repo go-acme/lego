@@ -50,7 +50,7 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 	for _, opt := range opts {
 		err := opt(chlg)
 		if err != nil {
-			log.Warn("Challenge option skipped.", "error", err)
+			log.Warn("Challenge option skipped.", log.ErrorAttr(err))
 		}
 	}
 
@@ -60,7 +60,7 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 // Solve manages the provider to validate and solve the challenge.
 func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	domain := authz.Identifier.Value
-	log.Info("acme: Trying to solve TLS-ALPN-01.", "domain", challenge.GetTargetedDomain(authz))
+	log.Info("acme: Trying to solve TLS-ALPN-01.", log.DomainAttr(challenge.GetTargetedDomain(authz)))
 
 	chlng, err := challenge.FindChallenge(challenge.TLSALPN01, authz)
 	if err != nil {
@@ -81,7 +81,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	defer func() {
 		err := c.provider.CleanUp(ctx, domain, chlng.Token, keyAuth)
 		if err != nil {
-			log.Warn("acme: cleaning up failed.", "domain", challenge.GetTargetedDomain(authz), err)
+			log.Warn("acme: cleaning up failed.", log.DomainAttr(challenge.GetTargetedDomain(authz)), log.ErrorAttr(err))
 		}
 	}()
 

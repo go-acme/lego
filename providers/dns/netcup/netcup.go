@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -119,7 +120,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	defer func() {
 		err = d.client.Logout(ctxAuth)
 		if err != nil {
-			log.Warn("netcup: failed to logout.", "error", err)
+			log.Warn("netcup: failed to logout.", log.ErrorAttr(err))
 		}
 	}()
 
@@ -135,7 +136,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	records, err := d.client.GetDNSRecords(ctxAuth, zone)
 	if err != nil {
 		// skip no existing records
-		log.Info("No existing records, error ignored.", "zone", zone, "error", err)
+		log.Info("No existing records, error ignored.", slog.String("zone", zone), log.ErrorAttr(err))
 	}
 
 	records = append(records, record)
@@ -165,7 +166,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	defer func() {
 		err = d.client.Logout(ctxAuth)
 		if err != nil {
-			log.Warn("netcup: failed to logout.", "error", err)
+			log.Warn("netcup: failed to logout.", log.ErrorAttr(err))
 		}
 	}()
 

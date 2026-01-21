@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"slices"
 	"strings"
@@ -133,7 +134,12 @@ func getEnvFileWithStrictFallback(keys ...string) []byte {
 
 		fileContents, err := os.ReadFile(fileVarValue)
 		if err != nil {
-			log.Debug("Failed to read the file.", "filepath", fileVarValue, "envVar", key, "error", err)
+			log.Debug("Failed to read the file.",
+				slog.String("filepath", fileVarValue),
+				slog.String("envVar", key),
+				log.ErrorAttr(err),
+			)
+
 			return nil
 		}
 

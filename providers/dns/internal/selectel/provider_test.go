@@ -40,7 +40,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config.TTL = test.ttl
 			config.Token = test.token
 
-			p, err := NewDNSProviderConfig(config)
+			p, err := NewDNSProviderConfig(config, "")
 
 			if test.expected == "" {
 				require.NoError(t, err)

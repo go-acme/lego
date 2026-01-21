@@ -15,9 +15,17 @@ func (c *Client) lookupCNAME(ctx context.Context, fqdn string) string {
 	for range 50 {
 		// Keep following CNAMEs
 		r, err := c.sendQuery(ctx, fqdn, dns.TypeCNAME, true)
+		if err != nil {
+			log.Debug("Lookup CNAME.",
+				slog.String("fqdn", fqdn),
+				log.ErrorAttr(err),
+			)
 
-		if err != nil || r.Rcode != dns.RcodeSuccess {
-			// TODO(ldez): logs the error in v5
+			// No more CNAME records to follow, exit
+			break
+		}
+
+		if r.Rcode != dns.RcodeSuccess {
 			// No more CNAME records to follow, exit
 			break
 		}

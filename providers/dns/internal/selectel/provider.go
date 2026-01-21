@@ -26,9 +26,6 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
-
-	// TODO(ldez): remove in v5?
-	BaseURL string
 }
 
 // DNSProvider implements the challenge.Provider interface.
@@ -38,7 +35,7 @@ type DNSProvider struct {
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for selectel.
-func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+func NewDNSProviderConfig(config *Config, baseURL string) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("the configuration of the DNS provider is nil")
 	}
@@ -59,11 +56,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
-	var err error
+	if baseURL != "" {
+		var err error
 
-	client.BaseURL, err = url.Parse(config.BaseURL)
-	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+		client.BaseURL, err = url.Parse(baseURL)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &DNSProvider{config: config, client: client}, nil

@@ -39,7 +39,6 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
-	HTTPTimeout        time.Duration // TODO(ldez): remove in v5
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -48,7 +47,9 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
 	}
 }
 
@@ -83,7 +84,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	authClient := OAuthStaticAccessToken(config.HTTPClient, config.APIKey)
-	authClient.Timeout = config.HTTPTimeout
 
 	client := govultr.NewClient(clientdebug.Wrap(authClient))
 

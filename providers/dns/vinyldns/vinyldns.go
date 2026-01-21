@@ -106,9 +106,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
-	} else {
-		// For compatibility, it should be removed in v5.
-		client.HTTPClient.Timeout = 30 * time.Second
 	}
 
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)

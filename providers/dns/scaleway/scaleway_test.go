@@ -84,7 +84,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
 			config.TTL = test.ttl
-			config.Token = test.token
+			config.SecretKey = test.token
 
 			p, err := NewDNSProviderConfig(config)
 

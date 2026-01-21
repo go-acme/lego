@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"context"
+
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/log"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 // Flag names.
@@ -37,19 +39,19 @@ func createRevoke() *cli.Command {
 	}
 }
 
-func revoke(cliCtx *cli.Context) error {
-	account, keyType := setupAccount(cliCtx, NewAccountsStorage(cliCtx))
+func revoke(ctx context.Context, cmd *cli.Command) error {
+	account, keyType := setupAccount(ctx, cmd, NewAccountsStorage(cmd))
 
 	if account.Registration == nil {
 		log.Fatal("Account is not registered. Use 'run' to register a new account.", "email", account.Email)
 	}
 
-	client := newClient(cliCtx, account, keyType)
+	client := newClient(cmd, account, keyType)
 
-	certsStorage := NewCertificatesStorage(cliCtx)
+	certsStorage := NewCertificatesStorage(cmd)
 	certsStorage.CreateRootFolder()
 
-	for _, domain := range cliCtx.StringSlice(flgDomains) {
+	for _, domain := range cmd.StringSlice(flgDomains) {
 		log.Info("Trying to revoke the certificate.", "domain", domain)
 
 		certBytes, err := certsStorage.ReadFile(domain, certExt)
@@ -57,16 +59,16 @@ func revoke(cliCtx *cli.Context) error {
 			log.Fatal("Error while revoking the certificate.", "domain", domain, "error", err)
 		}
 
-		reason := cliCtx.Uint(flgReason)
+		reason := cmd.Uint(flgReason)
 
-		err = client.Certificate.RevokeWithReason(cliCtx.Context, certBytes, &reason)
+		err = client.Certificate.RevokeWithReason(ctx, certBytes, &reason)
 		if err != nil {
 			log.Fatal("Error while revoking the certificate.", "domain", domain, "error", err)
 		}
 
 		log.Info("Certificate was revoked.", "domain", domain)
 
-		if cliCtx.Bool(flgKeep) {
+		if cmd.Bool(flgKeep) {
 			return nil
 		}
 

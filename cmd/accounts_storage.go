@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"crypto"
 	"encoding/json"
 	"encoding/pem"
@@ -13,7 +14,7 @@ import (
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const userIDPlaceholder = "noemail@example.com"
@@ -64,25 +65,25 @@ type AccountsStorage struct {
 	rootUserPath    string
 	keysPath        string
 	accountFilePath string
-	ctx             *cli.Context
+	cmd             *cli.Command
 }
 
 // NewAccountsStorage Creates a new AccountsStorage.
-func NewAccountsStorage(ctx *cli.Context) *AccountsStorage {
+func NewAccountsStorage(cmd *cli.Command) *AccountsStorage {
 	// TODO: move to account struct?
-	email := ctx.String(flgEmail)
+	email := cmd.String(flgEmail)
 
 	userID := email
 	if userID == "" {
 		userID = userIDPlaceholder
 	}
 
-	serverURL, err := url.Parse(ctx.String(flgServer))
+	serverURL, err := url.Parse(cmd.String(flgServer))
 	if err != nil {
-		log.Fatal("URL parsing", "flag", flgServer, "serverURL", ctx.String(flgServer), "error", err)
+		log.Fatal("URL parsing", "flag", flgServer, "serverURL", cmd.String(flgServer), "error", err)
 	}
 
-	rootPath := filepath.Join(ctx.String(flgPath), baseAccountsRootFolderName)
+	rootPath := filepath.Join(cmd.String(flgPath), baseAccountsRootFolderName)
 	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(serverURL.Host)
 	accountsPath := filepath.Join(rootPath, serverPath)
 	rootUserPath := filepath.Join(accountsPath, userID)
@@ -94,7 +95,7 @@ func NewAccountsStorage(ctx *cli.Context) *AccountsStorage {
 		rootUserPath:    rootUserPath,
 		keysPath:        filepath.Join(rootUserPath, baseKeysFolderName),
 		accountFilePath: filepath.Join(rootUserPath, accountFileName),
-		ctx:             ctx,
+		cmd:             cmd,
 	}
 }
 
@@ -134,7 +135,7 @@ func (s *AccountsStorage) Save(account *Account) error {
 	return os.WriteFile(s.accountFilePath, jsonBytes, filePerm)
 }
 
-func (s *AccountsStorage) LoadAccount(privateKey crypto.PrivateKey) *Account {
+func (s *AccountsStorage) LoadAccount(ctx context.Context, privateKey crypto.PrivateKey) *Account {
 	fileBytes, err := os.ReadFile(s.accountFilePath)
 	if err != nil {
 		log.Fatal("Could not load the account file.", "userID", s.GetUserID(), "error", err)
@@ -150,7 +151,7 @@ func (s *AccountsStorage) LoadAccount(privateKey crypto.PrivateKey) *Account {
 	account.key = privateKey
 
 	if account.Registration == nil || account.Registration.Body.Status == "" {
-		reg, err := tryRecoverRegistration(s.ctx, privateKey)
+		reg, err := tryRecoverRegistration(ctx, s.cmd, privateKey)
 		if err != nil {
 			log.Fatal("Could not load the account file. Registration is nil.", "userID", s.GetUserID(), "error", err)
 		}
@@ -233,18 +234,18 @@ func loadPrivateKey(file string) (crypto.PrivateKey, error) {
 	return privateKey, nil
 }
 
-func tryRecoverRegistration(cliCtx *cli.Context, privateKey crypto.PrivateKey) (*registration.Resource, error) {
+func tryRecoverRegistration(ctx context.Context, cmd *cli.Command, privateKey crypto.PrivateKey) (*registration.Resource, error) {
 	// couldn't load account but got a key. Try to look the account up.
 	config := lego.NewConfig(&Account{key: privateKey})
-	config.CADirURL = cliCtx.String(flgServer)
-	config.UserAgent = getUserAgent(cliCtx)
+	config.CADirURL = cmd.String(flgServer)
+	config.UserAgent = getUserAgent(cmd)
 
 	client, err := lego.NewClient(config)
 	if err != nil {
 		return nil, err
 	}
 
-	reg, err := client.Registration.ResolveAccountByKey(cliCtx.Context)
+	reg, err := client.Registration.ResolveAccountByKey(ctx)
 	if err != nil {
 		return nil, err
 	}

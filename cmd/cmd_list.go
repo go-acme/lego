@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -9,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/go-acme/lego/v5/certcrypto"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const (
@@ -43,25 +44,25 @@ func createList() *cli.Command {
 	}
 }
 
-func list(ctx *cli.Context) error {
-	if ctx.Bool(flgAccounts) && !ctx.Bool(flgNames) {
-		if err := listAccount(ctx); err != nil {
+func list(ctx context.Context, cmd *cli.Command) error {
+	if cmd.Bool(flgAccounts) && !cmd.Bool(flgNames) {
+		if err := listAccount(ctx, cmd); err != nil {
 			return err
 		}
 	}
 
-	return listCertificates(ctx)
+	return listCertificates(ctx, cmd)
 }
 
-func listCertificates(ctx *cli.Context) error {
-	certsStorage := NewCertificatesStorage(ctx)
+func listCertificates(_ context.Context, cmd *cli.Command) error {
+	certsStorage := NewCertificatesStorage(cmd)
 
 	matches, err := filepath.Glob(filepath.Join(certsStorage.GetRootPath(), "*.crt"))
 	if err != nil {
 		return err
 	}
 
-	names := ctx.Bool(flgNames)
+	names := cmd.Bool(flgNames)
 
 	if len(matches) == 0 {
 		if !names {
@@ -109,8 +110,8 @@ func listCertificates(ctx *cli.Context) error {
 	return nil
 }
 
-func listAccount(ctx *cli.Context) error {
-	accountsStorage := NewAccountsStorage(ctx)
+func listAccount(_ context.Context, cmd *cli.Command) error {
+	accountsStorage := NewAccountsStorage(cmd)
 
 	matches, err := filepath.Glob(filepath.Join(accountsStorage.GetRootPath(), "*", "*", "*.json"))
 	if err != nil {
@@ -118,7 +119,7 @@ func listAccount(ctx *cli.Context) error {
 	}
 
 	if len(matches) == 0 {
-		fmt.Println("No accounts found.")
+		fmt.Println("No accounts were found.")
 		return nil
 	}
 

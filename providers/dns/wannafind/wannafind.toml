@@ -1,0 +1,22 @@
+Name = "Wannafind"
+Description = ''''''
+URL = "https://www.wannafind.dk/"
+Code = "wannafind"
+Since = "v4.32.0"
+
+Example = '''
+WANNAFIND_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+lego --dns wannafind -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    WANNAFIND_API_KEY = "API key"
+  [Configuration.Additional]
+    WANNAFIND_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    WANNAFIND_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    WANNAFIND_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    WANNAFIND_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://api.wannafind.dk/dns/swagger/index.html"

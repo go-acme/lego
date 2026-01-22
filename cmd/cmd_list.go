@@ -20,13 +20,8 @@ const (
 
 func createList() *cli.Command {
 	return &cli.Command{
-		Name:  "list",
-		Usage: "Display certificates and accounts information.",
-		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
-			validatePathFlag(cmd)
-
-			return ctx, nil
-		},
+		Name:   "list",
+		Usage:  "Display certificates and accounts information.",
 		Action: list,
 		Flags:  createListFlags(),
 	}

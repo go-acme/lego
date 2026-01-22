@@ -255,19 +255,12 @@ func CreateOutputFlags(defaultPath string) []cli.Flag {
 }
 
 func CreatePathFlag(defaultPath string) cli.Flag {
-	if defaultPath == "" {
-		// FIXME rethink this part
-		cwd, err := os.Getwd()
-		if err == nil {
-			defaultPath = filepath.Join(cwd, ".lego")
-		}
-	}
-
 	return &cli.StringFlag{
-		Name:    flgPath,
-		Sources: cli.EnvVars(envPath),
-		Usage:   "Directory to use for storing the data.",
-		Value:   defaultPath,
+		Name:     flgPath,
+		Sources:  cli.NewValueSourceChain(cli.EnvVar(envPath), &defaultPathValueSource{value: defaultPath}),
+		Usage:    "Directory to use for storing the data.",
+		Value:    defaultPath,
+		Required: true,
 	}
 }
 
@@ -324,4 +317,27 @@ func CreateFlags(defaultPath string) []cli.Flag {
 	flags = append(flags, CreateDNSChallengeFlags()...)
 
 	return flags
+}
+
+// defaultPathValueSource gets the default path based on the current working directory.
+// The field value is only here because clihelp/generator.
+type defaultPathValueSource struct {
+	value string
+}
+
+func (p *defaultPathValueSource) String() string {
+	return fmt.Sprintf("default path %[1]q", p.value)
+}
+
+func (p *defaultPathValueSource) GoString() string {
+	return fmt.Sprintf("&defaultPathValueSource{value:%[1]q}", p.value)
+}
+
+func (p *defaultPathValueSource) Lookup() (string, bool) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", false
+	}
+
+	return filepath.Join(cwd, ".lego"), true
 }

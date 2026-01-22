@@ -28,8 +28,6 @@ func main() {
 		fmt.Printf("lego version %s %s/%s\n", cmd.Version, runtime.GOOS, runtime.GOARCH)
 	}
 
-	app.Commands = cmd.CreateCommands()
-
 	err := app.Run(context.Background(), os.Args)
 	if err != nil {
 		log.Fatal("Error", log.ErrorAttr(err))

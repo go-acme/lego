@@ -34,12 +34,6 @@ func createList() *cli.Command {
 				Aliases: []string{"n"},
 				Usage:   "Display certificate common names only.",
 			},
-			// fake email, needed by NewAccountsStorage
-			&cli.StringFlag{
-				Name:   flgEmail,
-				Value:  "",
-				Hidden: true,
-			},
 		},
 	}
 }

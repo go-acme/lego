@@ -71,7 +71,6 @@ type AccountsStorage struct {
 
 // NewAccountsStorage Creates a new AccountsStorage.
 func NewAccountsStorage(cmd *cli.Command) *AccountsStorage {
-	// TODO: move to account struct?
 	email := cmd.String(flgEmail)
 
 	userID := email

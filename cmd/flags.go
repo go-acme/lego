@@ -89,11 +89,12 @@ const (
 func CreateACMEClientFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:    flgServer,
-			Aliases: []string{"s"},
-			Sources: cli.EnvVars(envServer),
-			Usage:   "CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.",
-			Value:   lego.LEDirectoryProduction,
+			Name:     flgServer,
+			Aliases:  []string{"s"},
+			Sources:  cli.EnvVars(envServer),
+			Usage:    "CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.",
+			Value:    lego.LEDirectoryProduction,
+			Required: true,
 		},
 		&cli.BoolFlag{
 			Name:  flgDisableCommonName,

@@ -42,8 +42,6 @@ func createRenew() *cli.Command {
 		Usage:  "Renew a certificate",
 		Action: renew,
 		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
-			validateFlags(cmd)
-
 			// we require either domains or csr, but not both
 			hasDomains := len(cmd.StringSlice(flgDomains)) > 0
 

@@ -17,13 +17,8 @@ const (
 
 func createRevoke() *cli.Command {
 	return &cli.Command{
-		Name:  "revoke",
-		Usage: "Revoke a certificate",
-		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
-			validateFlags(cmd)
-
-			return ctx, nil
-		},
+		Name:   "revoke",
+		Usage:  "Revoke a certificate",
 		Action: revoke,
 		Flags:  createRevokeFlags(),
 	}

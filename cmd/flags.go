@@ -86,20 +86,8 @@ const (
 	envServer      = "LEGO_SERVER"
 )
 
-func CreateFlags(defaultPath string) []cli.Flag {
-	if defaultPath == "" {
-		cwd, err := os.Getwd()
-		if err == nil {
-			defaultPath = filepath.Join(cwd, ".lego")
-		}
-	}
-
+func CreateACMEClientFlags() []cli.Flag {
 	return []cli.Flag{
-		&cli.StringSliceFlag{
-			Name:    flgDomains,
-			Aliases: []string{"d"},
-			Usage:   "Add a domain to the process. Can be specified multiple times.",
-		},
 		&cli.StringFlag{
 			Name:    flgServer,
 			Aliases: []string{"s"},
@@ -108,39 +96,8 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Value:   lego.LEDirectoryProduction,
 		},
 		&cli.BoolFlag{
-			Name:    flgAcceptTOS,
-			Aliases: []string{"a"},
-			Usage:   "By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.",
-		},
-		&cli.StringFlag{
-			Name:    flgEmail,
-			Aliases: []string{"m"},
-			Sources: cli.EnvVars(envEmail),
-			Usage:   "Email used for registration and recovery contact.",
-		},
-		&cli.BoolFlag{
 			Name:  flgDisableCommonName,
 			Usage: "Disable the use of the common name in the CSR.",
-		},
-		&cli.StringFlag{
-			Name:    flgCSR,
-			Aliases: []string{"c"},
-			Usage:   "Certificate signing request filename, if an external CSR is to be used.",
-		},
-		&cli.BoolFlag{
-			Name:    flgEAB,
-			Sources: cli.EnvVars(envEAB),
-			Usage:   "Use External Account Binding for account registration. Requires --kid and --hmac.",
-		},
-		&cli.StringFlag{
-			Name:    flgKID,
-			Sources: cli.EnvVars(envEABKID),
-			Usage:   "Key identifier from External CA. Used for External Account Binding.",
-		},
-		&cli.StringFlag{
-			Name:    flgHMAC,
-			Sources: cli.EnvVars(envEABHMAC),
-			Usage:   "MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.",
 		},
 		&cli.StringFlag{
 			Name:    flgKeyType,
@@ -148,16 +105,33 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Value:   "ec256",
 			Usage:   "Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384.",
 		},
-		&cli.StringFlag{
-			Name:  flgFilename,
-			Usage: "(deprecated) Filename of the generated certificate.",
+		&cli.IntFlag{
+			Name:  flgHTTPTimeout,
+			Usage: "Set the HTTP timeout value to a specific value in seconds.",
+		},
+		&cli.BoolFlag{
+			Name:  flgTLSSkipVerify,
+			Usage: "Skip the TLS verification of the ACME server.",
+		},
+		&cli.IntFlag{
+			Name:  flgCertTimeout,
+			Usage: "Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates.",
+			Value: 30,
+		},
+		&cli.IntFlag{
+			Name:  flgOverallRequestLimit,
+			Usage: "ACME overall requests limit.",
+			Value: certificate.DefaultOverallRequestLimit,
 		},
 		&cli.StringFlag{
-			Name:    flgPath,
-			Sources: cli.EnvVars(envPath),
-			Usage:   "Directory to use for storing the data.",
-			Value:   defaultPath,
+			Name:  flgUserAgent,
+			Usage: "Add to the user-agent sent to the CA to identify an application embedding lego-cli",
 		},
+	}
+}
+
+func CreateHTTPChallengeFlags() []cli.Flag {
+	return []cli.Flag{
 		&cli.BoolFlag{
 			Name:  flgHTTP,
 			Usage: "Use the HTTP-01 challenge to solve challenges. Can be mixed with other types of challenges.",
@@ -190,6 +164,11 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Name:  flgHTTPS3Bucket,
 			Usage: "Set the S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.",
 		},
+	}
+}
+
+func CreateTLSChallengeFlags() []cli.Flag {
+	return []cli.Flag{
 		&cli.BoolFlag{
 			Name:  flgTLS,
 			Usage: "Use the TLS-ALPN-01 challenge to solve challenges. Can be mixed with other types of challenges.",
@@ -204,6 +183,11 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage: "Delay between the start of the TLS listener (use for TLSALPN-01 based challenges) and the validation of the challenge.",
 			Value: 0,
 		},
+	}
+}
+
+func CreateDNSChallengeFlags() []cli.Flag {
+	return []cli.Flag{
 		&cli.StringFlag{
 			Name:  flgDNS,
 			Usage: "Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage.",
@@ -232,17 +216,31 @@ func CreateFlags(defaultPath string) []cli.Flag {
 				" The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.",
 		},
 		&cli.IntFlag{
-			Name:  flgHTTPTimeout,
-			Usage: "Set the HTTP timeout value to a specific value in seconds.",
-		},
-		&cli.BoolFlag{
-			Name:  flgTLSSkipVerify,
-			Usage: "Skip the TLS verification of the ACME server.",
-		},
-		&cli.IntFlag{
 			Name:  flgDNSTimeout,
 			Usage: "Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries.",
 			Value: 10,
+		},
+	}
+}
+
+func CreateOutputFlags(defaultPath string) []cli.Flag {
+	if defaultPath == "" {
+		cwd, err := os.Getwd()
+		if err == nil {
+			defaultPath = filepath.Join(cwd, ".lego")
+		}
+	}
+
+	return []cli.Flag{
+		&cli.StringFlag{
+			Name:  flgFilename,
+			Usage: "(deprecated) Filename of the generated certificate.",
+		},
+		&cli.StringFlag{
+			Name:    flgPath,
+			Sources: cli.EnvVars(envPath),
+			Usage:   "Directory to use for storing the data.",
+			Value:   defaultPath,
 		},
 		&cli.BoolFlag{
 			Name:  flgPEM,
@@ -265,19 +263,60 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Value:   "RC2",
 			Sources: cli.EnvVars(envPFXFormat),
 		},
-		&cli.IntFlag{
-			Name:  flgCertTimeout,
-			Usage: "Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates.",
-			Value: 30,
-		},
-		&cli.IntFlag{
-			Name:  flgOverallRequestLimit,
-			Usage: "ACME overall requests limit.",
-			Value: certificate.DefaultOverallRequestLimit,
+	}
+}
+
+func CreateAccountFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.BoolFlag{
+			Name:    flgAcceptTOS,
+			Aliases: []string{"a"},
+			Usage:   "By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.",
 		},
 		&cli.StringFlag{
-			Name:  flgUserAgent,
-			Usage: "Add to the user-agent sent to the CA to identify an application embedding lego-cli",
+			Name:    flgEmail,
+			Aliases: []string{"m"},
+			Sources: cli.EnvVars(envEmail),
+			Usage:   "Email used for registration and recovery contact.",
+		},
+		&cli.StringFlag{
+			Name:    flgCSR,
+			Aliases: []string{"c"},
+			Usage:   "Certificate signing request filename, if an external CSR is to be used.",
+		},
+		&cli.BoolFlag{
+			Name:    flgEAB,
+			Sources: cli.EnvVars(envEAB),
+			Usage:   "Use External Account Binding for account registration. Requires --kid and --hmac.",
+		},
+		&cli.StringFlag{
+			Name:    flgKID,
+			Sources: cli.EnvVars(envEABKID),
+			Usage:   "Key identifier from External CA. Used for External Account Binding.",
+		},
+		&cli.StringFlag{
+			Name:    flgHMAC,
+			Sources: cli.EnvVars(envEABHMAC),
+			Usage:   "MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.",
 		},
 	}
+}
+
+func CreateFlags(defaultPath string) []cli.Flag {
+	flags := []cli.Flag{
+		&cli.StringSliceFlag{
+			Name:    flgDomains,
+			Aliases: []string{"d"},
+			Usage:   "Add a domain to the process. Can be specified multiple times.",
+		},
+	}
+
+	flags = append(flags, CreateAccountFlags()...)
+	flags = append(flags, CreateACMEClientFlags()...)
+	flags = append(flags, CreateOutputFlags(defaultPath)...)
+	flags = append(flags, CreateHTTPChallengeFlags()...)
+	flags = append(flags, CreateTLSChallengeFlags()...)
+	flags = append(flags, CreateDNSChallengeFlags()...)
+
+	return flags
 }

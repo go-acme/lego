@@ -2,15 +2,15 @@
 title: "webnames.ru"
 date: 2019-03-03T16:39:46+01:00
 draft: false
-slug: webnames
+slug: webnamesru
 dnsprovider:
   since:    "v4.15.0"
-  code:     "webnames"
+  code:     "webnamesru"
   url:      "https://www.webnames.ru/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/webnames/webnames.toml -->
+<!-- providers/dns/webnamesru/webnamesru.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
@@ -19,7 +19,7 @@ Configuration for [webnames.ru](https://www.webnames.ru/).
 
 <!--more-->
 
-- Code: `webnames`
+- Code: `webnamesru`
 - Since: v4.15.0
 
 
@@ -67,5 +67,5 @@ The API key can be found: Personal account / My domains and services / Select th
 - [API documentation](https://github.com/regtime-ltd/certbot-dns-webnames)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/webnames/webnames.toml -->
+<!-- providers/dns/webnamesru/webnamesru.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

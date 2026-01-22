@@ -12,7 +12,7 @@ import (
 
 func allDNSCodes() string {
 	providers := []string{
-		"acme-dns",
+		"acmedns",
 		"active24",
 		"alidns",
 		"aliesa",
@@ -185,8 +185,8 @@ func allDNSCodes() string {
 		"volcengine",
 		"vscale",
 		"vultr",
-		"webnames",
 		"webnamesca",
+		"webnamesru",
 		"websupport",
 		"wedos",
 		"westcn",
@@ -206,10 +206,10 @@ func displayDNSHelp(w io.Writer, name string) error {
 	ew := &errWriter{w: w}
 
 	switch name {
-	case "acme-dns":
+	case "acmedns":
 		// generated from: providers/dns/acmedns/acmedns.toml
 		ew.writeln(`Configuration for Joohoi's ACME-DNS.`)
-		ew.writeln(`Code:	'acme-dns'`)
+		ew.writeln(`Code:	'acmedns'`)
 		ew.writeln(`Since:	'v1.1.0'`)
 		ew.writeln()
 
@@ -223,7 +223,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "ACME_DNS_ALLOWLIST":	Source networks using CIDR notation (multiple values should be separated with a comma).`)
 
 		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/acme-dns`)
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/acmedns`)
 
 	case "active24":
 		// generated from: providers/dns/active24/active24.toml
@@ -3350,7 +3350,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "SELECTEL_BASE_URL":	API endpoint URL`)
 		ew.writeln(`	- "SELECTEL_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "SELECTEL_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "SELECTEL_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
@@ -3890,7 +3889,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "VSCALE_BASE_URL":	API endpoint URL`)
 		ew.writeln(`	- "VSCALE_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "VSCALE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "VSCALE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
@@ -3919,25 +3917,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/vultr`)
 
-	case "webnames":
-		// generated from: providers/dns/webnames/webnames.toml
-		ew.writeln(`Configuration for webnames.ru.`)
-		ew.writeln(`Code:	'webnames'`)
-		ew.writeln(`Since:	'v4.15.0'`)
-		ew.writeln()
-
-		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "WEBNAMESRU_API_KEY":	Domain API key`)
-		ew.writeln()
-
-		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "WEBNAMESRU_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
-		ew.writeln(`	- "WEBNAMESRU_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
-		ew.writeln(`	- "WEBNAMESRU_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
-
-		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/webnames`)
-
 	case "webnamesca":
 		// generated from: providers/dns/webnamesca/webnamesca.toml
 		ew.writeln(`Configuration for webnames.ca.`)
@@ -3958,6 +3937,25 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/webnamesca`)
+
+	case "webnamesru":
+		// generated from: providers/dns/webnamesru/webnamesru.toml
+		ew.writeln(`Configuration for webnames.ru.`)
+		ew.writeln(`Code:	'webnamesru'`)
+		ew.writeln(`Since:	'v4.15.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "WEBNAMESRU_API_KEY":	Domain API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "WEBNAMESRU_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "WEBNAMESRU_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "WEBNAMESRU_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/webnamesru`)
 
 	case "websupport":
 		// generated from: providers/dns/websupport/websupport.toml

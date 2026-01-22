@@ -47,7 +47,6 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `VSCALE_BASE_URL` | API endpoint URL |
 | `VSCALE_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
 | `VSCALE_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
 | `VSCALE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |

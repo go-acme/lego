@@ -182,7 +182,7 @@ If your DNS provider is not supported, please open an [issue](https://github.com
   <td><a href="https://go-acme.github.io/lego/dns/jdcloud/">JD Cloud</a></td>
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/joker/">Joker</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/acme-dns/">Joohoi&#39;s ACME-DNS</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/acmedns/">Joohoi&#39;s ACME-DNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/keyhelp/">KeyHelp</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/liara/">Liara</a></td>
 </tr><tr>
@@ -278,7 +278,7 @@ If your DNS provider is not supported, please open an [issue](https://github.com
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/vultr/">Vultr</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/webnamesca/">webnames.ca</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/webnames/">webnames.ru</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/webnamesru/">webnames.ru</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/websupport/">Websupport</a></td>
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/wedos/">WEDOS</a></td>

@@ -22,8 +22,6 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-const filePerm os.FileMode = 0o600
-
 // setupClient creates a new client with challenge settings.
 func setupClient(cmd *cli.Command, account *Account, keyType certcrypto.KeyType) *lego.Client {
 	client := newClient(cmd, account, keyType)
@@ -121,16 +119,6 @@ func getKeyType(cmd *cli.Command) certcrypto.KeyType {
 
 func getUserAgent(cmd *cli.Command) string {
 	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", cmd.String(flgUserAgent), cmd.Version))
-}
-
-func createNonExistingFolder(path string) error {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return os.MkdirAll(path, 0o700)
-	} else if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func readCSRFile(filename string) (*x509.CertificateRequest, error) {

@@ -57,13 +57,13 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 
 	client := newClient(cmd, account, keyType)
 
-	certsStorage := NewCertificatesStorage(cmd)
+	certsStorage := newCertificatesStorage(cmd)
 	certsStorage.CreateRootFolder()
 
 	for _, domain := range cmd.StringSlice(flgDomains) {
 		log.Info("Trying to revoke the certificate.", log.DomainAttr(domain))
 
-		certBytes, err := certsStorage.ReadFile(domain, certExt)
+		certBytes, err := certsStorage.ReadFile(domain, storage.CertExt)
 		if err != nil {
 			log.Fatal("Error while revoking the certificate.", log.DomainAttr(domain), log.ErrorAttr(err))
 		}

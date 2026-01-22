@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 )
 
 const (
@@ -87,18 +88,18 @@ func metaToEnv(meta map[string]string) []string {
 
 func addPathToMetadata(meta map[string]string, domain string, certRes *certificate.Resource, certsStorage *CertificatesStorage) {
 	meta[hookEnvCertDomain] = domain
-	meta[hookEnvCertPath] = certsStorage.GetFileName(domain, certExt)
-	meta[hookEnvCertKeyPath] = certsStorage.GetFileName(domain, keyExt)
+	meta[hookEnvCertPath] = certsStorage.GetFileName(domain, storage.CertExt)
+	meta[hookEnvCertKeyPath] = certsStorage.GetFileName(domain, storage.KeyExt)
 
 	if certRes.IssuerCertificate != nil {
-		meta[hookEnvIssuerCertKeyPath] = certsStorage.GetFileName(domain, issuerExt)
+		meta[hookEnvIssuerCertKeyPath] = certsStorage.GetFileName(domain, storage.IssuerExt)
 	}
 
-	if certsStorage.pem {
-		meta[hookEnvCertPEMPath] = certsStorage.GetFileName(domain, pemExt)
+	if certsStorage.IsPEM() {
+		meta[hookEnvCertPEMPath] = certsStorage.GetFileName(domain, storage.PEMExt)
 	}
 
-	if certsStorage.pfx {
-		meta[hookEnvCertPFXPath] = certsStorage.GetFileName(domain, pfxExt)
+	if certsStorage.IsPFX() {
+		meta[hookEnvCertPFXPath] = certsStorage.GetFileName(domain, storage.PFXExt)
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/urfave/cli/v3"
 	"software.sslmate.com/src/go-pkcs12"
@@ -266,7 +267,7 @@ func CreatePathFlag(defaultPath string, forceCreation bool) cli.Flag {
 				return nil
 			}
 
-			err := createNonExistingFolder(s)
+			err := storage.CreateNonExistingFolder(s)
 			if err != nil {
 				return fmt.Errorf("could not check/create the path %q: %w", s, err)
 			}

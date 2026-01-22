@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/urfave/cli/v3"
 )
 
@@ -54,7 +55,7 @@ func list(ctx context.Context, cmd *cli.Command) error {
 }
 
 func listCertificates(_ context.Context, cmd *cli.Command) error {
-	certsStorage := NewCertificatesStorage(cmd)
+	certsStorage := storage.NewCertificatesReader(cmd.String(flgPath))
 
 	matches, err := filepath.Glob(filepath.Join(certsStorage.GetRootPath(), "*.crt"))
 	if err != nil {
@@ -76,7 +77,7 @@ func listCertificates(_ context.Context, cmd *cli.Command) error {
 	}
 
 	for _, filename := range matches {
-		if strings.HasSuffix(filename, issuerExt) {
+		if strings.HasSuffix(filename, storage.IssuerExt) {
 			continue
 		}
 

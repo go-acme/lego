@@ -157,7 +157,7 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 		log.Fatal("The account is not registered. Use 'run' to register a new account.", slog.String("email", account.Email))
 	}
 
-	certsStorage := NewCertificatesStorage(cmd)
+	certsStorage := newCertificatesStorage(cmd)
 
 	bundle := !cmd.Bool(flgNoBundle)
 
@@ -181,7 +181,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *Account, ke
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certificates, err := certsStorage.ReadCertificate(domain, certExt)
+	certificates, err := certsStorage.ReadCertificate(domain, storage.CertExt)
 	if err != nil {
 		log.Fatal("Error while loading the certificate.", log.DomainAttr(domain), log.ErrorAttr(err))
 	}
@@ -242,7 +242,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *Account, ke
 	var privateKey crypto.PrivateKey
 
 	if cmd.Bool(flgReuseKey) {
-		keyBytes, errR := certsStorage.ReadFile(domain, keyExt)
+		keyBytes, errR := certsStorage.ReadFile(domain, storage.KeyExt)
 		if errR != nil {
 			log.Fatal("Error while loading the private key.",
 				log.DomainAttr(domain),
@@ -322,7 +322,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *Account, keyTyp
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certificates, err := certsStorage.ReadCertificate(domain, certExt)
+	certificates, err := certsStorage.ReadCertificate(domain, storage.CertExt)
 	if err != nil {
 		log.Fatal("Error while loading the certificate.",
 			log.DomainAttr(domain),

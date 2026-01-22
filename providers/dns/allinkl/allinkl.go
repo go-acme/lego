@@ -131,7 +131,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("allinkl: authentication: %w", err)
 	}
 
-	ctx = internal.WithContext(ctx, credential)
+	ctxAuth := internal.WithContext(ctx, credential)
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
@@ -145,7 +145,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		RecordData: info.Value,
 	}
 
-	recordID, err := d.client.AddDNSSettings(ctx, record)
+	recordID, err := d.client.AddDNSSettings(ctxAuth, record)
 	if err != nil {
 		return fmt.Errorf("allinkl: add DNS settings: %w", err)
 	}
@@ -166,7 +166,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("allinkl: authentication: %w", err)
 	}
 
-	ctx = internal.WithContext(ctx, credential)
+	ctxAuth := internal.WithContext(ctx, credential)
 
 	// gets the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
@@ -177,7 +177,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("allinkl: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	_, err = d.client.DeleteDNSSettings(ctx, recordID)
+	_, err = d.client.DeleteDNSSettings(ctxAuth, recordID)
 	if err != nil {
 		return fmt.Errorf("allinkl: delete DNS settings: %w", err)
 	}

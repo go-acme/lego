@@ -32,7 +32,7 @@ func createList() *cli.Command {
 			&cli.BoolFlag{
 				Name:    flgNames,
 				Aliases: []string{"n"},
-				Usage:   "Display certificate common names only.",
+				Usage:   "Display certificate names only.",
 			},
 		},
 	}

@@ -11,48 +11,69 @@ import (
 	"software.sslmate.com/src/go-pkcs12"
 )
 
-// Flag names.
+// Flag names related to the account and domains.
 const (
-	flgDomains                  = "domains"
-	flgServer                   = "server"
-	flgAcceptTOS                = "accept-tos"
-	flgEmail                    = "email"
-	flgDisableCommonName        = "disable-cn"
-	flgCSR                      = "csr"
-	flgEAB                      = "eab"
-	flgKID                      = "kid"
-	flgHMAC                     = "hmac"
-	flgKeyType                  = "key-type"
-	flgFilename                 = "filename"
-	flgPath                     = "path"
-	flgHTTP                     = "http"
-	flgHTTPPort                 = "http.port"
-	flgHTTPDelay                = "http.delay"
-	flgHTTPProxyHeader          = "http.proxy-header"
-	flgHTTPWebroot              = "http.webroot"
-	flgHTTPMemcachedHost        = "http.memcached-host"
-	flgHTTPS3Bucket             = "http.s3-bucket"
-	flgTLS                      = "tls"
-	flgTLSPort                  = "tls.port"
-	flgTLSDelay                 = "tls.delay"
+	flgDomains   = "domains"
+	flgAcceptTOS = "accept-tos"
+	flgEmail     = "email"
+	flgCSR       = "csr"
+	flgEAB       = "eab"
+	flgKID       = "kid"
+	flgHMAC      = "hmac"
+)
+
+// Flag names related to the output.
+const (
+	flgFilename  = "filename"
+	flgPath      = "path"
+	flgPEM       = "pem"
+	flgPFX       = "pfx"
+	flgPFXPass   = "pfx.pass"
+	flgPFXFormat = "pfx.format"
+)
+
+// Flag names related to the ACME client.
+const (
+	flgServer              = "server"
+	flgDisableCommonName   = "disable-cn"
+	flgKeyType             = "key-type"
+	flgHTTPTimeout         = "http-timeout"
+	flgTLSSkipVerify       = "tls-skip-verify"
+	flgCertTimeout         = "cert.timeout"
+	flgOverallRequestLimit = "overall-request-limit"
+	flgUserAgent           = "user-agent"
+)
+
+// Flag names related to HTTP-01 challenge.
+const (
+	flgHTTP              = "http"
+	flgHTTPPort          = "http.port"
+	flgHTTPDelay         = "http.delay"
+	flgHTTPProxyHeader   = "http.proxy-header"
+	flgHTTPWebroot       = "http.webroot"
+	flgHTTPMemcachedHost = "http.memcached-host"
+	flgHTTPS3Bucket      = "http.s3-bucket"
+)
+
+// Flag names related to TLS-ALPN-01 challenge.
+const (
+	flgTLS      = "tls"
+	flgTLSPort  = "tls.port"
+	flgTLSDelay = "tls.delay"
+)
+
+// Flag names related to DNS-01 challenge.
+const (
 	flgDNS                      = "dns"
 	flgDNSDisableCP             = "dns.disable-cp"
 	flgDNSPropagationWait       = "dns.propagation-wait"
 	flgDNSPropagationDisableANS = "dns.propagation-disable-ans"
 	flgDNSPropagationRNS        = "dns.propagation-rns"
 	flgDNSResolvers             = "dns.resolvers"
-	flgHTTPTimeout              = "http-timeout"
-	flgTLSSkipVerify            = "tls-skip-verify"
 	flgDNSTimeout               = "dns-timeout"
-	flgPEM                      = "pem"
-	flgPFX                      = "pfx"
-	flgPFXPass                  = "pfx.pass"
-	flgPFXFormat                = "pfx.format"
-	flgCertTimeout              = "cert.timeout"
-	flgOverallRequestLimit      = "overall-request-limit"
-	flgUserAgent                = "user-agent"
 )
 
+// Environment variable names.
 const (
 	envEAB         = "LEGO_EAB"
 	envEABHMAC     = "LEGO_EAB_HMAC"

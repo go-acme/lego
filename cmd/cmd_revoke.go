@@ -25,24 +25,32 @@ func createRevoke() *cli.Command {
 			return ctx, nil
 		},
 		Action: revoke,
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:    flgKeep,
-				Aliases: []string{"k"},
-				Usage:   "Keep the certificates after the revocation instead of archiving them.",
-			},
-			&cli.UintFlag{
-				Name: flgReason,
-				Usage: "Identifies the reason for the certificate revocation." +
-					" See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1." +
-					" Valid values are:" +
-					" 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged)," +
-					" 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL)," +
-					" 9 (privilegeWithdrawn), or 10 (aACompromise).",
-				Value: acme.CRLReasonUnspecified,
-			},
-		},
+		Flags:  createRevokeFlags(),
 	}
+}
+
+func createRevokeFlags() []cli.Flag {
+	flags := CreateFlags("")
+
+	flags = append(flags,
+		&cli.BoolFlag{
+			Name:    flgKeep,
+			Aliases: []string{"k"},
+			Usage:   "Keep the certificates after the revocation instead of archiving them.",
+		},
+		&cli.UintFlag{
+			Name: flgReason,
+			Usage: "Identifies the reason for the certificate revocation." +
+				" See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1." +
+				" Valid values are:" +
+				" 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged)," +
+				" 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL)," +
+				" 9 (privilegeWithdrawn), or 10 (aACompromise).",
+			Value: acme.CRLReasonUnspecified,
+		},
+	)
+
+	return flags
 }
 
 func revoke(ctx context.Context, cmd *cli.Command) error {

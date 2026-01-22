@@ -19,7 +19,6 @@ func main() {
 		Usage:                 "Let's Encrypt client written in Go",
 		Version:               getVersion(),
 		EnableShellCompletion: true,
-		Flags:                 cmd.CreateFlags(""),
 		Commands:              cmd.CreateCommands(),
 	}
 

@@ -17,12 +17,16 @@ func createDNSHelp() *cli.Command {
 		Name:   "dnshelp",
 		Usage:  "Shows additional help for the '--dns' global option",
 		Action: dnsHelp,
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    flgCode,
-				Aliases: []string{"c"},
-				Usage:   fmt.Sprintf("DNS code: %s", allDNSCodes()),
-			},
+		Flags:  createDNSHelpFlags(),
+	}
+}
+
+func createDNSHelpFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.StringFlag{
+			Name:    flgCode,
+			Aliases: []string{"c"},
+			Usage:   fmt.Sprintf("DNS code: %s", allDNSCodes()),
 		},
 	}
 }

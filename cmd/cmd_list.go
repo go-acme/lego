@@ -28,19 +28,27 @@ func createList() *cli.Command {
 			return ctx, nil
 		},
 		Action: list,
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:    flgAccounts,
-				Aliases: []string{"a"},
-				Usage:   "Display accounts.",
-			},
-			&cli.BoolFlag{
-				Name:    flgNames,
-				Aliases: []string{"n"},
-				Usage:   "Display certificate names only.",
-			},
-		},
+		Flags:  createListFlags(),
 	}
+}
+
+func createListFlags() []cli.Flag {
+	flags := CreateFlags("")
+
+	flags = append(flags,
+		&cli.BoolFlag{
+			Name:    flgAccounts,
+			Aliases: []string{"a"},
+			Usage:   "Display accounts.",
+		},
+		&cli.BoolFlag{
+			Name:    flgNames,
+			Aliases: []string{"n"},
+			Usage:   "Display certificate names only.",
+		},
+	)
+
+	return flags
 }
 
 func list(ctx context.Context, cmd *cli.Command) error {

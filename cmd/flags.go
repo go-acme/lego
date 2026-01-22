@@ -224,24 +224,12 @@ func CreateDNSChallengeFlags() []cli.Flag {
 }
 
 func CreateOutputFlags(defaultPath string) []cli.Flag {
-	if defaultPath == "" {
-		cwd, err := os.Getwd()
-		if err == nil {
-			defaultPath = filepath.Join(cwd, ".lego")
-		}
-	}
-
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:  flgFilename,
 			Usage: "(deprecated) Filename of the generated certificate.",
 		},
-		&cli.StringFlag{
-			Name:    flgPath,
-			Sources: cli.EnvVars(envPath),
-			Usage:   "Directory to use for storing the data.",
-			Value:   defaultPath,
-		},
+		CreatePathFlag(defaultPath),
 		&cli.BoolFlag{
 			Name:  flgPEM,
 			Usage: "Generate an additional .pem (base64) file by concatenating the .key and .crt files together.",
@@ -263,6 +251,23 @@ func CreateOutputFlags(defaultPath string) []cli.Flag {
 			Value:   "RC2",
 			Sources: cli.EnvVars(envPFXFormat),
 		},
+	}
+}
+
+func CreatePathFlag(defaultPath string) cli.Flag {
+	if defaultPath == "" {
+		// FIXME rethink this part
+		cwd, err := os.Getwd()
+		if err == nil {
+			defaultPath = filepath.Join(cwd, ".lego")
+		}
+	}
+
+	return &cli.StringFlag{
+		Name:    flgPath,
+		Sources: cli.EnvVars(envPath),
+		Usage:   "Directory to use for storing the data.",
+		Value:   defaultPath,
 	}
 }
 

@@ -131,22 +131,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	ctx = internal.WithContext(ctx, credential)
 
-	var authZone string
-
-	for z := range dns01.DomainsSeq(info.EffectiveFQDN) {
-		_, errG := d.client.GetDNSSettings(ctx, z, "")
-		if errG != nil {
-			log.Infof("allinkl: get DNS settings zone[%q] %v", z, errG)
-			continue
-		}
-
-		authZone = z
-
-		break
-	}
-
-	if authZone == "" {
-		return fmt.Errorf("allinkl: unable to find auth zone for '%s'", info.EffectiveFQDN)
+	authZone, err := d.findZone(ctx, info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("allinkl: %w", err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -205,4 +192,18 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Unlock()
 
 	return nil
+}
+
+func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (string, error) {
+	for z := range dns01.DomainsSeq(fqdn) {
+		_, errG := d.client.GetDNSSettings(ctx, z, "")
+		if errG != nil {
+			log.Infof("get DNS settings zone[%q] %v", z, errG)
+			continue
+		}
+
+		return z, nil
+	}
+
+	return "", fmt.Errorf("unable to find auth zone for '%s'", fqdn)
 }

@@ -20,7 +20,6 @@ func main() {
 		Version:               getVersion(),
 		EnableShellCompletion: true,
 		Flags:                 cmd.CreateFlags(""),
-		Before:                cmd.Before,
 		Commands:              cmd.CreateCommands(),
 	}
 

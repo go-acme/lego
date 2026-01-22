@@ -35,6 +35,8 @@ func createRun() *cli.Command {
 		Name:  "run",
 		Usage: "Register an account, then create and install a certificate",
 		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+			validateFlags(cmd)
+
 			// we require either domains or csr, but not both
 			hasDomains := len(cmd.StringSlice(flgDomains)) > 0
 

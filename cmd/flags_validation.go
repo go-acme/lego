@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 
@@ -9,10 +8,18 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func Before(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+// FIXME convert to flag requirement?
+func validatePathFlag(cmd *cli.Command) {
 	if cmd.String(flgPath) == "" {
 		log.Fatal(fmt.Sprintf("Could not determine the current working directory. Please pass --%s.", flgPath))
 	}
+
+	// FIXME is command list need an existing path?
+}
+
+// FIXME rename + remove fatal?
+func validateFlags(cmd *cli.Command) {
+	validatePathFlag(cmd)
 
 	err := createNonExistingFolder(cmd.String(flgPath))
 	if err != nil {
@@ -26,6 +33,4 @@ func Before(ctx context.Context, cmd *cli.Command) (context.Context, error) {
 	if cmd.String(flgServer) == "" {
 		log.Fatal(fmt.Sprintf("Could not determine the current working server. Please pass --%s.", flgServer))
 	}
-
-	return ctx, nil
 }

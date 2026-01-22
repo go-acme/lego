@@ -120,9 +120,9 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("gigahostno: %w", err)
 	}
 
-	ctx = internal.WithContext(ctx, d.token.Token)
+	ctxAuth := internal.WithContext(ctx, d.token.Token)
 
-	zone, err := d.findZone(ctx, info.EffectiveFQDN)
+	zone, err := d.findZone(ctxAuth, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("gigahostno: %w", err)
 	}
@@ -139,7 +139,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		TTL:   d.config.TTL,
 	}
 
-	err = d.client.CreateNewRecord(ctx, zone.ID, record)
+	err = d.client.CreateNewRecord(ctxAuth, zone.ID, record)
 	if err != nil {
 		return fmt.Errorf("gigahostno: create new record: %w", err)
 	}
@@ -156,9 +156,9 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("gigahostno: %w", err)
 	}
 
-	ctx = internal.WithContext(ctx, d.token.Token)
+	ctxAuth := internal.WithContext(ctx, d.token.Token)
 
-	zone, err := d.findZone(ctx, info.EffectiveFQDN)
+	zone, err := d.findZone(ctxAuth, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("gigahostno: %w", err)
 	}
@@ -168,14 +168,14 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("gigahostno: %w", err)
 	}
 
-	records, err := d.client.GetZoneRecords(ctx, zone.ID)
+	records, err := d.client.GetZoneRecords(ctxAuth, zone.ID)
 	if err != nil {
 		return fmt.Errorf("gigahostno: get zone records: %w", err)
 	}
 
 	for _, record := range records {
 		if record.Type == "TXT" && record.Name == subDomain && record.Value == info.Value {
-			err := d.client.DeleteRecord(ctx, zone.ID, record.ID, record.Name, record.Type)
+			err := d.client.DeleteRecord(ctxAuth, zone.ID, record.ID, record.Name, record.Type)
 			if err != nil {
 				return fmt.Errorf("gigahostno: delete record: %w", err)
 			}

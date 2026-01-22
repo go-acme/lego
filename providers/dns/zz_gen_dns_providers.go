@@ -179,8 +179,8 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/volcengine"
 	"github.com/go-acme/lego/v5/providers/dns/vscale"
 	"github.com/go-acme/lego/v5/providers/dns/vultr"
-	"github.com/go-acme/lego/v5/providers/dns/webnames"
 	"github.com/go-acme/lego/v5/providers/dns/webnamesca"
+	"github.com/go-acme/lego/v5/providers/dns/webnamesru"
 	"github.com/go-acme/lego/v5/providers/dns/websupport"
 	"github.com/go-acme/lego/v5/providers/dns/wedos"
 	"github.com/go-acme/lego/v5/providers/dns/westcn"
@@ -195,7 +195,7 @@ import (
 // NewDNSChallengeProviderByName Factory for DNS providers.
 func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 	switch name {
-	case "acme-dns", "acmedns":
+	case "acmedns", "acme-dns":
 		return acmedns.NewDNSProvider()
 	case "active24":
 		return active24.NewDNSProvider()
@@ -541,10 +541,10 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return vscale.NewDNSProvider()
 	case "vultr":
 		return vultr.NewDNSProvider()
-	case "webnames", "webnamesru":
-		return webnames.NewDNSProvider()
 	case "webnamesca":
 		return webnamesca.NewDNSProvider()
+	case "webnamesru", "webnames":
+		return webnamesru.NewDNSProvider()
 	case "websupport":
 		return websupport.NewDNSProvider()
 	case "wedos":

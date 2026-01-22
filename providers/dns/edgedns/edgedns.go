@@ -31,8 +31,8 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
 
-// Test Environment variables names (unused).
-// TODO(ldez): must be moved into test files.
+// Managed by the Akamai EdgeGrid client.
+// The constants are only helpers.
 const (
 	EnvHost         = envNamespace + "HOST"
 	EnvClientToken  = envNamespace + "CLIENT_TOKEN"

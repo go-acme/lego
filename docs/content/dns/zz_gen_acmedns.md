@@ -2,10 +2,10 @@
 title: "Joohoi's ACME-DNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
-slug: acme-dns
+slug: acmedns
 dnsprovider:
   since:    "v1.1.0"
-  code:     "acme-dns"
+  code:     "acmedns"
   url:      "https://github.com/joohoi/acme-dns"
 ---
 
@@ -19,7 +19,7 @@ Configuration for [Joohoi's ACME-DNS](https://github.com/joohoi/acme-dns).
 
 <!--more-->
 
-- Code: `acme-dns`
+- Code: `acmedns`
 - Since: v1.1.0
 
 

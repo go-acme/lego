@@ -138,15 +138,6 @@ func GeneratePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
 	return nil, fmt.Errorf("invalid KeyType: %s", keyType)
 }
 
-// Deprecated: uses [CreateCSR] instead.
-func GenerateCSR(privateKey crypto.PrivateKey, domain string, san []string, mustStaple bool) ([]byte, error) {
-	return CreateCSR(privateKey, CSROptions{
-		Domain:     domain,
-		SAN:        san,
-		MustStaple: mustStaple,
-	})
-}
-
 type CSROptions struct {
 	Domain         string
 	SAN            []string

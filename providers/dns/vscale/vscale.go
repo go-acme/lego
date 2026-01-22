@@ -20,7 +20,6 @@ import (
 const (
 	envNamespace = "VSCALE_"
 
-	EnvBaseURL  = envNamespace + "BASE_URL"
 	EnvAPIToken = envNamespace + "API_TOKEN"
 
 	EnvTTL                = envNamespace + "TTL"
@@ -39,7 +38,6 @@ type Config = selectel.Config
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(EnvBaseURL, defaultBaseURL),
 		TTL:                env.GetOrDefaultInt(EnvTTL, selectel.MinTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
@@ -74,11 +72,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("vscale: the configuration of the DNS provider is nil")
 	}
 
-	if config.BaseURL == "" {
-		config.BaseURL = defaultBaseURL
-	}
-
-	provider, err := selectel.NewDNSProviderConfig(config)
+	provider, err := selectel.NewDNSProviderConfig(config, defaultBaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("vscale: %w", err)
 	}

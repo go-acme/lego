@@ -26,9 +26,6 @@ const (
 	EnvAPIKey         = envNamespace + "API_KEY"
 	EnvAPIPassword    = envNamespace + "API_PASSWORD"
 
-	// Deprecated: the TTL is not configurable on record.
-	EnvTTL = envNamespace + "TTL"
-
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
@@ -44,9 +41,6 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HTTPClient         *http.Client
-
-	// Deprecated: the TTL is not configurable on record.
-	TTL int
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.

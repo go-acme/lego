@@ -36,7 +36,6 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HTTPClient         *http.Client
-	SequenceInterval   time.Duration // Deprecated: unused, will be removed in v5.
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.

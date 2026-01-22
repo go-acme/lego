@@ -30,12 +30,7 @@ type OrderOptions struct {
 type OrderService service
 
 // New Creates a new order.
-func (o *OrderService) New(ctx context.Context, domains []string) (acme.ExtendedOrder, error) {
-	return o.NewWithOptions(ctx, domains, nil)
-}
-
-// NewWithOptions Creates a new order.
-func (o *OrderService) NewWithOptions(ctx context.Context, domains []string, opts *OrderOptions) (acme.ExtendedOrder, error) {
+func (o *OrderService) New(ctx context.Context, domains []string, opts *OrderOptions) (acme.ExtendedOrder, error) {
 	orderReq := acme.Order{Identifiers: createIdentifiers(domains)}
 
 	if opts != nil {

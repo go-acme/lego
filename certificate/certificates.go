@@ -177,7 +177,7 @@ func (c *Certifier) Obtain(ctx context.Context, request ObtainRequest) (*Resourc
 		ReplacesCertID: request.ReplacesCertID,
 	}
 
-	order, err := c.core.Orders.NewWithOptions(ctx, domains, orderOpts)
+	order, err := c.core.Orders.New(ctx, domains, orderOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +245,7 @@ func (c *Certifier) ObtainForCSR(ctx context.Context, request ObtainForCSRReques
 		ReplacesCertID: request.ReplacesCertID,
 	}
 
-	order, err := c.core.Orders.NewWithOptions(ctx, domains, orderOpts)
+	order, err := c.core.Orders.New(ctx, domains, orderOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -472,7 +472,7 @@ func (c *Certifier) RevokeWithReason(ctx context.Context, cert []byte, reason *u
 	return c.core.Certificates.Revoke(ctx, revokeMsg)
 }
 
-// RenewOptions options used by Certifier.RenewWithOptions.
+// RenewOptions options used by [Certifier.Renew].
 type RenewOptions struct {
 	NotBefore time.Time
 	NotAfter  time.Time
@@ -498,27 +498,7 @@ type RenewOptions struct {
 // If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
 //
 // For private key reuse the PrivateKey property of the passed in Resource should be non-nil.
-//
-// Deprecated: use RenewWithOptions instead.
-func (c *Certifier) Renew(ctx context.Context, certRes Resource, bundle, mustStaple bool, preferredChain string) (*Resource, error) {
-	return c.RenewWithOptions(ctx, certRes, &RenewOptions{
-		Bundle:         bundle,
-		PreferredChain: preferredChain,
-		MustStaple:     mustStaple,
-	})
-}
-
-// RenewWithOptions takes a Resource and tries to renew the certificate.
-//
-// If the renewal process succeeds, the new certificate will be returned in a new CertResource.
-// Please be aware that this function will return a new certificate in ANY case that is not an error.
-// If the server does not provide us with a new cert on a GET request to the CertURL
-// this function will start a new-cert flow where a new certificate gets generated.
-//
-// If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
-//
-// For private key reuse the PrivateKey property of the passed in Resource should be non-nil.
-func (c *Certifier) RenewWithOptions(ctx context.Context, certRes Resource, options *RenewOptions) (*Resource, error) {
+func (c *Certifier) Renew(ctx context.Context, certRes Resource, options *RenewOptions) (*Resource, error) {
 	// Input certificate is PEM encoded.
 	// Decode it here as we may need the decoded cert later on in the renewal process.
 	// The input may be a bundle or a single certificate.

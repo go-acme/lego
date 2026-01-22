@@ -52,7 +52,7 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	ProjectID string
-	Token     string // TODO(ldez) rename to SecretKey in the next major.
+	SecretKey string
 	AccessKey string
 
 	PropagationTimeout time.Duration
@@ -90,7 +90,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	config := NewDefaultConfig()
-	config.Token = values[EnvSecretKey]
+	config.SecretKey = values[EnvSecretKey]
 	config.AccessKey = env.GetOrDefaultString(EnvAccessKey, dumpAccessKey)
 	config.ProjectID = env.GetOrFile(EnvProjectID)
 
@@ -103,7 +103,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("scaleway: the configuration of the DNS provider is nil")
 	}
 
-	if config.Token == "" {
+	if config.SecretKey == "" {
 		return nil, errors.New("scaleway: credentials missing")
 	}
 
@@ -112,7 +112,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	configuration := []scw.ClientOption{
-		scw.WithAuth(config.AccessKey, config.Token),
+		scw.WithAuth(config.AccessKey, config.SecretKey),
 		scw.WithUserAgent(useragent.Get()),
 	}
 

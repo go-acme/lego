@@ -2,7 +2,7 @@ Name = "Joohoi's ACME-DNS"
 Description = ''''''
 URL = "https://github.com/joohoi/acme-dns"
 Code = "acmedns"
-Aliases = ["acme-dns"]
+Aliases = ["acme-dns"] # "acme-dns" is for compatibility with v4, must be dropped in the future.
 Since = "v1.1.0"
 
 Example = '''

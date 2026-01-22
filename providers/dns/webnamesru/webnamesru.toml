@@ -2,7 +2,7 @@ Name = "webnames.ru"
 Description = ''''''
 URL = "https://www.webnames.ru/"
 Code = "webnamesru"
-Aliases = ["webnames"]
+Aliases = ["webnames"] # "webnames" is for compatibility with v4, must be dropped in the future.
 Since = "v4.15.0"
 
 Example = '''

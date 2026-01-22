@@ -229,7 +229,7 @@ func CreateOutputFlags(defaultPath string) []cli.Flag {
 			Name:  flgFilename,
 			Usage: "(deprecated) Filename of the generated certificate.",
 		},
-		CreatePathFlag(defaultPath),
+		CreatePathFlag(defaultPath, true),
 		&cli.BoolFlag{
 			Name:  flgPEM,
 			Usage: "Generate an additional .pem (base64) file by concatenating the .key and .crt files together.",
@@ -254,12 +254,24 @@ func CreateOutputFlags(defaultPath string) []cli.Flag {
 	}
 }
 
-func CreatePathFlag(defaultPath string) cli.Flag {
+func CreatePathFlag(defaultPath string, forceCreation bool) cli.Flag {
 	return &cli.StringFlag{
-		Name:     flgPath,
-		Sources:  cli.NewValueSourceChain(cli.EnvVar(envPath), &defaultPathValueSource{value: defaultPath}),
-		Usage:    "Directory to use for storing the data.",
-		Value:    defaultPath,
+		Name:    flgPath,
+		Sources: cli.NewValueSourceChain(cli.EnvVar(envPath), &defaultPathValueSource{value: defaultPath}),
+		Usage:   "Directory to use for storing the data.",
+		Value:   defaultPath,
+		Validator: func(s string) error {
+			if !forceCreation {
+				return nil
+			}
+
+			err := createNonExistingFolder(s)
+			if err != nil {
+				return fmt.Errorf("could not check/create the path %q: %w", s, err)
+			}
+
+			return nil
+		},
 		Required: true,
 	}
 }

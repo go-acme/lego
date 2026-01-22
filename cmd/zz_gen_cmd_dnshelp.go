@@ -12,6 +12,7 @@ import (
 
 func allDNSCodes() string {
 	providers := []string{
+		"abion",
 		"acme-dns",
 		"active24",
 		"alidns",
@@ -207,6 +208,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 	ew := &errWriter{w: w}
 
 	switch name {
+	case "abion":
+		// generated from: providers/dns/abion/abion.toml
+		ew.writeln(`Configuration for Abion.`)
+		ew.writeln(`Code:	'abion'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ABION_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ABION_HTTP_TIMEOUT":	API request timeout in seconds (Default: 10)`)
+		ew.writeln(`	- "ABION_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "ABION_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "ABION_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/abion`)
+
 	case "acme-dns":
 		// generated from: providers/dns/acmedns/acmedns.toml
 		ew.writeln(`Configuration for Joohoi's ACME-DNS.`)

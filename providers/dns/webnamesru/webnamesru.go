@@ -1,5 +1,5 @@
-// Package webnames implements a DNS provider for solving the DNS-01 challenge using webnames.ru DNS.
-package webnames
+// Package webnamesru implements a DNS provider for solving the DNS-01 challenge using webnames.ru DNS.
+package webnamesru
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v5/providers/dns/webnames/internal"
+	"github.com/go-acme/lego/v5/providers/dns/webnamesru/internal"
 )
 
 // Environment variables names.

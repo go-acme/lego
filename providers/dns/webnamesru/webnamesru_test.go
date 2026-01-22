@@ -1,4 +1,4 @@
-package webnames
+package webnamesru
 
 import (
 	"testing"

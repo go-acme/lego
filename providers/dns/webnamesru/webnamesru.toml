@@ -1,8 +1,8 @@
 Name = "webnames.ru"
 Description = ''''''
 URL = "https://www.webnames.ru/"
-Code = "webnames"
-Aliases = ["webnamesru"]
+Code = "webnamesru"
+Aliases = ["webnames"]
 Since = "v4.15.0"
 
 Example = '''

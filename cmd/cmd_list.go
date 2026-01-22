@@ -33,9 +33,7 @@ func createList() *cli.Command {
 }
 
 func createListFlags() []cli.Flag {
-	flags := CreateFlags("")
-
-	flags = append(flags,
+	return []cli.Flag{
 		&cli.BoolFlag{
 			Name:    flgAccounts,
 			Aliases: []string{"a"},
@@ -46,9 +44,8 @@ func createListFlags() []cli.Flag {
 			Aliases: []string{"n"},
 			Usage:   "Display certificate names only.",
 		},
-	)
-
-	return flags
+		CreatePathFlag(""),
+	}
 }
 
 func list(ctx context.Context, cmd *cli.Command) error {

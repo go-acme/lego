@@ -30,7 +30,7 @@ type CertificatesWriterConfig struct {
 	PFXFormat   string
 	PFXPassword string
 
-	Filename string // FIXME
+	Filename string // TODO(ldez): remove
 }
 
 // CertificatesWriter a writer of certificate files.
@@ -56,7 +56,7 @@ type CertificatesWriter struct {
 	pfxFormat   string
 	pfxPassword string
 
-	filename string // FIXME
+	filename string // TODO(ldez): remove
 }
 
 // NewCertificatesWriter create a new certificates storage writer.

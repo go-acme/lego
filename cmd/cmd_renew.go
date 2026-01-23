@@ -17,6 +17,7 @@ import (
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
@@ -163,7 +164,7 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 	bundle := !cmd.Bool(flgNoBundle)
 
 	meta := map[string]string{
-		hookEnvAccountEmail: account.Email,
+		hook.EnvAccountEmail: account.Email,
 	}
 
 	// CSR
@@ -302,7 +303,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 
 	addPathToMetadata(meta, domain, certRes, certsStorage)
 
-	return launchHook(ctx, cmd.String(flgRenewHook), cmd.Duration(flgRenewHookTimeout), meta)
+	return hook.Launch(ctx, cmd.String(flgRenewHook), cmd.Duration(flgRenewHookTimeout), meta)
 }
 
 func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
@@ -401,7 +402,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 
 	addPathToMetadata(meta, domain, certRes, certsStorage)
 
-	return launchHook(ctx, cmd.String(flgRenewHook), cmd.Duration(flgRenewHookTimeout), meta)
+	return hook.Launch(ctx, cmd.String(flgRenewHook), cmd.Duration(flgRenewHookTimeout), meta)
 }
 
 func needRenewal(x509Cert *x509.Certificate, domain string, days int, dynamic bool) bool {

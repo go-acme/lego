@@ -1,19 +1,20 @@
-package cmd
+package hook
 
 import (
 	"runtime"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func Test_launchHook(t *testing.T) {
-	err := launchHook(t.Context(), "echo foo", 1*time.Second, map[string]string{})
+func Test_Launch(t *testing.T) {
+	err := Launch(t.Context(), "echo foo", 1*time.Second, map[string]string{})
 	require.NoError(t, err)
 }
 
-func Test_launchHook_errors(t *testing.T) {
+func Test_Launch_errors(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("skipping test on Windows")
 	}
@@ -54,8 +55,18 @@ func Test_launchHook_errors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			err := launchHook(t.Context(), test.hook, test.timeout, map[string]string{})
+			err := Launch(t.Context(), test.hook, test.timeout, map[string]string{})
 			require.EqualError(t, err, test.expected)
 		})
 	}
+}
+
+func Test_metaToEnv(t *testing.T) {
+	env := metaToEnv(map[string]string{
+		"foo": "bar",
+	})
+
+	expected := []string{"foo=bar"}
+
+	assert.Equal(t, expected, env)
 }

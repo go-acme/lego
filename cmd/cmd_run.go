@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
@@ -158,12 +159,12 @@ func run(ctx context.Context, cmd *cli.Command) error {
 	certsStorage.SaveResource(cert)
 
 	meta := map[string]string{
-		hookEnvAccountEmail: account.Email,
+		hook.EnvAccountEmail: account.Email,
 	}
 
 	addPathToMetadata(meta, cert.Domain, cert, certsStorage)
 
-	return launchHook(ctx, cmd.String(flgRunHook), cmd.Duration(flgRunHookTimeout), meta)
+	return hook.Launch(ctx, cmd.String(flgRunHook), cmd.Duration(flgRunHookTimeout), meta)
 }
 
 func handleTOS(cmd *cli.Command, client *lego.Client) bool {

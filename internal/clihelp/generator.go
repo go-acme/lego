@@ -86,14 +86,12 @@ func generate(ctx context.Context) error {
 
 // createStubApp Construct cli app, very similar to cmd/lego/main.go.
 // Notable differences:
-// - substitute "." for CWD in default config path, as the user will very likely see a different path
 // - do not include version information, because we're likely running against a snapshot
 // - skip DNS help and provider list, as initialization takes time, and we don't generate `lego dns --help` here.
 func createStubApp() *cli.Command {
 	return &cli.Command{
 		Name:     "lego",
 		Usage:    "Let's Encrypt client written in Go",
-		Flags:    cmd.CreateFlags("./.lego"),
 		Commands: cmd.CreateCommands(),
 	}
 }

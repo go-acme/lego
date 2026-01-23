@@ -40,7 +40,7 @@ func createListFlags() []cli.Flag {
 			Aliases: []string{"n"},
 			Usage:   "Display certificate names only.",
 		},
-		CreatePathFlag("", false),
+		CreatePathFlag(false),
 	}
 }
 

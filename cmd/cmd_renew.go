@@ -67,7 +67,7 @@ func createRenew() *cli.Command {
 }
 
 func createRenewFlags() []cli.Flag {
-	flags := CreateFlags("")
+	flags := CreateFlags()
 
 	flags = append(flags,
 		&cli.IntFlag{

@@ -225,13 +225,13 @@ func CreateDNSChallengeFlags() []cli.Flag {
 	}
 }
 
-func CreateOutputFlags(defaultPath string) []cli.Flag {
+func CreateOutputFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:  flgFilename,
 			Usage: "(deprecated) Filename of the generated certificate.",
 		},
-		CreatePathFlag(defaultPath, true),
+		CreatePathFlag(true),
 		&cli.BoolFlag{
 			Name:  flgPEM,
 			Usage: "Generate an additional .pem (base64) file by concatenating the .key and .crt files together.",
@@ -256,12 +256,11 @@ func CreateOutputFlags(defaultPath string) []cli.Flag {
 	}
 }
 
-func CreatePathFlag(defaultPath string, forceCreation bool) cli.Flag {
+func CreatePathFlag(forceCreation bool) cli.Flag {
 	return &cli.StringFlag{
 		Name:    flgPath,
-		Sources: cli.NewValueSourceChain(cli.EnvVar(envPath), &defaultPathValueSource{value: defaultPath}),
+		Sources: cli.NewValueSourceChain(cli.EnvVar(envPath), &defaultPathValueSource{}),
 		Usage:   "Directory to use for storing the data.",
-		Value:   defaultPath,
 		Validator: func(s string) error {
 			if !forceCreation {
 				return nil
@@ -314,7 +313,7 @@ func CreateAccountFlags() []cli.Flag {
 	}
 }
 
-func CreateFlags(defaultPath string) []cli.Flag {
+func CreateFlags() []cli.Flag {
 	flags := []cli.Flag{
 		&cli.StringSliceFlag{
 			Name:    flgDomains,
@@ -325,7 +324,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 
 	flags = append(flags, CreateAccountFlags()...)
 	flags = append(flags, CreateACMEClientFlags()...)
-	flags = append(flags, CreateOutputFlags(defaultPath)...)
+	flags = append(flags, CreateOutputFlags()...)
 	flags = append(flags, CreateHTTPChallengeFlags()...)
 	flags = append(flags, CreateTLSChallengeFlags()...)
 	flags = append(flags, CreateDNSChallengeFlags()...)
@@ -335,16 +334,14 @@ func CreateFlags(defaultPath string) []cli.Flag {
 
 // defaultPathValueSource gets the default path based on the current working directory.
 // The field value is only here because clihelp/generator.
-type defaultPathValueSource struct {
-	value string
-}
+type defaultPathValueSource struct{}
 
 func (p *defaultPathValueSource) String() string {
-	return fmt.Sprintf("default path %[1]q", p.value)
+	return "default path"
 }
 
 func (p *defaultPathValueSource) GoString() string {
-	return fmt.Sprintf("&defaultPathValueSource{value:%[1]q}", p.value)
+	return "&defaultPathValueSource{}"
 }
 
 func (p *defaultPathValueSource) Lookup() (string, bool) {

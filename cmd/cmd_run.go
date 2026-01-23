@@ -57,7 +57,7 @@ func createRun() *cli.Command {
 }
 
 func createRunFlags() []cli.Flag {
-	flags := CreateFlags("")
+	flags := CreateFlags()
 
 	flags = append(flags,
 		&cli.BoolFlag{

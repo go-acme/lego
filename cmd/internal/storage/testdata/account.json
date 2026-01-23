@@ -1,0 +1,16 @@
+{
+  "email": "account@example.com",
+  "registration": {
+    "body": {
+      "status": "valid",
+      "contact": [
+        "contact@example.com"
+      ],
+      "termsOfServiceAgreed": true,
+      "orders": "https://ame.example.com/orders/123456",
+      "onlyReturnExisting": true,
+      "externalAccountBinding": "EAB"
+    },
+    "uri": "https://ame.example.com"
+  }
+}

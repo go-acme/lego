@@ -66,13 +66,14 @@ func TestChallengeHTTP_Run(t *testing.T) {
 	loader.CleanLegoFiles(t.Context())
 
 	err := load.RunLego(t.Context(),
+		"run",
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", testDomain1,
 		"--http",
 		"--http.port", ":5002",
-		"run")
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,13 +83,14 @@ func TestChallengeTLS_Run_Domains(t *testing.T) {
 	loader.CleanLegoFiles(t.Context())
 
 	err := load.RunLego(t.Context(),
+		"run",
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", testDomain1,
 		"--tls",
 		"--tls.port", ":5001",
-		"run")
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,13 +100,14 @@ func TestChallengeTLS_Run_IP(t *testing.T) {
 	loader.CleanLegoFiles(t.Context())
 
 	err := load.RunLego(t.Context(),
+		"run",
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", "127.0.0.1",
 		"--tls",
 		"--tls.port", ":5001",
-		"run")
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,13 +119,14 @@ func TestChallengeTLS_Run_CSR(t *testing.T) {
 	csrPath := createTestCSRFile(t, true)
 
 	err := load.RunLego(t.Context(),
+		"run",
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-csr", csrPath,
 		"--tls",
 		"--tls.port", ":5001",
-		"run")
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,13 +138,14 @@ func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
 	csrPath := createTestCSRFile(t, false)
 
 	err := load.RunLego(t.Context(),
+		"run",
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-csr", csrPath,
 		"--tls",
 		"--tls.port", ":5001",
-		"run")
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,6 +155,7 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 	loader.CleanLegoFiles(t.Context())
 
 	err := load.RunLego(t.Context(),
+		"run",
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -157,12 +163,13 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 		"-d", testDomain3,
 		"--tls",
 		"--tls.port", ":5001",
-		"run")
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	err = load.RunLego(t.Context(),
+		"revoke",
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
@@ -179,25 +186,27 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 	loader.CleanLegoFiles(t.Context())
 
 	err := load.RunLego(t.Context(),
+		"run",
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", testDomain4,
 		"--tls",
 		"--tls.port", ":5001",
-		"run")
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	err = load.RunLego(t.Context(),
+		"revoke",
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", testDomain4,
 		"--tls",
 		"--tls.port", ":5001",
-		"revoke")
+	)
 	if err != nil {
 		t.Fatal(err)
 	}

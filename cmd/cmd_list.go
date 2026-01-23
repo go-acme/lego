@@ -77,7 +77,7 @@ func listCertificates(_ context.Context, cmd *cli.Command) error {
 	}
 
 	for _, filename := range matches {
-		if strings.HasSuffix(filename, storage.IssuerExt) {
+		if strings.HasSuffix(filename, storage.ExtIssuer) {
 			continue
 		}
 

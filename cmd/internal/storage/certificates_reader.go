@@ -25,7 +25,7 @@ func NewCertificatesReader(basePath string) *CertificatesReader {
 }
 
 func (s *CertificatesReader) ReadResource(domain string) certificate.Resource {
-	raw, err := s.ReadFile(domain, ResourceExt)
+	raw, err := s.ReadFile(domain, ExtResource)
 	if err != nil {
 		log.Fatal("Error while loading the metadata.",
 			log.DomainAttr(domain),

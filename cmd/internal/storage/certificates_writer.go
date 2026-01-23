@@ -105,7 +105,7 @@ func (s *CertificatesWriter) SaveResource(certRes *certificate.Resource) {
 
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	err := s.writeFile(domain, CertExt, certRes.Certificate)
+	err := s.writeFile(domain, ExtCert, certRes.Certificate)
 	if err != nil {
 		log.Fatal("Unable to save Certificate.",
 			log.DomainAttr(domain),
@@ -114,7 +114,7 @@ func (s *CertificatesWriter) SaveResource(certRes *certificate.Resource) {
 	}
 
 	if certRes.IssuerCertificate != nil {
-		err = s.writeFile(domain, IssuerExt, certRes.IssuerCertificate)
+		err = s.writeFile(domain, ExtIssuer, certRes.IssuerCertificate)
 		if err != nil {
 			log.Fatal("Unable to save IssuerCertificate.",
 				log.DomainAttr(domain),
@@ -142,7 +142,7 @@ func (s *CertificatesWriter) SaveResource(certRes *certificate.Resource) {
 		)
 	}
 
-	err = s.writeFile(domain, ResourceExt, jsonBytes)
+	err = s.writeFile(domain, ExtResource, jsonBytes)
 	if err != nil {
 		log.Fatal("Unable to save CertResource.",
 			log.DomainAttr(domain),
@@ -160,7 +160,7 @@ func (s *CertificatesWriter) MoveToArchive(domain string) error {
 	}
 
 	for _, oldFile := range matches {
-		if strings.TrimSuffix(oldFile, filepath.Ext(oldFile)) != baseFilename && oldFile != baseFilename+IssuerExt {
+		if strings.TrimSuffix(oldFile, filepath.Ext(oldFile)) != baseFilename && oldFile != baseFilename+ExtIssuer {
 			continue
 		}
 
@@ -190,13 +190,13 @@ func (s *CertificatesWriter) IsPFX() bool {
 }
 
 func (s *CertificatesWriter) writeCertificateFiles(domain string, certRes *certificate.Resource) error {
-	err := s.writeFile(domain, KeyExt, certRes.PrivateKey)
+	err := s.writeFile(domain, ExtKey, certRes.PrivateKey)
 	if err != nil {
 		return fmt.Errorf("unable to save key file: %w", err)
 	}
 
 	if s.pem {
-		err = s.writeFile(domain, PEMExt, bytes.Join([][]byte{certRes.Certificate, certRes.PrivateKey}, nil))
+		err = s.writeFile(domain, ExtPEM, bytes.Join([][]byte{certRes.Certificate, certRes.PrivateKey}, nil))
 		if err != nil {
 			return fmt.Errorf("unable to save PEM file: %w", err)
 		}
@@ -243,7 +243,7 @@ func (s *CertificatesWriter) writePFXFile(domain string, certRes *certificate.Re
 		return fmt.Errorf("unable to encode PFX data for domain %s: %w", domain, err)
 	}
 
-	return s.writeFile(domain, PFXExt, pfxBytes)
+	return s.writeFile(domain, ExtPFX, pfxBytes)
 }
 
 func (s *CertificatesWriter) writeFile(domain, extension string, data []byte) error {

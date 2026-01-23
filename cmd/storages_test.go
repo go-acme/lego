@@ -118,7 +118,7 @@ func generateTestFiles(t *testing.T, dir, domain string) []string {
 
 	var filenames []string
 
-	for _, ext := range []string{storage.IssuerExt, storage.CertExt, storage.KeyExt, storage.PEMExt, storage.PFXExt, storage.ResourceExt} {
+	for _, ext := range []string{storage.ExtIssuer, storage.ExtCert, storage.ExtKey, storage.ExtPEM, storage.ExtPFX, storage.ExtResource} {
 		filename := filepath.Join(dir, domain+ext)
 		err := os.WriteFile(filename, []byte("test"), 0o666)
 		require.NoError(t, err)

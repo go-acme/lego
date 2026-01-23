@@ -64,7 +64,7 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 	for _, domain := range cmd.StringSlice(flgDomains) {
 		log.Info("Trying to revoke the certificate.", log.DomainAttr(domain))
 
-		certBytes, err := certsStorage.ReadFile(domain, storage.CertExt)
+		certBytes, err := certsStorage.ReadFile(domain, storage.ExtCert)
 		if err != nil {
 			log.Fatal("Error while revoking the certificate.", log.DomainAttr(domain), log.ErrorAttr(err))
 		}

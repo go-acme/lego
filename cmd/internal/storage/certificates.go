@@ -6,12 +6,12 @@ import (
 )
 
 const (
-	IssuerExt   = ".issuer.crt"
-	CertExt     = ".crt"
-	KeyExt      = ".key"
-	PEMExt      = ".pem"
-	PFXExt      = ".pfx"
-	ResourceExt = ".json"
+	ExtIssuer   = ".issuer.crt"
+	ExtCert     = ".crt"
+	ExtKey      = ".key"
+	ExtPEM      = ".pem"
+	ExtPFX      = ".pfx"
+	ExtResource = ".json"
 )
 
 const (

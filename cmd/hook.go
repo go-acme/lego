@@ -88,18 +88,18 @@ func metaToEnv(meta map[string]string) []string {
 
 func addPathToMetadata(meta map[string]string, domain string, certRes *certificate.Resource, certsStorage *CertificatesStorage) {
 	meta[hookEnvCertDomain] = domain
-	meta[hookEnvCertPath] = certsStorage.GetFileName(domain, storage.CertExt)
-	meta[hookEnvCertKeyPath] = certsStorage.GetFileName(domain, storage.KeyExt)
+	meta[hookEnvCertPath] = certsStorage.GetFileName(domain, storage.ExtCert)
+	meta[hookEnvCertKeyPath] = certsStorage.GetFileName(domain, storage.ExtKey)
 
 	if certRes.IssuerCertificate != nil {
-		meta[hookEnvIssuerCertKeyPath] = certsStorage.GetFileName(domain, storage.IssuerExt)
+		meta[hookEnvIssuerCertKeyPath] = certsStorage.GetFileName(domain, storage.ExtIssuer)
 	}
 
 	if certsStorage.IsPEM() {
-		meta[hookEnvCertPEMPath] = certsStorage.GetFileName(domain, storage.PEMExt)
+		meta[hookEnvCertPEMPath] = certsStorage.GetFileName(domain, storage.ExtPEM)
 	}
 
 	if certsStorage.IsPFX() {
-		meta[hookEnvCertPFXPath] = certsStorage.GetFileName(domain, storage.PFXExt)
+		meta[hookEnvCertPFXPath] = certsStorage.GetFileName(domain, storage.ExtPFX)
 	}
 }

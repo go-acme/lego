@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
 )
@@ -49,7 +50,7 @@ func createRevokeFlags() []cli.Flag {
 }
 
 func revoke(ctx context.Context, cmd *cli.Command) error {
-	account, keyType := setupAccount(ctx, cmd, NewAccountsStorage(cmd))
+	account, keyType := setupAccount(ctx, cmd, newAccountsStorage(cmd))
 
 	if account.Registration == nil {
 		log.Fatal("Account is not registered. Use 'run' to register a new account.", slog.String("email", account.Email))

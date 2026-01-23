@@ -35,3 +35,18 @@ func newCertificatesStorage(cmd *cli.Command) *CertificatesStorage {
 		CertificatesReader: storage.NewCertificatesReader(basePath),
 	}
 }
+
+// newAccountsStorage Creates a new AccountsStorage.
+func newAccountsStorage(cmd *cli.Command) *storage.AccountsStorage {
+	accountsStorage, err := storage.NewAccountsStorage(storage.AccountsStorageConfig{
+		Email:     cmd.String(flgEmail),
+		BasePath:  cmd.String(flgPath),
+		Server:    cmd.String(flgServer),
+		UserAgent: getUserAgent(cmd),
+	})
+	if err != nil {
+		log.Fatal("Accounts storage initialization", log.ErrorAttr(err))
+	}
+
+	return accountsStorage
+}

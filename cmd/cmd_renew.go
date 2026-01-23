@@ -17,6 +17,7 @@ import (
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/mattn/go-isatty"
@@ -151,7 +152,7 @@ func createRenewFlags() []cli.Flag {
 }
 
 func renew(ctx context.Context, cmd *cli.Command) error {
-	account, keyType := setupAccount(ctx, cmd, NewAccountsStorage(cmd))
+	account, keyType := setupAccount(ctx, cmd, newAccountsStorage(cmd))
 
 	if account.Registration == nil {
 		log.Fatal("The account is not registered. Use 'run' to register a new account.", slog.String("email", account.Email))
@@ -174,7 +175,7 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 	return renewForDomains(ctx, cmd, account, keyType, certsStorage, bundle, meta)
 }
 
-func renewForDomains(ctx context.Context, cmd *cli.Command, account *Account, keyType certcrypto.KeyType, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
+func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
 	domains := cmd.StringSlice(flgDomains)
 	domain := domains[0]
 
@@ -304,7 +305,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *Account, ke
 	return launchHook(ctx, cmd.String(flgRenewHook), cmd.Duration(flgRenewHookTimeout), meta)
 }
 
-func renewForCSR(ctx context.Context, cmd *cli.Command, account *Account, keyType certcrypto.KeyType, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
+func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
 	csr, err := readCSRFile(cmd.String(flgCSR))
 	if err != nil {
 		log.Fatal("Could not read CSR file.",

@@ -1,4 +1,4 @@
-package cmd
+package storage
 
 import (
 	"crypto"
@@ -11,6 +11,10 @@ type Account struct {
 	Email        string                 `json:"email"`
 	Registration *registration.Resource `json:"registration"`
 	key          crypto.PrivateKey
+}
+
+func NewAccount(email string, key crypto.PrivateKey) *Account {
+	return &Account{Email: email, key: key}
 }
 
 /** Implementation of the registration.User interface **/

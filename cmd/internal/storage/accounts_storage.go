@@ -1,10 +1,11 @@
-package cmd
+package storage
 
 import (
 	"context"
 	"crypto"
 	"encoding/json"
 	"encoding/pem"
+	"fmt"
 	"log/slog"
 	"net/url"
 	"os"
@@ -15,7 +16,6 @@ import (
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
-	"github.com/urfave/cli/v3"
 )
 
 const userIDPlaceholder = "noemail@example.com"
@@ -25,6 +25,14 @@ const (
 	baseKeysFolderName         = "keys"
 	accountFileName            = "account.json"
 )
+
+type AccountsStorageConfig struct {
+	Email    string
+	BasePath string
+
+	Server    string
+	UserAgent string
+}
 
 // AccountsStorage A storage for account data.
 //
@@ -63,31 +71,28 @@ type AccountsStorage struct {
 	userID          string
 	email           string
 	rootPath        string
-	rootUserPath    string
 	keysPath        string
 	accountFilePath string
-	cmd             *cli.Command
+
+	server    *url.URL
+	userAgent string
 }
 
 // NewAccountsStorage Creates a new AccountsStorage.
-func NewAccountsStorage(cmd *cli.Command) *AccountsStorage {
-	email := cmd.String(flgEmail)
+func NewAccountsStorage(config AccountsStorageConfig) (*AccountsStorage, error) {
+	email := config.Email
 
 	userID := email
 	if userID == "" {
 		userID = userIDPlaceholder
 	}
 
-	serverURL, err := url.Parse(cmd.String(flgServer))
+	serverURL, err := url.Parse(config.Server)
 	if err != nil {
-		log.Fatal("URL parsing",
-			slog.String("flag", flgServer),
-			slog.String("serverURL", cmd.String(flgServer)),
-			log.ErrorAttr(err),
-		)
+		return nil, fmt.Errorf("invalid server URL %q: %w", config.Server, err)
 	}
 
-	rootPath := filepath.Join(cmd.String(flgPath), baseAccountsRootFolderName)
+	rootPath := filepath.Join(config.BasePath, baseAccountsRootFolderName)
 	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(serverURL.Host)
 	accountsPath := filepath.Join(rootPath, serverPath)
 	rootUserPath := filepath.Join(accountsPath, userID)
@@ -96,20 +101,19 @@ func NewAccountsStorage(cmd *cli.Command) *AccountsStorage {
 		userID:          userID,
 		email:           email,
 		rootPath:        rootPath,
-		rootUserPath:    rootUserPath,
 		keysPath:        filepath.Join(rootUserPath, baseKeysFolderName),
 		accountFilePath: filepath.Join(rootUserPath, accountFileName),
-		cmd:             cmd,
-	}
+		server:          serverURL,
+		userAgent:       config.UserAgent,
+	}, nil
 }
 
 func (s *AccountsStorage) ExistsAccountFilePath() bool {
-	accountFile := filepath.Join(s.rootUserPath, accountFileName)
-	if _, err := os.Stat(accountFile); os.IsNotExist(err) {
+	if _, err := os.Stat(s.accountFilePath); os.IsNotExist(err) {
 		return false
 	} else if err != nil {
 		log.Fatal("Could not read the account file.",
-			slog.String("filepath", accountFile),
+			slog.String("filepath", s.accountFilePath),
 			log.ErrorAttr(err),
 		)
 	}
@@ -119,10 +123,6 @@ func (s *AccountsStorage) ExistsAccountFilePath() bool {
 
 func (s *AccountsStorage) GetRootPath() string {
 	return s.rootPath
-}
-
-func (s *AccountsStorage) GetRootUserPath() string {
-	return s.rootUserPath
 }
 
 func (s *AccountsStorage) GetUserID() string {
@@ -164,7 +164,7 @@ func (s *AccountsStorage) LoadAccount(ctx context.Context, privateKey crypto.Pri
 	account.key = privateKey
 
 	if account.Registration == nil || account.Registration.Body.Status == "" {
-		reg, err := tryRecoverRegistration(ctx, s.cmd, privateKey)
+		reg, err := s.tryRecoverRegistration(ctx, privateKey)
 		if err != nil {
 			log.Fatal("Could not load the account file. Registration is nil.",
 				slog.String("userID", s.GetUserID()),
@@ -209,7 +209,7 @@ func (s *AccountsStorage) GetPrivateKey(keyType certcrypto.KeyType) crypto.Priva
 		return privateKey
 	}
 
-	privateKey, err := loadPrivateKey(accKeyPath)
+	privateKey, err := LoadPrivateKey(accKeyPath)
 	if err != nil {
 		log.Fatal("Could not load an RSA private key from the file.",
 			slog.String("filepath", accKeyPath),
@@ -221,12 +221,45 @@ func (s *AccountsStorage) GetPrivateKey(keyType certcrypto.KeyType) crypto.Priva
 }
 
 func (s *AccountsStorage) createKeysFolder() {
-	if err := createNonExistingFolder(s.keysPath); err != nil {
+	if err := CreateNonExistingFolder(s.keysPath); err != nil {
 		log.Fatal("Could not check/create the directory for the account.",
 			slog.String("userID", s.GetUserID()),
 			log.ErrorAttr(err),
 		)
 	}
+}
+
+func (s *AccountsStorage) tryRecoverRegistration(ctx context.Context, privateKey crypto.PrivateKey) (*registration.Resource, error) {
+	// couldn't load account but got a key. Try to look the account up.
+	config := lego.NewConfig(&Account{key: privateKey})
+	config.CADirURL = s.server.String()
+	config.UserAgent = s.userAgent
+
+	client, err := lego.NewClient(config)
+	if err != nil {
+		return nil, err
+	}
+
+	reg, err := client.Registration.ResolveAccountByKey(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return reg, nil
+}
+
+func LoadPrivateKey(file string) (crypto.PrivateKey, error) {
+	keyBytes, err := os.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+
+	privateKey, err := certcrypto.ParsePEMPrivateKey(keyBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return privateKey, nil
 }
 
 func generatePrivateKey(file string, keyType certcrypto.KeyType) (crypto.PrivateKey, error) {
@@ -249,37 +282,4 @@ func generatePrivateKey(file string, keyType certcrypto.KeyType) (crypto.Private
 	}
 
 	return privateKey, nil
-}
-
-func loadPrivateKey(file string) (crypto.PrivateKey, error) {
-	keyBytes, err := os.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-
-	privateKey, err := certcrypto.ParsePEMPrivateKey(keyBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	return privateKey, nil
-}
-
-func tryRecoverRegistration(ctx context.Context, cmd *cli.Command, privateKey crypto.PrivateKey) (*registration.Resource, error) {
-	// couldn't load account but got a key. Try to look the account up.
-	config := lego.NewConfig(&Account{key: privateKey})
-	config.CADirURL = cmd.String(flgServer)
-	config.UserAgent = getUserAgent(cmd)
-
-	client, err := lego.NewClient(config)
-	if err != nil {
-		return nil, err
-	}
-
-	reg, err := client.Registration.ResolveAccountByKey(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return reg, nil
 }

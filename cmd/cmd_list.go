@@ -111,7 +111,7 @@ func listCertificates(_ context.Context, cmd *cli.Command) error {
 }
 
 func listAccount(_ context.Context, cmd *cli.Command) error {
-	accountsStorage := NewAccountsStorage(cmd)
+	accountsStorage := newAccountsStorage(cmd)
 
 	matches, err := filepath.Glob(filepath.Join(accountsStorage.GetRootPath(), "*", "*", "*.json"))
 	if err != nil {
@@ -131,7 +131,7 @@ func listAccount(_ context.Context, cmd *cli.Command) error {
 			return err
 		}
 
-		var account Account
+		var account storage.Account
 
 		err = json.Unmarshal(data, &account)
 		if err != nil {

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
@@ -124,7 +125,7 @@ server. Making regular backups of this folder is ideal.
 `
 
 func run(ctx context.Context, cmd *cli.Command) error {
-	accountsStorage := NewAccountsStorage(cmd)
+	accountsStorage := newAccountsStorage(cmd)
 
 	account, keyType := setupAccount(ctx, cmd, accountsStorage)
 

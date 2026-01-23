@@ -15,6 +15,7 @@ import (
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
@@ -23,7 +24,7 @@ import (
 )
 
 // setupClient creates a new client with challenge settings.
-func setupClient(cmd *cli.Command, account *Account, keyType certcrypto.KeyType) *lego.Client {
+func setupClient(cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType) *lego.Client {
 	client := newClient(cmd, account, keyType)
 
 	setupChallenges(cmd, client)
@@ -31,15 +32,15 @@ func setupClient(cmd *cli.Command, account *Account, keyType certcrypto.KeyType)
 	return client
 }
 
-func setupAccount(ctx context.Context, cmd *cli.Command, accountsStorage *AccountsStorage) (*Account, certcrypto.KeyType) {
+func setupAccount(ctx context.Context, cmd *cli.Command, accountsStorage *storage.AccountsStorage) (*storage.Account, certcrypto.KeyType) {
 	keyType := getKeyType(cmd)
 	privateKey := accountsStorage.GetPrivateKey(keyType)
 
-	var account *Account
+	var account *storage.Account
 	if accountsStorage.ExistsAccountFilePath() {
 		account = accountsStorage.LoadAccount(ctx, privateKey)
 	} else {
-		account = &Account{Email: accountsStorage.GetEmail(), key: privateKey}
+		account = storage.NewAccount(accountsStorage.GetEmail(), privateKey)
 	}
 
 	return account, keyType

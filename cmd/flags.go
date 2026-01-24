@@ -38,7 +38,6 @@ const (
 
 // Flag names related to the output.
 const (
-	flgFilename  = "filename"
 	flgPath      = "path"
 	flgPEM       = "pem"
 	flgPFX       = "pfx"
@@ -287,10 +286,6 @@ func CreateDNSChallengeFlags() []cli.Flag {
 
 func CreateOutputFlags() []cli.Flag {
 	return []cli.Flag{
-		&cli.StringFlag{
-			Name:  flgFilename,
-			Usage: "(deprecated) Filename of the generated certificate.",
-		},
 		CreatePathFlag(true),
 		&cli.BoolFlag{
 			Name:  flgPEM,

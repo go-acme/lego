@@ -34,7 +34,6 @@ func newCertificatesWriterConfig(cmd *cli.Command, basePath string) storage.Cert
 		PFX:         cmd.Bool(flgPFX),
 		PFXFormat:   cmd.String(flgPFXPass),
 		PFXPassword: cmd.String(flgPFXFormat),
-		Filename:    cmd.String(flgFilename),
 	}
 }
 

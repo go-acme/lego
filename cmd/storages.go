@@ -26,16 +26,6 @@ func newCertificatesWriterConfig(cmd *cli.Command) storage.CertificatesWriterCon
 	}
 }
 
-// newAccountsStorage Creates a new AccountsStorage.
-func newAccountsStorage(cmd *cli.Command) *storage.AccountsStorage {
-	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
-	if err != nil {
-		log.Fatal("Accounts storage initialization", log.ErrorAttr(err))
-	}
-
-	return accountsStorage
-}
-
 func newAccountsStorageConfig(cmd *cli.Command) storage.AccountsStorageConfig {
 	return storage.AccountsStorageConfig{
 		Email:     cmd.String(flgEmail),

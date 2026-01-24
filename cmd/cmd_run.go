@@ -53,14 +53,19 @@ func createRun() *cli.Command {
 }
 
 func run(ctx context.Context, cmd *cli.Command) error {
-	accountsStorage := newAccountsStorage(cmd)
+	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
+	if err != nil {
+		log.Fatal("Accounts storage initialization", log.ErrorAttr(err))
+	}
 
 	account, keyType := setupAccount(ctx, cmd, accountsStorage)
 
 	client := setupClient(cmd, account, keyType)
 
 	if account.Registration == nil {
-		reg, err := register(ctx, cmd, client)
+		var reg *registration.Resource
+
+		reg, err = register(ctx, cmd, client)
 		if err != nil {
 			log.Fatal("Could not complete registration.", log.ErrorAttr(err))
 		}

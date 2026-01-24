@@ -54,7 +54,12 @@ func createRenew() *cli.Command {
 }
 
 func renew(ctx context.Context, cmd *cli.Command) error {
-	account, keyType := setupAccount(ctx, cmd, newAccountsStorage(cmd))
+	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
+	if err != nil {
+		log.Fatal("Accounts storage initialization", log.ErrorAttr(err))
+	}
+
+	account, keyType := setupAccount(ctx, cmd, accountsStorage)
 
 	if account.Registration == nil {
 		log.Fatal("The account is not registered. Use 'run' to register a new account.", slog.String("email", account.Email))

@@ -111,7 +111,9 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 	if !cmd.Bool(flgARIDisable) {
 		client = setupClient(cmd, account, keyType)
 
-		ariRenewalTime = getARIRenewalTime(ctx, cmd, cert, domain, client)
+		willingToSleep := cmd.Duration(flgARIWaitToRenewDuration)
+
+		ariRenewalTime = getARIRenewalTime(ctx, willingToSleep, cert, domain, client)
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
 
@@ -255,7 +257,9 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 	if !cmd.Bool(flgARIDisable) {
 		client = setupClient(cmd, account, keyType)
 
-		ariRenewalTime = getARIRenewalTime(ctx, cmd, cert, domain, client)
+		willingToSleep := cmd.Duration(flgARIWaitToRenewDuration)
+
+		ariRenewalTime = getARIRenewalTime(ctx, willingToSleep, cert, domain, client)
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
 
@@ -364,7 +368,7 @@ func needRenewalDynamic(x509Cert *x509.Certificate, domain string, now time.Time
 }
 
 // getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.
-func getARIRenewalTime(ctx context.Context, cmd *cli.Command, cert *x509.Certificate, domain string, client *lego.Client) *time.Time {
+func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *x509.Certificate, domain string, client *lego.Client) *time.Time {
 	if cert.IsCA {
 		log.Fatal("Certificate bundle starts with a CA certificate.", log.DomainAttr(domain))
 	}
@@ -390,7 +394,7 @@ func getARIRenewalTime(ctx context.Context, cmd *cli.Command, cert *x509.Certifi
 
 	now := time.Now().UTC()
 
-	renewalTime := renewalInfo.ShouldRenewAt(now, cmd.Duration(flgARIWaitToRenewDuration))
+	renewalTime := renewalInfo.ShouldRenewAt(now, willingToSleep)
 	if renewalTime == nil {
 		log.Info("acme: renewalInfo endpoint indicates that renewal is not needed.", log.DomainAttr(domain))
 		return nil

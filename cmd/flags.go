@@ -362,7 +362,6 @@ func CreateFlags() []cli.Flag {
 	flags = append(flags, CreateAccountFlags()...)
 	flags = append(flags, CreateACMEClientFlags()...)
 	flags = append(flags, CreateOutputFlags()...)
-	flags = append(flags, CreateChallengesFlags()...)
 
 	return flags
 }

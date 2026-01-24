@@ -72,22 +72,20 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 		log.Fatal("Certificates storage", log.ErrorAttr(err))
 	}
 
-	bundle := !cmd.Bool(flgNoBundle)
-
 	meta := map[string]string{
 		hook.EnvAccountEmail: account.Email,
 	}
 
 	// CSR
 	if cmd.IsSet(flgCSR) {
-		return renewForCSR(ctx, cmd, account, keyType, certsStorage, bundle, meta)
+		return renewForCSR(ctx, cmd, account, keyType, certsStorage, meta)
 	}
 
 	// Domains
-	return renewForDomains(ctx, cmd, account, keyType, certsStorage, bundle, meta)
+	return renewForDomains(ctx, cmd, account, keyType, certsStorage, meta)
 }
 
-func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *storage.CertificatesStorage, bundle bool, meta map[string]string) error {
+func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
 	domains := cmd.StringSlice(flgDomains)
 	domain := domains[0]
 
@@ -96,7 +94,10 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 	// as web servers would not be able to work with a combined file.
 	certificates, err := certsStorage.ReadCertificate(domain, storage.ExtCert)
 	if err != nil {
-		log.Fatal("Error while loading the certificate.", log.DomainAttr(domain), log.ErrorAttr(err))
+		log.Fatal("Error while loading the certificate.",
+			log.DomainAttr(domain),
+			log.ErrorAttr(err),
+		)
 	}
 
 	cert := certificates[0]
@@ -189,17 +190,9 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 		renewalDomains = merge(certDomains, domains)
 	}
 
-	request := certificate.ObtainRequest{
-		Domains:                        renewalDomains,
-		PrivateKey:                     privateKey,
-		MustStaple:                     cmd.Bool(flgMustStaple),
-		NotBefore:                      cmd.Timestamp(flgNotBefore),
-		NotAfter:                       cmd.Timestamp(flgNotAfter),
-		Bundle:                         bundle,
-		PreferredChain:                 cmd.String(flgPreferredChain),
-		Profile:                        cmd.String(flgProfile),
-		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
-	}
+	request := newObtainRequest(cmd, renewalDomains)
+
+	request.PrivateKey = privateKey
 
 	if replacesCertID != "" {
 		request.ReplacesCertID = replacesCertID
@@ -214,17 +207,16 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 
 	certsStorage.SaveResource(certRes)
 
-	hook.AddPathToMetadata(meta, domain, certRes, certsStorage)
+	hook.AddPathToMetadata(meta, certRes.Domain, certRes, certsStorage)
 
 	return hook.Launch(ctx, cmd.String(flgRenewHook), cmd.Duration(flgRenewHookTimeout), meta)
 }
 
-func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *storage.CertificatesStorage, bundle bool, meta map[string]string) error {
+func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
 	csr, err := readCSRFile(cmd.String(flgCSR))
 	if err != nil {
 		log.Fatal("Could not read CSR file.",
-			slog.String("flag", flgCSR),
-			slog.String("filepath", cmd.String(flgCSR)),
+			slog.String(flgCSR, cmd.String(flgCSR)),
 			log.ErrorAttr(err),
 		)
 	}
@@ -268,7 +260,8 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 				log.Info("Sleeping until renewal time",
 					log.DomainAttr(domain),
 					slog.Duration("sleep", ariRenewalTime.Sub(now)),
-					slog.Time("renewalTime", *ariRenewalTime))
+					slog.Time("renewalTime", *ariRenewalTime),
+				)
 				time.Sleep(ariRenewalTime.Sub(now))
 			}
 		}
@@ -294,15 +287,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 		slog.Int("hoursRemaining", int(timeLeft.Hours())),
 	)
 
-	request := certificate.ObtainForCSRRequest{
-		CSR:                            csr,
-		NotBefore:                      cmd.Timestamp(flgNotBefore),
-		NotAfter:                       cmd.Timestamp(flgNotAfter),
-		Bundle:                         bundle,
-		PreferredChain:                 cmd.String(flgPreferredChain),
-		Profile:                        cmd.String(flgProfile),
-		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
-	}
+	request := newObtainForCSRRequest(cmd, csr)
 
 	if replacesCertID != "" {
 		request.ReplacesCertID = replacesCertID

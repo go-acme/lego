@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"context"
+	"crypto/x509"
 	"fmt"
 	"log/slog"
 	"os"
@@ -160,22 +161,13 @@ func register(ctx context.Context, cmd *cli.Command, client *lego.Client) (*regi
 }
 
 func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Client) (*certificate.Resource, error) {
-	bundle := !cmd.Bool(flgNoBundle)
-
 	domains := cmd.StringSlice(flgDomains)
+
 	if len(domains) > 0 {
 		// obtain a certificate, generating a new private key
-		request := certificate.ObtainRequest{
-			Domains:                        domains,
-			MustStaple:                     cmd.Bool(flgMustStaple),
-			NotBefore:                      cmd.Timestamp(flgNotBefore),
-			NotAfter:                       cmd.Timestamp(flgNotAfter),
-			Bundle:                         bundle,
-			PreferredChain:                 cmd.String(flgPreferredChain),
-			Profile:                        cmd.String(flgProfile),
-			AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
-		}
+		request := newObtainRequest(cmd, domains)
 
+		// TODO(ldez): factorize?
 		if cmd.IsSet(flgPrivateKey) {
 			var err error
 
@@ -195,16 +187,9 @@ func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Clien
 	}
 
 	// obtain a certificate for this CSR
-	request := certificate.ObtainForCSRRequest{
-		CSR:                            csr,
-		NotBefore:                      cmd.Timestamp(flgNotBefore),
-		NotAfter:                       cmd.Timestamp(flgNotAfter),
-		Bundle:                         bundle,
-		PreferredChain:                 cmd.String(flgPreferredChain),
-		Profile:                        cmd.String(flgProfile),
-		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
-	}
+	request := newObtainForCSRRequest(cmd, csr)
 
+	// TODO(ldez): factorize?
 	if cmd.IsSet(flgPrivateKey) {
 		var err error
 
@@ -215,4 +200,29 @@ func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Clien
 	}
 
 	return client.Certificate.ObtainForCSR(ctx, request)
+}
+
+func newObtainRequest(cmd *cli.Command, domains []string) certificate.ObtainRequest {
+	return certificate.ObtainRequest{
+		Domains:                        domains,
+		MustStaple:                     cmd.Bool(flgMustStaple),
+		NotBefore:                      cmd.Timestamp(flgNotBefore),
+		NotAfter:                       cmd.Timestamp(flgNotAfter),
+		Bundle:                         !cmd.Bool(flgNoBundle),
+		PreferredChain:                 cmd.String(flgPreferredChain),
+		Profile:                        cmd.String(flgProfile),
+		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
+	}
+}
+
+func newObtainForCSRRequest(cmd *cli.Command, csr *x509.CertificateRequest) certificate.ObtainForCSRRequest {
+	return certificate.ObtainForCSRRequest{
+		CSR:                            csr,
+		NotBefore:                      cmd.Timestamp(flgNotBefore),
+		NotAfter:                       cmd.Timestamp(flgNotAfter),
+		Bundle:                         !cmd.Bool(flgNoBundle),
+		PreferredChain:                 cmd.String(flgPreferredChain),
+		Profile:                        cmd.String(flgProfile),
+		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
+	}
 }

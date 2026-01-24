@@ -25,17 +25,6 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-// Flag names.
-const (
-	flgRenewDays              = "days"
-	flgRenewDynamic           = "dynamic"
-	flgARIDisable             = "ari-disable"
-	flgARIWaitToRenewDuration = "ari-wait-to-renew-duration"
-	flgReuseKey               = "reuse-key"
-	flgNoRandomSleep          = "no-random-sleep"
-	flgForceCertDomains       = "force-cert-domains"
-)
-
 func createRenew() *cli.Command {
 	return &cli.Command{
 		Name:   "renew",
@@ -62,51 +51,6 @@ func createRenew() *cli.Command {
 		},
 		Flags: createRenewFlags(),
 	}
-}
-
-func createRenewFlags() []cli.Flag {
-	flags := CreateBaseFlags()
-
-	flags = append(flags, CreateChallengesFlags()...)
-	flags = append(flags, CreateObtainFlags()...)
-	flags = append(flags, CreateHookFlags(flgRenewHook, flgRenewHookTimeout)...)
-
-	flags = append(flags,
-		&cli.IntFlag{
-			Name:  flgRenewDays,
-			Value: 30,
-			Usage: "The number of days left on a certificate to renew it.",
-		},
-		// TODO(ldez): in v5, remove this flag, use this behavior as default.
-		&cli.BoolFlag{
-			Name:  flgRenewDynamic,
-			Value: false,
-			Usage: "Compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates). This supersedes --days and will be the default behavior in Lego v5.",
-		},
-		&cli.BoolFlag{
-			Name:  flgARIDisable,
-			Usage: "Do not use the renewalInfo endpoint (RFC9773) to check if a certificate should be renewed.",
-		},
-		&cli.DurationFlag{
-			Name:  flgARIWaitToRenewDuration,
-			Usage: "The maximum duration you're willing to sleep for a renewal time returned by the renewalInfo endpoint.",
-		},
-		&cli.BoolFlag{
-			Name:  flgReuseKey,
-			Usage: "Used to indicate you want to reuse your current private key for the new certificate.",
-		},
-		&cli.BoolFlag{
-			Name: flgNoRandomSleep,
-			Usage: "Do not add a random sleep before the renewal." +
-				" We do not recommend using this flag if you are doing your renewals in an automated way.",
-		},
-		&cli.BoolFlag{
-			Name:  flgForceCertDomains,
-			Usage: "Check and ensure that the cert's domain list matches those passed in the domains argument.",
-		},
-	)
-
-	return flags
 }
 
 func renew(ctx context.Context, cmd *cli.Command) error {

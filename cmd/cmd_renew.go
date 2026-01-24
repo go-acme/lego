@@ -202,7 +202,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 
 	certsStorage.SaveResource(certRes)
 
-	addPathToMetadata(meta, domain, certRes, certsStorage)
+	hook.AddPathToMetadata(meta, domain, certRes, certsStorage)
 
 	return hook.Launch(ctx, cmd.String(flgRenewHook), cmd.Duration(flgRenewHookTimeout), meta)
 }
@@ -301,7 +301,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 
 	certsStorage.SaveResource(certRes)
 
-	addPathToMetadata(meta, domain, certRes, certsStorage)
+	hook.AddPathToMetadata(meta, domain, certRes, certsStorage)
 
 	return hook.Launch(ctx, cmd.String(flgRenewHook), cmd.Duration(flgRenewHookTimeout), meta)
 }

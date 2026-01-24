@@ -9,6 +9,9 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 )
 
 const (
@@ -81,4 +84,23 @@ func metaToEnv(meta map[string]string) []string {
 	}
 
 	return envs
+}
+
+// AddPathToMetadata adds information about the certificate to the metadata map.
+func AddPathToMetadata(meta map[string]string, domain string, certRes *certificate.Resource, certsStorage *storage.CertificatesStorage) {
+	meta[EnvCertDomain] = domain
+	meta[EnvCertPath] = certsStorage.GetFileName(domain, storage.ExtCert)
+	meta[EnvCertKeyPath] = certsStorage.GetFileName(domain, storage.ExtKey)
+
+	if certRes.IssuerCertificate != nil {
+		meta[EnvIssuerCertKeyPath] = certsStorage.GetFileName(domain, storage.ExtIssuer)
+	}
+
+	if certsStorage.IsPEM() {
+		meta[EnvCertPEMPath] = certsStorage.GetFileName(domain, storage.ExtPEM)
+	}
+
+	if certsStorage.IsPFX() {
+		meta[EnvCertPFXPath] = certsStorage.GetFileName(domain, storage.ExtPFX)
+	}
 }

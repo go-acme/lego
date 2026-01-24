@@ -89,7 +89,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		hook.EnvAccountEmail: account.Email,
 	}
 
-	addPathToMetadata(meta, cert.Domain, cert, certsStorage)
+	hook.AddPathToMetadata(meta, cert.Domain, cert, certsStorage)
 
 	return hook.Launch(ctx, cmd.String(flgRunHook), cmd.Duration(flgRunHookTimeout), meta)
 }

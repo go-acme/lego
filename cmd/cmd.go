@@ -8,6 +8,7 @@ func CreateCommands() []*cli.Command {
 		createRun(),
 		createRevoke(),
 		createRenew(),
+		createRegister(),
 		createDNSHelp(),
 		createList(),
 	}

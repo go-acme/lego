@@ -144,6 +144,16 @@ func CreateACMEClientFlags() []cli.Flag {
 	}
 }
 
+func CreateChallengesFlags() []cli.Flag {
+	var flags []cli.Flag
+
+	flags = append(flags, CreateHTTPChallengeFlags()...)
+	flags = append(flags, CreateTLSChallengeFlags()...)
+	flags = append(flags, CreateDNSChallengeFlags()...)
+
+	return flags
+}
+
 func CreateHTTPChallengeFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.BoolFlag{
@@ -352,9 +362,7 @@ func CreateFlags() []cli.Flag {
 	flags = append(flags, CreateAccountFlags()...)
 	flags = append(flags, CreateACMEClientFlags()...)
 	flags = append(flags, CreateOutputFlags()...)
-	flags = append(flags, CreateHTTPChallengeFlags()...)
-	flags = append(flags, CreateTLSChallengeFlags()...)
-	flags = append(flags, CreateDNSChallengeFlags()...)
+	flags = append(flags, CreateChallengesFlags()...)
 
 	return flags
 }

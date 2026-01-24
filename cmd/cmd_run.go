@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
@@ -20,9 +19,7 @@ import (
 
 // Flag names.
 const (
-	flgPrivateKey     = "private-key"
-	flgRunHook        = "run-hook"
-	flgRunHookTimeout = "run-hook-timeout"
+	flgPrivateKey = "private-key"
 )
 
 func createRun() *cli.Command {
@@ -54,20 +51,12 @@ func createRunFlags() []cli.Flag {
 
 	flags = append(flags, CreateChallengesFlags()...)
 	flags = append(flags, CreateObtainFlags()...)
+	flags = append(flags, CreateHookFlags(flgRunHook, flgRunHookTimeout)...)
 
 	flags = append(flags,
 		&cli.StringFlag{
 			Name:  flgPrivateKey,
 			Usage: "Path to private key (in PEM encoding) for the certificate. By default, the private key is generated.",
-		},
-		&cli.StringFlag{
-			Name:  flgRunHook,
-			Usage: "Define a hook. The hook is executed when the certificates are effectively created.",
-		},
-		&cli.DurationFlag{
-			Name:  flgRunHookTimeout,
-			Usage: "Define the timeout for the hook execution.",
-			Value: 2 * time.Minute,
 		},
 	)
 

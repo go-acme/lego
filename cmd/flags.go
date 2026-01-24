@@ -86,6 +86,15 @@ const (
 	flgDNSTimeout               = "dns-timeout"
 )
 
+// Flags names related to hooks.
+const (
+	flgRenewHook        = "renew-hook"
+	flgRenewHookTimeout = "renew-hook-timeout"
+
+	flgRunHook        = "run-hook"
+	flgRunHookTimeout = "run-hook-timeout"
+)
+
 // Environment variable names.
 const (
 	envEAB         = "LEGO_EAB"
@@ -351,6 +360,20 @@ func CreateObtainFlags() []cli.Flag {
 		&cli.StringFlag{
 			Name:  flgAlwaysDeactivateAuthorizations,
 			Usage: "Force the authorizations to be relinquished even if the certificate request was successful.",
+		},
+	}
+}
+
+func CreateHookFlags(name, timeoutName string) []cli.Flag {
+	return []cli.Flag{
+		&cli.StringFlag{
+			Name:  name,
+			Usage: "Define a hook. The hook is executed only when the certificates are effectively created/renewed.",
+		},
+		&cli.DurationFlag{
+			Name:  timeoutName,
+			Usage: "Define the timeout for the hook execution.",
+			Value: 2 * time.Minute,
 		},
 	}
 }

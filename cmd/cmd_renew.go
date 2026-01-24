@@ -32,8 +32,6 @@ const (
 	flgARIDisable             = "ari-disable"
 	flgARIWaitToRenewDuration = "ari-wait-to-renew-duration"
 	flgReuseKey               = "reuse-key"
-	flgRenewHook              = "renew-hook"
-	flgRenewHookTimeout       = "renew-hook-timeout"
 	flgNoRandomSleep          = "no-random-sleep"
 	flgForceCertDomains       = "force-cert-domains"
 )
@@ -71,6 +69,7 @@ func createRenewFlags() []cli.Flag {
 
 	flags = append(flags, CreateChallengesFlags()...)
 	flags = append(flags, CreateObtainFlags()...)
+	flags = append(flags, CreateHookFlags(flgRenewHook, flgRenewHookTimeout)...)
 
 	flags = append(flags,
 		&cli.IntFlag{
@@ -104,15 +103,6 @@ func createRenewFlags() []cli.Flag {
 		&cli.BoolFlag{
 			Name:  flgForceCertDomains,
 			Usage: "Check and ensure that the cert's domain list matches those passed in the domains argument.",
-		},
-		&cli.StringFlag{
-			Name:  flgRenewHook,
-			Usage: "Define a hook. The hook is executed only when the certificates are effectively renewed.",
-		},
-		&cli.DurationFlag{
-			Name:  flgRenewHookTimeout,
-			Usage: "Define the timeout for the hook execution.",
-			Value: 2 * time.Minute,
 		},
 	)
 

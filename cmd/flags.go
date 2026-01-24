@@ -118,6 +118,12 @@ const (
 	flgReason = "reason"
 )
 
+// Flag names related to the list command.
+const (
+	flgAccounts = "accounts"
+	flgNames    = "names"
+)
+
 // Environment variable names.
 const (
 	envEAB         = "LEGO_EAB"
@@ -496,6 +502,22 @@ func createRevokeFlags() []cli.Flag {
 	)
 
 	return flags
+}
+
+func createListFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.BoolFlag{
+			Name:    flgAccounts,
+			Aliases: []string{"a"},
+			Usage:   "Display accounts.",
+		},
+		&cli.BoolFlag{
+			Name:    flgNames,
+			Aliases: []string{"n"},
+			Usage:   "Display certificate names only.",
+		},
+		CreatePathFlag(false),
+	}
 }
 
 func CreateDomainFlag() cli.Flag {

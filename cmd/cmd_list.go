@@ -14,33 +14,12 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-const (
-	flgAccounts = "accounts"
-	flgNames    = "names"
-)
-
 func createList() *cli.Command {
 	return &cli.Command{
 		Name:   "list",
 		Usage:  "Display certificates and accounts information.",
 		Action: list,
 		Flags:  createListFlags(),
-	}
-}
-
-func createListFlags() []cli.Flag {
-	return []cli.Flag{
-		&cli.BoolFlag{
-			Name:    flgAccounts,
-			Aliases: []string{"a"},
-			Usage:   "Display accounts.",
-		},
-		&cli.BoolFlag{
-			Name:    flgNames,
-			Aliases: []string{"n"},
-			Usage:   "Display certificate names only.",
-		},
-		CreatePathFlag(false),
 	}
 }
 

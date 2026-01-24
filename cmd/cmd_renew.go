@@ -65,7 +65,10 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 		log.Fatal("The account is not registered. Use 'run' to register a new account.", slog.String("email", account.Email))
 	}
 
-	certsStorage := newCertificatesStorage(cmd)
+	certsStorage, err := storage.NewCertificatesStorage(newCertificatesWriterConfig(cmd))
+	if err != nil {
+		log.Fatal("Certificates storage", log.ErrorAttr(err))
+	}
 
 	bundle := !cmd.Bool(flgNoBundle)
 

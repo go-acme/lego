@@ -32,7 +32,11 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 
 	client := newClient(cmd, account, keyType)
 
-	certsStorage := newCertificatesStorage(cmd)
+	certsStorage, err := storage.NewCertificatesStorage(newCertificatesWriterConfig(cmd))
+	if err != nil {
+		log.Fatal("Certificates storage", log.ErrorAttr(err))
+	}
+
 	certsStorage.CreateRootFolder()
 
 	for _, domain := range cmd.StringSlice(flgDomains) {

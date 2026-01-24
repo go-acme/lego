@@ -78,7 +78,11 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		fmt.Printf(rootPathWarningMessage, accountsStorage.GetRootPath())
 	}
 
-	certsStorage := newCertificatesStorage(cmd)
+	certsStorage, err := storage.NewCertificatesStorage(newCertificatesWriterConfig(cmd))
+	if err != nil {
+		log.Fatal("Certificates storage", log.ErrorAttr(err))
+	}
+
 	certsStorage.CreateRootFolder()
 
 	cert, err := obtainCertificate(ctx, cmd, client)

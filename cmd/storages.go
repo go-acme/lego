@@ -2,19 +2,8 @@ package cmd
 
 import (
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
 )
-
-// newCertificatesStorage create a new certificates storage.
-func newCertificatesStorage(cmd *cli.Command) *storage.CertificatesStorage {
-	certsStorage, err := storage.NewCertificatesStorage(newCertificatesWriterConfig(cmd))
-	if err != nil {
-		log.Fatal("Certificates storage", log.ErrorAttr(err))
-	}
-
-	return certsStorage
-}
 
 func newCertificatesWriterConfig(cmd *cli.Command) storage.CertificatesWriterConfig {
 	return storage.CertificatesWriterConfig{

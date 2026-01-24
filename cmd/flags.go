@@ -57,6 +57,12 @@ const (
 	flgUserAgent           = "user-agent"
 )
 
+// Flag names related to the network stack.
+const (
+	flgIPv4Only = "ipv4only"
+	flgIPv6Only = "ipv6only"
+)
+
 // Flag names related to HTTP-01 challenge.
 const (
 	flgHTTP              = "http"
@@ -184,8 +190,24 @@ func CreateChallengesFlags() []cli.Flag {
 	flags = append(flags, CreateHTTPChallengeFlags()...)
 	flags = append(flags, CreateTLSChallengeFlags()...)
 	flags = append(flags, CreateDNSChallengeFlags()...)
+	flags = append(flags, CreateNetworkStackFlags()...)
 
 	return flags
+}
+
+func CreateNetworkStackFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.BoolFlag{
+			Name:    flgIPv4Only,
+			Aliases: []string{"4"},
+			Usage:   "Use IPv4 only.",
+		},
+		&cli.BoolFlag{
+			Name:    flgIPv6Only,
+			Aliases: []string{"6"},
+			Usage:   "Use IPv6 only.",
+		},
+	}
 }
 
 func CreateHTTPChallengeFlags() []cli.Flag {

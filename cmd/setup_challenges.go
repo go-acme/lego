@@ -103,8 +103,7 @@ func setupHTTPProvider(cmd *cli.Command) challenge.Provider {
 		}
 
 		srv := http01.NewProviderServerWithOptions(http01.Options{
-			// TODO(ldez): set network stack
-			Network: "tcp",
+			Network: getNetworkStack(cmd).Network("tcp"),
 			Address: net.JoinHostPort(host, port),
 		})
 
@@ -116,8 +115,7 @@ func setupHTTPProvider(cmd *cli.Command) challenge.Provider {
 
 	case cmd.Bool(flgHTTP):
 		srv := http01.NewProviderServerWithOptions(http01.Options{
-			// TODO(ldez): set network stack
-			Network: "tcp",
+			Network: getNetworkStack(cmd).Network("tcp"),
 			Address: net.JoinHostPort("", ":80"),
 		})
 
@@ -187,6 +185,8 @@ func setupDNS(cmd *cli.Command, client *lego.Client) error {
 		opts.Timeout = time.Duration(cmd.Int(flgDNSTimeout)) * time.Second
 	}
 
+	opts.NetworkStack = getNetworkStack(cmd)
+
 	dns01.SetDefaultClient(dns01.NewClient(opts))
 
 	err = client.Challenge.SetDNS01Provider(provider,
@@ -223,4 +223,17 @@ func checkPropagationExclusiveOptions(cmd *cli.Command) error {
 
 func isSetBool(cmd *cli.Command, name string) bool {
 	return cmd.IsSet(name) && cmd.Bool(name)
+}
+
+func getNetworkStack(cmd *cli.Command) challenge.NetworkStack {
+	switch {
+	case cmd.Bool(flgIPv4Only):
+		return challenge.IPv4Only
+
+	case cmd.Bool(flgIPv6Only):
+		return challenge.IPv6Only
+
+	default:
+		return challenge.DualStack
+	}
 }

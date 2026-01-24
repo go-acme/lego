@@ -268,27 +268,6 @@ func CreateOutputFlags() []cli.Flag {
 	}
 }
 
-func CreatePathFlag(forceCreation bool) cli.Flag {
-	return &cli.StringFlag{
-		Name:    flgPath,
-		Sources: cli.NewValueSourceChain(cli.EnvVar(envPath), &defaultPathValueSource{}),
-		Usage:   "Directory to use for storing the data.",
-		Validator: func(s string) error {
-			if !forceCreation {
-				return nil
-			}
-
-			err := storage.CreateNonExistingFolder(s)
-			if err != nil {
-				return fmt.Errorf("could not check/create the path %q: %w", s, err)
-			}
-
-			return nil
-		},
-		Required: true,
-	}
-}
-
 func CreateAccountFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.BoolFlag{
@@ -367,14 +346,9 @@ func CreateObtainFlags() []cli.Flag {
 }
 
 func CreateFlags() []cli.Flag {
-	flags := []cli.Flag{
-		&cli.StringSliceFlag{
-			Name:    flgDomains,
-			Aliases: []string{"d"},
-			Usage:   "Add a domain to the process. Can be specified multiple times.",
-		},
-	}
+	var flags []cli.Flag
 
+	flags = append(flags, CreateDomainFlag())
 	flags = append(flags, CreateAccountFlags()...)
 	flags = append(flags, CreateACMEClientFlags()...)
 	flags = append(flags, CreateOutputFlags()...)
@@ -383,6 +357,35 @@ func CreateFlags() []cli.Flag {
 	flags = append(flags, CreateDNSChallengeFlags()...)
 
 	return flags
+}
+
+func CreateDomainFlag() cli.Flag {
+	return &cli.StringSliceFlag{
+		Name:    flgDomains,
+		Aliases: []string{"d"},
+		Usage:   "Add a domain to the process. Can be specified multiple times or use comma as a separator.",
+	}
+}
+
+func CreatePathFlag(forceCreation bool) cli.Flag {
+	return &cli.StringFlag{
+		Name:    flgPath,
+		Sources: cli.NewValueSourceChain(cli.EnvVar(envPath), &defaultPathValueSource{}),
+		Usage:   "Directory to use for storing the data.",
+		Validator: func(s string) error {
+			if !forceCreation {
+				return nil
+			}
+
+			err := storage.CreateNonExistingFolder(s)
+			if err != nil {
+				return fmt.Errorf("could not check/create the path %q: %w", s, err)
+			}
+
+			return nil
+		},
+		Required: true,
+	}
 }
 
 // defaultPathValueSource gets the default path based on the current working directory.

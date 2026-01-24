@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
@@ -109,6 +110,12 @@ const (
 	flgReuseKey               = "reuse-key"
 	flgNoRandomSleep          = "no-random-sleep"
 	flgForceCertDomains       = "force-cert-domains"
+)
+
+// Flag names related to the specific revoke command.
+const (
+	flgKeep   = "keep"
+	flgReason = "reason"
 )
 
 // Environment variable names.
@@ -461,6 +468,30 @@ func createRenewFlags() []cli.Flag {
 		&cli.BoolFlag{
 			Name:  flgForceCertDomains,
 			Usage: "Check and ensure that the cert's domain list matches those passed in the domains argument.",
+		},
+	)
+
+	return flags
+}
+
+func createRevokeFlags() []cli.Flag {
+	flags := CreateBaseFlags()
+
+	flags = append(flags,
+		&cli.BoolFlag{
+			Name:    flgKeep,
+			Aliases: []string{"k"},
+			Usage:   "Keep the certificates after the revocation instead of archiving them.",
+		},
+		&cli.UintFlag{
+			Name: flgReason,
+			Usage: "Identifies the reason for the certificate revocation." +
+				" See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1." +
+				" Valid values are:" +
+				" 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged)," +
+				" 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL)," +
+				" 9 (privilegeWithdrawn), or 10 (aACompromise).",
+			Value: acme.CRLReasonUnspecified,
 		},
 	)
 

@@ -355,7 +355,7 @@ func CreateObtainFlags() []cli.Flag {
 	}
 }
 
-func CreateFlags() []cli.Flag {
+func CreateBaseFlags() []cli.Flag {
 	var flags []cli.Flag
 
 	flags = append(flags, CreateDomainFlag())

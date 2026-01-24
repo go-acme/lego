@@ -26,7 +26,7 @@ func createRevoke() *cli.Command {
 }
 
 func createRevokeFlags() []cli.Flag {
-	flags := CreateFlags()
+	flags := CreateBaseFlags()
 
 	flags = append(flags,
 		&cli.BoolFlag{

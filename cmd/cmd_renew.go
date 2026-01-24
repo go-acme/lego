@@ -67,7 +67,7 @@ func createRenew() *cli.Command {
 }
 
 func createRenewFlags() []cli.Flag {
-	flags := CreateFlags()
+	flags := CreateBaseFlags()
 
 	flags = append(flags, CreateChallengesFlags()...)
 	flags = append(flags, CreateObtainFlags()...)

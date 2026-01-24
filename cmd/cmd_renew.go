@@ -54,14 +54,14 @@ func createRenew() *cli.Command {
 }
 
 func renew(ctx context.Context, cmd *cli.Command) error {
-	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
-	if err != nil {
-		return fmt.Errorf("accounts storage initialization: %w", err)
-	}
-
 	keyType, err := getKeyType(cmd.String(flgKeyType))
 	if err != nil {
 		return fmt.Errorf("get the key type: %w", err)
+	}
+
+	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
+	if err != nil {
+		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
 	account, err := accountsStorage.Get(ctx, keyType)

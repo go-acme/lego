@@ -6,30 +6,19 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-// CertificatesStorage a certificates' storage.
-type CertificatesStorage struct {
-	*storage.CertificatesWriter
-	*storage.CertificatesReader
-}
-
 // newCertificatesStorage create a new certificates storage.
-func newCertificatesStorage(cmd *cli.Command) *CertificatesStorage {
-	basePath := cmd.String(flgPath)
-
-	writer, err := storage.NewCertificatesWriter(newCertificatesWriterConfig(cmd, basePath))
+func newCertificatesStorage(cmd *cli.Command) *storage.CertificatesStorage {
+	certsStorage, err := storage.NewCertificatesStorage(newCertificatesWriterConfig(cmd))
 	if err != nil {
-		log.Fatal("Certificates storage initialization", log.ErrorAttr(err))
+		log.Fatal("Certificates storage", log.ErrorAttr(err))
 	}
 
-	return &CertificatesStorage{
-		CertificatesWriter: writer,
-		CertificatesReader: storage.NewCertificatesReader(basePath),
-	}
+	return certsStorage
 }
 
-func newCertificatesWriterConfig(cmd *cli.Command, basePath string) storage.CertificatesWriterConfig {
+func newCertificatesWriterConfig(cmd *cli.Command) storage.CertificatesWriterConfig {
 	return storage.CertificatesWriterConfig{
-		BasePath:    basePath,
+		BasePath:    cmd.String(flgPath),
 		PEM:         cmd.Bool(flgPEM),
 		PFX:         cmd.Bool(flgPFX),
 		PFXFormat:   cmd.String(flgPFXPass),

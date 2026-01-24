@@ -77,7 +77,7 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 	return renewForDomains(ctx, cmd, account, keyType, certsStorage, bundle, meta)
 }
 
-func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
+func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *storage.CertificatesStorage, bundle bool, meta map[string]string) error {
 	domains := cmd.StringSlice(flgDomains)
 	domain := domains[0]
 
@@ -207,7 +207,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 	return hook.Launch(ctx, cmd.String(flgRenewHook), cmd.Duration(flgRenewHookTimeout), meta)
 }
 
-func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
+func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *storage.CertificatesStorage, bundle bool, meta map[string]string) error {
 	csr, err := readCSRFile(cmd.String(flgCSR))
 	if err != nil {
 		log.Fatal("Could not read CSR file.",

@@ -6,7 +6,7 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 )
 
-func addPathToMetadata(meta map[string]string, domain string, certRes *certificate.Resource, certsStorage *CertificatesStorage) {
+func addPathToMetadata(meta map[string]string, domain string, certRes *certificate.Resource, certsStorage *storage.CertificatesStorage) {
 	meta[hook.EnvCertDomain] = domain
 	meta[hook.EnvCertPath] = certsStorage.GetFileName(domain, storage.ExtCert)
 	meta[hook.EnvCertKeyPath] = certsStorage.GetFileName(domain, storage.ExtKey)

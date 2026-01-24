@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -19,12 +20,23 @@ const (
 	baseArchivesFolderName     = "archives"
 )
 
-func getCertificatesRootPath(basePath string) string {
-	return filepath.Join(basePath, baseCertificatesFolderName)
+// CertificatesStorage a certificates' storage.
+type CertificatesStorage struct {
+	*CertificatesWriter
+	*CertificatesReader
 }
 
-func getCertificatesArchivePath(basePath string) string {
-	return filepath.Join(basePath, baseArchivesFolderName)
+// NewCertificatesStorage create a new certificates storage.
+func NewCertificatesStorage(config CertificatesWriterConfig) (*CertificatesStorage, error) {
+	writer, err := NewCertificatesWriter(config)
+	if err != nil {
+		return nil, fmt.Errorf("certificates storage writer: %w", err)
+	}
+
+	return &CertificatesStorage{
+		CertificatesWriter: writer,
+		CertificatesReader: NewCertificatesReader(config.BasePath),
+	}, nil
 }
 
 func CreateNonExistingFolder(path string) error {
@@ -35,4 +47,12 @@ func CreateNonExistingFolder(path string) error {
 	}
 
 	return nil
+}
+
+func getCertificatesRootPath(basePath string) string {
+	return filepath.Join(basePath, baseCertificatesFolderName)
+}
+
+func getCertificatesArchivePath(basePath string) string {
+	return filepath.Join(basePath, baseArchivesFolderName)
 }

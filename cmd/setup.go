@@ -47,6 +47,19 @@ func setupAccount(ctx context.Context, cmd *cli.Command, accountsStorage *storag
 }
 
 func newClient(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyType) *lego.Client {
+	client, err := lego.NewClient(newClientConfig(cmd, acc, keyType))
+	if err != nil {
+		log.Fatal("Could not create client.", log.ErrorAttr(err))
+	}
+
+	if client.GetExternalAccountRequired() && !cmd.IsSet(flgEAB) { // TODO(ldez): handle this flag.
+		log.Fatal(fmt.Sprintf("Server requires External Account Binding. Use --%s with --%s and --%s.", flgEAB, flgKID, flgHMAC))
+	}
+
+	return client
+}
+
+func newClientConfig(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyType) *lego.Config {
 	config := lego.NewConfig(acc)
 	config.CADirURL = cmd.String(flgServer)
 
@@ -83,16 +96,7 @@ func newClient(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyTy
 
 	config.HTTPClient = retryClient.StandardClient()
 
-	client, err := lego.NewClient(config)
-	if err != nil {
-		log.Fatal("Could not create client.", log.ErrorAttr(err))
-	}
-
-	if client.GetExternalAccountRequired() && !cmd.IsSet(flgEAB) {
-		log.Fatal(fmt.Sprintf("Server requires External Account Binding. Use --%s with --%s and --%s.", flgEAB, flgKID, flgHMAC))
-	}
-
-	return client
+	return config
 }
 
 // getKeyType the type from which private keys should be generated.

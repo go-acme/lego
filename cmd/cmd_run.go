@@ -58,7 +58,9 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		log.Fatal("Accounts storage initialization", log.ErrorAttr(err))
 	}
 
-	account, keyType := setupAccount(ctx, cmd, accountsStorage)
+	keyType := getKeyType(cmd)
+
+	account := setupAccount(ctx, keyType, accountsStorage)
 
 	client := setupClient(cmd, account, keyType)
 

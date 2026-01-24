@@ -24,7 +24,9 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 		log.Fatal("Accounts storage initialization", log.ErrorAttr(err))
 	}
 
-	account, keyType := setupAccount(ctx, cmd, accountsStorage)
+	keyType := getKeyType(cmd)
+
+	account := setupAccount(ctx, keyType, accountsStorage)
 
 	if account.Registration == nil {
 		log.Fatal("Account is not registered. Use 'run' to register a new account.", slog.String("email", account.Email))

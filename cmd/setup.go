@@ -32,18 +32,14 @@ func setupClient(cmd *cli.Command, account *storage.Account, keyType certcrypto.
 	return client
 }
 
-func setupAccount(ctx context.Context, cmd *cli.Command, accountsStorage *storage.AccountsStorage) (*storage.Account, certcrypto.KeyType) {
-	keyType := getKeyType(cmd)
+func setupAccount(ctx context.Context, keyType certcrypto.KeyType, accountsStorage *storage.AccountsStorage) *storage.Account {
 	privateKey := accountsStorage.GetPrivateKey(keyType)
 
-	var account *storage.Account
 	if accountsStorage.ExistsAccountFilePath() {
-		account = accountsStorage.LoadAccount(ctx, privateKey)
-	} else {
-		account = storage.NewAccount(accountsStorage.GetEmail(), privateKey)
+		return accountsStorage.LoadAccount(ctx, privateKey)
 	}
 
-	return account, keyType
+	return storage.NewAccount(accountsStorage.GetEmail(), privateKey)
 }
 
 func newClient(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyType) *lego.Client {

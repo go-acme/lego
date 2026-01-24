@@ -10,7 +10,8 @@ import (
 type Account struct {
 	Email        string                 `json:"email"`
 	Registration *registration.Resource `json:"registration"`
-	key          crypto.PrivateKey
+
+	key crypto.PrivateKey
 }
 
 func NewAccount(email string, key crypto.PrivateKey) *Account {

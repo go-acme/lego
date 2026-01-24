@@ -64,7 +64,7 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("get the key type: %w", err)
 	}
 
-	account, err := setupAccount(ctx, keyType, accountsStorage)
+	account, err := accountsStorage.Get(ctx, keyType)
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}

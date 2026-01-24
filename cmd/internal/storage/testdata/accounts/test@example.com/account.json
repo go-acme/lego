@@ -1,0 +1,9 @@
+{
+	"email": "test@example.com",
+	"registration": {
+		"body": {
+			"status": "valid"
+		},
+		"uri": "https://example.org/acme/acct/123456"
+	}
+}

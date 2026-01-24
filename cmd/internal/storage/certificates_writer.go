@@ -75,46 +75,38 @@ func NewCertificatesWriter(config CertificatesWriterConfig) (*CertificatesWriter
 	}, nil
 }
 
-func (s *CertificatesWriter) CreateRootFolder() {
+func (s *CertificatesWriter) CreateRootFolder() error {
 	err := CreateNonExistingFolder(s.rootPath)
 	if err != nil {
-		log.Fatal("Could not check/create the root folder",
-			slog.String("filepath", s.rootPath),
-			log.ErrorAttr(err),
-		)
+		return fmt.Errorf("could not check/create the root folder %q: %w", s.rootPath, err)
 	}
+
+	return nil
 }
 
-func (s *CertificatesWriter) CreateArchiveFolder() {
+func (s *CertificatesWriter) CreateArchiveFolder() error {
 	err := CreateNonExistingFolder(s.archivePath)
 	if err != nil {
-		log.Fatal("Could not check/create the archive folder.",
-			slog.String("filepath", s.archivePath),
-			log.ErrorAttr(err),
-		)
+		return fmt.Errorf("could not check/create the archive folder %q: %w", s.archivePath, err)
 	}
+
+	return nil
 }
 
-func (s *CertificatesWriter) SaveResource(certRes *certificate.Resource) {
+func (s *CertificatesWriter) SaveResource(certRes *certificate.Resource) error {
 	domain := certRes.Domain
 
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
 	err := s.writeFile(domain, ExtCert, certRes.Certificate)
 	if err != nil {
-		log.Fatal("Unable to save Certificate.",
-			log.DomainAttr(domain),
-			log.ErrorAttr(err),
-		)
+		return fmt.Errorf("unable to save the certificate for the domain %q: %w", domain, err)
 	}
 
 	if certRes.IssuerCertificate != nil {
 		err = s.writeFile(domain, ExtIssuer, certRes.IssuerCertificate)
 		if err != nil {
-			log.Fatal("Unable to save IssuerCertificate.",
-				log.DomainAttr(domain),
-				log.ErrorAttr(err),
-			)
+			return fmt.Errorf("unable to save the issuer certificate for the domain %q: %w", domain, err)
 		}
 	}
 
@@ -122,28 +114,24 @@ func (s *CertificatesWriter) SaveResource(certRes *certificate.Resource) {
 	if certRes.PrivateKey != nil {
 		err = s.writeCertificateFiles(domain, certRes)
 		if err != nil {
-			log.Fatal("Unable to save PrivateKey.", log.DomainAttr(domain), log.ErrorAttr(err))
+			return fmt.Errorf("unable to save the private key for the domain %q: %w", domain, err)
 		}
 	} else if s.pem || s.pfx {
 		// we don't have the private key; can't write the .pem or .pfx file
-		log.Fatal("Unable to save PEM or PFX without the private key. Are you using a CSR?", log.DomainAttr(domain))
+		return fmt.Errorf("unable to save PEM or PFX without the private key for the domain %q: probable usage of a CSR", domain)
 	}
 
 	jsonBytes, err := json.MarshalIndent(certRes, "", "\t")
 	if err != nil {
-		log.Fatal("Unable to marshal CertResource.",
-			log.DomainAttr(domain),
-			log.ErrorAttr(err),
-		)
+		return fmt.Errorf("unable to marshal the resource for domain %q: %w", domain, err)
 	}
 
 	err = s.writeFile(domain, ExtResource, jsonBytes)
 	if err != nil {
-		log.Fatal("Unable to save CertResource.",
-			log.DomainAttr(domain),
-			log.ErrorAttr(err),
-		)
+		return fmt.Errorf("unable to save the resource for the domain %q: %w", domain, err)
 	}
+
+	return nil
 }
 
 func (s *CertificatesWriter) MoveToArchive(domain string) error {

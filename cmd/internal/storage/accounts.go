@@ -142,23 +142,17 @@ func (s *AccountsStorage) Save(account *Account) error {
 	return os.WriteFile(s.accountFilePath, jsonBytes, filePerm)
 }
 
-func (s *AccountsStorage) LoadAccount(ctx context.Context, privateKey crypto.PrivateKey) *Account {
+func (s *AccountsStorage) LoadAccount(ctx context.Context, privateKey crypto.PrivateKey) (*Account, error) {
 	fileBytes, err := os.ReadFile(s.accountFilePath)
 	if err != nil {
-		log.Fatal("Could not load the account file.",
-			slog.String("userID", s.GetUserID()),
-			log.ErrorAttr(err),
-		)
+		return nil, fmt.Errorf("could not read the account file (userID: %s): %w", s.GetUserID(), err)
 	}
 
 	var account Account
 
 	err = json.Unmarshal(fileBytes, &account)
 	if err != nil {
-		log.Fatal("Could not parse the account file.",
-			slog.String("userID", s.GetUserID()),
-			log.ErrorAttr(err),
-		)
+		return nil, fmt.Errorf("could not parse the account file (userID: %s): %w", s.GetUserID(), err)
 	}
 
 	account.key = privateKey
@@ -166,67 +160,52 @@ func (s *AccountsStorage) LoadAccount(ctx context.Context, privateKey crypto.Pri
 	if account.Registration == nil || account.Registration.Body.Status == "" {
 		reg, err := s.tryRecoverRegistration(ctx, privateKey)
 		if err != nil {
-			log.Fatal("Could not load the account file. Registration is nil.",
-				slog.String("userID", s.GetUserID()),
-				log.ErrorAttr(err),
-			)
+			return nil, fmt.Errorf("could not load the account file, registration is nil (userID: %s): %w", s.GetUserID(), err)
 		}
 
 		account.Registration = reg
 
 		err = s.Save(&account)
 		if err != nil {
-			log.Fatal("Could not save the account file. Registration is nil.",
-				slog.String("userID", s.GetUserID()),
-				log.ErrorAttr(err),
-			)
+			return nil, fmt.Errorf("could not save the account file, registration is nil (userID: %s): %w", s.GetUserID(), err)
 		}
 	}
 
-	return &account
+	return &account, nil
 }
 
-func (s *AccountsStorage) GetPrivateKey(keyType certcrypto.KeyType) crypto.PrivateKey {
+func (s *AccountsStorage) GetPrivateKey(keyType certcrypto.KeyType) (crypto.PrivateKey, error) {
 	accKeyPath := filepath.Join(s.keysPath, s.GetUserID()+".key")
 
 	if _, err := os.Stat(accKeyPath); os.IsNotExist(err) {
+		// TODO(ldez): debug level?
 		log.Info("No key found for the account. Generating a new private key.",
 			slog.String("userID", s.GetUserID()),
 			slog.Any("keyType", keyType),
 		)
-		s.createKeysFolder()
+
+		err := CreateNonExistingFolder(s.keysPath)
+		if err != nil {
+			return nil, fmt.Errorf("could not check/create the directory %q for the account (userID: %s): %w", s.keysPath, s.GetUserID(), err)
+		}
 
 		privateKey, err := generatePrivateKey(accKeyPath, keyType)
 		if err != nil {
-			log.Fatal("Could not generate the RSA private account key.",
-				slog.String("userID", s.GetUserID()),
-				log.ErrorAttr(err),
-			)
+			return nil, fmt.Errorf("could not generate the private account key (userID: %s): %w", s.GetUserID(), err)
 		}
 
+		// TODO(ldez): debug level?
 		log.Info("Saved key.", slog.String("filepath", accKeyPath))
 
-		return privateKey
+		return privateKey, nil
 	}
 
 	privateKey, err := LoadPrivateKey(accKeyPath)
 	if err != nil {
-		log.Fatal("Could not load an RSA private key from the file.",
-			slog.String("filepath", accKeyPath),
-			log.ErrorAttr(err),
-		)
+		return nil, fmt.Errorf("could not load the private key from the file %q: %w", accKeyPath, err)
 	}
 
-	return privateKey
-}
-
-func (s *AccountsStorage) createKeysFolder() {
-	if err := CreateNonExistingFolder(s.keysPath); err != nil {
-		log.Fatal("Could not check/create the directory for the account.",
-			slog.String("userID", s.GetUserID()),
-			log.ErrorAttr(err),
-		)
-	}
+	return privateKey, nil
 }
 
 func (s *AccountsStorage) tryRecoverRegistration(ctx context.Context, privateKey crypto.PrivateKey) (*registration.Resource, error) {

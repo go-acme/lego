@@ -164,7 +164,8 @@ func TestAccountsStorage_LoadAccount(t *testing.T) {
 
 	storage.accountFilePath = filepath.Join("testdata", accountFileName)
 
-	account := storage.LoadAccount(t.Context(), "")
+	account, err := storage.LoadAccount(t.Context(), "")
+	require.NoError(t, err)
 
 	expected := &Account{
 		Email: "account@example.com",
@@ -213,7 +214,8 @@ func TestAccountsStorage_GetPrivateKey(t *testing.T) {
 
 			expectedPath := filepath.Join(test.basePath, baseAccountsRootFolderName, "test@example.com", baseKeysFolderName, "test@example.com.key")
 
-			privateKey := storage.GetPrivateKey(certcrypto.RSA4096)
+			privateKey, err := storage.GetPrivateKey(certcrypto.RSA4096)
+			require.NoError(t, err)
 
 			assert.FileExists(t, expectedPath)
 

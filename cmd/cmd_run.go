@@ -41,26 +41,35 @@ func createRun() *cli.Command {
 func run(ctx context.Context, cmd *cli.Command) error {
 	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
 	if err != nil {
-		log.Fatal("Accounts storage initialization", log.ErrorAttr(err))
+		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
-	keyType := getKeyType(cmd)
+	keyType, err := getKeyType(cmd.String(flgKeyType))
+	if err != nil {
+		return fmt.Errorf("get the key type: %w", err)
+	}
 
-	account := setupAccount(ctx, keyType, accountsStorage)
+	account, err := setupAccount(ctx, keyType, accountsStorage)
+	if err != nil {
+		return fmt.Errorf("set up account: %w", err)
+	}
 
-	client := setupClient(cmd, account, keyType)
+	client, err := setupClient(cmd, account, keyType)
+	if err != nil {
+		return fmt.Errorf("set up client: %w", err)
+	}
 
 	if account.Registration == nil {
 		var reg *registration.Resource
 
 		reg, err = registerAccount(ctx, cmd, client)
 		if err != nil {
-			log.Fatal("Could not complete registration.", log.ErrorAttr(err))
+			return fmt.Errorf("could not complete registration: %w", err)
 		}
 
 		account.Registration = reg
 		if err = accountsStorage.Save(account); err != nil {
-			log.Fatal("Could not save the account file.", log.ErrorAttr(err))
+			return fmt.Errorf("could not save the account file: %w", err)
 		}
 
 		fmt.Printf(rootPathWarningMessage, accountsStorage.GetRootPath())
@@ -68,19 +77,25 @@ func run(ctx context.Context, cmd *cli.Command) error {
 
 	certsStorage, err := storage.NewCertificatesStorage(newCertificatesWriterConfig(cmd))
 	if err != nil {
-		log.Fatal("Certificates storage", log.ErrorAttr(err))
+		return fmt.Errorf("certificates storage initialization: %w", err)
 	}
 
-	certsStorage.CreateRootFolder()
+	err = certsStorage.CreateRootFolder()
+	if err != nil {
+		return fmt.Errorf("root folder creation: %w", err)
+	}
 
 	cert, err := obtainCertificate(ctx, cmd, client)
 	if err != nil {
 		// Make sure to return a non-zero exit code if ObtainSANCertificate returned at least one error.
 		// Due to us not returning partial certificate we can just exit here instead of at the end.
-		log.Fatal("Could not obtain certificates", log.ErrorAttr(err))
+		return fmt.Errorf("obtain certificate: %w", err)
 	}
 
-	certsStorage.SaveResource(cert)
+	err = certsStorage.SaveResource(cert)
+	if err != nil {
+		return fmt.Errorf("could not save the resource: %w", err)
+	}
 
 	meta := map[string]string{
 		hook.EnvAccountEmail: account.Email,

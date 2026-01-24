@@ -6,12 +6,14 @@ import (
 
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewCertificatesWriter_ReadResource(t *testing.T) {
 	reader := NewCertificatesReader("testdata")
 
-	resource := reader.ReadResource("example.com")
+	resource, err := reader.ReadResource("example.com")
+	require.NoError(t, err)
 
 	expected := certificate.Resource{
 		Domain:        "example.com",

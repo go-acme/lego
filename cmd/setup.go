@@ -15,7 +15,6 @@ import (
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
-	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
@@ -24,7 +23,7 @@ import (
 )
 
 // setupClient creates a new client with challenge settings.
-func setupClient(cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType) (*lego.Client, error) {
+func setupClient(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) (*lego.Client, error) {
 	client, err := newClient(cmd, account, keyType)
 	if err != nil {
 		return nil, fmt.Errorf("new client: %w", err)
@@ -35,8 +34,8 @@ func setupClient(cmd *cli.Command, account *storage.Account, keyType certcrypto.
 	return client, nil
 }
 
-func newClient(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyType) (*lego.Client, error) {
-	client, err := lego.NewClient(newClientConfig(cmd, acc, keyType))
+func newClient(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) (*lego.Client, error) {
+	client, err := lego.NewClient(newClientConfig(cmd, account, keyType))
 	if err != nil {
 		return nil, fmt.Errorf("new client: %w", err)
 	}
@@ -48,8 +47,8 @@ func newClient(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyTy
 	return client, nil
 }
 
-func newClientConfig(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyType) *lego.Config {
-	config := lego.NewConfig(acc)
+func newClientConfig(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) *lego.Config {
+	config := lego.NewConfig(account)
 	config.CADirURL = cmd.String(flgServer)
 
 	config.Certificate = lego.CertificateConfig{

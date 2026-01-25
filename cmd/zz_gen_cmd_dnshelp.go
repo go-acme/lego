@@ -263,8 +263,10 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "ALICLOUD_HTTP_TIMEOUT":	API request timeout in seconds (Default: 10)`)
+		ew.writeln(`	- "ALICLOUD_LINE":	Line (Default: default)`)
 		ew.writeln(`	- "ALICLOUD_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "ALICLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "ALICLOUD_REGION_ID":	Region ID (Default: cn-hangzhou)`)
 		ew.writeln(`	- "ALICLOUD_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)`)
 
 		ew.writeln()

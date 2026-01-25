@@ -2,14 +2,17 @@ package cmd
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
 	"software.sslmate.com/src/go-pkcs12"
 )
@@ -61,6 +64,7 @@ const (
 // Flag names related to the ACME client.
 const (
 	flgServer              = "server"
+	flgServerCode          = "server-code"
 	flgDisableCommonName   = "disable-cn"
 	flgKeyType             = "key-type"
 	flgHTTPTimeout         = "http-timeout"
@@ -155,17 +159,28 @@ const (
 	envPFXFormat   = "LEGO_PFX_FORMAT"
 	envPFXPassword = "LEGO_PFX_PASSWORD"
 	envServer      = "LEGO_SERVER"
+	envServerCode  = "LEGO_SERVER_CODE"
 )
 
 func createACMEClientFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:     flgServer,
-			Aliases:  []string{"s"},
-			Sources:  cli.EnvVars(envServer),
-			Usage:    "CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.",
-			Value:    lego.LEDirectoryProduction,
-			Required: true,
+			Name:    flgServer,
+			Aliases: []string{"s"},
+			Sources: cli.EnvVars(envServer),
+			Usage:   "CA (ACME server) URL. Overrides --ca-code.",
+		},
+		&cli.StringFlag{
+			// NOTE(ldez): if Required is true, then the default value is not display in the help.
+			Name:    flgServerCode,
+			Sources: cli.EnvVars(envServerCode),
+			Usage: fmt.Sprintf("CA (ACME server) code. Shortcode to define the server URL."+
+				"\n\t(available codes: %s)", strings.Join(lego.GetAllCodes(), ", ")),
+			Value: lego.CodeLetsEncrypt,
+			Validator: func(s string) error {
+				_, err := lego.GetDirectoryURL(s)
+				return err
+			},
 		},
 		&cli.BoolFlag{
 			Category: categoryAdvanced,
@@ -652,6 +667,23 @@ func createPathFlag(forceCreation bool) cli.Flag {
 		},
 		Required: true,
 	}
+}
+
+func getCA(cmd *cli.Command) string {
+	if cmd.String(flgServer) != "" {
+		return cmd.String(flgServer)
+	}
+
+	directoryURL, err := lego.GetDirectoryURL(cmd.String(flgServerCode))
+	if err != nil {
+		// The flag is already validated during flag parsing.
+		log.Debug("Invalid server code, fallback to Let's Encrypt staging server.",
+			slog.String("code", cmd.String(flgServerCode)))
+
+		return lego.DirectoryURLLetsEncryptStaging
+	}
+
+	return directoryURL
 }
 
 // defaultPathValueSource gets the default path based on the current working directory.

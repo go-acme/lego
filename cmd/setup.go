@@ -37,7 +37,7 @@ func newClient(cmd *cli.Command, account registration.User, keyType certcrypto.K
 
 func newClientConfig(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) *lego.Config {
 	config := lego.NewConfig(account)
-	config.CADirURL = cmd.String(flgServer)
+	config.CADirURL = getCA(cmd)
 
 	config.Certificate = lego.CertificateConfig{
 		KeyType:             keyType,

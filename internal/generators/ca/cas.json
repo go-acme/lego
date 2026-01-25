@@ -1,0 +1,114 @@
+[
+  {
+    "name": "Actalis",
+    "type": "production",
+    "code": "Actalis",
+    "directoryURL": "https://acme-api.actalis.com/acme/directory",
+    "documentationURL": "https://guide.actalis.com/ssl/activation/acme"
+  },
+  {
+    "name": "Digicert",
+    "type": "production",
+    "code": "Digicert",
+    "directoryURL": "https://one.digicert.com/mpki/api/v1/acme/v2/directory",
+    "documentationURL": "https://docs.digicert.com/en/trust-lifecycle-manager/automate-management-of-certificates/acme-automation-service/third-party-acme-integration/install-and-configure-third-party-acme-clients.html"
+  },
+  {
+    "name": "FreeSSL",
+    "type": "production",
+    "code": "FreeSSL",
+    "directoryURL": "https://acmepro.freessl.cn/v2/DV",
+    "documentationURL": "https://freessl.cn/"
+  },
+  {
+    "name": "GlobalSign",
+    "type": "production",
+    "code": "GlobalSign",
+    "directoryURL": "https://emea.acme.atlas.globalsign.com/directory",
+    "documentationURL": "https://docs.globalsign.com/solutions/services/acme/issuing-certificates-http-validation"
+  },
+  {
+    "name": "Google Trust",
+    "type": "production",
+    "code": "GoogleTrust",
+    "directoryURL": "https://dv.acme-v02.api.pki.goog/directory",
+    "documentationURL": "https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial#register-acme"
+  },
+  {
+    "name": "Google Trust staging",
+    "type": "staging",
+    "code": "GoogleTrustStaging",
+    "directoryURL": " https://dv.acme-v02.test-api.pki.goog/directory",
+    "documentationURL": "https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial#register-acme"
+  },
+  {
+    "name": "Let's Encrypt",
+    "type": "production",
+    "code": "LetsEncrypt",
+    "directoryURL": "https://acme-v02.api.letsencrypt.org/directory",
+    "documentationURL": "https://letsencrypt.org/docs/"
+  },
+  {
+    "name": "Let's Encrypt staging",
+    "type": "staging",
+    "code": "LetsEncryptStaging",
+    "directoryURL": "https://acme-staging-v02.api.letsencrypt.org/directory",
+    "documentationURL": "https://letsencrypt.org/docs/staging-environment/"
+  },
+  {
+    "name": "LiteSSL",
+    "type": "production",
+    "code": "LiteSSL",
+    "directoryURL": "https://acme.litessl.com/acme/v2/directory",
+    "documentationURL": "https://litessl.cn/"
+  },
+  {
+    "name": "PeeringHub",
+    "type": "production",
+    "code": "PeeringHub",
+    "directoryURL": "https://stica.peeringhub.io/acme",
+    "documentationURL": "https://doc.peeringhub.io/guides/generating-certificate/acme-protocol-reference/list-server-directory"
+  },
+  {
+    "name": "SSL.com ECDSA",
+    "type": "production",
+    "code": "SSLComECC",
+    "directoryURL": "https://acme.ssl.com/sslcom-dv-ecc",
+    "documentationURL": "https://www.ssl.com/guide/ssl-tls-certificate-issuance-and-revocation-with-acme/"
+  },
+  {
+    "name": "SSL.com RSA",
+    "type": "production",
+    "code": "SSLComRSA",
+    "directoryURL": "https://acme.ssl.com/sslcom-dv-rsa",
+    "documentationURL": "https://www.ssl.com/guide/ssl-tls-certificate-issuance-and-revocation-with-acme/"
+  },
+  {
+    "name": "Sectigo DV (Domain Validation)",
+    "type": "production",
+    "code": "Sectigo",
+    "directoryURL": "https://acme.sectigo.com/v2/DV",
+    "documentationURL": "https://docs.sectigo.com/caas/caas-api-guide/create-acme-accounts"
+  },
+  {
+    "name": "Sectigo EV (Extended Validation)",
+    "type": "production",
+    "code": "SectigoEV",
+    "directoryURL": "https://acme.sectigo.com/v2/EV",
+    "documentationURL": "https://docs.sectigo.com/"
+  },
+  {
+    "name": "Sectigo OV (Organization Validation) ",
+    "type": "production",
+    "code": "SectigoOV",
+    "directoryURL": "https://acme.sectigo.com/v2/OV",
+    "documentationURL": "https://docs.sectigo.com/caas/caas-api-guide/getting-started-ov"
+  },
+  {
+    "name": "ZeroSSL",
+    "type": "production",
+    "code": "ZeroSSL",
+    "directoryURL": "https://acme.zerossl.com/v2/DV90",
+    "documentationURL": "https://zerossl.com/documentation/acme/"
+  }
+]

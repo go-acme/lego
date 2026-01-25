@@ -44,10 +44,7 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("new client: %w", err)
 	}
 
-	certsStorage, err := storage.NewCertificatesStorage(newCertificatesWriterConfig(cmd))
-	if err != nil {
-		return fmt.Errorf("certificates storage initialization: %w", err)
-	}
+	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
 
 	err = certsStorage.CreateRootFolder()
 	if err != nil {

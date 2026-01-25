@@ -73,10 +73,7 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("the account %s is not registered", account.Email)
 	}
 
-	certsStorage, err := storage.NewCertificatesStorage(newCertificatesWriterConfig(cmd))
-	if err != nil {
-		return fmt.Errorf("certificates storage initialization: %w", err)
-	}
+	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
 
 	meta := map[string]string{
 		hook.EnvAccountEmail: account.Email,
@@ -213,12 +210,14 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 
 	certRes.Domain = domain
 
-	err = certsStorage.SaveResource(certRes)
+	options := newSaveOptions(cmd)
+
+	err = certsStorage.SaveResource(certRes, options)
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
 
-	hook.AddPathToMetadata(meta, certRes.Domain, certRes, certsStorage)
+	hook.AddPathToMetadata(meta, certRes.Domain, certRes, certsStorage, options)
 
 	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }
@@ -311,12 +310,14 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 		return fmt.Errorf("could not obtain the certificate for CSR: %w", err)
 	}
 
-	err = certsStorage.SaveResource(certRes)
+	options := newSaveOptions(cmd)
+
+	err = certsStorage.SaveResource(certRes, options)
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
 
-	hook.AddPathToMetadata(meta, domain, certRes, certsStorage)
+	hook.AddPathToMetadata(meta, domain, certRes, certsStorage, options)
 
 	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }

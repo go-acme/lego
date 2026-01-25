@@ -35,7 +35,7 @@ func list(ctx context.Context, cmd *cli.Command) error {
 }
 
 func listCertificates(_ context.Context, cmd *cli.Command) error {
-	certsStorage := storage.NewCertificatesReader(cmd.String(flgPath))
+	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
 
 	matches, err := filepath.Glob(filepath.Join(certsStorage.GetRootPath(), "*.crt"))
 	if err != nil {

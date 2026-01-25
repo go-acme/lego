@@ -495,9 +495,8 @@ func createRenewFlags() []cli.Flag {
 }
 
 func createRevokeFlags() []cli.Flag {
-	flags := CreateBaseFlags()
-
-	flags = append(flags,
+	flags := []cli.Flag{
+		CreatePathFlag(false),
 		&cli.BoolFlag{
 			Name:    flgKeep,
 			Aliases: []string{"k"},
@@ -513,7 +512,11 @@ func createRevokeFlags() []cli.Flag {
 				" 9 (privilegeWithdrawn), or 10 (aACompromise).",
 			Value: acme.CRLReasonUnspecified,
 		},
-	)
+	}
+
+	flags = append(flags, CreateDomainFlag())
+	flags = append(flags, CreateAccountFlags()...)
+	flags = append(flags, CreateACMEClientFlags()...)
 
 	return flags
 }

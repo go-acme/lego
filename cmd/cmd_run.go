@@ -54,10 +54,12 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("set up account: %w", err)
 	}
 
-	client, err := setupClient(cmd, account, keyType)
+	client, err := newClient(cmd, account, keyType)
 	if err != nil {
-		return fmt.Errorf("set up client: %w", err)
+		return fmt.Errorf("new client: %w", err)
 	}
+
+	setupChallenges(cmd, client)
 
 	if account.Registration == nil {
 		var reg *registration.Resource

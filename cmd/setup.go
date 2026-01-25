@@ -22,18 +22,6 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-// setupClient creates a new client with challenge settings.
-func setupClient(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) (*lego.Client, error) {
-	client, err := newClient(cmd, account, keyType)
-	if err != nil {
-		return nil, fmt.Errorf("new client: %w", err)
-	}
-
-	setupChallenges(cmd, client)
-
-	return client, nil
-}
-
 func newClient(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) (*lego.Client, error) {
 	client, err := lego.NewClient(newClientConfig(cmd, account, keyType))
 	if err != nil {

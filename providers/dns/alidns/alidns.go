@@ -27,6 +27,7 @@ const (
 	EnvSecretKey     = envNamespace + "SECRET_KEY"
 	EnvSecurityToken = envNamespace + "SECURITY_TOKEN"
 	EnvRegionID      = envNamespace + "REGION_ID"
+	EnvLine          = envNamespace + "LINE"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -45,6 +46,7 @@ type Config struct {
 	SecretKey          string
 	SecurityToken      string
 	RegionID           string
+	Line               string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -74,6 +76,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.RegionID = env.GetOrFile(EnvRegionID)
+	config.Line = env.GetOrFile(EnvLine)
 
 	values, err := env.Get(EnvRAMRole)
 	if err == nil {
@@ -254,12 +257,18 @@ func (d *DNSProvider) newTxtRecord(zone, fqdn, value string) (*alidns.AddDomainR
 		return nil, err
 	}
 
-	return new(alidns.AddDomainRecordRequest).
+	adrr := new(alidns.AddDomainRecordRequest).
 		SetType("TXT").
 		SetDomainName(zone).
 		SetRR(rr).
 		SetValue(value).
-		SetTTL(int64(d.config.TTL)), nil
+		SetTTL(int64(d.config.TTL))
+
+	if d.config.Line != "" {
+		adrr.SetLine(d.config.Line)
+	}
+
+	return adrr, nil
 }
 
 func (d *DNSProvider) findTxtRecords(ctx context.Context, fqdn string) ([]*alidns.DescribeDomainRecordsResponseBodyDomainRecordsRecord, error) {

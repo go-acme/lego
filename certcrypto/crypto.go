@@ -242,15 +242,15 @@ func ParsePEMCertificate(cert []byte) (*x509.Certificate, error) {
 }
 
 func GetCertificateMainDomain(cert *x509.Certificate) (string, error) {
-	return getMainDomain(cert.Subject, cert.DNSNames)
+	return getMainDomain(cert.Subject, cert.DNSNames, cert.IPAddresses)
 }
 
 func GetCSRMainDomain(cert *x509.CertificateRequest) (string, error) {
-	return getMainDomain(cert.Subject, cert.DNSNames)
+	return getMainDomain(cert.Subject, cert.DNSNames, cert.IPAddresses)
 }
 
-func getMainDomain(subject pkix.Name, dnsNames []string) (string, error) {
-	if subject.CommonName == "" && len(dnsNames) == 0 {
+func getMainDomain(subject pkix.Name, dnsNames []string, ips []net.IP) (string, error) {
+	if subject.CommonName == "" && len(dnsNames) == 0 && len(ips) == 0 {
 		return "", errors.New("missing domain")
 	}
 
@@ -258,7 +258,11 @@ func getMainDomain(subject pkix.Name, dnsNames []string) (string, error) {
 		return subject.CommonName, nil
 	}
 
-	return dnsNames[0], nil
+	if len(dnsNames) > 0 {
+		return dnsNames[0], nil
+	}
+
+	return ips[0].String(), nil
 }
 
 func ExtractDomains(cert *x509.Certificate) []string {

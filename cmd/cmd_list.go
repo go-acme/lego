@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -100,6 +101,11 @@ func listCertificates(ctx *cli.Context) error {
 		} else {
 			fmt.Println("  Certificate Name:", name)
 			fmt.Println("    Domains:", strings.Join(pCert.DNSNames, ", "))
+
+			if len(pCert.IPAddresses) > 0 {
+				fmt.Println("    IPs:", formatIPAddresses(pCert.IPAddresses))
+			}
+
 			fmt.Println("    Expiry Date:", pCert.NotAfter)
 			fmt.Println("    Certificate Path:", filename)
 			fmt.Println()
@@ -149,4 +155,13 @@ func listAccount(ctx *cli.Context) error {
 	}
 
 	return nil
+}
+
+func formatIPAddresses(ipAddresses []net.IP) string {
+	var ips []string
+	for _, ip := range ipAddresses {
+		ips = append(ips, ip.String())
+	}
+
+	return strings.Join(ips, ", ")
 }

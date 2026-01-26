@@ -120,7 +120,7 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 				return
 			}
 
-			log.Infof("[%s] Served key authentication", domain)
+			log.Info("Served key authentication", "domain", domain)
 
 			return
 		}

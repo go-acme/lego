@@ -1,6 +1,7 @@
 package certificate
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-acme/lego/v4/acme"
@@ -40,7 +41,7 @@ func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authoriz
 	}
 
 	for i, auth := range order.Authorizations {
-		log.Infof("[%s] AuthURL: %s", order.Identifiers[i].Value, auth)
+		log.Info(fmt.Sprintf("AuthURL: %s", auth), "domain", order.Identifiers[i].Value)
 	}
 
 	close(resc)

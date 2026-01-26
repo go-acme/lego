@@ -68,11 +68,11 @@ func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
 	domain := challenge.GetTargetedDomain(authz)
 	for _, chlg := range authz.Challenges {
 		if solvr, ok := c.solvers[challenge.Type(chlg.Type)]; ok {
-			log.Infof("[%s] acme: use %s solver", domain, chlg.Type)
+			log.Info(fmt.Sprintf("acme: use %s solver", chlg.Type), "domain", domain)
 			return solvr
 		}
 
-		log.Infof("[%s] acme: Could not find solver for: %s", domain, chlg.Type)
+		log.Info(fmt.Sprintf("acme: Could not find solver for: %s", chlg.Type), "domain", domain)
 	}
 
 	return nil
@@ -90,7 +90,7 @@ func validate(core *api.Core, domain string, chlg acme.Challenge) error {
 	}
 
 	if valid {
-		log.Infof("[%s] The server validated our request", domain)
+		log.Info("The server validated our request", "domain", domain)
 		return nil
 	}
 
@@ -125,7 +125,7 @@ func validate(core *api.Core, domain string, chlg acme.Challenge) error {
 		}
 
 		if valid {
-			log.Infof("[%s] The server validated our request", domain)
+			log.Info("The server validated our request", "domain", domain)
 			return nil
 		}
 

@@ -164,9 +164,9 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 	domains := sanitizeDomain(request.Domains)
 
 	if request.Bundle {
-		log.Infof("[%s] acme: Obtaining bundled SAN certificate", strings.Join(domains, ", "))
+		log.Info(fmt.Sprintf("acme: Obtaining bundled SAN certificate for %s", strings.Join(domains, ", ")), "domain", domains[0])
 	} else {
-		log.Infof("[%s] acme: Obtaining SAN certificate", strings.Join(domains, ", "))
+		log.Info(fmt.Sprintf("acme: Obtaining SAN certificate for %s", strings.Join(domains, ", ")), "domain", domains[0])
 	}
 
 	orderOpts := &api.OrderOptions{
@@ -195,7 +195,7 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 		return nil, err
 	}
 
-	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
+	log.Info(fmt.Sprintf("acme: Validations succeeded; requesting certificates for %s", strings.Join(domains, ", ")), "domain", domains[0])
 
 	failures := newObtainError()
 
@@ -232,9 +232,9 @@ func (c *Certifier) ObtainForCSR(request ObtainForCSRRequest) (*Resource, error)
 	domains := certcrypto.ExtractDomainsCSR(request.CSR)
 
 	if request.Bundle {
-		log.Infof("[%s] acme: Obtaining bundled SAN certificate given a CSR", strings.Join(domains, ", "))
+		log.Info(fmt.Sprintf("acme: Obtaining bundled SAN certificate given a CSR for %s", strings.Join(domains, ", ")), "domain", domains[0])
 	} else {
-		log.Infof("[%s] acme: Obtaining SAN certificate given a CSR", strings.Join(domains, ", "))
+		log.Info(fmt.Sprintf("acme: Obtaining SAN certificate given a CSR for %s", strings.Join(domains, ", ")), "domain", domains[0])
 	}
 
 	orderOpts := &api.OrderOptions{
@@ -263,7 +263,7 @@ func (c *Certifier) ObtainForCSR(request ObtainForCSRRequest) (*Resource, error)
 		return nil, err
 	}
 
-	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
+	log.Info(fmt.Sprintf("acme: Validations succeeded; requesting certificates for %s", strings.Join(domains, ", ")), "domain", domains[0])
 
 	failures := newObtainError()
 
@@ -413,7 +413,7 @@ func (c *Certifier) checkResponse(order acme.ExtendedOrder, certRes *Resource, b
 	certRes.CertStableURL = order.Certificate
 
 	if preferredChain == "" {
-		log.Infof("[%s] Server responded with a certificate.", certRes.Domain)
+		log.Info("Server responded with a certificate.", "domain", certRes.Domain)
 
 		return true, nil
 	}
@@ -425,7 +425,7 @@ func (c *Certifier) checkResponse(order acme.ExtendedOrder, certRes *Resource, b
 		}
 
 		if ok {
-			log.Infof("[%s] Server responded with a certificate for the preferred certificate chains %q.", certRes.Domain, preferredChain)
+			log.Info(fmt.Sprintf("Server responded with a certificate for the preferred certificate chains %q.", preferredChain), "domain", certRes.Domain)
 
 			certRes.IssuerCertificate = cert.Issuer
 			certRes.Certificate = cert.Cert
@@ -528,7 +528,7 @@ func (c *Certifier) RenewWithOptions(certRes Resource, options *RenewOptions) (*
 
 	// This is just meant to be informal for the user.
 	timeLeft := x509Cert.NotAfter.Sub(time.Now().UTC())
-	log.Infof("[%s] acme: Trying renewal with %d hours remaining", certRes.Domain, int(timeLeft.Hours()))
+	log.Info(fmt.Sprintf("acme: Trying renewal with %d hours remaining", int(timeLeft.Hours())), "domain", certRes.Domain)
 
 	// We always need to request a new certificate to renew.
 	// Start by checking to see if the certificate was based off a CSR,

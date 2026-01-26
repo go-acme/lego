@@ -4,6 +4,7 @@ import (
 	"crypto"
 	"crypto/x509"
 	"errors"
+	"fmt"
 	"math/rand"
 	"os"
 	"slices"
@@ -187,7 +188,7 @@ func renewForDomains(ctx *cli.Context, account *Account, keyType certcrypto.KeyT
 
 			// Figure out if we need to sleep before renewing.
 			if ariRenewalTime.After(now) {
-				log.Infof("[%s] Sleeping %s until renewal time %s", domain, ariRenewalTime.Sub(now), ariRenewalTime)
+				log.Info(fmt.Sprintf("Sleeping %s until renewal time %s", ariRenewalTime.Sub(now), ariRenewalTime), "domain", domain)
 				time.Sleep(ariRenewalTime.Sub(now))
 			}
 		}
@@ -213,7 +214,7 @@ func renewForDomains(ctx *cli.Context, account *Account, keyType certcrypto.KeyT
 
 	// This is just meant to be informal for the user.
 	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
-	log.Infof("[%s] acme: Trying renewal with %d hours remaining", domain, int(timeLeft.Hours()))
+	log.Info(fmt.Sprintf("acme: Trying renewal with %d hours remaining", int(timeLeft.Hours())), "domain", domain)
 
 	var privateKey crypto.PrivateKey
 
@@ -314,7 +315,7 @@ func renewForCSR(ctx *cli.Context, account *Account, keyType certcrypto.KeyType,
 
 			// Figure out if we need to sleep before renewing.
 			if ariRenewalTime.After(now) {
-				log.Infof("[%s] Sleeping %s until renewal time %s", domain, ariRenewalTime.Sub(now), ariRenewalTime)
+				log.Info(fmt.Sprintf("Sleeping %s until renewal time %s", ariRenewalTime.Sub(now), ariRenewalTime), "domain", domain)
 				time.Sleep(ariRenewalTime.Sub(now))
 			}
 		}
@@ -335,7 +336,7 @@ func renewForCSR(ctx *cli.Context, account *Account, keyType certcrypto.KeyType,
 
 	// This is just meant to be informal for the user.
 	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
-	log.Infof("[%s] acme: Trying renewal with %d hours remaining", domain, int(timeLeft.Hours()))
+	log.Info(fmt.Sprintf("acme: Trying renewal with %d hours remaining", int(timeLeft.Hours())), "domain", domain)
 
 	request := certificate.ObtainForCSRRequest{
 		CSR:                            csr,
@@ -401,8 +402,8 @@ func needRenewalDynamic(x509Cert *x509.Certificate, domain string, now time.Time
 		return true
 	}
 
-	log.Infof("[%s] The certificate expires at %s, the renewal can be performed in %s: no renewal.",
-		domain, x509Cert.NotAfter.Format(time.RFC3339), dueDate.Sub(now))
+	log.Info(fmt.Sprintf("The certificate expires at %s, the renewal can be performed in %s: no renewal.",
+		x509Cert.NotAfter.Format(time.RFC3339), dueDate.Sub(now)), "domain", domain)
 
 	return false
 }
@@ -417,11 +418,11 @@ func getARIRenewalTime(ctx *cli.Context, cert *x509.Certificate, domain string, 
 	if err != nil {
 		if errors.Is(err, api.ErrNoARI) {
 			// The server does not advertise a renewal info endpoint.
-			log.Warnf("[%s] acme: %v", domain, err)
+			log.Warn(fmt.Sprintf("acme: %v", err), "domain", domain)
 			return nil
 		}
 
-		log.Warnf("[%s] acme: calling renewal info endpoint: %v", domain, err)
+		log.Warn(fmt.Sprintf("acme: calling renewal info endpoint: %v", err), "domain", domain)
 
 		return nil
 	}
@@ -430,14 +431,14 @@ func getARIRenewalTime(ctx *cli.Context, cert *x509.Certificate, domain string, 
 
 	renewalTime := renewalInfo.ShouldRenewAt(now, ctx.Duration(flgARIWaitToRenewDuration))
 	if renewalTime == nil {
-		log.Infof("[%s] acme: renewalInfo endpoint indicates that renewal is not needed", domain)
+		log.Info("acme: renewalInfo endpoint indicates that renewal is not needed", "domain", domain)
 		return nil
 	}
 
-	log.Infof("[%s] acme: renewalInfo endpoint indicates that renewal is needed", domain)
+	log.Info("acme: renewalInfo endpoint indicates that renewal is needed", "domain", domain)
 
 	if renewalInfo.ExplanationURL != "" {
-		log.Infof("[%s] acme: renewalInfo endpoint provided an explanation: %s", domain, renewalInfo.ExplanationURL)
+		log.Info(fmt.Sprintf("acme: renewalInfo endpoint provided an explanation: %s", renewalInfo.ExplanationURL), "domain", domain)
 	}
 
 	return renewalTime

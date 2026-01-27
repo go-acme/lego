@@ -334,11 +334,6 @@ func CreateOutputFlags() []cli.Flag {
 
 func CreateAccountFlags() []cli.Flag {
 	return []cli.Flag{
-		&cli.BoolFlag{
-			Name:    flgAcceptTOS,
-			Aliases: []string{"a"},
-			Usage:   "By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.",
-		},
 		&cli.StringFlag{
 			Name:    flgEmail,
 			Aliases: []string{"m"},
@@ -443,6 +438,7 @@ func CreateBaseFlags() []cli.Flag {
 func createRunFlags() []cli.Flag {
 	flags := CreateBaseFlags()
 
+	flags = append(flags, CreateAcceptFlag())
 	flags = append(flags, CreateChallengesFlags()...)
 	flags = append(flags, CreateObtainFlags()...)
 	flags = append(flags, CreateHookFlags()...)
@@ -548,12 +544,21 @@ func createListFlags() []cli.Flag {
 func createRegisterFlags() []cli.Flag {
 	flags := []cli.Flag{
 		CreatePathFlag(true),
+		CreateAcceptFlag(),
 	}
 
 	flags = append(flags, CreateACMEClientFlags()...)
 	flags = append(flags, CreateAccountFlags()...)
 
 	return flags
+}
+
+func CreateAcceptFlag() cli.Flag {
+	return &cli.BoolFlag{
+		Name:    flgAcceptTOS,
+		Aliases: []string{"a"},
+		Usage:   "By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.",
+	}
 }
 
 func CreateDomainFlag() cli.Flag {

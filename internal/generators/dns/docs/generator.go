@@ -17,14 +17,14 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/go-acme/lego/v5/internal/dns/descriptors"
+	"github.com/go-acme/lego/v5/internal/generators/dns/descriptors"
 )
 
 //go:embed templates
 var templateFS embed.FS
 
 const (
-	root = "../../../"
+	root = "../../../../"
 
 	cliOutput  = root + "cmd/zz_gen_cmd_dnshelp.go"
 	docOutput  = root + "docs/content/dns"

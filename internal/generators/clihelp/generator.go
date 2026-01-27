@@ -15,7 +15,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-const outputFile = "../../docs/data/zz_cli_help.toml"
+const outputFile = "../../../docs/data/zz_cli_help.toml"
 
 const baseTemplate = `# THIS FILE IS AUTO-GENERATED. PLEASE DO NOT EDIT.
 

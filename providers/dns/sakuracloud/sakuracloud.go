@@ -11,9 +11,9 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/useragent"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v5/providers/dns/internal/useragent"
 	client "github.com/sacloud/api-client-go"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/defaults"

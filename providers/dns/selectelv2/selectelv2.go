@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/useragent"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v5/providers/dns/internal/useragent"
 	"github.com/miekg/dns"
 	selectelapi "github.com/selectel/domains-go/pkg/v2"
 	"github.com/selectel/go-selvpcclient/v4/selvpcclient"

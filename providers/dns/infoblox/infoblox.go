@@ -11,8 +11,8 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/useragent"
 	"github.com/go-acme/lego/v5/platform/config/env"
-	"github.com/go-acme/lego/v5/providers/dns/internal/useragent"
 	infoblox "github.com/infobloxopen/infoblox-go-client/v2"
 )
 

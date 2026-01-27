@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v5/internal/errutils"
 )
 
 const defaultBaseURL = "https://portal.brandit.com/api/v3/"

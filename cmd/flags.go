@@ -424,20 +424,14 @@ func CreateHookFlags() []cli.Flag {
 	}
 }
 
-func CreateBaseFlags() []cli.Flag {
-	var flags []cli.Flag
+func createRunFlags() []cli.Flag {
+	flags := []cli.Flag{
+		CreateDomainFlag(),
+	}
 
-	flags = append(flags, CreateDomainFlag())
 	flags = append(flags, CreateAccountFlags()...)
 	flags = append(flags, CreateACMEClientFlags()...)
 	flags = append(flags, CreateOutputFlags()...)
-
-	return flags
-}
-
-func createRunFlags() []cli.Flag {
-	flags := CreateBaseFlags()
-
 	flags = append(flags, CreateAcceptFlag())
 	flags = append(flags, CreateChallengesFlags()...)
 	flags = append(flags, CreateObtainFlags()...)
@@ -454,8 +448,13 @@ func createRunFlags() []cli.Flag {
 }
 
 func createRenewFlags() []cli.Flag {
-	flags := CreateBaseFlags()
+	flags := []cli.Flag{
+		CreateDomainFlag(),
+	}
 
+	flags = append(flags, CreateAccountFlags()...)
+	flags = append(flags, CreateACMEClientFlags()...)
+	flags = append(flags, CreateOutputFlags()...)
 	flags = append(flags, CreateChallengesFlags()...)
 	flags = append(flags, CreateObtainFlags()...)
 	flags = append(flags, CreateHookFlags()...)

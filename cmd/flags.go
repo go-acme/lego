@@ -141,7 +141,7 @@ const (
 	envServer      = "LEGO_SERVER"
 )
 
-func CreateACMEClientFlags() []cli.Flag {
+func createACMEClientFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:     flgServer,
@@ -186,18 +186,18 @@ func CreateACMEClientFlags() []cli.Flag {
 	}
 }
 
-func CreateChallengesFlags() []cli.Flag {
+func createChallengesFlags() []cli.Flag {
 	var flags []cli.Flag
 
-	flags = append(flags, CreateHTTPChallengeFlags()...)
-	flags = append(flags, CreateTLSChallengeFlags()...)
-	flags = append(flags, CreateDNSChallengeFlags()...)
-	flags = append(flags, CreateNetworkStackFlags()...)
+	flags = append(flags, createHTTPChallengeFlags()...)
+	flags = append(flags, createTLSChallengeFlags()...)
+	flags = append(flags, createDNSChallengeFlags()...)
+	flags = append(flags, createNetworkStackFlags()...)
 
 	return flags
 }
 
-func CreateNetworkStackFlags() []cli.Flag {
+func createNetworkStackFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.BoolFlag{
 			Name:    flgIPv4Only,
@@ -212,7 +212,7 @@ func CreateNetworkStackFlags() []cli.Flag {
 	}
 }
 
-func CreateHTTPChallengeFlags() []cli.Flag {
+func createHTTPChallengeFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.BoolFlag{
 			Name:  flgHTTP,
@@ -249,7 +249,7 @@ func CreateHTTPChallengeFlags() []cli.Flag {
 	}
 }
 
-func CreateTLSChallengeFlags() []cli.Flag {
+func createTLSChallengeFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.BoolFlag{
 			Name:  flgTLS,
@@ -268,7 +268,7 @@ func CreateTLSChallengeFlags() []cli.Flag {
 	}
 }
 
-func CreateDNSChallengeFlags() []cli.Flag {
+func createDNSChallengeFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:  flgDNS,
@@ -305,9 +305,9 @@ func CreateDNSChallengeFlags() []cli.Flag {
 	}
 }
 
-func CreateOutputFlags() []cli.Flag {
+func createStorageFlags() []cli.Flag {
 	return []cli.Flag{
-		CreatePathFlag(true),
+		createPathFlag(true),
 		&cli.BoolFlag{
 			Name:  flgPEM,
 			Usage: "Generate an additional .pem (base64) file by concatenating the .key and .crt files together.",
@@ -332,7 +332,7 @@ func CreateOutputFlags() []cli.Flag {
 	}
 }
 
-func CreateAccountFlags() []cli.Flag {
+func createAccountFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:    flgEmail,
@@ -364,7 +364,7 @@ func CreateAccountFlags() []cli.Flag {
 	}
 }
 
-func CreateObtainFlags() []cli.Flag {
+func createObtainFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:    flgCSR,
@@ -410,7 +410,7 @@ func CreateObtainFlags() []cli.Flag {
 	}
 }
 
-func CreateHookFlags() []cli.Flag {
+func createHookFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:  flgDeployHook,
@@ -426,16 +426,16 @@ func CreateHookFlags() []cli.Flag {
 
 func createRunFlags() []cli.Flag {
 	flags := []cli.Flag{
-		CreateDomainFlag(),
+		createDomainFlag(),
 	}
 
-	flags = append(flags, CreateAccountFlags()...)
-	flags = append(flags, CreateACMEClientFlags()...)
-	flags = append(flags, CreateOutputFlags()...)
-	flags = append(flags, CreateAcceptFlag())
-	flags = append(flags, CreateChallengesFlags()...)
-	flags = append(flags, CreateObtainFlags()...)
-	flags = append(flags, CreateHookFlags()...)
+	flags = append(flags, createAccountFlags()...)
+	flags = append(flags, createACMEClientFlags()...)
+	flags = append(flags, createStorageFlags()...)
+	flags = append(flags, createAcceptFlag())
+	flags = append(flags, createChallengesFlags()...)
+	flags = append(flags, createObtainFlags()...)
+	flags = append(flags, createHookFlags()...)
 
 	flags = append(flags,
 		&cli.StringFlag{
@@ -449,15 +449,15 @@ func createRunFlags() []cli.Flag {
 
 func createRenewFlags() []cli.Flag {
 	flags := []cli.Flag{
-		CreateDomainFlag(),
+		createDomainFlag(),
 	}
 
-	flags = append(flags, CreateAccountFlags()...)
-	flags = append(flags, CreateACMEClientFlags()...)
-	flags = append(flags, CreateOutputFlags()...)
-	flags = append(flags, CreateChallengesFlags()...)
-	flags = append(flags, CreateObtainFlags()...)
-	flags = append(flags, CreateHookFlags()...)
+	flags = append(flags, createAccountFlags()...)
+	flags = append(flags, createACMEClientFlags()...)
+	flags = append(flags, createStorageFlags()...)
+	flags = append(flags, createChallengesFlags()...)
+	flags = append(flags, createObtainFlags()...)
+	flags = append(flags, createHookFlags()...)
 
 	flags = append(flags,
 		&cli.IntFlag{
@@ -499,7 +499,7 @@ func createRenewFlags() []cli.Flag {
 
 func createRevokeFlags() []cli.Flag {
 	flags := []cli.Flag{
-		CreatePathFlag(false),
+		createPathFlag(false),
 		&cli.BoolFlag{
 			Name:    flgKeep,
 			Aliases: []string{"k"},
@@ -517,9 +517,9 @@ func createRevokeFlags() []cli.Flag {
 		},
 	}
 
-	flags = append(flags, CreateDomainFlag())
-	flags = append(flags, CreateAccountFlags()...)
-	flags = append(flags, CreateACMEClientFlags()...)
+	flags = append(flags, createDomainFlag())
+	flags = append(flags, createAccountFlags()...)
+	flags = append(flags, createACMEClientFlags()...)
 
 	return flags
 }
@@ -536,23 +536,23 @@ func createListFlags() []cli.Flag {
 			Aliases: []string{"n"},
 			Usage:   "Display certificate names only.",
 		},
-		CreatePathFlag(false),
+		createPathFlag(false),
 	}
 }
 
 func createRegisterFlags() []cli.Flag {
 	flags := []cli.Flag{
-		CreatePathFlag(true),
-		CreateAcceptFlag(),
+		createPathFlag(true),
+		createAcceptFlag(),
 	}
 
-	flags = append(flags, CreateACMEClientFlags()...)
-	flags = append(flags, CreateAccountFlags()...)
+	flags = append(flags, createACMEClientFlags()...)
+	flags = append(flags, createAccountFlags()...)
 
 	return flags
 }
 
-func CreateAcceptFlag() cli.Flag {
+func createAcceptFlag() cli.Flag {
 	return &cli.BoolFlag{
 		Name:    flgAcceptTOS,
 		Aliases: []string{"a"},
@@ -560,7 +560,7 @@ func CreateAcceptFlag() cli.Flag {
 	}
 }
 
-func CreateDomainFlag() cli.Flag {
+func createDomainFlag() cli.Flag {
 	return &cli.StringSliceFlag{
 		Name:    flgDomains,
 		Aliases: []string{"d"},
@@ -568,7 +568,7 @@ func CreateDomainFlag() cli.Flag {
 	}
 }
 
-func CreatePathFlag(forceCreation bool) cli.Flag {
+func createPathFlag(forceCreation bool) cli.Flag {
 	return &cli.StringFlag{
 		Name:    flgPath,
 		Sources: cli.NewValueSourceChain(cli.EnvVar(envPath), &defaultPathValueSource{}),

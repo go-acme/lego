@@ -7,7 +7,6 @@ import (
 
 func newAccountsStorageConfig(cmd *cli.Command) storage.AccountsStorageConfig {
 	return storage.AccountsStorageConfig{
-		Email:     cmd.String(flgEmail),
 		BasePath:  cmd.String(flgPath),
 		Server:    cmd.String(flgServer),
 		UserAgent: getUserAgent(cmd),

@@ -126,6 +126,7 @@ func listAccount(_ context.Context, cmd *cli.Command) error {
 			return err
 		}
 
+		fmt.Println("  ID:", account.GetID())
 		fmt.Println("  Email:", account.Email)
 		fmt.Println("  Server:", uri.Host)
 		fmt.Println("  Path:", filepath.Dir(filename))

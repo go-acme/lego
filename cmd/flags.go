@@ -19,6 +19,7 @@ const (
 	flgDomains   = "domains"
 	flgAcceptTOS = "accept-tos"
 	flgEmail     = "email"
+	flgAccountID = "account-id"
 	flgEAB       = "eab"
 	flgKID       = "kid"
 	flgHMAC      = "hmac"
@@ -132,6 +133,7 @@ const (
 	envEABHMAC     = "LEGO_EAB_HMAC"
 	envEABKID      = "LEGO_EAB_KID"
 	envEmail       = "LEGO_EMAIL"
+	envAccountID   = "LEGO_ACCOUNT_ID"
 	envPath        = "LEGO_PATH"
 	envPFX         = "LEGO_PFX"
 	envPFXFormat   = "LEGO_PFX_FORMAT"
@@ -342,6 +344,12 @@ func CreateAccountFlags() []cli.Flag {
 			Aliases: []string{"m"},
 			Sources: cli.EnvVars(envEmail),
 			Usage:   "Email used for registration and recovery contact.",
+		},
+		&cli.StringFlag{
+			Name:    flgAccountID,
+			Aliases: []string{"a"},
+			Sources: cli.EnvVars(envAccountID),
+			Usage:   "Account identifier (The email is used if there is account ID is undefined).",
 		},
 		&cli.BoolFlag{
 			Name:    flgEAB,

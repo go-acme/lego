@@ -18,8 +18,6 @@ import (
 	"github.com/go-acme/lego/v5/registration"
 )
 
-const userIDPlaceholder = "noemail@example.com"
-
 const (
 	baseAccountsRootFolderName = "accounts"
 	baseKeysFolderName         = "keys"
@@ -27,7 +25,6 @@ const (
 )
 
 type AccountsStorageConfig struct {
-	Email    string
 	BasePath string
 
 	Server    string
@@ -68,11 +65,7 @@ type AccountsStorageConfig struct {
 //	     │      └── root accounts directory
 //	     └── "path" option
 type AccountsStorage struct {
-	userID          string
-	email           string
-	rootPath        string
-	keysPath        string
-	accountFilePath string
+	rootPath string
 
 	server    *url.URL
 	userAgent string
@@ -80,31 +73,15 @@ type AccountsStorage struct {
 
 // NewAccountsStorage Creates a new AccountsStorage.
 func NewAccountsStorage(config AccountsStorageConfig) (*AccountsStorage, error) {
-	email := config.Email
-
-	userID := email
-	if userID == "" {
-		userID = userIDPlaceholder
-	}
-
 	serverURL, err := url.Parse(config.Server)
 	if err != nil {
 		return nil, fmt.Errorf("invalid server URL %q: %w", config.Server, err)
 	}
 
-	rootPath := filepath.Join(config.BasePath, baseAccountsRootFolderName)
-	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(serverURL.Host)
-	accountsPath := filepath.Join(rootPath, serverPath)
-	rootUserPath := filepath.Join(accountsPath, userID)
-
 	return &AccountsStorage{
-		userID:          userID,
-		email:           email,
-		rootPath:        rootPath,
-		keysPath:        filepath.Join(rootUserPath, baseKeysFolderName),
-		accountFilePath: filepath.Join(rootUserPath, accountFileName),
-		server:          serverURL,
-		userAgent:       config.UserAgent,
+		rootPath:  filepath.Join(config.BasePath, baseAccountsRootFolderName),
+		server:    serverURL,
+		userAgent: config.UserAgent,
 	}, nil
 }
 
@@ -118,72 +95,85 @@ func (s *AccountsStorage) Save(account *Account) error {
 		return err
 	}
 
-	return os.WriteFile(s.accountFilePath, jsonBytes, filePerm)
+	return os.WriteFile(s.getAccountFilePath(account.GetID()), jsonBytes, filePerm)
 }
 
-func (s *AccountsStorage) Get(ctx context.Context, keyType certcrypto.KeyType) (*Account, error) {
-	privateKey, err := s.getPrivateKey(keyType)
+func (s *AccountsStorage) Get(ctx context.Context, keyType certcrypto.KeyType, email, accountID string) (*Account, error) {
+	effectiveAccountID := getEffectiveAccountID(email, accountID)
+
+	if !s.existsAccountFile(effectiveAccountID) {
+		return s.newAccount(keyType, email, accountID)
+	}
+
+	return s.readAccount(ctx, keyType, effectiveAccountID)
+}
+
+func (s *AccountsStorage) newAccount(keyType certcrypto.KeyType, email, accountID string) (*Account, error) {
+	privateKey, err := s.getPrivateKey(keyType, getEffectiveAccountID(email, accountID))
 	if err != nil {
 		return nil, fmt.Errorf("get private key: %w", err)
 	}
 
-	if s.existsAccountFilePath() {
-		return s.load(ctx, privateKey)
-	}
-
-	return NewAccount(s.email, privateKey), nil
+	return NewAccount(email, accountID, privateKey), nil
 }
 
-func (s *AccountsStorage) load(ctx context.Context, privateKey crypto.PrivateKey) (*Account, error) {
-	fileBytes, err := os.ReadFile(s.accountFilePath)
+func (s *AccountsStorage) readAccount(ctx context.Context, keyType certcrypto.KeyType, effectiveAccountID string) (*Account, error) {
+	accountFilePath := s.getAccountFilePath(effectiveAccountID)
+
+	fileBytes, err := os.ReadFile(accountFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("could not read the account file (userID: %s): %w", s.userID, err)
+		return nil, fmt.Errorf("could not read the account file %q : %w", accountFilePath, err)
 	}
 
-	var account Account
+	account := new(Account)
 
-	err = json.Unmarshal(fileBytes, &account)
+	err = json.Unmarshal(fileBytes, account)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse the account file (userID: %s): %w", s.userID, err)
+		return nil, fmt.Errorf("could not parse the account file %s: %w", accountFilePath, err)
 	}
 
-	account.key = privateKey
+	account.key, err = s.getPrivateKey(keyType, effectiveAccountID)
+	if err != nil {
+		return nil, fmt.Errorf("get private key: %w", err)
+	}
 
 	if account.Registration == nil || account.Registration.Body.Status == "" {
-		reg, err := s.tryRecoverRegistration(ctx, privateKey)
+		reg, err := s.tryRecoverRegistration(ctx, account.key)
 		if err != nil {
-			return nil, fmt.Errorf("could not load the account file, registration is nil (userID: %s): %w", s.userID, err)
+			return nil, fmt.Errorf("could not load the account file, registration is nil (accountID: %s): %w", effectiveAccountID, err)
 		}
 
 		account.Registration = reg
 
-		err = s.Save(&account)
+		err = s.Save(account)
 		if err != nil {
-			return nil, fmt.Errorf("could not save the account file, registration is nil (userID: %s): %w", s.userID, err)
+			return nil, fmt.Errorf("could not save the account file, registration is nil (accountID: %s): %w", effectiveAccountID, err)
 		}
 	}
 
-	return &account, nil
+	return account, nil
 }
 
-func (s *AccountsStorage) getPrivateKey(keyType certcrypto.KeyType) (crypto.PrivateKey, error) {
-	accKeyPath := filepath.Join(s.keysPath, s.userID+".key")
+func (s *AccountsStorage) getPrivateKey(keyType certcrypto.KeyType, accountID string) (crypto.PrivateKey, error) {
+	keysPath := s.getKeysPath(accountID)
+
+	accKeyPath := filepath.Join(keysPath, accountID+".key")
 
 	if _, err := os.Stat(accKeyPath); os.IsNotExist(err) {
 		// TODO(ldez): debug level?
 		log.Info("No key found for the account. Generating a new private key.",
-			slog.String("userID", s.userID),
+			slog.String("accountID", accountID),
 			slog.Any("keyType", keyType),
 		)
 
-		err := CreateNonExistingFolder(s.keysPath)
+		err := CreateNonExistingFolder(keysPath)
 		if err != nil {
-			return nil, fmt.Errorf("could not check/create the directory %q for the account (userID: %s): %w", s.keysPath, s.userID, err)
+			return nil, fmt.Errorf("could not check/create the directory %q for the account (accountID: %s): %w", keysPath, accountID, err)
 		}
 
 		privateKey, err := generatePrivateKey(accKeyPath, keyType)
 		if err != nil {
-			return nil, fmt.Errorf("could not generate the private account key (userID: %s): %w", s.userID, err)
+			return nil, fmt.Errorf("could not generate the private account key (accountID: %s): %w", accountID, err)
 		}
 
 		// TODO(ldez): debug level?
@@ -200,17 +190,33 @@ func (s *AccountsStorage) getPrivateKey(keyType certcrypto.KeyType) (crypto.Priv
 	return privateKey, nil
 }
 
-func (s *AccountsStorage) existsAccountFilePath() bool {
-	if _, err := os.Stat(s.accountFilePath); os.IsNotExist(err) {
+func (s *AccountsStorage) existsAccountFile(effectiveAccountID string) bool {
+	accountFilePath := s.getAccountFilePath(effectiveAccountID)
+
+	if _, err := os.Stat(accountFilePath); os.IsNotExist(err) {
 		return false
 	} else if err != nil {
 		log.Fatal("Could not read the account file.",
-			slog.String("filepath", s.accountFilePath),
+			slog.String("filepath", accountFilePath),
 			log.ErrorAttr(err),
 		)
 	}
 
 	return true
+}
+
+func (s *AccountsStorage) getAccountFilePath(accountID string) string {
+	return filepath.Join(s.getRootUserPath(accountID), accountFileName)
+}
+
+func (s *AccountsStorage) getKeysPath(accountID string) string {
+	return filepath.Join(s.getRootUserPath(accountID), baseKeysFolderName)
+}
+
+func (s *AccountsStorage) getRootUserPath(accountID string) string {
+	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(s.server.Host)
+
+	return filepath.Join(s.rootPath, serverPath, accountID)
 }
 
 func (s *AccountsStorage) tryRecoverRegistration(ctx context.Context, privateKey crypto.PrivateKey) (*registration.Resource, error) {

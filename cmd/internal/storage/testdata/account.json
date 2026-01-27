@@ -1,4 +1,5 @@
 {
+  "id": "test@example.com",
   "email": "account@example.com",
   "registration": {
     "body": {

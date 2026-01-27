@@ -49,7 +49,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
-	account, err := accountsStorage.Get(ctx, keyType)
+	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flgEmail), cmd.String(flgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
@@ -97,6 +97,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	meta := map[string]string{
+		// TODO(ldez) add account ID.
 		hook.EnvAccountEmail: account.Email,
 	}
 

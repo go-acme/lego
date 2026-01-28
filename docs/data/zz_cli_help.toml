@@ -76,8 +76,8 @@ OPTIONS:
    --preferred-chain string                                       If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.
    --profile string                                               If the CA offers multiple certificate profiles (draft-ietf-acme-profiles), choose this one.
    --always-deactivate-authorizations string                      Force the authorizations to be relinquished even if the certificate request was successful.
-   --run-hook string                                              Define a hook. The hook is executed only when the certificates are effectively created/renewed.
-   --run-hook-timeout duration                                    Define the timeout for the hook execution. (default: 2m0s)
+   --deploy-hook string                                           Define a hook. The hook is executed only when the certificates are effectively created/renewed.
+   --deploy-hook-timeout duration                                 Define the timeout for the hook execution. (default: 2m0s)
    --private-key string                                           Path to private key (in PEM encoding) for the certificate. By default, the private key is generated.
    --help, -h                                                     show help
 """
@@ -136,8 +136,8 @@ OPTIONS:
    --preferred-chain string                                       If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.
    --profile string                                               If the CA offers multiple certificate profiles (draft-ietf-acme-profiles), choose this one.
    --always-deactivate-authorizations string                      Force the authorizations to be relinquished even if the certificate request was successful.
-   --renew-hook string                                            Define a hook. The hook is executed only when the certificates are effectively created/renewed.
-   --renew-hook-timeout duration                                  Define the timeout for the hook execution. (default: 2m0s)
+   --deploy-hook string                                           Define a hook. The hook is executed only when the certificates are effectively created/renewed.
+   --deploy-hook-timeout duration                                 Define the timeout for the hook execution. (default: 2m0s)
    --days int                                                     The number of days left on a certificate to renew it. (default: 30)
    --dynamic                                                      Compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates). This supersedes --days and will be the default behavior in Lego v5.
    --ari-disable                                                  Do not use the renewalInfo endpoint (RFC9773) to check if a certificate should be renewed.

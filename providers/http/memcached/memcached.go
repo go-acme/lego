@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"path"
-	"time"
 
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-acme/lego/v5/challenge/http01"
@@ -28,22 +27,18 @@ func NewMemcachedProvider(hosts []string) (*HTTPProvider, error) {
 
 // Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given webroot path.
 func (w *HTTPProvider) Present(_ context.Context, _, token, keyAuth string) error {
-	var errs []error
-
 	challengePath := path.Join("/", http01.ChallengePath(token))
+
+	item := &memcache.Item{
+		Key:        challengePath,
+		Value:      []byte(keyAuth),
+		Expiration: 60,
+	}
+
+	var errs []error
 
 	for _, host := range w.hosts {
 		mc := memcache.New(host)
-
-		// Only because this is slow on GitHub action.
-		mc.Timeout = 1 * time.Second
-		mc.MaxIdleConns = memcache.DefaultMaxIdleConns * 2
-
-		item := &memcache.Item{
-			Key:        challengePath,
-			Value:      []byte(keyAuth),
-			Expiration: 60,
-		}
 
 		err := mc.Add(item)
 		if err != nil {

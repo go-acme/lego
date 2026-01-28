@@ -32,21 +32,30 @@ func setupClient(cmd *cli.Command, account *storage.Account, keyType certcrypto.
 	return client
 }
 
-func setupAccount(ctx context.Context, cmd *cli.Command, accountsStorage *storage.AccountsStorage) (*storage.Account, certcrypto.KeyType) {
-	keyType := getKeyType(cmd)
+func setupAccount(ctx context.Context, keyType certcrypto.KeyType, accountsStorage *storage.AccountsStorage) *storage.Account {
 	privateKey := accountsStorage.GetPrivateKey(keyType)
 
-	var account *storage.Account
 	if accountsStorage.ExistsAccountFilePath() {
-		account = accountsStorage.LoadAccount(ctx, privateKey)
-	} else {
-		account = storage.NewAccount(accountsStorage.GetEmail(), privateKey)
+		return accountsStorage.LoadAccount(ctx, privateKey)
 	}
 
-	return account, keyType
+	return storage.NewAccount(accountsStorage.GetEmail(), privateKey)
 }
 
 func newClient(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyType) *lego.Client {
+	client, err := lego.NewClient(newClientConfig(cmd, acc, keyType))
+	if err != nil {
+		log.Fatal("Could not create client.", log.ErrorAttr(err))
+	}
+
+	if client.GetExternalAccountRequired() && !cmd.IsSet(flgEAB) { // TODO(ldez): handle this flag.
+		log.Fatal(fmt.Sprintf("Server requires External Account Binding. Use --%s with --%s and --%s.", flgEAB, flgKID, flgHMAC))
+	}
+
+	return client
+}
+
+func newClientConfig(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyType) *lego.Config {
 	config := lego.NewConfig(acc)
 	config.CADirURL = cmd.String(flgServer)
 
@@ -83,16 +92,7 @@ func newClient(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyTy
 
 	config.HTTPClient = retryClient.StandardClient()
 
-	client, err := lego.NewClient(config)
-	if err != nil {
-		log.Fatal("Could not create client.", log.ErrorAttr(err))
-	}
-
-	if client.GetExternalAccountRequired() && !cmd.IsSet(flgEAB) {
-		log.Fatal(fmt.Sprintf("Server requires External Account Binding. Use --%s with --%s and --%s.", flgEAB, flgKID, flgHMAC))
-	}
-
-	return client
+	return config
 }
 
 // getKeyType the type from which private keys should be generated.

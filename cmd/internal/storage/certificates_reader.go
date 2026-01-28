@@ -6,12 +6,10 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/log"
-	"golang.org/x/net/idna"
 )
 
 type CertificatesReader struct {
@@ -77,17 +75,4 @@ func (s *CertificatesReader) ReadCertificate(domain, extension string) ([]*x509.
 
 	// The input may be a bundle or a single certificate.
 	return certcrypto.ParsePEMBundle(content)
-}
-
-// sanitizedDomain Make sure no funny chars are in the cert names (like wildcards ;)).
-func sanitizedDomain(domain string) string {
-	safe, err := idna.ToASCII(strings.NewReplacer(":", "-", "*", "_").Replace(domain))
-	if err != nil {
-		log.Fatal("Could not sanitize the domain.",
-			log.DomainAttr(domain),
-			log.ErrorAttr(err),
-		)
-	}
-
-	return safe
 }

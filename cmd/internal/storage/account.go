@@ -24,7 +24,7 @@ func (a *Account) GetEmail() string {
 	return a.Email
 }
 
-// GetPrivateKey returns the private RSA account key.
+// GetPrivateKey returns the private account key.
 func (a *Account) GetPrivateKey() crypto.PrivateKey {
 	return a.key
 }

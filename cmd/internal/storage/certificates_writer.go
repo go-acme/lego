@@ -29,8 +29,6 @@ type CertificatesWriterConfig struct {
 	PFX         bool
 	PFXFormat   string
 	PFXPassword string
-
-	Filename string // TODO(ldez): remove
 }
 
 // CertificatesWriter a writer of certificate files.
@@ -55,8 +53,6 @@ type CertificatesWriter struct {
 	pfx         bool
 	pfxFormat   string
 	pfxPassword string
-
-	filename string // TODO(ldez): remove
 }
 
 // NewCertificatesWriter create a new certificates storage writer.
@@ -76,7 +72,6 @@ func NewCertificatesWriter(config CertificatesWriterConfig) (*CertificatesWriter
 		pfx:         config.PFX,
 		pfxPassword: config.PFXPassword,
 		pfxFormat:   config.PFXFormat,
-		filename:    config.Filename,
 	}, nil
 }
 
@@ -247,14 +242,7 @@ func (s *CertificatesWriter) writePFXFile(domain string, certRes *certificate.Re
 }
 
 func (s *CertificatesWriter) writeFile(domain, extension string, data []byte) error {
-	var baseFileName string
-	if s.filename != "" {
-		baseFileName = s.filename
-	} else {
-		baseFileName = sanitizedDomain(domain)
-	}
-
-	filePath := filepath.Join(s.rootPath, baseFileName+extension)
+	filePath := filepath.Join(s.rootPath, sanitizedDomain(domain)+extension)
 
 	log.Info("Writing file.",
 		slog.String("filepath", filePath))

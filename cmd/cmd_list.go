@@ -11,12 +11,8 @@ import (
 
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
-)
-
-const (
-	flgAccounts = "accounts"
-	flgNames    = "names"
 )
 
 func createList() *cli.Command {
@@ -25,22 +21,6 @@ func createList() *cli.Command {
 		Usage:  "Display certificates and accounts information.",
 		Action: list,
 		Flags:  createListFlags(),
-	}
-}
-
-func createListFlags() []cli.Flag {
-	return []cli.Flag{
-		&cli.BoolFlag{
-			Name:    flgAccounts,
-			Aliases: []string{"a"},
-			Usage:   "Display accounts.",
-		},
-		&cli.BoolFlag{
-			Name:    flgNames,
-			Aliases: []string{"n"},
-			Usage:   "Display certificate names only.",
-		},
-		CreatePathFlag(false),
 	}
 }
 
@@ -111,7 +91,10 @@ func listCertificates(_ context.Context, cmd *cli.Command) error {
 }
 
 func listAccount(_ context.Context, cmd *cli.Command) error {
-	accountsStorage := newAccountsStorage(cmd)
+	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
+	if err != nil {
+		log.Fatal("Accounts storage initialization", log.ErrorAttr(err))
+	}
 
 	matches, err := filepath.Glob(filepath.Join(accountsStorage.GetRootPath(), "*", "*", "*.json"))
 	if err != nil {

@@ -86,6 +86,10 @@ func TestMemcachedPresentMultiHost(t *testing.T) {
 	for _, host := range memcachedHosts {
 		mc := memcache.New(host)
 
+		// Only because this is slow on GitHub action.
+		mc.Timeout = 1 * time.Second
+		mc.MaxIdleConns = memcache.DefaultMaxIdleConns * 2
+
 		i, err := mc.Get(challengePath)
 		require.NoError(t, err)
 		assert.Equal(t, i.Value, []byte(keyAuth))

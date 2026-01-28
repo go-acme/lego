@@ -59,6 +59,7 @@ func TestChallengeDNS_Run(t *testing.T) {
 	loader.CleanLegoFiles(t.Context())
 
 	err := load.RunLego(t.Context(),
+		"run",
 		"--accept-tos",
 		"--dns", "exec",
 		"--dns.resolvers", ":8053",
@@ -66,7 +67,7 @@ func TestChallengeDNS_Run(t *testing.T) {
 		"-s", "https://localhost:15000/dir",
 		"-d", testDomain2,
 		"-d", testDomain1,
-		"run")
+	)
 	if err != nil {
 		t.Fatal(err)
 	}

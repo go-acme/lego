@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
 )
@@ -20,28 +21,36 @@ func createRevoke() *cli.Command {
 		Name:   "revoke",
 		Usage:  "Revoke a certificate",
 		Action: revoke,
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:    flgKeep,
-				Aliases: []string{"k"},
-				Usage:   "Keep the certificates after the revocation instead of archiving them.",
-			},
-			&cli.UintFlag{
-				Name: flgReason,
-				Usage: "Identifies the reason for the certificate revocation." +
-					" See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1." +
-					" Valid values are:" +
-					" 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged)," +
-					" 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL)," +
-					" 9 (privilegeWithdrawn), or 10 (aACompromise).",
-				Value: acme.CRLReasonUnspecified,
-			},
-		},
+		Flags:  createRevokeFlags(),
 	}
 }
 
+func createRevokeFlags() []cli.Flag {
+	flags := CreateFlags()
+
+	flags = append(flags,
+		&cli.BoolFlag{
+			Name:    flgKeep,
+			Aliases: []string{"k"},
+			Usage:   "Keep the certificates after the revocation instead of archiving them.",
+		},
+		&cli.UintFlag{
+			Name: flgReason,
+			Usage: "Identifies the reason for the certificate revocation." +
+				" See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1." +
+				" Valid values are:" +
+				" 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged)," +
+				" 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL)," +
+				" 9 (privilegeWithdrawn), or 10 (aACompromise).",
+			Value: acme.CRLReasonUnspecified,
+		},
+	)
+
+	return flags
+}
+
 func revoke(ctx context.Context, cmd *cli.Command) error {
-	account, keyType := setupAccount(ctx, cmd, NewAccountsStorage(cmd))
+	account, keyType := setupAccount(ctx, cmd, newAccountsStorage(cmd))
 
 	if account.Registration == nil {
 		log.Fatal("Account is not registered. Use 'run' to register a new account.", slog.String("email", account.Email))
@@ -49,13 +58,13 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 
 	client := newClient(cmd, account, keyType)
 
-	certsStorage := NewCertificatesStorage(cmd)
+	certsStorage := newCertificatesStorage(cmd)
 	certsStorage.CreateRootFolder()
 
 	for _, domain := range cmd.StringSlice(flgDomains) {
 		log.Info("Trying to revoke the certificate.", log.DomainAttr(domain))
 
-		certBytes, err := certsStorage.ReadFile(domain, certExt)
+		certBytes, err := certsStorage.ReadFile(domain, storage.ExtCert)
 		if err != nil {
 			log.Fatal("Error while revoking the certificate.", log.DomainAttr(domain), log.ErrorAttr(err))
 		}

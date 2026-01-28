@@ -19,16 +19,12 @@ func main() {
 		Usage:                 "Let's Encrypt client written in Go",
 		Version:               getVersion(),
 		EnableShellCompletion: true,
-		Flags:                 cmd.CreateFlags(""),
-		Before:                cmd.Before,
 		Commands:              cmd.CreateCommands(),
 	}
 
 	cli.VersionPrinter = func(cmd *cli.Command) {
 		fmt.Printf("lego version %s %s/%s\n", cmd.Version, runtime.GOOS, runtime.GOARCH)
 	}
-
-	app.Commands = cmd.CreateCommands()
 
 	err := app.Run(context.Background(), os.Args)
 	if err != nil {

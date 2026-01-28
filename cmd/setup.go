@@ -15,6 +15,7 @@ import (
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
@@ -22,10 +23,8 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-const filePerm os.FileMode = 0o600
-
 // setupClient creates a new client with challenge settings.
-func setupClient(cmd *cli.Command, account *Account, keyType certcrypto.KeyType) *lego.Client {
+func setupClient(cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType) *lego.Client {
 	client := newClient(cmd, account, keyType)
 
 	setupChallenges(cmd, client)
@@ -33,15 +32,15 @@ func setupClient(cmd *cli.Command, account *Account, keyType certcrypto.KeyType)
 	return client
 }
 
-func setupAccount(ctx context.Context, cmd *cli.Command, accountsStorage *AccountsStorage) (*Account, certcrypto.KeyType) {
+func setupAccount(ctx context.Context, cmd *cli.Command, accountsStorage *storage.AccountsStorage) (*storage.Account, certcrypto.KeyType) {
 	keyType := getKeyType(cmd)
 	privateKey := accountsStorage.GetPrivateKey(keyType)
 
-	var account *Account
+	var account *storage.Account
 	if accountsStorage.ExistsAccountFilePath() {
 		account = accountsStorage.LoadAccount(ctx, privateKey)
 	} else {
-		account = &Account{Email: accountsStorage.GetEmail(), key: privateKey}
+		account = storage.NewAccount(accountsStorage.GetEmail(), privateKey)
 	}
 
 	return account, keyType
@@ -121,16 +120,6 @@ func getKeyType(cmd *cli.Command) certcrypto.KeyType {
 
 func getUserAgent(cmd *cli.Command) string {
 	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", cmd.String(flgUserAgent), cmd.Version))
-}
-
-func createNonExistingFolder(path string) error {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return os.MkdirAll(path, 0o700)
-	} else if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func readCSRFile(filename string) (*x509.CertificateRequest, error) {

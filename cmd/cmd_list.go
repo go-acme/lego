@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/urfave/cli/v3"
 )
 
@@ -23,24 +24,23 @@ func createList() *cli.Command {
 		Name:   "list",
 		Usage:  "Display certificates and accounts information.",
 		Action: list,
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:    flgAccounts,
-				Aliases: []string{"a"},
-				Usage:   "Display accounts.",
-			},
-			&cli.BoolFlag{
-				Name:    flgNames,
-				Aliases: []string{"n"},
-				Usage:   "Display certificate common names only.",
-			},
-			// fake email, needed by NewAccountsStorage
-			&cli.StringFlag{
-				Name:   flgEmail,
-				Value:  "",
-				Hidden: true,
-			},
+		Flags:  createListFlags(),
+	}
+}
+
+func createListFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.BoolFlag{
+			Name:    flgAccounts,
+			Aliases: []string{"a"},
+			Usage:   "Display accounts.",
 		},
+		&cli.BoolFlag{
+			Name:    flgNames,
+			Aliases: []string{"n"},
+			Usage:   "Display certificate names only.",
+		},
+		CreatePathFlag(false),
 	}
 }
 
@@ -55,7 +55,7 @@ func list(ctx context.Context, cmd *cli.Command) error {
 }
 
 func listCertificates(_ context.Context, cmd *cli.Command) error {
-	certsStorage := NewCertificatesStorage(cmd)
+	certsStorage := storage.NewCertificatesReader(cmd.String(flgPath))
 
 	matches, err := filepath.Glob(filepath.Join(certsStorage.GetRootPath(), "*.crt"))
 	if err != nil {
@@ -77,7 +77,7 @@ func listCertificates(_ context.Context, cmd *cli.Command) error {
 	}
 
 	for _, filename := range matches {
-		if strings.HasSuffix(filename, issuerExt) {
+		if strings.HasSuffix(filename, storage.ExtIssuer) {
 			continue
 		}
 
@@ -111,7 +111,7 @@ func listCertificates(_ context.Context, cmd *cli.Command) error {
 }
 
 func listAccount(_ context.Context, cmd *cli.Command) error {
-	accountsStorage := NewAccountsStorage(cmd)
+	accountsStorage := newAccountsStorage(cmd)
 
 	matches, err := filepath.Glob(filepath.Join(accountsStorage.GetRootPath(), "*", "*", "*.json"))
 	if err != nil {
@@ -131,7 +131,7 @@ func listAccount(_ context.Context, cmd *cli.Command) error {
 			return err
 		}
 
-		var account Account
+		var account storage.Account
 
 		err = json.Unmarshal(data, &account)
 		if err != nil {

@@ -2,7 +2,6 @@ package storage
 
 import (
 	"crypto"
-	"crypto/rsa"
 	"os"
 	"path/filepath"
 	"strings"
@@ -124,43 +123,4 @@ func TestAccountsStorage_Get_existingAccount(t *testing.T) {
 	assert.Equal(t, expectedRegistration, account.GetRegistration())
 
 	assert.NotNil(t, account.GetPrivateKey())
-}
-
-func TestAccountsStorage_getPrivateKey(t *testing.T) {
-	testCases := []struct {
-		desc     string
-		basePath string
-	}{
-		{
-			desc: "create a new private key",
-		},
-		{
-			desc:     "existing private key",
-			basePath: "testdata",
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			if test.basePath == "" {
-				test.basePath = t.TempDir()
-			}
-
-			storage, err := NewAccountsStorage(AccountsStorageConfig{
-				BasePath: test.basePath,
-			})
-			require.NoError(t, err)
-
-			accountID := "test@example.com"
-
-			expectedPath := filepath.Join(test.basePath, baseAccountsRootFolderName, accountID, baseKeysFolderName, "test@example.com.key")
-
-			privateKey, err := storage.getPrivateKey(certcrypto.RSA4096, accountID)
-			require.NoError(t, err)
-
-			assert.FileExists(t, expectedPath)
-
-			assert.IsType(t, &rsa.PrivateKey{}, privateKey)
-		})
-	}
 }

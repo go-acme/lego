@@ -6,7 +6,7 @@ import (
 	"github.com/go-acme/lego/v5/registration"
 )
 
-const accountIDPlaceholder = "noemail@example.com"
+const AccountIDPlaceholder = "noemail@example.com"
 
 // Account represents a users local saved credentials.
 type Account struct {
@@ -52,5 +52,5 @@ func getEffectiveAccountID(email, id string) string {
 		return email
 	}
 
-	return accountIDPlaceholder
+	return AccountIDPlaceholder
 }

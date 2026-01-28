@@ -117,7 +117,7 @@ func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Clien
 		if cmd.IsSet(flgPrivateKey) {
 			var err error
 
-			request.PrivateKey, err = storage.LoadPrivateKey(cmd.String(flgPrivateKey))
+			request.PrivateKey, err = storage.ReadPrivateKeyFile(cmd.String(flgPrivateKey))
 			if err != nil {
 				return nil, fmt.Errorf("load private key: %w", err)
 			}
@@ -139,7 +139,7 @@ func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Clien
 	if cmd.IsSet(flgPrivateKey) {
 		var err error
 
-		request.PrivateKey, err = storage.LoadPrivateKey(cmd.String(flgPrivateKey))
+		request.PrivateKey, err = storage.ReadPrivateKeyFile(cmd.String(flgPrivateKey))
 		if err != nil {
 			return nil, fmt.Errorf("load private key: %w", err)
 		}

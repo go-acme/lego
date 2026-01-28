@@ -77,14 +77,6 @@ func TestCertificatesStorage_GetRootPath(t *testing.T) {
 	assert.Equal(t, expected, rootPath)
 }
 
-func TestCertificatesStorage_GetArchivePath(t *testing.T) {
-	basePath := t.TempDir()
-
-	writer := NewCertificatesStorage(basePath)
-
-	assert.Equal(t, filepath.Join(basePath, baseArchivesFolderName), writer.archivePath)
-}
-
 func TestCertificatesStorage_GetFileName(t *testing.T) {
 	testCases := []struct {
 		desc      string

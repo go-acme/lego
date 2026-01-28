@@ -26,9 +26,9 @@ func DisableAuthoritativeNssPropagationRequirement() ChallengeOption {
 	}
 }
 
-func RecursiveNSsPropagationRequirement() ChallengeOption {
+func DisableRecursiveNSsPropagationRequirement() ChallengeOption {
 	return func(chlg *Challenge) error {
-		chlg.preCheck.requireRecursiveNssPropagation = true
+		chlg.preCheck.requireRecursiveNssPropagation = false
 		return nil
 	}
 }

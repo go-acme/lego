@@ -36,6 +36,7 @@ type preCheck struct {
 func newPreCheck() preCheck {
 	return preCheck{
 		requireAuthoritativeNssPropagation: true,
+		requireRecursiveNssPropagation:     true,
 	}
 }
 

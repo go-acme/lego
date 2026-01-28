@@ -65,9 +65,13 @@ const (
 	flgKeyType             = "key-type"
 	flgHTTPTimeout         = "http-timeout"
 	flgTLSSkipVerify       = "tls-skip-verify"
-	flgCertTimeout         = "cert.timeout"
 	flgOverallRequestLimit = "overall-request-limit"
 	flgUserAgent           = "user-agent"
+)
+
+// Flag names related to certificates.
+const (
+	flgCertTimeout = "cert.timeout"
 )
 
 // Flag names related to the network stack.

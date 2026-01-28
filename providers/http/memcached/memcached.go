@@ -37,6 +37,7 @@ func (w *HTTPProvider) Present(_ context.Context, _, token, keyAuth string) erro
 
 		// Only because this is slow on GitHub action.
 		mc.Timeout = 1 * time.Second
+		mc.MaxIdleConns = memcache.DefaultMaxIdleConns * 2
 
 		item := &memcache.Item{
 			Key:        challengePath,

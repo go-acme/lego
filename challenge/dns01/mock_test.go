@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/require"
 )
@@ -17,10 +18,10 @@ func fakeNS(name, ns string) *dns.NS {
 	}
 }
 
-func fakeA(name, ip string) *dns.A {
+func fakeA(name string) *dns.A {
 	return &dns.A{
 		Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: 10},
-		A:   net.ParseIP(ip),
+		A:   net.ParseIP("127.0.0.1"),
 	}
 }
 
@@ -36,6 +37,8 @@ func fakeTXT(name, value string) *dns.TXT {
 func mockResolver(authoritativeNS net.Addr) func(t *testing.T, client *Client) {
 	return func(t *testing.T, client *Client) {
 		t.Helper()
+
+		t.Log("authoritativeNS", authoritativeNS)
 
 		_, port, err := net.SplitHostPort(authoritativeNS.String())
 		require.NoError(t, err)
@@ -68,7 +71,9 @@ func mockDefault(t *testing.T, recursiveNS net.Addr, opts ...func(t *testing.T, 
 		SetDefaultClient(backup)
 	})
 
-	client := NewClient(&Options{RecursiveNameservers: []string{recursiveNS.String()}})
+	t.Log("recursiveNS", recursiveNS)
+
+	client := NewClient(&Options{RecursiveNameservers: []string{recursiveNS.String()}, NetworkStack: challenge.IPv4Only})
 
 	for _, opt := range opts {
 		opt(t, client)

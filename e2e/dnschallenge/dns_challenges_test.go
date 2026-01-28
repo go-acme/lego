@@ -63,7 +63,7 @@ func TestChallengeDNS_Run(t *testing.T) {
 		"--accept-tos",
 		"--dns", "exec",
 		"--dns.resolvers", ":8053",
-		"--dns.disable-cp",
+		"--dns.propagation.wait", "0",
 		"-s", "https://localhost:15000/dir",
 		"-d", testDomain2,
 		"-d", testDomain1,

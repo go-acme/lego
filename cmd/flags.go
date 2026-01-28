@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -105,10 +106,9 @@ const (
 // Flag names related to DNS-01 challenge.
 const (
 	flgDNS                      = "dns"
-	flgDNSDisableCP             = "dns.disable-cp"
-	flgDNSPropagationWait       = "dns.propagation-wait"
-	flgDNSPropagationDisableANS = "dns.propagation-disable-ans"
-	flgDNSPropagationRNS        = "dns.propagation-rns"
+	flgDNSPropagationWait       = "dns.propagation.wait"
+	flgDNSPropagationDisableANS = "dns.propagation.disable-ans"
+	flgDNSPropagationDisableRNS = "dns.propagation.disable-rns"
 	flgDNSResolvers             = "dns.resolvers"
 	flgDNSTimeout               = "dns.timeout"
 )
@@ -326,23 +326,25 @@ func createDNSChallengeFlags() []cli.Flag {
 		},
 		&cli.BoolFlag{
 			Category: categoryDNS01Challenge,
-			Name:     flgDNSDisableCP,
-			Usage:    fmt.Sprintf("(deprecated) use %s instead.", flgDNSPropagationDisableANS),
-		},
-		&cli.BoolFlag{
-			Category: categoryDNS01Challenge,
 			Name:     flgDNSPropagationDisableANS,
 			Usage:    "By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.",
 		},
 		&cli.BoolFlag{
 			Category: categoryDNS01Challenge,
-			Name:     flgDNSPropagationRNS,
-			Usage:    "By setting this flag to true, use all the recursive nameservers to check the propagation of the TXT record.",
+			Name:     flgDNSPropagationDisableRNS,
+			Usage:    "By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).",
 		},
 		&cli.DurationFlag{
 			Category: categoryDNS01Challenge,
 			Name:     flgDNSPropagationWait,
 			Usage:    "By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead.",
+			Validator: func(d time.Duration) error {
+				if d < 0 {
+					return errors.New("it cannot be negative")
+				}
+
+				return nil
+			},
 		},
 		&cli.StringSliceFlag{
 			Category: categoryDNS01Challenge,

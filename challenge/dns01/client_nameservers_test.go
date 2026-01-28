@@ -42,7 +42,7 @@ func TestClient_checkNameserversPropagationCustom_authoritativeNss(t *testing.T)
 						fakeTXT("8.8.8.8.asn.routeviews.org.", "24"),
 					),
 				),
-			expectedError: "did not return the expected TXT record [fqdn: 8.8.8.8.asn.routeviews.org., value: fe01=]: 15169 ,8.8.8.0 ,24",
+			expectedError: "did not return the expected TXT record [fqdn: 8.8.8.8.asn.routeviews.org., value: fe01=]: 15169, 8.8.8.0, 24",
 		},
 		{
 			desc: "No TXT RR",

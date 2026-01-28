@@ -5,6 +5,7 @@ import (
 	"path"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-acme/lego/v5/challenge/http01"
@@ -109,6 +110,8 @@ func TestMemcachedPresentPartialFailureMultiHost(t *testing.T) {
 
 	for _, host := range memcachedHosts {
 		mc := memcache.New(host)
+		// Only because this is slow on GitHub action.
+		mc.Timeout = 1 * time.Second
 
 		i, err := mc.Get(challengePath)
 		require.NoError(t, err)

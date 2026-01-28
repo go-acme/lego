@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certificate"
@@ -38,8 +39,8 @@ const (
 	flgEmail     = "email"
 	flgAccountID = "account-id"
 	flgEAB       = "eab"
-	flgKID       = "kid"
-	flgHMAC      = "hmac"
+	flgEABKID    = "eab.kid"
+	flgEABHMAC   = "eab.hmac"
 )
 
 // Flag names related to Obtain certificates.
@@ -147,19 +148,13 @@ const (
 	flgNames    = "names"
 )
 
-// Environment variable names.
-const (
-	envEAB         = "LEGO_EAB"
-	envEABHMAC     = "LEGO_EAB_HMAC"
-	envEABKID      = "LEGO_EAB_KID"
-	envEmail       = "LEGO_EMAIL"
-	envAccountID   = "LEGO_ACCOUNT_ID"
-	envPath        = "LEGO_PATH"
-	envPFX         = "LEGO_PFX"
-	envPFXFormat   = "LEGO_PFX_FORMAT"
-	envPFXPassword = "LEGO_PFX_PASSWORD"
-	envServer      = "LEGO_SERVER"
-)
+func toEnvName(flg string) string {
+	fields := strings.FieldsFunc(flg, func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsNumber(r)
+	})
+
+	return "LEGO_" + strings.ToUpper(strings.Join(fields, "_"))
+}
 
 func createACMEClientFlags() []cli.Flag {
 	return []cli.Flag{
@@ -167,7 +162,7 @@ func createACMEClientFlags() []cli.Flag {
 			// NOTE(ldez): if Required is true, then the default value is not display in the help.
 			Name:    flgServer,
 			Aliases: []string{"s"},
-			Sources: cli.EnvVars(envServer),
+			Sources: cli.EnvVars(toEnvName(flgServer)),
 			Usage: fmt.Sprintf("CA (ACME server). It can be either a URL or a shortcode."+
 				"\n\t(available shortcodes: %s)", strings.Join(lego.GetAllCodes(), ", ")),
 			Value: lego.DirectoryURLLetsEncrypt,
@@ -375,21 +370,21 @@ func createStorageFlags() []cli.Flag {
 			Category: categoryStorage,
 			Name:     flgPFX,
 			Usage:    "Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together.",
-			Sources:  cli.EnvVars(envPFX),
+			Sources:  cli.EnvVars(toEnvName(flgPFX)),
 		},
 		&cli.StringFlag{
 			Category: categoryStorage,
 			Name:     flgPFXPass,
 			Usage:    "The password used to encrypt the .pfx (PCKS#12) file.",
 			Value:    pkcs12.DefaultPassword,
-			Sources:  cli.EnvVars(envPFXPassword),
+			Sources:  cli.EnvVars(toEnvName(flgPFXPass)),
 		},
 		&cli.StringFlag{
 			Category: categoryStorage,
 			Name:     flgPFXFormat,
 			Usage:    "The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256.",
 			Value:    "RC2",
-			Sources:  cli.EnvVars(envPFXFormat),
+			Sources:  cli.EnvVars(toEnvName(flgPFXFormat)),
 		},
 	}
 }
@@ -399,32 +394,33 @@ func createAccountFlags() []cli.Flag {
 		&cli.StringFlag{
 			Name:    flgEmail,
 			Aliases: []string{"m"},
-			Sources: cli.EnvVars(envEmail),
+			Sources: cli.EnvVars(toEnvName(flgEmail)),
 			Usage:   "Email used for registration and recovery contact.",
 		},
 		&cli.StringFlag{
-			Name:    flgAccountID,
-			Aliases: []string{"a"},
-			Sources: cli.EnvVars(envAccountID),
-			Usage:   "Account identifier (The email is used if there is account ID is undefined).",
+			Category: categoryStorage,
+			Name:     flgAccountID,
+			Aliases:  []string{"a"},
+			Sources:  cli.EnvVars(toEnvName(flgAccountID)),
+			Usage:    "Account identifier (The email is used if there is account ID is undefined).",
 		},
 		&cli.BoolFlag{
 			Category: categoryEAB,
 			Name:     flgEAB,
-			Sources:  cli.EnvVars(envEAB),
-			Usage:    "Use External Account Binding for account registration. Requires --kid and --hmac.",
+			Sources:  cli.EnvVars(toEnvName(flgEAB)),
+			Usage:    fmt.Sprintf("Use External Account Binding for account registration. Requires %s and %s.", flgEABKID, flgEABHMAC),
 		},
 		&cli.StringFlag{
 			Category: categoryEAB,
-			Name:     flgKID,
-			Sources:  cli.EnvVars(envEABKID),
-			Usage:    "Key identifier from External CA. Used for External Account Binding.",
+			Name:     flgEABKID,
+			Sources:  cli.EnvVars(toEnvName(flgEABKID)),
+			Usage:    "Key identifier for External Account Binding.",
 		},
 		&cli.StringFlag{
 			Category: categoryEAB,
-			Name:     flgHMAC,
-			Sources:  cli.EnvVars(envEABHMAC),
-			Usage:    "MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.",
+			Name:     flgEABHMAC,
+			Sources:  cli.EnvVars(toEnvName(flgEABHMAC)),
+			Usage:    "MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format.",
 		},
 	}
 }
@@ -653,7 +649,7 @@ func createPathFlag(forceCreation bool) cli.Flag {
 	return &cli.StringFlag{
 		Category: categoryStorage,
 		Name:     flgPath,
-		Sources:  cli.NewValueSourceChain(cli.EnvVar(envPath), &defaultPathValueSource{}),
+		Sources:  cli.NewValueSourceChain(cli.EnvVar(toEnvName(flgPath)), &defaultPathValueSource{}),
 		Usage:    "Directory to use for storing the data.",
 		Validator: func(s string) error {
 			if !forceCreation {

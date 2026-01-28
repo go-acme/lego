@@ -88,11 +88,8 @@ const (
 
 // Flags names related to hooks.
 const (
-	flgRenewHook        = "renew-hook"
-	flgRenewHookTimeout = "renew-hook-timeout"
-
-	flgRunHook        = "run-hook"
-	flgRunHookTimeout = "run-hook-timeout"
+	flgDeployHook        = "deploy-hook"
+	flgDeployHookTimeout = "deploy-hook-timeout"
 )
 
 // Flag names related to the specific run command.
@@ -388,14 +385,14 @@ func CreateObtainFlags() []cli.Flag {
 	}
 }
 
-func CreateHookFlags(name, timeoutName string) []cli.Flag {
+func CreateHookFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:  name,
+			Name:  flgDeployHook,
 			Usage: "Define a hook. The hook is executed only when the certificates are effectively created/renewed.",
 		},
 		&cli.DurationFlag{
-			Name:  timeoutName,
+			Name:  flgDeployHookTimeout,
 			Usage: "Define the timeout for the hook execution.",
 			Value: 2 * time.Minute,
 		},
@@ -418,7 +415,7 @@ func createRunFlags() []cli.Flag {
 
 	flags = append(flags, CreateChallengesFlags()...)
 	flags = append(flags, CreateObtainFlags()...)
-	flags = append(flags, CreateHookFlags(flgRunHook, flgRunHookTimeout)...)
+	flags = append(flags, CreateHookFlags()...)
 
 	flags = append(flags,
 		&cli.StringFlag{
@@ -435,7 +432,7 @@ func createRenewFlags() []cli.Flag {
 
 	flags = append(flags, CreateChallengesFlags()...)
 	flags = append(flags, CreateObtainFlags()...)
-	flags = append(flags, CreateHookFlags(flgRenewHook, flgRenewHookTimeout)...)
+	flags = append(flags, CreateHookFlags()...)
 
 	flags = append(flags,
 		&cli.IntFlag{

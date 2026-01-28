@@ -209,7 +209,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 
 	hook.AddPathToMetadata(meta, certRes.Domain, certRes, certsStorage)
 
-	return hook.Launch(ctx, cmd.String(flgRenewHook), cmd.Duration(flgRenewHookTimeout), meta)
+	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }
 
 func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
@@ -302,7 +302,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 
 	hook.AddPathToMetadata(meta, domain, certRes, certsStorage)
 
-	return hook.Launch(ctx, cmd.String(flgRenewHook), cmd.Duration(flgRenewHookTimeout), meta)
+	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }
 
 func needRenewal(x509Cert *x509.Certificate, domain string, days int, dynamic bool) bool {

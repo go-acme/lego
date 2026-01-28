@@ -88,7 +88,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 
 	hook.AddPathToMetadata(meta, cert.Domain, cert, certsStorage)
 
-	return hook.Launch(ctx, cmd.String(flgRunHook), cmd.Duration(flgRunHookTimeout), meta)
+	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }
 
 func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Client) (*certificate.Resource, error) {

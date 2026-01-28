@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"time"
 
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-acme/lego/v5/challenge/http01"
@@ -34,6 +35,9 @@ func (w *HTTPProvider) Present(_ context.Context, _, token, keyAuth string) erro
 	for _, host := range w.hosts {
 		mc := memcache.New(host)
 
+		// Only because this is slow on GitHub action.
+		mc.Timeout = 1 * time.Second
+
 		item := &memcache.Item{
 			Key:        challengePath,
 			Value:      []byte(keyAuth),
@@ -48,7 +52,7 @@ func (w *HTTPProvider) Present(_ context.Context, _, token, keyAuth string) erro
 	}
 
 	if len(errs) == len(w.hosts) {
-		return fmt.Errorf("unable to store key in any of the memcache hosts: %w", errors.Join(errs...))
+		return fmt.Errorf("unable to store key in any of the memcached hosts: %w", errors.Join(errs...))
 	}
 
 	return nil

@@ -18,10 +18,9 @@ const (
 	keyAuth = "bar"
 )
 
-var memcachedHosts = loadMemcachedHosts()
-
-func loadMemcachedHosts() []string {
+func getMemcachedHosts() []string {
 	memcachedHostsStr := os.Getenv("MEMCACHED_HOSTS")
+
 	if memcachedHostsStr != "" {
 		return strings.Split(memcachedHostsStr, ",")
 	}
@@ -36,6 +35,8 @@ func TestNewMemcachedProviderEmpty(t *testing.T) {
 }
 
 func TestNewMemcachedProviderValid(t *testing.T) {
+	memcachedHosts := getMemcachedHosts()
+
 	if len(memcachedHosts) == 0 {
 		t.Skip("Skipping memcached tests")
 	}
@@ -45,6 +46,8 @@ func TestNewMemcachedProviderValid(t *testing.T) {
 }
 
 func TestMemcachedPresentSingleHost(t *testing.T) {
+	memcachedHosts := getMemcachedHosts()
+
 	if len(memcachedHosts) == 0 {
 		t.Skip("Skipping memcached tests")
 	}
@@ -65,6 +68,8 @@ func TestMemcachedPresentSingleHost(t *testing.T) {
 }
 
 func TestMemcachedPresentMultiHost(t *testing.T) {
+	memcachedHosts := getMemcachedHosts()
+
 	if len(memcachedHosts) <= 1 {
 		t.Skip("Skipping memcached multi-host tests")
 	}
@@ -87,6 +92,8 @@ func TestMemcachedPresentMultiHost(t *testing.T) {
 }
 
 func TestMemcachedPresentPartialFailureMultiHost(t *testing.T) {
+	memcachedHosts := getMemcachedHosts()
+
 	if len(memcachedHosts) == 0 {
 		t.Skip("Skipping memcached tests")
 	}
@@ -110,6 +117,8 @@ func TestMemcachedPresentPartialFailureMultiHost(t *testing.T) {
 }
 
 func TestMemcachedCleanup(t *testing.T) {
+	memcachedHosts := getMemcachedHosts()
+
 	if len(memcachedHosts) == 0 {
 		t.Skip("Skipping memcached tests")
 	}

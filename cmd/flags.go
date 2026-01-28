@@ -65,7 +65,7 @@ const (
 // Flag names related to the ACME client.
 const (
 	flgServer              = "server"
-	flgDisableCommonName   = "disable-cn"
+	flgEnableCommonName    = "enable-cn"
 	flgKeyType             = "key-type"
 	flgHTTPTimeout         = "http-timeout"
 	flgTLSSkipVerify       = "tls-skip-verify"
@@ -184,8 +184,8 @@ func createACMEClientFlags() []cli.Flag {
 		},
 		&cli.BoolFlag{
 			Category: categoryAdvanced,
-			Name:     flgDisableCommonName,
-			Usage:    "Disable the use of the common name in the CSR.",
+			Name:     flgEnableCommonName,
+			Usage:    "Enable the use of the common name. (Not recommended)",
 		},
 		&cli.StringFlag{
 			Name:    flgKeyType,

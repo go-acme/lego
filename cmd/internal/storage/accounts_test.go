@@ -42,7 +42,7 @@ func TestNewAccountsStorage_userID(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			assert.Equal(t, test.email, storage.userID)
+			assert.Equal(t, test.email, storage.email)
 			assert.Equal(t, test.expected, storage.userID)
 		})
 	}

@@ -180,39 +180,46 @@ func createACMEClientFlags() []cli.Flag {
 		&cli.BoolFlag{
 			Category: categoryAdvanced,
 			Name:     flgEnableCommonName,
+			Sources:  cli.EnvVars(toEnvName(flgEnableCommonName)),
 			Usage:    "Enable the use of the common name. (Not recommended)",
 		},
 		&cli.StringFlag{
 			Name:    flgKeyType,
 			Aliases: []string{"k"},
+			Sources: cli.EnvVars(toEnvName(flgKeyType)),
 			Value:   "ec256",
 			Usage:   "Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384.",
 		},
 		&cli.IntFlag{
 			Category: categoryACMEClient,
 			Name:     flgHTTPTimeout,
+			Sources:  cli.EnvVars(toEnvName(flgHTTPTimeout)),
 			Usage:    "Set the HTTP timeout value to a specific value in seconds.",
 		},
 		&cli.BoolFlag{
 			Category: categoryACMEClient,
 			Name:     flgTLSSkipVerify,
+			Sources:  cli.EnvVars(toEnvName(flgTLSSkipVerify)),
 			Usage:    "Skip the TLS verification of the ACME server.",
 		},
 		&cli.IntFlag{
 			Category: categoryAdvanced,
 			Name:     flgCertTimeout,
+			Sources:  cli.EnvVars(toEnvName(flgCertTimeout)),
 			Usage:    "Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates.",
 			Value:    30,
 		},
 		&cli.IntFlag{
 			Category: categoryACMEClient,
 			Name:     flgOverallRequestLimit,
+			Sources:  cli.EnvVars(toEnvName(flgOverallRequestLimit)),
 			Usage:    "ACME overall requests limit.",
 			Value:    certificate.DefaultOverallRequestLimit,
 		},
 		&cli.StringFlag{
 			Category: categoryACMEClient,
 			Name:     flgUserAgent,
+			Sources:  cli.EnvVars(toEnvName(flgUserAgent)),
 			Usage:    "Add to the user-agent sent to the CA to identify an application embedding lego-cli",
 		},
 	}
@@ -235,12 +242,14 @@ func createNetworkStackFlags() []cli.Flag {
 			Category: categoryAdvanced,
 			Name:     flgIPv4Only,
 			Aliases:  []string{"4"},
+			Sources:  cli.EnvVars(toEnvName(flgIPv4Only)),
 			Usage:    "Use IPv4 only.",
 		},
 		&cli.BoolFlag{
 			Category: categoryAdvanced,
 			Name:     flgIPv6Only,
 			Aliases:  []string{"6"},
+			Sources:  cli.EnvVars(toEnvName(flgIPv6Only)),
 			Usage:    "Use IPv6 only.",
 		},
 	}
@@ -251,40 +260,47 @@ func createHTTPChallengeFlags() []cli.Flag {
 		&cli.BoolFlag{
 			Category: categoryHTTP01Challenge,
 			Name:     flgHTTP,
+			Sources:  cli.EnvVars(toEnvName(flgHTTP)),
 			Usage:    "Use the HTTP-01 challenge to solve challenges. Can be mixed with other types of challenges.",
 		},
 		&cli.StringFlag{
 			Category: categoryHTTP01Challenge,
 			Name:     flgHTTPPort,
+			Sources:  cli.EnvVars(toEnvName(flgHTTPPort)),
 			Usage:    "Set the port and interface to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port.",
 			Value:    ":80",
 		},
 		&cli.DurationFlag{
 			Category: categoryHTTP01Challenge,
 			Name:     flgHTTPDelay,
+			Sources:  cli.EnvVars(toEnvName(flgHTTPDelay)),
 			Usage:    "Delay between the starts of the HTTP server (use for HTTP-01 based challenges) and the validation of the challenge.",
 			Value:    0,
 		},
 		&cli.StringFlag{
 			Category: categoryHTTP01Challenge,
 			Name:     flgHTTPProxyHeader,
+			Sources:  cli.EnvVars(toEnvName(flgHTTPProxyHeader)),
 			Usage:    "Validate against this HTTP header when solving HTTP-01 based challenges behind a reverse proxy.",
 			Value:    "Host",
 		},
 		&cli.StringFlag{
 			Category: categoryHTTP01Challenge,
 			Name:     flgHTTPWebroot,
+			Sources:  cli.EnvVars(toEnvName(flgHTTPWebroot)),
 			Usage: "Set the webroot folder to use for HTTP-01 based challenges to write directly to the .well-known/acme-challenge file." +
 				" This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge",
 		},
 		&cli.StringSliceFlag{
 			Category: categoryHTTP01Challenge,
 			Name:     flgHTTPMemcachedHost,
+			Sources:  cli.EnvVars(toEnvName(flgHTTPMemcachedHost)),
 			Usage:    "Set the memcached host(s) to use for HTTP-01 based challenges. Challenges will be written to all specified hosts.",
 		},
 		&cli.StringFlag{
 			Category: categoryHTTP01Challenge,
 			Name:     flgHTTPS3Bucket,
+			Sources:  cli.EnvVars(toEnvName(flgHTTPS3Bucket)),
 			Usage:    "Set the S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.",
 		},
 	}
@@ -295,17 +311,20 @@ func createTLSChallengeFlags() []cli.Flag {
 		&cli.BoolFlag{
 			Category: categoryTLSALPN01Challenge,
 			Name:     flgTLS,
+			Sources:  cli.EnvVars(toEnvName(flgTLS)),
 			Usage:    "Use the TLS-ALPN-01 challenge to solve challenges. Can be mixed with other types of challenges.",
 		},
 		&cli.StringFlag{
 			Category: categoryTLSALPN01Challenge,
 			Name:     flgTLSPort,
+			Sources:  cli.EnvVars(toEnvName(flgTLSPort)),
 			Usage:    "Set the port and interface to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port.",
 			Value:    ":443",
 		},
 		&cli.DurationFlag{
 			Category: categoryTLSALPN01Challenge,
 			Name:     flgTLSDelay,
+			Sources:  cli.EnvVars(toEnvName(flgTLSDelay)),
 			Usage:    "Delay between the start of the TLS listener (use for TLSALPN-01 based challenges) and the validation of the challenge.",
 			Value:    0,
 		},
@@ -317,21 +336,25 @@ func createDNSChallengeFlags() []cli.Flag {
 		&cli.StringFlag{
 			Category: categoryDNS01Challenge,
 			Name:     flgDNS,
+			Sources:  cli.EnvVars(toEnvName(flgDNS)),
 			Usage:    "Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage.",
 		},
 		&cli.BoolFlag{
 			Category: categoryDNS01Challenge,
 			Name:     flgDNSPropagationDisableANS,
+			Sources:  cli.EnvVars(toEnvName(flgDNSPropagationDisableANS)),
 			Usage:    "By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.",
 		},
 		&cli.BoolFlag{
 			Category: categoryDNS01Challenge,
 			Name:     flgDNSPropagationDisableRNS,
+			Sources:  cli.EnvVars(toEnvName(flgDNSPropagationDisableRNS)),
 			Usage:    "By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).",
 		},
 		&cli.DurationFlag{
 			Category: categoryDNS01Challenge,
 			Name:     flgDNSPropagationWait,
+			Sources:  cli.EnvVars(toEnvName(flgDNSPropagationWait)),
 			Usage:    "By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead.",
 			Validator: func(d time.Duration) error {
 				if d < 0 {
@@ -344,6 +367,7 @@ func createDNSChallengeFlags() []cli.Flag {
 		&cli.StringSliceFlag{
 			Category: categoryDNS01Challenge,
 			Name:     flgDNSResolvers,
+			Sources:  cli.EnvVars(toEnvName(flgDNSResolvers)),
 			Usage: "Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination." +
 				" For DNS-01 challenge verification, the authoritative DNS server is queried directly." +
 				" Supported: host:port." +
@@ -352,6 +376,7 @@ func createDNSChallengeFlags() []cli.Flag {
 		&cli.IntFlag{
 			Category: categoryDNS01Challenge,
 			Name:     flgDNSTimeout,
+			Sources:  cli.EnvVars(toEnvName(flgDNSTimeout)),
 			Usage:    "Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries.",
 			Value:    10,
 		},
@@ -364,27 +389,28 @@ func createStorageFlags() []cli.Flag {
 		&cli.BoolFlag{
 			Category: categoryStorage,
 			Name:     flgPEM,
+			Sources:  cli.EnvVars(toEnvName(flgPEM)),
 			Usage:    "Generate an additional .pem (base64) file by concatenating the .key and .crt files together.",
 		},
 		&cli.BoolFlag{
 			Category: categoryStorage,
 			Name:     flgPFX,
-			Usage:    "Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together.",
 			Sources:  cli.EnvVars(toEnvName(flgPFX)),
+			Usage:    "Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together.",
 		},
 		&cli.StringFlag{
 			Category: categoryStorage,
 			Name:     flgPFXPass,
+			Sources:  cli.EnvVars(toEnvName(flgPFXPass)),
 			Usage:    "The password used to encrypt the .pfx (PCKS#12) file.",
 			Value:    pkcs12.DefaultPassword,
-			Sources:  cli.EnvVars(toEnvName(flgPFXPass)),
 		},
 		&cli.StringFlag{
 			Category: categoryStorage,
 			Name:     flgPFXFormat,
+			Sources:  cli.EnvVars(toEnvName(flgPFXFormat)),
 			Usage:    "The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256.",
 			Value:    "RC2",
-			Sources:  cli.EnvVars(toEnvName(flgPFXFormat)),
 		},
 	}
 }
@@ -431,22 +457,26 @@ func createObtainFlags() []cli.Flag {
 			Category: categoryAdvanced,
 			Name:     flgCSR,
 			Aliases:  []string{"c"},
+			Sources:  cli.EnvVars(toEnvName(flgCSR)),
 			Usage:    "Certificate signing request filename, if an external CSR is to be used.",
 		},
 		&cli.BoolFlag{
 			Category: categoryAdvanced,
 			Name:     flgNoBundle,
+			Sources:  cli.EnvVars(toEnvName(flgNoBundle)),
 			Usage:    "Do not create a certificate bundle by adding the issuers certificate to the new certificate.",
 		},
 		&cli.BoolFlag{
 			Category: categoryAdvanced,
 			Name:     flgMustStaple,
+			Sources:  cli.EnvVars(toEnvName(flgMustStaple)),
 			Usage: "Include the OCSP must staple TLS extension in the CSR and generated certificate." +
 				" Only works if the CSR is generated by lego.",
 		},
 		&cli.TimestampFlag{
 			Category: categoryAdvanced,
 			Name:     flgNotBefore,
+			Sources:  cli.EnvVars(toEnvName(flgNotBefore)),
 			Usage:    "Set the notBefore field in the certificate (RFC3339 format)",
 			Config: cli.TimestampConfig{
 				Layouts: []string{time.RFC3339},
@@ -455,6 +485,7 @@ func createObtainFlags() []cli.Flag {
 		&cli.TimestampFlag{
 			Category: categoryAdvanced,
 			Name:     flgNotAfter,
+			Sources:  cli.EnvVars(toEnvName(flgNotAfter)),
 			Usage:    "Set the notAfter field in the certificate (RFC3339 format)",
 			Config: cli.TimestampConfig{
 				Layouts: []string{time.RFC3339},
@@ -463,17 +494,20 @@ func createObtainFlags() []cli.Flag {
 		&cli.StringFlag{
 			Category: categoryAdvanced,
 			Name:     flgPreferredChain,
+			Sources:  cli.EnvVars(toEnvName(flgPreferredChain)),
 			Usage: "If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name." +
 				" If no match, the default offered chain will be used.",
 		},
 		&cli.StringFlag{
 			Category: categoryAdvanced,
 			Name:     flgProfile,
+			Sources:  cli.EnvVars(toEnvName(flgProfile)),
 			Usage:    "If the CA offers multiple certificate profiles (draft-ietf-acme-profiles), choose this one.",
 		},
 		&cli.StringFlag{
 			Category: categoryAdvanced,
 			Name:     flgAlwaysDeactivateAuthorizations,
+			Sources:  cli.EnvVars(toEnvName(flgAlwaysDeactivateAuthorizations)),
 			Usage:    "Force the authorizations to be relinquished even if the certificate request was successful.",
 		},
 	}
@@ -484,11 +518,13 @@ func createHookFlags() []cli.Flag {
 		&cli.StringFlag{
 			Category: categoryHooks,
 			Name:     flgDeployHook,
+			Sources:  cli.EnvVars(toEnvName(flgDeployHook)),
 			Usage:    "Define a hook. The hook is executed only when the certificates are effectively created/renewed.",
 		},
 		&cli.DurationFlag{
 			Category: categoryHooks,
 			Name:     flgDeployHookTimeout,
+			Sources:  cli.EnvVars(toEnvName(flgDeployHookTimeout)),
 			Usage:    "Define the timeout for the hook execution.",
 			Value:    2 * time.Minute,
 		},
@@ -512,6 +548,7 @@ func createRunFlags() []cli.Flag {
 		&cli.StringFlag{
 			Category: categoryAdvanced,
 			Name:     flgPrivateKey,
+			Sources:  cli.EnvVars(toEnvName(flgPrivateKey)),
 			Usage:    "Path to a private key (in PEM encoding) for the certificate. By default, a private key is generated.",
 		},
 	)
@@ -533,40 +570,47 @@ func createRenewFlags() []cli.Flag {
 
 	flags = append(flags,
 		&cli.IntFlag{
-			Name:  flgRenewDays,
-			Value: 30,
-			Usage: "The number of days left on a certificate to renew it.",
+			Name:    flgRenewDays,
+			Sources: cli.EnvVars(toEnvName(flgRenewDays)),
+			Value:   30,
+			Usage:   "The number of days left on a certificate to renew it.",
 		},
 		// TODO(ldez): in v5, remove this flag, use this behavior as default.
 		&cli.BoolFlag{
-			Name:  flgRenewDynamic,
-			Value: false,
-			Usage: "Compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates). This supersedes --days and will be the default behavior in Lego v5.",
+			Name:    flgRenewDynamic,
+			Sources: cli.EnvVars(toEnvName(flgRenewDynamic)),
+			Value:   false,
+			Usage:   "Compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates). This supersedes --days and will be the default behavior in Lego v5.",
 		},
 		&cli.BoolFlag{
 			Category: categoryARI,
 			Name:     flgARIDisable,
+			Sources:  cli.EnvVars(toEnvName(flgARIDisable)),
 			Usage:    "Do not use the renewalInfo endpoint (RFC9773) to check if a certificate should be renewed.",
 		},
 		&cli.DurationFlag{
 			Category: categoryARI,
 			Name:     flgARIWaitToRenewDuration,
+			Sources:  cli.EnvVars(toEnvName(flgARIWaitToRenewDuration)),
 			Usage:    "The maximum duration you're willing to sleep for a renewal time returned by the renewalInfo endpoint.",
 		},
 		&cli.BoolFlag{
 			Category: categoryAdvanced,
 			Name:     flgReuseKey,
+			Sources:  cli.EnvVars(toEnvName(flgReuseKey)),
 			Usage:    "Used to indicate you want to reuse your current private key for the new certificate.",
 		},
 		&cli.BoolFlag{
 			Category: categoryAdvanced,
 			Name:     flgNoRandomSleep,
+			Sources:  cli.EnvVars(toEnvName(flgNoRandomSleep)),
 			Usage: "Do not add a random sleep before the renewal." +
 				" We do not recommend using this flag if you are doing your renewals in an automated way.",
 		},
 		&cli.BoolFlag{
 			Category: categoryAdvanced,
 			Name:     flgForceCertDomains,
+			Sources:  cli.EnvVars(toEnvName(flgForceCertDomains)),
 			Usage:    "Check and ensure that the cert's domain list matches those passed in the domains argument.",
 		},
 	)
@@ -580,10 +624,12 @@ func createRevokeFlags() []cli.Flag {
 		&cli.BoolFlag{
 			Name:    flgKeep,
 			Aliases: []string{"k"},
+			Sources: cli.EnvVars(toEnvName(flgKeep)),
 			Usage:   "Keep the certificates after the revocation instead of archiving them.",
 		},
 		&cli.UintFlag{
-			Name: flgReason,
+			Name:    flgReason,
+			Sources: cli.EnvVars(toEnvName(flgReason)),
 			Usage: "Identifies the reason for the certificate revocation." +
 				" See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1." +
 				" Valid values are:" +
@@ -633,6 +679,7 @@ func createAcceptFlag() cli.Flag {
 	return &cli.BoolFlag{
 		Name:    flgAcceptTOS,
 		Aliases: []string{"a"},
+		Sources: cli.EnvVars(toEnvName(flgAcceptTOS)),
 		Usage:   "By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.",
 	}
 }
@@ -641,6 +688,7 @@ func createDomainFlag() cli.Flag {
 	return &cli.StringSliceFlag{
 		Name:    flgDomains,
 		Aliases: []string{"d"},
+		Sources: cli.EnvVars(toEnvName(flgDomains)),
 		Usage:   "Add a domain. For multiple domains either repeat the option or provide a comma-separated list.",
 	}
 }

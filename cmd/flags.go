@@ -628,7 +628,7 @@ func createDomainFlag() cli.Flag {
 	return &cli.StringSliceFlag{
 		Name:    flgDomains,
 		Aliases: []string{"d"},
-		Usage:   "Add a domain to the process. Can be specified multiple times or use comma as a separator.",
+		Usage:   "Add a domain. For multiple domains either repeat the option or provide a comma-separated list.",
 	}
 }
 

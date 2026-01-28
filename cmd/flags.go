@@ -110,7 +110,7 @@ const (
 	flgDNSPropagationDisableANS = "dns.propagation-disable-ans"
 	flgDNSPropagationRNS        = "dns.propagation-rns"
 	flgDNSResolvers             = "dns.resolvers"
-	flgDNSTimeout               = "dns-timeout"
+	flgDNSTimeout               = "dns.timeout"
 )
 
 // Flags names related to hooks.

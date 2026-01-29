@@ -149,10 +149,9 @@ const (
 	flgReason = "reason"
 )
 
-// Flag names related to the list command.
+// Flag names related to the list commands.
 const (
-	flgAccounts = "accounts"
-	flgNames    = "names"
+	flgFormatJSON = "json"
 )
 
 func toEnvName(flg string) string {
@@ -671,22 +670,6 @@ func createRevokeFlags() []cli.Flag {
 	return flags
 }
 
-func createListFlags() []cli.Flag {
-	return []cli.Flag{
-		&cli.BoolFlag{
-			Name:    flgAccounts,
-			Aliases: []string{"a"},
-			Usage:   "Display accounts.",
-		},
-		&cli.BoolFlag{
-			Name:    flgNames,
-			Aliases: []string{"n"},
-			Usage:   "Display certificate names only.",
-		},
-		createPathFlag(false),
-	}
-}
-
 func createRegisterFlags() []cli.Flag {
 	flags := []cli.Flag{
 		createPathFlag(true),
@@ -697,6 +680,16 @@ func createRegisterFlags() []cli.Flag {
 	flags = append(flags, createAccountFlags()...)
 
 	return flags
+}
+
+func createListFlags() []cli.Flag {
+	return []cli.Flag{
+		createPathFlag(false),
+		&cli.BoolFlag{
+			Name:  flgFormatJSON,
+			Usage: "Format the output as JSON.",
+		},
+	}
 }
 
 func createAcceptFlag() cli.Flag {

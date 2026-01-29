@@ -30,6 +30,7 @@ const (
 	categoryACMEClient         = "Flags related to the ACME client:"
 	categoryAdvanced           = "Flags related to advanced options:"
 	categoryARI                = "Flags related to ACME Renewal Information (ARI) Extension:"
+	categoryLogs               = "Flags related to logs:"
 )
 
 // Flag names related to the account.
@@ -118,6 +119,12 @@ const (
 const (
 	flgDeployHook        = "deploy-hook"
 	flgDeployHookTimeout = "deploy-hook-timeout"
+)
+
+// Flag names related to logs.
+const (
+	flgLogLevel  = "log.level"
+	flgLogFormat = "log.format"
 )
 
 // Flag names related to the specific run command.
@@ -527,6 +534,25 @@ func createHookFlags() []cli.Flag {
 			Sources:  cli.EnvVars(toEnvName(flgDeployHookTimeout)),
 			Usage:    "Define the timeout for the hook execution.",
 			Value:    2 * time.Minute,
+		},
+	}
+}
+
+func CreateLogFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.StringFlag{
+			Category: categoryLogs,
+			Name:     flgLogLevel,
+			Sources:  cli.EnvVars(toEnvName(flgLogLevel)),
+			Usage:    "Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'.",
+			Value:    "info",
+		},
+		&cli.StringFlag{
+			Category: categoryLogs,
+			Name:     flgLogFormat,
+			Sources:  cli.EnvVars(toEnvName(flgLogFormat)),
+			Usage:    "Set the logging format. Supported values: 'colored', 'text', 'json'.",
+			Value:    "colored",
 		},
 	}
 }

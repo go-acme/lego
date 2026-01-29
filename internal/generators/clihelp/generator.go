@@ -93,6 +93,7 @@ func createStubApp() *cli.Command {
 		Name:     "lego",
 		Usage:    "ACME client written in Go",
 		Commands: cmd.CreateCommands(),
+		Flags:    cmd.CreateLogFlags(),
 	}
 }
 

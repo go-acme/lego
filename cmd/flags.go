@@ -127,8 +127,8 @@ const (
 
 // Flag names related to the specific renew command.
 const (
-	flgRenewDays              = "days"
-	flgRenewDynamic           = "dynamic"
+	flgRenewDays              = "renew-days"
+	flgRenewForce             = "renew-force"
 	flgARIDisable             = "ari-disable"
 	flgARIWaitToRenewDuration = "ari-wait-to-renew-duration"
 	flgReuseKey               = "reuse-key"
@@ -572,15 +572,13 @@ func createRenewFlags() []cli.Flag {
 		&cli.IntFlag{
 			Name:    flgRenewDays,
 			Sources: cli.EnvVars(toEnvName(flgRenewDays)),
-			Value:   30,
-			Usage:   "The number of days left on a certificate to renew it.",
+			Usage: "The number of days left on a certificate to renew it." +
+				"\n\tBy default, compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates).",
 		},
-		// TODO(ldez): in v5, remove this flag, use this behavior as default.
 		&cli.BoolFlag{
-			Name:    flgRenewDynamic,
-			Sources: cli.EnvVars(toEnvName(flgRenewDynamic)),
-			Value:   false,
-			Usage:   "Compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates). This supersedes --days and will be the default behavior in Lego v5.",
+			Name:    flgRenewForce,
+			Sources: cli.EnvVars(toEnvName(flgRenewForce)),
+			Usage:   "Force the renewal of the certificate even if it is not due for renewal yet.",
 		},
 		&cli.BoolFlag{
 			Category: categoryARI,

@@ -25,6 +25,14 @@ const (
 	cmdNameChallSrv = "pebble-challtestsrv"
 )
 
+const (
+	// If defined, e2e tests are enabled.
+	envLegoTests = "LEGO_E2E_TESTS"
+
+	// If defined, the cleaning of the .lego directory is skipped.
+	envLegoTestsSkipClean = "LEGO_E2E_TESTS_SKIP_CLEAN"
+)
+
 type CmdOption struct {
 	HealthCheckURL string
 	Args           []string
@@ -40,7 +48,7 @@ type EnvLoader struct {
 }
 
 func (l *EnvLoader) MainTest(ctx context.Context, m *testing.M) int {
-	if _, e2e := os.LookupEnv("LEGO_E2E_TESTS"); !e2e {
+	if _, e2e := os.LookupEnv(envLegoTests); !e2e {
 		fmt.Fprintln(os.Stderr, "skipping test: e2e tests are disabled. (no 'LEGO_E2E_TESTS' env var)")
 		fmt.Println("PASS")
 
@@ -346,6 +354,10 @@ func goTool(ctx context.Context) (string, error) {
 }
 
 func CleanLegoFiles(ctx context.Context) {
+	if _, e2e := os.LookupEnv(envLegoTestsSkipClean); e2e {
+		return
+	}
+
 	cmd := exec.CommandContext(ctx, "rm", "-rf", ".lego")
 	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
 

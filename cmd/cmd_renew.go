@@ -12,6 +12,7 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme/api"
@@ -24,6 +25,8 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v3"
 )
+
+type lzSetUp func() (*lego.Client, error)
 
 func createRenew() *cli.Command {
 	return &cli.Command{
@@ -80,16 +83,27 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 		hook.EnvAccountEmail: account.Email,
 	}
 
+	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
+		client, err := newClient(cmd, account, keyType)
+		if err != nil {
+			return nil, fmt.Errorf("new client: %w", err)
+		}
+
+		setupChallenges(cmd, client)
+
+		return client, nil
+	})
+
 	// CSR
 	if cmd.IsSet(flgCSR) {
-		return renewForCSR(ctx, cmd, account, keyType, certsStorage, meta)
+		return renewForCSR(ctx, cmd, lazyClient, certsStorage, meta)
 	}
 
 	// Domains
-	return renewForDomains(ctx, cmd, account, keyType, certsStorage, meta)
+	return renewForDomains(ctx, cmd, lazyClient, certsStorage, meta)
 }
 
-func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
+func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
 	domains := cmd.StringSlice(flgDomains)
 	domain := domains[0]
 
@@ -111,7 +125,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 	var client *lego.Client
 
 	if !cmd.Bool(flgARIDisable) {
-		client, err = setupClient(cmd, account, keyType)
+		client, err = lazyClient()
 		if err != nil {
 			return fmt.Errorf("set up client: %w", err)
 		}
@@ -150,7 +164,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 	}
 
 	if client == nil {
-		client, err = setupClient(cmd, account, keyType)
+		client, err = lazyClient()
 		if err != nil {
 			return fmt.Errorf("set up client: %w", err)
 		}
@@ -223,7 +237,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }
 
-func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
+func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
 	csr, err := readCSRFile(cmd.String(flgCSR))
 	if err != nil {
 		return fmt.Errorf("could not read CSR file %q: %w", cmd.String(flgCSR), err)
@@ -252,7 +266,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 	var client *lego.Client
 
 	if !cmd.Bool(flgARIDisable) {
-		client, err = setupClient(cmd, account, keyType)
+		client, err = lazyClient()
 		if err != nil {
 			return fmt.Errorf("set up client: %w", err)
 		}
@@ -286,7 +300,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 	}
 
 	if client == nil {
-		client, err = setupClient(cmd, account, keyType)
+		client, err = lazyClient()
 		if err != nil {
 			return fmt.Errorf("set up client: %w", err)
 		}

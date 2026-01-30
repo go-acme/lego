@@ -14,13 +14,8 @@ import (
 )
 
 func main() {
-	app := &cli.Command{
-		Name:                  "lego",
-		Usage:                 "Let's Encrypt client written in Go",
-		Version:               getVersion(),
-		EnableShellCompletion: true,
-		Commands:              cmd.CreateCommands(),
-	}
+	app := cmd.CreateRootCommand()
+	app.Version = getVersion()
 
 	cli.VersionPrinter = func(cmd *cli.Command) {
 		fmt.Printf("lego version %s %s/%s\n", cmd.Version, runtime.GOOS, runtime.GOARCH)

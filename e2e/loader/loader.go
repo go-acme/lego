@@ -255,9 +255,7 @@ func buildLego(ctx context.Context) (string, func(), error) {
 		return "", func() {}, err
 	}
 
-	mainFolder := filepath.Join(projectRoot, "cmd", "lego")
-
-	err = os.Chdir(mainFolder)
+	err = os.Chdir(projectRoot)
 	if err != nil {
 		return "", func() {}, err
 	}

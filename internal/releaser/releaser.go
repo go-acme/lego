@@ -22,7 +22,7 @@ const (
 	modeMajor = "major"
 )
 
-const versionSourceFile = "./cmd/lego/zz_gen_version.go"
+const versionSourceFile = "./zz_gen_version.go"
 
 const (
 	commentRelease = "release"

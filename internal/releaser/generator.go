@@ -22,7 +22,7 @@ const (
 
 const (
 	versionTemplate   = "templates/version.go.tmpl"
-	versionTargetFile = "./cmd/lego/zz_gen_version.go"
+	versionTargetFile = "./zz_gen_version.go"
 )
 
 //go:embed templates

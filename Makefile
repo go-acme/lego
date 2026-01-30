@@ -4,7 +4,7 @@ export GO111MODULE=on
 export CGO_ENABLED=0
 
 LEGO_IMAGE := goacme/lego
-MAIN_DIRECTORY := ./cmd/lego/
+MAIN_DIRECTORY := .
 
 BIN_OUTPUT := $(if $(filter $(shell go env GOOS), windows), dist/lego.exe, dist/lego)
 
@@ -69,7 +69,7 @@ generate-dns:
 	go generate ./...
 
 validate-doc: generate-dns
-validate-doc: DOC_DIRECTORIES := ./docs/ ./cmd/
+validate-doc: DOC_DIRECTORIES := ./docs/ ./zz_gen_version.go
 validate-doc:
 	@if git diff --exit-code --quiet $(DOC_DIRECTORIES) 2>/dev/null; then \
 		echo 'All documentation changes are done the right way.'; \

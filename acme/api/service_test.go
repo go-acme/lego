@@ -3,8 +3,10 @@ package api
 import (
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_getLink(t *testing.T) {
@@ -50,6 +52,41 @@ func Test_getLink(t *testing.T) {
 			link := getLink(test.header, test.relName)
 
 			assert.Equal(t, test.expected, link)
+		})
+	}
+}
+
+func TestParseRetryAfter(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		value    string
+		expected time.Duration
+	}{
+		{
+			desc:     "empty header value",
+			value:    "",
+			expected: time.Duration(0),
+		},
+		{
+			desc:     "delay-seconds",
+			value:    "123",
+			expected: 123 * time.Second,
+		},
+		{
+			desc:     "HTTP-date",
+			value:    time.Now().Add(3 * time.Second).Format(time.RFC1123),
+			expected: 3 * time.Second,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			rt, err := ParseRetryAfter(test.value)
+			require.NoError(t, err)
+
+			assert.InDelta(t, test.expected.Seconds(), rt.Seconds(), 1)
 		})
 	}
 }

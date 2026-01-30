@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/acme"
+	"github.com/go-acme/lego/v4/acme/api"
 )
 
 // RenewalInfoRequest contains the necessary renewal information.
@@ -92,9 +93,9 @@ func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse
 	}
 
 	if retry := resp.Header.Get("Retry-After"); retry != "" {
-		info.RetryAfter, err = time.ParseDuration(retry + "s")
+		info.RetryAfter, err = api.ParseRetryAfter(retry)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to parse Retry-After header: %w", err)
 		}
 	}
 

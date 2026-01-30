@@ -171,7 +171,6 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 	err = load.RunLego(t.Context(),
 		"revoke",
 		"-m", testEmail1,
-		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", testDomain2,
 	)
@@ -199,7 +198,6 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 	err = load.RunLego(t.Context(),
 		"revoke",
 		"-m", testEmail1,
-		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
 		"-d", testDomain4,
 	)

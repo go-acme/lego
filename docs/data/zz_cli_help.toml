@@ -5,7 +5,7 @@
 title   = "lego help"
 content = """
 NAME:
-   lego - Let's Encrypt client written in Go
+   lego - ACME client written in Go
 
 USAGE:
    lego [global options] [command [command options]]

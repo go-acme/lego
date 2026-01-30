@@ -11,12 +11,13 @@ USAGE:
    lego [global options] [command [command options]]
 
 COMMANDS:
-   run      Register an account, then create and install a certificate
-   revoke   Revoke a certificate
-   renew    Renew a certificate
-   dnshelp  Shows additional help for the '--dns' global option
-   list     Display certificates and accounts information.
-   help, h  Shows a list of commands or help for one command
+   run       Register an account, then create and install a certificate
+   revoke    Revoke a certificate
+   renew     Renew a certificate
+   register  Register an account.
+   dnshelp   Shows additional help for the '--dns' global option
+   list      Display certificates and accounts information.
+   help, h   Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --help, -h  show help

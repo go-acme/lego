@@ -74,13 +74,9 @@ func TestCertifier_GetRenewalInfo(t *testing.T) {
 	assert.Equal(t, time.Duration(21600000000000), ri.RetryAfter)
 }
 
-func TestCertifier_GetRenewalInfo_HTTPDateRetryAfter(t *testing.T) {
+func TestCertifier_GetRenewalInfo_retryAfter(t *testing.T) {
 	leaf, err := certcrypto.ParsePEMCertificate([]byte(ariLeafPEM))
 	require.NoError(t, err)
-
-	// Test with Retry-After as HTTP-date (RFC 7231 format).
-	futureTime := time.Now().UTC().Add(6 * time.Hour)
-	httpDate := futureTime.Format(time.RFC1123)
 
 	server := tester.MockACMEServer().
 		Route("GET /renewalInfo/"+ariLeafCertID,
@@ -93,7 +89,7 @@ func TestCertifier_GetRenewalInfo_HTTPDateRetryAfter(t *testing.T) {
 			}
 		}`).
 				WithHeader("Content-Type", "application/json").
-				WithHeader("Retry-After", httpDate)).
+				WithHeader("Retry-After", time.Now().UTC().Add(6*time.Hour).Format(time.RFC1123))).
 		BuildHTTPS(t)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)

@@ -62,8 +62,9 @@ func getRetryAfter(resp *http.Response) string {
 
 // ParseRetryAfter parses the Retry-After header value according to RFC 7231.
 // The header can be either delay-seconds (numeric) or HTTP-date (RFC 1123 format).
-// Returns the duration until the retry time, or an error if parsing fails.
-// If the HTTP-date is in the past, returns 0 duration.
+// https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.3
+// Returns the duration until the retry time.
+// TODO(ldez): unexposed this function in v5.
 func ParseRetryAfter(value string) (time.Duration, error) {
 	if value == "" {
 		return 0, nil
@@ -82,5 +83,5 @@ func ParseRetryAfter(value string) (time.Duration, error) {
 		return duration, nil
 	}
 
-	return 0, fmt.Errorf("invalid Retry-After value: %q (expected delay-seconds or HTTP-date)", value)
+	return 0, fmt.Errorf("invalid Retry-After value: %q", value)
 }

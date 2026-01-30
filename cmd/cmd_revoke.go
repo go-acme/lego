@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"context"
-	"log/slog"
+	"fmt"
 
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
+	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
 )
@@ -19,58 +20,83 @@ func createRevoke() *cli.Command {
 }
 
 func revoke(ctx context.Context, cmd *cli.Command) error {
+	keyType, err := getKeyType(cmd.String(flgKeyType))
+	if err != nil {
+		return fmt.Errorf("get the key type: %w", err)
+	}
+
 	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
 	if err != nil {
-		log.Fatal("Accounts storage initialization", log.ErrorAttr(err))
+		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
-	keyType := getKeyType(cmd)
-
-	account := setupAccount(ctx, keyType, accountsStorage)
+	account, err := accountsStorage.Get(ctx, keyType)
+	if err != nil {
+		return fmt.Errorf("set up account: %w", err)
+	}
 
 	if account.Registration == nil {
-		log.Fatal("Account is not registered. Use 'run' to register a new account.", slog.String("email", account.Email))
+		return fmt.Errorf("the account %s is not registered", account.Email)
 	}
 
-	client := newClient(cmd, account, keyType)
+	client, err := newClient(cmd, account, keyType)
+	if err != nil {
+		return fmt.Errorf("new client: %w", err)
+	}
 
 	certsStorage, err := storage.NewCertificatesStorage(newCertificatesWriterConfig(cmd))
 	if err != nil {
-		log.Fatal("Certificates storage", log.ErrorAttr(err))
+		return fmt.Errorf("certificates storage initialization: %w", err)
 	}
 
-	certsStorage.CreateRootFolder()
+	err = certsStorage.CreateRootFolder()
+	if err != nil {
+		return fmt.Errorf("root folder creation: %w", err)
+	}
+
+	reason := cmd.Uint(flgReason)
+	keep := cmd.Bool(flgKeep)
 
 	for _, domain := range cmd.StringSlice(flgDomains) {
-		log.Info("Trying to revoke the certificate.", log.DomainAttr(domain))
-
-		certBytes, err := certsStorage.ReadFile(domain, storage.ExtCert)
-		if err != nil {
-			log.Fatal("Error while revoking the certificate.", log.DomainAttr(domain), log.ErrorAttr(err))
-		}
-
-		reason := cmd.Uint(flgReason)
-
-		err = client.Certificate.RevokeWithReason(ctx, certBytes, &reason)
-		if err != nil {
-			log.Fatal("Error while revoking the certificate.", log.DomainAttr(domain), log.ErrorAttr(err))
-		}
-
-		log.Info("Certificate was revoked.", log.DomainAttr(domain))
-
-		if cmd.Bool(flgKeep) {
-			return nil
-		}
-
-		certsStorage.CreateArchiveFolder()
-
-		err = certsStorage.MoveToArchive(domain)
+		err := revokeCertificate(ctx, client, certsStorage, domain, reason, keep)
 		if err != nil {
 			return err
 		}
-
-		log.Info("Certificate was archived", log.DomainAttr(domain))
 	}
+
+	return nil
+}
+
+func revokeCertificate(ctx context.Context, client *lego.Client, certsStorage *storage.CertificatesStorage, domain string, reason uint, keep bool) error {
+	log.Info("Trying to revoke the certificate.", log.DomainAttr(domain))
+
+	certBytes, err := certsStorage.ReadFile(domain, storage.ExtCert)
+	if err != nil {
+		return fmt.Errorf("certificate reading for domain %s: %w", domain, err)
+	}
+
+	err = client.Certificate.RevokeWithReason(ctx, certBytes, &reason)
+	if err != nil {
+		return fmt.Errorf("certificate revocation for domain %s: %w", domain, err)
+	}
+
+	log.Info("The certificate has been revoked.", log.DomainAttr(domain))
+
+	if keep {
+		return nil
+	}
+
+	err = certsStorage.CreateArchiveFolder()
+	if err != nil {
+		return fmt.Errorf("archive folder creation: %w", err)
+	}
+
+	err = certsStorage.MoveToArchive(domain)
+	if err != nil {
+		return err
+	}
+
+	log.Info("The certificate has been archived.", log.DomainAttr(domain))
 
 	return nil
 }

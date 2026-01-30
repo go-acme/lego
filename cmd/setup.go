@@ -5,9 +5,9 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -15,7 +15,6 @@ import (
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
-	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
@@ -24,39 +23,32 @@ import (
 )
 
 // setupClient creates a new client with challenge settings.
-func setupClient(cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType) *lego.Client {
-	client := newClient(cmd, account, keyType)
+func setupClient(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) (*lego.Client, error) {
+	client, err := newClient(cmd, account, keyType)
+	if err != nil {
+		return nil, fmt.Errorf("new client: %w", err)
+	}
 
 	setupChallenges(cmd, client)
 
-	return client
+	return client, nil
 }
 
-func setupAccount(ctx context.Context, keyType certcrypto.KeyType, accountsStorage *storage.AccountsStorage) *storage.Account {
-	privateKey := accountsStorage.GetPrivateKey(keyType)
-
-	if accountsStorage.ExistsAccountFilePath() {
-		return accountsStorage.LoadAccount(ctx, privateKey)
-	}
-
-	return storage.NewAccount(accountsStorage.GetEmail(), privateKey)
-}
-
-func newClient(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyType) *lego.Client {
-	client, err := lego.NewClient(newClientConfig(cmd, acc, keyType))
+func newClient(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) (*lego.Client, error) {
+	client, err := lego.NewClient(newClientConfig(cmd, account, keyType))
 	if err != nil {
-		log.Fatal("Could not create client.", log.ErrorAttr(err))
+		return nil, fmt.Errorf("new client: %w", err)
 	}
 
 	if client.GetExternalAccountRequired() && !cmd.IsSet(flgEAB) { // TODO(ldez): handle this flag.
-		log.Fatal(fmt.Sprintf("Server requires External Account Binding. Use --%s with --%s and --%s.", flgEAB, flgKID, flgHMAC))
+		return nil, errors.New("server requires External Account Binding (EAB)")
 	}
 
-	return client
+	return client, nil
 }
 
-func newClientConfig(cmd *cli.Command, acc registration.User, keyType certcrypto.KeyType) *lego.Config {
-	config := lego.NewConfig(acc)
+func newClientConfig(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) *lego.Config {
+	config := lego.NewConfig(account)
 	config.CADirURL = cmd.String(flgServer)
 
 	config.Certificate = lego.CertificateConfig{
@@ -96,26 +88,25 @@ func newClientConfig(cmd *cli.Command, acc registration.User, keyType certcrypto
 }
 
 // getKeyType the type from which private keys should be generated.
-func getKeyType(cmd *cli.Command) certcrypto.KeyType {
-	keyType := cmd.String(flgKeyType)
+func getKeyType(keyType string) (certcrypto.KeyType, error) {
 	switch strings.ToUpper(keyType) {
 	case "RSA2048":
-		return certcrypto.RSA2048
+		return certcrypto.RSA2048, nil
 	case "RSA3072":
-		return certcrypto.RSA3072
+		return certcrypto.RSA3072, nil
 	case "RSA4096":
-		return certcrypto.RSA4096
+		return certcrypto.RSA4096, nil
 	case "RSA8192":
-		return certcrypto.RSA8192
+		return certcrypto.RSA8192, nil
 	case "EC256":
-		return certcrypto.EC256
+		return certcrypto.EC256, nil
 	case "EC384":
-		return certcrypto.EC384
+		return certcrypto.EC384, nil
 	}
 
-	log.Fatal("Unsupported KeyType.", slog.String("keyType", keyType))
+	// TODO(ldez): log + fallback?
 
-	return ""
+	return "", fmt.Errorf("unsupported key type: %s", keyType)
 }
 
 func getUserAgent(cmd *cli.Command) string {

@@ -3,6 +3,7 @@ package storage
 import (
 	"crypto/x509"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -22,24 +23,18 @@ func NewCertificatesReader(basePath string) *CertificatesReader {
 	}
 }
 
-func (s *CertificatesReader) ReadResource(domain string) certificate.Resource {
+func (s *CertificatesReader) ReadResource(domain string) (certificate.Resource, error) {
 	raw, err := s.ReadFile(domain, ExtResource)
 	if err != nil {
-		log.Fatal("Error while loading the metadata.",
-			log.DomainAttr(domain),
-			log.ErrorAttr(err),
-		)
+		return certificate.Resource{}, fmt.Errorf("unable to load resource for domain %q: %w", domain, err)
 	}
 
 	var resource certificate.Resource
 	if err = json.Unmarshal(raw, &resource); err != nil {
-		log.Fatal("Error while marshaling the metadata.",
-			log.DomainAttr(domain),
-			log.ErrorAttr(err),
-		)
+		return certificate.Resource{}, fmt.Errorf("unable to unmarshal resource for domain %q: %w", domain, err)
 	}
 
-	return resource
+	return resource, nil
 }
 
 func (s *CertificatesReader) ExistsFile(domain, extension string) bool {

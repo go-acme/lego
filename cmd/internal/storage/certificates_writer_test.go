@@ -19,7 +19,8 @@ func TestCertificatesWriter_CreateRootFolder(t *testing.T) {
 
 	require.NoDirExists(t, writer.rootPath)
 
-	writer.CreateRootFolder()
+	err = writer.CreateRootFolder()
+	require.NoError(t, err)
 
 	require.DirExists(t, writer.rootPath)
 }
@@ -32,7 +33,8 @@ func TestCertificatesWriter_CreateArchiveFolder(t *testing.T) {
 
 	require.NoDirExists(t, writer.GetArchivePath())
 
-	writer.CreateArchiveFolder()
+	err = writer.CreateArchiveFolder()
+	require.NoError(t, err)
 
 	require.DirExists(t, writer.GetArchivePath())
 }
@@ -53,7 +55,7 @@ func TestCertificatesWriter_SaveResource(t *testing.T) {
 	require.NoFileExists(t, filepath.Join(basePath, baseCertificatesFolderName, "example.com.key"))
 	require.NoFileExists(t, filepath.Join(basePath, baseCertificatesFolderName, "example.com.json"))
 
-	writer.SaveResource(&certificate.Resource{
+	err = writer.SaveResource(&certificate.Resource{
 		Domain:            "example.com",
 		CertURL:           "https://acme.example.org/cert/123",
 		CertStableURL:     "https://acme.example.org/cert/456",
@@ -62,6 +64,7 @@ func TestCertificatesWriter_SaveResource(t *testing.T) {
 		IssuerCertificate: []byte("IssuerCertificate"),
 		CSR:               []byte("CSR"),
 	})
+	require.NoError(t, err)
 
 	require.FileExists(t, filepath.Join(basePath, baseCertificatesFolderName, "example.com.crt"))
 	require.FileExists(t, filepath.Join(basePath, baseCertificatesFolderName, "example.com.issuer.crt"))
@@ -262,8 +265,11 @@ func setupCertificatesWriter(t *testing.T) *CertificatesWriter {
 	)
 	require.NoError(t, err)
 
-	writer.CreateRootFolder()
-	writer.CreateArchiveFolder()
+	err = writer.CreateRootFolder()
+	require.NoError(t, err)
+
+	err = writer.CreateArchiveFolder()
+	require.NoError(t, err)
 
 	return writer
 }

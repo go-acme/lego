@@ -54,22 +54,28 @@ func createRenew() *cli.Command {
 }
 
 func renew(ctx context.Context, cmd *cli.Command) error {
-	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
+	keyType, err := getKeyType(cmd.String(flgKeyType))
 	if err != nil {
-		log.Fatal("Accounts storage initialization", log.ErrorAttr(err))
+		return fmt.Errorf("get the key type: %w", err)
 	}
 
-	keyType := getKeyType(cmd)
+	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
+	if err != nil {
+		return fmt.Errorf("accounts storage initialization: %w", err)
+	}
 
-	account := setupAccount(ctx, keyType, accountsStorage)
+	account, err := accountsStorage.Get(ctx, keyType)
+	if err != nil {
+		return fmt.Errorf("set up account: %w", err)
+	}
 
 	if account.Registration == nil {
-		log.Fatal("The account is not registered. Use 'run' to register a new account.", slog.String("email", account.Email))
+		return fmt.Errorf("the account %s is not registered", account.Email)
 	}
 
 	certsStorage, err := storage.NewCertificatesStorage(newCertificatesWriterConfig(cmd))
 	if err != nil {
-		log.Fatal("Certificates storage", log.ErrorAttr(err))
+		return fmt.Errorf("certificates storage initialization: %w", err)
 	}
 
 	meta := map[string]string{
@@ -94,10 +100,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 	// as web servers would not be able to work with a combined file.
 	certificates, err := certsStorage.ReadCertificate(domain, storage.ExtCert)
 	if err != nil {
-		log.Fatal("Error while loading the certificate.",
-			log.DomainAttr(domain),
-			log.ErrorAttr(err),
-		)
+		return fmt.Errorf("error while reading the certificate for domain %q: %w", domain, err)
 	}
 
 	cert := certificates[0]
@@ -110,7 +113,10 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 	var client *lego.Client
 
 	if !cmd.Bool(flgARIDisable) {
-		client = setupClient(cmd, account, keyType)
+		client, err = setupClient(cmd, account, keyType)
+		if err != nil {
+			return fmt.Errorf("set up client: %w", err)
+		}
 
 		willingToSleep := cmd.Duration(flgARIWaitToRenewDuration)
 
@@ -125,13 +131,14 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 					slog.Duration("sleep", ariRenewalTime.Sub(now)),
 					slog.Time("renewalTime", *ariRenewalTime),
 				)
+
 				time.Sleep(ariRenewalTime.Sub(now))
 			}
 		}
 
 		replacesCertID, err = certificate.MakeARICertID(cert)
 		if err != nil {
-			log.Fatal("Error while construction the ARI CertID.", log.DomainAttr(domain), log.ErrorAttr(err))
+			return fmt.Errorf("error while constructing the ARI CertID for domain %q: %w", domain, err)
 		}
 	}
 
@@ -145,11 +152,15 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 	}
 
 	if client == nil {
-		client = setupClient(cmd, account, keyType)
+		client, err = setupClient(cmd, account, keyType)
+		if err != nil {
+			return fmt.Errorf("set up client: %w", err)
+		}
 	}
 
 	// This is just meant to be informal for the user.
 	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
+
 	log.Info("acme: Trying renewal.",
 		log.DomainAttr(domain),
 		slog.Int("hoursRemaining", int(timeLeft.Hours())),
@@ -160,15 +171,12 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 	if cmd.Bool(flgReuseKey) {
 		keyBytes, errR := certsStorage.ReadFile(domain, storage.ExtKey)
 		if errR != nil {
-			log.Fatal("Error while loading the private key.",
-				log.DomainAttr(domain),
-				log.ErrorAttr(errR),
-			)
+			return fmt.Errorf("error while reading the private key for domain %q: %w", domain, errR)
 		}
 
 		privateKey, errR = certcrypto.ParsePEMPrivateKey(keyBytes)
 		if errR != nil {
-			return errR
+			return fmt.Errorf("error while parsing the private key for domain %q: %w", domain, errR)
 		}
 	}
 
@@ -200,12 +208,15 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 
 	certRes, err := client.Certificate.Obtain(ctx, request)
 	if err != nil {
-		log.Fatal("Could not obtain the certificate.", log.ErrorAttr(err))
+		return fmt.Errorf("could not obtain the certificate for domain %q: %w", domain, err)
 	}
 
 	certRes.Domain = domain
 
-	certsStorage.SaveResource(certRes)
+	err = certsStorage.SaveResource(certRes)
+	if err != nil {
+		return fmt.Errorf("could not save the resource: %w", err)
+	}
 
 	hook.AddPathToMetadata(meta, certRes.Domain, certRes, certsStorage)
 
@@ -215,15 +226,12 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, account *storage.Acc
 func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account, keyType certcrypto.KeyType, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
 	csr, err := readCSRFile(cmd.String(flgCSR))
 	if err != nil {
-		log.Fatal("Could not read CSR file.",
-			slog.String(flgCSR, cmd.String(flgCSR)),
-			log.ErrorAttr(err),
-		)
+		return fmt.Errorf("could not read CSR file %q: %w", cmd.String(flgCSR), err)
 	}
 
 	domain, err := certcrypto.GetCSRMainDomain(csr)
 	if err != nil {
-		log.Fatal("Could not get CSR main domain.", log.ErrorAttr(err))
+		return fmt.Errorf("could not get CSR main domain: %w", err)
 	}
 
 	// load the cert resource from files.
@@ -231,10 +239,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 	// as web servers would not be able to work with a combined file.
 	certificates, err := certsStorage.ReadCertificate(domain, storage.ExtCert)
 	if err != nil {
-		log.Fatal("Error while loading the certificate.",
-			log.DomainAttr(domain),
-			log.ErrorAttr(err),
-		)
+		return fmt.Errorf("error while reading the certificate for domain %q: %w", domain, err)
 	}
 
 	cert := certificates[0]
@@ -247,7 +252,10 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 	var client *lego.Client
 
 	if !cmd.Bool(flgARIDisable) {
-		client = setupClient(cmd, account, keyType)
+		client, err = setupClient(cmd, account, keyType)
+		if err != nil {
+			return fmt.Errorf("set up client: %w", err)
+		}
 
 		willingToSleep := cmd.Duration(flgARIWaitToRenewDuration)
 
@@ -262,13 +270,14 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 					slog.Duration("sleep", ariRenewalTime.Sub(now)),
 					slog.Time("renewalTime", *ariRenewalTime),
 				)
+
 				time.Sleep(ariRenewalTime.Sub(now))
 			}
 		}
 
 		replacesCertID, err = certificate.MakeARICertID(cert)
 		if err != nil {
-			log.Fatal("Error while construction the ARI CertID.", log.DomainAttr(domain), log.ErrorAttr(err))
+			return fmt.Errorf("error while constructing the ARI CertID for domain %q: %w", domain, err)
 		}
 	}
 
@@ -277,11 +286,15 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 	}
 
 	if client == nil {
-		client = setupClient(cmd, account, keyType)
+		client, err = setupClient(cmd, account, keyType)
+		if err != nil {
+			return fmt.Errorf("set up client: %w", err)
+		}
 	}
 
 	// This is just meant to be informal for the user.
 	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
+
 	log.Info("acme: Trying renewal.",
 		log.DomainAttr(domain),
 		slog.Int("hoursRemaining", int(timeLeft.Hours())),
@@ -295,10 +308,13 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, account *storage.Account
 
 	certRes, err := client.Certificate.ObtainForCSR(ctx, request)
 	if err != nil {
-		log.Fatal("Could not obtain the certificate for CSR.", log.ErrorAttr(err))
+		return fmt.Errorf("could not obtain the certificate for CSR: %w", err)
 	}
 
-	certsStorage.SaveResource(certRes)
+	err = certsStorage.SaveResource(certRes)
+	if err != nil {
+		return fmt.Errorf("could not save the resource: %w", err)
+	}
 
 	hook.AddPathToMetadata(meta, domain, certRes, certsStorage)
 

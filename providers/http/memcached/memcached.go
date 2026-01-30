@@ -27,18 +27,18 @@ func NewMemcachedProvider(hosts []string) (*HTTPProvider, error) {
 
 // Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given webroot path.
 func (w *HTTPProvider) Present(_ context.Context, _, token, keyAuth string) error {
-	var errs []error
-
 	challengePath := path.Join("/", http01.ChallengePath(token))
+
+	item := &memcache.Item{
+		Key:        challengePath,
+		Value:      []byte(keyAuth),
+		Expiration: 60,
+	}
+
+	var errs []error
 
 	for _, host := range w.hosts {
 		mc := memcache.New(host)
-
-		item := &memcache.Item{
-			Key:        challengePath,
-			Value:      []byte(keyAuth),
-			Expiration: 60,
-		}
 
 		err := mc.Add(item)
 		if err != nil {
@@ -48,7 +48,7 @@ func (w *HTTPProvider) Present(_ context.Context, _, token, keyAuth string) erro
 	}
 
 	if len(errs) == len(w.hosts) {
-		return fmt.Errorf("unable to store key in any of the memcache hosts: %w", errors.Join(errs...))
+		return fmt.Errorf("unable to store key in any of the memcached hosts: %w", errors.Join(errs...))
 	}
 
 	return nil

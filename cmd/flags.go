@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -64,7 +65,6 @@ const (
 // Flag names related to the ACME client.
 const (
 	flgServer              = "server"
-	flgServerCode          = "server-code"
 	flgDisableCommonName   = "disable-cn"
 	flgKeyType             = "key-type"
 	flgHTTPTimeout         = "http-timeout"
@@ -159,27 +159,27 @@ const (
 	envPFXFormat   = "LEGO_PFX_FORMAT"
 	envPFXPassword = "LEGO_PFX_PASSWORD"
 	envServer      = "LEGO_SERVER"
-	envServerCode  = "LEGO_SERVER_CODE"
 )
 
 func createACMEClientFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
+			// NOTE(ldez): if Required is true, then the default value is not display in the help.
 			Name:    flgServer,
 			Aliases: []string{"s"},
 			Sources: cli.EnvVars(envServer),
-			Usage:   "CA (ACME server) URL. Overrides --ca-code.",
-		},
-		&cli.StringFlag{
-			// NOTE(ldez): if Required is true, then the default value is not display in the help.
-			Name:    flgServerCode,
-			Sources: cli.EnvVars(envServerCode),
-			Usage: fmt.Sprintf("CA (ACME server) code. Shortcode to define the server URL."+
-				"\n\t(available codes: %s)", strings.Join(lego.GetAllCodes(), ", ")),
-			Value: lego.CodeLetsEncrypt,
-			Validator: func(s string) error {
-				_, err := lego.GetDirectoryURL(s)
-				return err
+			Usage: fmt.Sprintf("CA (ACME server). It can be either a URL or a shortcode."+
+				"\n\t(available shortcodes: %s)", strings.Join(lego.GetAllCodes(), ", ")),
+			Value: lego.DirectoryURLLetsEncrypt,
+			Action: func(ctx context.Context, cmd *cli.Command, s string) error {
+				directoryURL, err := lego.GetDirectoryURL(s)
+				if err != nil {
+					log.Debug("Server shortcode not found. Use the value as URL.", slog.String("value", s), log.ErrorAttr(err))
+
+					directoryURL = s
+				}
+
+				return cmd.Set(flgServer, directoryURL)
 			},
 		},
 		&cli.BoolFlag{
@@ -667,23 +667,6 @@ func createPathFlag(forceCreation bool) cli.Flag {
 		},
 		Required: true,
 	}
-}
-
-func getCA(cmd *cli.Command) string {
-	if cmd.String(flgServer) != "" {
-		return cmd.String(flgServer)
-	}
-
-	directoryURL, err := lego.GetDirectoryURL(cmd.String(flgServerCode))
-	if err != nil {
-		// The flag is already validated during flag parsing.
-		log.Debug("Invalid server code, fallback to Let's Encrypt staging server.",
-			slog.String("code", cmd.String(flgServerCode)))
-
-		return lego.DirectoryURLLetsEncryptStaging
-	}
-
-	return directoryURL
 }
 
 // defaultPathValueSource gets the default path based on the current working directory.

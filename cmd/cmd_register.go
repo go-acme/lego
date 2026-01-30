@@ -95,7 +95,7 @@ func registerAccount(ctx context.Context, cmd *cli.Command, client *lego.Client)
 			Kid:                  kid,
 			HmacEncoded:          hmacEncoded,
 		})
-	} else if zerossl.IsZeroSSL(getCA(cmd)) {
+	} else if zerossl.IsZeroSSL(cmd.String(flgServer)) {
 		return registration.RegisterWithZeroSSL(ctx, client.Registration, cmd.String(flgEmail))
 	}
 

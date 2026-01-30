@@ -31,7 +31,7 @@ func createRun() *cli.Command {
 				log.Fatal("Please specify --domains/-d (or --csr/-c if you already have a CSR)")
 			}
 
-			return ctx, nil
+			return ctx, validateNetworkStack(cmd)
 		},
 		Action: run,
 		Flags:  createRunFlags(),
@@ -171,4 +171,12 @@ func newObtainForCSRRequest(cmd *cli.Command, csr *x509.CertificateRequest) cert
 		Profile:                        cmd.String(flgProfile),
 		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
 	}
+}
+
+func validateNetworkStack(cmd *cli.Command) error {
+	if cmd.Bool(flgIPv4Only) && cmd.Bool(flgIPv6Only) {
+		return fmt.Errorf("cannot specify both --%s and --%s", flgIPv4Only, flgIPv6Only)
+	}
+
+	return nil
 }

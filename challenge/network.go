@@ -3,16 +3,16 @@ package challenge
 type NetworkStack int
 
 const (
-	dualStack NetworkStack = iota
-	ipv4only
-	ipv6only
+	DualStack NetworkStack = iota
+	IPv4Only
+	IPv6Only
 )
 
 func (s NetworkStack) Network(proto string) string {
 	switch s {
-	case ipv4only:
+	case IPv4Only:
 		return proto + "4"
-	case ipv6only:
+	case IPv6Only:
 		return proto + "6"
 	default:
 		return proto

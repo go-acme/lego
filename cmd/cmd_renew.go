@@ -47,7 +47,7 @@ func createRenew() *cli.Command {
 				log.Fatal(fmt.Sprintf("--%s only works with --%s/-d, --%s/-c doesn't support this option.", flgForceCertDomains, flgDomains, flgCSR))
 			}
 
-			return ctx, nil
+			return ctx, validateNetworkStack(cmd)
 		},
 		Flags: createRenewFlags(),
 	}

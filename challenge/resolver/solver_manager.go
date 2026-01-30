@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"strconv"
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
@@ -94,16 +93,14 @@ func validate(core *api.Core, domain string, chlg acme.Challenge) error {
 		return nil
 	}
 
-	ra, err := strconv.Atoi(chlng.RetryAfter)
-	if err != nil {
+	initialInterval, err := api.ParseRetryAfter(chlng.RetryAfter)
+	if err != nil || initialInterval == 0 {
 		// The ACME server MUST return a Retry-After.
-		// If it doesn't, we'll just poll hard.
+		// If it doesn't, or if it's invalid, we'll just poll hard.
 		// Boulder does not implement the ability to retry challenges or the Retry-After header.
 		// https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md#section-82
-		ra = 5
+		initialInterval = 5 * time.Second
 	}
-
-	initialInterval := time.Duration(ra) * time.Second
 
 	ctx := context.Background()
 

@@ -13,6 +13,7 @@ import (
 	"slices"
 	"strings"
 	"text/template"
+	"unicode"
 )
 
 const (
@@ -70,7 +71,8 @@ func generate() error {
 
 	err = template.Must(
 		template.New("ca").Funcs(map[string]any{
-			"ToLower": strings.ToLower,
+			"ToLower":   strings.ToLower,
+			"ToVarName": toVarName,
 		}).Parse(srcTemplate),
 	).Execute(b, entries)
 	if err != nil {
@@ -89,4 +91,10 @@ func generate() error {
 	}
 
 	return nil
+}
+
+func toVarName(s string) string {
+	return strings.Join(strings.FieldsFunc(s, func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	}), "")
 }

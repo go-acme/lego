@@ -37,7 +37,7 @@
   {
     "name": "Google Trust staging",
     "type": "staging",
-    "code": "GoogleTrustStaging",
+    "code": "GoogleTrust-Staging",
     "directoryURL": " https://dv.acme-v02.test-api.pki.goog/directory",
     "documentationURL": "https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial#register-acme"
   },
@@ -51,7 +51,7 @@
   {
     "name": "Let's Encrypt staging",
     "type": "staging",
-    "code": "LetsEncryptStaging",
+    "code": "LetsEncrypt-Staging",
     "directoryURL": "https://acme-staging-v02.api.letsencrypt.org/directory",
     "documentationURL": "https://letsencrypt.org/docs/staging-environment/"
   },

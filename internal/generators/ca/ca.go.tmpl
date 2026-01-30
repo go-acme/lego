@@ -9,24 +9,24 @@ import (
 
 const (
 {{- range . }}
-  // Code{{ .Code }} is the CA code for {{ .Name }}.
+  // Code{{ ToVarName .Code }} is the CA code for {{ .Name }}.
   // {{ .DocumentationURL }}
-  Code{{ .Code }} = "{{ ToLower .Code }}"
+  Code{{ ToVarName .Code }} = "{{ ToLower .Code }}"
 {{ end }})
 
 const (
 {{- range . }}
-  // DirectoryURL{{ .Code }} is the directory URL for {{ .Name }}.
+  // DirectoryURL{{ ToVarName .Code }} is the directory URL for {{ .Name }}.
   // {{ .DocumentationURL }}
-  DirectoryURL{{ .Code }} = "{{ .DirectoryURL }}"
+  DirectoryURL{{ ToVarName .Code }} = "{{ .DirectoryURL }}"
 {{ end }})
 
 // GetDirectoryURL returns the directory URL for the given CA code.
 func GetDirectoryURL(code string) (string, error) {
 	switch strings.ToLower(code) {
 	{{- range . }}
-	case Code{{ .Code }}:
-		return DirectoryURL{{ .Code }}, nil
+	case Code{{ ToVarName .Code }}:
+		return DirectoryURL{{ ToVarName .Code }}, nil
 	{{ end }}
 	default:
 		return "", fmt.Errorf("unknown ACME server code: %q", code)
@@ -36,7 +36,7 @@ func GetDirectoryURL(code string) (string, error) {
 func GetAllCodes() []string {
 	return []string{
 {{- range . }}
-		Code{{ .Code }},
+		Code{{ ToVarName .Code }},
 {{- end }}
 	}
 }

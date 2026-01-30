@@ -41,7 +41,7 @@ OPTIONS:
    --key-type string, -k string                                 Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384. (default: "ec256")
    --server string, -s string                                   CA (ACME server) URL. Overrides --ca-code. [$LEGO_SERVER]
    --server-code string                                         CA (ACME server) code. Shortcode to define the server URL.
-                                                                (available codes: actalis, digicert, freessl, globalsign, googletrust, googletruststaging, letsencrypt, letsencryptstaging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "letsencrypt") [$LEGO_SERVER_CODE]
+                                                                (available codes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "letsencrypt") [$LEGO_SERVER_CODE]
 
    Flags related to External Account Binding:
 
@@ -131,7 +131,7 @@ OPTIONS:
    --key-type string, -k string                                 Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384. (default: "ec256")
    --server string, -s string                                   CA (ACME server) URL. Overrides --ca-code. [$LEGO_SERVER]
    --server-code string                                         CA (ACME server) code. Shortcode to define the server URL.
-                                                                (available codes: actalis, digicert, freessl, globalsign, googletrust, googletruststaging, letsencrypt, letsencryptstaging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "letsencrypt") [$LEGO_SERVER_CODE]
+                                                                (available codes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "letsencrypt") [$LEGO_SERVER_CODE]
 
    Flags related to ACME Renewal Information (ARI) Extension:
 
@@ -228,7 +228,7 @@ OPTIONS:
    --reason uint                                                Identifies the reason for the certificate revocation. See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1. Valid values are: 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged), 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL), 9 (privilegeWithdrawn), or 10 (aACompromise). (default: 0)
    --server string, -s string                                   CA (ACME server) URL. Overrides --ca-code. [$LEGO_SERVER]
    --server-code string                                         CA (ACME server) code. Shortcode to define the server URL.
-                                                                (available codes: actalis, digicert, freessl, globalsign, googletrust, googletruststaging, letsencrypt, letsencryptstaging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "letsencrypt") [$LEGO_SERVER_CODE]
+                                                                (available codes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "letsencrypt") [$LEGO_SERVER_CODE]
 
    Flags related to External Account Binding:
 

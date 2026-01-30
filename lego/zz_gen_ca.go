@@ -30,7 +30,7 @@ const (
 
 	// CodeGoogleTrustStaging is the CA code for Google Trust staging.
 	// https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial#register-acme
-	CodeGoogleTrustStaging = "googletruststaging"
+	CodeGoogleTrustStaging = "googletrust-staging"
 
 	// CodeLetsEncrypt is the CA code for Let's Encrypt.
 	// https://letsencrypt.org/docs/
@@ -38,7 +38,7 @@ const (
 
 	// CodeLetsEncryptStaging is the CA code for Let's Encrypt staging.
 	// https://letsencrypt.org/docs/staging-environment/
-	CodeLetsEncryptStaging = "letsencryptstaging"
+	CodeLetsEncryptStaging = "letsencrypt-staging"
 
 	// CodeLiteSSL is the CA code for LiteSSL.
 	// https://litessl.cn/

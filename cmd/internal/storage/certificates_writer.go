@@ -22,60 +22,32 @@ import (
 
 const filePerm os.FileMode = 0o600
 
-type CertificatesWriterConfig struct {
-	BasePath string
-
+// SaveOptions contains the options for saving a certificate.
+type SaveOptions struct {
 	PEM         bool
 	PFX         bool
 	PFXFormat   string
 	PFXPassword string
 }
 
-// CertificatesWriter a writer of certificate files.
-//
-// rootPath:
-//
-//	./.lego/certificates/
-//	     │      └── root certificates directory
-//	     └── "path" option
-//
-// archivePath:
-//
-//	./.lego/archives/
-//	     │      └── archived certificates directory
-//	     └── "path" option
-type CertificatesWriter struct {
-	rootPath    string
-	archivePath string
+// Validate validates the options.
+func (o *SaveOptions) Validate() error {
+	if o == nil {
+		return nil
+	}
 
-	pem bool
-
-	pfx         bool
-	pfxFormat   string
-	pfxPassword string
-}
-
-// NewCertificatesWriter create a new certificates storage writer.
-func NewCertificatesWriter(config CertificatesWriterConfig) (*CertificatesWriter, error) {
-	if config.PFX {
-		switch config.PFXFormat {
+	if o.PFX {
+		switch o.PFXFormat {
 		case "DES", "RC2", "SHA256":
 		default:
-			return nil, fmt.Errorf("invalid PFX format: %s", config.PFXFormat)
+			return fmt.Errorf("invalid PFX format: %s", o.PFXFormat)
 		}
 	}
 
-	return &CertificatesWriter{
-		rootPath:    getCertificatesRootPath(config.BasePath),
-		archivePath: getCertificatesArchivePath(config.BasePath),
-		pem:         config.PEM,
-		pfx:         config.PFX,
-		pfxPassword: config.PFXPassword,
-		pfxFormat:   config.PFXFormat,
-	}, nil
+	return nil
 }
 
-func (s *CertificatesWriter) CreateRootFolder() error {
+func (s *CertificatesStorage) CreateRootFolder() error {
 	err := CreateNonExistingFolder(s.rootPath)
 	if err != nil {
 		return fmt.Errorf("could not check/create the root folder %q: %w", s.rootPath, err)
@@ -84,7 +56,7 @@ func (s *CertificatesWriter) CreateRootFolder() error {
 	return nil
 }
 
-func (s *CertificatesWriter) CreateArchiveFolder() error {
+func (s *CertificatesStorage) CreateArchiveFolder() error {
 	err := CreateNonExistingFolder(s.archivePath)
 	if err != nil {
 		return fmt.Errorf("could not check/create the archive folder %q: %w", s.archivePath, err)
@@ -93,12 +65,17 @@ func (s *CertificatesWriter) CreateArchiveFolder() error {
 	return nil
 }
 
-func (s *CertificatesWriter) SaveResource(certRes *certificate.Resource) error {
+func (s *CertificatesStorage) SaveResource(certRes *certificate.Resource, opts *SaveOptions) error {
+	err := opts.Validate()
+	if err != nil {
+		return err
+	}
+
 	domain := certRes.Domain
 
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	err := s.writeFile(domain, ExtCert, certRes.Certificate)
+	err = s.writeFile(domain, ExtCert, certRes.Certificate)
 	if err != nil {
 		return fmt.Errorf("unable to save the certificate for the domain %q: %w", domain, err)
 	}
@@ -112,11 +89,11 @@ func (s *CertificatesWriter) SaveResource(certRes *certificate.Resource) error {
 
 	// if we were given a CSR, we don't know the private key
 	if certRes.PrivateKey != nil {
-		err = s.writeCertificateFiles(domain, certRes)
+		err = s.writeCertificateFiles(domain, certRes, opts)
 		if err != nil {
 			return fmt.Errorf("unable to save the private key for the domain %q: %w", domain, err)
 		}
-	} else if s.pem || s.pfx {
+	} else if opts != nil && (opts.PEM || opts.PFX) {
 		// we don't have the private key; can't write the .pem or .pfx file
 		return fmt.Errorf("unable to save PEM or PFX without the private key for the domain %q: probable usage of a CSR", domain)
 	}
@@ -134,7 +111,7 @@ func (s *CertificatesWriter) SaveResource(certRes *certificate.Resource) error {
 	return nil
 }
 
-func (s *CertificatesWriter) MoveToArchive(domain string) error {
+func (s *CertificatesStorage) MoveToArchive(domain string) error {
 	baseFilename := filepath.Join(s.rootPath, sanitizedDomain(domain))
 
 	matches, err := filepath.Glob(baseFilename + ".*")
@@ -160,33 +137,25 @@ func (s *CertificatesWriter) MoveToArchive(domain string) error {
 	return nil
 }
 
-func (s *CertificatesWriter) GetArchivePath() string {
-	return s.archivePath
-}
-
-func (s *CertificatesWriter) IsPEM() bool {
-	return s.pem
-}
-
-func (s *CertificatesWriter) IsPFX() bool {
-	return s.pfx
-}
-
-func (s *CertificatesWriter) writeCertificateFiles(domain string, certRes *certificate.Resource) error {
+func (s *CertificatesStorage) writeCertificateFiles(domain string, certRes *certificate.Resource, opts *SaveOptions) error {
 	err := s.writeFile(domain, ExtKey, certRes.PrivateKey)
 	if err != nil {
 		return fmt.Errorf("unable to save key file: %w", err)
 	}
 
-	if s.pem {
+	if opts == nil {
+		return nil
+	}
+
+	if opts.PEM {
 		err = s.writeFile(domain, ExtPEM, bytes.Join([][]byte{certRes.Certificate, certRes.PrivateKey}, nil))
 		if err != nil {
 			return fmt.Errorf("unable to save PEM file: %w", err)
 		}
 	}
 
-	if s.pfx {
-		err = s.writePFXFile(domain, certRes)
+	if opts.PFX {
+		err = s.writePFXFile(domain, certRes, opts.PFXPassword, opts.PFXFormat)
 		if err != nil {
 			return fmt.Errorf("unable to save PFX file: %w", err)
 		}
@@ -195,7 +164,7 @@ func (s *CertificatesWriter) writeCertificateFiles(domain string, certRes *certi
 	return nil
 }
 
-func (s *CertificatesWriter) writePFXFile(domain string, certRes *certificate.Resource) error {
+func (s *CertificatesStorage) writePFXFile(domain string, certRes *certificate.Resource, password, format string) error {
 	certPemBlock, _ := pem.Decode(certRes.Certificate)
 	if certPemBlock == nil {
 		return fmt.Errorf("unable to parse Certificate for domain %s", domain)
@@ -216,12 +185,12 @@ func (s *CertificatesWriter) writePFXFile(domain string, certRes *certificate.Re
 		return fmt.Errorf("unable to parse PrivateKey for domain %s: %w", domain, err)
 	}
 
-	encoder, err := getPFXEncoder(s.pfxFormat)
+	encoder, err := getPFXEncoder(format)
 	if err != nil {
 		return fmt.Errorf("PFX encoder: %w", err)
 	}
 
-	pfxBytes, err := encoder.Encode(privateKey, cert, certChain, s.pfxPassword)
+	pfxBytes, err := encoder.Encode(privateKey, cert, certChain, password)
 	if err != nil {
 		return fmt.Errorf("unable to encode PFX data for domain %s: %w", domain, err)
 	}
@@ -229,7 +198,7 @@ func (s *CertificatesWriter) writePFXFile(domain string, certRes *certificate.Re
 	return s.writeFile(domain, ExtPFX, pfxBytes)
 }
 
-func (s *CertificatesWriter) writeFile(domain, extension string, data []byte) error {
+func (s *CertificatesStorage) writeFile(domain, extension string, data []byte) error {
 	filePath := filepath.Join(s.rootPath, sanitizedDomain(domain)+extension)
 
 	log.Info("Writing file.",

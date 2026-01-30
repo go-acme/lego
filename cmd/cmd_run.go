@@ -49,7 +49,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
-	account, err := accountsStorage.Get(ctx, keyType)
+	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flgEmail), cmd.String(flgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
@@ -75,10 +75,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		fmt.Printf(rootPathWarningMessage, accountsStorage.GetRootPath())
 	}
 
-	certsStorage, err := storage.NewCertificatesStorage(newCertificatesWriterConfig(cmd))
-	if err != nil {
-		return fmt.Errorf("certificates storage initialization: %w", err)
-	}
+	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
 
 	err = certsStorage.CreateRootFolder()
 	if err != nil {
@@ -92,16 +89,19 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("obtain certificate: %w", err)
 	}
 
-	err = certsStorage.SaveResource(cert)
+	options := newSaveOptions(cmd)
+
+	err = certsStorage.SaveResource(cert, options)
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
 
 	meta := map[string]string{
+		// TODO(ldez) add account ID.
 		hook.EnvAccountEmail: account.Email,
 	}
 
-	hook.AddPathToMetadata(meta, cert.Domain, cert, certsStorage)
+	hook.AddPathToMetadata(meta, cert.Domain, cert, certsStorage, options)
 
 	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }
@@ -117,7 +117,7 @@ func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Clien
 		if cmd.IsSet(flgPrivateKey) {
 			var err error
 
-			request.PrivateKey, err = storage.LoadPrivateKey(cmd.String(flgPrivateKey))
+			request.PrivateKey, err = storage.ReadPrivateKeyFile(cmd.String(flgPrivateKey))
 			if err != nil {
 				return nil, fmt.Errorf("load private key: %w", err)
 			}
@@ -139,7 +139,7 @@ func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Clien
 	if cmd.IsSet(flgPrivateKey) {
 		var err error
 
-		request.PrivateKey, err = storage.LoadPrivateKey(cmd.String(flgPrivateKey))
+		request.PrivateKey, err = storage.ReadPrivateKeyFile(cmd.String(flgPrivateKey))
 		if err != nil {
 			return nil, fmt.Errorf("load private key: %w", err)
 		}

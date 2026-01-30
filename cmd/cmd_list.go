@@ -35,7 +35,7 @@ func list(ctx context.Context, cmd *cli.Command) error {
 }
 
 func listCertificates(_ context.Context, cmd *cli.Command) error {
-	certsStorage := storage.NewCertificatesReader(cmd.String(flgPath))
+	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
 
 	matches, err := filepath.Glob(filepath.Join(certsStorage.GetRootPath(), "*.crt"))
 	if err != nil {
@@ -126,6 +126,7 @@ func listAccount(_ context.Context, cmd *cli.Command) error {
 			return err
 		}
 
+		fmt.Println("  ID:", account.GetID())
 		fmt.Println("  Email:", account.Email)
 		fmt.Println("  Server:", uri.Host)
 		fmt.Println("  Path:", filepath.Dir(filename))

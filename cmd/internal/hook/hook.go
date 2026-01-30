@@ -87,7 +87,7 @@ func metaToEnv(meta map[string]string) []string {
 }
 
 // AddPathToMetadata adds information about the certificate to the metadata map.
-func AddPathToMetadata(meta map[string]string, domain string, certRes *certificate.Resource, certsStorage *storage.CertificatesStorage) {
+func AddPathToMetadata(meta map[string]string, domain string, certRes *certificate.Resource, certsStorage *storage.CertificatesStorage, options *storage.SaveOptions) {
 	meta[EnvCertDomain] = domain
 	meta[EnvCertPath] = certsStorage.GetFileName(domain, storage.ExtCert)
 	meta[EnvCertKeyPath] = certsStorage.GetFileName(domain, storage.ExtKey)
@@ -96,11 +96,11 @@ func AddPathToMetadata(meta map[string]string, domain string, certRes *certifica
 		meta[EnvIssuerCertKeyPath] = certsStorage.GetFileName(domain, storage.ExtIssuer)
 	}
 
-	if certsStorage.IsPEM() {
+	if options.PEM {
 		meta[EnvCertPEMPath] = certsStorage.GetFileName(domain, storage.ExtPEM)
 	}
 
-	if certsStorage.IsPFX() {
+	if options.PFX {
 		meta[EnvCertPFXPath] = certsStorage.GetFileName(domain, storage.ExtPFX)
 	}
 }

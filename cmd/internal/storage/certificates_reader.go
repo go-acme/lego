@@ -13,17 +13,7 @@ import (
 	"github.com/go-acme/lego/v5/log"
 )
 
-type CertificatesReader struct {
-	rootPath string
-}
-
-func NewCertificatesReader(basePath string) *CertificatesReader {
-	return &CertificatesReader{
-		rootPath: getCertificatesRootPath(basePath),
-	}
-}
-
-func (s *CertificatesReader) ReadResource(domain string) (certificate.Resource, error) {
+func (s *CertificatesStorage) ReadResource(domain string) (certificate.Resource, error) {
 	raw, err := s.ReadFile(domain, ExtResource)
 	if err != nil {
 		return certificate.Resource{}, fmt.Errorf("unable to load resource for domain %q: %w", domain, err)
@@ -37,7 +27,7 @@ func (s *CertificatesReader) ReadResource(domain string) (certificate.Resource, 
 	return resource, nil
 }
 
-func (s *CertificatesReader) ExistsFile(domain, extension string) bool {
+func (s *CertificatesStorage) ExistsFile(domain, extension string) bool {
 	filePath := s.GetFileName(domain, extension)
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -49,20 +39,20 @@ func (s *CertificatesReader) ExistsFile(domain, extension string) bool {
 	return true
 }
 
-func (s *CertificatesReader) ReadFile(domain, extension string) ([]byte, error) {
+func (s *CertificatesStorage) ReadFile(domain, extension string) ([]byte, error) {
 	return os.ReadFile(s.GetFileName(domain, extension))
 }
 
-func (s *CertificatesReader) GetRootPath() string {
+func (s *CertificatesStorage) GetRootPath() string {
 	return s.rootPath
 }
 
-func (s *CertificatesReader) GetFileName(domain, extension string) string {
+func (s *CertificatesStorage) GetFileName(domain, extension string) string {
 	filename := sanitizedDomain(domain) + extension
 	return filepath.Join(s.rootPath, filename)
 }
 
-func (s *CertificatesReader) ReadCertificate(domain, extension string) ([]*x509.Certificate, error) {
+func (s *CertificatesStorage) ReadCertificate(domain, extension string) ([]*x509.Certificate, error) {
 	content, err := s.ReadFile(domain, extension)
 	if err != nil {
 		return nil, err

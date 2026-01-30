@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,22 +24,29 @@ const (
 )
 
 // CertificatesStorage a certificates' storage.
+//
+// rootPath:
+//
+//	./.lego/certificates/
+//	     │      └── root certificates directory
+//	     └── "path" option
+//
+// archivePath:
+//
+//	./.lego/archives/
+//	     │      └── archived certificates directory
+//	     └── "path" option
 type CertificatesStorage struct {
-	*CertificatesWriter
-	*CertificatesReader
+	rootPath    string
+	archivePath string
 }
 
 // NewCertificatesStorage create a new certificates storage.
-func NewCertificatesStorage(config CertificatesWriterConfig) (*CertificatesStorage, error) {
-	writer, err := NewCertificatesWriter(config)
-	if err != nil {
-		return nil, fmt.Errorf("certificates storage writer: %w", err)
-	}
-
+func NewCertificatesStorage(basePath string) *CertificatesStorage {
 	return &CertificatesStorage{
-		CertificatesWriter: writer,
-		CertificatesReader: NewCertificatesReader(config.BasePath),
-	}, nil
+		rootPath:    getCertificatesRootPath(basePath),
+		archivePath: getCertificatesArchivePath(basePath),
+	}
 }
 
 func CreateNonExistingFolder(path string) error {

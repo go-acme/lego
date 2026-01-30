@@ -19,6 +19,7 @@ const (
 	flgDomains   = "domains"
 	flgAcceptTOS = "accept-tos"
 	flgEmail     = "email"
+	flgAccountID = "account-id"
 	flgEAB       = "eab"
 	flgKID       = "kid"
 	flgHMAC      = "hmac"
@@ -132,6 +133,7 @@ const (
 	envEABHMAC     = "LEGO_EAB_HMAC"
 	envEABKID      = "LEGO_EAB_KID"
 	envEmail       = "LEGO_EMAIL"
+	envAccountID   = "LEGO_ACCOUNT_ID"
 	envPath        = "LEGO_PATH"
 	envPFX         = "LEGO_PFX"
 	envPFXFormat   = "LEGO_PFX_FORMAT"
@@ -343,6 +345,12 @@ func CreateAccountFlags() []cli.Flag {
 			Sources: cli.EnvVars(envEmail),
 			Usage:   "Email used for registration and recovery contact.",
 		},
+		&cli.StringFlag{
+			Name:    flgAccountID,
+			Aliases: []string{"a"},
+			Sources: cli.EnvVars(envAccountID),
+			Usage:   "Account identifier (The email is used if there is account ID is undefined).",
+		},
 		&cli.BoolFlag{
 			Name:    flgEAB,
 			Sources: cli.EnvVars(envEAB),
@@ -495,9 +503,8 @@ func createRenewFlags() []cli.Flag {
 }
 
 func createRevokeFlags() []cli.Flag {
-	flags := CreateBaseFlags()
-
-	flags = append(flags,
+	flags := []cli.Flag{
+		CreatePathFlag(false),
 		&cli.BoolFlag{
 			Name:    flgKeep,
 			Aliases: []string{"k"},
@@ -513,7 +520,11 @@ func createRevokeFlags() []cli.Flag {
 				" 9 (privilegeWithdrawn), or 10 (aACompromise).",
 			Value: acme.CRLReasonUnspecified,
 		},
-	)
+	}
+
+	flags = append(flags, CreateDomainFlag())
+	flags = append(flags, CreateAccountFlags()...)
+	flags = append(flags, CreateACMEClientFlags()...)
 
 	return flags
 }

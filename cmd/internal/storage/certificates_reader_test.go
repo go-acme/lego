@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewCertificatesWriter_ReadResource(t *testing.T) {
-	reader := NewCertificatesReader("testdata")
+func TestCertificatesStorage_ReadResource(t *testing.T) {
+	reader := NewCertificatesStorage("testdata")
 
 	resource, err := reader.ReadResource("example.com")
 	require.NoError(t, err)
@@ -24,8 +24,8 @@ func TestNewCertificatesWriter_ReadResource(t *testing.T) {
 	assert.Equal(t, expected, resource)
 }
 
-func TestNewCertificatesWriter_ExistsFile(t *testing.T) {
-	reader := NewCertificatesReader("testdata")
+func TestCertificatesStorage_ExistsFile(t *testing.T) {
+	reader := NewCertificatesStorage("testdata")
 
 	testCases := []struct {
 		desc      string
@@ -56,8 +56,8 @@ func TestNewCertificatesWriter_ExistsFile(t *testing.T) {
 	}
 }
 
-func TestNewCertificatesWriter_ReadFile(t *testing.T) {
-	reader := NewCertificatesReader("testdata")
+func TestCertificatesStorage_ReadFile(t *testing.T) {
+	reader := NewCertificatesStorage("testdata")
 
 	data, err := reader.ReadFile("example.com", ExtResource)
 	assert.NoError(t, err)
@@ -65,10 +65,10 @@ func TestNewCertificatesWriter_ReadFile(t *testing.T) {
 	assert.NotEmpty(t, data)
 }
 
-func TestNewCertificatesWriter_GetRootPath(t *testing.T) {
+func TestCertificatesStorage_GetRootPath(t *testing.T) {
 	basePath := t.TempDir()
 
-	reader := NewCertificatesReader(basePath)
+	reader := NewCertificatesStorage(basePath)
 
 	rootPath := reader.GetRootPath()
 
@@ -77,7 +77,7 @@ func TestNewCertificatesWriter_GetRootPath(t *testing.T) {
 	assert.Equal(t, expected, rootPath)
 }
 
-func TestNewCertificatesWriter_GetFileName(t *testing.T) {
+func TestCertificatesStorage_GetFileName(t *testing.T) {
 	testCases := []struct {
 		desc      string
 		domain    string
@@ -122,7 +122,7 @@ func TestNewCertificatesWriter_GetFileName(t *testing.T) {
 
 			basePath := t.TempDir()
 
-			reader := NewCertificatesReader(basePath)
+			reader := NewCertificatesStorage(basePath)
 
 			filename := reader.GetFileName(test.domain, test.extension)
 
@@ -133,8 +133,8 @@ func TestNewCertificatesWriter_GetFileName(t *testing.T) {
 	}
 }
 
-func TestNewCertificatesWriter_ReadCertificate(t *testing.T) {
-	reader := NewCertificatesReader("testdata")
+func TestCertificatesStorage_ReadCertificate(t *testing.T) {
+	reader := NewCertificatesStorage("testdata")
 
 	cert, err := reader.ReadCertificate("example.org", ExtCert)
 	assert.NoError(t, err)

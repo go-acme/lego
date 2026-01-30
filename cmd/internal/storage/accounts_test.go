@@ -2,7 +2,6 @@ package storage
 
 import (
 	"crypto"
-	"crypto/rsa"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,39 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func TestNewAccountsStorage_userID(t *testing.T) {
-	testCases := []struct {
-		desc     string
-		email    string
-		expected string
-	}{
-		{
-			desc:     "with email",
-			email:    "test@example.com",
-			expected: "test@example.com",
-		},
-		{
-			desc:     "without email",
-			expected: "noemail@example.com",
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			storage, err := NewAccountsStorage(AccountsStorageConfig{
-				Email:    test.email,
-				BasePath: t.TempDir(),
-			})
-			require.NoError(t, err)
-
-			assert.Equal(t, test.email, storage.email)
-			assert.Equal(t, test.expected, storage.userID)
-		})
-	}
-}
 
 func TestAccountsStorage_GetRootPath(t *testing.T) {
 	basePath := t.TempDir()
@@ -69,13 +35,15 @@ func TestAccountsStorage_Save(t *testing.T) {
 	basePath := t.TempDir()
 
 	storage, err := NewAccountsStorage(AccountsStorageConfig{
-		Email:    "test@example.com",
 		BasePath: basePath,
 	})
 	require.NoError(t, err)
 
+	accountID := "test@example.com"
+
 	account := &Account{
 		Email: "account@example.com",
+		ID:    accountID,
 		Registration: &registration.Resource{
 			Body: acme.Account{
 				Status:                 "valid",
@@ -90,20 +58,22 @@ func TestAccountsStorage_Save(t *testing.T) {
 		key: crypto.PrivateKey(""),
 	}
 
-	err = os.MkdirAll(filepath.Dir(storage.accountFilePath), 0o755)
+	accountFilePath := storage.getAccountFilePath(accountID)
+
+	err = os.MkdirAll(filepath.Dir(accountFilePath), 0o755)
 	require.NoError(t, err)
 
 	err = storage.Save(account)
 	require.NoError(t, err)
 
-	require.FileExists(t, storage.accountFilePath)
+	require.FileExists(t, accountFilePath)
 
-	accountFilePath, err := filepath.Rel(basePath, storage.accountFilePath)
+	relativeAccountFilePath, err := filepath.Rel(basePath, accountFilePath)
 	require.NoError(t, err)
 
-	assert.Equal(t, filepath.Join(baseAccountsRootFolderName, "test@example.com", accountFileName), accountFilePath)
+	assert.Equal(t, filepath.Join(baseAccountsRootFolderName, accountID, accountFileName), relativeAccountFilePath)
 
-	file, err := os.ReadFile(storage.accountFilePath)
+	file, err := os.ReadFile(accountFilePath)
 	require.NoError(t, err)
 
 	expected, err := os.ReadFile(filepath.Join("testdata", accountFileName))
@@ -114,30 +84,34 @@ func TestAccountsStorage_Save(t *testing.T) {
 
 func TestAccountsStorage_Get_newAccount(t *testing.T) {
 	storage, err := NewAccountsStorage(AccountsStorageConfig{
-		Email:    "test@example.com",
 		BasePath: t.TempDir(),
 	})
 	require.NoError(t, err)
 
-	account, err := storage.Get(t.Context(), certcrypto.RSA4096)
+	email := "test@example.com"
+
+	account, err := storage.Get(t.Context(), certcrypto.RSA4096, email, "")
 	require.NoError(t, err)
 
 	assert.Equal(t, "test@example.com", account.GetEmail())
+	assert.Equal(t, "test@example.com", account.GetID())
 	assert.Nil(t, account.GetRegistration())
 	assert.NotNil(t, account.GetPrivateKey())
 }
 
 func TestAccountsStorage_Get_existingAccount(t *testing.T) {
 	storage, err := NewAccountsStorage(AccountsStorageConfig{
-		Email:    "test@example.com",
 		BasePath: "testdata",
 	})
 	require.NoError(t, err)
 
-	account, err := storage.Get(t.Context(), certcrypto.RSA4096)
+	accountID := "test@example.com"
+
+	account, err := storage.Get(t.Context(), certcrypto.RSA4096, "", accountID)
 	require.NoError(t, err)
 
-	assert.Equal(t, "test@example.com", account.GetEmail())
+	assert.Equal(t, "account@example.com", account.GetEmail())
+	assert.Equal(t, "test@example.com", account.GetID())
 
 	expectedRegistration := &registration.Resource{
 		Body: acme.Account{
@@ -149,116 +123,4 @@ func TestAccountsStorage_Get_existingAccount(t *testing.T) {
 	assert.Equal(t, expectedRegistration, account.GetRegistration())
 
 	assert.NotNil(t, account.GetPrivateKey())
-}
-
-func TestAccountsStorage_load(t *testing.T) {
-	storage, err := NewAccountsStorage(AccountsStorageConfig{
-		Email:    "test@example.com",
-		BasePath: t.TempDir(),
-	})
-	require.NoError(t, err)
-
-	storage.accountFilePath = filepath.Join("testdata", accountFileName)
-
-	account, err := storage.load(t.Context(), "")
-	require.NoError(t, err)
-
-	expected := &Account{
-		Email: "account@example.com",
-		Registration: &registration.Resource{
-			Body: acme.Account{
-				Status:                 "valid",
-				Contact:                []string{"contact@example.com"},
-				TermsOfServiceAgreed:   true,
-				Orders:                 "https://ame.example.com/orders/123456",
-				OnlyReturnExisting:     true,
-				ExternalAccountBinding: []byte(`"EAB"`),
-			},
-			URI: "https://ame.example.com",
-		},
-		key: crypto.PrivateKey(""),
-	}
-
-	assert.Equal(t, expected, account)
-}
-
-func TestAccountsStorage_getPrivateKey(t *testing.T) {
-	testCases := []struct {
-		desc     string
-		basePath string
-	}{
-		{
-			desc: "create a new private key",
-		},
-		{
-			desc:     "existing private key",
-			basePath: "testdata",
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			if test.basePath == "" {
-				test.basePath = t.TempDir()
-			}
-
-			storage, err := NewAccountsStorage(AccountsStorageConfig{
-				Email:    "test@example.com",
-				BasePath: test.basePath,
-			})
-			require.NoError(t, err)
-
-			expectedPath := filepath.Join(test.basePath, baseAccountsRootFolderName, "test@example.com", baseKeysFolderName, "test@example.com.key")
-
-			privateKey, err := storage.getPrivateKey(certcrypto.RSA4096)
-			require.NoError(t, err)
-
-			assert.FileExists(t, expectedPath)
-
-			assert.IsType(t, &rsa.PrivateKey{}, privateKey)
-		})
-	}
-}
-
-func TestAccountsStorage_existsAccountFilePath(t *testing.T) {
-	testCases := []struct {
-		desc   string
-		setup  func(t *testing.T, storage *AccountsStorage)
-		assert assert.BoolAssertionFunc
-	}{
-		{
-			desc: "an account file exists",
-			setup: func(t *testing.T, storage *AccountsStorage) {
-				t.Helper()
-
-				err := os.MkdirAll(filepath.Dir(storage.accountFilePath), 0o755)
-				require.NoError(t, err)
-
-				err = os.WriteFile(storage.accountFilePath, []byte("test"), 0o644)
-				require.NoError(t, err)
-			},
-			assert: assert.True,
-		},
-		{
-			desc:   "no account file",
-			assert: assert.False,
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			storage, err := NewAccountsStorage(AccountsStorageConfig{
-				BasePath: t.TempDir(),
-			})
-			require.NoError(t, err)
-
-			if test.setup != nil {
-				test.setup(t, storage)
-			}
-
-			test.assert(t, storage.existsAccountFilePath())
-		})
-	}
 }

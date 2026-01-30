@@ -512,6 +512,17 @@ func createListFlags() []cli.Flag {
 	}
 }
 
+func createRegisterFlags() []cli.Flag {
+	flags := []cli.Flag{
+		CreatePathFlag(true),
+	}
+
+	flags = append(flags, CreateACMEClientFlags()...)
+	flags = append(flags, CreateAccountFlags()...)
+
+	return flags
+}
+
 func CreateDomainFlag() cli.Flag {
 	return &cli.StringSliceFlag{
 		Name:    flgDomains,

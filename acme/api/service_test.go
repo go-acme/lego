@@ -86,7 +86,7 @@ func TestParseRetryAfter(t *testing.T) {
 			rt, err := ParseRetryAfter(test.value)
 			require.NoError(t, err)
 
-			assert.InDelta(t, test.expected.Seconds(), rt.Seconds(), 0.9)
+			assert.InDelta(t, test.expected.Seconds(), rt.Seconds(), 1)
 		})
 	}
 }

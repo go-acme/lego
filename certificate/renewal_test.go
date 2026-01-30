@@ -107,9 +107,7 @@ func TestCertifier_GetRenewalInfo_retryAfter(t *testing.T) {
 	assert.Equal(t, "2020-03-17T18:21:09Z", ri.SuggestedWindow.End.Format(time.RFC3339))
 	assert.Equal(t, "https://aricapable.ca.example/docs/renewal-advice/", ri.ExplanationURL)
 
-	// RetryAfter should be parsed as duration until the HTTP-date time
-	assert.Greater(t, ri.RetryAfter, 5*time.Hour)
-	assert.Less(t, ri.RetryAfter, 7*time.Hour)
+	assert.InDelta(t, 6, ri.RetryAfter.Hours(), 0.001)
 }
 
 func TestCertifier_GetRenewalInfo_errors(t *testing.T) {

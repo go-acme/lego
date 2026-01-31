@@ -12,7 +12,7 @@ import (
 
 const (
 	dnsTemplate   = "templates/dns.go.tmpl"
-	dnsTargetFile = "./providers/dns/internal/useragent/useragent.go"
+	dnsTargetFile = "./internal/useragent/useragent.go"
 )
 
 const (

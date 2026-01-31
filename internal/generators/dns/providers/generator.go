@@ -13,11 +13,11 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/go-acme/lego/v5/internal/dns/descriptors"
+	"github.com/go-acme/lego/v5/internal/generators/dns/descriptors"
 )
 
 const (
-	root = "../../../"
+	root = "../../../../"
 
 	outputPath = "providers/dns/zz_gen_dns_providers.go"
 )

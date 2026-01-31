@@ -16,8 +16,8 @@ import (
 	aazure "github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/internal/errutils"
 	"github.com/go-acme/lego/v5/platform/config/env"
-	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 )
 
 // Environment variables names.

@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v5/internal/errutils"
 	"github.com/go-acme/lego/v5/log"
-	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
 	"golang.org/x/time/rate"
 )
 

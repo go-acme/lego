@@ -1,15 +1,19 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
 	"software.sslmate.com/src/go-pkcs12"
 )
@@ -160,12 +164,23 @@ const (
 func createACMEClientFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:     flgServer,
-			Aliases:  []string{"s"},
-			Sources:  cli.EnvVars(envServer),
-			Usage:    "CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.",
-			Value:    lego.LEDirectoryProduction,
-			Required: true,
+			// NOTE(ldez): if Required is true, then the default value is not display in the help.
+			Name:    flgServer,
+			Aliases: []string{"s"},
+			Sources: cli.EnvVars(envServer),
+			Usage: fmt.Sprintf("CA (ACME server). It can be either a URL or a shortcode."+
+				"\n\t(available shortcodes: %s)", strings.Join(lego.GetAllCodes(), ", ")),
+			Value: lego.DirectoryURLLetsEncrypt,
+			Action: func(ctx context.Context, cmd *cli.Command, s string) error {
+				directoryURL, err := lego.GetDirectoryURL(s)
+				if err != nil {
+					log.Debug("Server shortcode not found. Use the value as URL.", slog.String("value", s), log.ErrorAttr(err))
+
+					directoryURL = s
+				}
+
+				return cmd.Set(flgServer, directoryURL)
+			},
 		},
 		&cli.BoolFlag{
 			Category: categoryAdvanced,

@@ -57,7 +57,7 @@ func createRenew() *cli.Command {
 }
 
 func renew(ctx context.Context, cmd *cli.Command) error {
-	keyType, err := getKeyType(cmd.String(flgKeyType))
+	keyType, err := certcrypto.GetKeyType(cmd.String(flgKeyType))
 	if err != nil {
 		return fmt.Errorf("get the key type: %w", err)
 	}

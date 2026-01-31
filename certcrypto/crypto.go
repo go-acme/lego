@@ -22,16 +22,6 @@ import (
 	"golang.org/x/crypto/ocsp"
 )
 
-// Constants for all key types we support.
-const (
-	EC256   = KeyType("P256")
-	EC384   = KeyType("P384")
-	RSA2048 = KeyType("2048")
-	RSA3072 = KeyType("3072")
-	RSA4096 = KeyType("4096")
-	RSA8192 = KeyType("8192")
-)
-
 const (
 	// OCSPGood means that the certificate is valid.
 	OCSPGood = ocsp.Good
@@ -48,9 +38,6 @@ var (
 	tlsFeatureExtensionOID = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 24}
 	ocspMustStapleFeature  = []byte{0x30, 0x03, 0x02, 0x01, 0x05}
 )
-
-// KeyType represents the key algo as well as the key size or curve to use.
-type KeyType string
 
 type DERCertificateBytes []byte
 

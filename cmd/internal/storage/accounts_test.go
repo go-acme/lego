@@ -40,10 +40,12 @@ func TestAccountsStorage_Save(t *testing.T) {
 	require.NoError(t, err)
 
 	accountID := "test@example.com"
+	keyType := certcrypto.RSA4096
 
 	account := &Account{
-		Email: "account@example.com",
-		ID:    accountID,
+		Email:   "account@example.com",
+		ID:      accountID,
+		KeyType: keyType,
 		Registration: &registration.Resource{
 			Body: acme.Account{
 				Status:                 "valid",
@@ -58,20 +60,16 @@ func TestAccountsStorage_Save(t *testing.T) {
 		key: crypto.PrivateKey(""),
 	}
 
-	accountFilePath := storage.getAccountFilePath(accountID)
+	accountFilePath := storage.getAccountFilePath(keyType, accountID)
 
 	err = os.MkdirAll(filepath.Dir(accountFilePath), 0o755)
 	require.NoError(t, err)
 
-	err = storage.Save(account)
+	err = storage.Save(keyType, account)
 	require.NoError(t, err)
 
 	require.FileExists(t, accountFilePath)
-
-	relativeAccountFilePath, err := filepath.Rel(basePath, accountFilePath)
-	require.NoError(t, err)
-
-	assert.Equal(t, filepath.Join(baseAccountsRootFolderName, accountID, accountFileName), relativeAccountFilePath)
+	assert.NoFileExists(t, filepath.Join(storage.getKeyPath(keyType, accountID), account.GetID()+ExtKey))
 
 	file, err := os.ReadFile(accountFilePath)
 	require.NoError(t, err)
@@ -89,14 +87,18 @@ func TestAccountsStorage_Get_newAccount(t *testing.T) {
 	require.NoError(t, err)
 
 	email := "test@example.com"
+	keyType := certcrypto.RSA4096
 
-	account, err := storage.Get(t.Context(), certcrypto.RSA4096, email, "")
+	account, err := storage.Get(t.Context(), keyType, email, "")
 	require.NoError(t, err)
 
 	assert.Equal(t, "test@example.com", account.GetEmail())
 	assert.Equal(t, "test@example.com", account.GetID())
 	assert.Nil(t, account.GetRegistration())
 	assert.NotNil(t, account.GetPrivateKey())
+
+	assert.FileExists(t, storage.getAccountFilePath(keyType, email))
+	assert.FileExists(t, filepath.Join(storage.getKeyPath(keyType, email), account.GetID()+ExtKey))
 }
 
 func TestAccountsStorage_Get_existingAccount(t *testing.T) {
@@ -112,6 +114,7 @@ func TestAccountsStorage_Get_existingAccount(t *testing.T) {
 
 	assert.Equal(t, "account@example.com", account.GetEmail())
 	assert.Equal(t, "test@example.com", account.GetID())
+	assert.Equal(t, certcrypto.RSA4096, account.KeyType)
 
 	expectedRegistration := &registration.Resource{
 		Body: acme.Account{

@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
+	"github.com/mattn/go-zglob"
 	"github.com/urfave/cli/v3"
 )
 
@@ -91,7 +92,7 @@ func listCertificatesJSON(_ context.Context, cmd *cli.Command) error {
 func readCertificates(cmd *cli.Command) ([]ListCertificate, error) {
 	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
 
-	matches, err := filepath.Glob(filepath.Join(certsStorage.GetRootPath(), "*.json"))
+	matches, err := zglob.Glob(filepath.Join(certsStorage.GetRootPath(), "**", "*.json"))
 	if err != nil {
 		return nil, err
 	}

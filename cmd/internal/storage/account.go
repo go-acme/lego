@@ -3,6 +3,7 @@ package storage
 import (
 	"crypto"
 
+	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/registration"
 )
 
@@ -12,13 +13,14 @@ const AccountIDPlaceholder = "noemail@example.com"
 type Account struct {
 	ID           string                 `json:"id"`
 	Email        string                 `json:"email"`
+	KeyType      certcrypto.KeyType     `json:"keyType"`
 	Registration *registration.Resource `json:"registration"`
 
 	key crypto.PrivateKey
 }
 
-func NewAccount(email, id string, key crypto.PrivateKey) *Account {
-	return &Account{Email: email, ID: id, key: key}
+func NewAccount(email, id string, keyType certcrypto.KeyType, key crypto.PrivateKey) *Account {
+	return &Account{Email: email, ID: id, KeyType: keyType, key: key}
 }
 
 /** Implementation of the registration.User interface **/
@@ -31,6 +33,11 @@ func (a *Account) GetID() string {
 // GetEmail returns the email address for the account.
 func (a *Account) GetEmail() string {
 	return a.Email
+}
+
+// GetKeyType returns the key type of the account.
+func (a *Account) GetKeyType() certcrypto.KeyType {
+	return a.KeyType
 }
 
 // GetPrivateKey returns the private account key.

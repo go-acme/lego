@@ -21,7 +21,6 @@ import (
 
 const (
 	baseAccountsRootFolderName = "accounts"
-	baseKeysFolderName         = "keys"
 	accountFileName            = "account.json"
 )
 
@@ -51,25 +50,26 @@ type AccountsStorageConfig struct {
 // rootUserPath:
 //
 //	./.lego/accounts/localhost_14000/foo@example.com/
-//	     │      │             │             └── userID ("email" option)
+//	     │      │             │             └── accountID
 //	     │      │             └── CA server ("server" option)
 //	     │      └── root accounts directory
 //	     └── "path" option
 //
 // keysPath:
 //
-//	./.lego/accounts/localhost_14000/foo@example.com/keys/
-//	     │      │             │             │           └── root keys directory
-//	     │      │             │             └── userID ("email" option)
+//	./.lego/accounts/localhost_14000/foo@example.com/RSA4096/
+//	     │      │             │             │          └── per key type directory
+//	     │      │             │             └── accountID
 //	     │      │             └── CA server ("server" option)
 //	     │      └── root accounts directory
 //	     └── "path" option
 //
 // accountFilePath:
 //
-//	./.lego/accounts/localhost_14000/foo@example.com/account.json
-//	     │      │             │             │             └── account file
-//	     │      │             │             └── userID ("email" option)
+//	./.lego/accounts/localhost_14000/foo@example.com/RSA4096/account.json
+//	     │      │             │             │          │       └── account file
+//	     │      │             │             │          └── per key type directory
+//	     │      │             │             └── accountID
 //	     │      │             └── CA server ("server" option)
 //	     │      └── root accounts directory
 //	     └── "path" option
@@ -99,8 +99,8 @@ func (s *AccountsStorage) GetRootPath() string {
 	return s.rootPath
 }
 
-// Save saves the account to a file.
-func (s *AccountsStorage) Save(account *Account) error {
+// Save saves the account to a file (only the JSON file).
+func (s *AccountsStorage) Save(keyType certcrypto.KeyType, account *Account) error {
 	if account.ID == "" {
 		account.ID = account.GetID()
 	}
@@ -110,15 +110,25 @@ func (s *AccountsStorage) Save(account *Account) error {
 		return err
 	}
 
-	return os.WriteFile(s.getAccountFilePath(account.GetID()), jsonBytes, filePerm)
+	return os.WriteFile(s.getAccountFilePath(keyType, account.GetID()), jsonBytes, filePerm)
 }
 
-// Get gets an account from a file or creates a new one (the account is not saved).
+// Get gets an account from a file or creates a new one (the files are saved).
 func (s *AccountsStorage) Get(ctx context.Context, keyType certcrypto.KeyType, email, accountID string) (*Account, error) {
 	effectiveAccountID := getEffectiveAccountID(email, accountID)
 
-	if !s.existsAccountFile(effectiveAccountID) {
-		return s.createAccount(keyType, email, accountID)
+	if !s.existsAccountFile(keyType, effectiveAccountID) {
+		account, err := s.createAccount(keyType, email, accountID)
+		if err != nil {
+			return nil, err
+		}
+
+		err = s.Save(keyType, account)
+		if err != nil {
+			return nil, err
+		}
+
+		return account, nil
 	}
 
 	return s.getAccount(ctx, keyType, effectiveAccountID)
@@ -133,18 +143,18 @@ func (s *AccountsStorage) createAccount(keyType certcrypto.KeyType, email, accou
 		return nil, err
 	}
 
-	return NewAccount(email, effectiveAccountID, privateKey), nil
+	return NewAccount(email, effectiveAccountID, keyType, privateKey), nil
 }
 
 // getAccount gets the account from a file.
 // It will also try to recover the registration if it's missing (and save the account file).
 // And it will also create a new private key if it doesn't exist (and save the private key file).
 func (s *AccountsStorage) getAccount(ctx context.Context, keyType certcrypto.KeyType, effectiveAccountID string) (*Account, error) {
-	accountFilePath := s.getAccountFilePath(effectiveAccountID)
+	accountFilePath := s.getAccountFilePath(keyType, effectiveAccountID)
 
 	fileBytes, err := os.ReadFile(accountFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("could not read the account file %q : %w", accountFilePath, err)
+		return nil, fmt.Errorf("could not read the account file %q: %w", accountFilePath, err)
 	}
 
 	account := new(Account)
@@ -154,7 +164,7 @@ func (s *AccountsStorage) getAccount(ctx context.Context, keyType certcrypto.Key
 		return nil, fmt.Errorf("could not parse the account file %s: %w", accountFilePath, err)
 	}
 
-	account.key, err = s.readPrivateKey(effectiveAccountID)
+	account.key, err = s.readPrivateKey(keyType, effectiveAccountID)
 	if err == nil {
 		if account.Registration != nil && account.Registration.Body.Status != "" {
 			return account, nil
@@ -165,7 +175,7 @@ func (s *AccountsStorage) getAccount(ctx context.Context, keyType certcrypto.Key
 			return nil, fmt.Errorf("could not load the account file, registration is nil (accountID: %s): %w", effectiveAccountID, err)
 		}
 
-		err = s.Save(account)
+		err = s.Save(keyType, account)
 		if err != nil {
 			return nil, fmt.Errorf("could not save the account file, registration is nil (accountID: %s): %w", effectiveAccountID, err)
 		}
@@ -195,7 +205,7 @@ func (s *AccountsStorage) getAccount(ctx context.Context, keyType certcrypto.Key
 
 // createPrivateKey generates a new private key and saves it to a file.
 func (s *AccountsStorage) createPrivateKey(keyType certcrypto.KeyType, effectiveAccountID string) (crypto.PrivateKey, error) {
-	keysPath := s.getKeysPath(effectiveAccountID)
+	keysPath := s.getKeyPath(keyType, effectiveAccountID)
 
 	accKeyPath := filepath.Join(keysPath, effectiveAccountID+".key")
 
@@ -232,8 +242,8 @@ func (s *AccountsStorage) createPrivateKey(keyType certcrypto.KeyType, effective
 }
 
 // readPrivateKey reads the private key from a file.
-func (s *AccountsStorage) readPrivateKey(effectiveAccountID string) (crypto.PrivateKey, error) {
-	keysPath := s.getKeysPath(effectiveAccountID)
+func (s *AccountsStorage) readPrivateKey(keyType certcrypto.KeyType, effectiveAccountID string) (crypto.PrivateKey, error) {
+	keysPath := s.getKeyPath(keyType, effectiveAccountID)
 
 	accKeyPath := filepath.Join(keysPath, effectiveAccountID+".key")
 
@@ -245,15 +255,15 @@ func (s *AccountsStorage) readPrivateKey(effectiveAccountID string) (crypto.Priv
 
 	privateKey, err := ReadPrivateKeyFile(accKeyPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not load the private key from the file %q: %w", accKeyPath, err)
+		return nil, fmt.Errorf("error loading the private key file %q: %w", accKeyPath, err)
 	}
 
 	return privateKey, nil
 }
 
 // existsAccountFile checks if the account file exists.
-func (s *AccountsStorage) existsAccountFile(effectiveAccountID string) bool {
-	accountFilePath := s.getAccountFilePath(effectiveAccountID)
+func (s *AccountsStorage) existsAccountFile(keyType certcrypto.KeyType, effectiveAccountID string) bool {
+	accountFilePath := s.getAccountFilePath(keyType, effectiveAccountID)
 
 	if _, err := os.Stat(accountFilePath); os.IsNotExist(err) {
 		return false
@@ -268,20 +278,18 @@ func (s *AccountsStorage) existsAccountFile(effectiveAccountID string) bool {
 }
 
 // getAccountFilePath returns the account file path.
-func (s *AccountsStorage) getAccountFilePath(effectiveAccountID string) string {
-	return filepath.Join(s.getRootUserPath(effectiveAccountID), accountFileName)
+func (s *AccountsStorage) getAccountFilePath(keyType certcrypto.KeyType, effectiveAccountID string) string {
+	return filepath.Join(s.getKeyPath(keyType, effectiveAccountID), accountFileName)
 }
 
-// getKeysPath returns the path to the folder that contains the private keys for an account.
-func (s *AccountsStorage) getKeysPath(effectiveAccountID string) string {
-	return filepath.Join(s.getRootUserPath(effectiveAccountID), baseKeysFolderName)
+// getKeyPath returns the path to the folder that contains the private key for an account.
+func (s *AccountsStorage) getKeyPath(keyType certcrypto.KeyType, effectiveAccountID string) string {
+	return filepath.Join(s.getRootUserPath(effectiveAccountID), string(keyType))
 }
 
 // getRootUserPath returns the path to the root folder for an account.
 func (s *AccountsStorage) getRootUserPath(effectiveAccountID string) string {
-	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(s.server.Host)
-
-	return filepath.Join(s.rootPath, serverPath, effectiveAccountID)
+	return filepath.Join(s.rootPath, sanitizeHost(s.server), effectiveAccountID)
 }
 
 // tryRecoverRegistration tries to recover the registration from the private key.
@@ -308,13 +316,17 @@ func (s *AccountsStorage) tryRecoverRegistration(ctx context.Context, privateKey
 func ReadPrivateKeyFile(filename string) (crypto.PrivateKey, error) {
 	keyBytes, err := os.ReadFile(filename)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("reading the private key: %w", err)
 	}
 
 	privateKey, err := certcrypto.ParsePEMPrivateKey(keyBytes)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parsing the private key: %w", err)
 	}
 
 	return privateKey, nil
+}
+
+func sanitizeHost(uri *url.URL) string {
+	return strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(uri.Host)
 }

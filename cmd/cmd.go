@@ -39,6 +39,7 @@ func CreateCommands() []*cli.Command {
 		createRegister(),
 		createDNSHelp(),
 		createList(),
+		createMigrate(),
 	}
 }
 

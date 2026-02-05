@@ -66,6 +66,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/edgeone"
 	"github.com/go-acme/lego/v4/providers/dns/efficientip"
 	"github.com/go-acme/lego/v4/providers/dns/epik"
+	"github.com/go-acme/lego/v4/providers/dns/euserv"
 	"github.com/go-acme/lego/v4/providers/dns/exec"
 	"github.com/go-acme/lego/v4/providers/dns/exoscale"
 	"github.com/go-acme/lego/v4/providers/dns/f5xc"
@@ -316,6 +317,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return efficientip.NewDNSProvider()
 	case "epik":
 		return epik.NewDNSProvider()
+	case "euserv":
+		return euserv.NewDNSProvider()
 	case "exec":
 		return exec.NewDNSProvider()
 	case "exoscale":

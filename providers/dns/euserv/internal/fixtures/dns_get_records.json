@@ -1,0 +1,82 @@
+{
+  "message": "success",
+  "code": "100",
+  "result": {
+    "dns_record_count_max": {
+      "value": "100"
+    },
+    "dns_record_count_total": {
+      "value": "2"
+    },
+    "dns_records_load_page": {
+      "value": "1"
+    },
+    "domains": [
+      {
+        "dom_id": {
+          "value": "1234"
+        },
+        "dom_domain": {
+          "value": "mydomain.com"
+        },
+        "nameservers_using_default": {
+          "value": "1"
+        },
+        "dns_record_count": {
+          "value": "2"
+        },
+        "dns_records": [
+          {
+            "id": {
+              "value": "123456"
+            },
+            "name": {
+              "value": "*.mydomain.com"
+            },
+            "type": {
+              "value": "A"
+            },
+            "subdomain": {
+              "value": "*"
+            },
+            "content": {
+              "value": "XX.XX.XX.XX"
+            },
+            "ttl": {
+              "value": "86400"
+            },
+            "prio": {
+              "value": ""
+            }
+          },
+          {
+            "id": {
+              "value": "234567"
+            },
+            "name": {
+              "value": "mydomain.com"
+            },
+            "type": {
+              "value": "MX"
+            },
+            "subdomain": {
+              "value": ""
+            },
+            "content": {
+              "value": "mx10.kundencontroller.de"
+            },
+            "ttl": {
+              "value": "86400"
+            },
+            "prio": {
+              "value": "10"
+            }
+          }
+        ]
+      }
+    ],
+    "sess_id": {
+      "value": "cd52d8bc00c7ad0ec14abcd8d6f9fd1e1010052291546606942"
+    }
+  }
+}

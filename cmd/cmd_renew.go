@@ -117,41 +117,9 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 
 	cert := certificates[0]
 
-	var (
-		ariRenewalTime *time.Time
-		replacesCertID string
-	)
-
-	var client *lego.Client
-
-	if !cmd.Bool(flgARIDisable) {
-		client, err = lazyClient()
-		if err != nil {
-			return fmt.Errorf("set up client: %w", err)
-		}
-
-		willingToSleep := cmd.Duration(flgARIWaitToRenewDuration)
-
-		ariRenewalTime = getARIRenewalTime(ctx, willingToSleep, cert, domain, client)
-		if ariRenewalTime != nil {
-			now := time.Now().UTC()
-
-			// Figure out if we need to sleep before renewing.
-			if ariRenewalTime.After(now) {
-				log.Info("Sleeping until renewal time",
-					log.DomainAttr(domain),
-					slog.Duration("sleep", ariRenewalTime.Sub(now)),
-					slog.Time("renewalTime", *ariRenewalTime),
-				)
-
-				time.Sleep(ariRenewalTime.Sub(now))
-			}
-		}
-
-		replacesCertID, err = certificate.MakeARICertID(cert)
-		if err != nil {
-			return fmt.Errorf("error while constructing the ARI CertID for domain %q: %w", domain, err)
-		}
+	ariRenewalTime, replacesCertID, err := getARIInfo(ctx, cmd, lazyClient, domain, cert)
+	if err != nil {
+		return err
 	}
 
 	forceDomains := cmd.Bool(flgForceCertDomains)
@@ -165,11 +133,9 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		return nil
 	}
 
-	if client == nil {
-		client, err = lazyClient()
-		if err != nil {
-			return fmt.Errorf("set up client: %w", err)
-		}
+	client, err := lazyClient()
+	if err != nil {
+		return fmt.Errorf("set up client: %w", err)
 	}
 
 	// This is just meant to be informal for the user.
@@ -260,41 +226,9 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 
 	cert := certificates[0]
 
-	var (
-		ariRenewalTime *time.Time
-		replacesCertID string
-	)
-
-	var client *lego.Client
-
-	if !cmd.Bool(flgARIDisable) {
-		client, err = lazyClient()
-		if err != nil {
-			return fmt.Errorf("set up client: %w", err)
-		}
-
-		willingToSleep := cmd.Duration(flgARIWaitToRenewDuration)
-
-		ariRenewalTime = getARIRenewalTime(ctx, willingToSleep, cert, domain, client)
-		if ariRenewalTime != nil {
-			now := time.Now().UTC()
-
-			// Figure out if we need to sleep before renewing.
-			if ariRenewalTime.After(now) {
-				log.Info("Sleeping until renewal time",
-					log.DomainAttr(domain),
-					slog.Duration("sleep", ariRenewalTime.Sub(now)),
-					slog.Time("renewalTime", *ariRenewalTime),
-				)
-
-				time.Sleep(ariRenewalTime.Sub(now))
-			}
-		}
-
-		replacesCertID, err = certificate.MakeARICertID(cert)
-		if err != nil {
-			return fmt.Errorf("error while constructing the ARI CertID for domain %q: %w", domain, err)
-		}
+	ariRenewalTime, replacesCertID, err := getARIInfo(ctx, cmd, lazyClient, domain, cert)
+	if err != nil {
+		return err
 	}
 
 	days := getFlagRenewDays(cmd)
@@ -303,11 +237,9 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 		return nil
 	}
 
-	if client == nil {
-		client, err = lazyClient()
-		if err != nil {
-			return fmt.Errorf("set up client: %w", err)
-		}
+	client, err := lazyClient()
+	if err != nil {
+		return fmt.Errorf("set up client: %w", err)
 	}
 
 	// This is just meant to be informal for the user.
@@ -404,6 +336,42 @@ func needRenewalDynamic(x509Cert *x509.Certificate, domain string, now time.Time
 		x509Cert.NotAfter.Format(time.RFC3339), FormattableDuration(dueDate.Sub(now))), log.DomainAttr(domain))
 
 	return false
+}
+
+func getARIInfo(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, domain string, cert *x509.Certificate) (*time.Time, string, error) {
+	if cmd.Bool(flgARIDisable) {
+		return nil, "", nil
+	}
+
+	client, err := lazyClient()
+	if err != nil {
+		return nil, "", fmt.Errorf("set up client: %w", err)
+	}
+
+	willingToSleep := cmd.Duration(flgARIWaitToRenewDuration)
+
+	ariRenewalTime := getARIRenewalTime(ctx, willingToSleep, cert, domain, client)
+	if ariRenewalTime != nil {
+		now := time.Now().UTC()
+
+		// Figure out if we need to sleep before renewing.
+		if ariRenewalTime.After(now) {
+			log.Info("Sleeping until renewal time",
+				log.DomainAttr(domain),
+				slog.Duration("sleep", ariRenewalTime.Sub(now)),
+				slog.Time("renewalTime", *ariRenewalTime),
+			)
+
+			time.Sleep(ariRenewalTime.Sub(now))
+		}
+	}
+
+	replacesCertID, err := certificate.MakeARICertID(cert)
+	if err != nil {
+		return nil, "", fmt.Errorf("error while constructing the ARI CertID for domain %q: %w", domain, err)
+	}
+
+	return ariRenewalTime, replacesCertID, nil
 }
 
 // getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.

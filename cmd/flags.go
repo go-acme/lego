@@ -91,6 +91,7 @@ const (
 // Flag names related to certificates.
 const (
 	flgCertTimeout = "cert.timeout"
+	flgCertName    = "cert.name"
 )
 
 // Flag names related to the network stack.
@@ -670,7 +671,7 @@ func createRevokeFlags() []cli.Flag {
 			Sources: cli.EnvVars(toEnvName(flgReason)),
 			Usage: "Identifies the reason for the certificate revocation." +
 				" See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1." +
-				" Valid values are:" +
+				"\n\tValid values are:" +
 				" 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged)," +
 				" 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL)," +
 				" 9 (privilegeWithdrawn), or 10 (aACompromise).",
@@ -734,6 +735,23 @@ func createDomainFlag() cli.Flag {
 		Aliases: []string{flgAliasDomains},
 		Sources: cli.EnvVars(toEnvName(flgDomains)),
 		Usage:   "Add a domain. For multiple domains either repeat the option or provide a comma-separated list.",
+	}
+}
+
+func createCertNameFlag() cli.Flag {
+	return &cli.StringFlag{
+		Category: categoryStorage,
+		Name:     flgCertName,
+		Sources:  cli.EnvVars(toEnvName(flgCertName)),
+		Usage:    "The certificate ID/Name, used to store and retrieve a certificate. By default, it uses the first domain name.",
+	}
+}
+
+func createCertNamesFlag() cli.Flag {
+	return &cli.StringSliceFlag{
+		Name:    flgCertName,
+		Sources: cli.EnvVars(toEnvName(flgCertName)),
+		Usage:   "The certificate IDs/Names, used to retrieve the certificates.",
 	}
 }
 

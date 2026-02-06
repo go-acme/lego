@@ -77,18 +77,18 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		fmt.Printf(rootPathWarningMessage, accountsStorage.GetRootPath())
 	}
 
-	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
-
-	err = certsStorage.CreateRootFolder()
-	if err != nil {
-		return fmt.Errorf("root folder creation: %w", err)
-	}
-
 	cert, err := obtainCertificate(ctx, cmd, client)
 	if err != nil {
 		// Make sure to return a non-zero exit code if ObtainSANCertificate returned at least one error.
 		// Due to us not returning partial certificate we can just exit here instead of at the end.
 		return fmt.Errorf("obtain certificate: %w", err)
+	}
+
+	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
+
+	err = certsStorage.CreateRootFolder()
+	if err != nil {
+		return fmt.Errorf("root folder creation: %w", err)
 	}
 
 	options := newSaveOptions(cmd)

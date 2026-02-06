@@ -133,11 +133,6 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		return nil
 	}
 
-	client, err := lazyClient()
-	if err != nil {
-		return fmt.Errorf("set up client: %w", err)
-	}
-
 	// This is just meant to be informal for the user.
 	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
 
@@ -145,6 +140,11 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		log.DomainAttr(domain),
 		slog.Int("hoursRemaining", int(timeLeft.Hours())),
 	)
+
+	client, err := lazyClient()
+	if err != nil {
+		return fmt.Errorf("set up client: %w", err)
+	}
 
 	var privateKey crypto.PrivateKey
 
@@ -160,18 +160,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		}
 	}
 
-	// https://github.com/go-acme/lego/issues/1656
-	// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L435-L440
-	if !isatty.IsTerminal(os.Stdout.Fd()) && !cmd.Bool(flgNoRandomSleep) {
-		// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L472
-		const jitter = 8 * time.Minute
-
-		rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-		sleepTime := time.Duration(rnd.Int63n(int64(jitter)))
-
-		log.Info("renewal: random delay.", slog.Duration("sleep", sleepTime))
-		time.Sleep(sleepTime)
-	}
+	randomSleep(cmd)
 
 	renewalDomains := slices.Clone(domains)
 	if !forceDomains {
@@ -237,11 +226,6 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 		return nil
 	}
 
-	client, err := lazyClient()
-	if err != nil {
-		return fmt.Errorf("set up client: %w", err)
-	}
-
 	// This is just meant to be informal for the user.
 	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
 
@@ -249,6 +233,11 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 		log.DomainAttr(domain),
 		slog.Int("hoursRemaining", int(timeLeft.Hours())),
 	)
+
+	client, err := lazyClient()
+	if err != nil {
+		return fmt.Errorf("set up client: %w", err)
+	}
 
 	request := newObtainForCSRRequest(cmd, csr)
 
@@ -332,8 +321,13 @@ func needRenewalDynamic(x509Cert *x509.Certificate, domain string, now time.Time
 		return true
 	}
 
-	log.Infof(log.LazySprintf("Skip renewal: The certificate expires at %s, the renewal can be performed in %s.",
-		x509Cert.NotAfter.Format(time.RFC3339), FormattableDuration(dueDate.Sub(now))), log.DomainAttr(domain))
+	log.Infof(
+		log.LazySprintf("Skip renewal: The certificate expires at %s, the renewal can be performed in %s.",
+			x509Cert.NotAfter.Format(time.RFC3339),
+			FormattableDuration(dueDate.Sub(now)),
+		),
+		log.DomainAttr(domain),
+	)
 
 	return false
 }
@@ -417,6 +411,21 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 	}
 
 	return renewalTime
+}
+
+func randomSleep(cmd *cli.Command) {
+	// https://github.com/go-acme/lego/issues/1656
+	// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L435-L440
+	if !isatty.IsTerminal(os.Stdout.Fd()) && !cmd.Bool(flgNoRandomSleep) {
+		// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L472
+		const jitter = 8 * time.Minute
+
+		rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+		sleepTime := time.Duration(rnd.Int63n(int64(jitter)))
+
+		log.Info("renewal: random delay.", slog.Duration("sleep", sleepTime))
+		time.Sleep(sleepTime)
+	}
 }
 
 func merge(prevDomains, nextDomains []string) []string {

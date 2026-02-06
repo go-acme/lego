@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	"github.com/go-acme/lego/v5/log"
 	"golang.org/x/net/idna"
@@ -68,14 +69,20 @@ func getCertificatesArchivePath(basePath string) string {
 }
 
 // sanitizedDomain Make sure no funny chars are in the cert names (like wildcards ;)).
+// FIXME rename
 func sanitizedDomain(domain string) string {
 	safe, err := idna.ToASCII(strings.NewReplacer(":", "-", "*", "_").Replace(domain))
 	if err != nil {
-		log.Fatal("Could not sanitize the domain.",
+		log.Fatal("Could not sanitize the local certificate ID.",
 			log.DomainAttr(domain),
 			log.ErrorAttr(err),
 		)
 	}
 
-	return safe
+	return strings.Join(
+		strings.FieldsFunc(safe, func(r rune) bool {
+			return !unicode.IsLetter(r) && !unicode.IsNumber(r) && r != '-' && r != '_' && r != '.'
+		}),
+		"",
+	)
 }

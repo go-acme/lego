@@ -172,7 +172,7 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 		"revoke",
 		"-m", testEmail1,
 		"-s", "https://localhost:14000/dir",
-		"-d", testDomain2,
+		"-c", testDomain2,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -199,7 +199,7 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 		"revoke",
 		"-m", testEmail1,
 		"-s", "https://localhost:14000/dir",
-		"-d", testDomain4,
+		"-c", testDomain4,
 	)
 	if err != nil {
 		t.Fatal(err)

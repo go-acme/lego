@@ -84,6 +84,11 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("obtain certificate: %w", err)
 	}
 
+	certID := cmd.String(flgCertName)
+	if certID != "" {
+		certRes.ID = certID
+	}
+
 	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
 
 	options := newSaveOptions(cmd)
@@ -97,6 +102,9 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		// TODO(ldez) add account ID.
 		hook.EnvAccountEmail: account.Email,
 	}
+
+	// FIXME replace EnvCertDomain by EnvCertDomains and create an env var for the certID.
+	// FIXME remove certID/domain from AddPathToMetadata and use only certRes
 
 	hook.AddPathToMetadata(meta, certRes.ID, certRes, certsStorage, options)
 

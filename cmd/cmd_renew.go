@@ -36,16 +36,16 @@ func createRenew() *cli.Command {
 		Usage:  "Renew a certificate",
 		Action: renew,
 		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
-			// we require either domains or csr, but not both
 			hasDomains := len(cmd.StringSlice(flgDomains)) > 0
-
 			hasCsr := cmd.String(flgCSR) != ""
+			hasCertID := cmd.String(flgCertName) != ""
+
 			if hasDomains && hasCsr {
 				log.Fatal(fmt.Sprintf("Please specify either --%s/-d or --%s, but not both", flgDomains, flgCSR))
 			}
 
-			if !hasDomains && !hasCsr {
-				log.Fatal(fmt.Sprintf("Please specify --%s/-d (or --%s if you already have a CSR)", flgDomains, flgCSR))
+			if !hasCertID && !hasDomains && !hasCsr {
+				log.Fatal(fmt.Sprintf("Please specify --%s or --%s/-d (or --%s if you already have a CSR)", flgCertName, flgDomains, flgCSR))
 			}
 
 			if cmd.Bool(flgForceCertDomains) && hasCsr {
@@ -107,23 +107,43 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 
 func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
 	domains := cmd.StringSlice(flgDomains)
-	domain := domains[0]
+
+	certID := cmd.String(flgCertName)
+
+	switch {
+	case certID == "" && len(domains) > 0:
+		certID = domains[0]
+
+	case certID != "" && len(domains) == 0:
+		resource, err := certsStorage.ReadResource(certID)
+		if err != nil {
+			return fmt.Errorf("error while reading resource for %q: %w", certID, err)
+		}
+
+		domains = resource.Domains
+
+	case certID != "" && len(domains) > 0:
+		// Nothing to do, certID and domains are already consistent.
+
+	default:
+		return errors.New("no domains or certificate ID/name provided")
+	}
 
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certificates, err := certsStorage.ReadCertificate(domain)
+	certificates, err := certsStorage.ReadCertificate(certID)
 	if err != nil {
-		return fmt.Errorf("error while reading the certificate for domain %q: %w", domain, err)
+		return fmt.Errorf("error while reading the certificate for %q: %w", certID, err)
 	}
 
 	cert := certificates[0]
 
 	if cert.IsCA {
-		return fmt.Errorf("certificate bundle for %q starts with a CA certificate", domain)
+		return fmt.Errorf("certificate bundle for %q starts with a CA certificate", certID)
 	}
 
-	ariRenewalTime, replacesCertID, err := getARIInfo(ctx, cmd, lazyClient, domain, cert)
+	ariRenewalTime, replacesCertID, err := getARIInfo(ctx, cmd, lazyClient, certID, cert)
 	if err != nil {
 		return err
 	}
@@ -136,13 +156,13 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 	}
 
 	if ariRenewalTime == nil && !cmd.Bool(flgRenewForce) && sameDomains(certDomains, renewalDomains) &&
-		!isInRenewalPeriod(cert, domain, getFlagRenewDays(cmd), time.Now()) {
+		!isInRenewalPeriod(cert, certID, getFlagRenewDays(cmd), time.Now()) {
 		return nil
 	}
 
 	// This is just meant to be informal for the user.
 	log.Info("acme: Trying renewal.",
-		log.DomainAttr(domain),
+		log.DomainAttr(certID),
 		slog.Any("time-remaining", FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
 	)
 
@@ -156,7 +176,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 	request := newObtainRequest(cmd, renewalDomains)
 
 	if cmd.Bool(flgReuseKey) {
-		request.PrivateKey, err = certsStorage.ReadPrivateKey(domain)
+		request.PrivateKey, err = certsStorage.ReadPrivateKey(certID)
 		if err != nil {
 			return err
 		}
@@ -168,10 +188,10 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 
 	certRes, err := client.Certificate.Obtain(ctx, request)
 	if err != nil {
-		return fmt.Errorf("could not obtain the certificate for domain %q: %w", domain, err)
+		return fmt.Errorf("could not obtain the certificate for %q: %w", certID, err)
 	}
 
-	certRes.ID = domain
+	certRes.ID = certID
 
 	options := newSaveOptions(cmd)
 
@@ -179,6 +199,9 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
+
+	// FIXME replace EnvCertDomain by EnvCertDomains and create an env var for the certID.
+	// FIXME remove certID/domain from AddPathToMetadata and use only certRes
 
 	hook.AddPathToMetadata(meta, certRes.ID, certRes, certsStorage, options)
 
@@ -191,38 +214,42 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 		return fmt.Errorf("could not read CSR file %q: %w", cmd.String(flgCSR), err)
 	}
 
-	domain, err := certcrypto.GetCSRMainDomain(csr)
-	if err != nil {
-		return fmt.Errorf("could not get CSR main domain: %w", err)
+	certID := cmd.String(flgCertName)
+	if certID == "" {
+		certID, err = certcrypto.GetCSRMainDomain(csr)
+		if err != nil {
+			return fmt.Errorf("CSR: could not get the main domain: %w", err)
+		}
 	}
 
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certificates, err := certsStorage.ReadCertificate(domain)
+	certificates, err := certsStorage.ReadCertificate(certID)
 	if err != nil {
-		return fmt.Errorf("error while reading the certificate for domain %q: %w", domain, err)
+		return fmt.Errorf("CSR: error while reading the certificate for domains %q: %w",
+			strings.Join(certcrypto.ExtractDomainsCSR(csr), ","), err)
 	}
 
 	cert := certificates[0]
 
 	if cert.IsCA {
-		return fmt.Errorf("certificate bundle for %q starts with a CA certificate", domain)
+		return fmt.Errorf("certificate bundle for %q starts with a CA certificate", certID)
 	}
 
-	ariRenewalTime, replacesCertID, err := getARIInfo(ctx, cmd, lazyClient, domain, cert)
+	ariRenewalTime, replacesCertID, err := getARIInfo(ctx, cmd, lazyClient, certID, cert)
 	if err != nil {
-		return err
+		return fmt.Errorf("CSR: %w", err)
 	}
 
 	if ariRenewalTime == nil && !cmd.Bool(flgRenewForce) && sameDomainsCertificate(cert, csr) &&
-		!isInRenewalPeriod(cert, domain, getFlagRenewDays(cmd), time.Now()) {
+		!isInRenewalPeriod(cert, certID, getFlagRenewDays(cmd), time.Now()) {
 		return nil
 	}
 
 	// This is just meant to be informal for the user.
 	log.Info("acme: Trying renewal.",
-		log.DomainAttr(domain),
+		log.DomainAttr(certID),
 		slog.Any("time-remaining", FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
 	)
 
@@ -239,17 +266,20 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 
 	certRes, err := client.Certificate.ObtainForCSR(ctx, request)
 	if err != nil {
-		return fmt.Errorf("could not obtain the certificate for CSR: %w", err)
+		return fmt.Errorf("CSR: could not obtain the certificate: %w", err)
 	}
 
-	certRes.ID = domain
+	certRes.ID = certID
 
 	options := newSaveOptions(cmd)
 
 	err = certsStorage.Save(certRes, options)
 	if err != nil {
-		return fmt.Errorf("could not save the resource: %w", err)
+		return fmt.Errorf("CSR: could not save the resource: %w", err)
 	}
+
+	// FIXME replace EnvCertDomain by EnvCertDomains and create an env var for the certID.
+	// FIXME remove certID/domain from AddPathToMetadata and use only certRes
 
 	hook.AddPathToMetadata(meta, certRes.ID, certRes, certsStorage, options)
 

@@ -50,8 +50,8 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 	reason := cmd.Uint(flgReason)
 	keep := cmd.Bool(flgKeep)
 
-	for _, domain := range cmd.StringSlice(flgDomains) {
-		err := revokeCertificate(ctx, client, certsStorage, domain, reason, keep)
+	for _, certID := range cmd.StringSlice(flgCertName) {
+		err := revokeCertificate(ctx, client, certsStorage, certID, reason, keep)
 		if err != nil {
 			return err
 		}
@@ -60,31 +60,31 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-func revokeCertificate(ctx context.Context, client *lego.Client, certsStorage *storage.CertificatesStorage, domain string, reason uint, keep bool) error {
-	log.Info("Trying to revoke the certificate.", log.DomainAttr(domain))
+func revokeCertificate(ctx context.Context, client *lego.Client, certsStorage *storage.CertificatesStorage, certID string, reason uint, keep bool) error {
+	log.Info("Trying to revoke the certificate.", log.DomainAttr(certID))
 
-	certBytes, err := certsStorage.ReadFile(domain, storage.ExtCert)
+	certBytes, err := certsStorage.ReadFile(certID, storage.ExtCert)
 	if err != nil {
-		return fmt.Errorf("certificate reading for domain %s: %w", domain, err)
+		return fmt.Errorf("certificate reading for domain %s: %w", certID, err)
 	}
 
 	err = client.Certificate.RevokeWithReason(ctx, certBytes, &reason)
 	if err != nil {
-		return fmt.Errorf("certificate revocation for domain %s: %w", domain, err)
+		return fmt.Errorf("certificate revocation for domain %s: %w", certID, err)
 	}
 
-	log.Info("The certificate has been revoked.", log.DomainAttr(domain))
+	log.Info("The certificate has been revoked.", log.DomainAttr(certID))
 
 	if keep {
 		return nil
 	}
 
-	err = certsStorage.Archive(domain)
+	err = certsStorage.Archive(certID)
 	if err != nil {
 		return err
 	}
 
-	log.Info("The certificate has been archived.", log.DomainAttr(domain))
+	log.Info("The certificate has been archived.", log.DomainAttr(certID))
 
 	return nil
 }

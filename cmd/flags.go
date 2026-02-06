@@ -575,6 +575,7 @@ func CreateLogFlags() []cli.Flag {
 func createRunFlags() []cli.Flag {
 	flags := []cli.Flag{
 		createDomainFlag(),
+		createCertNameFlag(),
 	}
 
 	flags = append(flags, createAccountFlags()...)
@@ -600,6 +601,7 @@ func createRunFlags() []cli.Flag {
 func createRenewFlags() []cli.Flag {
 	flags := []cli.Flag{
 		createDomainFlag(),
+		createCertNameFlag(),
 	}
 
 	flags = append(flags, createAccountFlags()...)
@@ -660,6 +662,7 @@ func createRenewFlags() []cli.Flag {
 func createRevokeFlags() []cli.Flag {
 	flags := []cli.Flag{
 		createPathFlag(false),
+		createCertNamesFlag(),
 		&cli.BoolFlag{
 			Name:    flgKeep,
 			Sources: cli.EnvVars(toEnvName(flgKeep)),
@@ -678,7 +681,6 @@ func createRevokeFlags() []cli.Flag {
 		},
 	}
 
-	flags = append(flags, createDomainFlag())
 	flags = append(flags, createAccountFlags()...)
 	flags = append(flags, createACMEClientFlags()...)
 

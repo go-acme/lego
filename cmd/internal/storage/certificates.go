@@ -2,6 +2,7 @@ package storage
 
 import (
 	"crypto"
+	"crypto/x509"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -103,4 +104,19 @@ func ReadPrivateKeyFile(filename string) (crypto.PrivateKey, error) {
 	}
 
 	return privateKey, nil
+}
+
+// ReadCertificateFile reads a certificate file.
+func ReadCertificateFile(filename string) ([]*x509.Certificate, error) {
+	keyBytes, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("reading the certificate: %w", err)
+	}
+
+	certs, err := certcrypto.ParsePEMBundle(keyBytes)
+	if err != nil {
+		return nil, fmt.Errorf("parsing the certificate: %w", err)
+	}
+
+	return certs, nil
 }

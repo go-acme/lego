@@ -166,6 +166,11 @@ const (
 	flgFormatJSON = "json"
 )
 
+// Flag names related to the migrate command.
+const (
+	flgAccountOnly = "account-only"
+)
+
 func toEnvName(flg string) string {
 	fields := strings.FieldsFunc(flg, func(r rune) bool {
 		return !unicode.IsLetter(r) && !unicode.IsNumber(r)
@@ -698,6 +703,18 @@ func createListFlags() []cli.Flag {
 		&cli.BoolFlag{
 			Name:  flgFormatJSON,
 			Usage: "Format the output as JSON.",
+		},
+	}
+}
+
+func createMigrateFlags() []cli.Flag {
+	return []cli.Flag{
+		createPathFlag(false),
+		&cli.BoolFlag{
+			Name:    flgAccountOnly,
+			Sources: cli.EnvVars(toEnvName(flgAccountOnly)),
+			Usage:   "Only migrate accounts.",
+			Value:   false,
 		},
 	}
 }

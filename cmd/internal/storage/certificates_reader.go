@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/log"
 )
@@ -29,13 +28,8 @@ func (s *CertificatesStorage) ReadResource(domain string) (*certificate.Resource
 }
 
 func (s *CertificatesStorage) ReadCertificate(domain string) ([]*x509.Certificate, error) {
-	content, err := s.ReadFile(domain, ExtCert)
-	if err != nil {
-		return nil, err
-	}
-
 	// The input may be a bundle or a single certificate.
-	return certcrypto.ParsePEMBundle(content)
+	return ReadCertificateFile(s.GetFileName(domain, ExtCert))
 }
 
 func (s *CertificatesStorage) ReadPrivateKey(domain string) (crypto.PrivateKey, error) {

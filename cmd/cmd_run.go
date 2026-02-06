@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"crypto/x509"
 	"fmt"
 
 	"github.com/go-acme/lego/v5/certcrypto"
@@ -149,37 +148,4 @@ func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Clien
 	}
 
 	return client.Certificate.ObtainForCSR(ctx, request)
-}
-
-func newObtainRequest(cmd *cli.Command, domains []string) certificate.ObtainRequest {
-	return certificate.ObtainRequest{
-		Domains:                        domains,
-		MustStaple:                     cmd.Bool(flgMustStaple),
-		NotBefore:                      cmd.Timestamp(flgNotBefore),
-		NotAfter:                       cmd.Timestamp(flgNotAfter),
-		Bundle:                         !cmd.Bool(flgNoBundle),
-		PreferredChain:                 cmd.String(flgPreferredChain),
-		Profile:                        cmd.String(flgProfile),
-		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
-	}
-}
-
-func newObtainForCSRRequest(cmd *cli.Command, csr *x509.CertificateRequest) certificate.ObtainForCSRRequest {
-	return certificate.ObtainForCSRRequest{
-		CSR:                            csr,
-		NotBefore:                      cmd.Timestamp(flgNotBefore),
-		NotAfter:                       cmd.Timestamp(flgNotAfter),
-		Bundle:                         !cmd.Bool(flgNoBundle),
-		PreferredChain:                 cmd.String(flgPreferredChain),
-		Profile:                        cmd.String(flgProfile),
-		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
-	}
-}
-
-func validateNetworkStack(cmd *cli.Command) error {
-	if cmd.Bool(flgIPv4Only) && cmd.Bool(flgIPv6Only) {
-		return fmt.Errorf("cannot specify both --%s and --%s", flgIPv4Only, flgIPv6Only)
-	}
-
-	return nil
 }

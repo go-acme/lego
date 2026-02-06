@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"crypto"
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
@@ -13,18 +14,41 @@ import (
 	"github.com/go-acme/lego/v5/log"
 )
 
-func (s *CertificatesStorage) ReadResource(domain string) (certificate.Resource, error) {
+func (s *CertificatesStorage) ReadResource(domain string) (*certificate.Resource, error) {
 	raw, err := s.ReadFile(domain, ExtResource)
 	if err != nil {
-		return certificate.Resource{}, fmt.Errorf("unable to load resource for domain %q: %w", domain, err)
+		return nil, fmt.Errorf("unable to load resource for domain %q: %w", domain, err)
 	}
 
-	var resource certificate.Resource
-	if err = json.Unmarshal(raw, &resource); err != nil {
-		return certificate.Resource{}, fmt.Errorf("unable to unmarshal resource for domain %q: %w", domain, err)
+	resource := new(certificate.Resource)
+	if err = json.Unmarshal(raw, resource); err != nil {
+		return nil, fmt.Errorf("unable to unmarshal resource for domain %q: %w", domain, err)
 	}
 
 	return resource, nil
+}
+
+func (s *CertificatesStorage) ReadCertificate(domain string) ([]*x509.Certificate, error) {
+	content, err := s.ReadFile(domain, ExtCert)
+	if err != nil {
+		return nil, err
+	}
+
+	// The input may be a bundle or a single certificate.
+	return certcrypto.ParsePEMBundle(content)
+}
+
+func (s *CertificatesStorage) ReadPrivateKey(domain string) (crypto.PrivateKey, error) {
+	privateKey, err := ReadPrivateKeyFile(s.GetFileName(domain, ExtKey))
+	if err != nil {
+		return nil, fmt.Errorf("error while parsing the private key for %q: %w", domain, err)
+	}
+
+	return privateKey, nil
+}
+
+func (s *CertificatesStorage) ReadFile(domain, extension string) ([]byte, error) {
+	return os.ReadFile(s.GetFileName(domain, extension))
 }
 
 func (s *CertificatesStorage) ExistsFile(domain, extension string) bool {
@@ -39,25 +63,10 @@ func (s *CertificatesStorage) ExistsFile(domain, extension string) bool {
 	return true
 }
 
-func (s *CertificatesStorage) ReadFile(domain, extension string) ([]byte, error) {
-	return os.ReadFile(s.GetFileName(domain, extension))
-}
-
 func (s *CertificatesStorage) GetRootPath() string {
 	return s.rootPath
 }
 
 func (s *CertificatesStorage) GetFileName(domain, extension string) string {
-	filename := sanitizedDomain(domain) + extension
-	return filepath.Join(s.rootPath, filename)
-}
-
-func (s *CertificatesStorage) ReadCertificate(domain, extension string) ([]*x509.Certificate, error) {
-	content, err := s.ReadFile(domain, extension)
-	if err != nil {
-		return nil, err
-	}
-
-	// The input may be a bundle or a single certificate.
-	return certcrypto.ParsePEMBundle(content)
+	return filepath.Join(s.rootPath, sanitizedDomain(domain)+extension)
 }

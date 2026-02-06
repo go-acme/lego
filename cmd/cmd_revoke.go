@@ -47,11 +47,6 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 
 	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
 
-	err = certsStorage.CreateRootFolder()
-	if err != nil {
-		return fmt.Errorf("root folder creation: %w", err)
-	}
-
 	reason := cmd.Uint(flgReason)
 	keep := cmd.Bool(flgKeep)
 
@@ -84,12 +79,7 @@ func revokeCertificate(ctx context.Context, client *lego.Client, certsStorage *s
 		return nil
 	}
 
-	err = certsStorage.CreateArchiveFolder()
-	if err != nil {
-		return fmt.Errorf("archive folder creation: %w", err)
-	}
-
-	err = certsStorage.MoveToArchive(domain)
+	err = certsStorage.Archive(domain)
 	if err != nil {
 		return err
 	}

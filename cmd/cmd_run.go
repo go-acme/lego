@@ -77,7 +77,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		fmt.Printf(rootPathWarningMessage, accountsStorage.GetRootPath())
 	}
 
-	cert, err := obtainCertificate(ctx, cmd, client)
+	certRes, err := obtainCertificate(ctx, cmd, client)
 	if err != nil {
 		// Make sure to return a non-zero exit code if ObtainSANCertificate returned at least one error.
 		// Due to us not returning partial certificate we can just exit here instead of at the end.
@@ -86,14 +86,9 @@ func run(ctx context.Context, cmd *cli.Command) error {
 
 	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
 
-	err = certsStorage.CreateRootFolder()
-	if err != nil {
-		return fmt.Errorf("root folder creation: %w", err)
-	}
-
 	options := newSaveOptions(cmd)
 
-	err = certsStorage.SaveResource(cert, options)
+	err = certsStorage.Save(certRes, options)
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
@@ -103,7 +98,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		hook.EnvAccountEmail: account.Email,
 	}
 
-	hook.AddPathToMetadata(meta, cert.ID, cert, certsStorage, options)
+	hook.AddPathToMetadata(meta, certRes.ID, certRes, certsStorage, options)
 
 	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }

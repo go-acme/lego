@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"crypto"
 	"crypto/x509"
 	"errors"
 	"fmt"
@@ -113,7 +112,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certificates, err := certsStorage.ReadCertificate(domain, storage.ExtCert)
+	certificates, err := certsStorage.ReadCertificate(domain)
 	if err != nil {
 		return fmt.Errorf("error while reading the certificate for domain %q: %w", domain, err)
 	}
@@ -152,25 +151,16 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		return fmt.Errorf("set up client: %w", err)
 	}
 
-	var privateKey crypto.PrivateKey
-
-	if cmd.Bool(flgReuseKey) {
-		keyBytes, errR := certsStorage.ReadFile(domain, storage.ExtKey)
-		if errR != nil {
-			return fmt.Errorf("error while reading the private key for domain %q: %w", domain, errR)
-		}
-
-		privateKey, errR = certcrypto.ParsePEMPrivateKey(keyBytes)
-		if errR != nil {
-			return fmt.Errorf("error while parsing the private key for domain %q: %w", domain, errR)
-		}
-	}
-
 	randomSleep(cmd)
 
 	request := newObtainRequest(cmd, renewalDomains)
 
-	request.PrivateKey = privateKey
+	if cmd.Bool(flgReuseKey) {
+		request.PrivateKey, err = certsStorage.ReadPrivateKey(domain)
+		if err != nil {
+			return err
+		}
+	}
 
 	if replacesCertID != "" {
 		request.ReplacesCertID = replacesCertID
@@ -185,7 +175,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 
 	options := newSaveOptions(cmd)
 
-	err = certsStorage.SaveResource(certRes, options)
+	err = certsStorage.Save(certRes, options)
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
@@ -209,7 +199,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certificates, err := certsStorage.ReadCertificate(domain, storage.ExtCert)
+	certificates, err := certsStorage.ReadCertificate(domain)
 	if err != nil {
 		return fmt.Errorf("error while reading the certificate for domain %q: %w", domain, err)
 	}
@@ -256,7 +246,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 
 	options := newSaveOptions(cmd)
 
-	err = certsStorage.SaveResource(certRes, options)
+	err = certsStorage.Save(certRes, options)
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
 	}

@@ -1,11 +1,14 @@
 package storage
 
 import (
+	"crypto"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"unicode"
 
+	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/log"
 	"golang.org/x/net/idna"
 )
@@ -85,4 +88,19 @@ func sanitizedDomain(domain string) string {
 		}),
 		"",
 	)
+}
+
+// ReadPrivateKeyFile reads a private key file.
+func ReadPrivateKeyFile(filename string) (crypto.PrivateKey, error) {
+	keyBytes, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("reading the private key: %w", err)
+	}
+
+	privateKey, err := certcrypto.ParsePEMPrivateKey(keyBytes)
+	if err != nil {
+		return nil, fmt.Errorf("parsing the private key: %w", err)
+	}
+
+	return privateKey, nil
 }

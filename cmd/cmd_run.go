@@ -103,7 +103,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		hook.EnvAccountEmail: account.Email,
 	}
 
-	hook.AddPathToMetadata(meta, cert.Domain, cert, certsStorage, options)
+	hook.AddPathToMetadata(meta, cert.ID, cert, certsStorage, options)
 
 	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }

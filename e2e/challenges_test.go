@@ -240,7 +240,8 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, testDomain1, resource.Domain)
+	assert.Equal(t, testDomain1, resource.ID)
+	assert.Equal(t, []string{testDomain1}, resource.Domains)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -283,7 +284,8 @@ func TestChallengeHTTP_Client_Obtain_profile(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, testDomain1, resource.Domain)
+	assert.Equal(t, testDomain1, resource.ID)
+	assert.Equal(t, []string{testDomain1}, resource.Domains)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -326,7 +328,8 @@ func TestChallengeHTTP_Client_Obtain_emails_csr(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, testDomain1, resource.Domain)
+	assert.Equal(t, testDomain1, resource.ID)
+	assert.Equal(t, []string{testDomain1}, resource.Domains)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -372,7 +375,8 @@ func TestChallengeHTTP_Client_Obtain_notBefore_notAfter(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, testDomain1, resource.Domain)
+	assert.Equal(t, testDomain1, resource.ID)
+	assert.Equal(t, []string{testDomain1}, resource.Domains)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -460,7 +464,8 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, testDomain1, resource.Domain)
+	assert.Equal(t, testDomain1, resource.ID)
+	assert.Equal(t, []string{testDomain1}, resource.Domains)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -504,7 +509,8 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, testDomain1, resource.Domain)
+	assert.Equal(t, testDomain1, resource.ID)
+	assert.Equal(t, []string{testDomain1, testDomain2}, resource.Domains)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -549,7 +555,8 @@ func TestChallengeTLS_Client_ObtainForCSR_profile(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, testDomain1, resource.Domain)
+	assert.Equal(t, testDomain1, resource.ID)
+	assert.Equal(t, []string{testDomain1, testDomain2}, resource.Domains)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)

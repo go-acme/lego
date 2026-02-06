@@ -181,7 +181,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		return fmt.Errorf("could not obtain the certificate for domain %q: %w", domain, err)
 	}
 
-	certRes.Domain = domain
+	certRes.ID = domain
 
 	options := newSaveOptions(cmd)
 
@@ -190,7 +190,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
 
-	hook.AddPathToMetadata(meta, certRes.Domain, certRes, certsStorage, options)
+	hook.AddPathToMetadata(meta, certRes.ID, certRes, certsStorage, options)
 
 	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }
@@ -252,6 +252,8 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 		return fmt.Errorf("could not obtain the certificate for CSR: %w", err)
 	}
 
+	certRes.ID = domain
+
 	options := newSaveOptions(cmd)
 
 	err = certsStorage.SaveResource(certRes, options)
@@ -259,7 +261,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
 
-	hook.AddPathToMetadata(meta, domain, certRes, certsStorage, options)
+	hook.AddPathToMetadata(meta, certRes.ID, certRes, certsStorage, options)
 
 	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }

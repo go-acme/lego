@@ -16,7 +16,8 @@ func TestCertificatesStorage_ReadResource(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := certificate.Resource{
-		Domain:        "example.com",
+		ID:            "example.com",
+		Domains:       []string{"example.com"},
 		CertURL:       "https://acme.example.org/cert/123",
 		CertStableURL: "https://acme.example.org/cert/456",
 	}

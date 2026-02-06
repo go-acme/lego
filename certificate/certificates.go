@@ -11,6 +11,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme"
@@ -43,9 +44,12 @@ const maxBodySize = 1024 * 1024
 // Certificate may be a certificate bundle,
 // depending on the options supplied to create it.
 type Resource struct {
-	Domain            string `json:"domain"`
-	CertURL           string `json:"certUrl"`
-	CertStableURL     string `json:"certStableUrl"`
+	ID      string   `json:"id"`
+	Domains []string `json:"domains"`
+
+	CertURL       string `json:"certUrl"`
+	CertStableURL string `json:"certStableUrl"`
+
 	PrivateKey        []byte `json:"-"`
 	Certificate       []byte `json:"-"`
 	IssuerCertificate []byte `json:"-"`
@@ -349,7 +353,8 @@ func (c *Certifier) getForCSR(ctx context.Context, domains []string, order acme.
 	}
 
 	certRes := &Resource{
-		Domain:     domains[0],
+		ID:         domains[0],
+		Domains:    domains,
 		CertURL:    respOrder.Certificate,
 		PrivateKey: privateKeyPem,
 	}
@@ -414,7 +419,7 @@ func (c *Certifier) checkResponse(ctx context.Context, order acme.ExtendedOrder,
 	certRes.CertStableURL = order.Certificate
 
 	if preferredChain == "" {
-		log.Info("Server responded with a certificate.", log.DomainAttr(certRes.Domain))
+		log.Info("Server responded with a certificate.", log.DomainsAttr(certRes.Domains))
 
 		return true, nil
 	}
@@ -427,7 +432,7 @@ func (c *Certifier) checkResponse(ctx context.Context, order acme.ExtendedOrder,
 
 		if ok {
 			log.Info("Server responded with a certificate.",
-				log.DomainAttr(certRes.Domain),
+				log.DomainsAttr(certRes.Domains),
 				slog.String("preferredChain", preferredChain),
 			)
 
@@ -509,13 +514,13 @@ func (c *Certifier) Renew(ctx context.Context, certRes Resource, options *RenewO
 
 	x509Cert := certificates[0]
 	if x509Cert.IsCA {
-		return nil, fmt.Errorf("[%s] Certificate bundle starts with a CA certificate", certRes.Domain)
+		return nil, fmt.Errorf("[%s] Certificate bundle starts with a CA certificate", strings.Join(certRes.Domains, ", "))
 	}
 
 	// This is just meant to be informal for the user.
 	timeLeft := x509Cert.NotAfter.Sub(time.Now().UTC())
 	log.Info("acme: Trying renewal.",
-		log.DomainAttr(certRes.Domain),
+		log.DomainsAttr(certRes.Domains),
 		slog.Int("hoursRemaining", int(timeLeft.Hours())),
 	)
 
@@ -685,7 +690,8 @@ func (c *Certifier) Get(ctx context.Context, url string, bundle bool) (*Resource
 	}
 
 	return &Resource{
-		Domain:            domain,
+		ID:                domain,
+		Domains:           certcrypto.ExtractDomains(x509Certs[0]),
 		Certificate:       cert,
 		IssuerCertificate: issuer,
 		CertURL:           url,

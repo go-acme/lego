@@ -47,7 +47,8 @@ func TestCertificatesStorage_SaveResource(t *testing.T) {
 	require.NoFileExists(t, filepath.Join(basePath, baseCertificatesFolderName, "example.com.json"))
 
 	resource := &certificate.Resource{
-		Domain:            "example.com",
+		ID:                "example.com",
+		Domains:           []string{"example.com"},
 		CertURL:           "https://acme.example.org/cert/123",
 		CertStableURL:     "https://acme.example.org/cert/456",
 		PrivateKey:        []byte("PrivateKey"),
@@ -92,7 +93,8 @@ func TestCertificatesStorage_SaveResource_pem(t *testing.T) {
 	require.NoFileExists(t, filepath.Join(basePath, baseCertificatesFolderName, "example.com.pem"))
 
 	resource := &certificate.Resource{
-		Domain:            "example.com",
+		ID:                "example.com",
+		Domains:           []string{"example.com"},
 		CertURL:           "https://acme.example.org/cert/123",
 		CertStableURL:     "https://acme.example.org/cert/456",
 		PrivateKey:        []byte("PrivateKey"),

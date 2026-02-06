@@ -71,7 +71,7 @@ func (s *CertificatesStorage) SaveResource(certRes *certificate.Resource, opts *
 		return err
 	}
 
-	domain := certRes.Domain
+	domain := certRes.ID
 
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.

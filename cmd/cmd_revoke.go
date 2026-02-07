@@ -61,7 +61,7 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 }
 
 func revokeCertificate(ctx context.Context, client *lego.Client, certsStorage *storage.CertificatesStorage, certID string, reason uint, keep bool) error {
-	log.Info("Trying to revoke the certificate.", log.DomainAttr(certID))
+	log.Info("Trying to revoke the certificate.", log.CertNameAttr(certID))
 
 	certBytes, err := certsStorage.ReadFile(certID, storage.ExtCert)
 	if err != nil {
@@ -73,7 +73,7 @@ func revokeCertificate(ctx context.Context, client *lego.Client, certsStorage *s
 		return fmt.Errorf("certificate revocation for domain %s: %w", certID, err)
 	}
 
-	log.Info("The certificate has been revoked.", log.DomainAttr(certID))
+	log.Info("The certificate has been revoked.", log.CertNameAttr(certID))
 
 	if keep {
 		return nil
@@ -84,7 +84,7 @@ func revokeCertificate(ctx context.Context, client *lego.Client, certsStorage *s
 		return err
 	}
 
-	log.Info("The certificate has been archived.", log.DomainAttr(certID))
+	log.Info("The certificate has been archived.", log.CertNameAttr(certID))
 
 	return nil
 }

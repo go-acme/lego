@@ -162,7 +162,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 
 	// This is just meant to be informal for the user.
 	log.Info("acme: Trying renewal.",
-		log.DomainAttr(certID),
+		log.CertNameAttr(certID),
 		slog.Any("time-remaining", FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
 	)
 
@@ -249,7 +249,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 
 	// This is just meant to be informal for the user.
 	log.Info("acme: Trying renewal.",
-		log.DomainAttr(certID),
+		log.CertNameAttr(certID),
 		slog.Any("time-remaining", FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
 	)
 
@@ -306,7 +306,7 @@ func isInRenewalPeriod(cert *x509.Certificate, domain string, days int, now time
 			cert.NotAfter.Format(time.RFC3339),
 			FormattableDuration(dueDate.Sub(now)),
 		),
-		log.DomainAttr(domain),
+		log.CertNameAttr(domain),
 	)
 
 	return false
@@ -351,7 +351,7 @@ func getARIInfo(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, domai
 		// Figure out if we need to sleep before renewing.
 		if ariRenewalTime.After(now) {
 			log.Info("Sleeping until renewal time",
-				log.DomainAttr(domain),
+				log.CertNameAttr(domain),
 				slog.Duration("sleep", ariRenewalTime.Sub(now)),
 				slog.Time("renewalTime", *ariRenewalTime),
 			)
@@ -371,14 +371,14 @@ func getARIInfo(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, domai
 // getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.
 func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *x509.Certificate, domain string, client *lego.Client) *time.Time {
 	if cert.IsCA {
-		log.Fatal("Certificate bundle starts with a CA certificate.", log.DomainAttr(domain))
+		log.Fatal("Certificate bundle starts with a CA certificate.", log.CertNameAttr(domain))
 	}
 
 	renewalInfo, err := client.Certificate.GetRenewalInfo(ctx, certificate.RenewalInfoRequest{Cert: cert})
 	if err != nil {
 		if errors.Is(err, api.ErrNoARI) {
 			log.Warn("acme: the server does not advertise a renewal info endpoint.",
-				log.DomainAttr(domain),
+				log.CertNameAttr(domain),
 				log.ErrorAttr(err),
 			)
 
@@ -386,7 +386,7 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 		}
 
 		log.Warn("acme: calling renewal info endpoint",
-			log.DomainAttr(domain),
+			log.CertNameAttr(domain),
 			log.ErrorAttr(err),
 		)
 
@@ -397,15 +397,15 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 
 	renewalTime := renewalInfo.ShouldRenewAt(now, willingToSleep)
 	if renewalTime == nil {
-		log.Info("acme: renewalInfo endpoint indicates that renewal is not needed.", log.DomainAttr(domain))
+		log.Info("acme: renewalInfo endpoint indicates that renewal is not needed.", log.CertNameAttr(domain))
 		return nil
 	}
 
-	log.Info("acme: renewalInfo endpoint indicates that renewal is needed.", log.DomainAttr(domain))
+	log.Info("acme: renewalInfo endpoint indicates that renewal is needed.", log.CertNameAttr(domain))
 
 	if renewalInfo.ExplanationURL != "" {
 		log.Info("acme: renewalInfo endpoint provided an explanation.",
-			log.DomainAttr(domain),
+			log.CertNameAttr(domain),
 			slog.String("explanationURL", renewalInfo.ExplanationURL),
 		)
 	}

@@ -142,11 +142,9 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 	}
 
 	// This is just meant to be informal for the user.
-	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
-
 	log.Info("acme: Trying renewal.",
 		log.DomainAttr(domain),
-		slog.Int("hoursRemaining", int(timeLeft.Hours())),
+		slog.Any("time-remaining", FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
 	)
 
 	client, err := lazyClient()
@@ -233,11 +231,9 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 	}
 
 	// This is just meant to be informal for the user.
-	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
-
 	log.Info("acme: Trying renewal.",
 		log.DomainAttr(domain),
-		slog.Int("hoursRemaining", int(timeLeft.Hours())),
+		slog.Any("time-remaining", FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
 	)
 
 	client, err := lazyClient()
@@ -474,4 +470,8 @@ func (f FormattableDuration) String() string {
 	}
 
 	return s.String()
+}
+
+func (f FormattableDuration) LogValue() slog.Value {
+	return slog.StringValue(f.String())
 }

@@ -61,11 +61,6 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 
 	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
 
-	meta := map[string]string{
-		// TODO(ldez) add account ID.
-		hook.EnvAccountEmail: account.Email,
-	}
-
 	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
 		client, err := newClient(cmd, account, keyType)
 		if err != nil {
@@ -77,16 +72,18 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 		return client, nil
 	})
 
+	hookManager := newHookManager(cmd, certsStorage, account)
+
 	// CSR
 	if cmd.IsSet(flgCSR) {
-		return renewForCSR(ctx, cmd, lazyClient, certsStorage, meta)
+		return renewForCSR(ctx, cmd, lazyClient, certsStorage, hookManager)
 	}
 
 	// Domains
-	return renewForDomains(ctx, cmd, lazyClient, certsStorage, meta)
+	return renewForDomains(ctx, cmd, lazyClient, certsStorage, hookManager)
 }
 
-func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
+func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
 	domains := cmd.StringSlice(flgDomains)
 
 	certID := cmd.String(flgCertName)
@@ -147,6 +144,13 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		slog.Any("time-remaining", FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
 	)
 
+	err = hookManager.Pre(ctx, certID, renewalDomains)
+	if err != nil {
+		return fmt.Errorf("pre-renew hook: %w", err)
+	}
+
+	defer func() { _ = hookManager.Post(ctx) }()
+
 	client, err := lazyClient()
 	if err != nil {
 		return fmt.Errorf("set up client: %w", err)
@@ -181,12 +185,10 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
 
-	hook.AddPathToMetadata(meta, certRes, certsStorage, options)
-
-	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
+	return hookManager.Deploy(ctx, certRes, options)
 }
 
-func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
+func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
 	csr, err := readCSRFile(cmd.String(flgCSR))
 	if err != nil {
 		return fmt.Errorf("could not read CSR file %q: %w", cmd.String(flgCSR), err)
@@ -231,6 +233,13 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 		slog.Any("time-remaining", FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
 	)
 
+	err = hookManager.Pre(ctx, certID, certcrypto.ExtractDomainsCSR(csr))
+	if err != nil {
+		return fmt.Errorf("CSR: pre-renew hook: %w", err)
+	}
+
+	defer func() { _ = hookManager.Post(ctx) }()
+
 	client, err := lazyClient()
 	if err != nil {
 		return fmt.Errorf("set up client: %w", err)
@@ -256,9 +265,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 		return fmt.Errorf("CSR: could not save the resource: %w", err)
 	}
 
-	hook.AddPathToMetadata(meta, certRes, certsStorage, options)
-
-	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
+	return hookManager.Deploy(ctx, certRes, options)
 }
 
 func getFlagRenewDays(cmd *cli.Command) int {

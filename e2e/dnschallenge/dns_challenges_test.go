@@ -94,6 +94,8 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
+	t.Setenv("EXEC_SEQUENCE_INTERVAL", "5")
+
 	provider, err := dns.NewDNSChallengeProviderByName("exec")
 	require.NoError(t, err)
 
@@ -153,6 +155,8 @@ func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
 
 	client, err := lego.NewClient(config)
 	require.NoError(t, err)
+
+	t.Setenv("EXEC_SEQUENCE_INTERVAL", "5")
 
 	provider, err := dns.NewDNSChallengeProviderByName("exec")
 	require.NoError(t, err)

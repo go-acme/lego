@@ -103,10 +103,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		hook.EnvAccountEmail: account.Email,
 	}
 
-	// FIXME replace EnvCertDomain by EnvCertDomains and create an env var for the certID.
-	// FIXME remove certID/domain from AddPathToMetadata and use only certRes
-
-	hook.AddPathToMetadata(meta, certRes.ID, certRes, certsStorage, options)
+	hook.AddPathToMetadata(meta, certRes, certsStorage, options)
 
 	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }

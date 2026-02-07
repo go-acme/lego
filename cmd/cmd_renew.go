@@ -200,10 +200,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
 
-	// FIXME replace EnvCertDomain by EnvCertDomains and create an env var for the certID.
-	// FIXME remove certID/domain from AddPathToMetadata and use only certRes
-
-	hook.AddPathToMetadata(meta, certRes.ID, certRes, certsStorage, options)
+	hook.AddPathToMetadata(meta, certRes, certsStorage, options)
 
 	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }
@@ -278,10 +275,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 		return fmt.Errorf("CSR: could not save the resource: %w", err)
 	}
 
-	// FIXME replace EnvCertDomain by EnvCertDomains and create an env var for the certID.
-	// FIXME remove certID/domain from AddPathToMetadata and use only certRes
-
-	hook.AddPathToMetadata(meta, certRes.ID, certRes, certsStorage, options)
+	hook.AddPathToMetadata(meta, certRes, certsStorage, options)
 
 	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }

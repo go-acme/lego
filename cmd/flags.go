@@ -36,13 +36,11 @@ const (
 // Flag aliases (short-codes).
 const (
 	flgAliasAcceptTOS = "a"
-	flgAliasAccountID = "a" // FIXME(ldez): duplicated alias.
 	flgAliasCSR       = "c"
 	flgAliasDomains   = "d"
 	flgAliasEmail     = "m"
 	flgAliasIPv4Only  = "4"
 	flgAliasIPv6Only  = "6"
-	flgAliasKeep      = "k" // FIXME(ldez): duplicated alias.
 	flgAliasKeyType   = "k"
 	flgAliasServer    = "s"
 )
@@ -446,7 +444,6 @@ func createAccountFlags() []cli.Flag {
 		&cli.StringFlag{
 			Category: categoryStorage,
 			Name:     flgAccountID,
-			Aliases:  []string{flgAliasAccountID},
 			Sources:  cli.EnvVars(toEnvName(flgAccountID)),
 			Usage:    "Account identifier (The email is used if there is account ID is undefined).",
 		},
@@ -660,7 +657,6 @@ func createRevokeFlags() []cli.Flag {
 		createPathFlag(false),
 		&cli.BoolFlag{
 			Name:    flgKeep,
-			Aliases: []string{flgAliasKeep},
 			Sources: cli.EnvVars(toEnvName(flgKeep)),
 			Usage:   "Keep the certificates after the revocation instead of archiving them.",
 		},

@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_sanitizedDomain(t *testing.T) {
+func Test_SanitizedName(t *testing.T) {
 	// IDN examples from https://www.iana.org/domains/reserved
 	testCases := []struct {
 		desc     string
@@ -73,13 +73,18 @@ func Test_sanitizedDomain(t *testing.T) {
 			value:    "127.0.0.1",
 			expected: "127.0.0.1",
 		},
+		{
+			desc:     "email",
+			value:    "fée@example.com",
+			expected: "xn--fe@example-b7a.com",
+		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, test.expected, sanitizedDomain(test.value))
+			assert.Equal(t, test.expected, SanitizedName(test.value))
 		})
 	}
 }

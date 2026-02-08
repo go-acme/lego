@@ -4,6 +4,7 @@ import (
 	"crypto"
 	"crypto/x509"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -72,20 +73,19 @@ func getCertificatesArchivePath(basePath string) string {
 	return filepath.Join(basePath, baseArchivesFolderName)
 }
 
-// sanitizedDomain Make sure no funny chars are in the cert names (like wildcards ;)).
-// FIXME rename
-func sanitizedDomain(domain string) string {
-	safe, err := idna.ToASCII(strings.NewReplacer(":", "-", "*", "_").Replace(domain))
+// SanitizedName Make sure no funny chars are in the cert names (like wildcards ;)).
+func SanitizedName(name string) string {
+	safe, err := idna.ToASCII(strings.NewReplacer(":", "-", "*", "_").Replace(name))
 	if err != nil {
-		log.Fatal("Could not sanitize the local certificate ID.",
-			log.DomainAttr(domain),
+		log.Fatal("Could not sanitize the name.",
+			slog.String("name", name),
 			log.ErrorAttr(err),
 		)
 	}
 
 	return strings.Join(
 		strings.FieldsFunc(safe, func(r rune) bool {
-			return !unicode.IsLetter(r) && !unicode.IsNumber(r) && r != '-' && r != '_' && r != '.'
+			return !unicode.IsLetter(r) && !unicode.IsNumber(r) && r != '-' && r != '_' && r != '.' && r != '@'
 		}),
 		"",
 	)

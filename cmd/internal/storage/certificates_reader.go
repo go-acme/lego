@@ -62,5 +62,5 @@ func (s *CertificatesStorage) GetRootPath() string {
 }
 
 func (s *CertificatesStorage) GetFileName(domain, extension string) string {
-	return filepath.Join(s.rootPath, sanitizedDomain(domain)+extension)
+	return filepath.Join(s.rootPath, SanitizedName(domain)+extension)
 }

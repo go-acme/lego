@@ -98,7 +98,7 @@ func (s *CertificatesStorage) Archive(domain string) error {
 		return fmt.Errorf("could not check/create the archive folder %q: %w", s.archivePath, err)
 	}
 
-	baseFilename := filepath.Join(s.rootPath, sanitizedDomain(domain))
+	baseFilename := filepath.Join(s.rootPath, SanitizedName(domain))
 
 	matches, err := filepath.Glob(baseFilename + ".*")
 	if err != nil {

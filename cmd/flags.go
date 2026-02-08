@@ -36,7 +36,7 @@ const (
 // Flag aliases (short-codes).
 const (
 	flgAliasAcceptTOS = "a"
-	flgAliasCSR       = "c"
+	flgAliasCertName  = "c"
 	flgAliasDomains   = "d"
 	flgAliasEmail     = "m"
 	flgAliasIPv4Only  = "4"
@@ -479,7 +479,6 @@ func createObtainFlags() []cli.Flag {
 		&cli.StringFlag{
 			Category: categoryAdvanced,
 			Name:     flgCSR,
-			Aliases:  []string{flgAliasCSR},
 			Sources:  cli.EnvVars(toEnvName(flgCSR)),
 			Usage:    "Certificate signing request filename, if an external CSR is to be used.",
 		},
@@ -742,6 +741,7 @@ func createCertNameFlag() cli.Flag {
 	return &cli.StringFlag{
 		Category: categoryStorage,
 		Name:     flgCertName,
+		Aliases:  []string{flgAliasCertName},
 		Sources:  cli.EnvVars(toEnvName(flgCertName)),
 		Usage:    "The certificate ID/Name, used to store and retrieve a certificate. By default, it uses the first domain name.",
 	}
@@ -750,6 +750,7 @@ func createCertNameFlag() cli.Flag {
 func createCertNamesFlag() cli.Flag {
 	return &cli.StringSliceFlag{
 		Name:    flgCertName,
+		Aliases: []string{flgAliasCertName},
 		Sources: cli.EnvVars(toEnvName(flgCertName)),
 		Usage:   "The certificate IDs/Names, used to retrieve the certificates.",
 	}

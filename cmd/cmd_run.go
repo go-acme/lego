@@ -24,11 +24,11 @@ func createRun() *cli.Command {
 
 			hasCsr := cmd.String(flgCSR) != ""
 			if hasDomains && hasCsr {
-				log.Fatal("Please specify either --domains/-d or --csr/-c, but not both")
+				log.Fatal("Please specify either --domains/-d or --csr, but not both")
 			}
 
 			if !hasDomains && !hasCsr {
-				log.Fatal("Please specify --domains/-d (or --csr/-c if you already have a CSR)")
+				log.Fatal("Please specify --domains/-d (or --csr if you already have a CSR)")
 			}
 
 			return ctx, validateNetworkStack(cmd)

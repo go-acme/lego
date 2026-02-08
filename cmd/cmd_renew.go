@@ -41,15 +41,15 @@ func createRenew() *cli.Command {
 
 			hasCsr := cmd.String(flgCSR) != ""
 			if hasDomains && hasCsr {
-				log.Fatal(fmt.Sprintf("Please specify either --%s/-d or --%s/-c, but not both", flgDomains, flgCSR))
+				log.Fatal(fmt.Sprintf("Please specify either --%s/-d or --%s, but not both", flgDomains, flgCSR))
 			}
 
 			if !hasDomains && !hasCsr {
-				log.Fatal(fmt.Sprintf("Please specify --%s/-d (or --%s/-c if you already have a CSR)", flgDomains, flgCSR))
+				log.Fatal(fmt.Sprintf("Please specify --%s/-d (or --%s if you already have a CSR)", flgDomains, flgCSR))
 			}
 
 			if cmd.Bool(flgForceCertDomains) && hasCsr {
-				log.Fatal(fmt.Sprintf("--%s only works with --%s/-d, --%s/-c doesn't support this option.", flgForceCertDomains, flgDomains, flgCSR))
+				log.Fatal(fmt.Sprintf("--%s only works with --%s/-d, --%s doesn't support this option.", flgForceCertDomains, flgDomains, flgCSR))
 			}
 
 			return ctx, validateNetworkStack(cmd)

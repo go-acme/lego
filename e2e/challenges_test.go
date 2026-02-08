@@ -123,7 +123,7 @@ func TestChallengeTLS_Run_CSR(t *testing.T) {
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
-		"-csr", csrPath,
+		"--csr", csrPath,
 		"--tls",
 		"--tls.port", ":5001",
 	)
@@ -142,7 +142,7 @@ func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", "https://localhost:14000/dir",
-		"-csr", csrPath,
+		"--csr", csrPath,
 		"--tls",
 		"--tls.port", ":5001",
 	)

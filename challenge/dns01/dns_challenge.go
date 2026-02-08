@@ -112,7 +112,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		timeout, interval = DefaultPropagationTimeout, DefaultPollingInterval
 	}
 
-	log.Info("acme: Checking DNS record propagation.",
+	log.Info("acme: waiting for DNS record propagation.",
 		log.DomainAttr(domain),
 		slog.String("nameservers", strings.Join(DefaultClient().recursiveNameservers, ",")),
 	)
@@ -122,7 +122,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	err = wait.For("propagation", timeout, interval, func() (bool, error) {
 		stop, errP := c.preCheck.call(ctx, domain, info.EffectiveFQDN, info.Value)
 		if !stop || errP != nil {
-			log.Info("acme: Waiting for DNS record propagation.", log.DomainAttr(domain))
+			log.Info("acme: waiting for DNS record propagation.", log.DomainAttr(domain))
 		}
 
 		return stop, errP

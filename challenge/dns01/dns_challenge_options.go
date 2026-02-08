@@ -2,7 +2,10 @@ package dns01
 
 import (
 	"context"
+	"log/slog"
 	"time"
+
+	"github.com/go-acme/lego/v5/log"
 )
 
 type ChallengeOption func(*Challenge) error
@@ -35,6 +38,13 @@ func DisableRecursiveNSsPropagationRequirement() ChallengeOption {
 
 func PropagationWait(wait time.Duration, skipCheck bool) ChallengeOption {
 	return WrapPreCheck(func(ctx context.Context, domain, fqdn, value string, check PreCheckFunc) (bool, error) {
+		if skipCheck {
+			log.Info("acme: the active propagation check is disabled, waiting for the propagation instead.",
+				slog.Duration("wait", wait),
+				log.DomainAttr(domain),
+			)
+		}
+
 		time.Sleep(wait)
 
 		if skipCheck {

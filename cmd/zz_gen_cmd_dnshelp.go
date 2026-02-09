@@ -48,6 +48,8 @@ func allDNSCodes() string {
 		"constellix",
 		"corenetworks",
 		"cpanel",
+		"curanet",
+		"dandomain",
 		"ddnss",
 		"derak",
 		"desec",
@@ -159,6 +161,7 @@ func allDNSCodes() string {
 		"safedns",
 		"sakuracloud",
 		"scaleway",
+		"scannet",
 		"selectel",
 		"selectelv2",
 		"selfhostde",
@@ -186,6 +189,7 @@ func allDNSCodes() string {
 		"volcengine",
 		"vscale",
 		"vultr",
+		"wannafind",
 		"webnames",
 		"webnamesca",
 		"websupport",
@@ -1001,6 +1005,46 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/cpanel`)
+
+	case "curanet":
+		// generated from: providers/dns/curanet/curanet.toml
+		ew.writeln(`Configuration for Curanet.`)
+		ew.writeln(`Code:	'curanet'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "CURANET_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CURANET_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "CURANET_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "CURANET_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "CURANET_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/curanet`)
+
+	case "dandomain":
+		// generated from: providers/dns/dandomain/dandomain.toml
+		ew.writeln(`Configuration for DanDomain.`)
+		ew.writeln(`Code:	'dandomain'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DANDOMAIN_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DANDOMAIN_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "DANDOMAIN_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "DANDOMAIN_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "DANDOMAIN_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dandomain`)
 
 	case "ddnss":
 		// generated from: providers/dns/ddnss/ddnss.toml
@@ -3366,6 +3410,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/scaleway`)
 
+	case "scannet":
+		// generated from: providers/dns/scannet/scannet.toml
+		ew.writeln(`Configuration for ScanNet.`)
+		ew.writeln(`Code:	'scannet'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SCANNET_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SCANNET_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "SCANNET_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "SCANNET_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "SCANNET_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/scannet`)
+
 	case "selectel":
 		// generated from: providers/dns/selectel/selectel.toml
 		ew.writeln(`Configuration for Selectel.`)
@@ -3946,6 +4010,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/vultr`)
+
+	case "wannafind":
+		// generated from: providers/dns/wannafind/wannafind.toml
+		ew.writeln(`Configuration for Wannafind.`)
+		ew.writeln(`Code:	'wannafind'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "WANNAFIND_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "WANNAFIND_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "WANNAFIND_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "WANNAFIND_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "WANNAFIND_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/wannafind`)
 
 	case "webnames":
 		// generated from: providers/dns/webnames/webnames.toml

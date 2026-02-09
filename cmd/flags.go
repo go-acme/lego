@@ -32,11 +32,11 @@ const (
 	categoryARI                = "Flags related to ACME Renewal Information (ARI) Extension:"
 )
 
-// Flag names related to the account and domains.
+// Flag names related to the account.
 const (
-	flgDomains   = "domains"
 	flgAcceptTOS = "accept-tos"
 	flgEmail     = "email"
+	flgKeyType   = "key-type"
 	flgAccountID = "account-id"
 	flgEAB       = "eab"
 	flgEABKID    = "eab.kid"
@@ -45,6 +45,7 @@ const (
 
 // Flag names related to Obtain certificates.
 const (
+	flgDomains                        = "domains"
 	flgCSR                            = "csr"
 	flgNoBundle                       = "no-bundle"
 	flgMustStaple                     = "must-staple"
@@ -68,7 +69,6 @@ const (
 const (
 	flgServer              = "server"
 	flgEnableCommonName    = "enable-cn"
-	flgKeyType             = "key-type"
 	flgHTTPTimeout         = "http-timeout"
 	flgTLSSkipVerify       = "tls-skip-verify"
 	flgOverallRequestLimit = "overall-request-limit"

@@ -5,7 +5,7 @@
 
 # Lego
 
-Let's Encrypt client and ACME library written in Go.
+[ACME](https://www.rfc-editor.org/rfc/rfc8555.html) client and library for Let's Encrypt and other ACME CAs written in Go.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/go-acme/lego/v4.svg)](https://pkg.go.dev/github.com/go-acme/lego/v4)
 [![Build Status](https://github.com//go-acme/lego/workflows/Main/badge.svg?branch=master)](https://github.com//go-acme/lego/actions)

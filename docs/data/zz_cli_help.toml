@@ -261,16 +261,14 @@ NAME:
    lego list - Display certificates and accounts information.
 
 USAGE:
-   lego list
+   lego list [command [command options]]
+
+COMMANDS:
+   certificates  Display information about certificates.
+   accounts      Display information about accounts.
 
 OPTIONS:
-   --accounts, -a  Display accounts.
-   --help, -h      show help
-   --names, -n     Display certificate names only.
-
-   Flags related to the storage:
-
-   --path string  Directory to use for storing the data. [$LEGO_PATH]
+   --help, -h  show help
 """
 
 [[command]]

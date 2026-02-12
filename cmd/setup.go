@@ -15,6 +15,8 @@ import (
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
@@ -38,6 +40,7 @@ func newClient(cmd *cli.Command, account registration.User, keyType certcrypto.K
 func newClientConfig(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) *lego.Config {
 	config := lego.NewConfig(account)
 	config.CADirURL = cmd.String(flgServer)
+	config.UserAgent = getUserAgent(cmd)
 
 	config.Certificate = lego.CertificateConfig{
 		KeyType:             keyType,
@@ -45,7 +48,6 @@ func newClientConfig(cmd *cli.Command, account registration.User, keyType certcr
 		OverallRequestLimit: cmd.Int(flgOverallRequestLimit),
 		EnableCommonName:    cmd.Bool(flgEnableCommonName),
 	}
-	config.UserAgent = getUserAgent(cmd)
 
 	if cmd.IsSet(flgHTTPTimeout) {
 		config.HTTPClient.Timeout = time.Duration(cmd.Int(flgHTTPTimeout)) * time.Second
@@ -77,39 +79,6 @@ func newClientConfig(cmd *cli.Command, account registration.User, keyType certcr
 
 func getUserAgent(cmd *cli.Command) string {
 	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", cmd.String(flgUserAgent), cmd.Version))
-}
-
-func readCSRFile(filename string) (*x509.CertificateRequest, error) {
-	bytes, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	raw := bytes
-
-	// see if we can find a PEM-encoded CSR
-	var p *pem.Block
-
-	rest := bytes
-	for {
-		// decode a PEM block
-		p, rest = pem.Decode(rest)
-
-		// did we fail?
-		if p == nil {
-			break
-		}
-
-		// did we get a CSR?
-		if p.Type == "CERTIFICATE REQUEST" || p.Type == "NEW CERTIFICATE REQUEST" {
-			raw = p.Bytes
-		}
-	}
-
-	// no PEM-encoded CSR
-	// assume we were given a DER-encoded ASN.1 CSR
-	// (if this assumption is wrong, parsing these bytes will fail)
-	return x509.ParseCertificateRequest(raw)
 }
 
 func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
@@ -156,4 +125,87 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 	}
 
 	return rt, nil
+}
+
+func readCSRFile(filename string) (*x509.CertificateRequest, error) {
+	bytes, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	raw := bytes
+
+	// see if we can find a PEM-encoded CSR
+	var p *pem.Block
+
+	rest := bytes
+	for {
+		// decode a PEM block
+		p, rest = pem.Decode(rest)
+
+		// did we fail?
+		if p == nil {
+			break
+		}
+
+		// did we get a CSR?
+		if p.Type == "CERTIFICATE REQUEST" || p.Type == "NEW CERTIFICATE REQUEST" {
+			raw = p.Bytes
+		}
+	}
+
+	// no PEM-encoded CSR
+	// assume we were given a DER-encoded ASN.1 CSR
+	// (if this assumption is wrong, parsing these bytes will fail)
+	return x509.ParseCertificateRequest(raw)
+}
+
+func newObtainRequest(cmd *cli.Command, domains []string) certificate.ObtainRequest {
+	return certificate.ObtainRequest{
+		Domains:                        domains,
+		MustStaple:                     cmd.Bool(flgMustStaple),
+		NotBefore:                      cmd.Timestamp(flgNotBefore),
+		NotAfter:                       cmd.Timestamp(flgNotAfter),
+		Bundle:                         !cmd.Bool(flgNoBundle),
+		PreferredChain:                 cmd.String(flgPreferredChain),
+		Profile:                        cmd.String(flgProfile),
+		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
+	}
+}
+
+func newObtainForCSRRequest(cmd *cli.Command, csr *x509.CertificateRequest) certificate.ObtainForCSRRequest {
+	return certificate.ObtainForCSRRequest{
+		CSR:                            csr,
+		NotBefore:                      cmd.Timestamp(flgNotBefore),
+		NotAfter:                       cmd.Timestamp(flgNotAfter),
+		Bundle:                         !cmd.Bool(flgNoBundle),
+		PreferredChain:                 cmd.String(flgPreferredChain),
+		Profile:                        cmd.String(flgProfile),
+		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
+	}
+}
+
+func validateNetworkStack(cmd *cli.Command) error {
+	if cmd.Bool(flgIPv4Only) && cmd.Bool(flgIPv6Only) {
+		return fmt.Errorf("cannot specify both --%s and --%s", flgIPv4Only, flgIPv6Only)
+	}
+
+	return nil
+}
+
+func newAccountsStorageConfig(cmd *cli.Command) storage.AccountsStorageConfig {
+	return storage.AccountsStorageConfig{
+		BasePath:  cmd.String(flgPath),
+		Server:    cmd.String(flgServer),
+		UserAgent: getUserAgent(cmd),
+	}
+}
+
+func newSaveOptions(cmd *cli.Command) *storage.SaveOptions {
+	return &storage.SaveOptions{
+		PEM:         cmd.Bool(flgPEM),
+		PFX:         cmd.Bool(flgPFX),
+		PFXFormat:   cmd.String(flgPFXPass),
+		PFXPassword: cmd.String(flgPFXFormat),
+	}
 }

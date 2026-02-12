@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"crypto/x509"
 	"fmt"
 
 	"github.com/go-acme/lego/v5/certcrypto"
@@ -25,11 +24,11 @@ func createRun() *cli.Command {
 
 			hasCsr := cmd.String(flgCSR) != ""
 			if hasDomains && hasCsr {
-				log.Fatal("Please specify either --domains/-d or --csr/-c, but not both")
+				log.Fatal("Please specify either --domains/-d or --csr, but not both")
 			}
 
 			if !hasDomains && !hasCsr {
-				log.Fatal("Please specify --domains/-d (or --csr/-c if you already have a CSR)")
+				log.Fatal("Please specify --domains/-d (or --csr if you already have a CSR)")
 			}
 
 			return ctx, validateNetworkStack(cmd)
@@ -78,23 +77,23 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		fmt.Printf(rootPathWarningMessage, accountsStorage.GetRootPath())
 	}
 
-	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
-
-	err = certsStorage.CreateRootFolder()
-	if err != nil {
-		return fmt.Errorf("root folder creation: %w", err)
-	}
-
-	cert, err := obtainCertificate(ctx, cmd, client)
+	certRes, err := obtainCertificate(ctx, cmd, client)
 	if err != nil {
 		// Make sure to return a non-zero exit code if ObtainSANCertificate returned at least one error.
 		// Due to us not returning partial certificate we can just exit here instead of at the end.
 		return fmt.Errorf("obtain certificate: %w", err)
 	}
 
+	certID := cmd.String(flgCertName)
+	if certID != "" {
+		certRes.ID = certID
+	}
+
+	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
+
 	options := newSaveOptions(cmd)
 
-	err = certsStorage.SaveResource(cert, options)
+	err = certsStorage.Save(certRes, options)
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
@@ -104,7 +103,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		hook.EnvAccountEmail: account.Email,
 	}
 
-	hook.AddPathToMetadata(meta, cert.Domain, cert, certsStorage, options)
+	hook.AddPathToMetadata(meta, certRes, certsStorage, options)
 
 	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }
@@ -149,37 +148,4 @@ func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Clien
 	}
 
 	return client.Certificate.ObtainForCSR(ctx, request)
-}
-
-func newObtainRequest(cmd *cli.Command, domains []string) certificate.ObtainRequest {
-	return certificate.ObtainRequest{
-		Domains:                        domains,
-		MustStaple:                     cmd.Bool(flgMustStaple),
-		NotBefore:                      cmd.Timestamp(flgNotBefore),
-		NotAfter:                       cmd.Timestamp(flgNotAfter),
-		Bundle:                         !cmd.Bool(flgNoBundle),
-		PreferredChain:                 cmd.String(flgPreferredChain),
-		Profile:                        cmd.String(flgProfile),
-		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
-	}
-}
-
-func newObtainForCSRRequest(cmd *cli.Command, csr *x509.CertificateRequest) certificate.ObtainForCSRRequest {
-	return certificate.ObtainForCSRRequest{
-		CSR:                            csr,
-		NotBefore:                      cmd.Timestamp(flgNotBefore),
-		NotAfter:                       cmd.Timestamp(flgNotAfter),
-		Bundle:                         !cmd.Bool(flgNoBundle),
-		PreferredChain:                 cmd.String(flgPreferredChain),
-		Profile:                        cmd.String(flgProfile),
-		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
-	}
-}
-
-func validateNetworkStack(cmd *cli.Command) error {
-	if cmd.Bool(flgIPv4Only) && cmd.Bool(flgIPv6Only) {
-		return fmt.Errorf("cannot specify both --%s and --%s", flgIPv4Only, flgIPv6Only)
-	}
-
-	return nil
 }

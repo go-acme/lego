@@ -194,13 +194,15 @@ func Test_checkResponse(t *testing.T) {
 			Certificate: server.URL + "/certificate",
 		},
 	}
+
 	certRes := &Resource{}
 
 	valid, err := certifier.checkResponse(t.Context(), order, certRes, true, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
-	assert.Empty(t, certRes.Domain)
+	assert.Empty(t, certRes.ID)
+	assert.Empty(t, certRes.Domains)
 	assert.Contains(t, certRes.CertStableURL, "/certificate")
 	assert.Contains(t, certRes.CertURL, "/certificate")
 	assert.Nil(t, certRes.CSR)
@@ -228,13 +230,15 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 			Certificate: server.URL + "/certificate",
 		},
 	}
+
 	certRes := &Resource{}
 
 	valid, err := certifier.checkResponse(t.Context(), order, certRes, true, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
-	assert.Empty(t, certRes.Domain)
+	assert.Empty(t, certRes.ID)
+	assert.Empty(t, certRes.Domains)
 	assert.Contains(t, certRes.CertStableURL, "/certificate")
 	assert.Contains(t, certRes.CertURL, "/certificate")
 	assert.Nil(t, certRes.CSR)
@@ -262,13 +266,15 @@ func Test_checkResponse_no_bundle(t *testing.T) {
 			Certificate: server.URL + "/certificate",
 		},
 	}
+
 	certRes := &Resource{}
 
 	valid, err := certifier.checkResponse(t.Context(), order, certRes, false, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
-	assert.Empty(t, certRes.Domain)
+	assert.Empty(t, certRes.ID)
+	assert.Empty(t, certRes.Domains)
 	assert.Contains(t, certRes.CertStableURL, "/certificate")
 	assert.Contains(t, certRes.CertURL, "/certificate")
 	assert.Nil(t, certRes.CSR)
@@ -303,8 +309,10 @@ func Test_checkResponse_alternate(t *testing.T) {
 			Certificate: server.URL + "/certificate",
 		},
 	}
+
 	certRes := &Resource{
-		Domain: "example.com",
+		ID:      "example.com",
+		Domains: []string{"example.com"},
 	}
 
 	valid, err := certifier.checkResponse(t.Context(), order, certRes, true, "DST Root CA X3")
@@ -312,7 +320,8 @@ func Test_checkResponse_alternate(t *testing.T) {
 
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
-	assert.Equal(t, "example.com", certRes.Domain)
+	assert.Equal(t, "example.com", certRes.ID)
+	assert.Equal(t, []string{"example.com"}, certRes.Domains)
 	assert.Contains(t, certRes.CertStableURL, "/certificate/1")
 	assert.Contains(t, certRes.CertURL, "/certificate/1")
 	assert.Nil(t, certRes.CSR)
@@ -338,7 +347,8 @@ func Test_Get(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.NotNil(t, certRes)
-	assert.Equal(t, "acme.wtf", certRes.Domain)
+	assert.Equal(t, "acme.wtf", certRes.ID)
+	assert.Equal(t, []string{"acme.wtf"}, certRes.Domains)
 	assert.Equal(t, server.URL+"/acme/cert/test-cert", certRes.CertStableURL)
 	assert.Equal(t, server.URL+"/acme/cert/test-cert", certRes.CertURL)
 	assert.Nil(t, certRes.CSR)

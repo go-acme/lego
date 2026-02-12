@@ -14,6 +14,7 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 )
 
+// TODO(ldez) rename the env vars with LEGO_HOOK_ prefix to avoid collisions with flag names.
 const (
 	EnvAccountEmail      = "LEGO_ACCOUNT_EMAIL"
 	EnvCertDomain        = "LEGO_CERT_DOMAIN"
@@ -22,6 +23,13 @@ const (
 	EnvIssuerCertKeyPath = "LEGO_ISSUER_CERT_PATH"
 	EnvCertPEMPath       = "LEGO_CERT_PEM_PATH"
 	EnvCertPFXPath       = "LEGO_CERT_PFX_PATH"
+)
+
+// TODO(ldez): merge this with the previous constant block.
+const (
+	EnvCertNameSanitized = "LEGO_HOOK_CERT_NAME_SANITIZED"
+	EnvCertID            = "LEGO_HOOK_CERT_ID"
+	EnvCertDomains       = "LEGO_HOOK_CERT_DOMAINS"
 )
 
 func Launch(ctx context.Context, hook string, timeout time.Duration, meta map[string]string) error {
@@ -87,20 +95,24 @@ func metaToEnv(meta map[string]string) []string {
 }
 
 // AddPathToMetadata adds information about the certificate to the metadata map.
-func AddPathToMetadata(meta map[string]string, domain string, certRes *certificate.Resource, certsStorage *storage.CertificatesStorage, options *storage.SaveOptions) {
-	meta[EnvCertDomain] = domain
-	meta[EnvCertPath] = certsStorage.GetFileName(domain, storage.ExtCert)
-	meta[EnvCertKeyPath] = certsStorage.GetFileName(domain, storage.ExtKey)
+func AddPathToMetadata(meta map[string]string, certRes *certificate.Resource, certsStorage *storage.CertificatesStorage, options *storage.SaveOptions) {
+	meta[EnvCertID] = certRes.ID
+	meta[EnvCertNameSanitized] = storage.SanitizedName(certRes.ID)
+
+	meta[EnvCertDomains] = strings.Join(certRes.Domains, ",")
+
+	meta[EnvCertPath] = certsStorage.GetFileName(certRes.ID, storage.ExtCert)
+	meta[EnvCertKeyPath] = certsStorage.GetFileName(certRes.ID, storage.ExtKey)
 
 	if certRes.IssuerCertificate != nil {
-		meta[EnvIssuerCertKeyPath] = certsStorage.GetFileName(domain, storage.ExtIssuer)
+		meta[EnvIssuerCertKeyPath] = certsStorage.GetFileName(certRes.ID, storage.ExtIssuer)
 	}
 
 	if options.PEM {
-		meta[EnvCertPEMPath] = certsStorage.GetFileName(domain, storage.ExtPEM)
+		meta[EnvCertPEMPath] = certsStorage.GetFileName(certRes.ID, storage.ExtPEM)
 	}
 
 	if options.PFX {
-		meta[EnvCertPFXPath] = certsStorage.GetFileName(domain, storage.ExtPFX)
+		meta[EnvCertPFXPath] = certsStorage.GetFileName(certRes.ID, storage.ExtPFX)
 	}
 }

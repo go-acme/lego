@@ -127,7 +127,8 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, "*.xn--lgo-bma.localhost", resource.Domain)
+	assert.Equal(t, "*.xn--lgo-bma.localhost", resource.ID)
+	assert.Equal(t, []string{"*.xn--lgo-bma.localhost", "xn--lgo-bma.localhost"}, resource.Domains)
 	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
@@ -190,7 +191,8 @@ func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
-	assert.Equal(t, "*.xn--lgo-bma.localhost", resource.Domain)
+	assert.Equal(t, "*.xn--lgo-bma.localhost", resource.ID)
+	assert.Equal(t, []string{"*.xn--lgo-bma.localhost", "xn--lgo-bma.localhost"}, resource.Domains)
 	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)

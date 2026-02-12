@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"crypto"
 	"crypto/x509"
 	"errors"
 	"fmt"
@@ -11,6 +10,7 @@ import (
 	"math/rand"
 	"os"
 	"slices"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -26,6 +26,8 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+const noDays = -math.MaxInt
+
 type lzSetUp func() (*lego.Client, error)
 
 func createRenew() *cli.Command {
@@ -34,20 +36,20 @@ func createRenew() *cli.Command {
 		Usage:  "Renew a certificate",
 		Action: renew,
 		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
-			// we require either domains or csr, but not both
 			hasDomains := len(cmd.StringSlice(flgDomains)) > 0
-
 			hasCsr := cmd.String(flgCSR) != ""
+			hasCertID := cmd.String(flgCertName) != ""
+
 			if hasDomains && hasCsr {
-				log.Fatal(fmt.Sprintf("Please specify either --%s/-d or --%s/-c, but not both", flgDomains, flgCSR))
+				log.Fatal(fmt.Sprintf("Please specify either --%s/-d or --%s, but not both", flgDomains, flgCSR))
 			}
 
-			if !hasDomains && !hasCsr {
-				log.Fatal(fmt.Sprintf("Please specify --%s/-d (or --%s/-c if you already have a CSR)", flgDomains, flgCSR))
+			if !hasCertID && !hasDomains && !hasCsr {
+				log.Fatal(fmt.Sprintf("Please specify --%s or --%s/-d (or --%s if you already have a CSR)", flgCertName, flgDomains, flgCSR))
 			}
 
 			if cmd.Bool(flgForceCertDomains) && hasCsr {
-				log.Fatal(fmt.Sprintf("--%s only works with --%s/-d, --%s/-c doesn't support this option.", flgForceCertDomains, flgDomains, flgCSR))
+				log.Fatal(fmt.Sprintf("--%s only works with --%s/-d, --%s doesn't support this option.", flgForceCertDomains, flgDomains, flgCSR))
 			}
 
 			return ctx, validateNetworkStack(cmd)
@@ -105,95 +107,307 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 
 func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
 	domains := cmd.StringSlice(flgDomains)
-	domain := domains[0]
+
+	certID := cmd.String(flgCertName)
+
+	switch {
+	case certID == "" && len(domains) > 0:
+		certID = domains[0]
+
+	case certID != "" && len(domains) == 0:
+		resource, err := certsStorage.ReadResource(certID)
+		if err != nil {
+			return fmt.Errorf("error while reading resource for %q: %w", certID, err)
+		}
+
+		domains = resource.Domains
+
+	case certID != "" && len(domains) > 0:
+		// Nothing to do, certID and domains are already consistent.
+
+	default:
+		return errors.New("no domains or certificate ID/name provided")
+	}
 
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certificates, err := certsStorage.ReadCertificate(domain, storage.ExtCert)
+	certificates, err := certsStorage.ReadCertificate(certID)
 	if err != nil {
-		return fmt.Errorf("error while reading the certificate for domain %q: %w", domain, err)
+		return fmt.Errorf("error while reading the certificate for %q: %w", certID, err)
 	}
 
 	cert := certificates[0]
 
-	var (
-		ariRenewalTime *time.Time
-		replacesCertID string
-	)
-
-	var client *lego.Client
-
-	if !cmd.Bool(flgARIDisable) {
-		client, err = lazyClient()
-		if err != nil {
-			return fmt.Errorf("set up client: %w", err)
-		}
-
-		willingToSleep := cmd.Duration(flgARIWaitToRenewDuration)
-
-		ariRenewalTime = getARIRenewalTime(ctx, willingToSleep, cert, domain, client)
-		if ariRenewalTime != nil {
-			now := time.Now().UTC()
-
-			// Figure out if we need to sleep before renewing.
-			if ariRenewalTime.After(now) {
-				log.Info("Sleeping until renewal time",
-					log.DomainAttr(domain),
-					slog.Duration("sleep", ariRenewalTime.Sub(now)),
-					slog.Time("renewalTime", *ariRenewalTime),
-				)
-
-				time.Sleep(ariRenewalTime.Sub(now))
-			}
-		}
-
-		replacesCertID, err = certificate.MakeARICertID(cert)
-		if err != nil {
-			return fmt.Errorf("error while constructing the ARI CertID for domain %q: %w", domain, err)
-		}
+	if cert.IsCA {
+		return fmt.Errorf("certificate bundle for %q starts with a CA certificate", certID)
 	}
 
-	forceDomains := cmd.Bool(flgForceCertDomains)
+	ariRenewalTime, replacesCertID, err := getARIInfo(ctx, cmd, lazyClient, certID, cert)
+	if err != nil {
+		return err
+	}
 
 	certDomains := certcrypto.ExtractDomains(cert)
 
-	days := getFlagRenewDays(cmd)
+	renewalDomains := slices.Clone(domains)
+	if !cmd.Bool(flgForceCertDomains) {
+		renewalDomains = merge(certDomains, domains)
+	}
 
-	if ariRenewalTime == nil && !needRenewal(cert, domain, days, cmd.Bool(flgRenewForce)) &&
-		(!forceDomains || slices.Equal(certDomains, domains)) {
+	if ariRenewalTime == nil && !cmd.Bool(flgRenewForce) && sameDomains(certDomains, renewalDomains) &&
+		!isInRenewalPeriod(cert, certID, getFlagRenewDays(cmd), time.Now()) {
 		return nil
 	}
 
-	if client == nil {
-		client, err = lazyClient()
+	// This is just meant to be informal for the user.
+	log.Info("acme: Trying renewal.",
+		log.CertNameAttr(certID),
+		slog.Any("time-remaining", FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
+	)
+
+	client, err := lazyClient()
+	if err != nil {
+		return fmt.Errorf("set up client: %w", err)
+	}
+
+	randomSleep(cmd)
+
+	request := newObtainRequest(cmd, renewalDomains)
+
+	if cmd.Bool(flgReuseKey) {
+		request.PrivateKey, err = certsStorage.ReadPrivateKey(certID)
 		if err != nil {
-			return fmt.Errorf("set up client: %w", err)
+			return err
 		}
+	}
+
+	if replacesCertID != "" {
+		request.ReplacesCertID = replacesCertID
+	}
+
+	certRes, err := client.Certificate.Obtain(ctx, request)
+	if err != nil {
+		return fmt.Errorf("could not obtain the certificate for %q: %w", certID, err)
+	}
+
+	certRes.ID = certID
+
+	options := newSaveOptions(cmd)
+
+	err = certsStorage.Save(certRes, options)
+	if err != nil {
+		return fmt.Errorf("could not save the resource: %w", err)
+	}
+
+	hook.AddPathToMetadata(meta, certRes, certsStorage, options)
+
+	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
+}
+
+func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
+	csr, err := readCSRFile(cmd.String(flgCSR))
+	if err != nil {
+		return fmt.Errorf("could not read CSR file %q: %w", cmd.String(flgCSR), err)
+	}
+
+	certID := cmd.String(flgCertName)
+	if certID == "" {
+		certID, err = certcrypto.GetCSRMainDomain(csr)
+		if err != nil {
+			return fmt.Errorf("CSR: could not get the main domain: %w", err)
+		}
+	}
+
+	// load the cert resource from files.
+	// We store the certificate, private key and metadata in different files
+	// as web servers would not be able to work with a combined file.
+	certificates, err := certsStorage.ReadCertificate(certID)
+	if err != nil {
+		return fmt.Errorf("CSR: error while reading the certificate for domains %q: %w",
+			strings.Join(certcrypto.ExtractDomainsCSR(csr), ","), err)
+	}
+
+	cert := certificates[0]
+
+	if cert.IsCA {
+		return fmt.Errorf("certificate bundle for %q starts with a CA certificate", certID)
+	}
+
+	ariRenewalTime, replacesCertID, err := getARIInfo(ctx, cmd, lazyClient, certID, cert)
+	if err != nil {
+		return fmt.Errorf("CSR: %w", err)
+	}
+
+	if ariRenewalTime == nil && !cmd.Bool(flgRenewForce) && sameDomainsCertificate(cert, csr) &&
+		!isInRenewalPeriod(cert, certID, getFlagRenewDays(cmd), time.Now()) {
+		return nil
 	}
 
 	// This is just meant to be informal for the user.
-	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
-
 	log.Info("acme: Trying renewal.",
-		log.DomainAttr(domain),
-		slog.Int("hoursRemaining", int(timeLeft.Hours())),
+		log.CertNameAttr(certID),
+		slog.Any("time-remaining", FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
 	)
 
-	var privateKey crypto.PrivateKey
+	client, err := lazyClient()
+	if err != nil {
+		return fmt.Errorf("set up client: %w", err)
+	}
 
-	if cmd.Bool(flgReuseKey) {
-		keyBytes, errR := certsStorage.ReadFile(domain, storage.ExtKey)
-		if errR != nil {
-			return fmt.Errorf("error while reading the private key for domain %q: %w", domain, errR)
+	request := newObtainForCSRRequest(cmd, csr)
+
+	if replacesCertID != "" {
+		request.ReplacesCertID = replacesCertID
+	}
+
+	certRes, err := client.Certificate.ObtainForCSR(ctx, request)
+	if err != nil {
+		return fmt.Errorf("CSR: could not obtain the certificate: %w", err)
+	}
+
+	certRes.ID = certID
+
+	options := newSaveOptions(cmd)
+
+	err = certsStorage.Save(certRes, options)
+	if err != nil {
+		return fmt.Errorf("CSR: could not save the resource: %w", err)
+	}
+
+	hook.AddPathToMetadata(meta, certRes, certsStorage, options)
+
+	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
+}
+
+func getFlagRenewDays(cmd *cli.Command) int {
+	if cmd.IsSet(flgRenewDays) {
+		return cmd.Int(flgRenewDays)
+	}
+
+	return noDays
+}
+
+func isInRenewalPeriod(cert *x509.Certificate, domain string, days int, now time.Time) bool {
+	dueDate := getDueDate(cert, days, now)
+
+	if dueDate.Before(now) || dueDate.Equal(now) {
+		return true
+	}
+
+	log.Infof(
+		log.LazySprintf("Skip renewal: The certificate expires at %s, the renewal can be performed in %s.",
+			cert.NotAfter.Format(time.RFC3339),
+			FormattableDuration(dueDate.Sub(now)),
+		),
+		log.CertNameAttr(domain),
+	)
+
+	return false
+}
+
+func getDueDate(x509Cert *x509.Certificate, days int, now time.Time) time.Time {
+	if days == noDays {
+		lifetime := x509Cert.NotAfter.Sub(x509Cert.NotBefore)
+
+		var divisor int64 = 3
+		if lifetime.Round(24*time.Hour).Hours()/24.0 <= 10 {
+			divisor = 2
 		}
 
-		privateKey, errR = certcrypto.ParsePEMPrivateKey(keyBytes)
-		if errR != nil {
-			return fmt.Errorf("error while parsing the private key for domain %q: %w", domain, errR)
+		return x509Cert.NotAfter.Add(-1 * time.Duration(lifetime.Nanoseconds()/divisor))
+	}
+
+	if days < 0 {
+		// if the number of days is negative: always renew the certificate.
+		return now
+	}
+
+	return x509Cert.NotAfter.Add(-1 * time.Duration(days) * 24 * time.Hour)
+}
+
+func getARIInfo(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, domain string, cert *x509.Certificate) (*time.Time, string, error) {
+	if cmd.Bool(flgARIDisable) {
+		return nil, "", nil
+	}
+
+	client, err := lazyClient()
+	if err != nil {
+		return nil, "", fmt.Errorf("set up client: %w", err)
+	}
+
+	willingToSleep := cmd.Duration(flgARIWaitToRenewDuration)
+
+	ariRenewalTime := getARIRenewalTime(ctx, willingToSleep, cert, domain, client)
+	if ariRenewalTime != nil {
+		now := time.Now().UTC()
+
+		// Figure out if we need to sleep before renewing.
+		if ariRenewalTime.After(now) {
+			log.Info("Sleeping until renewal time",
+				log.CertNameAttr(domain),
+				slog.Duration("sleep", ariRenewalTime.Sub(now)),
+				slog.Time("renewalTime", *ariRenewalTime),
+			)
+
+			time.Sleep(ariRenewalTime.Sub(now))
 		}
 	}
 
+	replacesCertID, err := certificate.MakeARICertID(cert)
+	if err != nil {
+		return nil, "", fmt.Errorf("error while constructing the ARI CertID for domain %q: %w", domain, err)
+	}
+
+	return ariRenewalTime, replacesCertID, nil
+}
+
+// getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.
+func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *x509.Certificate, domain string, client *lego.Client) *time.Time {
+	if cert.IsCA {
+		log.Fatal("Certificate bundle starts with a CA certificate.", log.CertNameAttr(domain))
+	}
+
+	renewalInfo, err := client.Certificate.GetRenewalInfo(ctx, certificate.RenewalInfoRequest{Cert: cert})
+	if err != nil {
+		if errors.Is(err, api.ErrNoARI) {
+			log.Warn("acme: the server does not advertise a renewal info endpoint.",
+				log.CertNameAttr(domain),
+				log.ErrorAttr(err),
+			)
+
+			return nil
+		}
+
+		log.Warn("acme: calling renewal info endpoint",
+			log.CertNameAttr(domain),
+			log.ErrorAttr(err),
+		)
+
+		return nil
+	}
+
+	now := time.Now().UTC()
+
+	renewalTime := renewalInfo.ShouldRenewAt(now, willingToSleep)
+	if renewalTime == nil {
+		log.Info("acme: renewalInfo endpoint indicates that renewal is not needed.", log.CertNameAttr(domain))
+		return nil
+	}
+
+	log.Info("acme: renewalInfo endpoint indicates that renewal is needed.", log.CertNameAttr(domain))
+
+	if renewalInfo.ExplanationURL != "" {
+		log.Info("acme: renewalInfo endpoint provided an explanation.",
+			log.CertNameAttr(domain),
+			slog.String("explanationURL", renewalInfo.ExplanationURL),
+		)
+	}
+
+	return renewalTime
+}
+
+func randomSleep(cmd *cli.Command) {
 	// https://github.com/go-acme/lego/issues/1656
 	// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L435-L440
 	if !isatty.IsTerminal(os.Stdout.Fd()) && !cmd.Bool(flgNoRandomSleep) {
@@ -206,249 +420,6 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		log.Info("renewal: random delay.", slog.Duration("sleep", sleepTime))
 		time.Sleep(sleepTime)
 	}
-
-	renewalDomains := slices.Clone(domains)
-	if !forceDomains {
-		renewalDomains = merge(certDomains, domains)
-	}
-
-	request := newObtainRequest(cmd, renewalDomains)
-
-	request.PrivateKey = privateKey
-
-	if replacesCertID != "" {
-		request.ReplacesCertID = replacesCertID
-	}
-
-	certRes, err := client.Certificate.Obtain(ctx, request)
-	if err != nil {
-		return fmt.Errorf("could not obtain the certificate for domain %q: %w", domain, err)
-	}
-
-	certRes.Domain = domain
-
-	options := newSaveOptions(cmd)
-
-	err = certsStorage.SaveResource(certRes, options)
-	if err != nil {
-		return fmt.Errorf("could not save the resource: %w", err)
-	}
-
-	hook.AddPathToMetadata(meta, certRes.Domain, certRes, certsStorage, options)
-
-	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
-}
-
-func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, meta map[string]string) error {
-	csr, err := readCSRFile(cmd.String(flgCSR))
-	if err != nil {
-		return fmt.Errorf("could not read CSR file %q: %w", cmd.String(flgCSR), err)
-	}
-
-	domain, err := certcrypto.GetCSRMainDomain(csr)
-	if err != nil {
-		return fmt.Errorf("could not get CSR main domain: %w", err)
-	}
-
-	// load the cert resource from files.
-	// We store the certificate, private key and metadata in different files
-	// as web servers would not be able to work with a combined file.
-	certificates, err := certsStorage.ReadCertificate(domain, storage.ExtCert)
-	if err != nil {
-		return fmt.Errorf("error while reading the certificate for domain %q: %w", domain, err)
-	}
-
-	cert := certificates[0]
-
-	var (
-		ariRenewalTime *time.Time
-		replacesCertID string
-	)
-
-	var client *lego.Client
-
-	if !cmd.Bool(flgARIDisable) {
-		client, err = lazyClient()
-		if err != nil {
-			return fmt.Errorf("set up client: %w", err)
-		}
-
-		willingToSleep := cmd.Duration(flgARIWaitToRenewDuration)
-
-		ariRenewalTime = getARIRenewalTime(ctx, willingToSleep, cert, domain, client)
-		if ariRenewalTime != nil {
-			now := time.Now().UTC()
-
-			// Figure out if we need to sleep before renewing.
-			if ariRenewalTime.After(now) {
-				log.Info("Sleeping until renewal time",
-					log.DomainAttr(domain),
-					slog.Duration("sleep", ariRenewalTime.Sub(now)),
-					slog.Time("renewalTime", *ariRenewalTime),
-				)
-
-				time.Sleep(ariRenewalTime.Sub(now))
-			}
-		}
-
-		replacesCertID, err = certificate.MakeARICertID(cert)
-		if err != nil {
-			return fmt.Errorf("error while constructing the ARI CertID for domain %q: %w", domain, err)
-		}
-	}
-
-	days := getFlagRenewDays(cmd)
-
-	if ariRenewalTime == nil && !needRenewal(cert, domain, days, cmd.Bool(flgRenewForce)) {
-		return nil
-	}
-
-	if client == nil {
-		client, err = lazyClient()
-		if err != nil {
-			return fmt.Errorf("set up client: %w", err)
-		}
-	}
-
-	// This is just meant to be informal for the user.
-	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
-
-	log.Info("acme: Trying renewal.",
-		log.DomainAttr(domain),
-		slog.Int("hoursRemaining", int(timeLeft.Hours())),
-	)
-
-	request := newObtainForCSRRequest(cmd, csr)
-
-	if replacesCertID != "" {
-		request.ReplacesCertID = replacesCertID
-	}
-
-	certRes, err := client.Certificate.ObtainForCSR(ctx, request)
-	if err != nil {
-		return fmt.Errorf("could not obtain the certificate for CSR: %w", err)
-	}
-
-	options := newSaveOptions(cmd)
-
-	err = certsStorage.SaveResource(certRes, options)
-	if err != nil {
-		return fmt.Errorf("could not save the resource: %w", err)
-	}
-
-	hook.AddPathToMetadata(meta, domain, certRes, certsStorage, options)
-
-	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
-}
-
-func getFlagRenewDays(cmd *cli.Command) int {
-	if cmd.IsSet(flgRenewDays) {
-		return cmd.Int(flgRenewDays)
-	}
-
-	return -math.MaxInt
-}
-
-func needRenewal(x509Cert *x509.Certificate, domain string, days int, force bool) bool {
-	if x509Cert.IsCA {
-		log.Fatal("Certificate bundle starts with a CA certificate.", log.DomainAttr(domain))
-	}
-
-	if force {
-		return true
-	}
-
-	// Default behavior
-	if days == -math.MaxInt {
-		return needRenewalDynamic(x509Cert, domain, time.Now())
-	}
-
-	return needRenewalDays(x509Cert, domain, days)
-}
-
-func needRenewalDays(x509Cert *x509.Certificate, domain string, days int) bool {
-	if days < 0 {
-		// if the number of days is negative: always renew the certificate.
-		return true
-	}
-
-	notAfter := int(time.Until(x509Cert.NotAfter).Hours() / 24.0)
-	if notAfter <= days {
-		return true
-	}
-
-	log.Infof(
-		log.LazySprintf("Skip renewal: the certificate expires in %d days, the number of days defined to perform the renewal is %d.",
-			notAfter, days),
-		log.DomainAttr(domain),
-	)
-
-	return false
-}
-
-func needRenewalDynamic(x509Cert *x509.Certificate, domain string, now time.Time) bool {
-	lifetime := x509Cert.NotAfter.Sub(x509Cert.NotBefore)
-
-	var divisor int64 = 3
-	if lifetime.Round(24*time.Hour).Hours()/24.0 <= 10 {
-		divisor = 2
-	}
-
-	dueDate := x509Cert.NotAfter.Add(-1 * time.Duration(lifetime.Nanoseconds()/divisor))
-
-	if dueDate.Before(now) {
-		return true
-	}
-
-	log.Infof(log.LazySprintf("Skip renewal: The certificate expires at %s, the renewal can be performed in %s.",
-		x509Cert.NotAfter.Format(time.RFC3339), FormattableDuration(dueDate.Sub(now))), log.DomainAttr(domain))
-
-	return false
-}
-
-// getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.
-func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *x509.Certificate, domain string, client *lego.Client) *time.Time {
-	if cert.IsCA {
-		log.Fatal("Certificate bundle starts with a CA certificate.", log.DomainAttr(domain))
-	}
-
-	renewalInfo, err := client.Certificate.GetRenewalInfo(ctx, certificate.RenewalInfoRequest{Cert: cert})
-	if err != nil {
-		if errors.Is(err, api.ErrNoARI) {
-			log.Warn("acme: the server does not advertise a renewal info endpoint.",
-				log.DomainAttr(domain),
-				log.ErrorAttr(err),
-			)
-
-			return nil
-		}
-
-		log.Warn("acme: calling renewal info endpoint",
-			log.DomainAttr(domain),
-			log.ErrorAttr(err),
-		)
-
-		return nil
-	}
-
-	now := time.Now().UTC()
-
-	renewalTime := renewalInfo.ShouldRenewAt(now, willingToSleep)
-	if renewalTime == nil {
-		log.Info("acme: renewalInfo endpoint indicates that renewal is not needed.", log.DomainAttr(domain))
-		return nil
-	}
-
-	log.Info("acme: renewalInfo endpoint indicates that renewal is needed.", log.DomainAttr(domain))
-
-	if renewalInfo.ExplanationURL != "" {
-		log.Info("acme: renewalInfo endpoint provided an explanation.",
-			log.DomainAttr(domain),
-			slog.String("explanationURL", renewalInfo.ExplanationURL),
-		)
-	}
-
-	return renewalTime
 }
 
 func merge(prevDomains, nextDomains []string) []string {
@@ -461,6 +432,24 @@ func merge(prevDomains, nextDomains []string) []string {
 	}
 
 	return prevDomains
+}
+
+func sameDomainsCertificate(cert *x509.Certificate, csr *x509.CertificateRequest) bool {
+	return sameDomains(certcrypto.ExtractDomains(cert), certcrypto.ExtractDomainsCSR(csr))
+}
+
+func sameDomains(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	aClone := slices.Clone(a)
+	sort.Strings(aClone)
+
+	bClone := slices.Clone(b)
+	sort.Strings(bClone)
+
+	return slices.Equal(aClone, bClone)
 }
 
 type FormattableDuration time.Duration
@@ -497,4 +486,8 @@ func (f FormattableDuration) String() string {
 	}
 
 	return s.String()
+}
+
+func (f FormattableDuration) LogValue() slog.Value {
+	return slog.StringValue(f.String())
 }

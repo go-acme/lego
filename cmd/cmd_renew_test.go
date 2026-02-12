@@ -57,65 +57,69 @@ func Test_merge(t *testing.T) {
 	}
 }
 
-func Test_needRenewal(t *testing.T) {
+func Test_isInRenewalPeriod_days(t *testing.T) {
+	now := time.Date(2025, 1, 19, 1, 1, 1, 1, time.UTC)
+
+	oneDay := 24 * time.Hour
+
 	testCases := []struct {
 		desc     string
-		x509Cert *x509.Certificate
+		cert     *x509.Certificate
 		days     int
-		expected bool
+		expected assert.BoolAssertionFunc
 	}{
 		{
-			desc: "30 days, NotAfter now",
-			x509Cert: &x509.Certificate{
-				NotAfter: time.Now(),
+			desc: "days: 30 days, NotAfter now",
+			cert: &x509.Certificate{
+				NotAfter: now,
 			},
 			days:     30,
-			expected: true,
+			expected: assert.True,
 		},
 		{
-			desc: "30 days, NotAfter 31 days",
-			x509Cert: &x509.Certificate{
-				NotAfter: time.Now().Add(31*24*time.Hour + 1*time.Second),
+			desc: "days: 30 days, NotAfter 31 days",
+			cert: &x509.Certificate{
+				NotAfter: now.Add(31*oneDay + 1*time.Second),
 			},
 			days:     30,
-			expected: false,
+			expected: assert.False,
 		},
 		{
-			desc: "30 days, NotAfter 30 days",
-			x509Cert: &x509.Certificate{
-				NotAfter: time.Now().Add(30 * 24 * time.Hour),
+			desc: "days: 30 days, NotAfter 30 days",
+			cert: &x509.Certificate{
+				NotAfter: now.Add(30 * oneDay),
 			},
 			days:     30,
-			expected: true,
+			expected: assert.True,
 		},
 		{
-			desc: "0 days, NotAfter 30 days: only the day of the expiration",
-			x509Cert: &x509.Certificate{
-				NotAfter: time.Now().Add(30 * 24 * time.Hour),
+			desc: "days: 0 days, NotAfter 30 days: only the day of the expiration",
+			cert: &x509.Certificate{
+				NotAfter: now.Add(30 * oneDay),
 			},
 			days:     0,
-			expected: false,
+			expected: assert.False,
 		},
 		{
-			desc: "-1 days, NotAfter 30 days: always renew",
-			x509Cert: &x509.Certificate{
-				NotAfter: time.Now().Add(30 * 24 * time.Hour),
+			desc: "days: -1 days, NotAfter 30 days: always renew",
+			cert: &x509.Certificate{
+				NotAfter: now.Add(30 * oneDay),
 			},
 			days:     -1,
-			expected: true,
+			expected: assert.True,
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			actual := needRenewal(test.x509Cert, "foo.com", test.days, false)
+			actual := isInRenewalPeriod(test.cert, "foo.com", test.days, now)
 
-			assert.Equal(t, test.expected, actual)
+			test.expected(t, actual)
 		})
 	}
 }
 
-func Test_needRenewalDynamic(t *testing.T) {
+func Test_isInRenewalPeriod_dynamic(t *testing.T) {
 	testCases := []struct {
 		desc                string
 		now                 time.Time
@@ -154,16 +158,14 @@ func Test_needRenewalDynamic(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			x509Cert := &x509.Certificate{
+			cert := &x509.Certificate{
 				NotBefore: test.notBefore,
 				NotAfter:  test.notAfter,
 			}
 
-			ok := needRenewalDynamic(x509Cert, "example.com", test.now)
+			actual := isInRenewalPeriod(cert, "foo.com", noDays, test.now)
 
-			test.expected(t, ok)
+			test.expected(t, actual)
 		})
 	}
 }

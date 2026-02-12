@@ -312,21 +312,6 @@ func (s *AccountsStorage) tryRecoverRegistration(ctx context.Context, privateKey
 	return reg, nil
 }
 
-// ReadPrivateKeyFile reads a private key file.
-func ReadPrivateKeyFile(filename string) (crypto.PrivateKey, error) {
-	keyBytes, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, fmt.Errorf("reading the private key: %w", err)
-	}
-
-	privateKey, err := certcrypto.ParsePEMPrivateKey(keyBytes)
-	if err != nil {
-		return nil, fmt.Errorf("parsing the private key: %w", err)
-	}
-
-	return privateKey, nil
-}
-
 func sanitizeHost(uri *url.URL) string {
 	return strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(uri.Host)
 }

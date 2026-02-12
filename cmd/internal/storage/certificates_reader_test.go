@@ -15,8 +15,9 @@ func TestCertificatesStorage_ReadResource(t *testing.T) {
 	resource, err := reader.ReadResource("example.com")
 	require.NoError(t, err)
 
-	expected := certificate.Resource{
-		Domain:        "example.com",
+	expected := &certificate.Resource{
+		ID:            "example.com",
+		Domains:       []string{"example.com"},
 		CertURL:       "https://acme.example.org/cert/123",
 		CertStableURL: "https://acme.example.org/cert/456",
 	}
@@ -136,7 +137,7 @@ func TestCertificatesStorage_GetFileName(t *testing.T) {
 func TestCertificatesStorage_ReadCertificate(t *testing.T) {
 	reader := NewCertificatesStorage("testdata")
 
-	cert, err := reader.ReadCertificate("example.org", ExtCert)
+	cert, err := reader.ReadCertificate("example.org")
 	assert.NoError(t, err)
 
 	assert.NotEmpty(t, cert)

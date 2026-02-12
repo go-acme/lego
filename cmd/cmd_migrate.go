@@ -15,17 +15,24 @@ import (
 func createMigrate() *cli.Command {
 	return &cli.Command{
 		Name:  "migrate",
-		Usage: "Migrate accounts.",
+		Usage: "Migrate certificates and accounts.",
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			if !confirmMigration(cmd) {
 				return nil
 			}
 
-			return migrate.Accounts(cmd.String(flgPath))
+			err := migrate.Accounts(cmd.String(flgPath))
+			if err != nil {
+				return err
+			}
+
+			if cmd.Bool(flgAccountOnly) {
+				return nil
+			}
+
+			return migrate.Certificates(cmd.String(flgPath))
 		},
-		Flags: []cli.Flag{
-			createPathFlag(false),
-		},
+		Flags: createMigrateFlags(),
 	}
 }
 

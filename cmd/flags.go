@@ -36,7 +36,7 @@ const (
 // Flag aliases (short-codes).
 const (
 	flgAliasAcceptTOS = "a"
-	flgAliasCSR       = "c"
+	flgAliasCertName  = "c"
 	flgAliasDomains   = "d"
 	flgAliasEmail     = "m"
 	flgAliasIPv4Only  = "4"
@@ -91,6 +91,7 @@ const (
 // Flag names related to certificates.
 const (
 	flgCertTimeout = "cert.timeout"
+	flgCertName    = "cert.name"
 )
 
 // Flag names related to the network stack.
@@ -164,6 +165,11 @@ const (
 // Flag names related to the list commands.
 const (
 	flgFormatJSON = "json"
+)
+
+// Flag names related to the migrate command.
+const (
+	flgAccountOnly = "account-only"
 )
 
 func toEnvName(flg string) string {
@@ -473,7 +479,6 @@ func createObtainFlags() []cli.Flag {
 		&cli.StringFlag{
 			Category: categoryAdvanced,
 			Name:     flgCSR,
-			Aliases:  []string{flgAliasCSR},
 			Sources:  cli.EnvVars(toEnvName(flgCSR)),
 			Usage:    "Certificate signing request filename, if an external CSR is to be used.",
 		},
@@ -570,6 +575,7 @@ func CreateLogFlags() []cli.Flag {
 func createRunFlags() []cli.Flag {
 	flags := []cli.Flag{
 		createDomainFlag(),
+		createCertNameFlag(),
 	}
 
 	flags = append(flags, createAccountFlags()...)
@@ -595,6 +601,7 @@ func createRunFlags() []cli.Flag {
 func createRenewFlags() []cli.Flag {
 	flags := []cli.Flag{
 		createDomainFlag(),
+		createCertNameFlag(),
 	}
 
 	flags = append(flags, createAccountFlags()...)
@@ -655,6 +662,7 @@ func createRenewFlags() []cli.Flag {
 func createRevokeFlags() []cli.Flag {
 	flags := []cli.Flag{
 		createPathFlag(false),
+		createCertNamesFlag(),
 		&cli.BoolFlag{
 			Name:    flgKeep,
 			Sources: cli.EnvVars(toEnvName(flgKeep)),
@@ -665,7 +673,7 @@ func createRevokeFlags() []cli.Flag {
 			Sources: cli.EnvVars(toEnvName(flgReason)),
 			Usage: "Identifies the reason for the certificate revocation." +
 				" See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1." +
-				" Valid values are:" +
+				"\n\tValid values are:" +
 				" 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged)," +
 				" 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL)," +
 				" 9 (privilegeWithdrawn), or 10 (aACompromise).",
@@ -673,7 +681,6 @@ func createRevokeFlags() []cli.Flag {
 		},
 	}
 
-	flags = append(flags, createDomainFlag())
 	flags = append(flags, createAccountFlags()...)
 	flags = append(flags, createACMEClientFlags()...)
 
@@ -702,6 +709,18 @@ func createListFlags() []cli.Flag {
 	}
 }
 
+func createMigrateFlags() []cli.Flag {
+	return []cli.Flag{
+		createPathFlag(false),
+		&cli.BoolFlag{
+			Name:    flgAccountOnly,
+			Sources: cli.EnvVars(toEnvName(flgAccountOnly)),
+			Usage:   "Only migrate accounts.",
+			Value:   false,
+		},
+	}
+}
+
 func createAcceptFlag() cli.Flag {
 	return &cli.BoolFlag{
 		Name:    flgAcceptTOS,
@@ -717,6 +736,25 @@ func createDomainFlag() cli.Flag {
 		Aliases: []string{flgAliasDomains},
 		Sources: cli.EnvVars(toEnvName(flgDomains)),
 		Usage:   "Add a domain. For multiple domains either repeat the option or provide a comma-separated list.",
+	}
+}
+
+func createCertNameFlag() cli.Flag {
+	return &cli.StringFlag{
+		Category: categoryStorage,
+		Name:     flgCertName,
+		Aliases:  []string{flgAliasCertName},
+		Sources:  cli.EnvVars(toEnvName(flgCertName)),
+		Usage:    "The certificate ID/Name, used to store and retrieve a certificate. By default, it uses the first domain name.",
+	}
+}
+
+func createCertNamesFlag() cli.Flag {
+	return &cli.StringSliceFlag{
+		Name:    flgCertName,
+		Aliases: []string{flgAliasCertName},
+		Sources: cli.EnvVars(toEnvName(flgCertName)),
+		Usage:   "The certificate IDs/Names, used to retrieve the certificates.",
 	}
 }
 

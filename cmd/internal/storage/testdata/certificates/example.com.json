@@ -1,5 +1,8 @@
 {
-	"domain": "example.com",
+	"id": "example.com",
+	"domains": [
+		"example.com"
+	],
 	"certUrl": "https://acme.example.org/cert/123",
 	"certStableUrl": "https://acme.example.org/cert/456"
 }

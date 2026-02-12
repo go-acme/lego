@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-acme/lego/v5/log"
+	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v3"
 	"gitlab.com/greyxor/slogor"
 )
@@ -60,10 +61,16 @@ func setUpLogger(cmd *cli.Command) {
 		logger = slog.New(slog.NewTextHandler(os.Stdout, opts))
 
 	default:
-		logger = slog.New(slogor.NewHandler(os.Stderr,
+		opts := []slogor.OptionFn{
 			slogor.SetLevel(getLogLeveler(cmd.String(flgLogLevel))),
-			slogor.SetTimeFormat(rfc3339NanoNatural)),
-		)
+			slogor.SetTimeFormat(rfc3339NanoNatural),
+		}
+
+		if !isatty.IsTerminal(os.Stdout.Fd()) {
+			opts = append(opts, slogor.DisableColor())
+		}
+
+		logger = slog.New(slogor.NewHandler(os.Stdout, opts...))
 	}
 
 	log.SetDefault(logger)

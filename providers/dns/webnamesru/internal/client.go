@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v5/internal/errutils"
 )
 
 const defaultBaseURL = "https://www.webnames.ru/scripts/json_domain_zone_manager.pl"

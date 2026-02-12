@@ -3,12 +3,15 @@ package registration
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/log"
+	"github.com/go-acme/lego/v5/registration/zerossl"
 )
 
 const mailTo = "mailto:"
@@ -169,4 +172,35 @@ func (r *Registrar) ResolveAccountByKey(ctx context.Context) (*Resource, error) 
 	}
 
 	return &Resource{URI: account.Location, Body: account.Account}, nil
+}
+
+// RegisterWithZeroSSL registers the current account to the ZeroSSL.
+// It uses either an access key or an email to generate an EAB.
+func RegisterWithZeroSSL(ctx context.Context, r *Registrar, email string) (*Resource, error) {
+	zc := zerossl.NewClient()
+
+	value, find := os.LookupEnv(zerossl.EnvZeroSSLAccessKey)
+	if find {
+		eab, err := zc.GenerateEAB(ctx, value)
+		if err != nil {
+			return nil, fmt.Errorf("zerossl: generate EAB: %w", err)
+		}
+
+		return r.RegisterWithExternalAccountBinding(ctx, RegisterEABOptions{
+			TermsOfServiceAgreed: true,
+			Kid:                  eab.Kid,
+			HmacEncoded:          eab.HmacKey,
+		})
+	}
+
+	eab, err := zc.GenerateEABFromEmail(ctx, email)
+	if err != nil {
+		return nil, fmt.Errorf("zerossl: generate EAB from email: %w", err)
+	}
+
+	return r.RegisterWithExternalAccountBinding(ctx, RegisterEABOptions{
+		TermsOfServiceAgreed: true,
+		Kid:                  eab.Kid,
+		HmacEncoded:          eab.HmacKey,
+	})
 }

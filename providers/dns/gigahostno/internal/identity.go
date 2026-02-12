@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
-	"github.com/go-acme/lego/v5/providers/dns/internal/useragent"
+	"github.com/go-acme/lego/v5/internal/errutils"
+	"github.com/go-acme/lego/v5/internal/useragent"
 	"github.com/pquerna/otp/totp"
 )
 

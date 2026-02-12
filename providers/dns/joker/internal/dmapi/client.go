@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v5/internal/errutils"
 )
 
 const defaultBaseURL = "https://dmapi.joker.com/request/"

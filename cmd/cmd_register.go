@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
+	"github.com/go-acme/lego/v5/registration/zerossl"
 	"github.com/urfave/cli/v3"
 )
 
@@ -94,6 +95,8 @@ func registerAccount(ctx context.Context, cmd *cli.Command, client *lego.Client)
 			Kid:                  kid,
 			HmacEncoded:          hmacEncoded,
 		})
+	} else if zerossl.IsZeroSSL(cmd.String(flgServer)) {
+		return registration.RegisterWithZeroSSL(ctx, client.Registration, cmd.String(flgEmail))
 	}
 
 	return client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})

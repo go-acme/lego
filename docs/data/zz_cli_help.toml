@@ -21,6 +21,11 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    --help, -h  show help
+
+   Flags related to logs:
+
+   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
 """
 
 [[command]]

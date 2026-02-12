@@ -43,7 +43,7 @@ func newClientConfig(cmd *cli.Command, account registration.User, keyType certcr
 		KeyType:             keyType,
 		Timeout:             time.Duration(cmd.Int(flgCertTimeout)) * time.Second,
 		OverallRequestLimit: cmd.Int(flgOverallRequestLimit),
-		EnableCommonName:    !cmd.Bool(flgDisableCommonName),
+		EnableCommonName:    cmd.Bool(flgEnableCommonName),
 	}
 	config.UserAgent = getUserAgent(cmd)
 

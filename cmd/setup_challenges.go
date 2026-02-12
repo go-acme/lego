@@ -164,14 +164,9 @@ func setupTLSProvider(cmd *cli.Command) challenge.Provider {
 }
 
 func setupDNS(cmd *cli.Command, client *lego.Client) error {
-	err := checkPropagationExclusiveOptions(cmd)
+	err := validatePropagationExclusiveOptions(cmd)
 	if err != nil {
 		return err
-	}
-
-	wait := cmd.Duration(flgDNSPropagationWait)
-	if wait < 0 {
-		return fmt.Errorf("'%s' cannot be negative", flgDNSPropagationWait)
 	}
 
 	provider, err := dns.NewDNSChallengeProviderByName(cmd.String(flgDNS))
@@ -189,40 +184,36 @@ func setupDNS(cmd *cli.Command, client *lego.Client) error {
 
 	dns01.SetDefaultClient(dns01.NewClient(opts))
 
+	shouldWait := cmd.IsSet(flgDNSPropagationWait)
+
 	err = client.Challenge.SetDNS01Provider(provider,
-		dns01.CondOption(cmd.Bool(flgDNSDisableCP) || cmd.Bool(flgDNSPropagationDisableANS),
+		dns01.CondOption(shouldWait,
+			dns01.PropagationWait(cmd.Duration(flgDNSPropagationWait), true)),
+		dns01.CondOption(!shouldWait && cmd.Bool(flgDNSPropagationDisableANS),
 			dns01.DisableAuthoritativeNssPropagationRequirement()),
-
-		dns01.CondOption(cmd.Duration(flgDNSPropagationWait) > 0,
-			// TODO(ldez): inside the next major version we will use flgDNSDisableCP here.
-			// This will change the meaning of this flag to really disable all propagation checks.
-			dns01.PropagationWait(wait, true)),
-
-		dns01.CondOption(cmd.Bool(flgDNSPropagationRNS),
-			dns01.RecursiveNSsPropagationRequirement()),
+		dns01.CondOption(!shouldWait && cmd.Bool(flgDNSPropagationDisableRNS),
+			dns01.DisableRecursiveNSsPropagationRequirement()),
 	)
 
 	return err
 }
 
-func checkPropagationExclusiveOptions(cmd *cli.Command) error {
-	if cmd.IsSet(flgDNSDisableCP) {
-		log.Warnf(log.LazySprintf("The flag '%s' is deprecated use '%s' instead.", flgDNSDisableCP, flgDNSPropagationDisableANS))
+func validatePropagationExclusiveOptions(cmd *cli.Command) error {
+	if !cmd.IsSet(flgDNSPropagationWait) {
+		return nil
 	}
 
-	if (isSetBool(cmd, flgDNSDisableCP) || isSetBool(cmd, flgDNSPropagationDisableANS)) && cmd.IsSet(flgDNSPropagationWait) {
-		return fmt.Errorf("'%s' and '%s' are mutually exclusive", flgDNSPropagationDisableANS, flgDNSPropagationWait)
+	if isSetBool(cmd, flgDNSPropagationDisableANS) {
+		return fmt.Errorf("'%s' and '%s' are mutually exclusive",
+			flgDNSPropagationWait, flgDNSPropagationDisableANS)
 	}
 
-	if isSetBool(cmd, flgDNSPropagationRNS) && cmd.IsSet(flgDNSPropagationWait) {
-		return fmt.Errorf("'%s' and '%s' are mutually exclusive", flgDNSPropagationRNS, flgDNSPropagationWait)
+	if isSetBool(cmd, flgDNSPropagationDisableRNS) {
+		return fmt.Errorf("'%s' and '%s' are mutually exclusive",
+			flgDNSPropagationWait, flgDNSPropagationDisableRNS)
 	}
 
 	return nil
-}
-
-func isSetBool(cmd *cli.Command, name string) bool {
-	return cmd.IsSet(name) && cmd.Bool(name)
 }
 
 func getNetworkStack(cmd *cli.Command) challenge.NetworkStack {
@@ -236,4 +227,8 @@ func getNetworkStack(cmd *cli.Command) challenge.NetworkStack {
 	default:
 		return challenge.DualStack
 	}
+}
+
+func isSetBool(cmd *cli.Command, name string) bool {
+	return cmd.IsSet(name) && cmd.Bool(name)
 }

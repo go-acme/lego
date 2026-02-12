@@ -158,7 +158,9 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 
 	certDomains := certcrypto.ExtractDomains(cert)
 
-	if ariRenewalTime == nil && !needRenewal(cert, domain, cmd.Int(flgRenewDays), cmd.Bool(flgRenewDynamic)) &&
+	days := getFlagRenewDays(cmd)
+
+	if ariRenewalTime == nil && !needRenewal(cert, domain, days, cmd.Bool(flgRenewForce)) &&
 		(!forceDomains || slices.Equal(certDomains, domains)) {
 		return nil
 	}
@@ -295,7 +297,9 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 		}
 	}
 
-	if ariRenewalTime == nil && !needRenewal(cert, domain, cmd.Int(flgRenewDays), cmd.Bool(flgRenewDynamic)) {
+	days := getFlagRenewDays(cmd)
+
+	if ariRenewalTime == nil && !needRenewal(cert, domain, days, cmd.Bool(flgRenewForce)) {
 		return nil
 	}
 
@@ -337,16 +341,34 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
 }
 
-func needRenewal(x509Cert *x509.Certificate, domain string, days int, dynamic bool) bool {
+func getFlagRenewDays(cmd *cli.Command) int {
+	if cmd.IsSet(flgRenewDays) {
+		return cmd.Int(flgRenewDays)
+	}
+
+	return -math.MaxInt
+}
+
+func needRenewal(x509Cert *x509.Certificate, domain string, days int, force bool) bool {
 	if x509Cert.IsCA {
 		log.Fatal("Certificate bundle starts with a CA certificate.", log.DomainAttr(domain))
 	}
 
-	if dynamic {
+	if force {
+		return true
+	}
+
+	// Default behavior
+	if days == -math.MaxInt {
 		return needRenewalDynamic(x509Cert, domain, time.Now())
 	}
 
+	return needRenewalDays(x509Cert, domain, days)
+}
+
+func needRenewalDays(x509Cert *x509.Certificate, domain string, days int) bool {
 	if days < 0 {
+		// if the number of days is negative: always renew the certificate.
 		return true
 	}
 

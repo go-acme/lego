@@ -83,11 +83,11 @@ func registerAccount(ctx context.Context, cmd *cli.Command, client *lego.Client)
 	}
 
 	if cmd.Bool(flgEAB) {
-		kid := cmd.String(flgKID)
-		hmacEncoded := cmd.String(flgHMAC)
+		kid := cmd.String(flgEABKID)
+		hmacEncoded := cmd.String(flgEABHMAC)
 
 		if kid == "" || hmacEncoded == "" {
-			log.Fatal(fmt.Sprintf("Requires arguments --%s and --%s.", flgKID, flgHMAC))
+			log.Fatal(fmt.Sprintf("Requires arguments --%s and --%s.", flgEABKID, flgEABHMAC))
 		}
 
 		return client.Registration.RegisterWithExternalAccountBinding(ctx, registration.RegisterEABOptions{

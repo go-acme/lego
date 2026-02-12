@@ -47,7 +47,7 @@ func (c *Client) checkNameserversPropagationCustom(ctx context.Context, fqdn, va
 		}
 
 		if !found {
-			return false, fmt.Errorf("NS %s did not return the expected TXT record [fqdn: %s, value: %s]: %s", ns, fqdn, value, strings.Join(records, " ,"))
+			return false, fmt.Errorf("NS %s did not return the expected TXT record [fqdn: %s, value: %s]: %s", ns, fqdn, value, strings.Join(records, ", "))
 		}
 	}
 

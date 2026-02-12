@@ -50,7 +50,7 @@ jobs:
         run: go install github.com/letsencrypt/pebble/v2/cmd/pebble-challtestsrv@v2.9.0
 
       - name: Set up a Memcached server
-        uses: niden/actions-memcached@v7
+        run: docker run -d --rm -p 11211:11211 memcached:1.6-alpine
 
       - name: Make
         run: |

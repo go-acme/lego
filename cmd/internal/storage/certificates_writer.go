@@ -92,13 +92,13 @@ func (s *CertificatesStorage) Save(certRes *certificate.Resource, opts *SaveOpti
 }
 
 // Archive moves the certificate files to the archive folder.
-func (s *CertificatesStorage) Archive(domain string) error {
+func (s *CertificatesStorage) Archive(certID string) error {
 	err := CreateNonExistingFolder(s.archivePath)
 	if err != nil {
 		return fmt.Errorf("could not check/create the archive folder %q: %w", s.archivePath, err)
 	}
 
-	baseFilename := filepath.Join(s.rootPath, SanitizedName(domain))
+	baseFilename := filepath.Join(s.rootPath, SanitizedName(certID))
 
 	matches, err := filepath.Glob(baseFilename + ".*")
 	if err != nil {

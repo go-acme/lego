@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"fmt"
 
+	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
@@ -39,7 +40,7 @@ func createRun() *cli.Command {
 }
 
 func run(ctx context.Context, cmd *cli.Command) error {
-	keyType, err := getKeyType(cmd.String(flgKeyType))
+	keyType, err := certcrypto.GetKeyType(cmd.String(flgKeyType))
 	if err != nil {
 		return fmt.Errorf("get the key type: %w", err)
 	}
@@ -70,7 +71,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		}
 
 		account.Registration = reg
-		if err = accountsStorage.Save(account); err != nil {
+		if err = accountsStorage.Save(keyType, account); err != nil {
 			return fmt.Errorf("could not save the account file: %w", err)
 		}
 

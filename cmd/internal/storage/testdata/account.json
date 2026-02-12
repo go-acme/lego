@@ -1,6 +1,7 @@
 {
   "id": "test@example.com",
   "email": "account@example.com",
+  "keyType": "RSA4096",
   "registration": {
     "body": {
       "status": "valid",

@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/log"
+	"github.com/mattn/go-zglob"
 	"github.com/urfave/cli/v3"
 )
 
@@ -54,6 +55,7 @@ func listAccountsText(_ context.Context, cmd *cli.Command) error {
 		fmt.Println(account.GetID())
 		fmt.Println("├── Email:", account.Email)
 		fmt.Println("├── Server:", account.Server)
+		fmt.Println("├── Key Type:", account.KeyType)
 		fmt.Println("└── Path:", account.Path)
 		fmt.Println()
 	}
@@ -76,7 +78,7 @@ func readAccounts(cmd *cli.Command) ([]ListAccount, error) {
 		return nil, err
 	}
 
-	matches, err := filepath.Glob(filepath.Join(accountsStorage.GetRootPath(), "*", "*", "*.json"))
+	matches, err := zglob.Glob(filepath.Join(accountsStorage.GetRootPath(), "**", "account.json"))
 	if err != nil {
 		return nil, err
 	}

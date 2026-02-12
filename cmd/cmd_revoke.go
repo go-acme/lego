@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
@@ -20,7 +21,7 @@ func createRevoke() *cli.Command {
 }
 
 func revoke(ctx context.Context, cmd *cli.Command) error {
-	keyType, err := getKeyType(cmd.String(flgKeyType))
+	keyType, err := certcrypto.GetKeyType(cmd.String(flgKeyType))
 	if err != nil {
 		return fmt.Errorf("get the key type: %w", err)
 	}

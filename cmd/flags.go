@@ -33,6 +33,18 @@ const (
 	categoryLogs               = "Flags related to logs:"
 )
 
+// Flag aliases (short-codes).
+const (
+	flgAliasAcceptTOS = "a"
+	flgAliasCSR       = "c"
+	flgAliasDomains   = "d"
+	flgAliasEmail     = "m"
+	flgAliasIPv4Only  = "4"
+	flgAliasIPv6Only  = "6"
+	flgAliasKeyType   = "k"
+	flgAliasServer    = "s"
+)
+
 // Flag names related to the account.
 const (
 	flgAcceptTOS = "accept-tos"
@@ -167,7 +179,7 @@ func createACMEClientFlags() []cli.Flag {
 		&cli.StringFlag{
 			// NOTE(ldez): if Required is true, then the default value is not display in the help.
 			Name:    flgServer,
-			Aliases: []string{"s"},
+			Aliases: []string{flgAliasServer},
 			Sources: cli.EnvVars(toEnvName(flgServer)),
 			Usage: fmt.Sprintf("CA (ACME server). It can be either a URL or a shortcode."+
 				"\n\t(available shortcodes: %s)", strings.Join(lego.GetAllCodes(), ", ")),
@@ -191,7 +203,7 @@ func createACMEClientFlags() []cli.Flag {
 		},
 		&cli.StringFlag{
 			Name:    flgKeyType,
-			Aliases: []string{"k"},
+			Aliases: []string{flgAliasKeyType},
 			Sources: cli.EnvVars(toEnvName(flgKeyType)),
 			Value:   "ec256",
 			Usage:   "Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384.",
@@ -247,14 +259,14 @@ func createNetworkStackFlags() []cli.Flag {
 		&cli.BoolFlag{
 			Category: categoryAdvanced,
 			Name:     flgIPv4Only,
-			Aliases:  []string{"4"},
+			Aliases:  []string{flgAliasIPv4Only},
 			Sources:  cli.EnvVars(toEnvName(flgIPv4Only)),
 			Usage:    "Use IPv4 only.",
 		},
 		&cli.BoolFlag{
 			Category: categoryAdvanced,
 			Name:     flgIPv6Only,
-			Aliases:  []string{"6"},
+			Aliases:  []string{flgAliasIPv6Only},
 			Sources:  cli.EnvVars(toEnvName(flgIPv6Only)),
 			Usage:    "Use IPv6 only.",
 		},
@@ -425,14 +437,13 @@ func createAccountFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:    flgEmail,
-			Aliases: []string{"m"},
+			Aliases: []string{flgAliasEmail},
 			Sources: cli.EnvVars(toEnvName(flgEmail)),
 			Usage:   "Email used for registration and recovery contact.",
 		},
 		&cli.StringFlag{
 			Category: categoryStorage,
 			Name:     flgAccountID,
-			Aliases:  []string{"a"},
 			Sources:  cli.EnvVars(toEnvName(flgAccountID)),
 			Usage:    "Account identifier (The email is used if there is account ID is undefined).",
 		},
@@ -462,7 +473,7 @@ func createObtainFlags() []cli.Flag {
 		&cli.StringFlag{
 			Category: categoryAdvanced,
 			Name:     flgCSR,
-			Aliases:  []string{"c"},
+			Aliases:  []string{flgAliasCSR},
 			Sources:  cli.EnvVars(toEnvName(flgCSR)),
 			Usage:    "Certificate signing request filename, if an external CSR is to be used.",
 		},
@@ -646,7 +657,6 @@ func createRevokeFlags() []cli.Flag {
 		createPathFlag(false),
 		&cli.BoolFlag{
 			Name:    flgKeep,
-			Aliases: []string{"k"},
 			Sources: cli.EnvVars(toEnvName(flgKeep)),
 			Usage:   "Keep the certificates after the revocation instead of archiving them.",
 		},
@@ -695,7 +705,7 @@ func createListFlags() []cli.Flag {
 func createAcceptFlag() cli.Flag {
 	return &cli.BoolFlag{
 		Name:    flgAcceptTOS,
-		Aliases: []string{"a"},
+		Aliases: []string{flgAliasAcceptTOS},
 		Sources: cli.EnvVars(toEnvName(flgAcceptTOS)),
 		Usage:   "By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.",
 	}
@@ -704,7 +714,7 @@ func createAcceptFlag() cli.Flag {
 func createDomainFlag() cli.Flag {
 	return &cli.StringSliceFlag{
 		Name:    flgDomains,
-		Aliases: []string{"d"},
+		Aliases: []string{flgAliasDomains},
 		Sources: cli.EnvVars(toEnvName(flgDomains)),
 		Usage:   "Add a domain. For multiple domains either repeat the option or provide a comma-separated list.",
 	}

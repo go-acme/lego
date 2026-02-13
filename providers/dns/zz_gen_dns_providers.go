@@ -125,6 +125,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/namecheap"
 	"github.com/go-acme/lego/v4/providers/dns/namedotcom"
 	"github.com/go-acme/lego/v4/providers/dns/namesilo"
+	"github.com/go-acme/lego/v4/providers/dns/namesurfer"
 	"github.com/go-acme/lego/v4/providers/dns/nearlyfreespeech"
 	"github.com/go-acme/lego/v4/providers/dns/neodigit"
 	"github.com/go-acme/lego/v4/providers/dns/netcup"
@@ -434,6 +435,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return namedotcom.NewDNSProvider()
 	case "namesilo":
 		return namesilo.NewDNSProvider()
+	case "namesurfer":
+		return namesurfer.NewDNSProvider()
 	case "nearlyfreespeech":
 		return nearlyfreespeech.NewDNSProvider()
 	case "neodigit":

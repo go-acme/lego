@@ -131,6 +131,7 @@ func allDNSCodes() string {
 		"namecheap",
 		"namedotcom",
 		"namesilo",
+		"namesurfer",
 		"nearlyfreespeech",
 		"neodigit",
 		"netcup",
@@ -2741,6 +2742,30 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/namesilo`)
+
+	case "namesurfer":
+		// generated from: providers/dns/namesurfer/namesurfer.toml
+		ew.writeln(`Configuration for FusionLayer NameSurfer.`)
+		ew.writeln(`Code:	'namesurfer'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NAMESURFER_API_ENDPOINT":	NameSurfer API endpoint URL (e.g., https://namesurfer.example.com:8443/API_10/NSService_10/)`)
+		ew.writeln(`	- "NAMESURFER_API_KEY":	API key name`)
+		ew.writeln(`	- "NAMESURFER_API_SECRET":	API secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NAMESURFER_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "NAMESURFER_INSECURE_SKIP_VERIFY":	Whether to verify the API certificate`)
+		ew.writeln(`	- "NAMESURFER_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "NAMESURFER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
+		ew.writeln(`	- "NAMESURFER_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)`)
+		ew.writeln(`	- "NAMESURFER_VIEW":	DNS view name (optional, default: empty string)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/namesurfer`)
 
 	case "nearlyfreespeech":
 		// generated from: providers/dns/nearlyfreespeech/nearlyfreespeech.toml

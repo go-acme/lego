@@ -1,0 +1,22 @@
+Name = "No-IP"
+Description = ''''''
+URL = "https://www.noip.com/"
+Code = "noip"
+Since = "v4.32.0"
+
+Example = '''
+NOIP_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+lego --dns noip -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    NOIP_API_KEY = "API key"
+  [Configuration.Additional]
+    NOIP_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    NOIP_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    NOIP_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    NOIP_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://developer.noip.com/reference/v1-dns-records-list-names"

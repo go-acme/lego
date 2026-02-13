@@ -2751,7 +2751,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "NAMESURFER_API_ENDPOINT":	NameSurfer API endpoint URL (e.g., https://namesurfer.example.com:8443/API_10/NSService_10/)`)
+		ew.writeln(`	- "NAMESURFER_API_ENDPOINT":	NameSurfer API (jsonrpc10) endpoint URL (e.g., https://foo.example.com:8443/API/NSService_10)`)
 		ew.writeln(`	- "NAMESURFER_API_KEY":	API key name`)
 		ew.writeln(`	- "NAMESURFER_API_SECRET":	API secret`)
 		ew.writeln()

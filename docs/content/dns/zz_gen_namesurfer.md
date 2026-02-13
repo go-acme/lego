@@ -26,9 +26,9 @@ Configuration for [FusionLayer NameSurfer](https://www.fusionlayer.com/).
 Here is an example bash command using the FusionLayer NameSurfer provider:
 
 ```bash
-NAMESURFER_API_ENDPOINT=https://your-namesurfer-server.example.com:8443/API_10/NSService_10/jsonrpc10 \
-NAMESURFER_API_KEY=your_api_key \
-NAMESURFER_API_SECRET=your_api_secret \
+NAMESURFER_API_ENDPOINT=https://foo.example.com:8443/API/NSService_10 \
+NAMESURFER_API_KEY=xxx \
+NAMESURFER_API_SECRET=yyy \
 lego --dns namesurfer -d '*.example.com' -d example.com run
 ```
 
@@ -39,7 +39,7 @@ lego --dns namesurfer -d '*.example.com' -d example.com run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `NAMESURFER_API_ENDPOINT` | NameSurfer API endpoint URL (e.g., https://namesurfer.example.com:8443/API_10/NSService_10/) |
+| `NAMESURFER_API_ENDPOINT` | NameSurfer API (jsonrpc10) endpoint URL (e.g., https://foo.example.com:8443/API/NSService_10) |
 | `NAMESURFER_API_KEY` | API key name |
 | `NAMESURFER_API_SECRET` | API secret |
 
@@ -66,7 +66,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](http://95.128.3.201:8053/API/NSService_10)
+- [API documentation](https://web.archive.org/web/20260213170737/http://95.128.3.201:8053/API/NSService_10)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/namesurfer/namesurfer.toml -->

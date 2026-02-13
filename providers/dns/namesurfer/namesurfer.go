@@ -177,7 +177,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (string, error) {
 	zones, err := d.client.ListZones(ctx, "forward")
 	if err != nil {
-		return "", fmt.Errorf("list zone basics: %w", err)
+		return "", fmt.Errorf("list zones: %w", err)
 	}
 
 	domain := dns01.UnFqdn(fqdn)

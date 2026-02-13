@@ -208,7 +208,7 @@ func (d *Client) doRequest(ctx context.Context, method string, params []any, res
 
 	err = json.Unmarshal(rpcResp.Result, result)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to unmarshal response: %w: %s", err, rpcResp.Result)
 	}
 
 	return nil

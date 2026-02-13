@@ -1,0 +1,23 @@
+{
+  "result": [
+    {
+      "name": "foo",
+      "type": "TXT",
+      "data": "xxx",
+      "ttl": 300
+    },
+    {
+      "name": "_acme-challenge",
+      "type": "TXT",
+      "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "ttl": 300
+    },
+    {
+      "name": "bar",
+      "type": "A",
+      "data": "yyy",
+      "ttl": 300
+    }
+  ],
+  "id": 123
+}

@@ -1,4 +1,4 @@
-Name = "NameSurfer"
+Name = "FusionLayer NameSurfer"
 Description = ''''''
 URL = "https://www.fusionlayer.com/"
 Code = "namesurfer"
@@ -13,16 +13,16 @@ lego --dns namesurfer -d '*.example.com' -d example.com run
 
 [Configuration]
   [Configuration.Credentials]
-    NAMESURFER_API_ENDPOINT = "NameSurfer API endpoint URL (e.g., https://namesurfer.example.com:8443/API_10/NSService_10/jsonrpc10)"
+    NAMESURFER_API_ENDPOINT = "NameSurfer API endpoint URL (e.g., https://namesurfer.example.com:8443/API_10/NSService_10/)"
     NAMESURFER_API_KEY = "API key name"
     NAMESURFER_API_SECRET = "API secret"
   [Configuration.Additional]
     NAMESURFER_VIEW = "DNS view name (optional, default: empty string)"
-    NAMESURFER_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)"
     NAMESURFER_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     NAMESURFER_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 120)"
+    NAMESURFER_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)"
     NAMESURFER_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
-    NAMESURFER_TLS_INSECURE_SKIP_VERIFY = "Skip TLS certificate verification (Default: false)"
+    NAMESURFER_INSECURE_SKIP_VERIFY = "Whether to verify the API certificate"
 
 [Links]
-  API = "https://www.fusionlayer.com/"
+  API = "http://95.128.3.201:8053/API/NSService_10"

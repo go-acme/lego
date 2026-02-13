@@ -1,0 +1,20 @@
+{
+  "result": [
+    {
+      "type": "typeA",
+      "name": "example.com",
+      "view": "viewA"
+    },
+    {
+      "type": "typeB",
+      "name": "example.org",
+      "view": "viewB"
+    },
+    {
+      "type": "typeB",
+      "name": "example.net",
+      "view": "viewC"
+    }
+  ],
+  "id": 123
+}

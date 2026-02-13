@@ -2,14 +2,19 @@ package namesurfer
 
 import (
 	"testing"
-	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest(EnvAPIEndpoint, EnvAPIKey, EnvAPISecret)
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(
+	EnvBaseURL,
+	EnvAPIKey,
+	EnvAPISecret,
+	EnvView,
+).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -20,37 +25,42 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAPIEndpoint: "https://namesurfer.example.com:8443/API_10/NSService_10/jsonrpc10",
-				EnvAPIKey:      "test_key",
-				EnvAPISecret:   "test_secret",
+				EnvBaseURL:   "https://example.com",
+				EnvAPIKey:    "user",
+				EnvAPISecret: "secret",
 			},
 		},
 		{
-			desc: "missing API endpoint",
+			desc: "missing base URL",
 			envVars: map[string]string{
-				EnvAPIEndpoint: "",
-				EnvAPIKey:      "test_key",
-				EnvAPISecret:   "test_secret",
+				EnvBaseURL:   "",
+				EnvAPIKey:    "user",
+				EnvAPISecret: "secret",
 			},
-			expected: "namesurfer: some credentials information are missing: NAMESURFER_API_ENDPOINT",
+			expected: "namesurfer: some credentials information are missing: NAMESURFER_BASE_URL",
 		},
 		{
 			desc: "missing API key",
 			envVars: map[string]string{
-				EnvAPIEndpoint: "https://namesurfer.example.com:8443/API_10/NSService_10/jsonrpc10",
-				EnvAPIKey:      "",
-				EnvAPISecret:   "test_secret",
+				EnvBaseURL:   "https://example.com",
+				EnvAPIKey:    "",
+				EnvAPISecret: "secret",
 			},
 			expected: "namesurfer: some credentials information are missing: NAMESURFER_API_KEY",
 		},
 		{
 			desc: "missing API secret",
 			envVars: map[string]string{
-				EnvAPIEndpoint: "https://namesurfer.example.com:8443/API_10/NSService_10/jsonrpc10",
-				EnvAPIKey:      "test_key",
-				EnvAPISecret:   "",
+				EnvBaseURL:   "https://example.com",
+				EnvAPIKey:    "user",
+				EnvAPISecret: "",
 			},
 			expected: "namesurfer: some credentials information are missing: NAMESURFER_API_SECRET",
+		},
+		{
+			desc:     "missing credentials",
+			envVars:  map[string]string{},
+			expected: "namesurfer: some credentials information are missing: NAMESURFER_BASE_URL,NAMESURFER_API_KEY,NAMESURFER_API_SECRET",
 		},
 	}
 
@@ -68,7 +78,7 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
-				require.NotNil(t, p.config.HTTPClient)
+				require.NotNil(t, p.client)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -78,35 +88,46 @@ func TestNewDNSProvider(t *testing.T) {
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc        string
-		apiEndpoint string
-		apiKey      string
-		apiSecret   string
-		expected    string
+		desc      string
+		baseURL   string
+		apiKey    string
+		apiSecret string
+		expected  string
 	}{
 		{
-			desc:        "success",
-			apiEndpoint: "https://namesurfer.example.com:8443/API_10/NSService_10/jsonrpc10",
-			apiKey:      "test_key",
-			apiSecret:   "test_secret",
+			desc:      "success",
+			baseURL:   "https://example.com",
+			apiKey:    "user",
+			apiSecret: "secret",
+		},
+		{
+			desc:      "missing base URL",
+			apiKey:    "user",
+			apiSecret: "secret",
+			expected:  "namesurfer: base URL missing",
+		},
+		{
+			desc:      "missing API key",
+			baseURL:   "https://example.com",
+			apiSecret: "secret",
+			expected:  "namesurfer: credentials missing",
+		},
+		{
+			desc:     "missing API secret",
+			baseURL:  "https://example.com",
+			apiKey:   "user",
+			expected: "namesurfer: credentials missing",
 		},
 		{
 			desc:     "missing credentials",
-			expected: "namesurfer: incomplete credentials",
-		},
-		{
-			desc:        "missing API endpoint",
-			apiEndpoint: "",
-			apiKey:      "test_key",
-			apiSecret:   "test_secret",
-			expected:    "namesurfer: incomplete credentials",
+			expected: "namesurfer: credentials missing",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.APIEndpoint = test.apiEndpoint
+			config.BaseURL = test.baseURL
 			config.APIKey = test.apiKey
 			config.APISecret = test.apiSecret
 
@@ -116,6 +137,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -123,44 +145,30 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func TestNewDNSProvider_ConfigNil(t *testing.T) {
-	_, err := NewDNSProviderConfig(nil)
-	require.EqualError(t, err, "namesurfer: the configuration of the DNS provider is nil")
-}
-
-func TestDNSProvider_Timeout(t *testing.T) {
-	config := NewDefaultConfig()
-	config.APIEndpoint = "https://namesurfer.example.com:8443/API_10/NSService_10/jsonrpc10"
-	config.APIKey = "test_key"
-	config.APISecret = "test_secret"
-	config.PropagationTimeout = 5 * time.Minute
-	config.PollingInterval = 30 * time.Second
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	timeout, interval := provider.Timeout()
-	assert.Equal(t, 5*time.Minute, timeout)
-	assert.Equal(t, 30*time.Second, interval)
-}
-
-func TestCalculateDigest(t *testing.T) {
-	config := &Config{
-		APIKey:      "testkey",
-		APISecret:   "testsecret",
-		APIEndpoint: "https://test.example.com",
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
 	}
 
-	provider := &DNSProvider{config: config}
+	envTest.RestoreEnv()
 
-	// Test digest calculation with no parts
-	digest1 := provider.calculateDigest()
-	assert.NotEmpty(t, digest1)
-	assert.Len(t, digest1, 64) // SHA256 produces 64 hex characters
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 
-	// Test digest calculation with parts
-	digest2 := provider.calculateDigest("zone.example.com", "default")
-	assert.NotEmpty(t, digest2)
-	assert.Len(t, digest2, 64)
-	assert.NotEqual(t, digest1, digest2) // Different inputs should produce different digests
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }

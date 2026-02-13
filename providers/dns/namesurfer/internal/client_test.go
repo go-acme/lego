@@ -81,7 +81,7 @@ func TestClient_UpdateDNSHost(t *testing.T) {
 		TTL:  300,
 	}
 
-	err := client.UpdateDNSHost(t.Context(), "example.com", "viewA", record)
+	err := client.UpdateDNSHost(t.Context(), "example.com", "viewA", record, DNSNode{})
 	require.NoError(t, err)
 }
 
@@ -105,21 +105,21 @@ func TestClient_SearchDNSHosts(t *testing.T) {
 	assert.Equal(t, expected, records)
 }
 
-func TestClient_ListZoneBasics(t *testing.T) {
+func TestClient_ListZones(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /jsonrpc10",
-			servermock.ResponseFromFixture("listZoneBasics.json"),
-			servermock.CheckRequestJSONBodyFromFixture("listZoneBasics-request.json"),
+			servermock.ResponseFromFixture("listZones.json"),
+			servermock.CheckRequestJSONBodyFromFixture("listZones-request.json"),
 		).
 		Build(t)
 
-	zones, err := client.ListZoneBasics(t.Context(), "value")
+	zones, err := client.ListZones(t.Context(), "value")
 	require.NoError(t, err)
 
-	expected := []MinimalZone{
-		{Type: "typeA", Name: "example.com", View: "viewA"},
-		{Type: "typeB", Name: "example.org", View: "viewB"},
-		{Type: "typeB", Name: "example.net", View: "viewC"},
+	expected := []DNSZone{
+		{Name: "example.com", View: "viewA"},
+		{Name: "example.org", View: "viewB"},
+		{Name: "example.net", View: "viewC"},
 	}
 
 	assert.Equal(t, expected, zones)

@@ -7,6 +7,7 @@ import (
 )
 
 // DNSNode represents a DNS record.
+// http://95.128.3.201:8053/API/NSService_10#DNSNode
 type DNSNode struct {
 	Name string `json:"name,omitempty"`
 	Type string `json:"type,omitempty"`
@@ -14,29 +15,29 @@ type DNSNode struct {
 	TTL  int    `json:"ttl,omitempty"`
 }
 
-// MinimalZone represents a DNS zone.
-type MinimalZone struct {
-	Type string `json:"type,omitempty"`
+// DNSZone represents a DNS zone.
+// http://95.128.3.201:8053/API/NSService_10#DNSZone
+type DNSZone struct {
 	Name string `json:"name,omitempty"`
 	View string `json:"view,omitempty"`
 }
 
-// JSONRPCRequest represents a JSON-RPC 1.0 request.
-type JSONRPCRequest struct {
+// APIRequest represents a JSON-RPC request.
+type APIRequest struct {
 	Method string `json:"method"`
-	Params any    `json:"params"`
+	Params []any  `json:"params"`
 	ID     any    `json:"id"` // Can be int or string depending on API
 }
 
-// JSONRPCResponse represents a JSON-RPC response.
-type JSONRPCResponse struct {
+// APIResponse represents a JSON-RPC response.
+type APIResponse struct {
 	Result json.RawMessage `json:"result"`
-	Error  *JSONRPCError   `json:"error"`
+	Error  *APIError       `json:"error"`
 	ID     any             `json:"id"` // Can be int or string depending on API
 }
 
-// JSONRPCError represents a JSON-RPC error.
-type JSONRPCError struct {
+// APIError represents a JSON-RPC error.
+type APIError struct {
 	Code       any      `json:"code"` // Can be int or string depending on API
 	Filename   string   `json:"filename"`
 	LineNumber int      `json:"lineno"`
@@ -44,7 +45,7 @@ type JSONRPCError struct {
 	Detail     []string `json:"detail"`
 }
 
-func (e *JSONRPCError) Error() string {
+func (e *APIError) Error() string {
 	var msg strings.Builder
 
 	msg.WriteString(fmt.Sprintf("code: %v", e.Code))

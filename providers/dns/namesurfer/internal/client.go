@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -50,6 +51,7 @@ func NewClient(baseURL, apiKey, apiSecret string) (*Client, error) {
 }
 
 // AddDNSRecord adds a DNS record.
+// http://95.128.3.201:8053/API/NSService_10#addDNSRecord
 func (d *Client) AddDNSRecord(ctx context.Context, zoneName, viewName string, record DNSNode) error {
 	digest := d.computeDigest(
 		zoneName,
@@ -62,11 +64,10 @@ func (d *Client) AddDNSRecord(ctx context.Context, zoneName, viewName string, re
 
 	// JSON-RPC 1.0 requires positional parameters array
 	params := []any{
-		d.apiKey, // keyname
-		digest,   // digest
-		zoneName, // zonename
-		viewName, // viewname
-		record,   // record (DNSNode)
+		digest,
+		zoneName,
+		viewName,
+		record,
 	}
 
 	resp, err := d.makeAPICall(ctx, "addDNSRecord", params)
@@ -88,17 +89,17 @@ func (d *Client) AddDNSRecord(ctx context.Context, zoneName, viewName string, re
 
 // UpdateDNSHost updates a DNS host record.
 // Passing an empty newNode removes the oldNode.
-func (d *Client) UpdateDNSHost(ctx context.Context, zoneName, viewName string, oldNode DNSNode) error {
+// http://95.128.3.201:8053/API/NSService_10#updateDNSHost
+func (d *Client) UpdateDNSHost(ctx context.Context, zoneName, viewName string, oldNode, newNode DNSNode) error {
 	digest := d.computeDigest(zoneName, viewName)
 
 	// JSON-RPC 1.0 requires positional parameters array
 	params := []any{
-		d.apiKey,
 		digest,
 		zoneName,
 		viewName,
 		oldNode,
-		DNSNode{}, // empty node = remove old node
+		newNode,
 	}
 
 	resp, err := d.makeAPICall(ctx, "updateDNSHost", params)
@@ -119,12 +120,12 @@ func (d *Client) UpdateDNSHost(ctx context.Context, zoneName, viewName string, o
 }
 
 // SearchDNSHosts searches for DNS host records.
+// http://95.128.3.201:8053/API/NSService_10#searchDNSHosts
 func (d *Client) SearchDNSHosts(ctx context.Context, pattern string) ([]DNSNode, error) {
 	digest := d.computeDigest(pattern)
 
 	// JSON-RPC 1.0 requires positional parameters array
 	params := []any{
-		d.apiKey,
 		digest,
 		pattern,
 	}
@@ -141,33 +142,33 @@ func (d *Client) SearchDNSHosts(ctx context.Context, pattern string) ([]DNSNode,
 	return nodes, err
 }
 
-// ListZoneBasics lists DNS zones.
-func (d *Client) ListZoneBasics(ctx context.Context, mode string) ([]MinimalZone, error) {
+// ListZones lists DNS zones.
+// http://95.128.3.201:8053/API/NSService_10#listZones
+func (d *Client) ListZones(ctx context.Context, mode string) ([]DNSZone, error) {
 	digest := d.computeDigest()
 
 	// JSON-RPC 1.0 requires positional parameters array
 	params := []any{
-		d.apiKey,
 		digest,
 		mode,
 	}
 
-	resp, err := d.makeAPICall(ctx, "listZoneBasics", params)
+	resp, err := d.makeAPICall(ctx, "listZones", params)
 	if err != nil {
 		return nil, err
 	}
 
-	var zones []MinimalZone
+	var zones []DNSZone
 
 	err = json.Unmarshal(resp, &zones)
 
 	return zones, err
 }
 
-func (d *Client) makeAPICall(ctx context.Context, method string, params any) (json.RawMessage, error) {
-	payload := JSONRPCRequest{
+func (d *Client) makeAPICall(ctx context.Context, method string, params []any) (json.RawMessage, error) {
+	payload := APIRequest{
 		Method: method,
-		Params: params,
+		Params: slices.Concat([]any{d.apiKey}, params),
 		ID:     1,
 	}
 
@@ -202,7 +203,7 @@ func (d *Client) makeAPICall(ctx context.Context, method string, params any) (js
 		return nil, fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(raw))
 	}
 
-	var rpcResp JSONRPCResponse
+	var rpcResp APIResponse
 
 	if err := json.Unmarshal(raw, &rpcResp); err != nil {
 		return nil, fmt.Errorf("failed to parse JSON-RPC response: %w", err)

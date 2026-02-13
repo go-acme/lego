@@ -1,5 +1,5 @@
 {
-  "method": "listZoneBasics",
+  "method": "listZones",
   "params": [
     "user",
     "2739461ea1a3dc51302993f724f40228409c53b78025d8d7b1d7bba3c1bf2d66",

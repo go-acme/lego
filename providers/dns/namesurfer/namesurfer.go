@@ -160,7 +160,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			continue
 		}
 
-		err = d.client.UpdateDNSHost(ctx, zone, d.config.View, node)
+		err = d.client.UpdateDNSHost(ctx, zone, d.config.View, node, internal.DNSNode{})
 		if err != nil {
 			return fmt.Errorf("namesurfer: update DNS host: %w", err)
 		}
@@ -175,7 +175,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (string, error) {
-	zones, err := d.client.ListZoneBasics(ctx, "forward")
+	zones, err := d.client.ListZones(ctx, "forward")
 	if err != nil {
 		return "", fmt.Errorf("list zone basics: %w", err)
 	}

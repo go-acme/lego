@@ -1,0 +1,42 @@
+Name = "NameSurfer"
+Description = ''''''
+URL = "https://www.fusionlayer.com/"
+Code = "namesurfer"
+Since = "v4.32.0"
+
+Example = '''
+NAMESURFER_API_ENDPOINT=https://your-namesurfer-server.example.com:8443/API_10/NSService_10/jsonrpc10 \
+NAMESURFER_API_KEY=your_api_key \
+NAMESURFER_API_SECRET=your_api_secret \
+lego --dns namesurfer -d '*.example.com' -d example.com run
+'''
+
+Additional = '''
+## Description
+
+FusionLayer NameSurfer is a DNS management system that provides a JSON-RPC API for automating DNS operations.
+
+This provider uses the NameSurfer API to manage DNS records for ACME DNS-01 challenges.
+You need to configure your NameSurfer API endpoint, API key, and API secret to use this provider.
+
+## API Authentication
+
+The API uses HMAC-SHA256 for request authentication. The provider automatically handles
+the digest calculation for all API requests.
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    NAMESURFER_API_ENDPOINT = "NameSurfer API endpoint URL (e.g., https://namesurfer.example.com:8443/API_10/NSService_10/jsonrpc10)"
+    NAMESURFER_API_KEY = "API key name"
+    NAMESURFER_API_SECRET = "API secret"
+  [Configuration.Additional]
+    NAMESURFER_VIEW = "DNS view name (optional, default: empty string)"
+    NAMESURFER_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)"
+    NAMESURFER_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    NAMESURFER_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 120)"
+    NAMESURFER_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+    NAMESURFER_TLS_INSECURE_SKIP_VERIFY = "Skip TLS certificate verification (Default: false)"
+
+[Links]
+  API = "https://www.fusionlayer.com/"

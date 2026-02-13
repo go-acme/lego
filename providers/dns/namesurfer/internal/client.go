@@ -72,12 +72,9 @@ func (d *Client) AddDNSRecord(ctx context.Context, zoneName, viewName string, re
 		record,
 	}
 
-	resp, err := d.makeAPICall(ctx, "addDNSRecord", params)
-	if err != nil {
-		return err
-	}
+	var ok bool
 
-	ok, err := parseBoolean(resp)
+	err := d.doRequest(ctx, "addDNSRecord", params, &ok)
 	if err != nil {
 		return err
 	}
@@ -104,12 +101,9 @@ func (d *Client) UpdateDNSHost(ctx context.Context, zoneName, viewName string, o
 		newNode,
 	}
 
-	resp, err := d.makeAPICall(ctx, "updateDNSHost", params)
-	if err != nil {
-		return err
-	}
+	var ok bool
 
-	ok, err := parseBoolean(resp)
+	err := d.doRequest(ctx, "updateDNSHost", params, &ok)
 	if err != nil {
 		return err
 	}
@@ -132,16 +126,14 @@ func (d *Client) SearchDNSHosts(ctx context.Context, pattern string) ([]DNSNode,
 		pattern,
 	}
 
-	resp, err := d.makeAPICall(ctx, "searchDNSHosts", params)
+	var nodes []DNSNode
+
+	err := d.doRequest(ctx, "searchDNSHosts", params, &nodes)
 	if err != nil {
 		return nil, err
 	}
 
-	var nodes []DNSNode
-
-	err = json.Unmarshal(resp, &nodes)
-
-	return nodes, err
+	return nodes, nil
 }
 
 // ListZones lists DNS zones.
@@ -155,19 +147,17 @@ func (d *Client) ListZones(ctx context.Context, mode string) ([]DNSZone, error) 
 		mode,
 	}
 
-	resp, err := d.makeAPICall(ctx, "listZones", params)
+	var zones []DNSZone
+
+	err := d.doRequest(ctx, "listZones", params, &zones)
 	if err != nil {
 		return nil, err
 	}
 
-	var zones []DNSZone
-
-	err = json.Unmarshal(resp, &zones)
-
-	return zones, err
+	return zones, nil
 }
 
-func (d *Client) makeAPICall(ctx context.Context, method string, params []any) (json.RawMessage, error) {
+func (d *Client) doRequest(ctx context.Context, method string, params []any, result any) error {
 	payload := APIRequest{
 		Method: method,
 		Params: slices.Concat([]any{d.apiKey}, params),
@@ -178,12 +168,12 @@ func (d *Client) makeAPICall(ctx context.Context, method string, params []any) (
 
 	err := json.NewEncoder(buf).Encode(payload)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		return fmt.Errorf("failed to create request JSON body: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.BaseURL.String(), buf)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create request: %w", err)
+		return fmt.Errorf("unable to create request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -191,31 +181,36 @@ func (d *Client) makeAPICall(ctx context.Context, method string, params []any) (
 
 	resp, err := d.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errutils.NewHTTPDoError(req, err)
+		return errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
 	if resp.StatusCode/100 != 2 {
-		return nil, errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
 	var rpcResp APIResponse
 
 	if err := json.Unmarshal(raw, &rpcResp); err != nil {
-		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	if rpcResp.Error != nil {
-		return nil, rpcResp.Error
+		return rpcResp.Error
 	}
 
-	return rpcResp.Result, nil
+	err = json.Unmarshal(rpcResp.Result, result)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (d *Client) computeDigest(parts ...string) string {
@@ -227,14 +222,4 @@ func (d *Client) computeDigest(parts ...string) string {
 	mac.Write([]byte(strings.Join(params, "&")))
 
 	return hex.EncodeToString(mac.Sum(nil))
-}
-
-func parseBoolean(resp json.RawMessage) (bool, error) {
-	var ok bool
-
-	if err := json.Unmarshal(resp, &ok); err != nil {
-		return false, err
-	}
-
-	return ok, nil
 }

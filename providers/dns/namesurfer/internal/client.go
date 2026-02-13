@@ -197,7 +197,8 @@ func (d *Client) doRequest(ctx context.Context, method string, params []any, res
 
 	var rpcResp APIResponse
 
-	if err := json.Unmarshal(raw, &rpcResp); err != nil {
+	err = json.Unmarshal(raw, &rpcResp)
+	if err != nil {
 		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 

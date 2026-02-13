@@ -16,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 type Client struct {
@@ -181,7 +183,7 @@ func (d *Client) makeAPICall(ctx context.Context, method string, params []any) (
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.BaseURL.String(), buf)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -189,24 +191,24 @@ func (d *Client) makeAPICall(ctx context.Context, method string, params []any) (
 
 	resp, err := d.HTTPClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("API request failed: %w", err)
+		return nil, errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
+		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
 	if resp.StatusCode/100 != 2 {
-		return nil, fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(raw))
+		return nil, errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
 	var rpcResp APIResponse
 
 	if err := json.Unmarshal(raw, &rpcResp); err != nil {
-		return nil, fmt.Errorf("failed to parse JSON-RPC response: %w", err)
+		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	if rpcResp.Error != nil {

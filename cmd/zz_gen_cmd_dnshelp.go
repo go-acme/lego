@@ -138,6 +138,7 @@ func allDNSCodes() string {
 		"nicmanager",
 		"nicru",
 		"nifcloud",
+		"nitrado",
 		"njalla",
 		"nodion",
 		"ns1",
@@ -2893,6 +2894,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nifcloud`)
+
+	case "nitrado":
+		// generated from: providers/dns/nitrado/nitrado.toml
+		ew.writeln(`Configuration for Nitrado.`)
+		ew.writeln(`Code:	'nitrado'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NITRADO_TOKEN":	Token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NITRADO_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "NITRADO_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "NITRADO_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "NITRADO_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nitrado`)
 
 	case "njalla":
 		// generated from: providers/dns/njalla/njalla.toml

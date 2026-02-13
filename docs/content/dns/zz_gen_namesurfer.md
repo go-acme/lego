@@ -26,7 +26,7 @@ Configuration for [FusionLayer NameSurfer](https://www.fusionlayer.com/).
 Here is an example bash command using the FusionLayer NameSurfer provider:
 
 ```bash
-NAMESURFER_API_ENDPOINT=https://foo.example.com:8443/API/NSService_10 \
+NAMESURFER_BASE_URL=https://foo.example.com:8443/API/NSService_10 \
 NAMESURFER_API_KEY=xxx \
 NAMESURFER_API_SECRET=yyy \
 lego --dns namesurfer -d '*.example.com' -d example.com run
@@ -39,9 +39,9 @@ lego --dns namesurfer -d '*.example.com' -d example.com run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `NAMESURFER_API_ENDPOINT` | NameSurfer API (jsonrpc10) endpoint URL (e.g., https://foo.example.com:8443/API/NSService_10) |
 | `NAMESURFER_API_KEY` | API key name |
 | `NAMESURFER_API_SECRET` | API secret |
+| `NAMESURFER_BASE_URL` | The base URL of NameSurfer API (jsonrpc10) endpoint URL (e.g., https://foo.example.com:8443/API/NSService_10) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

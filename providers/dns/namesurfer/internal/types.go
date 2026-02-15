@@ -9,10 +9,10 @@ import (
 // DNSNode represents a DNS record.
 // http://95.128.3.201:8053/API/NSService_10#DNSNode
 type DNSNode struct {
-	Name string `json:"name,omitempty"`
-	Type string `json:"type,omitempty"`
-	Data string `json:"data,omitempty"`
-	TTL  int    `json:"ttl,omitempty"`
+	Name string `json:"name"`
+	Type string `json:"type"`
+	Data string `json:"data"`
+	TTL  int    `json:"ttl"`
 }
 
 // DNSZone represents a DNS zone.

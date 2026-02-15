@@ -12,6 +12,11 @@
       "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
       "ttl": 300
     },
-    {}
+    {
+      "name": "",
+      "type": "",
+      "data": "",
+      "ttl": 0
+    }
   ]
 }

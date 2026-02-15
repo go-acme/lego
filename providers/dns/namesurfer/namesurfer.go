@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -61,6 +62,9 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config *Config
 	client *internal.Client
+
+	zones   map[string]string
+	zonesMu sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for FusionLayer NameSurfer.
@@ -105,6 +109,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{
 		config: config,
 		client: client,
+		zones:  make(map[string]string),
 	}, nil
 }
 
@@ -118,6 +123,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("namesurfer: %w", err)
 	}
+
+	d.zonesMu.Lock()
+	d.zones[token] = zone
+	d.zonesMu.Unlock()
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
@@ -145,10 +154,17 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.findZone(ctx, info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("namesurfer: %w", err)
+	d.zonesMu.Lock()
+	zone, ok := d.zones[token]
+	d.zonesMu.Unlock()
+
+	if !ok {
+		return fmt.Errorf("namesurfer: unknown zone for '%s'", info.EffectiveFQDN)
 	}
+
+	d.zonesMu.Lock()
+	delete(d.zones, token)
+	d.zonesMu.Unlock()
 
 	existing, err := d.client.SearchDNSHosts(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
@@ -182,17 +198,17 @@ func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (string, error)
 
 	domain := dns01.UnFqdn(fqdn)
 
-	var zone string
+	var zoneName string
 
-	for _, z := range zones {
-		if strings.HasSuffix(domain, z.Name) && len(z.Name) > len(zone) {
-			zone = z.Name
+	for _, zone := range zones {
+		if strings.HasSuffix(domain, zone.Name) && len(zone.Name) > len(zoneName) {
+			zoneName = zone.Name
 		}
 	}
 
-	if zone == "" {
+	if zoneName == "" {
 		return "", fmt.Errorf("no zone found for %s", fqdn)
 	}
 
-	return zone, nil
+	return zoneName, nil
 }

@@ -159,9 +159,9 @@ func (d *Client) ListZones(ctx context.Context, mode string) ([]DNSZone, error) 
 
 func (d *Client) doRequest(ctx context.Context, method string, params []any, result any) error {
 	payload := APIRequest{
+		ID:     1,
 		Method: method,
 		Params: slices.Concat([]any{d.apiKey}, params),
-		ID:     1,
 	}
 
 	buf := new(bytes.Buffer)

@@ -1,4 +1,5 @@
 {
+  "id": 1,
   "method": "updateDNSHost",
   "params": [
     "user",
@@ -12,6 +13,5 @@
       "ttl": 300
     },
     {}
-  ],
-  "id": 1
+  ]
 }

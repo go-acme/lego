@@ -23,20 +23,22 @@ type DNSZone struct {
 }
 
 // APIRequest represents a JSON-RPC request.
+// https://www.jsonrpc.org/specification_v1#a1.1Requestmethodinvocation
 type APIRequest struct {
+	ID     any    `json:"id"` // Can be int or string depending on API
 	Method string `json:"method"`
 	Params []any  `json:"params"`
-	ID     any    `json:"id"` // Can be int or string depending on API
 }
 
 // APIResponse represents a JSON-RPC response.
+// https://www.jsonrpc.org/specification_v1#a1.2Response
 type APIResponse struct {
+	ID     any             `json:"id"` // Can be int or string depending on API
 	Result json.RawMessage `json:"result"`
 	Error  *APIError       `json:"error"`
-	ID     any             `json:"id"` // Can be int or string depending on API
 }
 
-// APIError represents a JSON-RPC error.
+// APIError represents an error.
 type APIError struct {
 	Code       any      `json:"code"` // Can be int or string depending on API
 	Filename   string   `json:"filename"`

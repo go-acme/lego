@@ -1,9 +1,9 @@
 {
+  "id": 1,
   "method": "searchDNSHosts",
   "params": [
     "user",
     "02cf1a2f6e124507d16738d595f583932185313fc96afc2d8404960acaec29b4",
     "value"
-  ],
-  "id": 1
+  ]
 }

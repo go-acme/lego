@@ -1,0 +1,17 @@
+{
+  "id": 1,
+  "method": "updateDNSHost",
+  "params": [
+    "user",
+    "510e63288ac874c1d5ba313a9411591daa346e5621fb0153263adc278794e378",
+    "example.com",
+    "viewA",
+    {
+      "name": "_acme-challenge",
+      "type": "TXT",
+      "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "ttl": 300
+    },
+    {}
+  ]
+}

@@ -19,6 +19,7 @@ func allDNSCodes() string {
 		"allinkl",
 		"alwaysdata",
 		"anexia",
+		"artfiles",
 		"arvancloud",
 		"auroradns",
 		"autodns",
@@ -357,6 +358,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/anexia`)
+
+	case "artfiles":
+		// generated from: providers/dns/artfiles/artfiles.toml
+		ew.writeln(`Configuration for ArtFiles.`)
+		ew.writeln(`Code:	'artfiles'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ARTFILES_PASSWORD":	API password`)
+		ew.writeln(`	- "ARTFILES_USERNAME":	API username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ARTFILES_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "ARTFILES_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "ARTFILES_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 300)`)
+		ew.writeln(`	- "ARTFILES_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/artfiles`)
 
 	case "arvancloud":
 		// generated from: providers/dns/arvancloud/arvancloud.toml

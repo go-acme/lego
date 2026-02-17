@@ -1,0 +1,16 @@
+{
+  "data": {
+    "SRV": "_imap._tcp 0 0 0 .\n_imaps._tcp 0 1 993 mail.example.tld.\n_pop3._tcp 0 0 0 .\n_pop3s._tcp 0 0 0 .",
+    "AAAA": "",
+    "MX": "10 mail.example.tld.",
+    "CAA": "@ 128 iodef \"mailto:someone@example.tld\"\n@ 128 issue \"letsencrypt.org\"\n@ 128 issuewild \"letsencrypt.org\"",
+    "TTL": 3600,
+    "comment": "TLSA RR:\nInfo  -> https://dnssec-stats.ant.isi.edu/~viktor/x3hosts.html\nTest 1 -> https://stats.dnssec-tools.org/explore/?example.tld\nTest 2 -> https://dane.sys4.de/smtp/example.tld\n\nSMIMEA RR:\nGenerator -> https://www.smimea.info/smimea-generator.php\nTest      -> https://www.smimea.info/smimea-test.php",
+    "TXT": "_dmarc \"v=DMARC1;p=reject;sp=reject;adkim=r;aspf=r;pct=100;rua=mailto:someone@in.mailhardener.com,mailto:postmaster@example.tld;ri=86400;ruf=mailto:someone@in.mailhardener.com,mailto:postmaster@example.tld;fo=1;rf=afrf\"\n_mta-sts \"v=STSv1;id=yyyymmddTHHMMSS;\"\n_smtp._tls \"v=TLSRPTv1;rua=mailto:someone@in.mailhardener.com\"\n@ \"v=spf1 a mx ~all\"\nselector._domainkey \"v=DKIM1;k=rsa;p=Base64Stuff\" \"MoreBase64Stuff\" \"Even++MoreBase64Stuff\" \"YesMoreBase64Stuff\" \"And+Yes+Even+MoreBase64Stuff\" \"Sure++MoreBase64Stuff\" \"LastBase64Stuff\"\nselectorecc._domainkey \"v=DKIM1;k=ed25519;p=Base64Stuff\"\n_acme-challenge \"TheAcmeChallenge\"",
+    "A": "sub1   1.2.3.4\nsub2     1.2.3.4\nsub3 1.2.3.4\nsub4    1.2.3.4\nsub5 1.2.3.4\nsub6      1.2.3.4\nsub7    1.2.3.4\nsub8     1.2.3.4\nsub9  1.2.3.4\nsub10    1.2.3.4\nsub11      1.2.3.4\nsub12    1.2.3.4\nsub13   1.2.3.4\nsub14     1.2.3.4\nsub15      1.2.3.4\nsub16      1.2.3.4\nsub17      1.2.3.4\nsub18      1.2.3.4\n@        1.2.3.4",
+    "nameserver": "auth1.artfiles.de.\nauth2.artfiles.de.",
+    "CName": "some cname.to.example.tld.",
+    "TLSA": "_25._tcp.mail.example.tld. 2 1 1 CBBC559B44D524D6A132BDAC672744DA3407F12AAE5D5F722C5F6C7913871C75\n_25._tcp.mail.example.tld. 2 1 1 885BF0572252C6741DC9A52F5044487FEF2A93B811CDEDFAD7624CC283B7CDD5\n_25._tcp.mail.example.tld. 2 1 1 F1440A9B76E1E41E53A4CB461329BF6337B419726BE513E42E19F1C691C5D4B2\n_465._tcp.mail.example.tld. 2 1 1 CBBC559B44D524D6A132BDAC672744DA3407F12AAE5D5F722C5F6C7913871C75\n_465._tcp.mail.example.tld. 2 1 1 885BF0572252C6741DC9A52F5044487FEF2A93B811CDEDFAD7624CC283B7CDD5\n_465._tcp.mail.example.tld. 2 1 1 F1440A9B76E1E41E53A4CB461329BF6337B419726BE513E42E19F1C691C5D4B2\n_587._tcp.mail.example.tld. 2 1 1 CBBC559B44D524D6A132BDAC672744DA3407F12AAE5D5F722C5F6C7913871C75\n_587._tcp.mail.example.tld. 2 1 1 885BF0572252C6741DC9A52F5044487FEF2A93B811CDEDFAD7624CC283B7CDD5\n_587._tcp.mail.example.tld. 2 1 1 F1440A9B76E1E41E53A4CB461329BF6337B419726BE513E42E19F1C691C5D4B2"
+  },
+  "status": "OK"
+}

@@ -1,0 +1,24 @@
+Name = "ArtFiles"
+Description = ''''''
+URL = "https://www.artfiles.de/extras/domains/"
+Code = "artfiles"
+Since = "v4.32.0"
+
+Example = '''
+ARTFILES_USERNAME="xxx" \
+ARTFILES_PASSWORD="yyy" \
+lego --dns artfiles -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    ARTFILES_USERNAME = "API username"
+    ARTFILES_PASSWORD = "API password"
+  [Configuration.Additional]
+    ARTFILES_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    ARTFILES_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 300)"
+    ARTFILES_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    ARTFILES_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://support.artfiles.de/DCP-API#dns"

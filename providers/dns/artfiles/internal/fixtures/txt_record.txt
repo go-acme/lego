@@ -1,0 +1,7 @@
+_dmarc "v=DMARC1;p=reject;sp=reject;adkim=r;aspf=r;pct=100;rua=mailto:someone@in.mailhardener.com,mailto:postmaster@example.tld;ri=86400;ruf=mailto:someone@in.mailhardener.com,mailto:postmaster@example.tld;fo=1;rf=afrf"
+_mta-sts "v=STSv1;id=yyyymmddTHHMMSS;"
+_smtp._tls "v=TLSRPTv1;rua=mailto:someone@in.mailhardener.com"
+@ "v=spf1 a mx ~all"
+selector._domainkey "v=DKIM1;k=rsa;p=Base64Stuff" "MoreBase64Stuff" "Even++MoreBase64Stuff" "YesMoreBase64Stuff" "And+Yes+Even+MoreBase64Stuff" "Sure++MoreBase64Stuff" "LastBase64Stuff"
+selectorecc._domainkey "v=DKIM1;k=ed25519;p=Base64Stuff"
+_acme-challenge "TheAcmeChallenge"

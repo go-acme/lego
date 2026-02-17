@@ -75,10 +75,11 @@ type ObtainRequest struct {
 	MustStaple     bool
 	EmailAddresses []string
 
-	NotBefore      time.Time
-	NotAfter       time.Time
-	Bundle         bool
-	PreferredChain string
+	NotBefore        time.Time
+	NotAfter         time.Time
+	Bundle           bool
+	PreferredChain   string
+	EnableCommonName bool
 
 	// A string uniquely identifying the profile
 	// which will be used to affect issuance of the certificate requested by this Order.
@@ -104,10 +105,11 @@ type ObtainForCSRRequest struct {
 
 	PrivateKey crypto.PrivateKey
 
-	NotBefore      time.Time
-	NotAfter       time.Time
-	Bundle         bool
-	PreferredChain string
+	NotBefore        time.Time
+	NotAfter         time.Time
+	Bundle           bool
+	PreferredChain   string
+	EnableCommonName bool
 
 	// A string uniquely identifying the profile
 	// which will be used to affect issuance of the certificate requested by this Order.
@@ -130,7 +132,6 @@ type CertifierOptions struct {
 	KeyType             certcrypto.KeyType
 	Timeout             time.Duration
 	OverallRequestLimit int
-	EnableCommonName    bool
 }
 
 // Certifier A service to obtain/renew/revoke certificates.
@@ -309,7 +310,7 @@ func (c *Certifier) getForOrder(ctx context.Context, domains []string, order acm
 	}
 
 	commonName := ""
-	if len(domains[0]) <= 64 && c.options.EnableCommonName {
+	if len(domains[0]) <= 64 && request.EnableCommonName {
 		commonName = domains[0]
 	}
 

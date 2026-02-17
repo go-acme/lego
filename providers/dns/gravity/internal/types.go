@@ -13,17 +13,17 @@ type APIError struct {
 }
 
 func (a *APIError) Error() string {
-	var msg strings.Builder
+	msg := new(strings.Builder)
 
-	msg.WriteString(fmt.Sprintf("status: %s, error: %s", a.Status, a.ErrorMsg))
+	_, _ = fmt.Fprintf(msg, "status: %s, error: %s", a.Status, a.ErrorMsg)
 
 	if a.Code != 0 {
-		msg.WriteString(fmt.Sprintf(", code: %d", a.Code))
+		_, _ = fmt.Fprintf(msg, ", code: %d", a.Code)
 	}
 
 	if len(a.Context) != 0 {
 		for k, v := range a.Context {
-			msg.WriteString(fmt.Sprintf(", %s: %s", k, v))
+			_, _ = fmt.Fprintf(msg, ", %s: %s", k, v)
 		}
 	}
 

@@ -16,20 +16,20 @@ type ErrorInfo struct {
 }
 
 func (i *ErrorInfo) Error() string {
-	var msg strings.Builder
+	msg := new(strings.Builder)
 
-	msg.WriteString(fmt.Sprintf("%s: %s", i.Code, i.Message))
+	_, _ = fmt.Fprintf(msg, "%s: %s", i.Code, i.Message)
 
 	if i.Details.Announcement != "" {
-		msg.WriteString(fmt.Sprintf(": %s", i.Details.Announcement))
+		_, _ = fmt.Fprintf(msg, ": %s", i.Details.Announcement)
 	}
 
 	for _, limit := range i.Details.Limits {
-		msg.WriteString(fmt.Sprintf("limit: %s", limit.Name))
+		_, _ = fmt.Fprintf(msg, "limit: %s", limit.Name)
 	}
 
 	for _, field := range i.Details.Fields {
-		msg.WriteString(fmt.Sprintf("field: %s: %s", field.Name, strings.Join(field.Messages, ", ")))
+		_, _ = fmt.Fprintf(msg, "field: %s: %s", field.Name, strings.Join(field.Messages, ", "))
 	}
 
 	return msg.String()

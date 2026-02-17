@@ -48,24 +48,24 @@ type APIError struct {
 }
 
 func (e *APIError) Error() string {
-	var msg strings.Builder
+	msg := new(strings.Builder)
 
-	msg.WriteString(fmt.Sprintf("code: %v", e.Code))
+	_, _ = fmt.Fprintf(msg, "code: %v", e.Code)
 
 	if e.Filename != "" {
-		msg.WriteString(fmt.Sprintf(", filename: %s", e.Filename))
+		_, _ = fmt.Fprintf(msg, ", filename: %s", e.Filename)
 	}
 
 	if e.LineNumber > 0 {
-		msg.WriteString(fmt.Sprintf(", line: %d", e.LineNumber))
+		_, _ = fmt.Fprintf(msg, ", line: %d", e.LineNumber)
 	}
 
 	if e.Message != "" {
-		msg.WriteString(fmt.Sprintf(", message: %s", e.Message))
+		_, _ = fmt.Fprintf(msg, ", message: %s", e.Message)
 	}
 
 	if len(e.Detail) > 0 {
-		msg.WriteString(fmt.Sprintf(", detail: %v", strings.Join(e.Detail, " ")))
+		_, _ = fmt.Fprintf(msg, ", detail: %v", strings.Join(e.Detail, " "))
 	}
 
 	return msg.String()

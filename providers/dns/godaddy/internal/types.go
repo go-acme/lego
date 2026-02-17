@@ -26,9 +26,9 @@ type APIError struct {
 }
 
 func (a APIError) Error() string {
-	var msg strings.Builder
+	msg := new(strings.Builder)
 
-	msg.WriteString(fmt.Sprintf("%s: %s", a.Code, a.Message))
+	_, _ = fmt.Fprintf(msg, "%s: %s", a.Code, a.Message)
 
 	for _, field := range a.Fields {
 		msg.WriteString(" ")

@@ -12,12 +12,12 @@ type APIError struct {
 }
 
 func (a *APIError) Error() string {
-	var msg strings.Builder
+	msg := new(strings.Builder)
 
-	msg.WriteString(fmt.Sprintf("%s: %s", a.CorrelationID, a.Message))
+	_, _ = fmt.Fprintf(msg, "%s: %s", a.CorrelationID, a.Message)
 
 	for field, values := range a.Errors {
-		msg.WriteString(fmt.Sprintf(": %s: %s", field, strings.Join(values, ", ")))
+		_, _ = fmt.Fprintf(msg, ": %s: %s", field, strings.Join(values, ", "))
 	}
 
 	return msg.String()

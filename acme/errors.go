@@ -29,18 +29,18 @@ type ProblemDetails struct {
 }
 
 func (p *ProblemDetails) Error() string {
-	var msg strings.Builder
+	msg := new(strings.Builder)
 
-	msg.WriteString(fmt.Sprintf("acme: error: %d", p.HTTPStatus))
+	_, _ = fmt.Fprintf(msg, "acme: error: %d", p.HTTPStatus)
 
 	if p.Method != "" || p.URL != "" {
-		msg.WriteString(fmt.Sprintf(" :: %s :: %s", p.Method, p.URL))
+		_, _ = fmt.Fprintf(msg, " :: %s :: %s", p.Method, p.URL)
 	}
 
-	msg.WriteString(fmt.Sprintf(" :: %s :: %s", p.Type, p.Detail))
+	_, _ = fmt.Fprintf(msg, " :: %s :: %s", p.Type, p.Detail)
 
 	for _, sub := range p.SubProblems {
-		msg.WriteString(fmt.Sprintf(", problem: %q :: %s", sub.Type, sub.Detail))
+		_, _ = fmt.Fprintf(msg, ", problem: %q :: %s", sub.Type, sub.Detail)
 	}
 
 	if p.Instance != "" {

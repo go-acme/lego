@@ -33,7 +33,7 @@ require (
 	github.com/go-acme/alidns-20150109/v4 v4.7.0
 	github.com/go-acme/esa-20240910/v2 v2.48.0
 	github.com/go-acme/jdcloud-sdk-go v1.64.0
-	github.com/go-acme/tencentclouddnspod v1.1.25
+	github.com/go-acme/tencentclouddnspod v1.3.24
 	github.com/go-acme/tencentedgdeone v1.1.48
 	github.com/go-jose/go-jose/v4 v4.1.3
 	github.com/go-viper/mapstructure/v2 v2.4.0

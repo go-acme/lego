@@ -321,8 +321,8 @@ github.com/go-acme/esa-20240910/v2 v2.48.0 h1:muSDyhjDTejxUGe3FTthCPCqRaEdYY9cG3
 github.com/go-acme/esa-20240910/v2 v2.48.0/go.mod h1:shPb6hzc1rJL15IJBY8HQ4GZk4E8RC52+52twutEwIg=
 github.com/go-acme/jdcloud-sdk-go v1.64.0 h1:AW9j5khk8tRYbpBJPxKmqdwIqgLs2Fz3HUK3hn2YXjs=
 github.com/go-acme/jdcloud-sdk-go v1.64.0/go.mod h1:qc/m8HNX1Zgd7GAv2DSEinup8fwy3Ted3/VVx7LB5bU=
-github.com/go-acme/tencentclouddnspod v1.1.25 h1:7H3ZKshkaHzCXfRpAHVB5nvxeDDl2XLeNZfrNHiZj/s=
-github.com/go-acme/tencentclouddnspod v1.1.25/go.mod h1:XXfzp0AYV7UAUsHKT6R0KAUJFhqAUXmWGF07Elpa5cE=
+github.com/go-acme/tencentclouddnspod v1.3.24 h1:uCSiOW1EJttcnOON+MVVyVDJguFL/Q4NIGkq1CrT9p8=
+github.com/go-acme/tencentclouddnspod v1.3.24/go.mod h1:RKcB2wSoZncjBA0OEFj59s1ko1XDy+ZsAtk+9uMxUF0=
 github.com/go-acme/tencentedgdeone v1.1.48 h1:WLyLBsRVhSLFmtbEFXk0naLODSQn7X6J0Fc/qR8xVUk=
 github.com/go-acme/tencentedgdeone v1.1.48/go.mod h1:mu6tA+bPhlSd+CKUfzRikE0mfxmTlBI6dVTn9LY9dRI=
 github.com/go-cmd/cmd v1.0.5/go.mod h1:y8q8qlK5wQibcw63djSl/ntiHUHXHGdCkPk0j4QeW4s=
@@ -906,8 +906,8 @@ github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/subosito/gotenv v1.6.0 h1:9NlTDc1FTs4qu0DDq7AEtTPNw6SVm7uBMsUCUjABIf8=
 github.com/subosito/gotenv v1.6.0/go.mod h1:Dk4QP5c2W3ibzajGcXpNraDfq2IrhjMIvMSWPKKo0FU=
-github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.1.25/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.1.48/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.24/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.48 h1:bCs+z6dxRaHWm/C1D/XkSOcCZ0+W2+/6HmIXjpAj+fY=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.48/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tjfoc/gmsm v1.3.2/go.mod h1:HaUcFuY0auTiaHB9MHFGCPx5IaLhTUd2atbCFBQXn9w=

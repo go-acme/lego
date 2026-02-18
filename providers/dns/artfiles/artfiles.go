@@ -23,7 +23,6 @@ const (
 	EnvUsername = envNamespace + "USERNAME"
 	EnvPassword = envNamespace + "PASSWORD"
 
-	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
@@ -34,7 +33,6 @@ type Config struct {
 	Username string
 	Password string
 
-	SequenceInterval   time.Duration
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HTTPClient         *http.Client
@@ -45,7 +43,6 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 6*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, 10*time.Second),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -129,7 +126,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("artfiles: %w", err)
 	}
 
-	rv.Set(subDomain, info.Value)
+	rv.Add(subDomain, info.Value)
 
 	err = d.client.SetRecords(ctx, zone, "TXT", rv)
 	if err != nil {
@@ -169,7 +166,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("artfiles: %w", err)
 	}
 
-	rv.Delete(subDomain)
+	rv.RemoveValue(subDomain, info.Value)
 
 	err = d.client.SetRecords(ctx, zone, "TXT", rv)
 	if err != nil {
@@ -183,12 +180,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-// Sequential All DNS challenges for this provider will be resolved sequentially.
-// Returns the interval between each iteration.
-func (d *DNSProvider) Sequential() time.Duration {
-	return d.config.SequenceInterval
 }
 
 func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (string, error) {

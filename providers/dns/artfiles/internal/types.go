@@ -36,9 +36,13 @@ func (r RecordValue) RemoveValue(key, value string) {
 		return
 	}
 
-	r[key] = strings.ReplaceAll(r[key], strconv.Quote(value)+" ", "")
-	r[key] = strings.ReplaceAll(r[key], " "+strconv.Quote(value), "")
-	r[key] = strings.ReplaceAll(r[key], strconv.Quote(value), "")
+	quotedValue := strconv.Quote(value)
+
+	data := strings.ReplaceAll(r[key], " "+quotedValue, "")
+	data = strings.ReplaceAll(data, quotedValue+" ", "")
+	data = strings.ReplaceAll(data, quotedValue, "")
+
+	r[key] = data
 
 	if r[key] == "" {
 		r.Delete(key)

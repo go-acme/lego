@@ -17,6 +17,7 @@ lego --dns artfiles -d '*.example.com' -d example.com run
   [Configuration.Additional]
     ARTFILES_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     ARTFILES_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 360)"
+    ARTFILES_SEQUENCE_INTERVAL = "Time between sequential requests in seconds (Default: 10)"
     ARTFILES_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
     ARTFILES_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 

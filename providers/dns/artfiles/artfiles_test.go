@@ -184,7 +184,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.ResponseFromInternal("set_dns.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("TXT", `@ "v=spf1 a mx ~all"
-_acme-challenge "TheAcmeChallenge" "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+_acme-challenge "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
 _dmarc "v=DMARC1;p=reject;sp=reject;adkim=r;aspf=r;pct=100;rua=mailto:someone@in.mailhardener.com,mailto:postmaster@example.tld;ri=86400;ruf=mailto:someone@in.mailhardener.com,mailto:postmaster@example.tld;fo=1;rf=afrf"
 _mta-sts "v=STSv1;id=yyyymmddTHHMMSS;"
 _smtp._tls "v=TLSRPTv1;rua=mailto:someone@in.mailhardener.com"
@@ -212,7 +212,6 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			servermock.ResponseFromInternal("set_dns.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("TXT", `@ "v=spf1 a mx ~all"
-_acme-challenge "TheAcmeChallenge"
 _dmarc "v=DMARC1;p=reject;sp=reject;adkim=r;aspf=r;pct=100;rua=mailto:someone@in.mailhardener.com,mailto:postmaster@example.tld;ri=86400;ruf=mailto:someone@in.mailhardener.com,mailto:postmaster@example.tld;fo=1;rf=afrf"
 _mta-sts "v=STSv1;id=yyyymmddTHHMMSS;"
 _smtp._tls "v=TLSRPTv1;rua=mailto:someone@in.mailhardener.com"

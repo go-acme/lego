@@ -695,8 +695,8 @@ github.com/nats-io/nkeys v0.2.0/go.mod h1:XdZpAbhgyyODYqjTawOnIOI7VlbKSarI9Gfy1t
 github.com/nats-io/nkeys v0.3.0/go.mod h1:gvUNGjVcM2IPr5rCsRsC6Wb3Hr2CQAm08dsxtV6A5y4=
 github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OSON2c=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
-github.com/nrdcg/auroradns v1.1.0 h1:KekGh8kmf2MNwqZVVYo/fw/ZONt8QMEmbMFOeljteWo=
-github.com/nrdcg/auroradns v1.1.0/go.mod h1:O7tViUZbAcnykVnrGkXzIJTHoQCHcgalgAe6X1mzHfk=
+github.com/nrdcg/auroradns v1.2.0 h1:Jg407vTdXZvZKsART9CNWMp8rQOyhBk04q0MsOf0YR4=
+github.com/nrdcg/auroradns v1.2.0/go.mod h1:hnByA4Z7MOmV4EPRw5eOmEaNRFavcCIz6kONpNxp9LI=
 github.com/nrdcg/bunny-go v0.1.0 h1:GAHTRpHaG/TxfLZlqoJ8OJFzw8rI74+jOTkzxWh0uHA=
 github.com/nrdcg/bunny-go v0.1.0/go.mod h1:u+C9dgsspgtWVaAz6QkyV17s9fxD8viwwKoxb9XMz1A=
 github.com/nrdcg/desec v0.11.1 h1:ilpKmCr4gGsLcyq3RHfHNmlRzm9fzT2XbWxoVaUCS0s=

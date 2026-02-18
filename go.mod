@@ -55,7 +55,7 @@ require (
 	github.com/miekg/dns v1.1.72
 	github.com/mimuret/golang-iij-dpf v0.9.1
 	github.com/namedotcom/go/v4 v4.0.2
-	github.com/nrdcg/auroradns v1.1.0
+	github.com/nrdcg/auroradns v1.2.0
 	github.com/nrdcg/bunny-go v0.1.0
 	github.com/nrdcg/desec v0.11.1
 	github.com/nrdcg/dnspod-go v0.4.0

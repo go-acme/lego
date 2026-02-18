@@ -17,14 +17,14 @@ type Records struct {
 	Status string                     `json:"status"`
 }
 
-type RecordValue map[string]string
+type RecordValue map[string][]string
 
 func (r RecordValue) Set(key, value string) {
-	r[key] = strconv.Quote(value)
+	r[key] = []string{strconv.Quote(value)}
 }
 
 func (r RecordValue) Add(key, value string) {
-	r[key] = strings.TrimSpace(r[key] + " " + strconv.Quote(value))
+	r[key] = append(r[key], strconv.Quote(value))
 }
 
 func (r RecordValue) Delete(key string) {
@@ -32,19 +32,23 @@ func (r RecordValue) Delete(key string) {
 }
 
 func (r RecordValue) RemoveValue(key, value string) {
-	if r[key] == "" {
+	if len(r[key]) == 0 {
 		return
 	}
 
 	quotedValue := strconv.Quote(value)
 
-	data := strings.ReplaceAll(r[key], " "+quotedValue, "")
-	data = strings.ReplaceAll(data, quotedValue+" ", "")
-	data = strings.ReplaceAll(data, quotedValue, "")
+	var data []string
+
+	for _, s := range r[key] {
+		if s != quotedValue {
+			data = append(data, s)
+		}
+	}
 
 	r[key] = data
 
-	if r[key] == "" {
+	if len(r[key]) == 0 {
 		r.Delete(key)
 	}
 }
@@ -53,7 +57,9 @@ func (r RecordValue) String() string {
 	var parts []string
 
 	for _, key := range slices.Sorted(maps.Keys(r)) {
-		parts = append(parts, key+" "+r[key])
+		for _, s := range r[key] {
+			parts = append(parts, key+" "+s)
+		}
 	}
 
 	return strings.Join(parts, "\n")
@@ -67,7 +73,7 @@ func ParseRecordValue(lines string) RecordValue {
 
 		idx := strings.IndexFunc(line, unicode.IsSpace)
 
-		data[line[:idx]] = line[idx+1:]
+		data[line[:idx]] = append(data[line[:idx]], line[idx+1:])
 	}
 
 	return data

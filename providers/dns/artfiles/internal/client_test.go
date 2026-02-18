@@ -84,6 +84,6 @@ func TestClient_SetRecords(t *testing.T) {
 		).
 		Build(t)
 
-	err := client.SetRecords(t.Context(), "example.com", "TXT", RecordValue{"c": `"d"`, "a": "b"})
+	err := client.SetRecords(t.Context(), "example.com", "TXT", RecordValue{"c": []string{`"d"`}, "a": []string{"b"}})
 	require.NoError(t, err)
 }

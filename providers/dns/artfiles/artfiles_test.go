@@ -175,12 +175,12 @@ func TestDNSProvider_Present(t *testing.T) {
 		Route("GET /domain/get_domains.html",
 			servermock.ResponseFromInternal("domains.txt"),
 		).
-		Route("GET /domain/get_dns.html",
+		Route("GET /dns/get_dns.html",
 			servermock.ResponseFromInternal("get_dns.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("domain", "example.com"),
 		).
-		Route("POST /domain/set_dns.html",
+		Route("POST /dns/set_dns.html",
 			servermock.ResponseFromInternal("set_dns.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("TXT", `@ "v=spf1 a mx ~all"
@@ -203,12 +203,12 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		Route("GET /domain/get_domains.html",
 			servermock.ResponseFromInternal("domains.txt"),
 		).
-		Route("GET /domain/get_dns.html",
+		Route("GET /dns/get_dns.html",
 			servermock.ResponseFromInternal("get_dns.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("domain", "example.com"),
 		).
-		Route("POST /domain/set_dns.html",
+		Route("POST /dns/set_dns.html",
 			servermock.ResponseFromInternal("set_dns.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("TXT", `@ "v=spf1 a mx ~all"

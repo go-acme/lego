@@ -58,7 +58,7 @@ func (c *Client) GetDomains(ctx context.Context) ([]string, error) {
 }
 
 func (c *Client) GetRecords(ctx context.Context, domain string) (map[string]json.RawMessage, error) {
-	endpoint := c.BaseURL.JoinPath("domain", "get_dns.html")
+	endpoint := c.BaseURL.JoinPath("dns", "get_dns.html")
 
 	query := endpoint.Query()
 	query.Set("domain", domain)
@@ -86,7 +86,7 @@ func (c *Client) GetRecords(ctx context.Context, domain string) (map[string]json
 }
 
 func (c *Client) SetRecords(ctx context.Context, domain, rType string, value RecordValue) error {
-	endpoint := c.BaseURL.JoinPath("domain", "set_dns.html")
+	endpoint := c.BaseURL.JoinPath("dns", "set_dns.html")
 
 	query := endpoint.Query()
 	query.Set("domain", domain)

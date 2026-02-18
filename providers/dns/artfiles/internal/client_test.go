@@ -47,7 +47,7 @@ func TestClient_GetDomains(t *testing.T) {
 
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /domain/get_dns.html",
+		Route("GET /dns/get_dns.html",
 			servermock.ResponseFromFixture("get_dns.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("domain", "example.com"),
@@ -76,7 +76,7 @@ func TestClient_GetRecords(t *testing.T) {
 
 func TestClient_SetRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /domain/set_dns.html",
+		Route("POST /dns/set_dns.html",
 			servermock.ResponseFromFixture("set_dns.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("TXT", "a b\nc \"d\"").

@@ -90,7 +90,7 @@ require (
 	github.com/vultr/govultr/v3 v3.26.1
 	github.com/yandex-cloud/go-genproto v0.54.0
 	github.com/yandex-cloud/go-sdk/services/dns v0.0.25
-	github.com/yandex-cloud/go-sdk/v2 v2.37.0
+	github.com/yandex-cloud/go-sdk/v2 v2.56.0
 	golang.org/x/crypto v0.48.0
 	golang.org/x/net v0.50.0
 	golang.org/x/oauth2 v0.34.0

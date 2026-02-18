@@ -88,7 +88,7 @@ require (
 	github.com/vinyldns/go-vinyldns v0.9.17
 	github.com/volcengine/volc-sdk-golang v1.0.237
 	github.com/vultr/govultr/v3 v3.26.1
-	github.com/yandex-cloud/go-genproto v0.43.0
+	github.com/yandex-cloud/go-genproto v0.54.0
 	github.com/yandex-cloud/go-sdk/services/dns v0.0.25
 	github.com/yandex-cloud/go-sdk/v2 v2.37.0
 	golang.org/x/crypto v0.48.0

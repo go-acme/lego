@@ -1,0 +1,109 @@
+package internal
+
+import (
+	"encoding/csv"
+	"encoding/json"
+	"errors"
+	"io"
+	"maps"
+	"slices"
+	"strconv"
+	"strings"
+	"unicode"
+)
+
+type Records struct {
+	Data   map[string]json.RawMessage `json:"data"`
+	Status string                     `json:"status"`
+}
+
+type RecordValue map[string][]string
+
+func (r RecordValue) Set(key, value string) {
+	r[key] = []string{strconv.Quote(value)}
+}
+
+func (r RecordValue) Add(key, value string) {
+	r[key] = append(r[key], strconv.Quote(value))
+}
+
+func (r RecordValue) Delete(key string) {
+	delete(r, key)
+}
+
+func (r RecordValue) RemoveValue(key, value string) {
+	if len(r[key]) == 0 {
+		return
+	}
+
+	quotedValue := strconv.Quote(value)
+
+	var data []string
+
+	for _, s := range r[key] {
+		if s != quotedValue {
+			data = append(data, s)
+		}
+	}
+
+	r[key] = data
+
+	if len(r[key]) == 0 {
+		r.Delete(key)
+	}
+}
+
+func (r RecordValue) String() string {
+	var parts []string
+
+	for _, key := range slices.Sorted(maps.Keys(r)) {
+		for _, s := range r[key] {
+			parts = append(parts, key+" "+s)
+		}
+	}
+
+	return strings.Join(parts, "\n")
+}
+
+func ParseRecordValue(lines string) RecordValue {
+	data := make(RecordValue)
+
+	for line := range strings.Lines(lines) {
+		line = strings.TrimSpace(line)
+
+		idx := strings.IndexFunc(line, unicode.IsSpace)
+
+		data[line[:idx]] = append(data[line[:idx]], line[idx+1:])
+	}
+
+	return data
+}
+
+func parseDomains(input string) ([]string, error) {
+	reader := csv.NewReader(strings.NewReader(input))
+	reader.Comma = '\t'
+	reader.TrimLeadingSpace = true
+	reader.LazyQuotes = true
+
+	var data []string
+
+	for {
+		record, err := reader.Read()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		if len(record) < 1 {
+			// Malformed line
+			continue
+		}
+
+		data = append(data, record[0])
+	}
+
+	return data, nil
+}

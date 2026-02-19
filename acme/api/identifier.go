@@ -2,7 +2,6 @@ package api
 
 import (
 	"cmp"
-	"maps"
 	"net"
 	"slices"
 
@@ -10,7 +9,9 @@ import (
 )
 
 func createIdentifiers(domains []string) []acme.Identifier {
-	uniqIdentifiers := make(map[string]acme.Identifier)
+	uniqIdentifiers := make(map[string]struct{})
+
+	var identifiers []acme.Identifier
 
 	for _, domain := range domains {
 		if _, ok := uniqIdentifiers[domain]; ok {
@@ -23,10 +24,12 @@ func createIdentifiers(domains []string) []acme.Identifier {
 			ident.Type = "ip"
 		}
 
-		uniqIdentifiers[domain] = ident
+		identifiers = append(identifiers, ident)
+
+		uniqIdentifiers[domain] = struct{}{}
 	}
 
-	return slices.AppendSeq(make([]acme.Identifier, 0, len(uniqIdentifiers)), maps.Values(uniqIdentifiers))
+	return identifiers
 }
 
 // compareIdentifiers compares 2 slices of [acme.Identifier].

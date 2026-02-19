@@ -112,6 +112,7 @@ func allDNSCodes() string {
 		"jdcloud",
 		"joker",
 		"keyhelp",
+		"leaseweb",
 		"liara",
 		"lightsail",
 		"limacity",
@@ -2357,6 +2358,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/keyhelp`)
+
+	case "leaseweb":
+		// generated from: providers/dns/leaseweb/leaseweb.toml
+		ew.writeln(`Configuration for Leaseweb.`)
+		ew.writeln(`Code:	'leaseweb'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "LEASEWEB_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "LEASEWEB_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "LEASEWEB_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "LEASEWEB_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "LEASEWEB_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/leaseweb`)
 
 	case "liara":
 		// generated from: providers/dns/liara/liara.toml

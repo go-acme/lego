@@ -1,9 +1,11 @@
 package iij
 
 import (
+	"net/http/httptest"
 	"testing"
 
 	"github.com/go-acme/lego/v5/platform/tester"
+	"github.com/go-acme/lego/v5/platform/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -258,5 +260,71 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 
 	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.AccessKey = "user"
+			config.SecretKey = "secret"
+			config.DoServiceCode = "123"
+
+			p, err := NewDNSProviderConfig(config)
+			if err != nil {
+				return nil, err
+			}
+
+			p.api.Endpoint = server.URL
+
+			return p, nil
+		},
+		servermock.CheckHeader().
+			WithRegexp("Authorization", "IIJAPI user:.+").
+			WithRegexp("X-Iijapi-Expire", `\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.+`).
+			With("X-Iijapi-Signaturemethod", "HmacSHA256").
+			With("X-Iijapi-Signatureversion", "2"),
+	)
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /r/20140601/123/zones.json",
+			servermock.ResponseFromFixture("zones.json"),
+		).
+		Route("POST /r/20140601/123/example.com/record.json",
+			servermock.ResponseFromFixture("record.json"),
+			servermock.CheckRequestJSONBodyFromFixture("record-request.json"),
+		).
+		Route("PUT /r/20140601/123/commit.json",
+			servermock.ResponseFromFixture("commit.json"),
+		).
+		Build(t)
+
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /r/20140601/123/zones.json",
+			servermock.ResponseFromFixture("zones.json"),
+		).
+		Route("GET /r/20140601/123/example.com/records/DETAIL.json",
+			servermock.ResponseFromFixture("detail.json"),
+		).
+		Route("DELETE /r/20140601/123/example.com/record/963.json",
+			servermock.ResponseFromFixture("delete.json"),
+		).
+		Route("PUT /r/20140601/123/commit.json",
+			servermock.ResponseFromFixture("commit.json"),
+		).
+		Route("/",
+			servermock.DumpRequest(),
+		).
+		Build(t)
+
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 }

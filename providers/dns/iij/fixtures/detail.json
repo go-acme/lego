@@ -1,0 +1,14 @@
+{
+  "RequestId": "123456",
+  "RecordList": [
+    {
+      "Id": "963",
+      "Status": "bar",
+      "Owner": "_acme-challenge",
+      "TTL": "120",
+      "RecordType": "TXT",
+      "RData": "\"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY\""
+    }
+  ],
+  "StaticRecordList": null
+}

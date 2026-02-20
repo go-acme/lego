@@ -1,0 +1,16 @@
+{
+  "RequestId": "123456",
+  "ErrorResponse": {
+    "RequestId": "",
+    "ErrorType": "",
+    "ErrorMessage": ""
+  },
+  "Record": {
+    "Id": "789",
+    "Status": "bar",
+    "Owner": "foo",
+    "TTL": "120",
+    "RecordType": "TXT",
+    "RData": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+  }
+}

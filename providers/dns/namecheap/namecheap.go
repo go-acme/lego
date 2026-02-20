@@ -245,7 +245,7 @@ func newPseudoRecord(ctx context.Context, domain, keyAuth string) (*pseudoRecord
 
 	return &pseudoRecord{
 		domain:   domain,
-		key:      "_acme-challenge." + host,
+		key:      info.Prefix + host,
 		keyFqdn:  info.EffectiveFQDN,
 		keyValue: info.Value,
 		tld:      tld,

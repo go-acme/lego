@@ -306,12 +306,13 @@ func TestGetChallengeInfo(t *testing.T) {
 		FQDN:          "_acme-challenge.example.com.",
 		EffectiveFQDN: "_acme-challenge.example.com.",
 		Value:         "pmWkWSBCL51Bfkhn79xPuKBKHz__H6B-mY6G9_eieuM",
+		Prefix:        "_acme-challenge",
 	}
 
 	assert.Equal(t, expected, info)
 }
 
-func TestGetChallengeInfo_CNAME(t *testing.T) {
+func TestGetChallengeInfo_cname(t *testing.T) {
 	mockDefault(t, dnsmock.NewServer().
 		Query("_acme-challenge.example.com. CNAME", dnsmock.CNAME("example.org.")).
 		Query("example.org. CNAME", dnsmock.Noop).
@@ -323,12 +324,13 @@ func TestGetChallengeInfo_CNAME(t *testing.T) {
 		FQDN:          "_acme-challenge.example.com.",
 		EffectiveFQDN: "example.org.",
 		Value:         "pmWkWSBCL51Bfkhn79xPuKBKHz__H6B-mY6G9_eieuM",
+		Prefix:        "_acme-challenge",
 	}
 
 	assert.Equal(t, expected, info)
 }
 
-func TestGetChallengeInfo_CNAME_disabled(t *testing.T) {
+func TestGetChallengeInfo_cname_disabled(t *testing.T) {
 	mockDefault(t, dnsmock.NewServer().
 		// Never called when the env var works.
 		Query("_acme-challenge.example.com. CNAME", dnsmock.CNAME("example.org.")).
@@ -342,7 +344,39 @@ func TestGetChallengeInfo_CNAME_disabled(t *testing.T) {
 		FQDN:          "_acme-challenge.example.com.",
 		EffectiveFQDN: "_acme-challenge.example.com.",
 		Value:         "pmWkWSBCL51Bfkhn79xPuKBKHz__H6B-mY6G9_eieuM",
+		Prefix:        "_acme-challenge",
 	}
 
 	assert.Equal(t, expected, info)
+}
+
+func TestGetChallengeInfo_Domain(t *testing.T) {
+	mockDefault(t, dnsmock.NewServer().
+		Query("_acme-challenge.example.com. CNAME", dnsmock.Noop).
+		Build(t))
+
+	info := GetChallengeInfo(t.Context(), "example.com", "123")
+
+	assert.Equal(t, "example.com.", info.Domain())
+}
+
+func TestGetChallengeInfo_EffectiveDomain(t *testing.T) {
+	mockDefault(t, dnsmock.NewServer().
+		Query("_acme-challenge.example.com. CNAME", dnsmock.Noop).
+		Build(t))
+
+	info := GetChallengeInfo(t.Context(), "example.com", "123")
+
+	assert.Equal(t, "example.com.", info.EffectiveDomain())
+}
+
+func TestGetChallengeInfo_EffectiveDomain_cname(t *testing.T) {
+	mockDefault(t, dnsmock.NewServer().
+		Query("_acme-challenge.example.com. CNAME", dnsmock.CNAME("_acme-challenge.example.org.")).
+		Query("_acme-challenge.example.org. CNAME", dnsmock.Noop).
+		Build(t))
+
+	info := GetChallengeInfo(t.Context(), "example.com", "123")
+
+	assert.Equal(t, "_acme-challenge.example.org.", info.EffectiveDomain())
 }

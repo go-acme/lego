@@ -53,15 +53,13 @@ func NewClient(credentials map[string]string) *Client {
 }
 
 // UpdateTxtRecord updates a TXT record.
-func (c *Client) UpdateTxtRecord(ctx context.Context, hostname, txt string) error {
-	domain := strings.TrimPrefix(hostname, "_acme-challenge.")
-
+func (c *Client) UpdateTxtRecord(ctx context.Context, zone, hostname, txt string) error {
 	c.credMu.Lock()
-	token, ok := c.credentials[domain]
+	token, ok := c.credentials[zone]
 	c.credMu.Unlock()
 
 	if !ok {
-		return fmt.Errorf("domain %s not found in credentials, check your credentials map", domain)
+		return fmt.Errorf("domain %s not found in credentials, check your credentials map", zone)
 	}
 
 	data := url.Values{}

@@ -98,7 +98,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	err := d.client.UpdateTxtRecord(ctx, dns01.UnFqdn(info.EffectiveFQDN), info.Value)
+	zone := dns01.UnFqdn(info.EffectiveDomain())
+	fqdn := dns01.UnFqdn(info.EffectiveFQDN)
+
+	err := d.client.UpdateTxtRecord(ctx, zone, fqdn, info.Value)
 	if err != nil {
 		return fmt.Errorf("hurricane: %w", err)
 	}
@@ -110,7 +113,10 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	err := d.client.UpdateTxtRecord(ctx, dns01.UnFqdn(info.EffectiveFQDN), ".")
+	zone := dns01.UnFqdn(info.EffectiveDomain())
+	fqdn := dns01.UnFqdn(info.EffectiveFQDN)
+
+	err := d.client.UpdateTxtRecord(ctx, zone, fqdn, ".")
 	if err != nil {
 		return fmt.Errorf("hurricane: %w", err)
 	}

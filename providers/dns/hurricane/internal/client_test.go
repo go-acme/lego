@@ -64,7 +64,7 @@ func TestClient_UpdateTxtRecord(t *testing.T) {
 						With("txt", "foo")).
 				Build(t)
 
-			err := client.UpdateTxtRecord(t.Context(), "_acme-challenge.example.com", "foo")
+			err := client.UpdateTxtRecord(t.Context(), "example.com", "_acme-challenge.example.com", "foo")
 			test.expected(t, err)
 		})
 	}

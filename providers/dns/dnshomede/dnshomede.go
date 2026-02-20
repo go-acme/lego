@@ -107,7 +107,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	err := d.client.Add(ctx, dns01.UnFqdn(info.EffectiveFQDN), info.Value)
+	zone := dns01.UnFqdn(info.EffectiveDomain())
+
+	err := d.client.Add(ctx, zone, info.Value)
 	if err != nil {
 		return fmt.Errorf("dnshomede: %w", err)
 	}
@@ -119,7 +121,9 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	err := d.client.Remove(ctx, dns01.UnFqdn(info.EffectiveFQDN), info.Value)
+	zone := dns01.UnFqdn(info.EffectiveDomain())
+
+	err := d.client.Remove(ctx, zone, info.Value)
 	if err != nil {
 		return fmt.Errorf("dnshomede: %w", err)
 	}

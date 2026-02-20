@@ -43,17 +43,13 @@ func NewClient(credentials map[string]string) *Client {
 
 // Add adds a TXT record.
 // only one TXT record for ACME is allowed, so it will update the "current" TXT record.
-func (c *Client) Add(ctx context.Context, hostname, value string) error {
-	domain := strings.TrimPrefix(hostname, "_acme-challenge.")
-
+func (c *Client) Add(ctx context.Context, domain, value string) error {
 	return c.doAction(ctx, domain, addAction, value)
 }
 
 // Remove removes a TXT record.
 // only one TXT record for ACME is allowed, so it will remove "all" the TXT records.
-func (c *Client) Remove(ctx context.Context, hostname, value string) error {
-	domain := strings.TrimPrefix(hostname, "_acme-challenge.")
-
+func (c *Client) Remove(ctx context.Context, domain, value string) error {
 	return c.doAction(ctx, domain, removeAction, value)
 }
 

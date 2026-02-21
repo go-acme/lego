@@ -20,17 +20,23 @@ const defaultBaseURL = "https://dns-service.iran.liara.ir"
 type Client struct {
 	baseURL    *url.URL
 	httpClient *http.Client
+
+	teamID string
 }
 
 // NewClient creates a new Client.
-func NewClient(hc *http.Client) *Client {
+func NewClient(hc *http.Client, teamID string) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 
 	if hc == nil {
 		hc = &http.Client{Timeout: 10 * time.Second}
 	}
 
-	return &Client{httpClient: hc, baseURL: baseURL}
+	return &Client{
+		httpClient: hc,
+		baseURL:    baseURL,
+		teamID:     teamID,
+	}
 }
 
 // GetRecords gets the records of a domain.
@@ -38,7 +44,7 @@ func NewClient(hc *http.Client) *Client {
 func (c *Client) GetRecords(ctx context.Context, domainName string) ([]Record, error) {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records")
 
-	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	req, err := c.newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
@@ -73,7 +79,7 @@ func (c *Client) GetRecords(ctx context.Context, domainName string) ([]Record, e
 func (c *Client) CreateRecord(ctx context.Context, domainName string, record Record) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records")
 
-	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
+	req, err := c.newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
@@ -108,7 +114,7 @@ func (c *Client) CreateRecord(ctx context.Context, domainName string, record Rec
 func (c *Client) GetRecord(ctx context.Context, domainName, recordID string) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records", recordID)
 
-	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	req, err := c.newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
@@ -143,7 +149,7 @@ func (c *Client) GetRecord(ctx context.Context, domainName, recordID string) (*R
 func (c *Client) DeleteRecord(ctx context.Context, domainName, recordID string) error {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records", recordID)
 
-	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
+	req, err := c.newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return fmt.Errorf("create request: %w", err)
 	}
@@ -162,7 +168,14 @@ func (c *Client) DeleteRecord(ctx context.Context, domainName, recordID string) 
 	return nil
 }
 
-func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+func (c *Client) newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	if c.teamID != "" {
+		query := endpoint.Query()
+		query.Set("teamID", c.teamID)
+
+		endpoint.RawQuery = query.Encode()
+	}
+
 	buf := new(bytes.Buffer)
 
 	if payload != nil {

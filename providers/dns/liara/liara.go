@@ -23,6 +23,7 @@ const (
 	envNamespace = "LIARA_"
 
 	EnvAPIKey = envNamespace + "API_KEY"
+	EnvTeamID = envNamespace + "TEAM_ID"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -39,7 +40,9 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	APIKey             string
+	APIKey string
+	TeamID string
+
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -77,6 +80,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config := NewDefaultConfig()
 	config.APIKey = values[EnvAPIKey]
+	config.TeamID = env.GetOrFile(EnvTeamID)
 
 	return NewDNSProviderConfig(config)
 }
@@ -112,6 +116,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		clientdebug.Wrap(
 			internal.OAuthStaticAccessToken(retryClient.StandardClient(), config.APIKey),
 		),
+		config.TeamID,
 	)
 
 	return &DNSProvider{

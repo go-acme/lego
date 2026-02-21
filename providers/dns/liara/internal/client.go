@@ -20,23 +20,31 @@ const defaultBaseURL = "https://dns-service.iran.liara.ir"
 type Client struct {
 	baseURL    *url.URL
 	httpClient *http.Client
+
+	teamID string
 }
 
 // NewClient creates a new Client.
-func NewClient(hc *http.Client) *Client {
+func NewClient(hc *http.Client, teamID string) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 
 	if hc == nil {
 		hc = &http.Client{Timeout: 10 * time.Second}
 	}
 
-	return &Client{httpClient: hc, baseURL: baseURL}
+	return &Client{
+		httpClient: hc,
+		baseURL:    baseURL,
+		teamID:     teamID,
+	}
 }
 
 // GetRecords gets the records of a domain.
 // https://openapi.liara.ir/?urls.primaryName=DNS
 func (c *Client) GetRecords(ctx context.Context, domainName string) ([]Record, error) {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records")
+
+	c.setTeamID(endpoint)
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -73,6 +81,8 @@ func (c *Client) GetRecords(ctx context.Context, domainName string) ([]Record, e
 func (c *Client) CreateRecord(ctx context.Context, domainName string, record Record) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records")
 
+	c.setTeamID(endpoint)
+
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
@@ -107,6 +117,8 @@ func (c *Client) CreateRecord(ctx context.Context, domainName string, record Rec
 // GetRecord gets a specific record.
 func (c *Client) GetRecord(ctx context.Context, domainName, recordID string) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records", recordID)
+
+	c.setTeamID(endpoint)
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -143,6 +155,8 @@ func (c *Client) GetRecord(ctx context.Context, domainName, recordID string) (*R
 func (c *Client) DeleteRecord(ctx context.Context, domainName, recordID string) error {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records", recordID)
 
+	c.setTeamID(endpoint)
+
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return fmt.Errorf("create request: %w", err)
@@ -160,6 +174,17 @@ func (c *Client) DeleteRecord(ctx context.Context, domainName, recordID string) 
 	}
 
 	return nil
+}
+
+func (c *Client) setTeamID(endpoint *url.URL) {
+	if c.teamID == "" {
+		return
+	}
+
+	query := endpoint.Query()
+	query.Set("teamID", c.teamID)
+
+	endpoint.RawQuery = query.Encode()
 }
 
 func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {

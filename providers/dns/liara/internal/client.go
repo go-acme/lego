@@ -44,9 +44,7 @@ func NewClient(hc *http.Client, teamID string) *Client {
 func (c *Client) GetRecords(ctx context.Context, domainName string) ([]Record, error) {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records")
 
-	c.setTeamID(endpoint)
-
-	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	req, err := c.newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
@@ -81,9 +79,7 @@ func (c *Client) GetRecords(ctx context.Context, domainName string) ([]Record, e
 func (c *Client) CreateRecord(ctx context.Context, domainName string, record Record) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records")
 
-	c.setTeamID(endpoint)
-
-	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
+	req, err := c.newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
@@ -118,9 +114,7 @@ func (c *Client) CreateRecord(ctx context.Context, domainName string, record Rec
 func (c *Client) GetRecord(ctx context.Context, domainName, recordID string) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records", recordID)
 
-	c.setTeamID(endpoint)
-
-	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	req, err := c.newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
@@ -155,9 +149,7 @@ func (c *Client) GetRecord(ctx context.Context, domainName, recordID string) (*R
 func (c *Client) DeleteRecord(ctx context.Context, domainName, recordID string) error {
 	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records", recordID)
 
-	c.setTeamID(endpoint)
-
-	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
+	req, err := c.newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return fmt.Errorf("create request: %w", err)
 	}
@@ -176,18 +168,14 @@ func (c *Client) DeleteRecord(ctx context.Context, domainName, recordID string) 
 	return nil
 }
 
-func (c *Client) setTeamID(endpoint *url.URL) {
-	if c.teamID == "" {
-		return
+func (c *Client) newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	if c.teamID != "" {
+		query := endpoint.Query()
+		query.Set("teamID", c.teamID)
+
+		endpoint.RawQuery = query.Encode()
 	}
 
-	query := endpoint.Query()
-	query.Set("teamID", c.teamID)
-
-	endpoint.RawQuery = query.Encode()
-}
-
-func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
 	buf := new(bytes.Buffer)
 
 	if payload != nil {

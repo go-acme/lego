@@ -674,13 +674,13 @@ func (c *Certifier) GetOCSP(ctx context.Context, bundle []byte) ([]byte, *ocsp.R
 //
 // If bundle is true, the Certificate field in the returned Resource includes the issuer certificate.
 func (c *Certifier) Get(ctx context.Context, url string, bundle bool) (*Resource, error) {
-	cert, issuer, err := c.core.Certificates.Get(ctx, url, bundle)
+	rawCert, err := c.core.Certificates.Get(ctx, url, bundle)
 	if err != nil {
 		return nil, err
 	}
 
 	// Parse the returned cert bundle so that we can grab the domain from the common name.
-	x509Certs, err := certcrypto.ParsePEMBundle(cert)
+	x509Certs, err := certcrypto.ParsePEMBundle(rawCert.Cert)
 	if err != nil {
 		return nil, err
 	}
@@ -693,8 +693,8 @@ func (c *Certifier) Get(ctx context.Context, url string, bundle bool) (*Resource
 	return &Resource{
 		ID:                domain,
 		Domains:           certcrypto.ExtractDomains(x509Certs[0]),
-		Certificate:       cert,
-		IssuerCertificate: issuer,
+		Certificate:       rawCert.Cert,
+		IssuerCertificate: rawCert.Issuer,
 		CertURL:           url,
 		CertStableURL:     url,
 	}, nil

@@ -18,13 +18,13 @@ type CertificateService service
 
 // Get Returns the certificate and the issuer certificate.
 // 'bundle' is only applied if the issuer is provided by the 'up' link.
-func (c *CertificateService) Get(ctx context.Context, certURL string, bundle bool) ([]byte, []byte, error) {
+func (c *CertificateService) Get(ctx context.Context, certURL string, bundle bool) (*acme.RawCertificate, error) {
 	cert, _, err := c.get(ctx, certURL, bundle)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return cert.Cert, cert.Issuer, nil
+	return cert, nil
 }
 
 // GetAll the certificates and the alternate certificates.

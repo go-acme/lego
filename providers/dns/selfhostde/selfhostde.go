@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -59,16 +58,14 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-func (c *Config) getSeqNext(domain string) (string, error) {
-	effectiveDomain := strings.TrimPrefix(domain, "_acme-challenge.")
-
+func (c *Config) getSeqNext(effectiveDomain, fallback string) (string, error) {
 	c.recordsMappingMu.Lock()
 	defer c.recordsMappingMu.Unlock()
 
 	seq, ok := c.RecordsMapping[effectiveDomain]
 	if !ok {
 		// fallback
-		seq, ok = c.RecordsMapping[domain]
+		seq, ok = c.RecordsMapping[fallback]
 		if !ok {
 			return "", fmt.Errorf("record mapping not found for %q", effectiveDomain)
 		}
@@ -152,7 +149,10 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	recordID, err := d.config.getSeqNext(dns01.UnFqdn(info.EffectiveFQDN))
+	effectiveDomain := dns01.UnFqdn(info.EffectiveDomain())
+	fqdn := dns01.UnFqdn(info.EffectiveFQDN)
+
+	recordID, err := d.config.getSeqNext(effectiveDomain, fqdn)
 	if err != nil {
 		return fmt.Errorf("selfhostde: %w", err)
 	}

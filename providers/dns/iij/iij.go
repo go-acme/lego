@@ -94,8 +94,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	err := d.addTxtRecord(domain, info.Value)
+	err := d.addTxtRecord(info.EffectiveFQDN, info.Value)
 	if err != nil {
 		return fmt.Errorf("iij: %w", err)
 	}
@@ -107,8 +106,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	err := d.deleteTxtRecord(domain, info.Value)
+	err := d.deleteTxtRecord(info.EffectiveFQDN, info.Value)
 	if err != nil {
 		return fmt.Errorf("iij: %w", err)
 	}
@@ -116,14 +114,13 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	return nil
 }
 
-func (d *DNSProvider) addTxtRecord(domain, value string) error {
+func (d *DNSProvider) addTxtRecord(fqdn, value string) error {
 	zones, err := d.listZones()
 	if err != nil {
 		return err
 	}
 
-	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	owner, zone, err := splitDomain(domain, zones)
+	owner, zone, err := splitDomain(fqdn, zones)
 	if err != nil {
 		return err
 	}
@@ -146,13 +143,13 @@ func (d *DNSProvider) addTxtRecord(domain, value string) error {
 	return d.commit()
 }
 
-func (d *DNSProvider) deleteTxtRecord(domain, value string) error {
+func (d *DNSProvider) deleteTxtRecord(fqdn, value string) error {
 	zones, err := d.listZones()
 	if err != nil {
 		return err
 	}
 
-	owner, zone, err := splitDomain(domain, zones)
+	owner, zone, err := splitDomain(fqdn, zones)
 	if err != nil {
 		return err
 	}
@@ -235,12 +232,7 @@ func splitDomain(domain string, zones []string) (string, string, error) {
 		zone := base[index:]
 
 		if slices.Contains(zones, zone) {
-			baseOwner := base[:index]
-			if baseOwner != "" {
-				baseOwner = "." + baseOwner
-			}
-
-			return "_acme-challenge" + dns01.UnFqdn(baseOwner), zone, nil
+			return dns01.UnFqdn(base[:index]), zone, nil
 		}
 	}
 

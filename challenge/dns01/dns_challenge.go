@@ -29,6 +29,8 @@ const (
 	DefaultTTL = 120
 )
 
+const prefix = "_acme-challenge"
+
 type ValidateFunc func(ctx context.Context, core *api.Core, domain string, chlng acme.Challenge) error
 
 // Challenge implements the dns-01 challenge.
@@ -175,6 +177,25 @@ type ChallengeInfo struct {
 
 	// Value contains the value for the TXT record.
 	Value string
+
+	// Prefix is the challenge prefix (i.e. `_acme-challenge`).
+	Prefix string
+}
+
+// Domain returns the domain of the challenge without the prefix.
+func (c ChallengeInfo) Domain() string {
+	return strings.TrimPrefix(c.FQDN, c.Prefix+".")
+}
+
+// EffectiveDomain returns the domain of the challenge without the prefix.
+func (c ChallengeInfo) EffectiveDomain() string {
+	// When FQDN is varying from EffectiveFQDN,
+	// the prefix is not used because the information comes from CNAME.
+	if c.FQDN == c.EffectiveFQDN {
+		return strings.TrimPrefix(c.EffectiveFQDN, c.Prefix+".")
+	}
+
+	return c.EffectiveFQDN
 }
 
 // GetChallengeInfo returns information used to create a DNS record which will fulfill the `dns-01` challenge.
@@ -185,16 +206,17 @@ func GetChallengeInfo(ctx context.Context, domain, keyAuth string) ChallengeInfo
 
 	ok, _ := strconv.ParseBool(os.Getenv("LEGO_DISABLE_CNAME_SUPPORT"))
 
+	fqdn := fmt.Sprintf("%s.%s.", prefix, domain)
+
 	return ChallengeInfo{
 		Value:         value,
-		FQDN:          getChallengeFQDN(ctx, domain, false),
-		EffectiveFQDN: getChallengeFQDN(ctx, domain, !ok),
+		FQDN:          getChallengeFQDN(ctx, fqdn, false),
+		EffectiveFQDN: getChallengeFQDN(ctx, fqdn, !ok),
+		Prefix:        prefix,
 	}
 }
 
-func getChallengeFQDN(ctx context.Context, domain string, followCNAME bool) string {
-	fqdn := fmt.Sprintf("_acme-challenge.%s.", domain)
-
+func getChallengeFQDN(ctx context.Context, fqdn string, followCNAME bool) string {
 	if !followCNAME {
 		return fqdn
 	}

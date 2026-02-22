@@ -1,0 +1,17 @@
+{
+  "_links": {
+    "self": {
+      "href": "/domains/example.com/resourceRecordSets/_acme-challenge.example.com./TXT"
+    },
+    "collection": {
+      "href": "/domains/example.com/resourceRecordSets"
+    }
+  },
+  "content": [
+    "Now36o-3BmlB623-0c1qCIUmgWVVmDJb88KGl24pqpo"
+  ],
+  "editable": true,
+  "name": "_acme-challenge.example.com.",
+  "ttl": 3600,
+  "type": "TXT"
+}

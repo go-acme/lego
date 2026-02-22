@@ -19,6 +19,7 @@ func allDNSCodes() string {
 		"allinkl",
 		"alwaysdata",
 		"anexia",
+		"artfiles",
 		"arvancloud",
 		"auroradns",
 		"autodns",
@@ -31,6 +32,7 @@ func allDNSCodes() string {
 		"binarylane",
 		"bindman",
 		"bluecat",
+		"bluecatv2",
 		"bookmyname",
 		"brandit",
 		"bunny",
@@ -110,6 +112,7 @@ func allDNSCodes() string {
 		"jdcloud",
 		"joker",
 		"keyhelp",
+		"leaseweb",
 		"liara",
 		"lightsail",
 		"limacity",
@@ -130,6 +133,7 @@ func allDNSCodes() string {
 		"namecheap",
 		"namedotcom",
 		"namesilo",
+		"namesurfer",
 		"nearlyfreespeech",
 		"neodigit",
 		"netcup",
@@ -262,8 +266,10 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "ALICLOUD_HTTP_TIMEOUT":	API request timeout in seconds (Default: 10)`)
+		ew.writeln(`	- "ALICLOUD_LINE":	Line (Default: default)`)
 		ew.writeln(`	- "ALICLOUD_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "ALICLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "ALICLOUD_REGION_ID":	Region ID (Default: cn-hangzhou)`)
 		ew.writeln(`	- "ALICLOUD_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)`)
 
 		ew.writeln()
@@ -353,6 +359,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/anexia`)
+
+	case "artfiles":
+		// generated from: providers/dns/artfiles/artfiles.toml
+		ew.writeln(`Configuration for ArtFiles.`)
+		ew.writeln(`Code:	'artfiles'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ARTFILES_PASSWORD":	API password`)
+		ew.writeln(`	- "ARTFILES_USERNAME":	API username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ARTFILES_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "ARTFILES_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "ARTFILES_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 360)`)
+		ew.writeln(`	- "ARTFILES_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/artfiles`)
 
 	case "arvancloud":
 		// generated from: providers/dns/arvancloud/arvancloud.toml
@@ -622,6 +649,31 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/bluecat`)
+
+	case "bluecatv2":
+		// generated from: providers/dns/bluecatv2/bluecatv2.toml
+		ew.writeln(`Configuration for Bluecat v2.`)
+		ew.writeln(`Code:	'bluecatv2'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "BLUECATV2_CONFIG_NAME":	Configuration name`)
+		ew.writeln(`	- "BLUECATV2_PASSWORD":	API password`)
+		ew.writeln(`	- "BLUECATV2_USERNAME":	API username`)
+		ew.writeln(`	- "BLUECATV2_VIEW_NAME":	DNS View Name`)
+		ew.writeln(`	- "BLUECAT_SERVER_URL":	The server URL: it should have a scheme, hostname, and port (if required) of the authoritative Bluecat BAM serve`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "BLUECATV2_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "BLUECATV2_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "BLUECATV2_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "BLUECATV2_SKIP_DEPLOY":	Skip quick deployements`)
+		ew.writeln(`	- "BLUECATV2_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/bluecatv2`)
 
 	case "bookmyname":
 		// generated from: providers/dns/bookmyname/bookmyname.toml
@@ -2307,6 +2359,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/keyhelp`)
 
+	case "leaseweb":
+		// generated from: providers/dns/leaseweb/leaseweb.toml
+		ew.writeln(`Configuration for Leaseweb.`)
+		ew.writeln(`Code:	'leaseweb'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "LEASEWEB_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "LEASEWEB_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "LEASEWEB_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "LEASEWEB_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "LEASEWEB_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/leaseweb`)
+
 	case "liara":
 		// generated from: providers/dns/liara/liara.toml
 		ew.writeln(`Configuration for Liara.`)
@@ -2322,6 +2394,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "LIARA_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "LIARA_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "LIARA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "LIARA_TEAM_ID":	The team ID to access services in a team`)
 		ew.writeln(`	- "LIARA_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 3600)`)
 
 		ew.writeln()
@@ -2713,6 +2786,30 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/namesilo`)
+
+	case "namesurfer":
+		// generated from: providers/dns/namesurfer/namesurfer.toml
+		ew.writeln(`Configuration for FusionLayer NameSurfer.`)
+		ew.writeln(`Code:	'namesurfer'`)
+		ew.writeln(`Since:	'v4.32.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NAMESURFER_API_KEY":	API key name`)
+		ew.writeln(`	- "NAMESURFER_API_SECRET":	API secret`)
+		ew.writeln(`	- "NAMESURFER_BASE_URL":	The base URL of NameSurfer API (jsonrpc10) endpoint URL (e.g., https://foo.example.com:8443/API/NSService_10)`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NAMESURFER_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "NAMESURFER_INSECURE_SKIP_VERIFY":	Whether to verify the API certificate`)
+		ew.writeln(`	- "NAMESURFER_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "NAMESURFER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
+		ew.writeln(`	- "NAMESURFER_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)`)
+		ew.writeln(`	- "NAMESURFER_VIEW":	DNS view name (optional, default: empty string)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/namesurfer`)
 
 	case "nearlyfreespeech":
 		// generated from: providers/dns/nearlyfreespeech/nearlyfreespeech.toml

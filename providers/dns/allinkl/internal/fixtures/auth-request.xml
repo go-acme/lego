@@ -1,0 +1,7 @@
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+    <Body>
+        <KasAuth xmlns="https://kasserver.com/">
+            <Params>{"kas_login":"user","kas_auth_data":"secret","kas_auth_type":"plain","session_lifetime":60,"session_update_lifetime":"Y"}</Params>
+        </KasAuth>
+    </Body>
+</Envelope>

@@ -1,0 +1,24 @@
+{
+  "result": null,
+  "error": {
+    "filename": "service",
+    "lineno": 13,
+    "code": "Server.Keyfailure",
+    "string": "Unknown keyname user",
+    "detail": [
+      "Traceback (most recent call last):",
+      "  File \"/usr/local/namesurfer/python/lib/python2.6/site-packages/ladon/server/dispatcher.py\", line 159, in dispatch_request",
+      "    result = self.call_method(method,req_dict,tc,export_dict,log_line)",
+      "  File \"/usr/local/namesurfer/python/lib/python2.6/site-packages/ladon/server/dispatcher.py\", line 96, in call_method",
+      "    result = getattr(service_class_instance,req_dict['methodname'])(*args)",
+      "  File \"/usr/local/namesurfer/python/lib/python2.6/site-packages/ladon/ladonizer/decorator.py\", line 77, in injector",
+      "    res = f(*args,**kw)",
+      "  File \"/usr/local/namesurfer/webui2/webui/service/service10/NSService_10.py\", line 502, in addDNSRecord",
+      "    key = validate_key(keyname, digest, [zonename, viewname, record.name, record.type, str(record.ttl), record.data])",
+      "  File \"/usr/local/namesurfer/webui2/webui/service/base/implementation.py\", line 63, in validate_key",
+      "    raise ApiFault('Server.Keyfailure', 'Unknown keyname %s' % keyname)",
+      "ApiFault: service(13): Unknown keyname user",
+      ""
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "id": 12345,
+  "type": "QuickDeployment",
+  "state": "PENDING",
+  "status": "CANCEL",
+  "message": "string",
+  "percentComplete": 50,
+  "creationDateTime": "2022-11-23T02:53:00Z",
+  "startDateTime": "2022-11-23T02:53:03Z",
+  "completionDateTime": "2022-11-23T02:54:05Z",
+  "user": {
+    "id": 103307,
+    "type": "User",
+    "name": "admin",
+    "userDefinedFields": {
+      "udf1": "value1",
+      "udf2": "value2"
+    },
+    "authenticator": {
+      "id": 12345,
+      "type": "Authenticator",
+      "name": "LDAP authenticator"
+    },
+    "email": "user@example.com",
+    "phoneNumber": "555-1234",
+    "securityPrivilege": "NO_ACCESS",
+    "historyPrivilege": "HIDE",
+    "accessType": "GUI",
+    "passwordResetRequired": true,
+    "accountLocked": true,
+    "x509Required": true,
+    "administrativeAccessRights": [
+      {
+        "resourceType": "Event",
+        "accessLevel": "HIDE"
+      }
+    ]
+  },
+  "method": "SCHEDULED"
+}

@@ -74,6 +74,42 @@ func TestCertifier_GetRenewalInfo(t *testing.T) {
 	assert.Equal(t, time.Duration(21600000000000), ri.RetryAfter)
 }
 
+func TestCertifier_GetRenewalInfo_retryAfter(t *testing.T) {
+	leaf, err := certcrypto.ParsePEMCertificate([]byte(ariLeafPEM))
+	require.NoError(t, err)
+
+	server := tester.MockACMEServer().
+		Route("GET /renewalInfo/"+ariLeafCertID,
+			servermock.RawStringResponse(`{
+				"suggestedWindow": {
+					"start": "2020-03-17T17:51:09Z",
+					"end": "2020-03-17T18:21:09Z"
+				},
+				"explanationUrl": "https://aricapable.ca.example/docs/renewal-advice/"
+			}
+		}`).
+				WithHeader("Content-Type", "application/json").
+				WithHeader("Retry-After", time.Now().UTC().Add(6*time.Hour).Format(time.RFC1123))).
+		BuildHTTPS(t)
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", key)
+	require.NoError(t, err)
+
+	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
+
+	ri, err := certifier.GetRenewalInfo(t.Context(), RenewalInfoRequest{leaf})
+	require.NoError(t, err)
+	require.NotNil(t, ri)
+	assert.Equal(t, "2020-03-17T17:51:09Z", ri.SuggestedWindow.Start.Format(time.RFC3339))
+	assert.Equal(t, "2020-03-17T18:21:09Z", ri.SuggestedWindow.End.Format(time.RFC3339))
+	assert.Equal(t, "https://aricapable.ca.example/docs/renewal-advice/", ri.ExplanationURL)
+
+	assert.InDelta(t, 6, ri.RetryAfter.Hours(), 0.001)
+}
+
 func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
 	leaf, err := certcrypto.ParsePEMCertificate([]byte(ariLeafPEM))
 	require.NoError(t, err)

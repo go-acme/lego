@@ -3,9 +3,11 @@ package internal
 import "fmt"
 
 type DNSRecord struct {
-	ID        int    `json:"id,omitempty"`
-	Type      string `json:"type,omitempty"`
-	Value     string `json:"value,omitempty"`
+	ID    int    `json:"id,omitempty"`
+	Type  string `json:"type,omitempty"`
+	Value string `json:"value,omitempty"`
+
+	// SubDomain is the full name of a subdomain (not only the subdomain label).
 	SubDomain string `json:"subdomain,omitempty"`
 }
 

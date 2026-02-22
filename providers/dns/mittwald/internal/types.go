@@ -61,14 +61,14 @@ type APIError struct {
 }
 
 func (a APIError) Error() string {
-	var msg strings.Builder
+	msg := new(strings.Builder)
 
-	msg.WriteString(fmt.Sprintf("%s: %s", a.Type, a.Message))
+	_, _ = fmt.Fprintf(msg, "%s: %s", a.Type, a.Message)
 
 	if len(a.ValidationErrors) > 0 {
 		for _, validationError := range a.ValidationErrors {
-			msg.WriteString(fmt.Sprintf(" [%s: %s (%s, %s)]",
-				validationError.Type, validationError.Message, validationError.Path, validationError.Context.Format))
+			_, _ = fmt.Fprintf(msg, " [%s: %s (%s, %s)]",
+				validationError.Type, validationError.Message, validationError.Path, validationError.Context.Format)
 		}
 	}
 

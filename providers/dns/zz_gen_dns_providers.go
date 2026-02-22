@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/allinkl"
 	"github.com/go-acme/lego/v5/providers/dns/alwaysdata"
 	"github.com/go-acme/lego/v5/providers/dns/anexia"
+	"github.com/go-acme/lego/v5/providers/dns/artfiles"
 	"github.com/go-acme/lego/v5/providers/dns/arvancloud"
 	"github.com/go-acme/lego/v5/providers/dns/auroradns"
 	"github.com/go-acme/lego/v5/providers/dns/autodns"
@@ -25,6 +26,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/binarylane"
 	"github.com/go-acme/lego/v5/providers/dns/bindman"
 	"github.com/go-acme/lego/v5/providers/dns/bluecat"
+	"github.com/go-acme/lego/v5/providers/dns/bluecatv2"
 	"github.com/go-acme/lego/v5/providers/dns/bookmyname"
 	"github.com/go-acme/lego/v5/providers/dns/brandit"
 	"github.com/go-acme/lego/v5/providers/dns/bunny"
@@ -104,6 +106,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/jdcloud"
 	"github.com/go-acme/lego/v5/providers/dns/joker"
 	"github.com/go-acme/lego/v5/providers/dns/keyhelp"
+	"github.com/go-acme/lego/v5/providers/dns/leaseweb"
 	"github.com/go-acme/lego/v5/providers/dns/liara"
 	"github.com/go-acme/lego/v5/providers/dns/lightsail"
 	"github.com/go-acme/lego/v5/providers/dns/limacity"
@@ -124,6 +127,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/namecheap"
 	"github.com/go-acme/lego/v5/providers/dns/namedotcom"
 	"github.com/go-acme/lego/v5/providers/dns/namesilo"
+	"github.com/go-acme/lego/v5/providers/dns/namesurfer"
 	"github.com/go-acme/lego/v5/providers/dns/nearlyfreespeech"
 	"github.com/go-acme/lego/v5/providers/dns/neodigit"
 	"github.com/go-acme/lego/v5/providers/dns/netcup"
@@ -209,6 +213,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return alwaysdata.NewDNSProvider()
 	case "anexia":
 		return anexia.NewDNSProvider()
+	case "artfiles":
+		return artfiles.NewDNSProvider()
 	case "arvancloud":
 		return arvancloud.NewDNSProvider()
 	case "auroradns":
@@ -233,6 +239,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return bindman.NewDNSProvider()
 	case "bluecat":
 		return bluecat.NewDNSProvider()
+	case "bluecatv2":
+		return bluecatv2.NewDNSProvider()
 	case "bookmyname":
 		return bookmyname.NewDNSProvider()
 	case "brandit":
@@ -391,6 +399,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return joker.NewDNSProvider()
 	case "keyhelp":
 		return keyhelp.NewDNSProvider()
+	case "leaseweb":
+		return leaseweb.NewDNSProvider()
 	case "liara":
 		return liara.NewDNSProvider()
 	case "lightsail":
@@ -431,6 +441,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return namedotcom.NewDNSProvider()
 	case "namesilo":
 		return namesilo.NewDNSProvider()
+	case "namesurfer":
+		return namesurfer.NewDNSProvider()
 	case "nearlyfreespeech":
 		return nearlyfreespeech.NewDNSProvider()
 	case "neodigit":

@@ -463,26 +463,26 @@ func (f FormattableDuration) String() string {
 	seconds := int(d.Seconds()) % 60
 	ns := int(d.Nanoseconds()) % int(time.Second)
 
-	var s strings.Builder
+	s := new(strings.Builder)
 
 	if days > 0 {
-		s.WriteString(fmt.Sprintf("%dd", days))
+		_, _ = fmt.Fprintf(s, "%dd", days)
 	}
 
 	if hours > 0 {
-		s.WriteString(fmt.Sprintf("%dh", hours))
+		_, _ = fmt.Fprintf(s, "%dh", hours)
 	}
 
 	if minutes > 0 {
-		s.WriteString(fmt.Sprintf("%dm", minutes))
+		_, _ = fmt.Fprintf(s, "%dm", minutes)
 	}
 
 	if seconds > 0 {
-		s.WriteString(fmt.Sprintf("%ds", seconds))
+		_, _ = fmt.Fprintf(s, "%ds", seconds)
 	}
 
 	if ns > 0 {
-		s.WriteString(fmt.Sprintf("%dns", ns))
+		_, _ = fmt.Fprintf(s, "%dns", ns)
 	}
 
 	return s.String()

@@ -21,12 +21,12 @@ type ErrorDetail struct {
 }
 
 func (e *ErrorDetail) Error() string {
-	var msg strings.Builder
+	msg := new(strings.Builder)
 
-	msg.WriteString(fmt.Sprintf("%d: %s", e.Code, e.Type))
+	_, _ = fmt.Fprintf(msg, "%d: %s", e.Code, e.Type)
 
 	if e.Info != "" {
-		msg.WriteString(fmt.Sprintf(": %s", e.Info))
+		_, _ = fmt.Fprintf(msg, ": %s", e.Info)
 	}
 
 	return msg.String()

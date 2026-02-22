@@ -1,0 +1,22 @@
+Name = "Leaseweb"
+Description = ''''''
+URL = "https://www.leaseweb.com/en/"
+Code = "leaseweb"
+Since = "v4.32.0"
+
+Example = '''
+LEASEWEB_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+lego --dns leaseweb -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    LEASEWEB_API_KEY = "API key"
+  [Configuration.Additional]
+    LEASEWEB_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    LEASEWEB_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    LEASEWEB_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    LEASEWEB_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://developer.leaseweb.com/docs/#tag/DNS"

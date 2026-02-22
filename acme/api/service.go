@@ -1,8 +1,11 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
+	"time"
 )
 
 type service struct {
@@ -55,4 +58,30 @@ func getRetryAfter(resp *http.Response) string {
 	}
 
 	return resp.Header.Get("Retry-After")
+}
+
+// ParseRetryAfter parses the Retry-After header value according to RFC 7231.
+// The header can be either delay-seconds (numeric) or HTTP-date (RFC 1123 format).
+// https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.3
+// Returns the duration until the retry time.
+// TODO(ldez): unexposed this function in v5.
+func ParseRetryAfter(value string) (time.Duration, error) {
+	if value == "" {
+		return 0, nil
+	}
+
+	if seconds, err := strconv.ParseInt(value, 10, 64); err == nil {
+		return time.Duration(seconds) * time.Second, nil
+	}
+
+	if retryTime, err := time.Parse(time.RFC1123, value); err == nil {
+		duration := time.Until(retryTime)
+		if duration < 0 {
+			return 0, nil
+		}
+
+		return duration, nil
+	}
+
+	return 0, fmt.Errorf("invalid Retry-After value: %q", value)
 }

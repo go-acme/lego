@@ -110,15 +110,10 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("timewebcloud: could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
-	if err != nil {
-		return fmt.Errorf("timewebcloud: %w", err)
-	}
-
 	record := internal.DNSRecord{
 		Type:      "TXT",
 		Value:     info.Value,
-		SubDomain: subDomain,
+		SubDomain: dns01.UnFqdn(info.EffectiveFQDN),
 	}
 
 	response, err := d.client.CreateRecord(ctx, authZone, record)

@@ -1,0 +1,16 @@
+{
+  "id": 1,
+  "method": "addDNSRecord",
+  "params": [
+    "user",
+    "4fcc5fa29531709b0381c8debea127a6a26e71cb9491727876819cf5805c4990",
+    "example.com",
+    "viewA",
+    {
+      "name": "_acme-challenge",
+      "type": "TXT",
+      "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "ttl": 300
+    }
+  ]
+}

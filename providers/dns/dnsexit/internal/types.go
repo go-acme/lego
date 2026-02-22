@@ -29,12 +29,12 @@ type APIResponse struct {
 }
 
 func (a APIResponse) Error() string {
-	var msg strings.Builder
+	msg := new(strings.Builder)
 
-	msg.WriteString(fmt.Sprintf("%s (code=%d)", a.Message, a.Code))
+	_, _ = fmt.Fprintf(msg, "%s (code=%d)", a.Message, a.Code)
 
 	for _, detail := range a.Details {
-		msg.WriteString(fmt.Sprintf(", %s", detail))
+		_, _ = fmt.Fprintf(msg, ", %s", detail)
 	}
 
 	return msg.String()

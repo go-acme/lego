@@ -42,13 +42,13 @@ type ErrorChain struct {
 type Errors []Message
 
 func (e Errors) Error() string {
-	var msg strings.Builder
+	msg := new(strings.Builder)
 
 	for _, item := range e {
-		msg.WriteString(fmt.Sprintf("%d: %s", item.Code, item.Message))
+		_, _ = fmt.Fprintf(msg, "%d: %s", item.Code, item.Message)
 
 		for _, link := range item.ErrorChain {
-			msg.WriteString(fmt.Sprintf("; %d: %s", link.Code, link.Message))
+			_, _ = fmt.Fprintf(msg, "; %d: %s", link.Code, link.Message)
 		}
 	}
 

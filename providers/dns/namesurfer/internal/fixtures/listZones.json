@@ -1,0 +1,17 @@
+{
+  "id": 1,
+  "result": [
+    {
+      "name": "example.com",
+      "view": "viewA"
+    },
+    {
+      "name": "example.org",
+      "view": "viewB"
+    },
+    {
+      "name": "example.net",
+      "view": "viewC"
+    }
+  ]
+}

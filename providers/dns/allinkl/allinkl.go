@@ -5,12 +5,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/allinkl/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -121,17 +123,17 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("allinkl: could not find zone for domain %q: %w", domain, err)
-	}
-
 	credential, err := d.identifier.Authentication(ctx, 60, true)
 	if err != nil {
 		return fmt.Errorf("allinkl: authentication: %w", err)
 	}
 
 	ctxAuth := internal.WithContext(ctx, credential)
+
+	authZone, err := d.findZone(ctx, info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("allinkl: %w", err)
+	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
@@ -187,4 +189,18 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	d.recordIDsMu.Unlock()
 
 	return nil
+}
+
+func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (string, error) {
+	for z := range dns01.DomainsSeq(fqdn) {
+		_, errG := d.client.GetDNSSettings(ctx, z, "")
+		if errG != nil {
+			log.Debug("get DNS settings zone", slog.String("zone", z), log.ErrorAttr(errG))
+			continue
+		}
+
+		return z, nil
+	}
+
+	return "", fmt.Errorf("unable to find auth zone for '%s'", fqdn)
 }

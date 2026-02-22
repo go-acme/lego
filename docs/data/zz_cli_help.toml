@@ -17,7 +17,7 @@ COMMANDS:
    register  Register an account.
    dnshelp   Shows additional help for the '--dns' global option
    list      Display certificates and accounts information.
-   migrate   Migrate accounts.
+   migrate   Migrate certificates and accounts.
    help, h   Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
@@ -57,7 +57,7 @@ OPTIONS:
 
    --always-deactivate-authorizations string  Force the authorizations to be relinquished even if the certificate request was successful. [$LEGO_ALWAYS_DEACTIVATE_AUTHORIZATIONS]
    --cert.timeout int                         Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30) [$LEGO_CERT_TIMEOUT]
-   --csr string, -c string                    Certificate signing request filename, if an external CSR is to be used. [$LEGO_CSR]
+   --csr string                               Certificate signing request filename, if an external CSR is to be used. [$LEGO_CSR]
    --enable-cn                                Enable the use of the common name. (Not recommended) [$LEGO_ENABLE_CN]
    --ipv4only, -4                             Use IPv4 only. [$LEGO_IPV4ONLY]
    --ipv6only, -6                             Use IPv6 only. [$LEGO_IPV6ONLY]
@@ -108,12 +108,13 @@ OPTIONS:
 
    Flags related to the storage:
 
-   --account-id string  Account identifier (The email is used if there is account ID is undefined). [$LEGO_ACCOUNT_ID]
-   --path string        Directory to use for storing the data. [$LEGO_PATH]
-   --pem                Generate an additional .pem (base64) file by concatenating the .key and .crt files together. [$LEGO_PEM]
-   --pfx                Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together. [$LEGO_PFX]
-   --pfx.format string  The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256. (default: "RC2") [$LEGO_PFX_FORMAT]
-   --pfx.pass string    The password used to encrypt the .pfx (PCKS#12) file. (default: "changeit") [$LEGO_PFX_PASS]
+   --account-id string            Account identifier (The email is used if there is account ID is undefined). [$LEGO_ACCOUNT_ID]
+   --cert.name string, -c string  The certificate ID/Name, used to store and retrieve a certificate. By default, it uses the first domain name. [$LEGO_CERT_NAME]
+   --path string                  Directory to use for storing the data. [$LEGO_PATH]
+   --pem                          Generate an additional .pem (base64) file by concatenating the .key and .crt files together. [$LEGO_PEM]
+   --pfx                          Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together. [$LEGO_PFX]
+   --pfx.format string            The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256. (default: "RC2") [$LEGO_PFX_FORMAT]
+   --pfx.pass string              The password used to encrypt the .pfx (PCKS#12) file. (default: "changeit") [$LEGO_PFX_PASS]
 """
 
 [[command]]
@@ -151,7 +152,7 @@ OPTIONS:
 
    --always-deactivate-authorizations string  Force the authorizations to be relinquished even if the certificate request was successful. [$LEGO_ALWAYS_DEACTIVATE_AUTHORIZATIONS]
    --cert.timeout int                         Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30) [$LEGO_CERT_TIMEOUT]
-   --csr string, -c string                    Certificate signing request filename, if an external CSR is to be used. [$LEGO_CSR]
+   --csr string                               Certificate signing request filename, if an external CSR is to be used. [$LEGO_CSR]
    --enable-cn                                Enable the use of the common name. (Not recommended) [$LEGO_ENABLE_CN]
    --force-cert-domains                       Check and ensure that the cert's domain list matches those passed in the domains argument. [$LEGO_FORCE_CERT_DOMAINS]
    --ipv4only, -4                             Use IPv4 only. [$LEGO_IPV4ONLY]
@@ -204,12 +205,13 @@ OPTIONS:
 
    Flags related to the storage:
 
-   --account-id string  Account identifier (The email is used if there is account ID is undefined). [$LEGO_ACCOUNT_ID]
-   --path string        Directory to use for storing the data. [$LEGO_PATH]
-   --pem                Generate an additional .pem (base64) file by concatenating the .key and .crt files together. [$LEGO_PEM]
-   --pfx                Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together. [$LEGO_PFX]
-   --pfx.format string  The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256. (default: "RC2") [$LEGO_PFX_FORMAT]
-   --pfx.pass string    The password used to encrypt the .pfx (PCKS#12) file. (default: "changeit") [$LEGO_PFX_PASS]
+   --account-id string            Account identifier (The email is used if there is account ID is undefined). [$LEGO_ACCOUNT_ID]
+   --cert.name string, -c string  The certificate ID/Name, used to store and retrieve a certificate. By default, it uses the first domain name. [$LEGO_CERT_NAME]
+   --path string                  Directory to use for storing the data. [$LEGO_PATH]
+   --pem                          Generate an additional .pem (base64) file by concatenating the .key and .crt files together. [$LEGO_PEM]
+   --pfx                          Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together. [$LEGO_PFX]
+   --pfx.format string            The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256. (default: "RC2") [$LEGO_PFX_FORMAT]
+   --pfx.pass string              The password used to encrypt the .pfx (PCKS#12) file. (default: "changeit") [$LEGO_PFX_PASS]
 """
 
 [[command]]
@@ -222,14 +224,15 @@ USAGE:
    lego revoke
 
 OPTIONS:
-   --domains string, -d string [ --domains string, -d string ]  Add a domain. For multiple domains either repeat the option or provide a comma-separated list. [$LEGO_DOMAINS]
-   --email string, -m string                                    Email used for registration and recovery contact. [$LEGO_EMAIL]
-   --help, -h                                                   show help
-   --keep                                                       Keep the certificates after the revocation instead of archiving them. [$LEGO_KEEP]
-   --key-type string, -k string                                 Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384. (default: "ec256") [$LEGO_KEY_TYPE]
-   --reason uint                                                Identifies the reason for the certificate revocation. See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1. Valid values are: 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged), 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL), 9 (privilegeWithdrawn), or 10 (aACompromise). (default: 0) [$LEGO_REASON]
-   --server string, -s string                                   CA (ACME server). It can be either a URL or a shortcode.
-                                                                (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
+   --cert.name string, -c string [ --cert.name string, -c string ]  The certificate IDs/Names, used to retrieve the certificates. [$LEGO_CERT_NAME]
+   --email string, -m string                                        Email used for registration and recovery contact. [$LEGO_EMAIL]
+   --help, -h                                                       show help
+   --keep                                                           Keep the certificates after the revocation instead of archiving them. [$LEGO_KEEP]
+   --key-type string, -k string                                     Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384. (default: "ec256") [$LEGO_KEY_TYPE]
+   --reason uint                                                    Identifies the reason for the certificate revocation. See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1.
+                                                                    Valid values are: 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged), 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL), 9 (privilegeWithdrawn), or 10 (aACompromise). (default: 0) [$LEGO_REASON]
+   --server string, -s string                                       CA (ACME server). It can be either a URL or a shortcode.
+                                                                    (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
 
    Flags related to External Account Binding:
 

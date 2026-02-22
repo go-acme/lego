@@ -11,29 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCertificatesStorage_CreateRootFolder(t *testing.T) {
-	writer := NewCertificatesStorage(t.TempDir())
-
-	require.NoDirExists(t, writer.rootPath)
-
-	err := writer.CreateRootFolder()
-	require.NoError(t, err)
-
-	require.DirExists(t, writer.rootPath)
-}
-
-func TestCertificatesStorage_CreateArchiveFolder(t *testing.T) {
-	writer := NewCertificatesStorage(t.TempDir())
-
-	require.NoDirExists(t, writer.archivePath)
-
-	err := writer.CreateArchiveFolder()
-	require.NoError(t, err)
-
-	require.DirExists(t, writer.archivePath)
-}
-
-func TestCertificatesStorage_SaveResource(t *testing.T) {
+func TestCertificatesStorage_Save(t *testing.T) {
 	basePath := t.TempDir()
 
 	writer := NewCertificatesStorage(basePath)
@@ -47,7 +25,8 @@ func TestCertificatesStorage_SaveResource(t *testing.T) {
 	require.NoFileExists(t, filepath.Join(basePath, baseCertificatesFolderName, "example.com.json"))
 
 	resource := &certificate.Resource{
-		Domain:            "example.com",
+		ID:                "example.com",
+		Domains:           []string{"example.com"},
 		CertURL:           "https://acme.example.org/cert/123",
 		CertStableURL:     "https://acme.example.org/cert/456",
 		PrivateKey:        []byte("PrivateKey"),
@@ -56,7 +35,7 @@ func TestCertificatesStorage_SaveResource(t *testing.T) {
 		CSR:               []byte("CSR"),
 	}
 
-	err = writer.SaveResource(resource, nil)
+	err = writer.Save(resource, nil)
 	require.NoError(t, err)
 
 	require.FileExists(t, filepath.Join(basePath, baseCertificatesFolderName, "example.com.crt"))
@@ -77,7 +56,7 @@ func TestCertificatesStorage_SaveResource(t *testing.T) {
 	assert.JSONEq(t, string(expected), string(actual))
 }
 
-func TestCertificatesStorage_SaveResource_pem(t *testing.T) {
+func TestCertificatesStorage_Save_pem(t *testing.T) {
 	basePath := t.TempDir()
 
 	writer := NewCertificatesStorage(basePath)
@@ -92,7 +71,8 @@ func TestCertificatesStorage_SaveResource_pem(t *testing.T) {
 	require.NoFileExists(t, filepath.Join(basePath, baseCertificatesFolderName, "example.com.pem"))
 
 	resource := &certificate.Resource{
-		Domain:            "example.com",
+		ID:                "example.com",
+		Domains:           []string{"example.com"},
 		CertURL:           "https://acme.example.org/cert/123",
 		CertStableURL:     "https://acme.example.org/cert/456",
 		PrivateKey:        []byte("PrivateKey"),
@@ -101,7 +81,7 @@ func TestCertificatesStorage_SaveResource_pem(t *testing.T) {
 		CSR:               []byte("CSR"),
 	}
 
-	err = writer.SaveResource(resource, &SaveOptions{
+	err = writer.Save(resource, &SaveOptions{
 		PEM: true,
 	})
 	require.NoError(t, err)
@@ -125,14 +105,14 @@ func TestCertificatesStorage_SaveResource_pem(t *testing.T) {
 	assert.JSONEq(t, string(expected), string(actual))
 }
 
-func TestCertificatesStorage_MoveToArchive(t *testing.T) {
+func TestCertificatesStorage_Archive(t *testing.T) {
 	domain := "example.com"
 
-	certStorage := setupCertificatesStorage(t)
+	certStorage := NewCertificatesStorage(t.TempDir())
 
 	domainFiles := generateTestFiles(t, certStorage.rootPath, domain)
 
-	err := certStorage.MoveToArchive(domain)
+	err := certStorage.Archive(domain)
 	require.NoError(t, err)
 
 	for _, file := range domainFiles {
@@ -150,14 +130,14 @@ func TestCertificatesStorage_MoveToArchive(t *testing.T) {
 	assert.Regexp(t, `\d+\.`+regexp.QuoteMeta(domain), archive[0].Name())
 }
 
-func TestCertificatesStorage_MoveToArchive_noFileRelatedToDomain(t *testing.T) {
+func TestCertificatesStorage_Archive_noFileRelatedToDomain(t *testing.T) {
 	domain := "example.com"
 
-	certStorage := setupCertificatesStorage(t)
+	certStorage := NewCertificatesStorage(t.TempDir())
 
 	domainFiles := generateTestFiles(t, certStorage.rootPath, "example.org")
 
-	err := certStorage.MoveToArchive(domain)
+	err := certStorage.Archive(domain)
 	require.NoError(t, err)
 
 	for _, file := range domainFiles {
@@ -174,15 +154,15 @@ func TestCertificatesStorage_MoveToArchive_noFileRelatedToDomain(t *testing.T) {
 	assert.Empty(t, archive)
 }
 
-func TestCertificatesStorage_MoveToArchive_ambiguousDomain(t *testing.T) {
+func TestCertificatesStorage_Archive_ambiguousDomain(t *testing.T) {
 	domain := "example.com"
 
-	certStorage := setupCertificatesStorage(t)
+	certStorage := NewCertificatesStorage(t.TempDir())
 
 	domainFiles := generateTestFiles(t, certStorage.rootPath, domain)
 	otherDomainFiles := generateTestFiles(t, certStorage.rootPath, domain+".example.org")
 
-	err := certStorage.MoveToArchive(domain)
+	err := certStorage.Archive(domain)
 	require.NoError(t, err)
 
 	for _, file := range domainFiles {
@@ -216,24 +196,11 @@ func assertCertificateFileContent(t *testing.T, basePath, filename string) {
 	assert.Equal(t, string(expected), string(actual))
 }
 
-func setupCertificatesStorage(t *testing.T) *CertificatesStorage {
-	t.Helper()
-
-	basePath := t.TempDir()
-
-	writer := NewCertificatesStorage(basePath)
-
-	err := writer.CreateRootFolder()
-	require.NoError(t, err)
-
-	err = writer.CreateArchiveFolder()
-	require.NoError(t, err)
-
-	return writer
-}
-
 func generateTestFiles(t *testing.T, dir, domain string) []string {
 	t.Helper()
+
+	err := CreateNonExistingFolder(dir)
+	require.NoError(t, err)
 
 	var filenames []string
 

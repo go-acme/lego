@@ -16,3 +16,7 @@ func DomainAttr(v string) slog.Attr {
 func DomainsAttr(v []string) slog.Attr {
 	return slog.String("domains", strings.Join(v, ", "))
 }
+
+func CertNameAttr(v string) slog.Attr {
+	return slog.String("cert-name", v)
+}

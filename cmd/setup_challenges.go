@@ -145,16 +145,14 @@ func setupTLSProvider(cmd *cli.Command) challenge.Provider {
 		}
 
 		return tlsalpn01.NewProviderServerWithOptions(tlsalpn01.Options{
-			// TODO(ldez): set network stack
-			Network: "tcp",
+			Network: getNetworkStack(cmd).Network("tcp"),
 			Host:    host,
 			Port:    port,
 		})
 
 	case cmd.Bool(flgTLS):
 		return tlsalpn01.NewProviderServerWithOptions(tlsalpn01.Options{
-			// TODO(ldez): set network stack
-			Network: "tcp",
+			Network: getNetworkStack(cmd).Network("tcp"),
 		})
 
 	default:

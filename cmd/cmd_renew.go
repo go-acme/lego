@@ -288,7 +288,7 @@ func getFlagRenewDays(cmd *cli.Command) int {
 	return noDays
 }
 
-func isInRenewalPeriod(cert *x509.Certificate, domain string, days int, now time.Time) bool {
+func isInRenewalPeriod(cert *x509.Certificate, certID string, days int, now time.Time) bool {
 	dueDate := getDueDate(cert, days, now)
 
 	if dueDate.Before(now) || dueDate.Equal(now) {
@@ -300,7 +300,7 @@ func isInRenewalPeriod(cert *x509.Certificate, domain string, days int, now time
 			cert.NotAfter.Format(time.RFC3339),
 			FormattableDuration(dueDate.Sub(now)),
 		),
-		log.CertNameAttr(domain),
+		log.CertNameAttr(certID),
 	)
 
 	return false
@@ -326,7 +326,7 @@ func getDueDate(x509Cert *x509.Certificate, days int, now time.Time) time.Time {
 	return x509Cert.NotAfter.Add(-1 * time.Duration(days) * 24 * time.Hour)
 }
 
-func getARIInfo(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, domain string, cert *x509.Certificate) (*time.Time, string, error) {
+func getARIInfo(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certID string, cert *x509.Certificate) (*time.Time, string, error) {
 	if cmd.Bool(flgARIDisable) {
 		return nil, "", nil
 	}
@@ -338,14 +338,14 @@ func getARIInfo(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, domai
 
 	willingToSleep := cmd.Duration(flgARIWaitToRenewDuration)
 
-	ariRenewalTime := getARIRenewalTime(ctx, willingToSleep, cert, domain, client)
+	ariRenewalTime := getARIRenewalTime(ctx, willingToSleep, cert, certID, client)
 	if ariRenewalTime != nil {
 		now := time.Now().UTC()
 
 		// Figure out if we need to sleep before renewing.
 		if ariRenewalTime.After(now) {
 			log.Info("Sleeping until renewal time",
-				log.CertNameAttr(domain),
+				log.CertNameAttr(certID),
 				slog.Duration("sleep", ariRenewalTime.Sub(now)),
 				slog.Time("renewalTime", *ariRenewalTime),
 			)
@@ -356,23 +356,19 @@ func getARIInfo(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, domai
 
 	replacesCertID, err := certificate.MakeARICertID(cert)
 	if err != nil {
-		return nil, "", fmt.Errorf("error while constructing the ARI CertID for domain %q: %w", domain, err)
+		return nil, "", fmt.Errorf("error while constructing the ARI CertID for domain %q: %w", certID, err)
 	}
 
 	return ariRenewalTime, replacesCertID, nil
 }
 
 // getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.
-func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *x509.Certificate, domain string, client *lego.Client) *time.Time {
-	if cert.IsCA {
-		log.Fatal("Certificate bundle starts with a CA certificate.", log.CertNameAttr(domain))
-	}
-
+func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *x509.Certificate, certID string, client *lego.Client) *time.Time {
 	renewalInfo, err := client.Certificate.GetRenewalInfo(ctx, certificate.RenewalInfoRequest{Cert: cert})
 	if err != nil {
 		if errors.Is(err, api.ErrNoARI) {
 			log.Warn("acme: the server does not advertise a renewal info endpoint.",
-				log.CertNameAttr(domain),
+				log.CertNameAttr(certID),
 				log.ErrorAttr(err),
 			)
 
@@ -380,7 +376,7 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 		}
 
 		log.Warn("acme: calling renewal info endpoint",
-			log.CertNameAttr(domain),
+			log.CertNameAttr(certID),
 			log.ErrorAttr(err),
 		)
 
@@ -391,15 +387,15 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 
 	renewalTime := renewalInfo.ShouldRenewAt(now, willingToSleep)
 	if renewalTime == nil {
-		log.Info("acme: renewalInfo endpoint indicates that renewal is not needed.", log.CertNameAttr(domain))
+		log.Info("acme: renewalInfo endpoint indicates that renewal is not needed.", log.CertNameAttr(certID))
 		return nil
 	}
 
-	log.Info("acme: renewalInfo endpoint indicates that renewal is needed.", log.CertNameAttr(domain))
+	log.Info("acme: renewalInfo endpoint indicates that renewal is needed.", log.CertNameAttr(certID))
 
 	if renewalInfo.ExplanationURL != "" {
 		log.Info("acme: renewalInfo endpoint provided an explanation.",
-			log.CertNameAttr(domain),
+			log.CertNameAttr(certID),
 			slog.String("explanationURL", renewalInfo.ExplanationURL),
 		)
 	}

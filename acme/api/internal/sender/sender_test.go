@@ -58,11 +58,10 @@ func TestDo_UserAgentOnAllHTTPMethod(t *testing.T) {
 	}
 }
 
-func TestDo_CustomUserAgent(t *testing.T) {
+func Test_formatUserAgent(t *testing.T) {
 	customUA := "MyApp/1.2.3"
-	doer := NewDoer(http.DefaultClient, customUA)
 
-	ua := doer.formatUserAgent()
+	ua := formatUserAgent(customUA)
 	assert.Contains(t, ua, ourUserAgent)
 	assert.Contains(t, ua, customUA)
 

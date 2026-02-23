@@ -56,12 +56,7 @@ func NewClient(opts *Options) *Client {
 	}
 
 	if len(opts.RecursiveNameservers) == 0 {
-		defaultNameservers := []string{
-			"google-public-dns-a.google.com:53",
-			"google-public-dns-b.google.com:53",
-		}
-
-		opts.RecursiveNameservers = getNameservers(defaultResolvConf, defaultNameservers)
+		opts.RecursiveNameservers = getNameservers(defaultResolvConf, opts.NetworkStack)
 	}
 
 	if opts.Timeout == 0 {
@@ -69,7 +64,7 @@ func NewClient(opts *Options) *Client {
 	}
 
 	return &Client{
-		recursiveNameservers: opts.RecursiveNameservers,
+		recursiveNameservers: parseNameservers(opts.RecursiveNameservers),
 		authoritativeNSPort:  "53",
 		tcpClient: &dns.Client{
 			Net:     opts.NetworkStack.Network("tcp"),

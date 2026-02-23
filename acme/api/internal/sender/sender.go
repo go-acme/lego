@@ -32,7 +32,7 @@ func NewDoer(client *http.Client, userAgent string) *Doer {
 
 	return &Doer{
 		httpClient: client,
-		userAgent:  userAgent,
+		userAgent:  formatUserAgent(userAgent),
 	}
 }
 
@@ -75,7 +75,7 @@ func (d *Doer) newRequest(ctx context.Context, method, uri string, body io.Reade
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("User-Agent", d.formatUserAgent())
+	req.Header.Set("User-Agent", d.userAgent)
 
 	for _, opt := range opts {
 		err = opt(req)
@@ -115,9 +115,8 @@ func (d *Doer) do(req *http.Request, response any) (*http.Response, error) {
 }
 
 // formatUserAgent builds and returns the User-Agent string to use in requests.
-func (d *Doer) formatUserAgent() string {
-	ua := fmt.Sprintf("%s %s (%s; %s; %s)", d.userAgent, ourUserAgent, ourUserAgentComment, runtime.GOOS, runtime.GOARCH)
-	return strings.TrimSpace(ua)
+func formatUserAgent(userAgent string) string {
+	return strings.TrimSpace(fmt.Sprintf("%s %s (%s; %s; %s)", userAgent, ourUserAgent, ourUserAgentComment, runtime.GOOS, runtime.GOARCH))
 }
 
 func checkError(req *http.Request, resp *http.Response) error {

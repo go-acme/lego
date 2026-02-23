@@ -58,7 +58,6 @@ func NewClient(config *Config) (*Client, error) {
 		KeyType:             config.Certificate.KeyType,
 		Timeout:             config.Certificate.Timeout,
 		OverallRequestLimit: config.Certificate.OverallRequestLimit,
-		EnableCommonName:    config.Certificate.EnableCommonName,
 	}
 
 	certifier := certificate.NewCertifier(core, prober, options)

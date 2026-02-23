@@ -46,7 +46,6 @@ func newClientConfig(cmd *cli.Command, account registration.User, keyType certcr
 		KeyType:             keyType,
 		Timeout:             time.Duration(cmd.Int(flgCertTimeout)) * time.Second,
 		OverallRequestLimit: cmd.Int(flgOverallRequestLimit),
-		EnableCommonName:    cmd.Bool(flgEnableCommonName),
 	}
 
 	if cmd.IsSet(flgHTTPTimeout) {
@@ -168,6 +167,7 @@ func newObtainRequest(cmd *cli.Command, domains []string) certificate.ObtainRequ
 		NotAfter:                       cmd.Timestamp(flgNotAfter),
 		Bundle:                         !cmd.Bool(flgNoBundle),
 		PreferredChain:                 cmd.String(flgPreferredChain),
+		EnableCommonName:               cmd.Bool(flgEnableCommonName),
 		Profile:                        cmd.String(flgProfile),
 		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
 	}
@@ -180,6 +180,7 @@ func newObtainForCSRRequest(cmd *cli.Command, csr *x509.CertificateRequest) cert
 		NotAfter:                       cmd.Timestamp(flgNotAfter),
 		Bundle:                         !cmd.Bool(flgNoBundle),
 		PreferredChain:                 cmd.String(flgPreferredChain),
+		EnableCommonName:               cmd.Bool(flgEnableCommonName),
 		Profile:                        cmd.String(flgProfile),
 		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
 	}

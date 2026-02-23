@@ -350,9 +350,19 @@ type Window struct {
 	End   time.Time `json:"end"`
 }
 
-// RenewalInfoResponse is the response to GET requests made the renewalInfo endpoint.
-// - (4.1. Getting Renewal Information) https://www.rfc-editor.org/rfc/rfc9773.html
-type RenewalInfoResponse struct {
+type ExtendedRenewalInfo struct {
+	RenewalInfo
+
+	// RetryAfter header indicating the polling interval that the ACME server recommends.
+	// Conforming clients SHOULD query the renewalInfo URL again after the RetryAfter period has passed,
+	// as the server may provide a different suggestedWindow.
+	// https://www.rfc-editor.org/rfc/rfc9773.html#section-4.2
+	RetryAfter time.Duration
+}
+
+// RenewalInfo is the response to GET requests made the renewalInfo endpoint.
+// - (4.2. RenewalInfo Objects) https://www.rfc-editor.org/rfc/rfc9773.html#section-4.2
+type RenewalInfo struct {
 	// SuggestedWindow contains two fields, start and end,
 	// whose values are timestamps which bound the window of time in which the CA recommends renewing the certificate.
 	SuggestedWindow Window `json:"suggestedWindow"`
@@ -361,18 +371,4 @@ type RenewalInfoResponse struct {
 	//	or a page documenting which certificates are affected by a mass revocation event.
 	//	Callers SHOULD provide this URL to their operator, if present.
 	ExplanationURL string `json:"explanationURL"`
-}
-
-// RenewalInfoUpdateRequest is the JWS payload for POST requests made to the renewalInfo endpoint.
-// - (4.2. RenewalInfo Objects) https://www.rfc-editor.org/rfc/rfc9773.html#section-4.2
-type RenewalInfoUpdateRequest struct {
-	// CertID is a composite string in the format: base64url(AKI) || '.' || base64url(Serial), where AKI is the
-	// certificate's authority key identifier and Serial is the certificate's serial number. For details, see:
-	// https://www.rfc-editor.org/rfc/rfc9773.html#section-4.1
-	CertID string `json:"certID"`
-	// Replaced is required and indicates whether or not the client considers the certificate to have been replaced.
-	// A certificate is considered replaced when its revocation would not disrupt any ongoing services,
-	// for instance because it has been renewed and the new certificate is in use, or because it is no longer in use.
-	// Clients SHOULD NOT send a request where this value is false.
-	Replaced bool `json:"replaced"`
 }

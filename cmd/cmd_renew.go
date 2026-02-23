@@ -17,7 +17,6 @@ import (
 
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/certcrypto"
-	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
@@ -354,7 +353,7 @@ func getARIInfo(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certI
 		}
 	}
 
-	replacesCertID, err := certificate.MakeARICertID(cert)
+	replacesCertID, err := api.MakeARICertID(cert)
 	if err != nil {
 		return nil, "", fmt.Errorf("error while constructing the ARI CertID for domain %q: %w", certID, err)
 	}
@@ -364,7 +363,7 @@ func getARIInfo(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certI
 
 // getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.
 func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *x509.Certificate, certID string, client *lego.Client) *time.Time {
-	renewalInfo, err := client.Certificate.GetRenewalInfo(ctx, certificate.RenewalInfoRequest{Cert: cert})
+	renewalInfo, err := client.Certificate.GetRenewalInfo(ctx, cert)
 	if err != nil {
 		if errors.Is(err, api.ErrNoARI) {
 			log.Warn("acme: the server does not advertise a renewal info endpoint.",

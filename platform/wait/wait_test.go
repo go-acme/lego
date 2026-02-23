@@ -4,49 +4,38 @@ import (
 	"errors"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// TODO(ldez): rewrite those tests when upgrading to go1.25 as minimum Go version.
-
 func TestFor_timeout(t *testing.T) {
-	var io atomic.Int64
+	synctest.Test(t, func(t *testing.T) {
+		now := time.Now()
 
-	c := make(chan error)
+		var io atomic.Int64
 
-	go func() {
-		c <- For("test", 3*time.Second, 1*time.Second, func() (bool, error) {
+		err := For("test", 3*time.Second, 1*time.Second, func() (bool, error) {
 			io.Add(1)
-
-			if io.Load() == 1 {
-				return false, nil
-			}
 
 			return false, nil
 		})
-	}()
 
-	timeout := time.After(6 * time.Second)
-
-	select {
-	case <-timeout:
-		t.Fatal("timeout exceeded")
-	case err := <-c:
+		assert.Equal(t, 3*time.Second, time.Since(now))
+		require.EqualValues(t, 3, io.Load())
 		require.EqualError(t, err, "test: time limit exceeded")
-	}
-
-	require.EqualValues(t, 3, io.Load())
+	})
 }
 
 func TestFor_timeout_with_error(t *testing.T) {
-	var io atomic.Int64
+	synctest.Test(t, func(t *testing.T) {
+		now := time.Now()
 
-	c := make(chan error)
+		var io atomic.Int64
 
-	go func() {
-		c <- For("test", 3*time.Second, 1*time.Second, func() (bool, error) {
+		err := For("test", 3*time.Second, 1*time.Second, func() (bool, error) {
 			io.Add(1)
 
 			// This allows be sure that the latest previous error is returned.
@@ -56,66 +45,45 @@ func TestFor_timeout_with_error(t *testing.T) {
 
 			return false, nil
 		})
-	}()
 
-	timeout := time.After(6 * time.Second)
-
-	select {
-	case <-timeout:
-		t.Fatal("timeout exceeded")
-	case err := <-c:
+		assert.Equal(t, 3*time.Second, time.Since(now))
+		require.EqualValues(t, 3, io.Load())
 		require.EqualError(t, err, "test: time limit exceeded: last error: oops")
-	}
-
-	require.EqualValues(t, 3, io.Load())
+	})
 }
 
 func TestFor_stop(t *testing.T) {
-	var io atomic.Int64
+	synctest.Test(t, func(t *testing.T) {
+		now := time.Now()
 
-	c := make(chan error)
+		var io atomic.Int64
 
-	go func() {
-		c <- For("test", 3*time.Second, 1*time.Second, func() (bool, error) {
+		err := For("test", 3*time.Second, 1*time.Second, func() (bool, error) {
 			io.Add(1)
 
 			return true, nil
 		})
-	}()
 
-	timeout := time.After(6 * time.Second)
-
-	select {
-	case <-timeout:
-		t.Fatal("timeout exceeded")
-	case err := <-c:
+		assert.Equal(t, 0*time.Second, time.Since(now))
 		require.NoError(t, err)
-	}
-
-	require.EqualValues(t, 1, io.Load())
+		require.EqualValues(t, 1, io.Load())
+	})
 }
 
 func TestFor_stop_with_error(t *testing.T) {
-	var io atomic.Int64
+	synctest.Test(t, func(t *testing.T) {
+		now := time.Now()
 
-	c := make(chan error)
+		var io atomic.Int64
 
-	go func() {
-		c <- For("test", 3*time.Second, 1*time.Second, func() (bool, error) {
+		err := For("test", 3*time.Second, 1*time.Second, func() (bool, error) {
 			io.Add(1)
 
 			return true, errors.New("oops")
 		})
-	}()
 
-	timeout := time.After(6 * time.Second)
-
-	select {
-	case <-timeout:
-		t.Fatal("timeout exceeded")
-	case err := <-c:
+		assert.Equal(t, 0*time.Second, time.Since(now))
 		require.EqualError(t, err, "oops")
-	}
-
-	require.EqualValues(t, 1, io.Load())
+		require.EqualValues(t, 1, io.Load())
+	})
 }

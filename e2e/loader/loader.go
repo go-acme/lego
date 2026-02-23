@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -113,8 +114,13 @@ func (l *EnvLoader) RunLegoCombinedOutput(ctx context.Context, arg ...string) ([
 }
 
 func (l *EnvLoader) RunLego(ctx context.Context, arg ...string) error {
+	return l.RunLegoWithInput(ctx, nil, arg...)
+}
+
+func (l *EnvLoader) RunLegoWithInput(ctx context.Context, stdin io.Reader, arg ...string) error {
 	cmd := exec.CommandContext(ctx, l.lego, arg...)
 	cmd.Env = l.LegoOptions
+	cmd.Stdin = stdin
 
 	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
 

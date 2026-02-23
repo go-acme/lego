@@ -21,16 +21,17 @@ import (
 )
 
 const (
-	categoryHTTP01Challenge    = "Flags related to the HTTP-01 challenge:"
-	categoryTLSALPN01Challenge = "Flags related to the TLS-ALPN-01 challenge:"
-	categoryDNS01Challenge     = "Flags related to the DNS-01 challenge:"
-	categoryStorage            = "Flags related to the storage:"
-	categoryHooks              = "Flags related to hooks:"
-	categoryEAB                = "Flags related to External Account Binding:"
-	categoryACMEClient         = "Flags related to the ACME client:"
-	categoryAdvanced           = "Flags related to advanced options:"
-	categoryARI                = "Flags related to ACME Renewal Information (ARI) Extension:"
-	categoryLogs               = "Flags related to logs:"
+	categoryHTTP01Challenge       = "Flags related to the HTTP-01 challenge:"
+	categoryTLSALPN01Challenge    = "Flags related to the TLS-ALPN-01 challenge:"
+	categoryDNS01Challenge        = "Flags related to the DNS-01 challenge:"
+	categoryDNSPersist01Challenge = "Flags related to the DNS-PERSIST-01 challenge:"
+	categoryStorage               = "Flags related to the storage:"
+	categoryHooks                 = "Flags related to hooks:"
+	categoryEAB                   = "Flags related to External Account Binding:"
+	categoryACMEClient            = "Flags related to the ACME client:"
+	categoryAdvanced              = "Flags related to advanced options:"
+	categoryARI                   = "Flags related to ACME Renewal Information (ARI) Extension:"
+	categoryLogs                  = "Flags related to logs:"
 )
 
 // Flag aliases (short-codes).
@@ -126,6 +127,18 @@ const (
 	flgDNSPropagationDisableRNS = "dns.propagation.disable-rns"
 	flgDNSResolvers             = "dns.resolvers"
 	flgDNSTimeout               = "dns.timeout"
+)
+
+// Flag names related to the DNS-PERSIST-01 challenge.
+const (
+	flgDNSPersist                      = "dns-persist"
+	flgDNSPersistIssuerDomainName      = "dns-persist.issuer-domain-name"
+	flgDNSPersistPersistUntil          = "dns-persist.persist-until"
+	flgDNSPersistPropagationWait       = "dns-persist.propagation-wait"
+	flgDNSPersistPropagationDisableANS = "dns-persist.propagation-disable-ans"
+	flgDNSPersistPropagationRNS        = "dns-persist.propagation-rns"
+	flgDNSPersistResolvers             = "dns-persist.resolvers"
+	flgDNSPersistTimeout               = "dns-persist.timeout"
 )
 
 // Flags names related to hooks.
@@ -255,6 +268,7 @@ func createChallengesFlags() []cli.Flag {
 	flags = append(flags, createHTTPChallengeFlags()...)
 	flags = append(flags, createTLSChallengeFlags()...)
 	flags = append(flags, createDNSChallengeFlags()...)
+	flags = append(flags, createDNSPersistChallengeFlags()...)
 	flags = append(flags, createNetworkStackFlags()...)
 
 	return flags
@@ -403,6 +417,80 @@ func createDNSChallengeFlags() []cli.Flag {
 			Sources:  cli.EnvVars(toEnvName(flgDNSTimeout)),
 			Usage:    "Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries.",
 			Value:    10,
+		},
+	}
+}
+
+func createDNSPersistChallengeFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.BoolFlag{
+			Category: categoryDNSPersist01Challenge,
+			Name:     flgDNSPersist,
+			Sources:  cli.EnvVars(toEnvName(flgDNSPersist)),
+			Usage:    "Use the DNS-PERSIST-01 challenge to solve challenges. Manual verification only. Can be mixed with other types of challenges.",
+		},
+		&cli.StringFlag{
+			Category: categoryDNSPersist01Challenge,
+			Name:     flgDNSPersistIssuerDomainName,
+			Sources:  cli.EnvVars(toEnvName(flgDNSPersistIssuerDomainName)),
+			Usage:    "Override the issuer-domain-name to use for DNS-PERSIST-01 when multiple are offered. Must be offered by the challenge.",
+		},
+		&cli.StringFlag{
+			Category: categoryDNSPersist01Challenge,
+			Name:     flgDNSPersistPersistUntil,
+			Sources:  cli.EnvVars(toEnvName(flgDNSPersistPersistUntil)),
+			Usage:    "Set the optional persistUntil for DNS-PERSIST-01 records as an RFC3339 timestamp (for example 2026-03-01T00:00:00Z).",
+			Validator: func(s string) error {
+				if s == "" {
+					return nil
+				}
+
+				_, err := time.Parse(time.RFC3339, s)
+				if err != nil {
+					return fmt.Errorf("must be an RFC3339 timestamp: %w", err)
+				}
+
+				return nil
+			},
+		},
+		&cli.DurationFlag{
+			Category: categoryDNSPersist01Challenge,
+			Name:     flgDNSPersistPropagationWait,
+			Sources:  cli.EnvVars(toEnvName(flgDNSPersistPropagationWait)),
+			Usage:    "By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead.",
+			Validator: func(d time.Duration) error {
+				if d < 0 {
+					return errors.New("it cannot be negative")
+				}
+
+				return nil
+			},
+		},
+		&cli.BoolFlag{
+			Category: categoryDNSPersist01Challenge,
+			Name:     flgDNSPersistPropagationDisableANS,
+			Sources:  cli.EnvVars(toEnvName(flgDNSPersistPropagationDisableANS)),
+			Usage:    "By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.",
+		},
+		&cli.BoolFlag{
+			Category: categoryDNSPersist01Challenge,
+			Name:     flgDNSPersistPropagationRNS,
+			Sources:  cli.EnvVars(toEnvName(flgDNSPersistPropagationRNS)),
+			Usage:    "By setting this flag to true, uses all the recursive name servers (aka resolvers) to check propagation of the TXT record.",
+		},
+		&cli.StringSliceFlag{
+			Category: categoryDNSPersist01Challenge,
+			Name:     flgDNSPersistResolvers,
+			Sources:  cli.EnvVars(toEnvName(flgDNSPersistResolvers)),
+			Usage: "Set the resolvers to use for DNS-PERSIST-01 TXT lookups." +
+				" Supported: host:port." +
+				" The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.",
+		},
+		&cli.IntFlag{
+			Category: categoryDNSPersist01Challenge,
+			Name:     flgDNSPersistTimeout,
+			Sources:  cli.EnvVars(toEnvName(flgDNSPersistTimeout)),
+			Usage:    "Set the DNS timeout value to a specific value in seconds. Used for DNS-PERSIST-01 lookups.",
 		},
 	}
 }

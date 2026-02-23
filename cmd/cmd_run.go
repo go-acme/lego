@@ -59,8 +59,6 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("new client: %w", err)
 	}
 
-	setupChallenges(cmd, client)
-
 	if account.Registration == nil {
 		var reg *registration.Resource
 
@@ -76,6 +74,8 @@ func run(ctx context.Context, cmd *cli.Command) error {
 
 		fmt.Printf(rootPathWarningMessage, accountsStorage.GetRootPath())
 	}
+
+	setupChallenges(cmd, client, account)
 
 	certRes, err := obtainCertificate(ctx, cmd, client)
 	if err != nil {

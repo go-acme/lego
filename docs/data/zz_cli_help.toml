@@ -90,6 +90,17 @@ OPTIONS:
    --dns.resolvers string [ --dns.resolvers string ]  Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination. For DNS-01 challenge verification, the authoritative DNS server is queried directly. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined. [$LEGO_DNS_RESOLVERS]
    --dns.timeout int                                  Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries. (default: 10) [$LEGO_DNS_TIMEOUT]
 
+   Flags related to the DNS-PERSIST-01 challenge:
+
+   --dns-persist                                                      Use the DNS-PERSIST-01 challenge to solve challenges. Manual verification only. Can be mixed with other types of challenges. [$LEGO_DNS_PERSIST]
+   --dns-persist.issuer-domain-name string                            Override the issuer-domain-name to use for DNS-PERSIST-01 when multiple are offered. Must be offered by the challenge. [$LEGO_DNS_PERSIST_ISSUER_DOMAIN_NAME]
+   --dns-persist.persist-until string                                 Set the optional persistUntil for DNS-PERSIST-01 records as an RFC3339 timestamp (for example 2026-03-01T00:00:00Z). [$LEGO_DNS_PERSIST_PERSIST_UNTIL]
+   --dns-persist.propagation-disable-ans                              By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers. [$LEGO_DNS_PERSIST_PROPAGATION_DISABLE_ANS]
+   --dns-persist.propagation-rns                                      By setting this flag to true, uses all the recursive name servers (aka resolvers) to check propagation of the TXT record. [$LEGO_DNS_PERSIST_PROPAGATION_RNS]
+   --dns-persist.propagation-wait duration                            By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. (default: 0s) [$LEGO_DNS_PERSIST_PROPAGATION_WAIT]
+   --dns-persist.resolvers string [ --dns-persist.resolvers string ]  Set the resolvers to use for DNS-PERSIST-01 TXT lookups. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined. [$LEGO_DNS_PERSIST_RESOLVERS]
+   --dns-persist.timeout int                                          Set the DNS timeout value to a specific value in seconds. Used for DNS-PERSIST-01 lookups. (default: 0) [$LEGO_DNS_PERSIST_TIMEOUT]
+
    Flags related to the HTTP-01 challenge:
 
    --http                                                         Use the HTTP-01 challenge to solve challenges. Can be mixed with other types of challenges. [$LEGO_HTTP]
@@ -186,6 +197,17 @@ OPTIONS:
    --dns.propagation.wait duration                    By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. (default: 0s) [$LEGO_DNS_PROPAGATION_WAIT]
    --dns.resolvers string [ --dns.resolvers string ]  Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination. For DNS-01 challenge verification, the authoritative DNS server is queried directly. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined. [$LEGO_DNS_RESOLVERS]
    --dns.timeout int                                  Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries. (default: 10) [$LEGO_DNS_TIMEOUT]
+
+   Flags related to the DNS-PERSIST-01 challenge:
+
+   --dns-persist                                                      Use the DNS-PERSIST-01 challenge to solve challenges. Manual verification only. Can be mixed with other types of challenges. [$LEGO_DNS_PERSIST]
+   --dns-persist.issuer-domain-name string                            Override the issuer-domain-name to use for DNS-PERSIST-01 when multiple are offered. Must be offered by the challenge. [$LEGO_DNS_PERSIST_ISSUER_DOMAIN_NAME]
+   --dns-persist.persist-until string                                 Set the optional persistUntil for DNS-PERSIST-01 records as an RFC3339 timestamp (for example 2026-03-01T00:00:00Z). [$LEGO_DNS_PERSIST_PERSIST_UNTIL]
+   --dns-persist.propagation-disable-ans                              By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers. [$LEGO_DNS_PERSIST_PROPAGATION_DISABLE_ANS]
+   --dns-persist.propagation-rns                                      By setting this flag to true, uses all the recursive name servers (aka resolvers) to check propagation of the TXT record. [$LEGO_DNS_PERSIST_PROPAGATION_RNS]
+   --dns-persist.propagation-wait duration                            By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. (default: 0s) [$LEGO_DNS_PERSIST_PROPAGATION_WAIT]
+   --dns-persist.resolvers string [ --dns-persist.resolvers string ]  Set the resolvers to use for DNS-PERSIST-01 TXT lookups. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined. [$LEGO_DNS_PERSIST_RESOLVERS]
+   --dns-persist.timeout int                                          Set the DNS timeout value to a specific value in seconds. Used for DNS-PERSIST-01 lookups. (default: 0) [$LEGO_DNS_PERSIST_TIMEOUT]
 
    Flags related to the HTTP-01 challenge:
 

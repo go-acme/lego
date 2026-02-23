@@ -20,13 +20,13 @@ import (
 
 func TestByType(t *testing.T) {
 	challenges := []acme.Challenge{
-		{Type: "dns-01"}, {Type: "tlsalpn-01"}, {Type: "http-01"},
+		{Type: "dns-01"}, {Type: "dns-persist-01"}, {Type: "tlsalpn-01"}, {Type: "http-01"},
 	}
 
 	sort.Sort(byType(challenges))
 
 	expected := []acme.Challenge{
-		{Type: "tlsalpn-01"}, {Type: "http-01"}, {Type: "dns-01"},
+		{Type: "tlsalpn-01"}, {Type: "http-01"}, {Type: "dns-01"}, {Type: "dns-persist-01"},
 	}
 
 	assert.Equal(t, expected, challenges)

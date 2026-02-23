@@ -364,10 +364,6 @@ func getARIInfo(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certI
 
 // getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.
 func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *x509.Certificate, certID string, client *lego.Client) *time.Time {
-	if cert.IsCA {
-		log.Fatal("Certificate bundle starts with a CA certificate.", log.CertNameAttr(certID))
-	}
-
 	renewalInfo, err := client.Certificate.GetRenewalInfo(ctx, certificate.RenewalInfoRequest{Cert: cert})
 	if err != nil {
 		if errors.Is(err, api.ErrNoARI) {

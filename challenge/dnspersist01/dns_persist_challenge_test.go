@@ -103,7 +103,7 @@ func TestGetChallengeInfo(t *testing.T) {
 			issuerDomainName: "authority.example",
 			accountURI:       "https://ca.example/acct/123",
 			wildcard:         true,
-			persistUntil:     ptrTime(time.Unix(4102444800, 0).UTC()),
+			persistUntil:     Pointer(time.Unix(4102444800, 0).UTC()),
 			expected: ChallengeInfo{
 				FQDN:             "_validation-persist.example.com.",
 				Value:            "authority.example; accounturi=https://ca.example/acct/123; policy=wildcard; persistUntil=4102444800",
@@ -396,28 +396,28 @@ func TestChallenge_hasMatchingRecord(t *testing.T) {
 			desc:               "required persistUntil matches",
 			records:            []TXTRecord{{Value: "ca.example;accounturi=acc;persistUntil=4102444800"}},
 			issuer:             "ca.example",
-			requiredPersistUTC: ptrTime(time.Unix(4102444800, 0).UTC()),
+			requiredPersistUTC: Pointer(time.Unix(4102444800, 0).UTC()),
 			expect:             true,
 		},
 		{
 			desc:               "required persistUntil matches even when expired",
 			records:            []TXTRecord{{Value: BuildIssueValues("ca.example", "acc", false, &expiredPersistUntil)}},
 			issuer:             "ca.example",
-			requiredPersistUTC: ptrTime(expiredPersistUntil),
+			requiredPersistUTC: Pointer(expiredPersistUntil),
 			expect:             true,
 		},
 		{
 			desc:               "required persistUntil mismatch",
 			records:            []TXTRecord{{Value: "ca.example;accounturi=acc;persistUntil=4102444801"}},
 			issuer:             "ca.example",
-			requiredPersistUTC: ptrTime(time.Unix(4102444800, 0).UTC()),
+			requiredPersistUTC: Pointer(time.Unix(4102444800, 0).UTC()),
 			expect:             false,
 		},
 		{
 			desc:               "required persistUntil missing",
 			records:            []TXTRecord{{Value: "ca.example;accounturi=acc"}},
 			issuer:             "ca.example",
-			requiredPersistUTC: ptrTime(time.Unix(4102444800, 0).UTC()),
+			requiredPersistUTC: Pointer(time.Unix(4102444800, 0).UTC()),
 			expect:             false,
 		},
 	}
@@ -434,6 +434,5 @@ func TestChallenge_hasMatchingRecord(t *testing.T) {
 	}
 }
 
-func ptrTime(t time.Time) *time.Time {
-	return &t
-}
+// TODO(ldez) factorize
+func Pointer[T any](v T) *T { return &v }

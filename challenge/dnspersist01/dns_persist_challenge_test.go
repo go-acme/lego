@@ -434,5 +434,5 @@ func TestChallenge_hasMatchingRecord(t *testing.T) {
 	}
 }
 
-// TODO(ldez) factorize
+// TODO(ldez) factorize.
 func Pointer[T any](v T) *T { return &v }

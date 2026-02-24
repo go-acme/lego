@@ -70,7 +70,13 @@ func (c *SolverManager) SetDNS01Provider(p challenge.Provider, opts ...dns01.Cha
 
 // SetDNSPersist01 configures the dns-persist-01 challenge solver.
 func (c *SolverManager) SetDNSPersist01(opts ...dnspersist01.ChallengeOption) error {
-	c.solvers[challenge.DNSPersist01] = dnspersist01.NewChallenge(c.core, validate, opts...)
+	chlg, err := dnspersist01.NewChallenge(c.core, validate, opts...)
+	if err != nil {
+		return err
+	}
+
+	c.solvers[challenge.DNSPersist01] = chlg
+
 	return nil
 }
 

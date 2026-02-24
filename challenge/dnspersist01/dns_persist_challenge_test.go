@@ -135,6 +135,8 @@ func TestGetChallengeInfo(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
 			actual, err := GetChallengeInfo(test.domain, test.issuerDomainName, test.accountURI, test.wildcard, test.persistUntil)
 			if test.expectErr != "" {
 				require.Error(t, err)
@@ -192,6 +194,8 @@ func TestValidateIssuerDomainNames(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
 			err := validateIssuerDomainNames(acme.Challenge{IssuerDomainNames: test.issuers})
 			if test.expectErr {
 				require.Error(t, err)
@@ -229,6 +233,8 @@ func TestWithIssuerDomainName(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
 			chlg := &Challenge{}
 
 			err := WithIssuerDomainName(test.input)(chlg)
@@ -307,8 +313,8 @@ func TestChallenge_selectIssuerDomainName(t *testing.T) {
 }
 
 func TestChallenge_hasMatchingRecord(t *testing.T) {
-	expiredPersistUntil := time.Unix(1700000000, 0).UTC()
-	futurePersistUntil := time.Unix(4102444800, 0).UTC()
+	expiredPersistUntil := Pointer(time.Unix(1700000000, 0).UTC())
+	futurePersistUntil := Pointer(time.Unix(4102444800, 0).UTC())
 
 	testCases := []struct {
 		desc               string
@@ -316,46 +322,46 @@ func TestChallenge_hasMatchingRecord(t *testing.T) {
 		issuer             string
 		wildcard           bool
 		requiredPersistUTC *time.Time
-		expect             bool
+		assert             assert.BoolAssertionFunc
 	}{
 		{
 			desc:    "match basic",
 			records: []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", false, nil)}},
 			issuer:  "ca.example",
-			expect:  true,
+			assert:  assert.True,
 		},
 		{
 			desc:    "issuer mismatch",
 			records: []TXTRecord{{Value: mustChallengeValue(t, "other.example", "acc", false, nil)}},
 			issuer:  "ca.example",
-			expect:  false,
+			assert:  assert.False,
 		},
 		{
 			desc:    "account mismatch",
 			records: []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "other", false, nil)}},
 			issuer:  "ca.example",
-			expect:  false,
+			assert:  assert.False,
 		},
 		{
 			desc:     "wildcard requires policy",
 			records:  []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", false, nil)}},
 			issuer:   "ca.example",
 			wildcard: true,
-			expect:   false,
+			assert:   assert.False,
 		},
 		{
 			desc:     "wildcard match",
 			records:  []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", true, nil)}},
 			issuer:   "ca.example",
 			wildcard: true,
-			expect:   true,
+			assert:   assert.True,
 		},
 		{
 			desc:     "policy wildcard allowed for non-wildcard",
 			records:  []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", true, nil)}},
 			issuer:   "ca.example",
 			wildcard: false,
-			expect:   true,
+			assert:   assert.True,
 		},
 		{
 			desc: "matching malformed and matching valid record succeeds",
@@ -364,61 +370,61 @@ func TestChallenge_hasMatchingRecord(t *testing.T) {
 				{Value: "ca.example;accounturi=acc"},
 			},
 			issuer: "ca.example",
-			expect: true,
+			assert: assert.True,
 		},
 		{
 			desc:     "wildcard accepts case-insensitive policy value",
 			records:  []TXTRecord{{Value: "ca.example;accounturi=acc;policy=wIlDcArD"}},
 			issuer:   "ca.example",
 			wildcard: true,
-			expect:   true,
+			assert:   assert.True,
 		},
 		{
 			desc:     "wildcard policy mismatch is not a match",
 			records:  []TXTRecord{{Value: "ca.example;accounturi=acc;policy=notwildcard"}},
 			issuer:   "ca.example",
 			wildcard: true,
-			expect:   false,
+			assert:   assert.False,
 		},
 		{
 			desc:    "persistUntil present without requirement is not a match",
-			records: []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", false, &expiredPersistUntil)}},
+			records: []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", false, expiredPersistUntil)}},
 			issuer:  "ca.example",
-			expect:  false,
+			assert:  assert.False,
 		},
 		{
 			desc:    "future persistUntil without requirement is not a match",
-			records: []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", false, &futurePersistUntil)}},
+			records: []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", false, futurePersistUntil)}},
 			issuer:  "ca.example",
-			expect:  false,
+			assert:  assert.False,
 		},
 		{
 			desc:               "required persistUntil matches",
 			records:            []TXTRecord{{Value: "ca.example;accounturi=acc;persistUntil=4102444800"}},
 			issuer:             "ca.example",
 			requiredPersistUTC: Pointer(time.Unix(4102444800, 0).UTC()),
-			expect:             true,
+			assert:             assert.True,
 		},
 		{
 			desc:               "required persistUntil matches even when expired",
-			records:            []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", false, &expiredPersistUntil)}},
+			records:            []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", false, expiredPersistUntil)}},
 			issuer:             "ca.example",
-			requiredPersistUTC: Pointer(expiredPersistUntil),
-			expect:             true,
+			requiredPersistUTC: expiredPersistUntil,
+			assert:             assert.True,
 		},
 		{
 			desc:               "required persistUntil mismatch",
 			records:            []TXTRecord{{Value: "ca.example;accounturi=acc;persistUntil=4102444801"}},
 			issuer:             "ca.example",
 			requiredPersistUTC: Pointer(time.Unix(4102444800, 0).UTC()),
-			expect:             false,
+			assert:             assert.False,
 		},
 		{
 			desc:               "required persistUntil missing",
 			records:            []TXTRecord{{Value: "ca.example;accounturi=acc"}},
 			issuer:             "ca.example",
 			requiredPersistUTC: Pointer(time.Unix(4102444800, 0).UTC()),
-			expect:             false,
+			assert:             assert.False,
 		},
 	}
 
@@ -428,14 +434,13 @@ func TestChallenge_hasMatchingRecord(t *testing.T) {
 				accountURI:   "acc",
 				persistUntil: test.requiredPersistUTC,
 			}
-			actual := chlg.hasMatchingRecord(test.records, test.issuer, test.wildcard)
-			assert.Equal(t, test.expect, actual)
+
+			match := chlg.hasMatchingRecord(test.records, test.issuer, test.wildcard)
+
+			test.assert(t, match)
 		})
 	}
 }
-
-// TODO(ldez) factorize.
-func Pointer[T any](v T) *T { return &v }
 
 func mustChallengeValue(t *testing.T, issuerDomainName, accountURI string, wildcard bool, persistUntil *time.Time) string {
 	t.Helper()

@@ -33,7 +33,7 @@ func validateIssuerDomainName(name string) error {
 	}
 
 	if len(name) > 253 {
-		return errors.New("issuer-domain-name exceeds maximum length of 253 octets")
+		return errors.New("issuer-domain-name exceeds the maximum length of 253 octets")
 	}
 
 	labels := strings.SplitSeq(name, ".")
@@ -43,7 +43,7 @@ func validateIssuerDomainName(name string) error {
 		}
 
 		if len(label) > 63 {
-			return errors.New("issuer-domain-name label exceeds maximum length of 63 octets")
+			return errors.New("issuer-domain-name label exceeds the maximum length of 63 octets")
 		}
 
 		if !isLDHLabel(label) {

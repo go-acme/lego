@@ -66,7 +66,7 @@ type Challenge struct {
 }
 
 // NewChallenge creates a dns-persist-01 challenge.
-func NewChallenge(core *api.Core, validate ValidateFunc, opts ...ChallengeOption) *Challenge {
+func NewChallenge(core *api.Core, validate ValidateFunc, opts ...ChallengeOption) (*Challenge, error) {
 	chlg := &Challenge{
 		core:                 core,
 		validate:             validate,
@@ -82,15 +82,15 @@ func NewChallenge(core *api.Core, validate ValidateFunc, opts ...ChallengeOption
 	for _, opt := range opts {
 		err := opt(chlg)
 		if err != nil {
-			log.Warn("Challenge option skipped.", log.ErrorAttr(err))
+			return nil, err
 		}
 	}
 
 	if chlg.accountURI == "" {
-		log.Fatal("Account is required for DNS-PERSIST-01 challenge type")
+		return nil, errors.New("dnspersist01: account URI cannot be empty")
 	}
 
-	return chlg
+	return chlg, nil
 }
 
 // WithResolver overrides the resolver used for DNS lookups.
@@ -172,8 +172,7 @@ func WithPersistUntil(persistUntil time.Time) ChallengeOption {
 			return errors.New("dnspersist01: persistUntil cannot be zero")
 		}
 
-		ts := persistUntil.UTC().Truncate(time.Second)
-		chlg.persistUntil = &ts
+		chlg.persistUntil = Pointer(persistUntil.UTC().Truncate(time.Second))
 
 		return nil
 	}
@@ -227,7 +226,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 
 	err = validateIssuerDomainNames(chlng)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnspersist01: %w", err)
 	}
 
 	fqdn := GetAuthorizationDomainName(domain)
@@ -239,7 +238,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 
 	issuerDomainName, err := c.selectIssuerDomainName(chlng.IssuerDomainNames, result.Records, authz.Wildcard)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnspersist01: %w", err)
 	}
 
 	matcher := func(records []TXTRecord) bool {
@@ -291,7 +290,7 @@ func (c *Challenge) getRecursiveNameservers() []string {
 		return DefaultNameservers()
 	}
 
-	return append([]string(nil), c.recursiveNameservers...)
+	return slices.Clone(c.recursiveNameservers)
 }
 
 // GetAuthorizationDomainName returns the fully-qualified DNS label used by the
@@ -340,17 +339,17 @@ func GetChallengeInfo(domain, issuerDomainName, accountURI string, wildcard bool
 // any one valid issuer-domain-name from this list.
 func validateIssuerDomainNames(chlng acme.Challenge) error {
 	if len(chlng.IssuerDomainNames) == 0 {
-		return errors.New("dnspersist01: issuer-domain-names missing from challenge")
+		return errors.New("issuer-domain-names missing from the challenge")
 	}
 
 	if len(chlng.IssuerDomainNames) > 10 {
-		return errors.New("dnspersist01: issuer-domain-names exceeds maximum length of 10")
+		return errors.New(" issuer-domain-names exceeds maximum length of 10")
 	}
 
 	for _, issuerDomainName := range chlng.IssuerDomainNames {
 		err := validateIssuerDomainName(issuerDomainName)
 		if err != nil {
-			return fmt.Errorf("dnspersist01: %w", err)
+			return err
 		}
 	}
 
@@ -365,7 +364,7 @@ func validateIssuerDomainNames(chlng acme.Challenge) error {
 // issuer-domain-name is selected using lexicographic ordering.
 func (c *Challenge) selectIssuerDomainName(challIssuers []string, records []TXTRecord, wildcard bool) (string, error) {
 	if len(challIssuers) == 0 {
-		return "", errors.New("dnspersist01: issuer-domain-names missing from challenge")
+		return "", errors.New("issuer-domain-names missing from the challenge")
 	}
 
 	sortedIssuers := slices.Clone(challIssuers)
@@ -373,7 +372,7 @@ func (c *Challenge) selectIssuerDomainName(challIssuers []string, records []TXTR
 
 	if c.userSuppliedIssuerDomainName != "" {
 		if !slices.Contains(sortedIssuers, c.userSuppliedIssuerDomainName) {
-			return "", fmt.Errorf("dnspersist01: provided issuer-domain-name %q not offered by challenge", c.userSuppliedIssuerDomainName)
+			return "", fmt.Errorf("provided issuer-domain-name %q not offered by the challenge", c.userSuppliedIssuerDomainName)
 		}
 
 		return c.userSuppliedIssuerDomainName, nil

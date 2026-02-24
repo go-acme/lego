@@ -141,7 +141,7 @@ func (c *Challenge) checkNameserversPropagation(fqdn string, nameservers []strin
 		}
 
 		if !matcher(result.Records) {
-			return false, fmt.Errorf("NS %s did not return a matching TXT record [fqdn: %s]: %s", ns, fqdn, strings.Join(txtValues(result.Records), " ,"))
+			return false, fmt.Errorf("NS %s did not return a matching TXT record [fqdn: %s]: %s", ns, fqdn, result)
 		}
 	}
 
@@ -154,15 +154,6 @@ func (c *Challenge) getAuthoritativeNSPort() string {
 	}
 
 	return c.authoritativeNSPort
-}
-
-func txtValues(records []TXTRecord) []string {
-	values := make([]string, 0, len(records))
-	for _, record := range records {
-		values = append(values, record.Value)
-	}
-
-	return values
 }
 
 // lookupNameservers returns the authoritative nameservers for the given fqdn.

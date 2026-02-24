@@ -47,6 +47,8 @@ func TestBuildIssueValue(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
 			actual, err := BuildIssueValue(test.issuer, test.accountURI, test.wildcard, test.persistUTC)
 			if test.expectErrContains != "" {
 				require.Error(t, err)
@@ -63,11 +65,10 @@ func TestBuildIssueValue(t *testing.T) {
 
 func TestParseIssueValue(t *testing.T) {
 	testCases := []struct {
-		desc               string
-		value              string
-		expected           IssueValue
-		expectedPersistUTC *time.Time
-		expectErrContains  string
+		desc              string
+		value             string
+		expected          IssueValue
+		expectErrContains string
 	}{
 		{
 			desc:  "basic",
@@ -117,8 +118,8 @@ func TestParseIssueValue(t *testing.T) {
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
 				Policy:           "wildcard",
+				PersistUntil:     Pointer(time.Unix(4102444800, 0).UTC()),
 			},
-			expectedPersistUTC: Pointer(time.Unix(4102444800, 0).UTC()),
 		},
 		{
 			desc:  "policy other than wildcard is treated as absent",
@@ -153,7 +154,7 @@ func TestParseIssueValue(t *testing.T) {
 		{
 			desc:              "empty accounturi is malformed",
 			value:             "authority.example; accounturi=",
-			expectErrContains: "empty value provided for mandatory accounturi",
+			expectErrContains: `empty value provided for mandatory "accounturi"`,
 		},
 		{
 			desc:              "invalid value character is malformed",
@@ -163,7 +164,7 @@ func TestParseIssueValue(t *testing.T) {
 		{
 			desc:              "persistUntil non unix timestamp is malformed",
 			value:             "authority.example; accounturi=https://authority.example/acct/123; persistUntil=not-a-unix-timestamp",
-			expectErrContains: `malformed persistUntil timestamp "not-a-unix-timestamp"`,
+			expectErrContains: `malformed "persistuntil": strconv.ParseInt: parsing "not-a-unix-timestamp": invalid syntax`,
 		},
 		{
 			desc:              "duplicate unknown parameter is malformed",
@@ -183,12 +184,14 @@ func TestParseIssueValue(t *testing.T) {
 		{
 			desc:              "empty persistUntil is malformed",
 			value:             "authority.example; accounturi=https://authority.example/acct/123; persistUntil=",
-			expectErrContains: `malformed persistUntil timestamp`,
+			expectErrContains: `malformed "persistuntil": strconv.ParseInt: parsing "": invalid syntax`,
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
 			parsed, err := ParseIssueValue(test.value)
 			if test.expectErrContains != "" {
 				require.Error(t, err)
@@ -200,7 +203,7 @@ func TestParseIssueValue(t *testing.T) {
 			require.NoError(t, err)
 
 			expected := test.expected
-			expected.PersistUntil = test.expectedPersistUTC
+
 			assert.Equal(t, expected, parsed)
 		})
 	}

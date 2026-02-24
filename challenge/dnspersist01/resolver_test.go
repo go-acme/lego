@@ -13,24 +13,27 @@ func TestResolver_LookupTXT(t *testing.T) {
 	fqdn := "_validation-persist.example.com."
 
 	testCases := []struct {
-		desc            string
-		serverBuilder   *dnsmock.Builder
-		expectedRecords []TXTRecord
-		expectedChain   []string
+		desc          string
+		serverBuilder *dnsmock.Builder
+		expected      TXTResult
 	}{
 		{
 			desc: "direct TXT",
 			serverBuilder: dnsmock.NewServer().
 				Query(fqdn+" TXT", dnsmock.Answer(fakeTXT(fqdn, "value", 120))),
-			expectedRecords: []TXTRecord{{Value: "value", TTL: 120}},
+			expected: TXTResult{
+				Records: []TXTRecord{{Value: "value", TTL: 120}},
+			},
 		},
 		{
 			desc: "cname to txt",
 			serverBuilder: dnsmock.NewServer().
 				Query(fqdn+" TXT", dnsmock.CNAME("alias.example.com.")).
 				Query("alias.example.com. TXT", dnsmock.Answer(fakeTXT("alias.example.com.", "value", 60))),
-			expectedRecords: []TXTRecord{{Value: "value", TTL: 60}},
-			expectedChain:   []string{"alias.example.com."},
+			expected: TXTResult{
+				Records:    []TXTRecord{{Value: "value", TTL: 60}},
+				CNAMEChain: []string{"alias.example.com."},
+			},
 		},
 		{
 			desc: "cname chain follows multiple hops",
@@ -38,8 +41,10 @@ func TestResolver_LookupTXT(t *testing.T) {
 				Query(fqdn+" TXT", dnsmock.CNAME("alias.example.com.")).
 				Query("alias.example.com. TXT", dnsmock.CNAME("alias2.example.com.")).
 				Query("alias2.example.com. TXT", dnsmock.Answer(fakeTXT("alias2.example.com.", "value", 30))),
-			expectedRecords: []TXTRecord{{Value: "value", TTL: 30}},
-			expectedChain:   []string{"alias.example.com.", "alias2.example.com."},
+			expected: TXTResult{
+				Records:    []TXTRecord{{Value: "value", TTL: 30}},
+				CNAMEChain: []string{"alias.example.com.", "alias2.example.com."},
+			},
 		},
 		{
 			desc: "nxdomain",
@@ -56,12 +61,13 @@ func TestResolver_LookupTXT(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			addr := test.serverBuilder.Build(t)
+
 			resolver := NewResolver([]string{addr.String()})
 
 			result, err := resolver.LookupTXT(fqdn)
 			require.NoError(t, err)
-			assert.Equal(t, test.expectedRecords, result.Records)
-			assert.Equal(t, test.expectedChain, result.CNAMEChain)
+
+			assert.Equal(t, test.expected, result)
 		})
 	}
 }

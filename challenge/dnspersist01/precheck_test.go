@@ -44,14 +44,11 @@ func Test_preCheck_checkDNSPropagation(t *testing.T) {
 		).
 		Build(t)
 
-	port := mockResolver(t, addr)
-
-	resolver := NewResolver([]string{addr.String()})
 	chlg := &Challenge{
-		resolver:             resolver,
+		resolver:             NewResolver([]string{addr.String()}),
 		preCheck:             newPreCheck(),
 		recursiveNameservers: ParseNameservers([]string{addr.String()}),
-		authoritativeNSPort:  port,
+		authoritativeNSPort:  mockResolver(t, addr),
 	}
 
 	testCases := []struct {

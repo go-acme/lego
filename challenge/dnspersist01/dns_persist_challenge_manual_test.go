@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFormatTXTValue(t *testing.T) {
+func Test_formatTXTValue(t *testing.T) {
 	longValue := strings.Repeat("z", 256)
 
 	testCases := []struct {
@@ -30,7 +30,10 @@ func TestFormatTXTValue(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
 			actual := formatTXTValue(test.value)
+
 			assert.Equal(t, test.expected, actual)
 		})
 	}

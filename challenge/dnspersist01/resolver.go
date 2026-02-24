@@ -32,6 +32,16 @@ type TXTResult struct {
 	CNAMEChain []string
 }
 
+func (r TXTResult) String() string {
+	values := make([]string, 0, len(r.Records))
+
+	for _, record := range r.Records {
+		values = append(values, record.Value)
+	}
+
+	return strings.Join(values, ",")
+}
+
 // NewResolver creates a resolver with normalized nameservers and default timeout.
 // If nameservers is empty, the system resolv.conf is used, falling back to defaults.
 func NewResolver(nameservers []string) *Resolver {
@@ -41,7 +51,7 @@ func NewResolver(nameservers []string) *Resolver {
 
 	return &Resolver{
 		Nameservers: ParseNameservers(nameservers),
-		Timeout:     DefaultDNSTimeout(),
+		Timeout:     defaultDNSTimeout,
 	}
 }
 
@@ -97,7 +107,7 @@ func (r *Resolver) lookupTXT(fqdn string, nameservers []string, recursive bool) 
 
 	timeout := r.Timeout
 	if timeout <= 0 {
-		timeout = DefaultDNSTimeout()
+		timeout = defaultDNSTimeout
 	}
 
 	const maxCNAMEFollows = 50

@@ -84,13 +84,13 @@ func ParseIssueValue(value string) (IssueValue, error) {
 		}
 
 		// Capture each tag=value pair.
-		tagValue := strings.SplitN(part, "=", 2)
-		if len(tagValue) != 2 {
+		tag, val, found := strings.Cut(part, "=")
+		if !found {
 			return IssueValue{}, fmt.Errorf("malformed parameter %q should be tag=value pair", part)
 		}
 
-		tag := trimWSP(tagValue[0])
-		val := trimWSP(tagValue[1])
+		tag = trimWSP(tag)
+		val = trimWSP(val)
 
 		if tag == "" {
 			return IssueValue{}, fmt.Errorf("malformed parameter %q, empty tag", part)
@@ -117,10 +117,11 @@ func ParseIssueValue(value string) (IssueValue, error) {
 		switch canonicalTag {
 		case paramAccountURI:
 			if val == "" {
-				return IssueValue{}, errors.New("empty value provided for mandatory accounturi")
+				return IssueValue{}, fmt.Errorf("empty value provided for mandatory %q", paramAccountURI)
 			}
 
 			parsed.AccountURI = val
+
 		case paramPolicy:
 			// Per the dns-persist-01 specification, if the policy tag is
 			// present parameter's tag and defined values MUST be treated as
@@ -133,14 +134,15 @@ func ParseIssueValue(value string) (IssueValue, error) {
 			}
 
 			parsed.Policy = val
+
 		case paramPersistUntil:
 			ts, err := strconv.ParseInt(val, 10, 64)
 			if err != nil {
-				return IssueValue{}, fmt.Errorf("malformed persistUntil timestamp %q", val)
+				return IssueValue{}, fmt.Errorf("malformed %q: %w", paramPersistUntil, err)
 			}
 
-			persistUntil := time.Unix(ts, 0).UTC()
-			parsed.PersistUntil = &persistUntil
+			parsed.PersistUntil = Pointer(time.Unix(ts, 0).UTC())
+
 		default:
 			// Unknown parameters are permitted but not currently consumed.
 		}
@@ -148,3 +150,8 @@ func ParseIssueValue(value string) (IssueValue, error) {
 
 	return parsed, nil
 }
+
+// Pointer returns a pointer to v.
+// TODO(ldez) factorize.
+// TODO(ldez) it must be replaced with the builtin 'new' function when min Go 1.26.
+func Pointer[T any](v T) *T { return &v }

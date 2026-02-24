@@ -435,22 +435,13 @@ func createDNSPersistChallengeFlags() []cli.Flag {
 			Sources:  cli.EnvVars(toEnvName(flgDNSPersistIssuerDomainName)),
 			Usage:    "Override the issuer-domain-name to use for DNS-PERSIST-01 when multiple are offered. Must be offered by the challenge.",
 		},
-		&cli.StringFlag{
-			Category: categoryDNSPersist01Challenge,
+		&cli.TimestampFlag{
 			Name:     flgDNSPersistPersistUntil,
-			Sources:  cli.EnvVars(toEnvName(flgDNSPersistPersistUntil)),
+			Category: categoryDNSPersist01Challenge,
 			Usage:    "Set the optional persistUntil for DNS-PERSIST-01 records as an RFC3339 timestamp (for example 2026-03-01T00:00:00Z).",
-			Validator: func(s string) error {
-				if s == "" {
-					return nil
-				}
-
-				_, err := time.Parse(time.RFC3339, s)
-				if err != nil {
-					return fmt.Errorf("must be an RFC3339 timestamp: %w", err)
-				}
-
-				return nil
+			Sources:  cli.EnvVars(toEnvName(flgDNSPersistPersistUntil)),
+			Config: cli.TimestampConfig{
+				Layouts: []string{time.RFC3339},
 			},
 		},
 		&cli.DurationFlag{

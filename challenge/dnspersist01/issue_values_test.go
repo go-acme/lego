@@ -8,26 +8,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBuildIssueValues(t *testing.T) {
+func TestBuildIssueValue(t *testing.T) {
 	testCases := []struct {
-		desc       string
-		issuer     string
-		accountURI string
-		wildcard   bool
-		persistUTC *time.Time
-		expect     string
+		desc              string
+		issuer            string
+		accountURI        string
+		wildcard          bool
+		persistUTC        *time.Time
+		expect            string
+		expectErrContains string
 	}{
 		{
 			desc:       "basic",
 			issuer:     "authority.example",
 			accountURI: "https://authority.example/acct/123",
 			expect:     "authority.example; accounturi=https://authority.example/acct/123",
-		},
-		{
-			desc:     "no account",
-			issuer:   "authority.example",
-			wildcard: true,
-			expect:   "authority.example; policy=wildcard",
 		},
 		{
 			desc:       "with persistUntil",
@@ -37,17 +32,36 @@ func TestBuildIssueValues(t *testing.T) {
 			persistUTC: Pointer(time.Unix(4102444800, 0).UTC()),
 			expect:     "authority.example; accounturi=https://authority.example/acct/123; policy=wildcard; persistUntil=4102444800",
 		},
+		{
+			desc:              "missing account uri",
+			issuer:            "authority.example",
+			expectErrContains: "ACME account URI cannot be empty",
+		},
+		{
+			desc:              "invalid issuer",
+			issuer:            "Authority.Example.",
+			accountURI:        "https://authority.example/acct/123",
+			expectErrContains: "issuer-domain-name must be lowercase",
+		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			actual := BuildIssueValues(test.issuer, test.accountURI, test.wildcard, test.persistUTC)
+			actual, err := BuildIssueValue(test.issuer, test.accountURI, test.wildcard, test.persistUTC)
+			if test.expectErrContains != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), test.expectErrContains)
+
+				return
+			}
+
+			require.NoError(t, err)
 			assert.Equal(t, test.expect, actual)
 		})
 	}
 }
 
-func TestParseIssueValues(t *testing.T) {
+func TestParseIssueValue(t *testing.T) {
 	testCases := []struct {
 		desc               string
 		value              string
@@ -61,7 +75,6 @@ func TestParseIssueValues(t *testing.T) {
 			expected: IssueValue{
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
-				Params:           map[string]string{},
 			},
 		},
 		{
@@ -71,7 +84,6 @@ func TestParseIssueValues(t *testing.T) {
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
 				Policy:           "wIlDcArD",
-				Params:           map[string]string{},
 			},
 		},
 		{
@@ -80,7 +92,6 @@ func TestParseIssueValues(t *testing.T) {
 			expected: IssueValue{
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
-				Params:           map[string]string{"extra": "value"},
 			},
 		},
 		{
@@ -89,7 +100,6 @@ func TestParseIssueValues(t *testing.T) {
 			expected: IssueValue{
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
-				Params:           map[string]string{"foo": ""},
 			},
 		},
 		{
@@ -98,10 +108,6 @@ func TestParseIssueValues(t *testing.T) {
 			expected: IssueValue{
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
-				Params: map[string]string{
-					"bad tag": "value",
-					"\nweird": "\\x01337",
-				},
 			},
 		},
 		{
@@ -111,7 +117,6 @@ func TestParseIssueValues(t *testing.T) {
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
 				Policy:           "wildcard",
-				Params:           map[string]string{},
 			},
 			expectedPersistUTC: Pointer(time.Unix(4102444800, 0).UTC()),
 		},
@@ -121,7 +126,6 @@ func TestParseIssueValues(t *testing.T) {
 			expected: IssueValue{
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
-				Params:           map[string]string{},
 			},
 		},
 		{
@@ -129,7 +133,6 @@ func TestParseIssueValues(t *testing.T) {
 			value: "authority.example",
 			expected: IssueValue{
 				IssuerDomainName: "authority.example",
-				Params:           map[string]string{},
 			},
 		},
 		{
@@ -186,7 +189,7 @@ func TestParseIssueValues(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			parsed, err := ParseIssueValues(test.value)
+			parsed, err := ParseIssueValue(test.value)
 			if test.expectErrContains != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), test.expectErrContains)

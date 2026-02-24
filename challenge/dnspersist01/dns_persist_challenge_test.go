@@ -264,7 +264,7 @@ func TestChallenge_selectIssuerDomainName(t *testing.T) {
 				"ca.example", "backup.example",
 			},
 			records: []TXTRecord{
-				{Value: BuildIssueValues("ca.example", "https://authority.example/acct/123", false, nil)},
+				{Value: mustChallengeValue(t, "ca.example", "https://authority.example/acct/123", false, nil)},
 			},
 			expectIssuerDomainName: "ca.example",
 		},
@@ -274,7 +274,7 @@ func TestChallenge_selectIssuerDomainName(t *testing.T) {
 				"ca.example", "backup.example",
 			},
 			records: []TXTRecord{
-				{Value: BuildIssueValues("ca.example", "https://authority.example/acct/123", false, nil)},
+				{Value: mustChallengeValue(t, "ca.example", "https://authority.example/acct/123", false, nil)},
 			},
 			overrideIssuerDomainName: "backup.example",
 			expectIssuerDomainName:   "backup.example",
@@ -320,39 +320,39 @@ func TestChallenge_hasMatchingRecord(t *testing.T) {
 	}{
 		{
 			desc:    "match basic",
-			records: []TXTRecord{{Value: BuildIssueValues("ca.example", "acc", false, nil)}},
+			records: []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", false, nil)}},
 			issuer:  "ca.example",
 			expect:  true,
 		},
 		{
 			desc:    "issuer mismatch",
-			records: []TXTRecord{{Value: BuildIssueValues("other.example", "acc", false, nil)}},
+			records: []TXTRecord{{Value: mustChallengeValue(t, "other.example", "acc", false, nil)}},
 			issuer:  "ca.example",
 			expect:  false,
 		},
 		{
 			desc:    "account mismatch",
-			records: []TXTRecord{{Value: BuildIssueValues("ca.example", "other", false, nil)}},
+			records: []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "other", false, nil)}},
 			issuer:  "ca.example",
 			expect:  false,
 		},
 		{
 			desc:     "wildcard requires policy",
-			records:  []TXTRecord{{Value: BuildIssueValues("ca.example", "acc", false, nil)}},
+			records:  []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", false, nil)}},
 			issuer:   "ca.example",
 			wildcard: true,
 			expect:   false,
 		},
 		{
 			desc:     "wildcard match",
-			records:  []TXTRecord{{Value: BuildIssueValues("ca.example", "acc", true, nil)}},
+			records:  []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", true, nil)}},
 			issuer:   "ca.example",
 			wildcard: true,
 			expect:   true,
 		},
 		{
 			desc:     "policy wildcard allowed for non-wildcard",
-			records:  []TXTRecord{{Value: BuildIssueValues("ca.example", "acc", true, nil)}},
+			records:  []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", true, nil)}},
 			issuer:   "ca.example",
 			wildcard: false,
 			expect:   true,
@@ -382,13 +382,13 @@ func TestChallenge_hasMatchingRecord(t *testing.T) {
 		},
 		{
 			desc:    "persistUntil present without requirement is not a match",
-			records: []TXTRecord{{Value: BuildIssueValues("ca.example", "acc", false, &expiredPersistUntil)}},
+			records: []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", false, &expiredPersistUntil)}},
 			issuer:  "ca.example",
 			expect:  false,
 		},
 		{
 			desc:    "future persistUntil without requirement is not a match",
-			records: []TXTRecord{{Value: BuildIssueValues("ca.example", "acc", false, &futurePersistUntil)}},
+			records: []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", false, &futurePersistUntil)}},
 			issuer:  "ca.example",
 			expect:  false,
 		},
@@ -401,7 +401,7 @@ func TestChallenge_hasMatchingRecord(t *testing.T) {
 		},
 		{
 			desc:               "required persistUntil matches even when expired",
-			records:            []TXTRecord{{Value: BuildIssueValues("ca.example", "acc", false, &expiredPersistUntil)}},
+			records:            []TXTRecord{{Value: mustChallengeValue(t, "ca.example", "acc", false, &expiredPersistUntil)}},
 			issuer:             "ca.example",
 			requiredPersistUTC: Pointer(expiredPersistUntil),
 			expect:             true,
@@ -436,3 +436,12 @@ func TestChallenge_hasMatchingRecord(t *testing.T) {
 
 // TODO(ldez) factorize.
 func Pointer[T any](v T) *T { return &v }
+
+func mustChallengeValue(t *testing.T, issuerDomainName, accountURI string, wildcard bool, persistUntil *time.Time) string {
+	t.Helper()
+
+	info, err := GetChallengeInfo("example.com", issuerDomainName, accountURI, wildcard, persistUntil)
+	require.NoError(t, err)
+
+	return info.Value
+}

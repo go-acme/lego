@@ -40,7 +40,7 @@ type ChallengeInfo struct {
 	// `_validation-persist.[domain].`).
 	FQDN string
 
-	// Value contains the TXT record issue-value.
+	// Value contains the TXT record value, an RFC 8659 issue-value.
 	Value string
 
 	// IssuerDomainName is the normalized issuer-domain-name used in Value.
@@ -301,26 +301,22 @@ func GetAuthorizationDomainName(domain string) string {
 }
 
 // GetChallengeInfo returns information used to create a DNS TXT record which
-// can fulfill the `dns-persist-01` challenge for a selected issuer. Domain,
-// issuerDomainName, and accountURI parameters are required. Wildcard and
-// persistUntil parameters are optional.
+// can fulfill the `dns-persist-01` challenge. Domain, issuerDomainName, and
+// accountURI parameters are required. Wildcard and persistUntil parameters are
+// optional.
 func GetChallengeInfo(domain, issuerDomainName, accountURI string, wildcard bool, persistUntil *time.Time) (ChallengeInfo, error) {
 	if domain == "" {
 		return ChallengeInfo{}, errors.New("dnspersist01: domain cannot be empty")
 	}
 
-	if accountURI == "" {
-		return ChallengeInfo{}, errors.New("dnspersist01: ACME account URI cannot be empty")
-	}
-
-	err := validateIssuerDomainName(issuerDomainName)
+	value, err := BuildIssueValue(issuerDomainName, accountURI, wildcard, persistUntil)
 	if err != nil {
-		return ChallengeInfo{}, fmt.Errorf("dnspersist01: %w", err)
+		return ChallengeInfo{}, err
 	}
 
 	return ChallengeInfo{
 		FQDN:             GetAuthorizationDomainName(domain),
-		Value:            BuildIssueValues(issuerDomainName, accountURI, wildcard, persistUntil),
+		Value:            value,
 		IssuerDomainName: issuerDomainName,
 	}, nil
 }
@@ -394,7 +390,7 @@ func (c *Challenge) selectIssuerDomainName(challIssuers []string, records []TXTR
 
 func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName string, wildcard bool) bool {
 	for _, record := range records {
-		parsed, err := ParseIssueValues(record.Value)
+		parsed, err := ParseIssueValue(record.Value)
 		if err != nil {
 			continue
 		}

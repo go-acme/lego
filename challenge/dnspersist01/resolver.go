@@ -77,8 +77,8 @@ func ParseNameservers(servers []string) []string {
 	return resolvers
 }
 
-// LookupTXT resolves TXT records at fqdn. If a CNAME is returned, it will be
-// followed once to resolve TXT records.
+// LookupTXT resolves TXT records at fqdn. If CNAMEs are returned, they are
+// followed up to 50 times to resolve TXT records.
 func (r *Resolver) LookupTXT(fqdn string) (TXTResult, error) {
 	return r.lookupTXT(fqdn, r.Nameservers, true)
 }
@@ -100,7 +100,7 @@ func (r *Resolver) lookupTXT(fqdn string, nameservers []string, recursive bool) 
 		timeout = DefaultDNSTimeout()
 	}
 
-	const maxCNAMEFollows = 1
+	const maxCNAMEFollows = 50
 
 	name := dns.Fqdn(fqdn)
 	seen := map[string]struct{}{}

@@ -33,11 +33,13 @@ func TestResolver_LookupTXT(t *testing.T) {
 			expectedChain:   []string{"alias.example.com."},
 		},
 		{
-			desc: "cname chain stops after one",
+			desc: "cname chain follows multiple hops",
 			serverBuilder: dnsmock.NewServer().
 				Query(fqdn+" TXT", dnsmock.CNAME("alias.example.com.")).
-				Query("alias.example.com. TXT", dnsmock.CNAME("alias2.example.com.")),
-			expectedChain: []string{"alias.example.com."},
+				Query("alias.example.com. TXT", dnsmock.CNAME("alias2.example.com.")).
+				Query("alias2.example.com. TXT", dnsmock.Answer(fakeTXT("alias2.example.com.", "value", 30))),
+			expectedRecords: []TXTRecord{{Value: "value", TTL: 30}},
+			expectedChain:   []string{"alias.example.com.", "alias2.example.com."},
 		},
 		{
 			desc: "nxdomain",

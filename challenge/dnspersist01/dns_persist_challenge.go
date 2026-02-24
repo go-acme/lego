@@ -94,6 +94,27 @@ func NewChallenge(core *api.Core, validate ValidateFunc, opts ...ChallengeOption
 	return chlg, nil
 }
 
+// CondOptions Conditional challenge options.
+func CondOptions(condition bool, opt ...ChallengeOption) ChallengeOption {
+	if !condition {
+		// NoOp options
+		return func(*Challenge) error {
+			return nil
+		}
+	}
+
+	return func(chlg *Challenge) error {
+		for _, opt := range opt {
+			err := opt(chlg)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
 // WithResolver overrides the resolver used for DNS lookups.
 func WithResolver(resolver *Resolver) ChallengeOption {
 	return func(chlg *Challenge) error {
@@ -150,6 +171,10 @@ func WithAccountURI(accountURI string) ChallengeOption {
 // and validated at configuration time.
 func WithIssuerDomainName(issuerDomainName string) ChallengeOption {
 	return func(chlg *Challenge) error {
+		if issuerDomainName == "" {
+			return nil
+		}
+
 		normalized, err := normalizeUserSuppliedIssuerDomainName(issuerDomainName)
 		if err != nil {
 			return err

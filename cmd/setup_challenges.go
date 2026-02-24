@@ -197,17 +197,19 @@ func setupDNS(cmd *cli.Command, client *lego.Client) error {
 
 	err = client.Challenge.SetDNS01Provider(provider,
 		dns01.CondOption(shouldWait,
-			dns01.PropagationWait(cmd.Duration(flgDNSPropagationWait), true)),
+			dns01.PropagationWait(cmd.Duration(flgDNSPropagationWait), true),
+		),
 		dns01.CondOption(!shouldWait && cmd.Bool(flgDNSPropagationDisableANS),
-			dns01.DisableAuthoritativeNssPropagationRequirement()),
+			dns01.DisableAuthoritativeNssPropagationRequirement(),
+		),
 		dns01.CondOption(!shouldWait && cmd.Bool(flgDNSPropagationDisableRNS),
-			dns01.DisableRecursiveNSsPropagationRequirement()),
+			dns01.DisableRecursiveNSsPropagationRequirement(),
+		),
 	)
 
 	return err
 }
 
-//nolint:gocyclo // option assembly mirrors CLI flags and challenge configuration branches.
 func setupDNSPersist(cmd *cli.Command, client *lego.Client, account registration.User) error {
 	if account == nil || account.GetRegistration() == nil || account.GetRegistration().URI == "" {
 		return errors.New("dns-persist-01 requires a registered account with an account URI")
@@ -218,46 +220,34 @@ func setupDNSPersist(cmd *cli.Command, client *lego.Client, account registration
 		return err
 	}
 
-	opts := []dnspersist01.ChallengeOption{dnspersist01.WithAccountURI(account.GetRegistration().URI)}
-
-	if issuerDomainName := cmd.String(flgDNSPersistIssuerDomainName); issuerDomainName != "" {
-		opts = append(opts, dnspersist01.WithIssuerDomainName(issuerDomainName))
-	}
-
-	if cmd.IsSet(flgDNSPersistPersistUntil) {
-		opts = append(opts, dnspersist01.WithPersistUntil(cmd.Timestamp(flgDNSPersistPersistUntil)))
-	}
-
-	if cmd.IsSet(flgDNSPersistResolvers) {
-		resolvers := cmd.StringSlice(flgDNSPersistResolvers)
-		if len(resolvers) > 0 {
-			opts = append(opts,
-				dnspersist01.WithNameservers(resolvers),
-				dnspersist01.AddRecursiveNameservers(resolvers),
-			)
-		}
-	}
-
-	if cmd.IsSet(flgDNSPersistTimeout) {
-		timeout := time.Duration(cmd.Int(flgDNSPersistTimeout)) * time.Second
-		opts = append(opts, dnspersist01.WithDNSTimeout(timeout))
-	}
-
+	resolvers := cmd.StringSlice(flgDNSPersistResolvers)
 	shouldWait := cmd.IsSet(flgDNSPersistPropagationWait)
 
-	if shouldWait {
-		opts = append(opts, dnspersist01.PropagationWait(cmd.Duration(flgDNSPersistPropagationWait), true))
-	}
-
-	if !shouldWait && cmd.Bool(flgDNSPersistPropagationDisableANS) {
-		opts = append(opts, dnspersist01.DisableAuthoritativeNssPropagationRequirement())
-	}
-
-	if !shouldWait && cmd.Bool(flgDNSPersistPropagationRNS) {
-		opts = append(opts, dnspersist01.RecursiveNSsPropagationRequirement())
-	}
-
-	return client.Challenge.SetDNSPersist01(opts...)
+	return client.Challenge.SetDNSPersist01(
+		dnspersist01.WithAccountURI(account.GetRegistration().URI),
+		dnspersist01.WithIssuerDomainName(cmd.String(flgDNSPersistIssuerDomainName)),
+		dnspersist01.CondOptions(len(resolvers) > 0,
+			dnspersist01.WithNameservers(resolvers),
+			dnspersist01.AddRecursiveNameservers(resolvers),
+		),
+		dnspersist01.CondOptions(cmd.IsSet(flgDNSPersistPersistUntil),
+			dnspersist01.WithPersistUntil(cmd.Timestamp(flgDNSPersistPersistUntil)),
+		),
+		dnspersist01.CondOptions(cmd.IsSet(flgDNSPersistTimeout),
+			dnspersist01.WithDNSTimeout(time.Duration(cmd.Int(flgDNSPersistTimeout))*time.Second),
+		),
+		dnspersist01.CondOptions(shouldWait,
+			dnspersist01.PropagationWait(cmd.Duration(flgDNSPersistPropagationWait), true),
+		),
+		dnspersist01.CondOptions(!shouldWait,
+			dnspersist01.CondOptions(cmd.Bool(flgDNSPersistPropagationDisableANS),
+				dnspersist01.DisableAuthoritativeNssPropagationRequirement(),
+			),
+			dnspersist01.CondOptions(cmd.Bool(flgDNSPersistPropagationRNS),
+				dnspersist01.RecursiveNSsPropagationRequirement(),
+			),
+		),
+	)
 }
 
 func validatePropagationExclusiveOptions(cmd *cli.Command, flgWait, flgANS, flgDNS string) error {

@@ -1,6 +1,7 @@
 package dnspersist01
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -51,12 +52,14 @@ func trimWSP(s string) string {
 
 // ParseIssueValues parses an issue-value string. Unknown parameters are
 // preserved in Params.
+//
+//nolint:gocyclo // parsing and validating tagged parameters requires branching per field.
 func ParseIssueValues(value string) (IssueValue, error) {
 	fields := strings.Split(value, ";")
 
 	issuerDomainName := trimWSP(fields[0])
 	if issuerDomainName == "" {
-		return IssueValue{}, fmt.Errorf("missing issuer-domain-name")
+		return IssueValue{}, errors.New("missing issuer-domain-name")
 	}
 
 	parsed := IssueValue{
@@ -69,7 +72,7 @@ func ParseIssueValues(value string) (IssueValue, error) {
 	for _, raw := range fields[1:] {
 		part := trimWSP(raw)
 		if part == "" {
-			return IssueValue{}, fmt.Errorf("empty parameter or trailing semicolon provided")
+			return IssueValue{}, errors.New("empty parameter or trailing semicolon provided")
 		}
 
 		tagValue := strings.SplitN(part, "=", 2)
@@ -79,6 +82,7 @@ func ParseIssueValues(value string) (IssueValue, error) {
 
 		tag := trimWSP(tagValue[0])
 		val := trimWSP(tagValue[1])
+
 		if tag == "" {
 			return IssueValue{}, fmt.Errorf("malformed parameter %q, empty tag", part)
 		}
@@ -87,6 +91,7 @@ func ParseIssueValues(value string) (IssueValue, error) {
 		if seenTags[key] {
 			return IssueValue{}, fmt.Errorf("duplicate parameter %q", tag)
 		}
+
 		seenTags[key] = true
 
 		for _, r := range val {
@@ -100,19 +105,22 @@ func ParseIssueValues(value string) (IssueValue, error) {
 		switch key {
 		case paramAccountURI:
 			if val == "" {
-				return IssueValue{}, fmt.Errorf("empty value provided for mandatory accounturi")
+				return IssueValue{}, errors.New("empty value provided for mandatory accounturi")
 			}
+
 			parsed.AccountURI = val
 		case paramPolicy:
-			if val != "" && strings.ToLower(val) != policyWildcard {
+			if val != "" && !strings.EqualFold(val, policyWildcard) {
 				val = ""
 			}
+
 			parsed.Policy = val
 		case paramPersistUntil:
 			ts, err := strconv.ParseInt(val, 10, 64)
 			if err != nil {
 				return IssueValue{}, fmt.Errorf("malformed persistUntil timestamp %q", val)
 			}
+
 			persistUntil := time.Unix(ts, 0).UTC()
 			parsed.PersistUntil = &persistUntil
 		default:

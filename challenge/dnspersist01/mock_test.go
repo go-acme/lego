@@ -33,19 +33,14 @@ func fakeTXT(name, value string, ttl uint32) *dns.TXT {
 
 // mockResolver modifies the default DNS resolver to use a custom network address during the test execution.
 // IMPORTANT: it modifies global variables.
-func mockResolver(t *testing.T, addr net.Addr) {
+func mockResolver(t *testing.T, addr net.Addr) string {
 	t.Helper()
 
 	_, port, err := net.SplitHostPort(addr.String())
 	require.NoError(t, err)
 
-	originalDefaultNameserverPort := defaultNameserverPort
-	t.Cleanup(func() {
-		defaultNameserverPort = originalDefaultNameserverPort
-	})
-	defaultNameserverPort = port
-
 	originalResolver := net.DefaultResolver
+
 	t.Cleanup(func() {
 		net.DefaultResolver = originalResolver
 	})
@@ -58,4 +53,6 @@ func mockResolver(t *testing.T, addr net.Addr) {
 			return d.DialContext(ctx, network, addr.String())
 		},
 	}
+
+	return port
 }

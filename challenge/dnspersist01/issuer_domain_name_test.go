@@ -48,6 +48,7 @@ func TestValidateIssuerDomainName_Errors(t *testing.T) {
 
 func TestValidateIssuerDomainName_ErrorNonCanonicalALabel(t *testing.T) {
 	originalToASCII := issuerDomainNameToASCII
+
 	t.Cleanup(func() {
 		issuerDomainNameToASCII = originalToASCII
 	})
@@ -63,6 +64,7 @@ func TestValidateIssuerDomainName_ErrorNonCanonicalALabel(t *testing.T) {
 
 func TestValidateIssuerDomainName_Valid(t *testing.T) {
 	originalToASCII := issuerDomainNameToASCII
+
 	t.Cleanup(func() {
 		issuerDomainNameToASCII = originalToASCII
 	})
@@ -76,12 +78,14 @@ func TestValidateIssuerDomainName_Valid(t *testing.T) {
 }
 
 func TestValidateIssuerDomainName_ErrorWrap(t *testing.T) {
+	sentinelErr := errors.New("sentinel idna failure")
+
 	originalToASCII := issuerDomainNameToASCII
+
 	t.Cleanup(func() {
 		issuerDomainNameToASCII = originalToASCII
 	})
 
-	sentinelErr := errors.New("sentinel idna failure")
 	issuerDomainNameToASCII = func(string) (string, error) {
 		return "", sentinelErr
 	}

@@ -30,9 +30,11 @@ func (a byType) Less(i, j int) bool {
 	if a[i].Type == string(challenge.DNS01) && a[j].Type == string(challenge.DNSPersist01) {
 		return true
 	}
+
 	if a[i].Type == string(challenge.DNSPersist01) && a[j].Type == string(challenge.DNS01) {
 		return false
 	}
+
 	return a[i].Type > a[j].Type
 }
 

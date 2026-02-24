@@ -43,7 +43,8 @@ func splitTXTValue(value string) []string {
 		chunks = append(chunks, value[:maxTXTStringOctets])
 		value = value[maxTXTStringOctets:]
 	}
-	if len(value) > 0 {
+
+	if value != "" {
 		chunks = append(chunks, value)
 	}
 

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -22,6 +23,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+//nolint:gocyclo // challenge setup dispatch is expected to branch by enabled challenge type.
 func setupChallenges(cmd *cli.Command, client *lego.Client, account registration.User) {
 	if !cmd.Bool(flgHTTP) && !cmd.Bool(flgTLS) && !cmd.IsSet(flgDNS) && !cmd.Bool(flgDNSPersist) {
 		log.Fatal(fmt.Sprintf("No challenge selected. You must specify at least one challenge: `--%s`, `--%s`, `--%s`, `--%s`.", flgHTTP, flgTLS, flgDNS, flgDNSPersist))
@@ -205,9 +207,10 @@ func setupDNS(cmd *cli.Command, client *lego.Client) error {
 	return err
 }
 
+//nolint:gocyclo // option assembly mirrors CLI flags and challenge configuration branches.
 func setupDNSPersist(cmd *cli.Command, client *lego.Client, account registration.User) error {
 	if account == nil || account.GetRegistration() == nil || account.GetRegistration().URI == "" {
-		return fmt.Errorf("dns-persist-01 requires a registered account with an account URI")
+		return errors.New("dns-persist-01 requires a registered account with an account URI")
 	}
 
 	err := validateDNSPersistPropagationExclusiveOptions(cmd)
@@ -233,8 +236,10 @@ func setupDNSPersist(cmd *cli.Command, client *lego.Client, account registration
 	if cmd.IsSet(flgDNSPersistResolvers) {
 		resolvers := cmd.StringSlice(flgDNSPersistResolvers)
 		if len(resolvers) > 0 {
-			opts = append(opts, dnspersist01.WithNameservers(resolvers))
-			opts = append(opts, dnspersist01.AddRecursiveNameservers(resolvers))
+			opts = append(opts,
+				dnspersist01.WithNameservers(resolvers),
+				dnspersist01.AddRecursiveNameservers(resolvers),
+			)
 		}
 	}
 

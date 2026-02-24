@@ -190,10 +190,12 @@ func TestParseIssueValues(t *testing.T) {
 			if test.expectErrContains != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), test.expectErrContains)
+
 				return
 			}
 
 			require.NoError(t, err)
+
 			expected := test.expected
 			expected.PersistUntil = test.expectedPersistUTC
 			assert.Equal(t, expected, parsed)

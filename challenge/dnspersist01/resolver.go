@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -14,11 +13,6 @@ import (
 )
 
 const defaultResolvConf = "/etc/resolv.conf"
-
-var defaultNameservers = []string{
-	"google-public-dns-a.google.com:53",
-	"google-public-dns-b.google.com:53",
-}
 
 // Resolver performs DNS lookups using the configured nameservers and timeout.
 type Resolver struct {
@@ -55,10 +49,17 @@ func NewResolver(nameservers []string) *Resolver {
 func DefaultNameservers() []string {
 	config, err := dns.ClientConfigFromFile(defaultResolvConf)
 	if err != nil || len(config.Servers) == 0 {
-		return slices.Clone(defaultNameservers)
+		return defaultFallbackNameservers()
 	}
 
 	return ParseNameservers(config.Servers)
+}
+
+func defaultFallbackNameservers() []string {
+	return []string{
+		"google-public-dns-a.google.com:53",
+		"google-public-dns-b.google.com:53",
+	}
 }
 
 // ParseNameservers ensures all servers have a port number.
@@ -109,6 +110,7 @@ func (r *Resolver) lookupTXT(fqdn string, nameservers []string, recursive bool) 
 		if _, ok := seen[name]; ok {
 			return result, fmt.Errorf("CNAME loop detected for %s", name)
 		}
+
 		seen[name] = struct{}{}
 
 		msg, err := dnsQueryWithTimeout(name, dns.TypeTXT, nameservers, recursive, timeout)
@@ -188,9 +190,11 @@ func dnsQueryWithTimeout(fqdn string, rtype uint16, nameservers []string, recurs
 		return nil, &DNSError{Message: "empty list of nameservers"}
 	}
 
-	var msg *dns.Msg
-	var err error
-	var errAll error
+	var (
+		msg    *dns.Msg
+		err    error
+		errAll error
+	)
 
 	for _, ns := range nameservers {
 		msg, err = sendDNSQuery(m, ns, timeout)
@@ -267,6 +271,7 @@ func (d *DNSError) Error() string {
 		for _, question := range questions {
 			parts = append(parts, strings.ReplaceAll(strings.TrimPrefix(question.String(), ";"), "\t", " "))
 		}
+
 		return strings.Join(parts, ";")
 	}
 

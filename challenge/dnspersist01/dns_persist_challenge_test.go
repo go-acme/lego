@@ -139,6 +139,7 @@ func TestGetChallengeInfo(t *testing.T) {
 			if test.expectErr != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), test.expectErr)
+
 				return
 			}
 
@@ -229,6 +230,7 @@ func TestWithIssuerDomainName(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			chlg := &Challenge{}
+
 			err := WithIssuerDomainName(test.input)(chlg)
 			if test.expectErr {
 				require.Error(t, err)

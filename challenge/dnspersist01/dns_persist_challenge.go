@@ -59,6 +59,7 @@ type Challenge struct {
 	userSuppliedIssuerDomainName string
 	persistUntil                 *time.Time
 	recursiveNameservers         []string
+	authoritativeNSPort          string
 
 	propagationTimeout  time.Duration
 	propagationInterval time.Duration
@@ -72,6 +73,7 @@ func NewChallenge(core *api.Core, validate ValidateFunc, opts ...ChallengeOption
 		resolver:             NewResolver(nil),
 		preCheck:             newPreCheck(),
 		recursiveNameservers: DefaultNameservers(),
+		authoritativeNSPort:  defaultAuthoritativeNSPort,
 
 		propagationTimeout:  DefaultPropagationTimeout,
 		propagationInterval: DefaultPollingInterval,
@@ -97,7 +99,9 @@ func WithResolver(resolver *Resolver) ChallengeOption {
 		if resolver == nil {
 			return errors.New("dnspersist01: resolver is nil")
 		}
+
 		chlg.resolver = resolver
+
 		return nil
 	}
 }
@@ -116,7 +120,9 @@ func WithDNSTimeout(timeout time.Duration) ChallengeOption {
 		if chlg.resolver == nil {
 			chlg.resolver = NewResolver(nil)
 		}
+
 		chlg.resolver.Timeout = timeout
+
 		return nil
 	}
 }
@@ -129,7 +135,9 @@ func WithAccountURI(accountURI string) ChallengeOption {
 		if accountURI == "" {
 			return errors.New("dnspersist01: ACME account URI cannot be empty")
 		}
+
 		chlg.accountURI = accountURI
+
 		return nil
 	}
 }
@@ -151,6 +159,7 @@ func WithIssuerDomainName(issuerDomainName string) ChallengeOption {
 		}
 
 		chlg.userSuppliedIssuerDomainName = normalized
+
 		return nil
 	}
 }
@@ -165,6 +174,7 @@ func WithPersistUntil(persistUntil time.Time) ChallengeOption {
 
 		ts := persistUntil.UTC().Truncate(time.Second)
 		chlg.persistUntil = &ts
+
 		return nil
 	}
 }
@@ -175,7 +185,9 @@ func WithPropagationTimeout(timeout time.Duration) ChallengeOption {
 		if timeout <= 0 {
 			return errors.New("dnspersist01: propagation timeout must be positive")
 		}
+
 		chlg.propagationTimeout = timeout
+
 		return nil
 	}
 }
@@ -186,7 +198,9 @@ func WithPropagationInterval(interval time.Duration) ChallengeOption {
 		if interval <= 0 {
 			return errors.New("dnspersist01: propagation interval must be positive")
 		}
+
 		chlg.propagationInterval = interval
+
 		return nil
 	}
 }
@@ -194,6 +208,8 @@ func WithPropagationInterval(interval time.Duration) ChallengeOption {
 // Solve validates the dns-persist-01 challenge by prompting the user to create
 // the required TXT record (if necessary) then performing propagation checks (or
 // a wait-only delay) before notifying the ACME server.
+//
+//nolint:gocyclo // challenge flow has several required branches (reuse/manual/wait/propagation/validate).
 func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	if c.resolver == nil {
 		return errors.New("dnspersist01: resolver is nil")
@@ -215,6 +231,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	}
 
 	fqdn := GetAuthorizationDomainName(domain)
+
 	result, err := c.resolver.LookupTXT(fqdn)
 	if err != nil {
 		return err
@@ -230,15 +247,16 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	}
 
 	if !matcher(result.Records) {
-		info, err := GetChallengeInfo(domain, issuerDomainName, c.accountURI, authz.Wildcard, c.persistUntil)
-		if err != nil {
-			return err
+		info, infoErr := GetChallengeInfo(domain, issuerDomainName, c.accountURI, authz.Wildcard, c.persistUntil)
+		if infoErr != nil {
+			return infoErr
 		}
 
 		displayRecordCreationInstructions(info.FQDN, info.Value)
-		err = waitForUser()
-		if err != nil {
-			return err
+
+		waitErr := waitForUser()
+		if waitErr != nil {
+			return waitErr
 		}
 	} else {
 		fmt.Printf("dnspersist01: Found existing matching TXT record for %s, no need to create a new one\n", fqdn)
@@ -250,15 +268,16 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	log.Info("acme: Checking DNS-PERSIST-01 record propagation.",
 		log.DomainAttr(domain), slog.String("nameservers", strings.Join(c.getRecursiveNameservers(), ",")),
 	)
+
 	time.Sleep(interval)
 
 	err = wait.For("propagation", timeout, interval, func() (bool, error) {
-		ok, err := c.preCheck.call(domain, fqdn, matcher, c.checkDNSPropagation)
-		if !ok || err != nil {
+		ok, callErr := c.preCheck.call(domain, fqdn, matcher, c.checkDNSPropagation)
+		if !ok || callErr != nil {
 			log.Info("acme: Waiting for DNS-PERSIST-01 record propagation.", log.DomainAttr(domain))
 		}
 
-		return ok, err
+		return ok, callErr
 	})
 	if err != nil {
 		return err
@@ -289,6 +308,7 @@ func GetChallengeInfo(domain, issuerDomainName, accountURI string, wildcard bool
 	if domain == "" {
 		return ChallengeInfo{}, errors.New("dnspersist01: domain cannot be empty")
 	}
+
 	if accountURI == "" {
 		return ChallengeInfo{}, errors.New("dnspersist01: ACME account URI cannot be empty")
 	}
@@ -362,6 +382,7 @@ func (c *Challenge) selectIssuerDomainName(challIssuers []string, records []TXTR
 
 		return c.userSuppliedIssuerDomainName, nil
 	}
+
 	for _, issuerDomainName := range sortedIssuers {
 		if c.hasMatchingRecord(records, issuerDomainName, wildcard) {
 			return issuerDomainName, nil
@@ -377,15 +398,19 @@ func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName stri
 		if err != nil {
 			continue
 		}
+
 		if parsed.IssuerDomainName != issuerDomainName {
 			continue
 		}
+
 		if parsed.AccountURI != c.accountURI {
 			continue
 		}
-		if wildcard && strings.ToLower(parsed.Policy) != policyWildcard {
+
+		if wildcard && !strings.EqualFold(parsed.Policy, policyWildcard) {
 			continue
 		}
+
 		if c.persistUntil == nil {
 			if parsed.PersistUntil != nil {
 				continue
@@ -395,6 +420,7 @@ func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName stri
 				continue
 			}
 		}
+
 		return true
 	}
 

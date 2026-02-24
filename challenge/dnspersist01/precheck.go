@@ -9,8 +9,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-// defaultNameserverPort used by authoritative NS.
-var defaultNameserverPort = "53"
+const defaultAuthoritativeNSPort = "53"
 
 // RecordMatcher returns true when the expected record is present.
 type RecordMatcher func(records []TXTRecord) bool
@@ -133,7 +132,7 @@ func (c *Challenge) checkDNSPropagation(fqdn string, matcher RecordMatcher) (boo
 func (c *Challenge) checkNameserversPropagation(fqdn string, nameservers []string, addPort, recursive bool, matcher RecordMatcher) (bool, error) {
 	for _, ns := range nameservers {
 		if addPort {
-			ns = net.JoinHostPort(ns, defaultNameserverPort)
+			ns = net.JoinHostPort(ns, c.getAuthoritativeNSPort())
 		}
 
 		result, err := c.resolver.lookupTXT(fqdn, []string{ns}, recursive)
@@ -147,6 +146,14 @@ func (c *Challenge) checkNameserversPropagation(fqdn string, nameservers []strin
 	}
 
 	return true, nil
+}
+
+func (c *Challenge) getAuthoritativeNSPort() string {
+	if c == nil || c.authoritativeNSPort == "" {
+		return defaultAuthoritativeNSPort
+	}
+
+	return c.authoritativeNSPort
 }
 
 func txtValues(records []TXTRecord) []string {

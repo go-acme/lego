@@ -57,6 +57,7 @@ func setTXTRecordRaw(host, value string) error {
 	if err != nil {
 		return err
 	}
+
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
@@ -76,6 +77,7 @@ func clearTXTRecord(t *testing.T, host string) {
 
 	resp, err := http.Post("http://localhost:8055/clear-txt", "application/json", bytes.NewReader(body))
 	require.NoError(t, err)
+
 	defer func() { _ = resp.Body.Close() }()
 
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -157,10 +159,12 @@ func waitForCLIAccountURI(ctx context.Context, email string) (string, error) {
 				if os.IsNotExist(err) {
 					continue
 				}
+
 				return "", err
 			}
 
 			var account accountFile
+
 			err = json.Unmarshal(content, &account)
 			if err != nil {
 				continue
@@ -234,6 +238,7 @@ func TestChallengeDNSPersist_Run(t *testing.T) {
 
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	accountURI := createCLIAccountState(t, testPersistCLIEmail)
@@ -266,28 +271,32 @@ func TestChallengeDNSPersist_Run_NewAccount(t *testing.T) {
 
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistCLIDomain)
 	defer clearTXTRecord(t, txtHost)
 
 	stdinReader, stdinWriter := io.Pipe()
+
 	defer func() { _ = stdinReader.Close() }()
 
 	errChan := make(chan error, 1)
+
 	go func() {
 		defer func() { _ = stdinWriter.Close() }()
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		accountURI, err := waitForCLIAccountURI(ctx, testPersistCLIFreshEmail)
-		if err != nil {
-			errChan <- fmt.Errorf("wait for account URI: %w", err)
+		accountURI, waitErr := waitForCLIAccountURI(ctx, testPersistCLIFreshEmail)
+		if waitErr != nil {
+			errChan <- fmt.Errorf("wait for account URI: %w", waitErr)
 			return
 		}
 
 		txtValue := dnspersist01.BuildIssueValues(testPersistIssuer, accountURI, true, nil)
+
 		err = setTXTRecordRaw(txtHost, txtValue)
 		if err != nil {
 			errChan <- fmt.Errorf("set TXT record: %w", err)
@@ -299,6 +308,7 @@ func TestChallengeDNSPersist_Run_NewAccount(t *testing.T) {
 			errChan <- fmt.Errorf("send enter to lego: %w", err)
 			return
 		}
+
 		errChan <- nil
 	}()
 
@@ -325,6 +335,7 @@ func TestChallengeDNSPersist_Renew(t *testing.T) {
 
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
+
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
 	accountURI := createCLIAccountState(t, testPersistCLIRenewEmail)

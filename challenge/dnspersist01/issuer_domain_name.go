@@ -1,12 +1,14 @@
 package dnspersist01
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
 	"golang.org/x/net/idna"
 )
 
+//nolint:gochecknoglobals // test seam for injecting IDNA conversion failures/variants.
 var issuerDomainNameToASCII = idna.Lookup.ToASCII
 
 // validateIssuerDomainName validates a single issuer-domain-name according to
@@ -19,26 +21,31 @@ var issuerDomainNameToASCII = idna.Lookup.ToASCII
 //   - A-label (Punycode, RFC5890)
 func validateIssuerDomainName(name string) error {
 	if name == "" {
-		return fmt.Errorf("issuer-domain-name cannot be empty")
+		return errors.New("issuer-domain-name cannot be empty")
 	}
+
 	if strings.ToLower(name) != name {
-		return fmt.Errorf("issuer-domain-name must be lowercase")
+		return errors.New("issuer-domain-name must be lowercase")
 	}
+
 	if strings.HasSuffix(name, ".") {
-		return fmt.Errorf("issuer-domain-name must not have a trailing dot")
+		return errors.New("issuer-domain-name must not have a trailing dot")
 	}
+
 	if len(name) > 253 {
-		return fmt.Errorf("issuer-domain-name exceeds maximum length of 253 octets")
+		return errors.New("issuer-domain-name exceeds maximum length of 253 octets")
 	}
 
 	labels := strings.SplitSeq(name, ".")
 	for label := range labels {
 		if label == "" {
-			return fmt.Errorf("issuer-domain-name contains an empty label")
+			return errors.New("issuer-domain-name contains an empty label")
 		}
+
 		if len(label) > 63 {
-			return fmt.Errorf("issuer-domain-name label exceeds maximum length of 63 octets")
+			return errors.New("issuer-domain-name label exceeds maximum length of 63 octets")
 		}
+
 		if !isLDHLabel(label) {
 			return fmt.Errorf("issuer-domain-name label %q must be a lowercase LDH label", label)
 		}
@@ -48,26 +55,32 @@ func validateIssuerDomainName(name string) error {
 	if err != nil {
 		return fmt.Errorf("issuer-domain-name must be represented in A-label format: %w", err)
 	}
+
 	if ascii != name {
-		return fmt.Errorf("issuer-domain-name must be represented in A-label format")
+		return errors.New("issuer-domain-name must be represented in A-label format")
 	}
+
 	return nil
 }
 
 func isLDHLabel(label string) bool {
-	if len(label) == 0 {
+	if label == "" {
 		return false
 	}
+
 	if !isLowerAlphaNum(label[0]) || !isLowerAlphaNum(label[len(label)-1]) {
 		return false
 	}
-	for i := 0; i < len(label); i++ {
+
+	for i := range len(label) {
 		c := label[i]
 		if isLowerAlphaNum(c) || c == '-' {
 			continue
 		}
+
 		return false
 	}
+
 	return true
 }
 
@@ -86,5 +99,6 @@ func normalizeUserSuppliedIssuerDomainName(name string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("normalizing supplied issuer-domain-name %q: %w", n, err)
 	}
+
 	return ascii, nil
 }

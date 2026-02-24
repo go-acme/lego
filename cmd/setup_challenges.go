@@ -243,8 +243,8 @@ func setupDNSPersist(cmd *cli.Command, client *lego.Client, account registration
 			dnspersist01.CondOptions(cmd.Bool(flgDNSPersistPropagationDisableANS),
 				dnspersist01.DisableAuthoritativeNssPropagationRequirement(),
 			),
-			dnspersist01.CondOptions(cmd.Bool(flgDNSPersistPropagationRNS),
-				dnspersist01.RecursiveNSsPropagationRequirement(),
+			dnspersist01.CondOptions(cmd.Bool(flgDNSSPersistPropagationDisableRNS),
+				dnspersist01.DisableRecursiveNSsPropagationRequirement(),
 			),
 		),
 	)

@@ -37,10 +37,10 @@ func DisableAuthoritativeNssPropagationRequirement() ChallengeOption {
 	}
 }
 
-// RecursiveNSsPropagationRequirement requires checks against recursive nameservers.
-func RecursiveNSsPropagationRequirement() ChallengeOption {
+// DisableRecursiveNSsPropagationRequirement disables recursive nameserver checks.
+func DisableRecursiveNSsPropagationRequirement() ChallengeOption {
 	return func(chlg *Challenge) error {
-		chlg.preCheck.requireRecursiveNssPropagation = true
+		chlg.preCheck.requireRecursiveNssPropagation = false
 		return nil
 	}
 }
@@ -80,6 +80,7 @@ type preCheck struct {
 func newPreCheck() preCheck {
 	return preCheck{
 		requireAuthoritativeNssPropagation: true,
+		requireRecursiveNssPropagation:     true,
 	}
 }
 

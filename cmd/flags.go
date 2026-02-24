@@ -131,14 +131,14 @@ const (
 
 // Flag names related to the DNS-PERSIST-01 challenge.
 const (
-	flgDNSPersist                      = "dns-persist"
-	flgDNSPersistIssuerDomainName      = "dns-persist.issuer-domain-name"
-	flgDNSPersistPersistUntil          = "dns-persist.persist-until"
-	flgDNSPersistPropagationWait       = "dns-persist.propagation.wait"
-	flgDNSPersistPropagationDisableANS = "dns-persist.propagation.disable-ans"
-	flgDNSPersistPropagationRNS        = "dns-persist.propagation.rns"
-	flgDNSPersistResolvers             = "dns-persist.resolvers"
-	flgDNSPersistTimeout               = "dns-persist.timeout"
+	flgDNSPersist                       = "dns-persist"
+	flgDNSPersistIssuerDomainName       = "dns-persist.issuer-domain-name"
+	flgDNSPersistPersistUntil           = "dns-persist.persist-until"
+	flgDNSPersistPropagationWait        = "dns-persist.propagation.wait"
+	flgDNSPersistPropagationDisableANS  = "dns-persist.propagation.disable-ans"
+	flgDNSSPersistPropagationDisableRNS = "dns-persist.propagation.disable-rns"
+	flgDNSPersistResolvers              = "dns-persist.resolvers"
+	flgDNSPersistTimeout                = "dns-persist.timeout"
 )
 
 // Flags names related to hooks.
@@ -465,9 +465,9 @@ func createDNSPersistChallengeFlags() []cli.Flag {
 		},
 		&cli.BoolFlag{
 			Category: categoryDNSPersist01Challenge,
-			Name:     flgDNSPersistPropagationRNS,
-			Sources:  cli.EnvVars(toEnvName(flgDNSPersistPropagationRNS)),
-			Usage:    "By setting this flag to true, uses all the recursive name servers (aka resolvers) to check propagation of the TXT record.",
+			Name:     flgDNSSPersistPropagationDisableRNS,
+			Sources:  cli.EnvVars(toEnvName(flgDNSSPersistPropagationDisableRNS)),
+			Usage:    "By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).",
 		},
 		&cli.StringSliceFlag{
 			Category: categoryDNSPersist01Challenge,

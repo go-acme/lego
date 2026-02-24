@@ -34,7 +34,7 @@ func TestBuildIssueValues(t *testing.T) {
 			issuer:     "authority.example",
 			accountURI: "https://authority.example/acct/123",
 			wildcard:   true,
-			persistUTC: ptrIssueTime(time.Unix(4102444800, 0).UTC()),
+			persistUTC: Pointer(time.Unix(4102444800, 0).UTC()),
 			expect:     "authority.example; accounturi=https://authority.example/acct/123; policy=wildcard; persistUntil=4102444800",
 		},
 	}
@@ -113,7 +113,7 @@ func TestParseIssueValues(t *testing.T) {
 				Policy:           "wildcard",
 				Params:           map[string]string{},
 			},
-			expectedPersistUTC: ptrIssueTime(time.Unix(4102444800, 0).UTC()),
+			expectedPersistUTC: Pointer(time.Unix(4102444800, 0).UTC()),
 		},
 		{
 			desc:  "policy other than wildcard is treated as absent",
@@ -201,8 +201,4 @@ func TestParseIssueValues(t *testing.T) {
 			assert.Equal(t, expected, parsed)
 		})
 	}
-}
-
-func ptrIssueTime(t time.Time) *time.Time {
-	return &t
 }

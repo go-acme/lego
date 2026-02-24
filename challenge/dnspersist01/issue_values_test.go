@@ -14,7 +14,7 @@ func TestBuildIssueValue(t *testing.T) {
 		issuer            string
 		accountURI        string
 		wildcard          bool
-		persistUTC        *time.Time
+		persistUTC        time.Time
 		expect            string
 		expectErrContains string
 	}{
@@ -29,7 +29,7 @@ func TestBuildIssueValue(t *testing.T) {
 			issuer:     "authority.example",
 			accountURI: "https://authority.example/acct/123",
 			wildcard:   true,
-			persistUTC: Pointer(time.Unix(4102444800, 0).UTC()),
+			persistUTC: time.Unix(4102444800, 0).UTC(),
 			expect:     "authority.example; accounturi=https://authority.example/acct/123; policy=wildcard; persistUntil=4102444800",
 		},
 		{
@@ -52,7 +52,7 @@ func TestBuildIssueValue(t *testing.T) {
 			actual, err := BuildIssueValue(test.issuer, test.accountURI, test.wildcard, test.persistUTC)
 			if test.expectErrContains != "" {
 				require.Error(t, err)
-				assert.Contains(t, err.Error(), test.expectErrContains)
+				assert.ErrorContains(t, err, test.expectErrContains)
 
 				return
 			}
@@ -118,7 +118,7 @@ func TestParseIssueValue(t *testing.T) {
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
 				Policy:           "wildcard",
-				PersistUntil:     Pointer(time.Unix(4102444800, 0).UTC()),
+				PersistUntil:     time.Unix(4102444800, 0).UTC(),
 			},
 		},
 		{
@@ -195,16 +195,14 @@ func TestParseIssueValue(t *testing.T) {
 			parsed, err := ParseIssueValue(test.value)
 			if test.expectErrContains != "" {
 				require.Error(t, err)
-				assert.Contains(t, err.Error(), test.expectErrContains)
+				assert.ErrorContains(t, err, test.expectErrContains)
 
 				return
 			}
 
 			require.NoError(t, err)
 
-			expected := test.expected
-
-			assert.Equal(t, expected, parsed)
+			assert.Equal(t, test.expected, parsed)
 		})
 	}
 }

@@ -18,11 +18,12 @@ import (
 	"github.com/miekg/dns"
 )
 
-const (
-	validationLabel = "_validation-persist"
+const validationLabel = "_validation-persist"
 
+const (
 	// DefaultPropagationTimeout default propagation timeout.
 	DefaultPropagationTimeout = 60 * time.Second
+
 	// DefaultPollingInterval default polling interval.
 	DefaultPollingInterval = 2 * time.Second
 )
@@ -57,7 +58,7 @@ type Challenge struct {
 
 	accountURI                   string
 	userSuppliedIssuerDomainName string
-	persistUntil                 *time.Time
+	persistUntil                 time.Time
 	recursiveNameservers         []string
 	authoritativeNSPort          string
 
@@ -82,7 +83,7 @@ func NewChallenge(core *api.Core, validate ValidateFunc, opts ...ChallengeOption
 	for _, opt := range opts {
 		err := opt(chlg)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("dnspersist01: %w", err)
 		}
 	}
 
@@ -97,7 +98,7 @@ func NewChallenge(core *api.Core, validate ValidateFunc, opts ...ChallengeOption
 func WithResolver(resolver *Resolver) ChallengeOption {
 	return func(chlg *Challenge) error {
 		if resolver == nil {
-			return errors.New("dnspersist01: resolver is nil")
+			return errors.New("resolver is nil")
 		}
 
 		chlg.resolver = resolver
@@ -110,6 +111,7 @@ func WithResolver(resolver *Resolver) ChallengeOption {
 func WithNameservers(nameservers []string) ChallengeOption {
 	return func(chlg *Challenge) error {
 		chlg.resolver = NewResolver(nameservers)
+
 		return nil
 	}
 }
@@ -133,7 +135,7 @@ func WithDNSTimeout(timeout time.Duration) ChallengeOption {
 func WithAccountURI(accountURI string) ChallengeOption {
 	return func(chlg *Challenge) error {
 		if accountURI == "" {
-			return errors.New("dnspersist01: ACME account URI cannot be empty")
+			return errors.New("ACME account URI cannot be empty")
 		}
 
 		chlg.accountURI = accountURI
@@ -155,7 +157,7 @@ func WithIssuerDomainName(issuerDomainName string) ChallengeOption {
 
 		err = validateIssuerDomainName(normalized)
 		if err != nil {
-			return fmt.Errorf("dnspersist01: %w", err)
+			return err
 		}
 
 		chlg.userSuppliedIssuerDomainName = normalized
@@ -169,10 +171,10 @@ func WithIssuerDomainName(issuerDomainName string) ChallengeOption {
 func WithPersistUntil(persistUntil time.Time) ChallengeOption {
 	return func(chlg *Challenge) error {
 		if persistUntil.IsZero() {
-			return errors.New("dnspersist01: persistUntil cannot be zero")
+			return errors.New("persistUntil cannot be zero")
 		}
 
-		chlg.persistUntil = Pointer(persistUntil.UTC().Truncate(time.Second))
+		chlg.persistUntil = persistUntil.UTC().Truncate(time.Second)
 
 		return nil
 	}
@@ -182,7 +184,7 @@ func WithPersistUntil(persistUntil time.Time) ChallengeOption {
 func WithPropagationTimeout(timeout time.Duration) ChallengeOption {
 	return func(chlg *Challenge) error {
 		if timeout <= 0 {
-			return errors.New("dnspersist01: propagation timeout must be positive")
+			return errors.New("propagation timeout must be positive")
 		}
 
 		chlg.propagationTimeout = timeout
@@ -195,7 +197,7 @@ func WithPropagationTimeout(timeout time.Duration) ChallengeOption {
 func WithPropagationInterval(interval time.Duration) ChallengeOption {
 	return func(chlg *Challenge) error {
 		if interval <= 0 {
-			return errors.New("dnspersist01: propagation interval must be positive")
+			return errors.New("propagation interval must be positive")
 		}
 
 		chlg.propagationInterval = interval
@@ -303,7 +305,7 @@ func GetAuthorizationDomainName(domain string) string {
 // can fulfill the `dns-persist-01` challenge. Domain, issuerDomainName, and
 // accountURI parameters are required. Wildcard and persistUntil parameters are
 // optional.
-func GetChallengeInfo(domain, issuerDomainName, accountURI string, wildcard bool, persistUntil *time.Time) (ChallengeInfo, error) {
+func GetChallengeInfo(domain, issuerDomainName, accountURI string, wildcard bool, persistUntil time.Time) (ChallengeInfo, error) {
 	if domain == "" {
 		return ChallengeInfo{}, errors.New("dnspersist01: domain cannot be empty")
 	}
@@ -406,14 +408,12 @@ func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName stri
 			continue
 		}
 
-		if c.persistUntil == nil {
-			if parsed.PersistUntil != nil {
+		if c.persistUntil.IsZero() {
+			if !parsed.PersistUntil.IsZero() {
 				continue
 			}
-		} else {
-			if parsed.PersistUntil == nil || !parsed.PersistUntil.Equal(*c.persistUntil) {
-				continue
-			}
+		} else if parsed.PersistUntil.IsZero() || !parsed.PersistUntil.Equal(c.persistUntil) {
+			continue
 		}
 
 		return true

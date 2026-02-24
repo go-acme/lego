@@ -20,13 +20,13 @@ type IssueValue struct {
 	IssuerDomainName string
 	AccountURI       string
 	Policy           string
-	PersistUntil     *time.Time
+	PersistUntil     time.Time
 }
 
 // BuildIssueValue constructs an RFC 8659 issue-value for a dns-persist-01 TXT
 // record. issuerDomainName and accountURI are required. wildcard and
 // persistUntil are optional.
-func BuildIssueValue(issuerDomainName, accountURI string, wildcard bool, persistUntil *time.Time) (string, error) {
+func BuildIssueValue(issuerDomainName, accountURI string, wildcard bool, persistUntil time.Time) (string, error) {
 	if accountURI == "" {
 		return "", errors.New("dnspersist01: ACME account URI cannot be empty")
 	}
@@ -42,7 +42,7 @@ func BuildIssueValue(issuerDomainName, accountURI string, wildcard bool, persist
 		value += "; " + paramPolicy + "=" + policyWildcard
 	}
 
-	if persistUntil != nil {
+	if !persistUntil.IsZero() {
 		value += fmt.Sprintf("; persistUntil=%d", persistUntil.UTC().Unix())
 	}
 
@@ -141,7 +141,7 @@ func ParseIssueValue(value string) (IssueValue, error) {
 				return IssueValue{}, fmt.Errorf("malformed %q: %w", paramPersistUntil, err)
 			}
 
-			parsed.PersistUntil = Pointer(time.Unix(ts, 0).UTC())
+			parsed.PersistUntil = time.Unix(ts, 0).UTC()
 
 		default:
 			// Unknown parameters are permitted but not currently consumed.

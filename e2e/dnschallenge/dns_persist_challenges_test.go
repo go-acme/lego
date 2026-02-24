@@ -84,10 +84,10 @@ func clearTXTRecord(t *testing.T, host string) {
 }
 
 //nolint:unparam // kept generic for future e2e tests.
-func mustDNSPersistIssueValue(t *testing.T, issuerDomainName, accountURI string, wildcard bool, persistUntil *time.Time) string {
+func mustDNSPersistIssueValue(t *testing.T, issuerDomainName, accountURI string) string {
 	t.Helper()
 
-	value, err := dnspersist01.BuildIssueValue(issuerDomainName, accountURI, wildcard, persistUntil)
+	value, err := dnspersist01.BuildIssueValue(issuerDomainName, accountURI, true, time.Time{})
 	require.NoError(t, err)
 
 	return value
@@ -210,7 +210,7 @@ func TestChallengeDNSPersist_Client_Obtain(t *testing.T) {
 	user.registration = reg
 
 	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistBaseDomain)
-	txtValue := mustDNSPersistIssueValue(t, testPersistIssuer, reg.URI, true, nil)
+	txtValue := mustDNSPersistIssueValue(t, testPersistIssuer, reg.URI)
 
 	setTXTRecord(t, txtHost, txtValue)
 	defer clearTXTRecord(t, txtHost)
@@ -255,7 +255,7 @@ func TestChallengeDNSPersist_Run(t *testing.T) {
 	require.NotEmpty(t, accountURI)
 
 	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistCLIDomain)
-	txtValue := mustDNSPersistIssueValue(t, testPersistIssuer, accountURI, true, nil)
+	txtValue := mustDNSPersistIssueValue(t, testPersistIssuer, accountURI)
 
 	setTXTRecord(t, txtHost, txtValue)
 	defer clearTXTRecord(t, txtHost)
@@ -305,7 +305,7 @@ func TestChallengeDNSPersist_Run_NewAccount(t *testing.T) {
 			return
 		}
 
-		txtValue := mustDNSPersistIssueValue(t, testPersistIssuer, accountURI, true, nil)
+		txtValue := mustDNSPersistIssueValue(t, testPersistIssuer, accountURI)
 
 		err = setTXTRecordRaw(txtHost, txtValue)
 		if err != nil {
@@ -352,7 +352,7 @@ func TestChallengeDNSPersist_Renew(t *testing.T) {
 	require.NotEmpty(t, accountURI)
 
 	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistCLIDomain)
-	txtValue := mustDNSPersistIssueValue(t, testPersistIssuer, accountURI, true, nil)
+	txtValue := mustDNSPersistIssueValue(t, testPersistIssuer, accountURI)
 
 	setTXTRecord(t, txtHost, txtValue)
 	defer clearTXTRecord(t, txtHost)

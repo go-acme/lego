@@ -134,9 +134,9 @@ const (
 	flgDNSPersist                      = "dns-persist"
 	flgDNSPersistIssuerDomainName      = "dns-persist.issuer-domain-name"
 	flgDNSPersistPersistUntil          = "dns-persist.persist-until"
-	flgDNSPersistPropagationWait       = "dns-persist.propagation-wait"
-	flgDNSPersistPropagationDisableANS = "dns-persist.propagation-disable-ans"
-	flgDNSPersistPropagationRNS        = "dns-persist.propagation-rns"
+	flgDNSPersistPropagationWait       = "dns-persist.propagation.wait"
+	flgDNSPersistPropagationDisableANS = "dns-persist.propagation.disable-ans"
+	flgDNSPersistPropagationRNS        = "dns-persist.propagation.rns"
 	flgDNSPersistResolvers             = "dns-persist.resolvers"
 	flgDNSPersistTimeout               = "dns-persist.timeout"
 )

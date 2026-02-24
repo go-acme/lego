@@ -1,4 +1,4 @@
-// Package compat provides compatibility with lego/v5.
+// Package compat provides compatibility with lego/v4.
 package compat
 
 import (

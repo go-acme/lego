@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("tok", "k")
 			client.HTTPClient = server.Client()
@@ -20,14 +20,14 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders().
+		servermock2.CheckHeader().WithJSONHeaders().
 			WithBasicAuth("tok", "k"),
 	)
 }
 
 func TestClient_ListZones(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /zones/records/all/example.com", servermock.ResponseFromFixture("list-zone.json")).
+		Route("GET /zones/records/all/example.com", servermock2.ResponseFromFixture("list-zone.json")).
 		Build(t)
 
 	zones, err := client.ListZones(t.Context(), "example.com")
@@ -49,7 +49,7 @@ func TestClient_ListZones(t *testing.T) {
 
 func TestClient_ListZones_error(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /zones/records/all/example.com", servermock.ResponseFromFixture("error1.json")).
+		Route("GET /zones/records/all/example.com", servermock2.ResponseFromFixture("error1.json")).
 		Build(t)
 
 	_, err := client.ListZones(t.Context(), "example.com")
@@ -59,8 +59,8 @@ func TestClient_ListZones_error(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /zones/records/add/example.com/TXT",
-			servermock.ResponseFromFixture("add-record.json").WithStatusCode(http.StatusCreated),
-			servermock.CheckRequestJSONBody(`{"domain":"example.com","host":"test631","ttl":"300","prio":"0","type":"TXT","rdata":"txt"}`)).
+			servermock2.ResponseFromFixture("add-record.json").WithStatusCode(http.StatusCreated),
+			servermock2.CheckRequestJSONBody(`{"domain":"example.com","host":"test631","ttl":"300","prio":"0","type":"TXT","rdata":"txt"}`)).
 		Build(t)
 
 	record := ZoneRecord{
@@ -81,7 +81,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /zones/records/add/example.com/TXT",
-			servermock.ResponseFromFixture("error1.json").WithStatusCode(http.StatusCreated)).
+			servermock2.ResponseFromFixture("error1.json").WithStatusCode(http.StatusCreated)).
 		Build(t)
 
 	record := ZoneRecord{

@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(OAuthStaticAccessToken(server.Client(), "secret"))
 			if err != nil {
@@ -23,7 +23,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders().
 			WithAuthorization("Bearer secret"),
 	)
@@ -32,8 +32,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_AddRRSetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/example.com/rrsets/www/TXT/actions/add_records",
-			servermock.ResponseFromFixture("add_rrset_records.json"),
-			servermock.CheckRequestJSONBodyFromFixture("add_rrset_records-request.json")).
+			servermock2.ResponseFromFixture("add_rrset_records.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("add_rrset_records-request.json")).
 		Build(t)
 
 	records := []Record{{
@@ -58,7 +58,7 @@ func TestClient_AddRRSetRecords(t *testing.T) {
 func TestClient_AddRRSetRecords_error_invalid_input(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/example.com/rrsets/www/TXT/actions/add_records",
-			servermock.ResponseFromFixture("error-invalid_input.json").
+			servermock2.ResponseFromFixture("error-invalid_input.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -74,7 +74,7 @@ func TestClient_AddRRSetRecords_error_invalid_input(t *testing.T) {
 func TestClient_AddRRSetRecords_error_resource_limit_exceeded(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/example.com/rrsets/www/TXT/actions/add_records",
-			servermock.ResponseFromFixture("error-resource_limit_exceeded.json").
+			servermock2.ResponseFromFixture("error-resource_limit_exceeded.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -90,7 +90,7 @@ func TestClient_AddRRSetRecords_error_resource_limit_exceeded(t *testing.T) {
 func TestClient_AddRRSetRecords_error_deprecated_api_endpoint(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/example.com/rrsets/www/TXT/actions/add_records",
-			servermock.ResponseFromFixture("error-deprecated_api_endpoint.json").
+			servermock2.ResponseFromFixture("error-deprecated_api_endpoint.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -106,8 +106,8 @@ func TestClient_AddRRSetRecords_error_deprecated_api_endpoint(t *testing.T) {
 func TestClient_RemoveRRSetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/example.com/rrsets/www/TXT/actions/remove_records",
-			servermock.ResponseFromFixture("remove_rrset_records.json"),
-			servermock.CheckRequestJSONBodyFromFixture("remove_rrset_records-request.json")).
+			servermock2.ResponseFromFixture("remove_rrset_records.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("remove_rrset_records-request.json")).
 		Build(t)
 
 	records := []Record{{
@@ -131,8 +131,8 @@ func TestClient_RemoveRRSetRecords(t *testing.T) {
 
 func TestClient_GetAction(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /actions/123", servermock.ResponseFromFixture("get_action.json")).
-		Route("/", servermock.DumpRequest()).
+		Route("GET /actions/123", servermock2.ResponseFromFixture("get_action.json")).
+		Route("/", servermock2.DumpRequest()).
 		Build(t)
 
 	result, err := client.GetAction(t.Context(), 123)

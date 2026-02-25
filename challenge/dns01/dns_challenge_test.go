@@ -11,8 +11,8 @@ import (
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/dnsmock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	dnsmock2 "github.com/go-acme/lego/v5/internal/tester/dnsmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -118,8 +118,8 @@ func TestChallenge_PreSolve(t *testing.T) {
 }
 
 func TestChallenge_Solve(t *testing.T) {
-	mockDefault(t, dnsmock.NewServer().
-		Query("_acme-challenge.example.com. CNAME", dnsmock.Noop).
+	mockDefault(t, dnsmock2.NewServer().
+		Query("_acme-challenge.example.com. CNAME", dnsmock2.Noop).
 		Build(t))
 
 	server := tester.MockACMEServer().BuildHTTPS(t)
@@ -296,8 +296,8 @@ func TestChallenge_CleanUp(t *testing.T) {
 }
 
 func TestGetChallengeInfo(t *testing.T) {
-	mockDefault(t, dnsmock.NewServer().
-		Query("_acme-challenge.example.com. CNAME", dnsmock.Noop).
+	mockDefault(t, dnsmock2.NewServer().
+		Query("_acme-challenge.example.com. CNAME", dnsmock2.Noop).
 		Build(t))
 
 	info := GetChallengeInfo(t.Context(), "example.com", "123")
@@ -313,9 +313,9 @@ func TestGetChallengeInfo(t *testing.T) {
 }
 
 func TestGetChallengeInfo_cname(t *testing.T) {
-	mockDefault(t, dnsmock.NewServer().
-		Query("_acme-challenge.example.com. CNAME", dnsmock.CNAME("example.org.")).
-		Query("example.org. CNAME", dnsmock.Noop).
+	mockDefault(t, dnsmock2.NewServer().
+		Query("_acme-challenge.example.com. CNAME", dnsmock2.CNAME("example.org.")).
+		Query("example.org. CNAME", dnsmock2.Noop).
 		Build(t))
 
 	info := GetChallengeInfo(t.Context(), "example.com", "123")
@@ -331,9 +331,9 @@ func TestGetChallengeInfo_cname(t *testing.T) {
 }
 
 func TestGetChallengeInfo_cname_disabled(t *testing.T) {
-	mockDefault(t, dnsmock.NewServer().
+	mockDefault(t, dnsmock2.NewServer().
 		// Never called when the env var works.
-		Query("_acme-challenge.example.com. CNAME", dnsmock.CNAME("example.org.")).
+		Query("_acme-challenge.example.com. CNAME", dnsmock2.CNAME("example.org.")).
 		Build(t))
 
 	t.Setenv("LEGO_DISABLE_CNAME_SUPPORT", "true")
@@ -351,8 +351,8 @@ func TestGetChallengeInfo_cname_disabled(t *testing.T) {
 }
 
 func TestGetChallengeInfo_Domain(t *testing.T) {
-	mockDefault(t, dnsmock.NewServer().
-		Query("_acme-challenge.example.com. CNAME", dnsmock.Noop).
+	mockDefault(t, dnsmock2.NewServer().
+		Query("_acme-challenge.example.com. CNAME", dnsmock2.Noop).
 		Build(t))
 
 	info := GetChallengeInfo(t.Context(), "example.com", "123")
@@ -361,8 +361,8 @@ func TestGetChallengeInfo_Domain(t *testing.T) {
 }
 
 func TestGetChallengeInfo_EffectiveDomain(t *testing.T) {
-	mockDefault(t, dnsmock.NewServer().
-		Query("_acme-challenge.example.com. CNAME", dnsmock.Noop).
+	mockDefault(t, dnsmock2.NewServer().
+		Query("_acme-challenge.example.com. CNAME", dnsmock2.Noop).
 		Build(t))
 
 	info := GetChallengeInfo(t.Context(), "example.com", "123")
@@ -371,9 +371,9 @@ func TestGetChallengeInfo_EffectiveDomain(t *testing.T) {
 }
 
 func TestGetChallengeInfo_EffectiveDomain_cname(t *testing.T) {
-	mockDefault(t, dnsmock.NewServer().
-		Query("_acme-challenge.example.com. CNAME", dnsmock.CNAME("_acme-challenge.example.org.")).
-		Query("_acme-challenge.example.org. CNAME", dnsmock.Noop).
+	mockDefault(t, dnsmock2.NewServer().
+		Query("_acme-challenge.example.com. CNAME", dnsmock2.CNAME("_acme-challenge.example.org.")).
+		Query("_acme-challenge.example.org. CNAME", dnsmock2.Noop).
 		Build(t))
 
 	info := GetChallengeInfo(t.Context(), "example.com", "123")

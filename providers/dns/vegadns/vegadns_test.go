@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -42,26 +42,26 @@ func TestDNSProvider_Present(t *testing.T) {
 	testCases := []struct {
 		desc          string
 		handler       http.Handler
-		builder       *servermock.Builder[*DNSProvider]
+		builder       *servermock2.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
 			desc: "success",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
-					servermock.ResponseFromFixture("token.json")).
+					servermock2.ResponseFromFixture("token.json")).
 				Route("GET /1.0/domains", getDomainHandler()).
 				Route("POST /1.0/records",
-					servermock.ResponseFromFixture("create_record.json").
+					servermock2.ResponseFromFixture("create_record.json").
 						WithStatusCode(http.StatusCreated)),
 		},
 		{
 			desc: "fail to find the zone",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
-					servermock.ResponseFromFixture("token.json")).
+					servermock2.ResponseFromFixture("token.json")).
 				Route("GET /1.0/domains",
-					servermock.Noop().
+					servermock2.Noop().
 						WithStatusCode(http.StatusNotFound)),
 			expectedError: "vegadns: find domain ID for _acme-challenge.example.com.: domain not found",
 		},
@@ -69,10 +69,10 @@ func TestDNSProvider_Present(t *testing.T) {
 			desc: "fail to create TXT record",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
-					servermock.ResponseFromFixture("token.json")).
+					servermock2.ResponseFromFixture("token.json")).
 				Route("GET /1.0/domains", getDomainHandler()).
 				Route("POST /1.0/records",
-					servermock.Noop().
+					servermock2.Noop().
 						WithStatusCode(http.StatusBadRequest)),
 			expectedError: "vegadns: create TXT record: bad answer from VegaDNS (code: 400, message: )",
 		},
@@ -99,28 +99,28 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		builder       *servermock.Builder[*DNSProvider]
+		builder       *servermock2.Builder[*DNSProvider]
 		expectedError string
 	}{
 		{
 			desc: "success",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
-					servermock.ResponseFromFixture("token.json")).
+					servermock2.ResponseFromFixture("token.json")).
 				Route("GET /1.0/domains", getDomainHandler()).
 				Route("GET /1.0/records",
-					servermock.ResponseFromFixture("records.json"),
-					servermock.CheckQueryParameter().With("domain_id", "1")).
+					servermock2.ResponseFromFixture("records.json"),
+					servermock2.CheckQueryParameter().With("domain_id", "1")).
 				Route("DELETE /1.0/records/3",
-					servermock.ResponseFromFixture("record_delete.json")),
+					servermock2.ResponseFromFixture("record_delete.json")),
 		},
 		{
 			desc: "fail to find the zone",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
-					servermock.ResponseFromFixture("token.json")).
+					servermock2.ResponseFromFixture("token.json")).
 				Route("GET /1.0/domains",
-					servermock.Noop().
+					servermock2.Noop().
 						WithStatusCode(http.StatusNotFound)),
 			expectedError: "vegadns: find domain ID for _acme-challenge.example.com.: domain not found",
 		},
@@ -128,12 +128,12 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			desc: "fail to get record ID",
 			builder: mockBuilder().
 				Route("POST /1.0/token",
-					servermock.ResponseFromFixture("token.json")).
+					servermock2.ResponseFromFixture("token.json")).
 				Route("GET /1.0/domains", getDomainHandler()).
 				Route("GET /1.0/records",
-					servermock.Noop().
+					servermock2.Noop().
 						WithStatusCode(http.StatusNotFound),
-					servermock.CheckQueryParameter().With("domain_id", "1")),
+					servermock2.CheckQueryParameter().With("domain_id", "1")),
 			expectedError: "vegadns: find record ID for 1: get records: bad answer from VegaDNS (code: 404, message: )",
 		},
 	}
@@ -179,8 +179,8 @@ func getDomainHandler() http.HandlerFunc {
 	}
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+func mockBuilder() *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 		envTest.Apply(map[string]string{
 			EnvKey:    "key",
 			EnvSecret: "secret",

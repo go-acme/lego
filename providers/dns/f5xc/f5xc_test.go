@@ -3,7 +3,7 @@ package f5xc
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester"
+	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/stretchr/testify/require"
 )
 

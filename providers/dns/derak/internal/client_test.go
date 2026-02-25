@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,16 +21,16 @@ func setupClient(server *httptest.Server) (*Client, error) {
 	return client, nil
 }
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](setupClient,
-		servermock.CheckHeader().WithJSONHeaders().
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](setupClient,
+		servermock2.CheckHeader().WithJSONHeaders().
 			WithBasicAuth("api", "secret"))
 }
 
 func TestGetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
-			servermock.ResponseFromFixture("records-GET.json")).
+			servermock2.ResponseFromFixture("records-GET.json")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", &GetRecordsParameters{DNSType: "TXT", Content: `"test"'`})
@@ -93,7 +93,7 @@ func TestGetRecords(t *testing.T) {
 func TestGetRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -104,7 +104,7 @@ func TestGetRecords_error(t *testing.T) {
 func TestGetRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/812bee17a0b440b0bd5ee099a78b839c",
-			servermock.ResponseFromFixture("record-GET.json")).
+			servermock2.ResponseFromFixture("record-GET.json")).
 		Build(t)
 
 	record, err := client.GetRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "812bee17a0b440b0bd5ee099a78b839c")
@@ -123,7 +123,7 @@ func TestGetRecord(t *testing.T) {
 func TestGetRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -134,7 +134,7 @@ func TestGetRecord_error(t *testing.T) {
 func TestCreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
-			servermock.ResponseFromFixture("record-PUT.json").
+			servermock2.ResponseFromFixture("record-PUT.json").
 				WithStatusCode(http.StatusCreated)).
 		Build(t)
 
@@ -161,7 +161,7 @@ func TestCreateRecord(t *testing.T) {
 func TestCreateRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -179,7 +179,7 @@ func TestCreateRecord_error(t *testing.T) {
 func TestEditRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/eebc813de2f94d67b09d91e10e2d65c2",
-			servermock.ResponseFromFixture("record-PATCH.json")).
+			servermock2.ResponseFromFixture("record-PATCH.json")).
 		Build(t)
 
 	record, err := client.EditRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "eebc813de2f94d67b09d91e10e2d65c2", Record{
@@ -200,7 +200,7 @@ func TestEditRecord(t *testing.T) {
 func TestEditRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/eebc813de2f94d67b09d91e10e2d65c2",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -213,7 +213,7 @@ func TestEditRecord_error(t *testing.T) {
 func TestDeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/653464211b7447a1bee6b8fcb9fb86df",
-			servermock.ResponseFromFixture("record-DELETE.json")).
+			servermock2.ResponseFromFixture("record-DELETE.json")).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "47c0ecf6c91243308c649ad1d2d618dd", "653464211b7447a1bee6b8fcb9fb86df")
@@ -223,7 +223,7 @@ func TestDeleteRecord(t *testing.T) {
 func TestDeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/47c0ecf6c91243308c649ad1d2d618dd/dnsrecords/653464211b7447a1bee6b8fcb9fb86df",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -232,11 +232,11 @@ func TestDeleteRecord_error(t *testing.T) {
 }
 
 func TestGetZones(t *testing.T) {
-	client := servermock.NewBuilder[*Client](setupClient,
-		servermock.CheckHeader().
+	client := servermock2.NewBuilder[*Client](setupClient,
+		servermock2.CheckHeader().
 			WithBasicAuth("api", "secret"),
 	).
-		Route("GET /", servermock.ResponseFromFixture("service-cdn-zones.json")).
+		Route("GET /", servermock2.ResponseFromFixture("service-cdn-zones.json")).
 		Build(t)
 
 	zones, err := client.GetZones(t.Context())
@@ -269,7 +269,7 @@ func TestGetZones(t *testing.T) {
 
 func TestGetZones_error(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /", servermock.ResponseFromFixture("error.json").
+		Route("GET /", servermock2.ResponseFromFixture("error.json").
 			WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 

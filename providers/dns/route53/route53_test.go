@@ -10,8 +10,8 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -148,7 +148,7 @@ func TestDNSProvider_Present(t *testing.T) {
 
 	envTest.ClearEnv()
 
-	provider := servermock.NewBuilder(
+	provider := servermock2.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			cfg := aws.Config{
 				HTTPClient:       server.Client(),
@@ -165,20 +165,20 @@ func TestDNSProvider_Present(t *testing.T) {
 		},
 	).
 		Route("GET /2013-04-01/hostedzonesbyname",
-			servermock.ResponseFromFixture("listHostedZonesByNameResponse.xml").
+			servermock2.ResponseFromFixture("listHostedZonesByNameResponse.xml").
 				WithHeader("Content-Type", "application/xml"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("dnsname", "example.com")).
 		Route("POST /2013-04-01/hostedzone/ABCDEFG/rrset",
-			servermock.ResponseFromFixture("changeResourceRecordSetsResponse.xml").
+			servermock2.ResponseFromFixture("changeResourceRecordSetsResponse.xml").
 				WithHeader("Content-Type", "application/xml")).
 		Route("GET /2013-04-01/change/123456",
-			servermock.ResponseFromFixture("getChangeResponse.xml").
+			servermock2.ResponseFromFixture("getChangeResponse.xml").
 				WithHeader("Content-Type", "application/xml")).
 		Route("GET /2013-04-01/hostedzone/ABCDEFG/rrset",
-			servermock.Noop().
+			servermock2.Noop().
 				WithHeader("Content-Type", "application/xml"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT")).
 		Build(t)

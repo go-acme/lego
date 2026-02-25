@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,8 +45,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(
+func mockBuilder() *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := &Config{
 				Token:              "secret",
@@ -63,7 +63,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders().
+		servermock2.CheckHeader().WithJSONHeaders().
 			With("X-TCpanel-Token", "secret"),
 	)
 }
@@ -71,11 +71,11 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /dns/zones",
-			servermock.ResponseFromInternal("get_zones.json")).
+			servermock2.ResponseFromInternal("get_zones.json")).
 		Route("POST /dns/zones/6/records",
-			servermock.ResponseFromInternal("create_record.json").
+			servermock2.ResponseFromInternal("create_record.json").
 				WithStatusCode(http.StatusCreated),
-			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json")).
+			servermock2.CheckRequestJSONBodyFromInternal("create_record-request.json")).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
@@ -85,7 +85,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("DELETE /dns/zones/456/records/123",
-			servermock.Noop().
+			servermock2.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 

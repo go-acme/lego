@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilderAuthenticated() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilderAuthenticated() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(server.URL, "userA", "secret")
 			if err != nil {
@@ -25,9 +25,9 @@ func mockBuilderAuthenticated() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders(),
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithAuthorization("Basic secretToken"),
 	)
 }
@@ -35,8 +35,8 @@ func mockBuilderAuthenticated() *servermock.Builder[*Client] {
 func TestClient_RetrieveZones(t *testing.T) {
 	client := mockBuilderAuthenticated().
 		Route("GET /api/v2/zones",
-			servermock.ResponseFromFixture("zones.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("zones.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With(
 					"filter",
 					"absoluteName:eq('example.com') and configuration.name:eq('myConfiguration') and view.name:eq('myView')",
@@ -81,7 +81,7 @@ func TestClient_RetrieveZones(t *testing.T) {
 func TestClient_RetrieveZones_error(t *testing.T) {
 	client := mockBuilderAuthenticated().
 		Route("GET /api/v2/zones",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized),
 		).
 		Build(t)
@@ -101,8 +101,8 @@ func TestClient_RetrieveZones_error(t *testing.T) {
 func TestClient_RetrieveZoneDeployments(t *testing.T) {
 	client := mockBuilderAuthenticated().
 		Route("GET /api/v2/zones/456789/deployments",
-			servermock.ResponseFromFixture("getZoneDeployments.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("getZoneDeployments.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("filter", "id:eq('12345')"),
 		).
 		Build(t)
@@ -134,9 +134,9 @@ func TestClient_RetrieveZoneDeployments(t *testing.T) {
 func TestClient_CreateZoneDeployment(t *testing.T) {
 	client := mockBuilderAuthenticated().
 		Route("POST /api/v2/zones/12345/deployments",
-			servermock.ResponseFromFixture("postZoneDeployment.json").
+			servermock2.ResponseFromFixture("postZoneDeployment.json").
 				WithStatusCode(http.StatusCreated),
-			servermock.CheckRequestJSONBodyFromFixture("postZoneDeployment-request.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("postZoneDeployment-request.json"),
 		).
 		Build(t)
 
@@ -161,8 +161,8 @@ func TestClient_CreateZoneDeployment(t *testing.T) {
 func TestClient_CreateZoneResourceRecord(t *testing.T) {
 	client := mockBuilderAuthenticated().
 		Route("POST /api/v2/zones/12345/resourceRecords",
-			servermock.ResponseFromFixture("postZoneResourceRecord.json"),
-			servermock.CheckRequestJSONBodyFromFixture("postZoneResourceRecord-request.json"),
+			servermock2.ResponseFromFixture("postZoneResourceRecord.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("postZoneResourceRecord-request.json"),
 		).
 		Build(t)
 
@@ -199,7 +199,7 @@ func TestClient_CreateZoneResourceRecord(t *testing.T) {
 func TestClient_DeleteResourceRecord(t *testing.T) {
 	client := mockBuilderAuthenticated().
 		Route("DELETE /api/v2/resourceRecords/12345",
-			servermock.ResponseFromFixture("deleteResourceRecord.json"),
+			servermock2.ResponseFromFixture("deleteResourceRecord.json"),
 		).
 		Build(t)
 

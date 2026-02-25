@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("secret")
 			if err != nil {
@@ -24,7 +24,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithAccept("application/json").
 			With("X-Api-Key", "secret"),
 	)
@@ -33,8 +33,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_ListDomains(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains",
-			servermock.ResponseFromFixture("list_domains.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("list_domains.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("domain-name", "example.com")).
 		Build(t)
 
@@ -53,7 +53,7 @@ func TestClient_ListDomains(t *testing.T) {
 func TestClient_ListDomains_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains",
-			servermock.Noop().WithStatusCode(http.StatusBadRequest)).
+			servermock2.Noop().WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
 	_, err := client.ListDomains(t.Context(), "example.com")
@@ -63,7 +63,7 @@ func TestClient_ListDomains_error(t *testing.T) {
 func TestClient_ListDomains_api_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains",
-			servermock.ResponseFromFixture("error.json")).
+			servermock2.ResponseFromFixture("error.json")).
 		Build(t)
 
 	_, err := client.ListDomains(t.Context(), "example.com")
@@ -73,10 +73,10 @@ func TestClient_ListDomains_api_error(t *testing.T) {
 func TestClient_ListDNSRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/list",
-			servermock.ResponseFromFixture("list_dns_records.json"),
-			servermock.CheckHeader().
+			servermock2.ResponseFromFixture("list_dns_records.json"),
+			servermock2.CheckHeader().
 				WithContentType("application/x-www-form-urlencoded"),
-			servermock.CheckForm().Strict().
+			servermock2.CheckForm().Strict().
 				With("order-id", "abc").
 				With("types[]", "TXT")).
 		Build(t)
@@ -96,7 +96,7 @@ func TestClient_ListDNSRecords(t *testing.T) {
 func TestClient_ListDNSRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/list",
-			servermock.Noop().WithStatusCode(http.StatusBadRequest)).
+			servermock2.Noop().WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
 	_, err := client.ListDNSRecords(t.Context(), "abc", "TXT")
@@ -106,7 +106,7 @@ func TestClient_ListDNSRecords_error(t *testing.T) {
 func TestClient_ListDNSRecords_api_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/list",
-			servermock.ResponseFromFixture("error.json")).
+			servermock2.ResponseFromFixture("error.json")).
 		Build(t)
 
 	_, err := client.ListDNSRecords(t.Context(), "abc", "TXT")
@@ -116,10 +116,10 @@ func TestClient_ListDNSRecords_api_error(t *testing.T) {
 func TestClient_AddDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/add",
-			servermock.ResponseFromFixture("add_dns_record.json"),
-			servermock.CheckHeader().
+			servermock2.ResponseFromFixture("add_dns_record.json"),
+			servermock2.CheckHeader().
 				WithContentType("application/x-www-form-urlencoded"),
-			servermock.CheckForm().Strict().
+			servermock2.CheckForm().Strict().
 				With("order-id", "abc").
 				With("name", "example.com.").
 				With("ttl", "120").
@@ -150,7 +150,7 @@ func TestClient_AddDNSRecord(t *testing.T) {
 func TestClient_AddDNSRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/add",
-			servermock.Noop().WithStatusCode(http.StatusBadRequest)).
+			servermock2.Noop().WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
 	record := Record{
@@ -167,7 +167,7 @@ func TestClient_AddDNSRecord_error(t *testing.T) {
 func TestClient_AddDNSRecord_api_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/add",
-			servermock.ResponseFromFixture("error.json")).
+			servermock2.ResponseFromFixture("error.json")).
 		Build(t)
 
 	record := Record{
@@ -184,10 +184,10 @@ func TestClient_AddDNSRecord_api_error(t *testing.T) {
 func TestClient_DeleteDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/delete",
-			servermock.ResponseFromFixture("delete_dns_record.json"),
-			servermock.CheckHeader().
+			servermock2.ResponseFromFixture("delete_dns_record.json"),
+			servermock2.CheckHeader().
 				WithContentType("application/x-www-form-urlencoded"),
-			servermock.CheckForm().Strict().
+			servermock2.CheckForm().Strict().
 				With("order-id", "abc").
 				With("line", "123")).
 		Build(t)
@@ -206,7 +206,7 @@ func TestClient_DeleteDNSRecord(t *testing.T) {
 func TestClient_DeleteDNSRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/delete",
-			servermock.Noop().WithStatusCode(http.StatusBadRequest)).
+			servermock2.Noop().WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
 	_, err := client.DeleteDNSRecord(t.Context(), "abc", 123)
@@ -216,7 +216,7 @@ func TestClient_DeleteDNSRecord_error(t *testing.T) {
 func TestClient_DeleteDNSRecord_api_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/dns-records/delete",
-			servermock.ResponseFromFixture("error.json")).
+			servermock2.ResponseFromFixture("error.json")).
 		Build(t)
 
 	_, err := client.DeleteDNSRecord(t.Context(), "abc", 123)

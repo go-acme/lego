@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(OAuthStaticAccessToken(server.Client(), "secret"), "LON1")
 			if err != nil {
@@ -24,7 +24,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders().
 			With("Authorization", "Bearer secret").
 			WithRegexp("User-Agent", `goacme-lego/[0-9.]+ \(.+\)`),
@@ -34,8 +34,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_ListDomains(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns",
-			servermock.ResponseFromFixture("list_domain_names.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("list_domain_names.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("region", "LON1")).
 		Build(t)
 
@@ -54,8 +54,8 @@ func TestClient_ListDomains(t *testing.T) {
 func TestClient_ListDNSRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
-			servermock.ResponseFromFixture("list_dns_records.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("list_dns_records.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("region", "LON1")).
 		Build(t)
 
@@ -79,7 +79,7 @@ func TestClient_ListDNSRecords(t *testing.T) {
 func TestClient_ListDNSRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -95,7 +95,7 @@ func TestClient_ListDNSRecords_error_raw(t *testing.T) {
 	// https://www.civo.com/api#parameters-and-responses
 	client := mockBuilder().
 		Route("GET /dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
-			servermock.RawStringResponse(http.StatusText(http.StatusNotFound)).
+			servermock2.RawStringResponse(http.StatusText(http.StatusNotFound)).
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
 
@@ -106,8 +106,8 @@ func TestClient_ListDNSRecords_error_raw(t *testing.T) {
 func TestClient_CreateDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
-			servermock.ResponseFromFixture("create_dns_record.json"),
-			servermock.CheckRequestJSONBodyFromFixture("create_dns_record-request.json")).
+			servermock2.ResponseFromFixture("create_dns_record.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("create_dns_record-request.json")).
 		Build(t)
 
 	record := Record{
@@ -135,8 +135,8 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 func TestClient_DeleteDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns/edc5dacf-a2ad-4757-41ee-c12f06259c70/records/76cc107f-fbef-4e2b-b97f-f5d34f4075d3",
-			servermock.ResponseFromFixture("delete_dns_record.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("delete_dns_record.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("region", "LON1")).
 		Build(t)
 

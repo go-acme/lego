@@ -5,13 +5,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_defaultTransport(t *testing.T) {
-	client := servermock.NewBuilder(
+	client := servermock2.NewBuilder(
 		func(server *httptest.Server) (*http.Client, error) {
 			cl := server.Client()
 
@@ -22,7 +22,7 @@ func Test_defaultTransport(t *testing.T) {
 			return cl, nil
 		}).
 		Route("/",
-			servermock.Noop().WithStatusCode(http.StatusTeapot)).
+			servermock2.Noop().WithStatusCode(http.StatusTeapot)).
 		Build(t)
 
 	req, err := http.NewRequest(http.MethodGet, "http://example.com", nil)

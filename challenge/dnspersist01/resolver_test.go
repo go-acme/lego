@@ -3,7 +3,7 @@ package dnspersist01
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/dnsmock"
+	dnsmock2 "github.com/go-acme/lego/v5/internal/tester/dnsmock"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -14,22 +14,22 @@ func TestResolver_LookupTXT(t *testing.T) {
 
 	testCases := []struct {
 		desc          string
-		serverBuilder *dnsmock.Builder
+		serverBuilder *dnsmock2.Builder
 		expected      TXTResult
 	}{
 		{
 			desc: "direct TXT",
-			serverBuilder: dnsmock.NewServer().
-				Query(fqdn+" TXT", dnsmock.Answer(fakeTXT(fqdn, "value", 120))),
+			serverBuilder: dnsmock2.NewServer().
+				Query(fqdn+" TXT", dnsmock2.Answer(fakeTXT(fqdn, "value", 120))),
 			expected: TXTResult{
 				Records: []TXTRecord{{Value: "value", TTL: 120}},
 			},
 		},
 		{
 			desc: "cname to txt",
-			serverBuilder: dnsmock.NewServer().
-				Query(fqdn+" TXT", dnsmock.CNAME("alias.example.com.")).
-				Query("alias.example.com. TXT", dnsmock.Answer(fakeTXT("alias.example.com.", "value", 60))),
+			serverBuilder: dnsmock2.NewServer().
+				Query(fqdn+" TXT", dnsmock2.CNAME("alias.example.com.")).
+				Query("alias.example.com. TXT", dnsmock2.Answer(fakeTXT("alias.example.com.", "value", 60))),
 			expected: TXTResult{
 				Records:    []TXTRecord{{Value: "value", TTL: 60}},
 				CNAMEChain: []string{"alias.example.com."},
@@ -37,10 +37,10 @@ func TestResolver_LookupTXT(t *testing.T) {
 		},
 		{
 			desc: "cname chain follows multiple hops",
-			serverBuilder: dnsmock.NewServer().
-				Query(fqdn+" TXT", dnsmock.CNAME("alias.example.com.")).
-				Query("alias.example.com. TXT", dnsmock.CNAME("alias2.example.com.")).
-				Query("alias2.example.com. TXT", dnsmock.Answer(fakeTXT("alias2.example.com.", "value", 30))),
+			serverBuilder: dnsmock2.NewServer().
+				Query(fqdn+" TXT", dnsmock2.CNAME("alias.example.com.")).
+				Query("alias.example.com. TXT", dnsmock2.CNAME("alias2.example.com.")).
+				Query("alias2.example.com. TXT", dnsmock2.Answer(fakeTXT("alias2.example.com.", "value", 30))),
 			expected: TXTResult{
 				Records:    []TXTRecord{{Value: "value", TTL: 30}},
 				CNAMEChain: []string{"alias.example.com.", "alias2.example.com."},
@@ -48,13 +48,13 @@ func TestResolver_LookupTXT(t *testing.T) {
 		},
 		{
 			desc: "nxdomain",
-			serverBuilder: dnsmock.NewServer().
-				Query(fqdn+" TXT", dnsmock.Error(dns.RcodeNameError)),
+			serverBuilder: dnsmock2.NewServer().
+				Query(fqdn+" TXT", dnsmock2.Error(dns.RcodeNameError)),
 		},
 		{
 			desc: "empty answer",
-			serverBuilder: dnsmock.NewServer().
-				Query(fqdn+" TXT", dnsmock.Noop),
+			serverBuilder: dnsmock2.NewServer().
+				Query(fqdn+" TXT", dnsmock2.Noop),
 		},
 	}
 

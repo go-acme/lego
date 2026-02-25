@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -148,8 +148,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(
+func mockBuilder() *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.APIUser = "user"
@@ -165,7 +165,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders().
 			With("API-User", "user").
 			With("API-Key", "secret"),
@@ -175,8 +175,8 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /domains/example.com/add-txt-record",
-			servermock.ResponseFromInternal("add_txt_record.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("add_txt_record.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("hostName", "_acme-challenge.example.com").
 				With("txt", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")).
 		Build(t)
@@ -188,8 +188,8 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("DELETE /domains/example.com/delete-txt-record",
-			servermock.ResponseFromInternal("delete_txt_record.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("delete_txt_record.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("hostName", "_acme-challenge.example.com").
 				With("txt", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")).
 		Build(t)

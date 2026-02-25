@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/platform/tester/dnsmock"
+	dnsmock2 "github.com/go-acme/lego/v5/internal/tester/dnsmock"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,7 +15,7 @@ func TestClient_checkNameserversPropagationCustom_authoritativeNss(t *testing.T)
 	testCases := []struct {
 		desc          string
 		fqdn, value   string
-		fakeDNSServer *dnsmock.Builder
+		fakeDNSServer *dnsmock2.Builder
 		expectedError string
 	}{
 		{
@@ -23,9 +23,9 @@ func TestClient_checkNameserversPropagationCustom_authoritativeNss(t *testing.T)
 			// NS: asnums.routeviews.org.
 			fqdn:  "8.8.8.8.asn.routeviews.org.",
 			value: "151698.8.8.024",
-			fakeDNSServer: dnsmock.NewServer().
+			fakeDNSServer: dnsmock2.NewServer().
 				Query("8.8.8.8.asn.routeviews.org. TXT",
-					dnsmock.Answer(
+					dnsmock2.Answer(
 						fakeTXT("8.8.8.8.asn.routeviews.org.", "151698.8.8.024"),
 					),
 				),
@@ -35,9 +35,9 @@ func TestClient_checkNameserversPropagationCustom_authoritativeNss(t *testing.T)
 			// NS: asnums.routeviews.org.
 			fqdn:  "8.8.8.8.asn.routeviews.org.",
 			value: "fe01=",
-			fakeDNSServer: dnsmock.NewServer().
+			fakeDNSServer: dnsmock2.NewServer().
 				Query("8.8.8.8.asn.routeviews.org. TXT",
-					dnsmock.Answer(
+					dnsmock2.Answer(
 						fakeTXT("8.8.8.8.asn.routeviews.org.", "15169"),
 						fakeTXT("8.8.8.8.asn.routeviews.org.", "8.8.8.0"),
 						fakeTXT("8.8.8.8.asn.routeviews.org.", "24"),
@@ -50,8 +50,8 @@ func TestClient_checkNameserversPropagationCustom_authoritativeNss(t *testing.T)
 			// NS: ns2.google.com.
 			fqdn:  "ns1.google.com.",
 			value: "fe01=",
-			fakeDNSServer: dnsmock.NewServer().
-				Query("ns1.google.com.", dnsmock.Noop),
+			fakeDNSServer: dnsmock2.NewServer().
+				Query("ns1.google.com.", dnsmock2.Noop),
 			expectedError: "did not return the expected TXT record [fqdn: ns1.google.com., value: fe01=]: ",
 		},
 	}
@@ -79,17 +79,17 @@ func TestClient_checkNameserversPropagationCustom_authoritativeNss(t *testing.T)
 func TestClient_lookupAuthoritativeNameservers_OK(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		fakeDNSServer *dnsmock.Builder
+		fakeDNSServer *dnsmock2.Builder
 		fqdn          string
 		expected      []string
 	}{
 		{
 			fqdn: "en.wikipedia.org.localhost.",
-			fakeDNSServer: dnsmock.NewServer().
-				Query("en.wikipedia.org.localhost SOA", dnsmock.CNAME("dyna.wikimedia.org.localhost")).
-				Query("wikipedia.org.localhost SOA", dnsmock.SOA("")).
+			fakeDNSServer: dnsmock2.NewServer().
+				Query("en.wikipedia.org.localhost SOA", dnsmock2.CNAME("dyna.wikimedia.org.localhost")).
+				Query("wikipedia.org.localhost SOA", dnsmock2.SOA("")).
 				Query("wikipedia.org.localhost NS",
-					dnsmock.Answer(
+					dnsmock2.Answer(
 						fakeNS("wikipedia.org.localhost.", "ns0.wikimedia.org.localhost."),
 						fakeNS("wikipedia.org.localhost.", "ns1.wikimedia.org.localhost."),
 						fakeNS("wikipedia.org.localhost.", "ns2.wikimedia.org.localhost."),
@@ -99,11 +99,11 @@ func TestClient_lookupAuthoritativeNameservers_OK(t *testing.T) {
 		},
 		{
 			fqdn: "www.google.com.localhost.",
-			fakeDNSServer: dnsmock.NewServer().
-				Query("www.google.com.localhost. SOA", dnsmock.Noop).
-				Query("google.com.localhost. SOA", dnsmock.SOA("")).
+			fakeDNSServer: dnsmock2.NewServer().
+				Query("www.google.com.localhost. SOA", dnsmock2.Noop).
+				Query("google.com.localhost. SOA", dnsmock2.SOA("")).
 				Query("google.com.localhost. NS",
-					dnsmock.Answer(
+					dnsmock2.Answer(
 						fakeNS("google.com.localhost.", "ns1.google.com.localhost."),
 						fakeNS("google.com.localhost.", "ns2.google.com.localhost."),
 						fakeNS("google.com.localhost.", "ns3.google.com.localhost."),
@@ -114,11 +114,11 @@ func TestClient_lookupAuthoritativeNameservers_OK(t *testing.T) {
 		},
 		{
 			fqdn: "mail.proton.me.localhost.",
-			fakeDNSServer: dnsmock.NewServer().
-				Query("mail.proton.me.localhost. SOA", dnsmock.Noop).
-				Query("proton.me.localhost. SOA", dnsmock.SOA("")).
+			fakeDNSServer: dnsmock2.NewServer().
+				Query("mail.proton.me.localhost. SOA", dnsmock2.Noop).
+				Query("proton.me.localhost. SOA", dnsmock2.SOA("")).
 				Query("proton.me.localhost. NS",
-					dnsmock.Answer(
+					dnsmock2.Answer(
 						fakeNS("proton.me.localhost.", "ns1.proton.me.localhost."),
 						fakeNS("proton.me.localhost.", "ns2.proton.me.localhost."),
 						fakeNS("proton.me.localhost.", "ns3.proton.me.localhost."),
@@ -147,30 +147,30 @@ func TestClient_lookupAuthoritativeNameservers_error(t *testing.T) {
 	testCases := []struct {
 		desc          string
 		fqdn          string
-		fakeDNSServer *dnsmock.Builder
+		fakeDNSServer *dnsmock2.Builder
 		error         string
 	}{
 		{
 			desc: "NXDOMAIN",
 			fqdn: "example.invalid.",
-			fakeDNSServer: dnsmock.NewServer().
-				Query(". SOA", dnsmock.Error(dns.RcodeNameError)),
+			fakeDNSServer: dnsmock2.NewServer().
+				Query(". SOA", dnsmock2.Error(dns.RcodeNameError)),
 			error: "could not find zone: [fqdn=example.invalid.] could not find the start of authority for 'example.invalid.' [question='invalid. IN  SOA', code=NXDOMAIN]",
 		},
 		{
 			desc: "NS error",
 			fqdn: "example.com.",
-			fakeDNSServer: dnsmock.NewServer().
-				Query("example.com. SOA", dnsmock.SOA("")).
-				Query("example.com. NS", dnsmock.Error(dns.RcodeServerFailure)),
+			fakeDNSServer: dnsmock2.NewServer().
+				Query("example.com. SOA", dnsmock2.SOA("")).
+				Query("example.com. NS", dnsmock2.Error(dns.RcodeServerFailure)),
 			error: "[zone=example.com.] could not determine authoritative nameservers",
 		},
 		{
 			desc: "empty NS",
 			fqdn: "example.com.",
-			fakeDNSServer: dnsmock.NewServer().
-				Query("example.com. SOA", dnsmock.SOA("")).
-				Query("example.me NS", dnsmock.Noop),
+			fakeDNSServer: dnsmock2.NewServer().
+				Query("example.com. SOA", dnsmock2.SOA("")).
+				Query("example.me NS", dnsmock2.Noop),
 			error: "[zone=example.com.] could not determine authoritative nameservers",
 		},
 	}

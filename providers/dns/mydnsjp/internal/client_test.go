@@ -5,12 +5,12 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("xxx", "secret")
 			client.HTTPClient = server.Client()
@@ -18,7 +18,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithContentTypeFromURLEncoded().
 			WithBasicAuth("xxx", "secret"))
 }
@@ -26,7 +26,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_AddTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /", nil,
-			servermock.CheckForm().Strict().
+			servermock2.CheckForm().Strict().
 				With("CERTBOT_DOMAIN", "example.com").
 				With("CERTBOT_VALIDATION", "txt").
 				With("EDIT_CMD", "REGIST")).
@@ -39,7 +39,7 @@ func TestClient_AddTXTRecord(t *testing.T) {
 func TestClient_DeleteTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /", nil,
-			servermock.CheckForm().Strict().
+			servermock2.CheckForm().Strict().
 				With("CERTBOT_DOMAIN", "example.com").
 				With("CERTBOT_VALIDATION", "txt").
 				With("EDIT_CMD", "DELETE")).

@@ -3,7 +3,7 @@ package internal
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -11,8 +11,8 @@ import (
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /login",
-			servermock.ResponseFromFixture("login.json"),
-			servermock.CheckRequestJSONBodyFromFixture("login-request.json")).
+			servermock2.ResponseFromFixture("login.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("login-request.json")).
 		Route("DELETE /api/record/xxx", nil).
 		Build(t)
 

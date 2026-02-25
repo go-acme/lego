@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -148,8 +148,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(
+func mockBuilder() *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.AuthUserID = "user123"
@@ -165,7 +165,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders(),
 	)
 }
@@ -173,8 +173,8 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /api/dns/add-domain-record.json",
-			servermock.ResponseFromInternal("add_record.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("add_record.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("Domain", "example.com").
 				With("Host", "_acme-challenge").
 				With("Type", "TXT").
@@ -192,8 +192,8 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /api/dns/delete-domain-record.json",
-			servermock.ResponseFromInternal("add_record.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("add_record.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("Id", "123").
 				With("auth-userid", "user123").
 				With("api-key", "secret"),

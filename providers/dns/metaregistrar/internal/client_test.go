@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("secret")
 			if err != nil {
@@ -24,15 +24,15 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders().
+		servermock2.CheckHeader().WithJSONHeaders().
 			With(tokenHeader, "secret"))
 }
 
 func TestClient_UpdateDNSZone(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /dnszone/example.com",
-			servermock.ResponseFromFixture("update-dns-zone.json"),
-			servermock.CheckRequestJSONBody(`{"add":[{"name":"@","type":"TXT","ttl":60,"content":"value"}]}`)).
+			servermock2.ResponseFromFixture("update-dns-zone.json"),
+			servermock2.CheckRequestJSONBody(`{"add":[{"name":"@","type":"TXT","ttl":60,"content":"value"}]}`)).
 		Build(t)
 
 	updateRequest := DNSZoneUpdateRequest{
@@ -78,7 +78,7 @@ func TestClient_UpdateDNSZone_error(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := mockBuilder().
 				Route("PATCH /dnszone/example.com",
-					servermock.ResponseFromFixture(test.filename).
+					servermock2.ResponseFromFixture(test.filename).
 						WithStatusCode(http.StatusUnprocessableEntity)).
 				Build(t)
 

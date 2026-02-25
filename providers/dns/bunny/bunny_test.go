@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/ptr"
-	"github.com/go-acme/lego/v5/platform/tester"
+	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/nrdcg/bunny-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

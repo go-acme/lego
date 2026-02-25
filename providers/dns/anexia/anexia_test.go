@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -127,8 +127,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(
+func mockBuilder() *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.Token = "secret"
@@ -137,7 +137,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 			return NewDNSProviderConfig(config)
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithAuthorization("Token secret"),
 	)
 }
@@ -145,10 +145,10 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /api/clouddns/v1/zone.json/example.com/records",
-			servermock.ResponseFromInternal("create_record.json"),
-			servermock.CheckHeader().
+			servermock2.ResponseFromInternal("create_record.json"),
+			servermock2.CheckHeader().
 				WithContentType("application/json; charset=utf-8"),
-			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json")).
+			servermock2.CheckRequestJSONBodyFromInternal("create_record-request.json")).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
@@ -158,9 +158,9 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /api/clouddns/v1/zone.json/example.com",
-			servermock.ResponseFromInternal("get_zone.json")).
+			servermock2.ResponseFromInternal("get_zone.json")).
 		Route("DELETE /api/clouddns/v1/zone.json/example.com/records/12345678-1234-1234-1234-123456789abc",
-			servermock.Noop()).
+			servermock2.Noop()).
 		Build(t)
 
 	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")

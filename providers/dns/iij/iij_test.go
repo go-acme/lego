@@ -4,8 +4,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -263,8 +263,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(
+func mockBuilder() *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.AccessKey = "user"
@@ -280,7 +280,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithRegexp("Authorization", "IIJAPI user:.+").
 			WithRegexp("X-Iijapi-Expire", `\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.+`).
 			With("X-Iijapi-Signaturemethod", "HmacSHA256").
@@ -291,14 +291,14 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /r/20140601/123/zones.json",
-			servermock.ResponseFromFixture("zones.json"),
+			servermock2.ResponseFromFixture("zones.json"),
 		).
 		Route("POST /r/20140601/123/example.com/record.json",
-			servermock.ResponseFromFixture("record.json"),
-			servermock.CheckRequestJSONBodyFromFixture("record-request.json"),
+			servermock2.ResponseFromFixture("record.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("record-request.json"),
 		).
 		Route("PUT /r/20140601/123/commit.json",
-			servermock.ResponseFromFixture("commit.json"),
+			servermock2.ResponseFromFixture("commit.json"),
 		).
 		Build(t)
 
@@ -309,19 +309,19 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /r/20140601/123/zones.json",
-			servermock.ResponseFromFixture("zones.json"),
+			servermock2.ResponseFromFixture("zones.json"),
 		).
 		Route("GET /r/20140601/123/example.com/records/DETAIL.json",
-			servermock.ResponseFromFixture("detail.json"),
+			servermock2.ResponseFromFixture("detail.json"),
 		).
 		Route("DELETE /r/20140601/123/example.com/record/963.json",
-			servermock.ResponseFromFixture("delete.json"),
+			servermock2.ResponseFromFixture("delete.json"),
 		).
 		Route("PUT /r/20140601/123/commit.json",
-			servermock.ResponseFromFixture("commit.json"),
+			servermock2.ResponseFromFixture("commit.json"),
 		).
 		Route("/",
-			servermock.DumpRequest(),
+			servermock2.DumpRequest(),
 		).
 		Build(t)
 

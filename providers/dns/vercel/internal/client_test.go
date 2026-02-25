@@ -5,32 +5,32 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(OAuthStaticAccessToken(server.Client(), "secret"), "123")
 			client.baseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders().
+		servermock2.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer secret"))
 }
 
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /v2/domains/example.com/records",
-			servermock.RawStringResponse(`{
+			servermock2.RawStringResponse(`{
 			"uid": "9e2eab60-0ba5-4dff-b481-2999c9764b84",
 			"updated": 1
 		}`),
-			servermock.CheckRequestJSONBody(`{"name":"_acme-challenge.example.com.","type":"TXT","value":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":60}`),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckRequestJSONBody(`{"name":"_acme-challenge.example.com.","type":"TXT","value":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":60}`),
+			servermock2.CheckQueryParameter().Strict().
 				With("teamId", "123")).
 		Build(t)
 
@@ -55,7 +55,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v2/domains/example.com/records/1234567", nil,
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("teamId", "123")).
 		Build(t)
 

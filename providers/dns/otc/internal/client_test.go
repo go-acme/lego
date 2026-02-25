@@ -6,13 +6,13 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder(
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret", "example.com", "test")
 			client.HTTPClient = server.Client()
@@ -20,15 +20,15 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders(),
+		servermock2.CheckHeader().WithJSONHeaders(),
 	)
 }
 
 func TestClient_GetZoneID(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones",
-			servermock.ResponseFromFixture("zones_GET.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("zones_GET.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Build(t)
 
@@ -41,8 +41,8 @@ func TestClient_GetZoneID(t *testing.T) {
 func TestClient_GetZoneID_private(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones",
-			servermock.ResponseFromFixture("zones_GET.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("zones_GET.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "example.com.").
 				With("type", "private")).
 		Build(t)
@@ -56,8 +56,8 @@ func TestClient_GetZoneID_private(t *testing.T) {
 func TestClient_GetZoneID_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones",
-			servermock.ResponseFromFixture("zones_GET_empty.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("zones_GET_empty.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Build(t)
 
@@ -68,8 +68,8 @@ func TestClient_GetZoneID_error(t *testing.T) {
 func TestClient_GetRecordSetID(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones/123123/recordsets",
-			servermock.ResponseFromFixture("zones-recordsets_GET.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("zones-recordsets_GET.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "example.com.").
 				With("type", "TXT"),
 		).
@@ -84,8 +84,8 @@ func TestClient_GetRecordSetID(t *testing.T) {
 func TestClient_GetRecordSetID_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones/123123/recordsets",
-			servermock.ResponseFromFixture("zones-recordsets_GET_empty.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("zones-recordsets_GET_empty.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "example.com.").
 				With("type", "TXT"),
 		).
@@ -98,8 +98,8 @@ func TestClient_GetRecordSetID_error(t *testing.T) {
 func TestClient_CreateRecordSet(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/123123/recordsets",
-			servermock.ResponseFromFixture("zones-recordsets_POST.json"),
-			servermock.CheckRequestJSONBodyFromFixture("zones-recordsets_POST-request.json")).
+			servermock2.ResponseFromFixture("zones-recordsets_POST.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("zones-recordsets_POST-request.json")).
 		Build(t)
 
 	rs := RecordSets{
@@ -116,7 +116,7 @@ func TestClient_CreateRecordSet(t *testing.T) {
 func TestClient_DeleteRecordSet(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/123123/recordsets/321321",
-			servermock.ResponseFromFixture("zones-recordsets_DELETE.json")).
+			servermock2.ResponseFromFixture("zones-recordsets_DELETE.json")).
 		Build(t)
 
 	err := client.DeleteRecordSet(t.Context(), "123123", "321321")

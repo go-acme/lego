@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -26,10 +26,10 @@ func mockContext(t *testing.T) context.Context {
 }
 
 func TestIdentifier_Authentication(t *testing.T) {
-	client := servermock.NewBuilder[*Identifier](setupIdentifierClient).
+	client := servermock2.NewBuilder[*Identifier](setupIdentifierClient).
 		Route("POST /KasAuth.php",
-			servermock.ResponseFromFixture("auth.xml"),
-			servermock.CheckRequestBodyFromFixture("auth-request.xml").
+			servermock2.ResponseFromFixture("auth.xml"),
+			servermock2.CheckRequestBodyFromFixture("auth-request.xml").
 				IgnoreWhitespace()).
 		Build(t)
 
@@ -40,8 +40,8 @@ func TestIdentifier_Authentication(t *testing.T) {
 }
 
 func TestIdentifier_Authentication_error(t *testing.T) {
-	client := servermock.NewBuilder[*Identifier](setupIdentifierClient).
-		Route("POST /KasAuth.php", servermock.ResponseFromFixture("auth_fault.xml")).
+	client := servermock2.NewBuilder[*Identifier](setupIdentifierClient).
+		Route("POST /KasAuth.php", servermock2.ResponseFromFixture("auth_fault.xml")).
 		Build(t)
 
 	_, err := client.Authentication(t.Context(), 60, false)

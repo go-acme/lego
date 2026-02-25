@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
@@ -150,21 +150,21 @@ func TestPresentNoExistingRR(t *testing.T) {
 	provider := mockBuilder().
 		// getHostedZone
 		Route("GET /dns/v1/projects/manhattan/managedZones",
-			servermock.JSONEncode(&dns.ManagedZonesListResponse{
+			servermock2.JSONEncode(&dns.ManagedZonesListResponse{
 				ManagedZones: []*dns.ManagedZone{
 					{Name: "test", Visibility: "public"},
 				},
 			}),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("dnsName", "example.com.").
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		// findTxtRecords
 		Route("GET /dns/v1/projects/manhattan/managedZones/test/rrsets",
-			servermock.JSONEncode(&dns.ResourceRecordSetsListResponse{
+			servermock2.JSONEncode(&dns.ResourceRecordSetsListResponse{
 				Rrsets: []*dns.ResourceRecordSet{},
 			}),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT").
 				With("prettyPrint", "false").
@@ -186,7 +186,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 					return
 				}
 			}),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		Build(t)
@@ -201,18 +201,18 @@ func TestPresentWithExistingRR(t *testing.T) {
 	provider := mockBuilder().
 		// getHostedZone
 		Route("GET /dns/v1/projects/manhattan/managedZones",
-			servermock.JSONEncode(&dns.ManagedZonesListResponse{
+			servermock2.JSONEncode(&dns.ManagedZonesListResponse{
 				ManagedZones: []*dns.ManagedZone{
 					{Name: "test", Visibility: "public"},
 				},
 			}),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("dnsName", "example.com.").
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		// findTxtRecords
 		Route("GET /dns/v1/projects/manhattan/managedZones/test/rrsets",
-			servermock.JSONEncode(&dns.ResourceRecordSetsListResponse{
+			servermock2.JSONEncode(&dns.ResourceRecordSetsListResponse{
 				Rrsets: []*dns.ResourceRecordSet{{
 					Name:    "_acme-challenge.example.com.",
 					Rrdatas: []string{`"X7DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"huji"`},
@@ -220,7 +220,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 					Type:    "TXT",
 				}},
 			}),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT").
 				With("prettyPrint", "false").
@@ -259,7 +259,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 					return
 				}
 			}),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		Build(t)
@@ -274,18 +274,18 @@ func TestPresentSkipExistingRR(t *testing.T) {
 	provider := mockBuilder().
 		// getHostedZone
 		Route("GET /dns/v1/projects/manhattan/managedZones",
-			servermock.JSONEncode(&dns.ManagedZonesListResponse{
+			servermock2.JSONEncode(&dns.ManagedZonesListResponse{
 				ManagedZones: []*dns.ManagedZone{
 					{Name: "test", Visibility: "public"},
 				},
 			}),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("dnsName", "example.com.").
 				With("prettyPrint", "false").
 				With("alt", "json")).
 		// findTxtRecords
 		Route("GET /dns/v1/projects/manhattan/managedZones/test/rrsets",
-			servermock.JSONEncode(&dns.ResourceRecordSetsListResponse{
+			servermock2.JSONEncode(&dns.ResourceRecordSetsListResponse{
 				Rrsets: []*dns.ResourceRecordSet{{
 					Name:    "_acme-challenge.example.com.",
 					Rrdatas: []string{`"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"X7DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"`, `"huji"`},
@@ -293,7 +293,7 @@ func TestPresentSkipExistingRR(t *testing.T) {
 					Type:    "TXT",
 				}},
 			}),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT").
 				With("prettyPrint", "false").
@@ -353,8 +353,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+func mockBuilder() *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 		config := NewDefaultConfig()
 		config.HTTPClient = server.Client()
 		config.Project = "manhattan"

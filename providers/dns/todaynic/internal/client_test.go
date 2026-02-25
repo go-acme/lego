@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("user123", "secret")
 			if err != nil {
@@ -24,7 +24,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders(),
 	)
 }
@@ -32,8 +32,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/dns/add-domain-record.json",
-			servermock.ResponseFromFixture("add_record.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("add_record.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("Domain", "example.com").
 				With("Host", "_acme-challenge").
 				With("Type", "TXT").
@@ -61,7 +61,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/dns/add-domain-record.json",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusNotFound),
 		).
 		Build(t)
@@ -81,8 +81,8 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/dns/delete-domain-record.json",
-			servermock.ResponseFromFixture("add_record.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("add_record.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("Id", "123").
 				With("auth-userid", "user123").
 				With("api-key", "secret"),

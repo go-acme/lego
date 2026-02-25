@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-acme/lego/v5/challenge/internal"
 	"github.com/miekg/dns"
 )
 
@@ -61,7 +62,7 @@ func (c *Client) fetchSoaByFqdn(ctx context.Context, fqdn string, nameservers []
 
 			// CNAME records cannot/should not exist at the root of a zone.
 			// So we skip a domain when a CNAME is found.
-			if dnsMsgContainsCNAME(r) {
+			if internal.MsgContainsCNAME(r) {
 				continue
 			}
 

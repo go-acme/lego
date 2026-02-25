@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/go-acme/lego/v5/challenge/internal"
 	"github.com/miekg/dns"
 )
 
@@ -44,7 +45,6 @@ func (c *Client) lookupTXT(ctx context.Context, fqdn string, nameservers []strin
 		return result, errors.New("resolver is nil")
 	}
 
-	nameservers = parseNameservers(nameservers)
 	if len(nameservers) == 0 {
 		return result, errors.New("empty list of nameservers")
 	}
@@ -75,7 +75,7 @@ func (c *Client) lookupTXT(ctx context.Context, fqdn string, nameservers []strin
 				return result, nil
 			}
 
-			cname := extractCNAME(msg, name)
+			cname := internal.ExtractCNAME(msg, name)
 			if cname == "" {
 				return result, nil
 			}

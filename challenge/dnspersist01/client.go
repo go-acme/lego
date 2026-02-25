@@ -9,10 +9,9 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/internal"
 	"github.com/miekg/dns"
 )
-
-const defaultResolvConf = "/etc/resolv.conf"
 
 var defaultClient atomic.Pointer[Client]
 
@@ -52,15 +51,15 @@ func NewClient(opts *Options) *Client {
 	}
 
 	if len(opts.RecursiveNameservers) == 0 {
-		opts.RecursiveNameservers = getNameservers(defaultResolvConf, opts.NetworkStack)
+		opts.RecursiveNameservers = internal.GetNameservers(defaultResolvConf, opts.NetworkStack)
 	}
 
 	if opts.Timeout == 0 {
-		opts.Timeout = dnsTimeout
+		opts.Timeout = internal.DNSTimeout
 	}
 
 	return &Client{
-		recursiveNameservers: parseNameservers(opts.RecursiveNameservers),
+		recursiveNameservers: internal.ParseNameservers(opts.RecursiveNameservers),
 		authoritativeNSPort:  "53",
 		tcpClient: &dns.Client{
 			Net:     opts.NetworkStack.Network("tcp"),

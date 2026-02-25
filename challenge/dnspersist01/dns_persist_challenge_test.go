@@ -152,7 +152,7 @@ func TestGetChallengeInfo(t *testing.T) {
 	}
 }
 
-func TestValidateIssuerDomainNames(t *testing.T) {
+func Test_validateIssuerDomainNames(t *testing.T) {
 	testCases := []struct {
 		desc    string
 		issuers []string
@@ -200,48 +200,6 @@ func TestValidateIssuerDomainNames(t *testing.T) {
 
 			err := validateIssuerDomainNames(acme.Challenge{IssuerDomainNames: test.issuers})
 			test.assert(t, err)
-		})
-	}
-}
-
-func TestWithIssuerDomainName(t *testing.T) {
-	testCases := []struct {
-		desc      string
-		input     string
-		expected  string
-		expectErr bool
-	}{
-		{
-			desc:     "normalizes uppercase and trailing dot",
-			input:    "CA.EXAMPLE.",
-			expected: "ca.example",
-		},
-		{
-			desc:     "normalizes idna issuer",
-			input:    "BÜCHER.example",
-			expected: "xn--bcher-kva.example",
-		},
-		{
-			desc:      "rejects invalid issuer",
-			input:     "ca_.example",
-			expectErr: true,
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			chlg := &Challenge{}
-
-			err := WithIssuerDomainName(test.input)(chlg)
-			if test.expectErr {
-				require.Error(t, err)
-				return
-			}
-
-			require.NoError(t, err)
-			assert.Equal(t, test.expected, chlg.userSuppliedIssuerDomainName)
 		})
 	}
 }

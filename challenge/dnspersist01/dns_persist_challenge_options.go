@@ -1,8 +1,12 @@
 package dnspersist01
 
 import (
+	"context"
 	"errors"
+	"log/slog"
 	"time"
+
+	"github.com/go-acme/lego/v5/log"
 )
 
 // ChallengeOption configures the dns-persist-01 challenge.
@@ -24,41 +28,6 @@ func CondOptions(condition bool, opt ...ChallengeOption) ChallengeOption {
 				return err
 			}
 		}
-
-		return nil
-	}
-}
-
-// WithResolver overrides the resolver used for DNS lookups.
-func WithResolver(resolver *Resolver) ChallengeOption {
-	return func(chlg *Challenge) error {
-		if resolver == nil {
-			return errors.New("resolver is nil")
-		}
-
-		chlg.resolver = resolver
-
-		return nil
-	}
-}
-
-// WithNameservers overrides resolver nameservers using the default timeout.
-func WithNameservers(nameservers []string) ChallengeOption {
-	return func(chlg *Challenge) error {
-		chlg.resolver = NewResolver(nameservers)
-
-		return nil
-	}
-}
-
-// WithDNSTimeout overrides the default DNS resolver timeout.
-func WithDNSTimeout(timeout time.Duration) ChallengeOption {
-	return func(chlg *Challenge) error {
-		if chlg.resolver == nil {
-			chlg.resolver = NewResolver(nil)
-		}
-
-		chlg.resolver.Timeout = timeout
 
 		return nil
 	}
@@ -119,28 +88,38 @@ func WithPersistUntil(persistUntil time.Time) ChallengeOption {
 	}
 }
 
-// WithPropagationTimeout overrides the propagation timeout duration.
-func WithPropagationTimeout(timeout time.Duration) ChallengeOption {
+// DisableAuthoritativeNssPropagationRequirement disables authoritative nameserver checks.
+func DisableAuthoritativeNssPropagationRequirement() ChallengeOption {
 	return func(chlg *Challenge) error {
-		if timeout <= 0 {
-			return errors.New("propagation timeout must be positive")
-		}
-
-		chlg.propagationTimeout = timeout
-
+		chlg.preCheck.requireAuthoritativeNssPropagation = false
 		return nil
 	}
 }
 
-// WithPropagationInterval overrides the propagation polling interval.
-func WithPropagationInterval(interval time.Duration) ChallengeOption {
+// DisableRecursiveNSsPropagationRequirement disables recursive nameserver checks.
+func DisableRecursiveNSsPropagationRequirement() ChallengeOption {
 	return func(chlg *Challenge) error {
-		if interval <= 0 {
-			return errors.New("propagation interval must be positive")
-		}
-
-		chlg.propagationInterval = interval
-
+		chlg.preCheck.requireRecursiveNssPropagation = false
 		return nil
 	}
+}
+
+// PropagationWait sleeps for the specified duration, optionally skipping checks.
+func PropagationWait(wait time.Duration, skipCheck bool) ChallengeOption {
+	return WrapPreCheck(func(ctx context.Context, domain, fqdn string, matcher RecordMatcher, check PreCheckFunc) (bool, error) {
+		if skipCheck {
+			log.Info("acme: the active propagation check is disabled, waiting for the propagation instead.",
+				slog.Duration("wait", wait),
+				log.DomainAttr(domain),
+			)
+		}
+
+		time.Sleep(wait)
+
+		if skipCheck {
+			return true, nil
+		}
+
+		return check(ctx, fqdn, matcher)
+	})
 }

@@ -220,21 +220,23 @@ func setupDNSPersist(cmd *cli.Command, client *lego.Client, account registration
 		return err
 	}
 
-	resolvers := cmd.StringSlice(flgDNSPersistResolvers)
+	opts := &dnspersist01.Options{RecursiveNameservers: cmd.StringSlice(flgDNSPersistResolvers)}
+
+	if cmd.IsSet(flgDNSPersistTimeout) {
+		opts.Timeout = time.Duration(cmd.Int(flgDNSPersistTimeout)) * time.Second
+	}
+
+	opts.NetworkStack = getNetworkStack(cmd)
+
+	dnspersist01.SetDefaultClient(dnspersist01.NewClient(opts))
+
 	shouldWait := cmd.IsSet(flgDNSPersistPropagationWait)
 
 	return client.Challenge.SetDNSPersist01(
 		dnspersist01.WithAccountURI(account.GetRegistration().URI),
 		dnspersist01.WithIssuerDomainName(cmd.String(flgDNSPersistIssuerDomainName)),
-		dnspersist01.CondOptions(len(resolvers) > 0,
-			dnspersist01.WithNameservers(resolvers),
-			dnspersist01.AddRecursiveNameservers(resolvers),
-		),
 		dnspersist01.CondOptions(cmd.IsSet(flgDNSPersistPersistUntil),
 			dnspersist01.WithPersistUntil(cmd.Timestamp(flgDNSPersistPersistUntil)),
-		),
-		dnspersist01.CondOptions(cmd.IsSet(flgDNSPersistTimeout),
-			dnspersist01.WithDNSTimeout(time.Duration(cmd.Int(flgDNSPersistTimeout))*time.Second),
 		),
 		dnspersist01.CondOptions(shouldWait,
 			dnspersist01.PropagationWait(cmd.Duration(flgDNSPersistPropagationWait), true),

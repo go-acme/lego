@@ -50,14 +50,11 @@ type ChallengeInfo struct {
 type Challenge struct {
 	core     *api.Core
 	validate ValidateFunc
-	resolver *Resolver
 	preCheck preCheck
 
 	accountURI                   string
 	userSuppliedIssuerDomainName string
 	persistUntil                 time.Time
-	recursiveNameservers         []string
-	authoritativeNSPort          string
 
 	propagationTimeout  time.Duration
 	propagationInterval time.Duration
@@ -66,12 +63,9 @@ type Challenge struct {
 // NewChallenge creates a dns-persist-01 challenge.
 func NewChallenge(core *api.Core, validate ValidateFunc, opts ...ChallengeOption) (*Challenge, error) {
 	chlg := &Challenge{
-		core:                 core,
-		validate:             validate,
-		resolver:             NewResolver(nil),
-		preCheck:             newPreCheck(),
-		recursiveNameservers: DefaultNameservers(),
-		authoritativeNSPort:  defaultAuthoritativeNSPort,
+		core:     core,
+		validate: validate,
+		preCheck: newPreCheck(),
 
 		propagationTimeout:  DefaultPropagationTimeout,
 		propagationInterval: DefaultPollingInterval,
@@ -91,16 +85,9 @@ func NewChallenge(core *api.Core, validate ValidateFunc, opts ...ChallengeOption
 	return chlg, nil
 }
 
-// Solve validates the dns-persist-01 challenge by prompting the user to create
-// the required TXT record (if necessary) then performing propagation checks (or
-// a wait-only delay) before notifying the ACME server.
-//
-//nolint:gocyclo // challenge flow has several required branches (reuse/manual/wait/propagation/validate).
+// Solve validates the dns-persist-01 challenge by prompting the user to create the required TXT record (if necessary)
+// then performing propagation checks (or a wait-only delay) before notifying the ACME server.
 func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
-	if c.resolver == nil {
-		return errors.New("dnspersist01: resolver is nil")
-	}
-
 	domain := authz.Identifier.Value
 	if domain == "" {
 		return errors.New("dnspersist01: empty identifier")
@@ -118,7 +105,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 
 	fqdn := GetAuthorizationDomainName(domain)
 
-	result, err := c.resolver.LookupTXT(fqdn)
+	result, err := DefaultClient().LookupTXT(ctx, fqdn)
 	if err != nil {
 		return err
 	}
@@ -148,14 +135,15 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		fmt.Printf("dnspersist01: Found existing matching TXT record for %s, no need to create a new one\n", fqdn)
 	}
 
-	log.Info("acme: Checking DNS-PERSIST-01 record propagation.",
-		log.DomainAttr(domain), slog.String("nameservers", strings.Join(c.getRecursiveNameservers(), ",")),
+	log.Info("acme: waiting for DNS-PERSIST-01 record propagation.",
+		log.DomainAttr(domain),
+		slog.String("nameservers", strings.Join(DefaultClient().recursiveNameservers, ",")),
 	)
 
 	time.Sleep(c.propagationInterval)
 
 	err = wait.For("propagation", c.propagationTimeout, c.propagationInterval, func() (bool, error) {
-		ok, callErr := c.preCheck.call(domain, fqdn, matcher, c.checkDNSPropagation)
+		ok, callErr := c.preCheck.call(ctx, domain, fqdn, matcher)
 		if !ok || callErr != nil {
 			log.Info("acme: Waiting for DNS-PERSIST-01 record propagation.", log.DomainAttr(domain))
 		}
@@ -169,20 +157,13 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	return c.validate(ctx, c.core, domain, chlng)
 }
 
-func (c *Challenge) getRecursiveNameservers() []string {
-	if c == nil || len(c.recursiveNameservers) == 0 {
-		return DefaultNameservers()
-	}
-
-	return slices.Clone(c.recursiveNameservers)
-}
-
-// selectIssuerDomainName selects the issuer-domain-name to use for a
-// dns-persist-01 challenge. If the user has supplied an issuer-domain-name, it
-// is used after verifying that it is offered by the ACME challenge. Otherwise,
-// the first issuer-domain-name with a matching TXT record is selected. If no
-// issuer-domain-name has a matching TXT record, a deterministic default
-// issuer-domain-name is selected using lexicographic ordering.
+// selectIssuerDomainName selects the issuer-domain-name to use for a dns-persist-01 challenge.
+// If the user has supplied an issuer-domain-name,
+// it is used after verifying that it is offered by the ACME challenge.
+// Otherwise,
+// the first issuer-domain-name with a matching TXT record is selected.
+// If no issuer-domain-name has a matching TXT record,
+// a deterministic default issuer-domain-name is selected using lexicographic ordering.
 func (c *Challenge) selectIssuerDomainName(challIssuers []string, records []TXTRecord, wildcard bool) (string, error) {
 	if len(challIssuers) == 0 {
 		return "", errors.New("issuer-domain-names missing from the challenge")

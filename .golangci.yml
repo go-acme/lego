@@ -270,11 +270,11 @@ linters:
       - path: log/logger.go
         linters:
           - gochecknoinits
-      - path: challenge/dns01/client.go
+      - path: challenge/(dns01|dnspersist01)/client.go
         text: defaultClient is a global variable
         linters:
           - gochecknoglobals
-      - path: challenge/dns01/client.go
+      - path: challenge/(dns01|dnspersist01)/client.go
         text: don't use `init` function
         linters:
           - gochecknoinits

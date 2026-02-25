@@ -37,6 +37,208 @@ const (
 	testPersistCLIRenewEmail     = "persist-e2e-renew@example.com"
 )
 
+func TestChallengeDNSPersist_Client_Obtain(t *testing.T) {
+	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
+	require.NoError(t, err)
+
+	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	user := &fakeUser{privateKey: privateKey}
+	config := lego.NewConfig(user)
+	config.CADirURL = "https://localhost:15000/dir"
+
+	client, err := lego.NewClient(config)
+	require.NoError(t, err)
+
+	reg, err := client.Registration.Register(context.Background(), registration.RegisterOptions{TermsOfServiceAgreed: true})
+	require.NoError(t, err)
+	require.NotEmpty(t, reg.URI)
+
+	user.registration = reg
+
+	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistBaseDomain)
+	txtValue := mustDNSPersistIssueValue(t, reg.URI)
+
+	setTXTRecord(t, txtHost, txtValue)
+	defer clearTXTRecord(t, txtHost)
+
+	mockDefaultPersist(t)
+
+	err = client.Challenge.SetDNSPersist01(
+		dnspersist01.WithAccountURI(reg.URI),
+		dnspersist01.DisableAuthoritativeNssPropagationRequirement(),
+	)
+	require.NoError(t, err)
+
+	privateKeyCSR, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	request := certificate.ObtainRequest{
+		Domains:    []string{testPersistDomain},
+		Bundle:     true,
+		PrivateKey: privateKeyCSR,
+	}
+	resource, err := client.Certificate.Obtain(context.Background(), request)
+	require.NoError(t, err)
+
+	require.NotNil(t, resource)
+	assert.Equal(t, testPersistDomain, resource.Domains[0])
+	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertURL)
+	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertStableURL)
+	assert.NotEmpty(t, resource.Certificate)
+	assert.NotEmpty(t, resource.IssuerCertificate)
+	assert.Empty(t, resource.CSR)
+}
+
+func TestChallengeDNSPersist_Run(t *testing.T) {
+	loader.CleanLegoFiles(context.Background())
+
+	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
+	require.NoError(t, err)
+
+	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+
+	accountURI := createCLIAccountState(t, testPersistCLIEmail)
+	require.NotEmpty(t, accountURI)
+
+	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistCLIDomain)
+	txtValue := mustDNSPersistIssueValue(t, accountURI)
+
+	setTXTRecord(t, txtHost, txtValue)
+	defer clearTXTRecord(t, txtHost)
+
+	err = load.RunLego(
+		context.Background(),
+		"run",
+		"--email", testPersistCLIEmail,
+		"--accept-tos",
+		"--dns-persist",
+		"--dns-persist.resolvers", ":8053",
+		"--dns-persist.propagation.disable-ans",
+		"--dns-persist.issuer-domain-name", testPersistIssuer,
+		"--server", "https://localhost:15000/dir",
+		"--domains", testPersistCLIWildcardDomain,
+		"--domains", testPersistCLIDomain,
+	)
+	require.NoError(t, err)
+}
+
+func TestChallengeDNSPersist_Run_NewAccount(t *testing.T) {
+	loader.CleanLegoFiles(context.Background())
+
+	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
+	require.NoError(t, err)
+
+	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+
+	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistCLIDomain)
+	defer clearTXTRecord(t, txtHost)
+
+	stdinReader, stdinWriter := io.Pipe()
+
+	defer func() { _ = stdinReader.Close() }()
+
+	errChan := make(chan error, 1)
+
+	go func() {
+		defer func() { _ = stdinWriter.Close() }()
+
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		accountURI, waitErr := waitForCLIAccountURI(ctx, testPersistCLIFreshEmail)
+		if waitErr != nil {
+			errChan <- fmt.Errorf("wait for account URI: %w", waitErr)
+			return
+		}
+
+		txtValue := mustDNSPersistIssueValue(t, accountURI)
+
+		err = setTXTRecordRaw(txtHost, txtValue)
+		if err != nil {
+			errChan <- fmt.Errorf("set TXT record: %w", err)
+			return
+		}
+
+		_, err = io.WriteString(stdinWriter, "\n")
+		if err != nil {
+			errChan <- fmt.Errorf("send enter to lego: %w", err)
+			return
+		}
+
+		errChan <- nil
+	}()
+
+	err = load.RunLegoWithInput(
+		context.Background(),
+		stdinReader,
+		"run",
+		"--email", testPersistCLIFreshEmail,
+		"--accept-tos",
+		"--dns-persist",
+		"--dns-persist.resolvers", ":8053",
+		"--dns-persist.propagation.disable-ans",
+		"--dns-persist.issuer-domain-name", testPersistIssuer,
+		"--server", "https://localhost:15000/dir",
+		"--domains", testPersistCLIWildcardDomain,
+		"--domains", testPersistCLIDomain,
+	)
+	require.NoError(t, err)
+	require.NoError(t, <-errChan)
+}
+
+func TestChallengeDNSPersist_Renew(t *testing.T) {
+	loader.CleanLegoFiles(context.Background())
+
+	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
+	require.NoError(t, err)
+
+	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+
+	accountURI := createCLIAccountState(t, testPersistCLIRenewEmail)
+	require.NotEmpty(t, accountURI)
+
+	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistCLIDomain)
+	txtValue := mustDNSPersistIssueValue(t, accountURI)
+
+	setTXTRecord(t, txtHost, txtValue)
+	defer clearTXTRecord(t, txtHost)
+
+	err = load.RunLego(
+		context.Background(),
+		"run",
+		"--email", testPersistCLIRenewEmail,
+		"--accept-tos",
+		"--dns-persist",
+		"--dns-persist.resolvers", ":8053",
+		"--dns-persist.propagation.disable-ans",
+		"--dns-persist.issuer-domain-name", testPersistIssuer,
+		"--server", "https://localhost:15000/dir",
+		"--domains", testPersistCLIWildcardDomain,
+		"--domains", testPersistCLIDomain,
+	)
+	require.NoError(t, err)
+
+	err = load.RunLego(
+		context.Background(),
+		"renew",
+		"--email", testPersistCLIRenewEmail,
+		"--dns-persist",
+		"--dns-persist.resolvers", ":8053",
+		"--dns-persist.propagation.disable-ans",
+		"--dns-persist.issuer-domain-name", testPersistIssuer,
+		"--server", "https://localhost:15000/dir",
+		"--domains", testPersistCLIWildcardDomain,
+		"--domains", testPersistCLIDomain,
+		"--renew-force",
+		"--no-random-sleep",
+	)
+	require.NoError(t, err)
+}
+
 func setTXTRecord(t *testing.T, host, value string) {
 	t.Helper()
 
@@ -83,11 +285,10 @@ func clearTXTRecord(t *testing.T, host string) {
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
-//nolint:unparam // kept generic for future e2e tests.
-func mustDNSPersistIssueValue(t *testing.T, issuerDomainName, accountURI string) string {
+func mustDNSPersistIssueValue(t *testing.T, accountURI string) string {
 	t.Helper()
 
-	value, err := dnspersist01.BuildIssueValue(issuerDomainName, accountURI, true, time.Time{})
+	value, err := dnspersist01.BuildIssueValue(testPersistIssuer, accountURI, true, time.Time{})
 	require.NoError(t, err)
 
 	return value
@@ -187,204 +388,14 @@ func waitForCLIAccountURI(ctx context.Context, email string) (string, error) {
 	}
 }
 
-func TestChallengeDNSPersist_Client_Obtain(t *testing.T) {
-	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
-	require.NoError(t, err)
+func mockDefaultPersist(t *testing.T) {
+	t.Helper()
 
-	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+	backup := dnspersist01.DefaultClient()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err, "Could not generate test key")
+	t.Cleanup(func() {
+		dnspersist01.SetDefaultClient(backup)
+	})
 
-	user := &fakeUser{privateKey: privateKey}
-	config := lego.NewConfig(user)
-	config.CADirURL = "https://localhost:15000/dir"
-
-	client, err := lego.NewClient(config)
-	require.NoError(t, err)
-
-	reg, err := client.Registration.Register(context.Background(), registration.RegisterOptions{TermsOfServiceAgreed: true})
-	require.NoError(t, err)
-	require.NotEmpty(t, reg.URI)
-
-	user.registration = reg
-
-	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistBaseDomain)
-	txtValue := mustDNSPersistIssueValue(t, testPersistIssuer, reg.URI)
-
-	setTXTRecord(t, txtHost, txtValue)
-	defer clearTXTRecord(t, txtHost)
-
-	err = client.Challenge.SetDNSPersist01(
-		dnspersist01.WithAccountURI(reg.URI),
-		dnspersist01.WithNameservers([]string{":8053"}),
-		dnspersist01.AddRecursiveNameservers([]string{":8053"}),
-		dnspersist01.DisableAuthoritativeNssPropagationRequirement(),
-	)
-	require.NoError(t, err)
-
-	privateKeyCSR, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err, "Could not generate test key")
-
-	request := certificate.ObtainRequest{
-		Domains:    []string{testPersistDomain},
-		Bundle:     true,
-		PrivateKey: privateKeyCSR,
-	}
-	resource, err := client.Certificate.Obtain(context.Background(), request)
-	require.NoError(t, err)
-
-	require.NotNil(t, resource)
-	assert.Equal(t, testPersistDomain, resource.Domains[0])
-	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertURL)
-	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertStableURL)
-	assert.NotEmpty(t, resource.Certificate)
-	assert.NotEmpty(t, resource.IssuerCertificate)
-	assert.Empty(t, resource.CSR)
-}
-
-func TestChallengeDNSPersist_Run(t *testing.T) {
-	loader.CleanLegoFiles(context.Background())
-
-	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
-	require.NoError(t, err)
-
-	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
-
-	accountURI := createCLIAccountState(t, testPersistCLIEmail)
-	require.NotEmpty(t, accountURI)
-
-	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistCLIDomain)
-	txtValue := mustDNSPersistIssueValue(t, testPersistIssuer, accountURI)
-
-	setTXTRecord(t, txtHost, txtValue)
-	defer clearTXTRecord(t, txtHost)
-
-	err = load.RunLego(
-		context.Background(),
-		"run",
-		"--email", testPersistCLIEmail,
-		"--accept-tos",
-		"--dns-persist",
-		"--dns-persist.resolvers", ":8053",
-		"--dns-persist.propagation.disable-ans",
-		"--dns-persist.issuer-domain-name", testPersistIssuer,
-		"--server", "https://localhost:15000/dir",
-		"--domains", testPersistCLIWildcardDomain,
-		"--domains", testPersistCLIDomain,
-	)
-	require.NoError(t, err)
-}
-
-func TestChallengeDNSPersist_Run_NewAccount(t *testing.T) {
-	loader.CleanLegoFiles(context.Background())
-
-	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
-	require.NoError(t, err)
-
-	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
-
-	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistCLIDomain)
-	defer clearTXTRecord(t, txtHost)
-
-	stdinReader, stdinWriter := io.Pipe()
-
-	defer func() { _ = stdinReader.Close() }()
-
-	errChan := make(chan error, 1)
-
-	go func() {
-		defer func() { _ = stdinWriter.Close() }()
-
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		accountURI, waitErr := waitForCLIAccountURI(ctx, testPersistCLIFreshEmail)
-		if waitErr != nil {
-			errChan <- fmt.Errorf("wait for account URI: %w", waitErr)
-			return
-		}
-
-		txtValue := mustDNSPersistIssueValue(t, testPersistIssuer, accountURI)
-
-		err = setTXTRecordRaw(txtHost, txtValue)
-		if err != nil {
-			errChan <- fmt.Errorf("set TXT record: %w", err)
-			return
-		}
-
-		_, err = io.WriteString(stdinWriter, "\n")
-		if err != nil {
-			errChan <- fmt.Errorf("send enter to lego: %w", err)
-			return
-		}
-
-		errChan <- nil
-	}()
-
-	err = load.RunLegoWithInput(
-		context.Background(),
-		stdinReader,
-		"run",
-		"--email", testPersistCLIFreshEmail,
-		"--accept-tos",
-		"--dns-persist",
-		"--dns-persist.resolvers", ":8053",
-		"--dns-persist.propagation.disable-ans",
-		"--dns-persist.issuer-domain-name", testPersistIssuer,
-		"--server", "https://localhost:15000/dir",
-		"--domains", testPersistCLIWildcardDomain,
-		"--domains", testPersistCLIDomain,
-	)
-	require.NoError(t, err)
-	require.NoError(t, <-errChan)
-}
-
-func TestChallengeDNSPersist_Renew(t *testing.T) {
-	loader.CleanLegoFiles(context.Background())
-
-	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
-	require.NoError(t, err)
-
-	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
-
-	accountURI := createCLIAccountState(t, testPersistCLIRenewEmail)
-	require.NotEmpty(t, accountURI)
-
-	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistCLIDomain)
-	txtValue := mustDNSPersistIssueValue(t, testPersistIssuer, accountURI)
-
-	setTXTRecord(t, txtHost, txtValue)
-	defer clearTXTRecord(t, txtHost)
-
-	err = load.RunLego(
-		context.Background(),
-		"run",
-		"--email", testPersistCLIRenewEmail,
-		"--accept-tos",
-		"--dns-persist",
-		"--dns-persist.resolvers", ":8053",
-		"--dns-persist.propagation.disable-ans",
-		"--dns-persist.issuer-domain-name", testPersistIssuer,
-		"--server", "https://localhost:15000/dir",
-		"--domains", testPersistCLIWildcardDomain,
-		"--domains", testPersistCLIDomain,
-	)
-	require.NoError(t, err)
-
-	err = load.RunLego(
-		context.Background(),
-		"renew",
-		"--email", testPersistCLIRenewEmail,
-		"--dns-persist",
-		"--dns-persist.resolvers", ":8053",
-		"--dns-persist.propagation.disable-ans",
-		"--dns-persist.issuer-domain-name", testPersistIssuer,
-		"--server", "https://localhost:15000/dir",
-		"--domains", testPersistCLIWildcardDomain,
-		"--domains", testPersistCLIDomain,
-		"--renew-force",
-		"--no-random-sleep",
-	)
-	require.NoError(t, err)
+	dnspersist01.SetDefaultClient(dnspersist01.NewClient(&dnspersist01.Options{RecursiveNameservers: []string{":8053"}}))
 }

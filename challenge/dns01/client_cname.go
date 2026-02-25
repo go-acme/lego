@@ -50,10 +50,13 @@ func (c *Client) lookupCNAME(ctx context.Context, fqdn string) string {
 // Update FQDN with CNAME if any.
 func updateDomainWithCName(r *dns.Msg, fqdn string) string {
 	for _, rr := range r.Answer {
-		if cn, ok := rr.(*dns.CNAME); ok {
-			if strings.EqualFold(cn.Hdr.Name, fqdn) {
-				return cn.Target
-			}
+		cn, ok := rr.(*dns.CNAME)
+		if !ok {
+			continue
+		}
+
+		if strings.EqualFold(cn.Hdr.Name, fqdn) {
+			return cn.Target
 		}
 	}
 

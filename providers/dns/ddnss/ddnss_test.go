@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -117,8 +117,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.Key = "secret"
@@ -139,8 +139,8 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /",
-			servermock2.ResponseFromInternal("success.html"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromInternal("success.html"),
+			servermock.CheckQueryParameter().Strict().
 				With("host", "_acme-challenge.example.com").
 				With("key", "secret").
 				With("txt", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
@@ -155,8 +155,8 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /",
-			servermock2.ResponseFromInternal("success.html"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromInternal("success.html"),
+			servermock.CheckQueryParameter().Strict().
 				With("host", "_acme-challenge.example.com").
 				With("key", "secret").
 				With("txtm", "2"),

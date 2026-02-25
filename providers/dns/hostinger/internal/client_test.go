@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("secret")
 			if err != nil {
@@ -24,7 +24,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			With("Authorization", "Bearer secret"),
 	)
 }
@@ -32,7 +32,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 func TestClient_GetDNSRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/dns/v1/zones/example.com",
-			servermock2.ResponseFromFixture("get_dns_records.json")).
+			servermock.ResponseFromFixture("get_dns_records.json")).
 		Build(t)
 
 	records, err := client.GetDNSRecords(t.Context(), "example.com")
@@ -63,7 +63,7 @@ func TestClient_GetDNSRecords(t *testing.T) {
 func TestClient_GetDNSRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/dns/v1/zones/example.com",
-			servermock2.ResponseFromFixture("error_401.json").
+			servermock.ResponseFromFixture("error_401.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -75,8 +75,8 @@ func TestClient_GetDNSRecords_error(t *testing.T) {
 func TestClient_UpdateDNSRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /api/dns/v1/zones/example.com",
-			servermock2.ResponseFromFixture("update_dns_records.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("update_dns_records-request.json")).
+			servermock.ResponseFromFixture("update_dns_records.json"),
+			servermock.CheckRequestJSONBodyFromFixture("update_dns_records-request.json")).
 		Build(t)
 
 	zone := ZoneRequest{
@@ -100,7 +100,7 @@ func TestClient_UpdateDNSRecords(t *testing.T) {
 func TestClient_UpdateDNSRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /api/dns/v1/zones/example.com",
-			servermock2.ResponseFromFixture("error_422.json").
+			servermock.ResponseFromFixture("error_422.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -123,8 +123,8 @@ func TestClient_UpdateDNSRecords_error(t *testing.T) {
 func TestClient_DeleteDNSRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /api/dns/v1/zones/example.com",
-			servermock2.ResponseFromFixture("delete_dns_records.json"),
-			servermock2.CheckRequestJSONBody(`{"filters":[{"name":"_acme-challenge","type":"TXT"}]}`)).
+			servermock.ResponseFromFixture("delete_dns_records.json"),
+			servermock.CheckRequestJSONBody(`{"filters":[{"name":"_acme-challenge","type":"TXT"}]}`)).
 		Build(t)
 
 	filters := []Filter{{
@@ -139,7 +139,7 @@ func TestClient_DeleteDNSRecords(t *testing.T) {
 func TestClient_DeleteDNSRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /api/dns/v1/zones/example.com",
-			servermock2.ResponseFromFixture("error_401.json").
+			servermock.ResponseFromFixture("error_401.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 

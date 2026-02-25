@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(server.URL, "userA", "secret")
 			if err != nil {
@@ -25,7 +25,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithJSONHeaders(),
 	)
 }
@@ -37,8 +37,8 @@ func mockToken(ctx context.Context) context.Context {
 func TestClient_CreateSession(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/v2/sessions",
-			servermock2.ResponseFromFixture("postSession.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("postSession-request.json"),
+			servermock.ResponseFromFixture("postSession.json"),
+			servermock.CheckRequestJSONBodyFromFixture("postSession-request.json"),
 		).
 		Build(t)
 
@@ -70,8 +70,8 @@ func TestClient_CreateSession(t *testing.T) {
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/v2/sessions",
-			servermock2.ResponseFromFixture("postSession.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("postSession-request.json"),
+			servermock.ResponseFromFixture("postSession.json"),
+			servermock.CheckRequestJSONBodyFromFixture("postSession-request.json"),
 		).
 		Build(t)
 

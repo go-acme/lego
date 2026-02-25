@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/go-acme/lego/v5/providers/dns/gravity/internal"
 	"github.com/stretchr/testify/require"
 )
@@ -179,8 +179,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 
@@ -197,7 +197,7 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithJSONHeaders(),
 	)
 }
@@ -205,22 +205,22 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /api/v1/auth/login",
-			servermock2.ResponseFromInternal("login.json"),
-			servermock2.CheckRequestJSONBodyFromInternal("login-request.json")).
+			servermock.ResponseFromInternal("login.json"),
+			servermock.CheckRequestJSONBodyFromInternal("login-request.json")).
 		Route("GET /api/v1/dns/",
 			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				if req.URL.Query().Get("name") != "example.com." {
-					servermock2.ResponseFromInternal("zones.json").ServeHTTP(rw, req)
+					servermock.ResponseFromInternal("zones.json").ServeHTTP(rw, req)
 					return
 				}
 
-				servermock2.ResponseFromInternal("zones_empty.json").ServeHTTP(rw, req)
+				servermock.ResponseFromInternal("zones_empty.json").ServeHTTP(rw, req)
 			}),
 		).
 		Route("POST /api/v1/dns/zones/records",
-			servermock2.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusNoContent),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("zone", "example.com.").
 				WithRegexp("uid", `\w{8}-\w{4}-\w{4}-\w{4}-\w{12}`).
 				With("hostname", "_acme-challenge")).
@@ -233,9 +233,9 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("DELETE /api/v1/dns/zones/records",
-			servermock2.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusNoContent),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("zone", "example.com.").
 				With("uid", "123").
 				With("type", "TXT").

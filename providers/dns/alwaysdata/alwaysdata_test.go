@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -133,8 +133,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.APIKey = "secret"
@@ -149,7 +149,7 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithJSONHeaders().
 			WithBasicAuth("secret", ""),
 	)
@@ -158,10 +158,10 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /domain/",
-			servermock2.ResponseFromInternal("domains.json")).
+			servermock.ResponseFromInternal("domains.json")).
 		Route("POST /record/",
-			servermock2.Noop().WithStatusCode(http.StatusCreated),
-			servermock2.CheckRequestJSONBodyFromInternal("record_add-request.json")).
+			servermock.Noop().WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromInternal("record_add-request.json")).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
@@ -171,15 +171,15 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /domain/",
-			servermock2.ResponseFromInternal("domains.json")).
+			servermock.ResponseFromInternal("domains.json")).
 		Route("GET /record/",
-			servermock2.ResponseFromInternal("records.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromInternal("records.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("domain", "132").
 				With("name", "_acme-challenge"),
 		).
 		Route("DELETE /record/789/",
-			servermock2.Noop()).
+			servermock.Noop()).
 		Build(t)
 
 	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")

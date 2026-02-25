@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -148,8 +148,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.Username = "user"
@@ -165,7 +165,7 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithBasicAuth("user", "secret"),
 	)
 }
@@ -173,16 +173,16 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /domain/get_domains.html",
-			servermock2.ResponseFromInternal("domains.txt"),
+			servermock.ResponseFromInternal("domains.txt"),
 		).
 		Route("GET /dns/get_dns.html",
-			servermock2.ResponseFromInternal("get_dns.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromInternal("get_dns.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("domain", "example.com"),
 		).
 		Route("POST /dns/set_dns.html",
-			servermock2.ResponseFromInternal("set_dns.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromInternal("set_dns.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("TXT", `@ "v=spf1 a mx ~all"
 _acme-challenge "TheAcmeChallenge"
 _acme-challenge "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
@@ -202,16 +202,16 @@ selectorecc._domainkey "v=DKIM1;k=ed25519;p=Base64Stuff"`).
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /domain/get_domains.html",
-			servermock2.ResponseFromInternal("domains.txt"),
+			servermock.ResponseFromInternal("domains.txt"),
 		).
 		Route("GET /dns/get_dns.html",
-			servermock2.ResponseFromInternal("get_dns.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromInternal("get_dns.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("domain", "example.com"),
 		).
 		Route("POST /dns/set_dns.html",
-			servermock2.ResponseFromInternal("set_dns.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromInternal("set_dns.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("TXT", `@ "v=spf1 a mx ~all"
 _acme-challenge "TheAcmeChallenge"
 _dmarc "v=DMARC1;p=reject;sp=reject;adkim=r;aspf=r;pct=100;rua=mailto:someone@in.mailhardener.com,mailto:postmaster@example.tld;ri=86400;ruf=mailto:someone@in.mailhardener.com,mailto:postmaster@example.tld;fo=1;rf=afrf"

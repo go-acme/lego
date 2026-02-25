@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,12 +21,12 @@ func setupClient(token string) func(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient("tokenA"),
-		servermock2.CheckHeader().WithJSONHeaders().
+	client := servermock.NewBuilder[*Client](setupClient("tokenA"),
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer tokenA"),
 	).
 		Route("GET /dns_zones/zoneID/dns_records",
-			servermock2.ResponseFromFixture("get_records.json")).
+			servermock.ResponseFromFixture("get_records.json")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "zoneID")
@@ -41,14 +41,14 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_CreateRecord(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient("tokenB"),
-		servermock2.CheckHeader().
+	client := servermock.NewBuilder[*Client](setupClient("tokenB"),
+		servermock.CheckHeader().
 			WithAccept("application/json").
 			WithContentType("application/json; charset=utf-8").
 			WithAuthorization("Bearer tokenB"),
 	).
 		Route("POST /dns_zones/zoneID/dns_records",
-			servermock2.ResponseFromFixture("create_record.json").
+			servermock.ResponseFromFixture("create_record.json").
 				WithStatusCode(http.StatusCreated)).
 		Build(t)
 
@@ -74,12 +74,12 @@ func TestClient_CreateRecord(t *testing.T) {
 }
 
 func TestClient_RemoveRecord(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient("tokenC"),
-		servermock2.CheckHeader().WithJSONHeaders().
+	client := servermock.NewBuilder[*Client](setupClient("tokenC"),
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer tokenC"),
 	).
 		Route("DELETE /dns_zones/zoneID/dns_records/recordID",
-			servermock2.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 

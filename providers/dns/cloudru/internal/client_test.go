@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 			client.HTTPClient = server.Client()
@@ -26,14 +26,14 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer xxx"))
 }
 
 func TestClient_GetZones(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones",
-			servermock2.ResponseFromFixture("zones.json")).
+			servermock.ResponseFromFixture("zones.json")).
 		Build(t)
 
 	ctx := mockContext(t)
@@ -58,7 +58,7 @@ func TestClient_GetZones(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones/zzz/records",
-			servermock2.ResponseFromFixture("records.json")).
+			servermock.ResponseFromFixture("records.json")).
 		Build(t)
 
 	ctx := mockContext(t)
@@ -105,8 +105,8 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/zzz/records",
-			servermock2.ResponseFromFixture("record.json"),
-			servermock2.CheckRequestJSONBody(`{"name":"www.example.com.","type":"TXT","values":["text"],"ttl":"3600"}`)).
+			servermock.ResponseFromFixture("record.json"),
+			servermock.CheckRequestJSONBody(`{"name":"www.example.com.","type":"TXT","values":["text"],"ttl":"3600"}`)).
 		Build(t)
 
 	ctx := mockContext(t)
@@ -137,7 +137,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/zzz/records/example.com/TXT",
-			servermock2.ResponseFromFixture("record.json")).
+			servermock.ResponseFromFixture("record.json")).
 		Build(t)
 
 	ctx := mockContext(t)

@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -91,10 +91,10 @@ func TestClient_FindTXTRecords(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := servermock2.NewBuilder[*Client](setupClient).
+			client := servermock.NewBuilder[*Client](setupClient).
 				Route("GET /",
-					servermock2.ResponseFromFixture(test.response),
-					servermock2.CheckQueryParameter().Strict().
+					servermock.ResponseFromFixture(test.response),
+					servermock.CheckQueryParameter().Strict().
 						WithValues(test.query)).
 				Build(t)
 
@@ -260,10 +260,10 @@ func TestClient_DoActions(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := servermock2.NewBuilder[*Client](setupClient).
+			client := servermock.NewBuilder[*Client](setupClient).
 				Route("GET /",
-					servermock2.ResponseFromFixture(test.response),
-					servermock2.CheckQueryParameter().Strict().
+					servermock.ResponseFromFixture(test.response),
+					servermock.CheckQueryParameter().Strict().
 						WithValues(test.query)).
 				Build(t)
 
@@ -317,11 +317,11 @@ func TestClient_DoActions_error(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := servermock2.NewBuilder[*Client](setupClient).
+			client := servermock.NewBuilder[*Client](setupClient).
 				Route("GET /",
-					servermock2.ResponseFromFixture(test.response).
+					servermock.ResponseFromFixture(test.response).
 						WithStatusCode(http.StatusInternalServerError),
-					servermock2.CheckQueryParameter().Strict().
+					servermock.CheckQueryParameter().Strict().
 						WithValues(test.query)).
 				Build(t)
 

@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/nrdcg/goacmedns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -167,16 +167,16 @@ func TestPresent_httpStorage(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			provider := servermock2.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+			provider := servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 				config := NewDefaultConfig()
 				config.StorageBaseURL = server.URL
 
 				return NewDNSProviderConfig(config)
 			}).
 				// Fetch
-				Route("GET /example.com", servermock2.Noop().WithStatusCode(http.StatusNotFound)).
+				Route("GET /example.com", servermock.Noop().WithStatusCode(http.StatusNotFound)).
 				// Put
-				Route("POST /example.com", servermock2.Noop().WithStatusCode(test.StatusCode)).
+				Route("POST /example.com", servermock.Noop().WithStatusCode(test.StatusCode)).
 				Build(t)
 
 			client := newMockClient().WithRegisterAccount(egTestAccount)
@@ -219,14 +219,14 @@ func TestRegister_httpStorage(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.Name, func(t *testing.T) {
-			provider := servermock2.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+			provider := servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 				config := NewDefaultConfig()
 				config.StorageBaseURL = server.URL
 
 				return NewDNSProviderConfig(config)
 			}).
 				// Put
-				Route("POST /example.com", servermock2.Noop().WithStatusCode(test.StatusCode)).
+				Route("POST /example.com", servermock.Noop().WithStatusCode(test.StatusCode)).
 				Build(t)
 
 			provider.client = newMockClient().WithRegisterAccount(egTestAccount)

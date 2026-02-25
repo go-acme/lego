@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("user", "secret")
 			if err != nil {
@@ -25,18 +25,18 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithContentTypeFromURLEncoded())
 }
 
 func TestClientAddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domain/",
-			servermock2.ResponseFromFixture("adddnsrecord.json").
+			servermock.ResponseFromFixture("adddnsrecord.json").
 				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("act", "adddnsrecord"),
-			servermock2.CheckForm().UsePostForm().Strict().
+			servermock.CheckForm().UsePostForm().Strict().
 				With("domain", "example.com").
 				With("host", "@").
 				With("ttl", "60").
@@ -66,9 +66,9 @@ func TestClientAddRecord(t *testing.T) {
 func TestClientAddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domain/",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("act", "adddnsrecord"),
 		).
 		Build(t)
@@ -90,11 +90,11 @@ func TestClientAddRecord_error(t *testing.T) {
 func TestClientDeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domain/",
-			servermock2.ResponseFromFixture("deldnsrecord.json").
+			servermock.ResponseFromFixture("deldnsrecord.json").
 				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("act", "deldnsrecord"),
-			servermock2.CheckForm().UsePostForm().Strict().
+			servermock.CheckForm().UsePostForm().Strict().
 				With("id", "123").
 				With("domain", "example.com").
 				With("username", "user").
@@ -110,9 +110,9 @@ func TestClientDeleteRecord(t *testing.T) {
 func TestClientDeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domain/",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("act", "deldnsrecord"),
 		).
 		Build(t)

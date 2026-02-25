@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -172,8 +172,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.Credentials = map[string]string{
@@ -190,17 +190,17 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithJSONHeaders(),
 	)
 }
 
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
-		Route("/", servermock2.DumpRequest()).
+		Route("/", servermock.DumpRequest()).
 		Route("POST /dns/example.com",
-			servermock2.ResponseFromInternal("create_record.json"),
-			servermock2.CheckRequestJSONBodyFromInternal("create_record-request.json")).
+			servermock.ResponseFromInternal("create_record.json"),
+			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json")).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
@@ -210,7 +210,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("DELETE /dns/example.com/1234",
-			servermock2.Noop()).
+			servermock.Noop()).
 		Build(t)
 
 	provider.recordIDs["abc"] = "1234"

@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 			client.HTTPClient = server.Client()
@@ -20,14 +20,14 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithBasicAuth("user", "secret"),
 	)
 }
 
 func TestClient_GetTxtRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /dns/example.com/txt", servermock2.ResponseFromFixture("get-txt-records.json")).
+		Route("GET /dns/example.com/txt", servermock.ResponseFromFixture("get-txt-records.json")).
 		Build(t)
 
 	records, err := client.GetTxtRecords(t.Context(), "example.com")
@@ -43,9 +43,9 @@ func TestClient_GetTxtRecords(t *testing.T) {
 func TestClient_AddTxtRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/example.com/txt",
-			servermock2.ResponseFromFixture("create-txt-record.json").
+			servermock.ResponseFromFixture("create-txt-record.json").
 				WithStatusCode(http.StatusCreated),
-			servermock2.CheckRequestJSONBody(`{"name":"prefix.example.com","destination":"server.example.com"}`)).
+			servermock.CheckRequestJSONBody(`{"name":"prefix.example.com","destination":"server.example.com"}`)).
 		Build(t)
 
 	records, err := client.AddTxtRecord(t.Context(), "example.com", TXTRecord{Name: "prefix.example.com", Destination: "server.example.com"})
@@ -61,7 +61,7 @@ func TestClient_AddTxtRecord(t *testing.T) {
 func TestClient_RemoveTxtRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns/example.com/txt/123",
-			servermock2.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 

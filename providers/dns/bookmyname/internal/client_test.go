@@ -4,12 +4,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("user", "secret")
 			if err != nil {
@@ -21,15 +21,15 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithBasicAuth("user", "secret"))
 }
 
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /",
-			servermock2.ResponseFromFixture("add_success.txt"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("add_success.txt"),
+			servermock.CheckQueryParameter().Strict().
 				With("do", "add").
 				With("hostname", "_acme-challenge.sub.example.com.").
 				With("type", "txt").
@@ -52,8 +52,8 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /",
-			servermock2.ResponseFromFixture("error.txt"),
-			servermock2.CheckQueryParameter().
+			servermock.ResponseFromFixture("error.txt"),
+			servermock.CheckQueryParameter().
 				With("do", "add")).
 		Build(t)
 
@@ -73,8 +73,8 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_RemoveRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /",
-			servermock2.ResponseFromFixture("remove_success.txt"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("remove_success.txt"),
+			servermock.CheckQueryParameter().Strict().
 				With("do", "remove").
 				With("hostname", "_acme-challenge.sub.example.com.").
 				With("type", "txt").
@@ -97,8 +97,8 @@ func TestClient_RemoveRecord(t *testing.T) {
 func TestClient_RemoveRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /",
-			servermock2.ResponseFromFixture("error.txt"),
-			servermock2.CheckQueryParameter().
+			servermock.ResponseFromFixture("error.txt"),
+			servermock.CheckQueryParameter().
 				With("do", "remove")).
 		Build(t)
 

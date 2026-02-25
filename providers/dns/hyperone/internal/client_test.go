@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -15,8 +15,8 @@ func (s signerMock) GetJWT() (string, error) {
 	return "", nil
 }
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			passport := &Passport{
 				SubjectID: "/iam/project/proj123/sa/xxxxxxx",
@@ -32,14 +32,14 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer"))
 }
 
 func TestClient_FindRecordset(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/loc123/project/proj123/zone/zone321/recordset",
-			servermock2.ResponseFromFixture("recordset.json")).
+			servermock.ResponseFromFixture("recordset.json")).
 		Build(t)
 
 	recordset, err := client.FindRecordset(t.Context(), "zone321", "SOA", "example.com.")
@@ -65,8 +65,8 @@ func TestClient_CreateRecordset(t *testing.T) {
 
 	client := mockBuilder().
 		Route("POST /dns/loc123/project/proj123/zone/zone123/recordset",
-			servermock2.ResponseFromFixture("createRecordset.json"),
-			servermock2.CheckRequestJSONBodyFromStruct(expectedReqBody)).
+			servermock.ResponseFromFixture("createRecordset.json"),
+			servermock.CheckRequestJSONBodyFromStruct(expectedReqBody)).
 		Build(t)
 
 	rs, err := client.CreateRecordset(t.Context(), "zone123", "TXT", "test.example.com.", "value", 3600)
@@ -88,7 +88,7 @@ func TestClient_DeleteRecordset(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/loc123/project/proj123/zone/321/recordset/322/record",
-			servermock2.ResponseFromFixture("record.json")).
+			servermock.ResponseFromFixture("record.json")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "321", "322")
@@ -112,8 +112,8 @@ func TestClient_CreateRecord(t *testing.T) {
 
 	client := mockBuilder().
 		Route("POST /dns/loc123/project/proj123/zone/z123/recordset/rs325/record",
-			servermock2.ResponseFromFixture("createRecord.json"),
-			servermock2.CheckRequestJSONBodyFromStruct(expectedReqBody)).
+			servermock.ResponseFromFixture("createRecord.json"),
+			servermock.CheckRequestJSONBodyFromStruct(expectedReqBody)).
 		Build(t)
 
 	rs, err := client.CreateRecord(t.Context(), "z123", "rs325", "value")
@@ -126,7 +126,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns/loc123/project/proj123/zone/321/recordset/322/record/323",
-			servermock2.ResponseFromFixture("createRecord.json")).
+			servermock.ResponseFromFixture("createRecord.json")).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "321", "322", "323")
@@ -136,7 +136,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_FindZone(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/loc123/project/proj123/zone",
-			servermock2.ResponseFromFixture("zones.json")).
+			servermock.ResponseFromFixture("zones.json")).
 		Build(t)
 
 	zone, err := client.FindZone(t.Context(), "example.com")
@@ -156,7 +156,7 @@ func TestClient_FindZone(t *testing.T) {
 func TestClient_GetZones(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/loc123/project/proj123/zone",
-			servermock2.ResponseFromFixture("zones.json")).
+			servermock.ResponseFromFixture("zones.json")).
 		Build(t)
 
 	zones, err := client.GetZones(t.Context())

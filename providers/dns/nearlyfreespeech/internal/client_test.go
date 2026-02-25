@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,12 +24,12 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient,
-		servermock2.CheckHeader().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().
 			WithContentTypeFromURLEncoded().
 			With(authenticationHeader, "user;1692475113;0123456789ABCDEF;24a32faf74c7bd0525f560ff12a1c1fb6545bafc"),
 	).
-		Route("POST /dns/example.com/addRR", nil, servermock2.CheckForm().Strict().
+		Route("POST /dns/example.com/addRR", nil, servermock.CheckForm().Strict().
 			With("data", "txtTXTtxt").
 			With("name", "sub").
 			With("type", "TXT").
@@ -49,13 +49,13 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient,
-		servermock2.CheckHeader().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().
 			WithContentTypeFromURLEncoded().
 			With(authenticationHeader, "user;1692475113;0123456789ABCDEF;24a32faf74c7bd0525f560ff12a1c1fb6545bafc"),
 	).
 		Route("POST /dns/example.com/addRR",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -71,13 +71,13 @@ func TestClient_AddRecord_error(t *testing.T) {
 }
 
 func TestClient_RemoveRecord(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient,
-		servermock2.CheckHeader().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().
 			WithContentTypeFromURLEncoded().
 			With(authenticationHeader, "user;1692475113;0123456789ABCDEF;699f01f077ca487bd66ac370d6dfc5b122c65522"),
 	).
 		Route("POST /dns/example.com/removeRR", nil,
-			servermock2.CheckForm().Strict().
+			servermock.CheckForm().Strict().
 				With("data", "txtTXTtxt").
 				With("name", "sub").
 				With("type", "TXT"),
@@ -95,13 +95,13 @@ func TestClient_RemoveRecord(t *testing.T) {
 }
 
 func TestClient_RemoveRecord_error(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient,
-		servermock2.CheckHeader().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().
 			WithContentTypeFromURLEncoded().
 			With(authenticationHeader, "user;1692475113;0123456789ABCDEF;699f01f077ca487bd66ac370d6dfc5b122c65522"),
 	).
 		Route("POST /dns/example.com/removeRR",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 

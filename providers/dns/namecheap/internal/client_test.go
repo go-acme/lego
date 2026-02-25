@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,10 +18,10 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_GetHosts(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("GET /",
-			servermock2.ResponseFromFixture("getHosts.xml"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("getHosts.xml"),
+			servermock.CheckQueryParameter().Strict().
 				With("ApiKey", "secret").
 				With("ApiUser", "user").
 				With("ClientIp", "127.0.0.1").
@@ -44,9 +44,9 @@ func TestClient_GetHosts(t *testing.T) {
 }
 
 func TestClient_GetHosts_error(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("GET /",
-			servermock2.ResponseFromFixture("getHosts_errorBadAPIKey1.xml")).
+			servermock.ResponseFromFixture("getHosts_errorBadAPIKey1.xml")).
 		Build(t)
 
 	_, err := client.GetHosts(t.Context(), "foo", "example.com")
@@ -54,10 +54,10 @@ func TestClient_GetHosts_error(t *testing.T) {
 }
 
 func TestClient_SetHosts(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient, servermock2.CheckHeader().WithContentTypeFromURLEncoded()).
+	client := servermock.NewBuilder[*Client](setupClient, servermock.CheckHeader().WithContentTypeFromURLEncoded()).
 		Route("POST /",
-			servermock2.ResponseFromFixture("setHosts.xml"),
-			servermock2.CheckForm().Strict().
+			servermock.ResponseFromFixture("setHosts.xml"),
+			servermock.CheckForm().Strict().
 				With("ApiKey", "secret").
 				With("ApiUser", "user").
 				With("ClientIp", "127.0.0.1").
@@ -90,9 +90,9 @@ func TestClient_SetHosts(t *testing.T) {
 }
 
 func TestClient_SetHosts_error(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient).
+	client := servermock.NewBuilder[*Client](setupClient).
 		Route("POST /",
-			servermock2.ResponseFromFixture("setHosts_errorBadAPIKey1.xml")).
+			servermock.ResponseFromFixture("setHosts_errorBadAPIKey1.xml")).
 		Build(t)
 
 	records := []Record{

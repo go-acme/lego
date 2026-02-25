@@ -6,27 +6,27 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(OAuthStaticAccessToken(server.Client(), "secret"))
 			client.BaseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer secret"))
 }
 
 func TestClient_GetDomainIDByName(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/domains",
-			servermock2.JSONEncode(DomainListingResponse{
+			servermock.JSONEncode(DomainListingResponse{
 				Embedded: EmbeddedDomainList{Domains: []*Domain{
 					{ID: 1, Name: "test.com"},
 					{ID: 2, Name: "test.org"},
@@ -43,7 +43,7 @@ func TestClient_GetDomainIDByName(t *testing.T) {
 func TestClient_CheckNameservers(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/domains/1/nameservers",
-			servermock2.JSONEncode(NameserverResponse{
+			servermock.JSONEncode(NameserverResponse{
 				Nameservers: []*Nameserver{
 					{Name: ns1},
 					{Name: ns2},
@@ -59,7 +59,7 @@ func TestClient_CheckNameservers(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /v1/domains/1/nameservers/records", nil,
-			servermock2.CheckRequestJSONBodyFromFixture("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
 		Build(t)
 
 	record := &Record{
@@ -79,16 +79,16 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 
 	client := mockBuilder().
 		Route("GET /v1/domains/",
-			servermock2.JSONEncode(DomainResponse{
+			servermock.JSONEncode(DomainResponse{
 				ID:   1,
 				Name: domainName,
 			})).
 		Route("GET /v1/domains/1/nameservers",
-			servermock2.JSONEncode(NameserverResponse{
+			servermock.JSONEncode(NameserverResponse{
 				Nameservers: []*Nameserver{{Name: ns1}, {Name: ns2}},
 			})).
 		Route("GET /v1/domains/1/nameservers/records",
-			servermock2.JSONEncode(RecordListingResponse{
+			servermock.JSONEncode(RecordListingResponse{
 				Embedded: EmbeddedRecordList{
 					Records: []*Record{
 						{
@@ -110,7 +110,7 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 				},
 			})).
 		Route("PUT /v1/domains/1/nameservers/records", nil,
-			servermock2.CheckRequestJSONBodyFromFixture("delete_txt_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("delete_txt_record-request.json")).
 		Build(t)
 
 	info := dns01.GetChallengeInfo(t.Context(), domainName, "abc")

@@ -4,12 +4,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("test", "secret")
 			client.BaseURL = server.URL
@@ -17,15 +17,15 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithContentTypeFromURLEncoded())
 }
 
 func TestClient_Send(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock2.RawStringResponse("OK: 1 inserted, 0 deleted"),
-			servermock2.CheckForm().Strict().
+			servermock.RawStringResponse("OK: 1 inserted, 0 deleted"),
+			servermock.CheckForm().Strict().
 				With("zone", "example.com").
 				With("label", "_acme-challenge").
 				With("type", "TXT").
@@ -46,8 +46,8 @@ func TestClient_Send(t *testing.T) {
 func TestClient_Send_empty(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock2.RawStringResponse("OK: 1 inserted, 0 deleted"),
-			servermock2.CheckForm().Strict().
+			servermock.RawStringResponse("OK: 1 inserted, 0 deleted"),
+			servermock.CheckForm().Strict().
 				With("zone", "example.com").
 				With("label", "_acme-challenge").
 				With("type", "TXT").

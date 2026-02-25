@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,10 +23,10 @@ func setupIdentifier(server *httptest.Server) (*Identifier, error) {
 }
 
 func TestNewClient(t *testing.T) {
-	identifier := servermock2.NewBuilder[*Identifier](setupIdentifier,
-		servermock2.CheckHeader().WithJSONHeaders(),
+	identifier := servermock.NewBuilder[*Identifier](setupIdentifier,
+		servermock.CheckHeader().WithJSONHeaders(),
 	).
-		Route("POST /v2.0/tokens", servermock2.ResponseFromFixture("tokens_POST.json")).
+		Route("POST /v2.0/tokens", servermock.ResponseFromFixture("tokens_POST.json")).
 		Build(t)
 
 	auth := Auth{

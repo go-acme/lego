@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient()
 			client.HTTPClient = server.Client()
@@ -20,7 +20,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders(),
+		servermock.CheckHeader().WithJSONHeaders(),
 	)
 }
 
@@ -70,7 +70,7 @@ func TestGetRootDomain(t *testing.T) {
 			t.Parallel()
 
 			client := mockBuilder().
-				Route(test.pattern, servermock2.ResponseFromFixture(test.file).WithStatusCode(test.status)).
+				Route(test.pattern, servermock.ResponseFromFixture(test.file).WithStatusCode(test.status)).
 				Build(t)
 
 			domain, err := client.GetRootDomain(t.Context(), "test.lego.freeddns.org")
@@ -160,8 +160,8 @@ func TestGetRecords(t *testing.T) {
 			t.Parallel()
 
 			client := mockBuilder().
-				Route(test.pattern, servermock2.ResponseFromFixture(test.file).WithStatusCode(test.status),
-					servermock2.CheckQueryParameter().Strict().
+				Route(test.pattern, servermock.ResponseFromFixture(test.file).WithStatusCode(test.status),
+					servermock.CheckQueryParameter().Strict().
 						With("recordType", "TXT")).
 				Build(t)
 
@@ -214,8 +214,8 @@ func TestAddNewRecord(t *testing.T) {
 			t.Parallel()
 
 			client := mockBuilder().
-				Route(test.pattern, servermock2.ResponseFromFixture(test.file).WithStatusCode(test.status),
-					servermock2.CheckRequestJSONBodyFromFixture("add_new_record-request.json")).
+				Route(test.pattern, servermock.ResponseFromFixture(test.file).WithStatusCode(test.status),
+					servermock.CheckRequestJSONBodyFromFixture("add_new_record-request.json")).
 				Build(t)
 
 			record := DNSRecord{
@@ -274,7 +274,7 @@ func TestDeleteRecord(t *testing.T) {
 			t.Parallel()
 
 			client := mockBuilder().
-				Route(test.pattern, servermock2.ResponseFromFixture(test.file).WithStatusCode(test.status)).
+				Route(test.pattern, servermock.ResponseFromFixture(test.file).WithStatusCode(test.status)).
 				Build(t)
 
 			err := client.DeleteRecord(t.Context(), 9007481, 6041418)

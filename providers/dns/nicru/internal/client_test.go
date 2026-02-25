@@ -5,13 +5,13 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(server.Client())
 			if err != nil {
@@ -22,14 +22,14 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithAccept("text/xml"),
 	)
 }
 
 func TestClient_GetServices(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /services", servermock2.ResponseFromFixture("services_GET.xml")).
+		Route("GET /services", servermock.ResponseFromFixture("services_GET.xml")).
 		Build(t)
 
 	zones, err := client.GetServices(t.Context())
@@ -65,7 +65,7 @@ func TestClient_GetServices(t *testing.T) {
 
 func TestClient_ListZones(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /zones", servermock2.ResponseFromFixture("zones_all_GET.xml")).
+		Route("GET /zones", servermock.ResponseFromFixture("zones_all_GET.xml")).
 		Build(t)
 
 	zones, err := client.ListZones(t.Context())
@@ -112,7 +112,7 @@ func TestClient_ListZones(t *testing.T) {
 
 func TestClient_ListZones_error(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /zones", servermock2.ResponseFromFixture("errors.xml")).
+		Route("GET /zones", servermock.ResponseFromFixture("errors.xml")).
 		Build(t)
 
 	_, err := client.ListZones(t.Context())
@@ -125,7 +125,7 @@ func TestClient_ListZones_error(t *testing.T) {
 func TestClient_GetZonesByService(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /services/test/zones",
-			servermock2.ResponseFromFixture("zones_GET.xml")).
+			servermock.ResponseFromFixture("zones_GET.xml")).
 		Build(t)
 
 	zones, err := client.GetZonesByService(t.Context(), "test")
@@ -173,7 +173,7 @@ func TestClient_GetZonesByService(t *testing.T) {
 func TestClient_GetZonesByService_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /services/test/zones",
-			servermock2.ResponseFromFixture("errors.xml")).
+			servermock.ResponseFromFixture("errors.xml")).
 		Build(t)
 
 	_, err := client.GetZonesByService(t.Context(), "test")
@@ -186,7 +186,7 @@ func TestClient_GetZonesByService_error(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /services/test/zones/example.com./records",
-			servermock2.ResponseFromFixture("records_GET.xml")).
+			servermock.ResponseFromFixture("records_GET.xml")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "test", "example.com.")
@@ -253,7 +253,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_GetRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /services/test/zones/example.com./records",
-			servermock2.ResponseFromFixture("errors.xml")).
+			servermock.ResponseFromFixture("errors.xml")).
 		Build(t)
 
 	_, err := client.GetRecords(t.Context(), "test", "example.com.")
@@ -266,8 +266,8 @@ func TestClient_GetRecords_error(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /services/test/zones/example.com./records",
-			servermock2.ResponseFromFixture("records_PUT.xml"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromFixture("records_PUT.xml"),
+			servermock.CheckHeader().
 				WithContentType("text/xml")).
 		Build(t)
 
@@ -326,8 +326,8 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /services/test/zones/example.com./records",
-			servermock2.ResponseFromFixture("errors.xml"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromFixture("errors.xml"),
+			servermock.CheckHeader().
 				WithContentType("text/xml")).
 		Build(t)
 
@@ -354,7 +354,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /services/test/zones/example.com./records/123",
-			servermock2.ResponseFromFixture("record_DELETE.xml")).
+			servermock.ResponseFromFixture("record_DELETE.xml")).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "test", "example.com.", "123")
@@ -364,7 +364,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /services/test/zones/example.com./records/123",
-			servermock2.ResponseFromFixture("errors.xml")).
+			servermock.ResponseFromFixture("errors.xml")).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "test", "example.com.", "123")
@@ -377,7 +377,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 func TestClient_CommitZone(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /services/test/zones/example.com./commit",
-			servermock2.ResponseFromFixture("commit_POST.xml")).
+			servermock.ResponseFromFixture("commit_POST.xml")).
 		Build(t)
 
 	err := client.CommitZone(t.Context(), "test", "example.com.")
@@ -387,7 +387,7 @@ func TestClient_CommitZone(t *testing.T) {
 func TestClient_CommitZone_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /services/test/zones/example.com./commit",
-			servermock2.ResponseFromFixture("errors.xml")).
+			servermock.ResponseFromFixture("errors.xml")).
 		Build(t)
 
 	err := client.CommitZone(t.Context(), "test", "example.com.")

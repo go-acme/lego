@@ -5,13 +5,13 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 
@@ -20,7 +20,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckQueryParameter().
+		servermock.CheckQueryParameter().
 			With("login", "user").
 			With("passwd", "secret").
 			With("input_format", "json").
@@ -31,8 +31,8 @@ func mockBuilder() *servermock2.Builder[*Client] {
 func TestClient_GetTXTRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/getData",
-			servermock2.ResponseFromFixture("getData-real.json"),
-			servermock2.CheckQueryParameter().
+			servermock.ResponseFromFixture("getData-real.json"),
+			servermock.CheckQueryParameter().
 				With("input_data", `{"fqdn":"example.com"}`),
 		).
 		Build(t)
@@ -48,8 +48,8 @@ func TestClient_GetTXTRecords(t *testing.T) {
 func TestClient_ChangeTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/changeRecords",
-			servermock2.ResponseFromFixture("changeRecords-doc.json"),
-			servermock2.CheckQueryParameter().
+			servermock.ResponseFromFixture("changeRecords-doc.json"),
+			servermock.CheckQueryParameter().
 				With("input_data", `{"fqdn":"sub.example.com","records":{"TXT":[{"value":"txtTXTtxt","priority":10,"ttl":300}]}}`),
 		).
 		Build(t)
@@ -63,7 +63,7 @@ func TestClient_ChangeTXTRecord(t *testing.T) {
 func TestClient_ChangeTXTRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/changeRecords",
-			servermock2.ResponseFromFixture("error.json")).
+			servermock.ResponseFromFixture("error.json")).
 		Build(t)
 
 	records := []Record{{Data: "txtTXTtxt", TTL: 300}}
@@ -77,7 +77,7 @@ func TestClient_ChangeTXTRecord_error(t *testing.T) {
 func TestClient_ChangeTXTRecord_answer_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/changeRecords",
-			servermock2.ResponseFromFixture("answer_error.json")).
+			servermock.ResponseFromFixture("answer_error.json")).
 		Build(t)
 
 	records := []Record{{Data: "txtTXTtxt", TTL: 300}}
@@ -91,8 +91,8 @@ func TestClient_ChangeTXTRecord_answer_error(t *testing.T) {
 func TestClient_ChangeTXTRecord_remove(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/changeRecords",
-			servermock2.ResponseFromFixture("changeRecords-doc.json"),
-			servermock2.CheckQueryParameter().
+			servermock.ResponseFromFixture("changeRecords-doc.json"),
+			servermock.CheckQueryParameter().
 				With("input_data", `{"fqdn":"sub.example.com","records":{}}`),
 		).
 		Build(t)

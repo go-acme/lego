@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,13 +18,13 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient,
-		servermock2.CheckHeader().WithJSONHeaders().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Njalla secret"),
 	).
 		Route("POST /",
-			servermock2.ResponseFromFixture("add_record.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("add_record-request.json")).
+			servermock.ResponseFromFixture("add_record.json"),
+			servermock.CheckRequestJSONBodyFromFixture("add_record-request.json")).
 		Build(t)
 
 	record := Record{
@@ -50,11 +50,11 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient,
-		servermock2.CheckHeader().WithJSONHeaders().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Njalla invalid"),
 	).
-		Route("POST /", servermock2.ResponseFromFixture("auth_error.json")).
+		Route("POST /", servermock.ResponseFromFixture("auth_error.json")).
 		Build(t)
 
 	client.token = "invalid"
@@ -74,13 +74,13 @@ func TestClient_AddRecord_error(t *testing.T) {
 }
 
 func TestClient_ListRecords(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient,
-		servermock2.CheckHeader().WithJSONHeaders().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Njalla secret"),
 	).
 		Route("POST /",
-			servermock2.ResponseFromFixture("list_records.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("list_records-request.json")).
+			servermock.ResponseFromFixture("list_records.json"),
+			servermock.CheckRequestJSONBodyFromFixture("list_records-request.json")).
 		Build(t)
 
 	records, err := client.ListRecords(t.Context(), "example.com")
@@ -109,11 +109,11 @@ func TestClient_ListRecords(t *testing.T) {
 }
 
 func TestClient_ListRecords_error(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient,
-		servermock2.CheckHeader().WithJSONHeaders().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Njalla invalid"),
 	).
-		Route("POST /", servermock2.ResponseFromFixture("auth_error.json")).
+		Route("POST /", servermock.ResponseFromFixture("auth_error.json")).
 		Build(t)
 
 	client.token = "invalid"
@@ -125,13 +125,13 @@ func TestClient_ListRecords_error(t *testing.T) {
 }
 
 func TestClient_RemoveRecord(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient,
-		servermock2.CheckHeader().WithJSONHeaders().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Njalla secret"),
 	).
 		Route("POST /",
-			servermock2.RawStringResponse(`{"jsonrpc":"2.0"}`),
-			servermock2.CheckRequestJSONBodyFromFixture("remove_record-request.json")).
+			servermock.RawStringResponse(`{"jsonrpc":"2.0"}`),
+			servermock.CheckRequestJSONBodyFromFixture("remove_record-request.json")).
 		Build(t)
 
 	err := client.RemoveRecord(t.Context(), "123", "example.com")
@@ -139,11 +139,11 @@ func TestClient_RemoveRecord(t *testing.T) {
 }
 
 func TestClient_RemoveRecord_error(t *testing.T) {
-	client := servermock2.NewBuilder[*Client](setupClient,
-		servermock2.CheckHeader().WithJSONHeaders().
+	client := servermock.NewBuilder[*Client](setupClient,
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Njalla secret"),
 	).
-		Route("POST /", servermock2.ResponseFromFixture("remove_record_error_missing_domain.json")).
+		Route("POST /", servermock.ResponseFromFixture("remove_record_error_missing_domain.json")).
 		Build(t)
 
 	err := client.RemoveRecord(t.Context(), "123", "example.com")

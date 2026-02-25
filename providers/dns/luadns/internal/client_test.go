@@ -5,13 +5,13 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder(apiToken string) *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder(apiToken string) *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("me", apiToken)
 			client.baseURL, _ = url.Parse(server.URL)
@@ -19,13 +19,13 @@ func mockBuilder(apiToken string) *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithBasicAuth("me", apiToken))
 }
 
 func TestClient_ListZones(t *testing.T) {
 	client := mockBuilder("secretA").
-		Route("GET /v1/zones", servermock2.ResponseFromFixture("list_zones.json")).
+		Route("GET /v1/zones", servermock.ResponseFromFixture("list_zones.json")).
 		Build(t)
 
 	zones, err := client.ListZones(t.Context())
@@ -62,8 +62,8 @@ func TestClient_ListZones(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder("secretB").
 		Route("POST /v1/zones/1/records",
-			servermock2.ResponseFromFixture("create_record.json"),
-			servermock2.CheckRequestJSONBody(`{"name":"example.com.","type":"MX","content":"10 mail.example.com.","ttl":300}`)).
+			servermock.ResponseFromFixture("create_record.json"),
+			servermock.CheckRequestJSONBody(`{"name":"example.com.","type":"MX","content":"10 mail.example.com.","ttl":300}`)).
 		Build(t)
 
 	zone := DNSZone{ID: 1}
@@ -93,8 +93,8 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder("secretC").
 		Route("DELETE /v1/zones/1/records/2",
-			servermock2.ResponseFromFixture("delete_record.json"),
-			servermock2.CheckRequestJSONBody(`{"id":2,"name":"example.com.","type":"MX","content":"10 mail.example.com.","ttl":300,"zone_id":1}`)).
+			servermock.ResponseFromFixture("delete_record.json"),
+			servermock.CheckRequestJSONBody(`{"id":2,"name":"example.com.","type":"MX","content":"10 mail.example.com.","ttl":300,"zone_id":1}`)).
 		Build(t)
 
 	record := &DNSRecord{

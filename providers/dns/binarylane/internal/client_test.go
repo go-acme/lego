@@ -6,12 +6,12 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("secret")
 			if err != nil {
@@ -23,7 +23,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer secret"),
 	)
 }
@@ -31,8 +31,8 @@ func mockBuilder() *servermock2.Builder[*Client] {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/records",
-			servermock2.ResponseFromFixture("create_record.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("create_record-request.json")).
+			servermock.ResponseFromFixture("create_record.json"),
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
 		Build(t)
 
 	record := Record{
@@ -59,7 +59,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_CreateRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/records",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -77,7 +77,7 @@ func TestClient_CreateRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/records/123",
-			servermock2.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 
@@ -88,7 +88,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/records/123",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 

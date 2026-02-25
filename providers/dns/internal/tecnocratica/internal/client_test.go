@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("secret")
 			if err != nil {
@@ -24,14 +24,14 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			With("X-TCpanel-Token", "secret"))
 }
 
 func TestClient_GetZones(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/zones",
-			servermock2.ResponseFromFixture("get_zones.json")).
+			servermock.ResponseFromFixture("get_zones.json")).
 		Build(t)
 
 	zones, err := client.GetZones(t.Context())
@@ -56,7 +56,7 @@ func TestClient_GetZones(t *testing.T) {
 func TestClient_GetZones_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/zones",
-			servermock2.RawStringResponse(`{"error": "unauthorized"}`).
+			servermock.RawStringResponse(`{"error": "unauthorized"}`).
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -69,7 +69,7 @@ func TestClient_GetZones_error(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/zones/6/records",
-			servermock2.ResponseFromFixture("get_records.json")).
+			servermock.ResponseFromFixture("get_records.json")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), 6, "")
@@ -105,9 +105,9 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/zones/6/records",
-			servermock2.ResponseFromFixture("create_record.json").
+			servermock.ResponseFromFixture("create_record.json").
 				WithStatusCode(http.StatusCreated),
-			servermock2.CheckRequestJSONBodyFromFixture("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
 		Build(t)
 
 	record := Record{
@@ -134,7 +134,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_CreateRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/zones/6/records",
-			servermock2.RawStringResponse(`{"error": "bad request"}`).
+			servermock.RawStringResponse(`{"error": "bad request"}`).
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -154,7 +154,7 @@ func TestClient_CreateRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns/zones/6/records/101",
-			servermock2.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 
@@ -165,7 +165,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns/zones/6/records/999",
-			servermock2.RawStringResponse(`{"error": "not found"}`).
+			servermock.RawStringResponse(`{"error": "not found"}`).
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
 

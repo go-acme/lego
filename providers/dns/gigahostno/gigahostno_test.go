@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/go-acme/lego/v5/providers/dns/gigahostno/internal"
 	"github.com/stretchr/testify/require"
 )
@@ -155,8 +155,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.Username = "user"
@@ -175,7 +175,7 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithJSONHeaders(),
 	)
 }
@@ -183,15 +183,15 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /authenticate",
-			servermock2.ResponseFromInternal("authenticate.json")).
+			servermock.ResponseFromInternal("authenticate.json")).
 		Route("GET /dns/zones",
-			servermock2.ResponseFromInternal("zones.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromInternal("zones.json"),
+			servermock.CheckHeader().
 				WithAuthorization("Bearer secrettoken")).
 		Route("POST /dns/zones/123/records",
-			servermock2.ResponseFromInternal("create_record.json"),
-			servermock2.CheckRequestJSONBodyFromInternal("create_record-request.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromInternal("create_record.json"),
+			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json"),
+			servermock.CheckHeader().
 				WithAuthorization("Bearer secrettoken")).
 		Build(t)
 
@@ -202,13 +202,13 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_Present_token_not_expired(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /dns/zones",
-			servermock2.ResponseFromInternal("zones.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromInternal("zones.json"),
+			servermock.CheckHeader().
 				WithAuthorization("Bearer secret-token")).
 		Route("POST /dns/zones/123/records",
-			servermock2.ResponseFromInternal("create_record.json"),
-			servermock2.CheckRequestJSONBodyFromInternal("create_record-request.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromInternal("create_record.json"),
+			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json"),
+			servermock.CheckHeader().
 				WithAuthorization("Bearer secret-token")).
 		Build(t)
 
@@ -225,21 +225,21 @@ func TestDNSProvider_Present_token_not_expired(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /authenticate",
-			servermock2.ResponseFromInternal("authenticate.json")).
+			servermock.ResponseFromInternal("authenticate.json")).
 		Route("GET /dns/zones",
-			servermock2.ResponseFromInternal("zones.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromInternal("zones.json"),
+			servermock.CheckHeader().
 				WithAuthorization("Bearer secrettoken")).
 		Route("GET /dns/zones/123/records",
-			servermock2.ResponseFromInternal("zone_records.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromInternal("zone_records.json"),
+			servermock.CheckHeader().
 				WithAuthorization("Bearer secrettoken")).
 		Route("DELETE /dns/zones/123/records/jkl012",
-			servermock2.ResponseFromInternal("delete_record.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromInternal("delete_record.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge").
 				With("type", "TXT"),
-			servermock2.CheckHeader().
+			servermock.CheckHeader().
 				WithAuthorization("Bearer secrettoken")).
 		Build(t)
 
@@ -250,19 +250,19 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 func TestDNSProvider_CleanUp_token_not_expired(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /dns/zones",
-			servermock2.ResponseFromInternal("zones.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromInternal("zones.json"),
+			servermock.CheckHeader().
 				WithAuthorization("Bearer secret-token")).
 		Route("GET /dns/zones/123/records",
-			servermock2.ResponseFromInternal("zone_records.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromInternal("zone_records.json"),
+			servermock.CheckHeader().
 				WithAuthorization("Bearer secret-token")).
 		Route("DELETE /dns/zones/123/records/jkl012",
-			servermock2.ResponseFromInternal("delete_record.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromInternal("delete_record.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge").
 				With("type", "TXT"),
-			servermock2.CheckHeader().
+			servermock.CheckHeader().
 				WithAuthorization("Bearer secret-token")).
 		Build(t)
 

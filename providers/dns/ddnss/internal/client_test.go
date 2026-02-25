@@ -4,12 +4,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(&Authentication{Key: "secret"})
 			if err != nil {
@@ -27,8 +27,8 @@ func mockBuilder() *servermock2.Builder[*Client] {
 func TestClient_AddTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /",
-			servermock2.ResponseFromFixture("success.html"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("success.html"),
+			servermock.CheckQueryParameter().Strict().
 				With("host", "_acme-challenge.example.com").
 				With("key", "secret").
 				With("txt", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
@@ -43,8 +43,8 @@ func TestClient_AddTXTRecord(t *testing.T) {
 func TestClient_RemoveTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /",
-			servermock2.ResponseFromFixture("success.html"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("success.html"),
+			servermock.CheckQueryParameter().Strict().
 				With("host", "_acme-challenge.example.com").
 				With("key", "secret").
 				With("txtm", "2"),

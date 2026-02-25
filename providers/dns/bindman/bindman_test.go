@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -106,8 +106,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.BaseURL = server.URL
@@ -115,7 +115,7 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 
 			return NewDNSProviderConfig(config)
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithJSONHeaders().
 			With("User-Agent", "bindman-dns-webhook-client"))
 }
@@ -123,7 +123,7 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	testCases := []struct {
 		name        string
-		mock        *servermock2.Builder[*DNSProvider]
+		mock        *servermock.Builder[*DNSProvider]
 		domain      string
 		token       string
 		keyAuth     string
@@ -133,8 +133,8 @@ func TestDNSProvider_Present(t *testing.T) {
 			name: "success when add record function return no error",
 			mock: mockBuilder().
 				Route("POST /records",
-					servermock2.Noop().WithStatusCode(http.StatusNoContent),
-					servermock2.CheckRequestJSONBodyFromFixture("add_record-request.json"),
+					servermock.Noop().WithStatusCode(http.StatusNoContent),
+					servermock.CheckRequestJSONBodyFromFixture("add_record-request.json"),
 				),
 			domain:      "example.com",
 			keyAuth:     "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
@@ -144,7 +144,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			name: "error when add record function return an error",
 			mock: mockBuilder().
 				Route("POST /records",
-					servermock2.ResponseFromFixture("error.json"),
+					servermock.ResponseFromFixture("error.json"),
 				),
 			domain:      "example.com",
 			keyAuth:     "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
@@ -168,7 +168,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	testCases := []struct {
 		name        string
-		mock        *servermock2.Builder[*DNSProvider]
+		mock        *servermock.Builder[*DNSProvider]
 		domain      string
 		token       string
 		keyAuth     string
@@ -178,7 +178,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			name: "success when remove record function return no error",
 			mock: mockBuilder().
 				Route("DELETE /records/_acme-challenge.example.com./TXT",
-					servermock2.Noop().WithStatusCode(http.StatusNoContent),
+					servermock.Noop().WithStatusCode(http.StatusNoContent),
 				),
 			domain:      "example.com",
 			keyAuth:     "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
@@ -188,7 +188,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			name: "error when remove record function return an error",
 			mock: mockBuilder().
 				Route("DELETE /records/_acme-challenge.example.com./TXT",
-					servermock2.ResponseFromFixture("error.json"),
+					servermock.ResponseFromFixture("error.json"),
 				),
 			domain:      "example.com",
 			keyAuth:     "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",

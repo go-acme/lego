@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 			client.baseURL, _ = url.Parse(server.URL)
@@ -20,14 +20,14 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders(),
+		servermock.CheckHeader().WithJSONHeaders(),
 	)
 }
 
 func TestClient_ListZone(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dnszones/",
-			servermock2.ResponseFromFixture("ListZone.json")).
+			servermock.ResponseFromFixture("ListZone.json")).
 		Build(t)
 
 	ctx := t.Context()
@@ -46,7 +46,7 @@ func TestClient_ListZone(t *testing.T) {
 func TestClient_GetZoneDetails(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dnszones/example.com",
-			servermock2.ResponseFromFixture("GetZoneDetails.json")).
+			servermock.ResponseFromFixture("GetZoneDetails.json")).
 		Build(t)
 
 	zone, err := client.GetZoneDetails(t.Context(), "example.com")
@@ -65,7 +65,7 @@ func TestClient_GetZoneDetails(t *testing.T) {
 func TestClient_ListRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dnszones/example.com/records/",
-			servermock2.ResponseFromFixture("ListRecords.json")).
+			servermock.ResponseFromFixture("ListRecords.json")).
 		Build(t)
 
 	records, err := client.ListRecords(t.Context(), "example.com")
@@ -98,7 +98,7 @@ func TestClient_ListRecords(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dnszones/example.com/records/",
-			servermock2.Noop().WithStatusCode(http.StatusNoContent)).
+			servermock.Noop().WithStatusCode(http.StatusNoContent)).
 		Build(t)
 
 	record := Record{Name: "www", TTL: 3600, Type: "A", Data: "127.0.0.1"}
@@ -110,7 +110,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_DeleteRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dnszones/example.com/records/delete",
-			servermock2.Noop().WithStatusCode(http.StatusNoContent)).
+			servermock.Noop().WithStatusCode(http.StatusNoContent)).
 		Build(t)
 
 	record := Record{Name: "www", Type: "A", Data: "127.0.0.1"}
@@ -122,7 +122,7 @@ func TestClient_DeleteRecords(t *testing.T) {
 func TestClient_CommitRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dnszones/example.com/records/commit",
-			servermock2.Noop().WithStatusCode(http.StatusNoContent)).
+			servermock.Noop().WithStatusCode(http.StatusNoContent)).
 		Build(t)
 
 	err := client.CommitRecords(t.Context(), "example.com")

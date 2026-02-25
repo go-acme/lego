@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/go-acme/lego/v5/providers/dns/allinkl/internal"
 	"github.com/stretchr/testify/require"
 )
@@ -153,8 +153,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.Login = "user"
@@ -172,8 +172,8 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 			return p, err
 		},
 	).Route("POST /KasAuth.php",
-		servermock2.ResponseFromInternal("auth.xml"),
-		servermock2.CheckRequestBodyFromInternal("auth-request.xml").
+		servermock.ResponseFromInternal("auth.xml"),
+		servermock.CheckRequestBodyFromInternal("auth-request.xml").
 			IgnoreWhitespace(),
 	)
 }
@@ -225,13 +225,13 @@ func TestDNSProvider_Present(t *testing.T) {
 					params := kReq.RequestParams.(map[string]any)
 
 					if params["zone_host"] == "_acme-challenge.example.com." {
-						servermock2.ResponseFromInternal("get_dns_settings_not_found.xml").ServeHTTP(rw, req)
+						servermock.ResponseFromInternal("get_dns_settings_not_found.xml").ServeHTTP(rw, req)
 					} else {
-						servermock2.ResponseFromInternal("get_dns_settings.xml").ServeHTTP(rw, req)
+						servermock.ResponseFromInternal("get_dns_settings.xml").ServeHTTP(rw, req)
 					}
 
 				case "add_dns_settings":
-					servermock2.ResponseFromInternal("add_dns_settings.xml").ServeHTTP(rw, req)
+					servermock.ResponseFromInternal("add_dns_settings.xml").ServeHTTP(rw, req)
 
 				default:
 					http.Error(rw, fmt.Sprintf("unknown action: %v", kReq.Action), http.StatusBadRequest)
@@ -247,8 +247,8 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /KasApi.php",
-			servermock2.ResponseFromInternal("delete_dns_settings.xml"),
-			servermock2.CheckRequestBodyFromInternal("delete_dns_settings-request.xml").
+			servermock.ResponseFromInternal("delete_dns_settings.xml"),
+			servermock.CheckRequestBodyFromInternal("delete_dns_settings-request.xml").
 				IgnoreWhitespace()).
 		Build(t)
 

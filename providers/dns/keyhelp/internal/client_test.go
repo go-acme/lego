@@ -5,13 +5,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(server.URL, "secret")
 			if err != nil {
@@ -22,7 +22,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			With(APIKeyHeader, "secret").
 			WithJSONHeaders(),
 	)
@@ -31,8 +31,8 @@ func mockBuilder() *servermock2.Builder[*Client] {
 func TestClient_ListDomains(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/v2/domains",
-			servermock2.ResponseFromFixture("get_domains.json"),
-			servermock2.CheckQueryParameter().
+			servermock.ResponseFromFixture("get_domains.json"),
+			servermock.CheckQueryParameter().
 				With("sort", "domain_utf8").
 				Strict()).
 		Build(t)
@@ -56,7 +56,7 @@ func TestClient_ListDomains(t *testing.T) {
 func TestClient_ListDomains_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/v2/domains",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -68,7 +68,7 @@ func TestClient_ListDomains_error(t *testing.T) {
 func TestClient_ListDomainRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/v2/dns/123",
-			servermock2.ResponseFromFixture("get_domain_records.json")).
+			servermock.ResponseFromFixture("get_domain_records.json")).
 		Build(t)
 
 	domainRecords, err := client.ListDomainRecords(t.Context(), 123)
@@ -101,7 +101,7 @@ func TestClient_ListDomainRecords(t *testing.T) {
 func TestClient_ListDomainRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/v2/dns/8",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -113,8 +113,8 @@ func TestClient_ListDomainRecords_error(t *testing.T) {
 func TestClient_UpdateDomainRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /api/v2/dns/8",
-			servermock2.ResponseFromFixture("update_domain_records.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("update_domain_records-request.json")).
+			servermock.ResponseFromFixture("update_domain_records.json"),
+			servermock.CheckRequestJSONBodyFromFixture("update_domain_records-request.json")).
 		Build(t)
 
 	records := DomainRecords{
@@ -157,7 +157,7 @@ func TestClient_UpdateDomainRecords(t *testing.T) {
 func TestClient_UpdateDomainRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /api/v2/dns/123",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 

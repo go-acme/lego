@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,8 +20,8 @@ const (
 	testPassword = "testpass"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(testAPIKey, testPassword)
 			client.baseURL, _ = url.Parse(server.URL)
@@ -29,7 +29,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithContentTypeFromURLEncoded(),
 	)
 }
@@ -37,8 +37,8 @@ func mockBuilder() *servermock2.Builder[*Client] {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /Domain/DnsRecord/Add",
-			servermock2.ResponseFromFixture("Domain_DnsRecord_Add_SUCCESS.json"),
-			servermock2.CheckForm().Strict().
+			servermock.ResponseFromFixture("Domain_DnsRecord_Add_SUCCESS.json"),
+			servermock.CheckForm().Strict().
 				With("fullrecordname", "www.example.com").
 				With("ttl", "36000").
 				With("type", "TXT").
@@ -62,7 +62,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /Domain/DnsRecord/Add",
-			servermock2.ResponseFromFixture("Domain_DnsRecord_Add_FAILURE.json")).
+			servermock.ResponseFromFixture("Domain_DnsRecord_Add_FAILURE.json")).
 		Build(t)
 
 	query := RecordQuery{
@@ -110,8 +110,8 @@ func TestClient_AddRecord_integration(t *testing.T) {
 func TestClient_RemoveRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /Domain/DnsRecord/Remove",
-			servermock2.ResponseFromFixture("Domain_DnsRecord_Remove_SUCCESS.json"),
-			servermock2.CheckForm().Strict().
+			servermock.ResponseFromFixture("Domain_DnsRecord_Remove_SUCCESS.json"),
+			servermock.CheckForm().Strict().
 				With("fullrecordname", "www.example.com").
 				With("type", "TXT").
 				With("password", testPassword).
@@ -131,7 +131,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 func TestClient_RemoveRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /Domain/DnsRecord/Remove",
-			servermock2.ResponseFromFixture("Domain_DnsRecord_Remove_FAILURE.json")).
+			servermock.ResponseFromFixture("Domain_DnsRecord_Remove_FAILURE.json")).
 		Build(t)
 
 	query := RecordQuery{
@@ -166,8 +166,8 @@ func TestClient_RemoveRecord_integration(t *testing.T) {
 func TestClient_ListRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /Domain/DnsRecord/List",
-			servermock2.ResponseFromFixture("Domain_DnsRecord_List_SUCCESS.json"),
-			servermock2.CheckForm().Strict().
+			servermock.ResponseFromFixture("Domain_DnsRecord_List_SUCCESS.json"),
+			servermock.CheckForm().Strict().
 				With("Domain", "example.com").
 				With("password", testPassword).
 				With("apiKey", testAPIKey).
@@ -226,7 +226,7 @@ func TestClient_ListRecords(t *testing.T) {
 func TestClient_ListRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /Domain/DnsRecord/List",
-			servermock2.ResponseFromFixture("Domain_DnsRecord_List_FAILURE.json")).
+			servermock.ResponseFromFixture("Domain_DnsRecord_List_FAILURE.json")).
 		Build(t)
 
 	query := ListRecordQuery{

@@ -5,15 +5,15 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 const apiKey = "secret"
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(apiKey)
 			client.baseURL, _ = url.Parse(server.URL)
@@ -21,14 +21,14 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			With(authorizationHeader, apiKey),
 	)
 }
 
 func TestClient_ListDomains(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /domains", servermock2.ResponseFromFixture("list-domains.json")).
+		Route("GET /domains", servermock.ResponseFromFixture("list-domains.json")).
 		Build(t)
 
 	domains, err := client.ListDomains(t.Context())
@@ -48,7 +48,7 @@ func TestClient_ListDomains(t *testing.T) {
 
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /domains/example.com/dns", servermock2.ResponseFromFixture("get-dns-records.json")).
+		Route("GET /domains/example.com/dns", servermock.ResponseFromFixture("get-dns-records.json")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "example.com")
@@ -87,8 +87,8 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_UpdateRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /domains/example.com/dns",
-			servermock2.ResponseFromFixture("update-dns-records.json"),
-			servermock2.CheckRequestJSONBody(`{"records":[{"type":"TXT","name":"foo","value":"value1","ttl":120}]}`)).
+			servermock.ResponseFromFixture("update-dns-records.json"),
+			servermock.CheckRequestJSONBody(`{"records":[{"type":"TXT","name":"foo","value":"value1","ttl":120}]}`)).
 		Build(t)
 
 	records := []Record{{

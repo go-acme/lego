@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -124,7 +124,7 @@ func TestDNSProvider(t *testing.T) {
 
 	regexpDate := regexp.MustCompile(`\[ACME Challenge [^\]:]*:[^\]]*\]`)
 
-	provider := servermock2.NewBuilder(
+	provider := servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.BaseURL = server.URL + "/"
@@ -133,7 +133,7 @@ func TestDNSProvider(t *testing.T) {
 
 			return NewDNSProviderConfig(config)
 		},
-		servermock2.CheckHeader().WithContentType("text/xml"),
+		servermock.CheckHeader().WithContentType("text/xml"),
 	).
 		Route("POST /", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			require.Equal(t, "text/xml", req.Header.Get("Content-Type"), "invalid content type")

@@ -5,13 +5,13 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder(apiKey string) *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder(apiKey string) *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(apiKey)
 			client.baseURL, _ = url.Parse(server.URL)
@@ -19,7 +19,7 @@ func mockBuilder(apiKey string) *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			With(authHeader, apiKey))
 }
 
@@ -27,8 +27,8 @@ func TestClient_GetTxtRecord(t *testing.T) {
 	const zoneID = "zoneA"
 
 	client := mockBuilder("myKeyA").
-		Route("GET /api/v1/records", servermock2.ResponseFromFixture("get_txt_record.json"),
-			servermock2.CheckQueryParameter().Strict().
+		Route("GET /api/v1/records", servermock.ResponseFromFixture("get_txt_record.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("zone_id", zoneID)).
 		Build(t)
 
@@ -52,8 +52,8 @@ func TestClient_CreateRecord(t *testing.T) {
 	const zoneID = "zoneA"
 
 	client := mockBuilder("myKeyB").
-		Route("POST /api/v1/records", servermock2.ResponseFromFixture("create_txt_record.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("create_txt_record-request.json")).
+		Route("POST /api/v1/records", servermock.ResponseFromFixture("create_txt_record.json"),
+			servermock.CheckRequestJSONBodyFromFixture("create_txt_record-request.json")).
 		Build(t)
 
 	record := DNSRecord{
@@ -79,7 +79,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 func TestClient_GetZoneID(t *testing.T) {
 	client := mockBuilder("myKeyD").
-		Route("GET /api/v1/zones", servermock2.ResponseFromFixture("get_zone_id.json")).
+		Route("GET /api/v1/zones", servermock.ResponseFromFixture("get_zone_id.json")).
 		Build(t)
 
 	zoneID, err := client.GetZoneID(t.Context(), "example.com")

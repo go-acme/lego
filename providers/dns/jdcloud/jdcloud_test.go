@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -157,8 +157,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.AccessKeyID = "abc123"
@@ -187,24 +187,24 @@ func TestDNSProvider_Present(t *testing.T) {
 			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				pageNumber := req.URL.Query().Get("pageNumber")
 
-				servermock2.ResponseFromFixture(
+				servermock.ResponseFromFixture(
 					fmt.Sprintf("describe_domains_page%s.json", pageNumber),
 				).ServeHTTP(rw, req)
 			}),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("domainName", "example.com").
 				WithRegexp("pageNumber", `(1|2)`).
 				With("pageSize", "10"),
-			servermock2.CheckHeader().
+			servermock.CheckHeader().
 				WithRegexp("Authorization",
 					`JDCLOUD2-HMAC-SHA256 Credential=abc123/\d{8}/cn-north-1/domainservice/jdcloud2_request, SignedHeaders=content-type;host;x-jdcloud-date;x-jdcloud-nonce, Signature=\w+`).
 				WithRegexp("X-Jdcloud-Date", `\d{8}T\d{6}Z`).
 				WithRegexp("X-Jdcloud-Nonce", `[\w-]+`),
 		).
 		Route("POST /v2/regions/cn-north-1/domain/20/ResourceRecord",
-			servermock2.ResponseFromFixture("create_record.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("create_record-request.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromFixture("create_record.json"),
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json"),
+			servermock.CheckHeader().
 				WithRegexp("Authorization",
 					`JDCLOUD2-HMAC-SHA256 Credential=abc123/\d{8}/cn-north-1/domainservice/jdcloud2_request, SignedHeaders=content-type;host;x-jdcloud-date;x-jdcloud-nonce, Signature=\w+`).
 				WithRegexp("X-Jdcloud-Date", `\d{8}T\d{6}Z`).
@@ -225,8 +225,8 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("DELETE /v2/regions/cn-north-1/domain/20/ResourceRecord/123",
-			servermock2.ResponseFromFixture("delete_record.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromFixture("delete_record.json"),
+			servermock.CheckHeader().
 				WithRegexp("Authorization",
 					`JDCLOUD2-HMAC-SHA256 Credential=abc123/\d{8}/cn-north-1/domainservice/jdcloud2_request, SignedHeaders=content-type;host;x-jdcloud-date;x-jdcloud-nonce, Signature=\w+`).
 				WithRegexp("X-Jdcloud-Date", `\d{8}T\d{6}Z`).

@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient()
 
@@ -21,7 +21,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			With("Accept", "application/json"),
 	)
 }
@@ -29,8 +29,8 @@ func mockBuilder() *servermock2.Builder[*Client] {
 func TestClient_GenerateEAB(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /acme/eab-credentials",
-			servermock2.ResponseFromFixture("success.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("success.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("access_key", "secret"),
 		).
 		Build(t)
@@ -50,7 +50,7 @@ func TestClient_GenerateEAB(t *testing.T) {
 func TestClient_GenerateEAB_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /acme/eab-credentials",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized),
 		).
 		Build(t)
@@ -62,10 +62,10 @@ func TestClient_GenerateEAB_error(t *testing.T) {
 func TestClient_GenerateEABFromEmail(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /acme/eab-credentials-email",
-			servermock2.ResponseFromFixture("success.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromFixture("success.json"),
+			servermock.CheckHeader().
 				WithContentTypeFromURLEncoded(),
-			servermock2.CheckForm().
+			servermock.CheckForm().
 				With("email", "test@exmample.com"),
 		).
 		Build(t)
@@ -86,7 +86,7 @@ func TestClient_GenerateEABFromEmail_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /acme/eab-credentials-email",
 			// NOTE: with this endpoint the server always returns a 200.
-			servermock2.ResponseFromFixture("error_email.json"),
+			servermock.ResponseFromFixture("error_email.json"),
 		).
 		Build(t)
 

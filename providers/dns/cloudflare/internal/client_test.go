@@ -5,13 +5,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(
 				WithAuthKey("foo@example.com", "secret"),
@@ -24,7 +24,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithRegexp("User-Agent", `goacme-lego/[0-9.]+ \(.+\)`).
 			WithAccept("application/json").
 			With("X-Auth-Email", "foo@example.com").
@@ -35,10 +35,10 @@ func mockBuilder() *servermock2.Builder[*Client] {
 func TestClient_CreateDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/023e105f4ecef8ad9ca31a8372d0c353/dns_records",
-			servermock2.ResponseFromFixture("create_record.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromFixture("create_record.json"),
+			servermock.CheckHeader().
 				WithContentType("application/json"),
-			servermock2.CheckRequestJSONBodyFromFixture("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
 		Build(t)
 
 	record := Record{
@@ -66,7 +66,7 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 func TestClient_CreateDNSRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/023e105f4ecef8ad9ca31a8372d0c353/dns_records",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -84,7 +84,7 @@ func TestClient_CreateDNSRecord_error(t *testing.T) {
 func TestClient_DeleteDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/023e105f4ecef8ad9ca31a8372d0c353/dns_records/xxx",
-			servermock2.ResponseFromFixture("delete_record.json")).
+			servermock.ResponseFromFixture("delete_record.json")).
 		Build(t)
 
 	err := client.DeleteDNSRecord(t.Context(), "023e105f4ecef8ad9ca31a8372d0c353", "xxx")
@@ -94,7 +94,7 @@ func TestClient_DeleteDNSRecord(t *testing.T) {
 func TestClient_DeleteDNSRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/023e105f4ecef8ad9ca31a8372d0c353/dns_records/xxx",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -105,8 +105,8 @@ func TestClient_DeleteDNSRecord_error(t *testing.T) {
 func TestClient_ZonesByName(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones",
-			servermock2.ResponseFromFixture("zones.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("zones.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com").
 				With("per_page", "50")).
 		Build(t)
@@ -166,7 +166,7 @@ func TestClient_ZonesByName(t *testing.T) {
 func TestClient_ZonesByName_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 

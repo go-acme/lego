@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("secret")
 			if err != nil {
@@ -25,7 +25,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithJSONHeaders().
 			WithAuthorization("Bearer secret"),
 	)
@@ -34,8 +34,8 @@ func mockBuilder() *servermock2.Builder[*Client] {
 func TestClient_RetrieveZones(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones",
-			servermock2.ResponseFromFixture("zones.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("zones.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("filter.zoneName", "example.com")).
 		Build(t)
 
@@ -69,7 +69,7 @@ func TestClient_RetrieveZones(t *testing.T) {
 func TestClient_RetrieveZones_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /zones",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -80,8 +80,8 @@ func TestClient_RetrieveZones_error(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/abc/records",
-			servermock2.ResponseFromFixture("create_record.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("create_record-request.json")).
+			servermock.ResponseFromFixture("create_record.json"),
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
 		Build(t)
 
 	record := RecordProperties{
@@ -125,7 +125,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/abc/records/def",
-			servermock2.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusAccepted)).
 		Build(t)
 

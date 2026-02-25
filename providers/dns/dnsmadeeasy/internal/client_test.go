@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("key", "secret")
 			if err != nil {
@@ -25,7 +25,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			With("x-dnsme-apiKey", "key").
 			WithRegexp("x-dnsme-requestDate", `\w+, \d+ \w+ \d+ \d+:\d+:\d+ UTC`).
 			WithRegexp("x-dnsme-hmac", `[a-z0-9]+`),
@@ -35,8 +35,8 @@ func mockBuilder() *servermock2.Builder[*Client] {
 func TestClient_GetDomain(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/managed/name",
-			servermock2.RawStringResponse(`{"id": 1, "name": "foo"}`),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.RawStringResponse(`{"id": 1, "name": "foo"}`),
+			servermock.CheckQueryParameter().Strict().
 				With("domainname", "example.com")).
 		Build(t)
 
@@ -54,8 +54,8 @@ func TestClient_GetDomain(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/managed/1/records",
-			servermock2.ResponseFromFixture("get_records.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("get_records.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("recordName", "foo").
 				With("type", "TXT"),
 		).
@@ -91,7 +91,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/managed/1/records", nil,
-			servermock2.CheckRequestJSONBodyFromFixture("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
 		Build(t)
 
 	domain := &Domain{ID: 1, Name: "foo"}

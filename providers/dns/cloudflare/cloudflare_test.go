@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -304,8 +304,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.AuthEmail = "foo@example.com"
@@ -315,7 +315,7 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 
 			return NewDNSProviderConfig(config)
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithRegexp("User-Agent", `goacme-lego/[0-9.]+ \(.+\)`).
 			With("X-Auth-Email", "foo@example.com").
 			With("X-Auth-Key", "secret"),
@@ -326,16 +326,16 @@ func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		// https://developers.cloudflare.com/api/resources/zones/methods/list/
 		Route("GET /zones",
-			servermock2.ResponseFromInternal("zones.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromInternal("zones.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com").
 				With("per_page", "50")).
 		// https://developers.cloudflare.com/api/resources/dns/subresources/records/methods/create/
 		Route("POST /zones/023e105f4ecef8ad9ca31a8372d0c353/dns_records",
-			servermock2.ResponseFromInternal("create_record.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromInternal("create_record.json"),
+			servermock.CheckHeader().
 				WithContentType("application/json"),
-			servermock2.CheckRequestJSONBodyFromInternal("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json")).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
@@ -346,13 +346,13 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		// https://developers.cloudflare.com/api/resources/zones/methods/list/
 		Route("GET /zones",
-			servermock2.ResponseFromInternal("zones.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromInternal("zones.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com").
 				With("per_page", "50")).
 		// https://developers.cloudflare.com/api/resources/dns/subresources/records/methods/delete/
 		Route("DELETE /zones/023e105f4ecef8ad9ca31a8372d0c353/dns_records/xxx",
-			servermock2.ResponseFromInternal("delete_record.json")).
+			servermock.ResponseFromInternal("delete_record.json")).
 		Build(t)
 
 	token := "abc"

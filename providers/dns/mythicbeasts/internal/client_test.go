@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 			client.HTTPClient = server.Client()
@@ -25,7 +25,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer "+fakeToken),
 	)
 }
@@ -33,8 +33,8 @@ func mockBuilder() *servermock2.Builder[*Client] {
 func TestClient_CreateTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/example.com/records/foo/TXT",
-			servermock2.ResponseFromFixture("post-zoneszonerecords.json"),
-			servermock2.CheckRequestJSONBody(`{"records":[{"host":"foo","ttl":120,"type":"TXT","data":"txt"}]}`)).
+			servermock.ResponseFromFixture("post-zoneszonerecords.json"),
+			servermock.CheckRequestJSONBody(`{"records":[{"host":"foo","ttl":120,"type":"TXT","data":"txt"}]}`)).
 		Build(t)
 
 	err := client.CreateTXTRecord(mockContext(t), "example.com", "foo", "txt", 120)
@@ -44,8 +44,8 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 func TestClient_RemoveTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/example.com/records/foo/TXT",
-			servermock2.ResponseFromFixture("delete-zoneszonerecords.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("delete-zoneszonerecords.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("data", "txt")).
 		Build(t)
 

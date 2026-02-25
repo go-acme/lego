@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -13,7 +13,7 @@ import (
 func TestClient_Login(t *testing.T) {
 	var serverURL *url.URL
 
-	client := servermock2.NewBuilder(
+	client := servermock.NewBuilder(
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret", "example.com", "test")
 			client.HTTPClient = server.Client()
@@ -23,7 +23,7 @@ func TestClient_Login(t *testing.T) {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders(),
+		servermock.CheckHeader().WithJSONHeaders(),
 	).
 		Route("POST /v3/auth/token", IdentityHandlerMock()).
 		Build(t)

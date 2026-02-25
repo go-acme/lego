@@ -7,19 +7,19 @@ import (
 	"net/http/httptest"
 
 	"github.com/go-acme/lego/v5/acme"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 )
 
 // MockACMEServer Minimal stub ACME server for validation.
-func MockACMEServer() *servermock2.Builder[*httptest.Server] {
-	return servermock2.NewBuilder(
+func MockACMEServer() *servermock.Builder[*httptest.Server] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*httptest.Server, error) {
 			return server, nil
 		}).
 		Route("GET /dir", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			serverURL := fmt.Sprintf("https://%s", req.Context().Value(http.LocalAddrContextKey))
 
-			servermock2.JSONEncode(acme.Directory{
+			servermock.JSONEncode(acme.Directory{
 				NewNonceURL:   serverURL + "/nonce",
 				NewAccountURL: serverURL + "/account",
 				NewOrderURL:   serverURL + "/newOrder",

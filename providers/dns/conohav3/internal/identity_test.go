@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,11 +24,11 @@ func setupIdentifier(server *httptest.Server) (*Identifier, error) {
 }
 
 func TestGetToken_HeaderToken(t *testing.T) {
-	identifier := servermock2.NewBuilder[*Identifier](setupIdentifier,
-		servermock2.CheckHeader().WithJSONHeaders(),
+	identifier := servermock.NewBuilder[*Identifier](setupIdentifier,
+		servermock.CheckHeader().WithJSONHeaders(),
 	).
 		Route("POST /v3/auth/tokens",
-			servermock2.ResponseFromFixture("empty.json").
+			servermock.ResponseFromFixture("empty.json").
 				WithStatusCode(http.StatusCreated).
 				WithHeader("x-subject-token", "sample-header-token-123")).
 		Build(t)

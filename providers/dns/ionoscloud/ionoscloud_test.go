@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -119,8 +119,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.APIToken = "secret"
@@ -135,7 +135,7 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithJSONHeaders().
 			WithAuthorization("Bearer secret"),
 	)
@@ -144,12 +144,12 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /zones",
-			servermock2.ResponseFromInternal("zones.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromInternal("zones.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("filter.zoneName", "example.com")).
 		Route("POST /zones/e74d0d15-f567-4b7b-9069-26ee1f93bae3/records",
-			servermock2.ResponseFromInternal("create_record.json"),
-			servermock2.CheckRequestJSONBodyFromInternal("create_record-request.json")).
+			servermock.ResponseFromInternal("create_record.json"),
+			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json")).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
@@ -159,7 +159,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("DELETE /zones/e74d0d15-f567-4b7b-9069-26ee1f93bae3/records/90d81ac0-3a30-44d4-95a5-12959effa6ee",
-			servermock2.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusAccepted)).
 		Build(t)
 

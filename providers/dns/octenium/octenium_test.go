@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -129,8 +129,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.APIKey = "secret"
@@ -145,7 +145,7 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithAccept("application/json").
 			With("X-Api-Key", "secret"),
 	)
@@ -154,14 +154,14 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /domains",
-			servermock2.ResponseFromFixture("list_domains.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("list_domains.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("domain-name", "example.com")).
 		Route("POST /domains/dns-records/add",
-			servermock2.ResponseFromFixture("add_dns_record.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromFixture("add_dns_record.json"),
+			servermock.CheckHeader().
 				WithContentType("application/x-www-form-urlencoded"),
-			servermock2.CheckForm().Strict().
+			servermock.CheckForm().Strict().
 				With("order-id", "2976").
 				With("name", "_acme-challenge.example.com.").
 				With("ttl", "120").
@@ -176,17 +176,17 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /domains/dns-records/list",
-			servermock2.ResponseFromFixture("list_dns_records.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromFixture("list_dns_records.json"),
+			servermock.CheckHeader().
 				WithContentType("application/x-www-form-urlencoded"),
-			servermock2.CheckForm().Strict().
+			servermock.CheckForm().Strict().
 				With("order-id", "2976").
 				With("types[]", "TXT")).
 		Route("POST /domains/dns-records/delete",
-			servermock2.ResponseFromFixture("delete_dns_record.json"),
-			servermock2.CheckHeader().
+			servermock.ResponseFromFixture("delete_dns_record.json"),
+			servermock.CheckHeader().
 				WithContentType("application/x-www-form-urlencoded"),
-			servermock2.CheckForm().Strict().
+			servermock.CheckForm().Strict().
 				With("order-id", "2976").
 				With("line", "123")).
 		Build(t)

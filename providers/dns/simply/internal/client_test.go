@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("accountname", "apikey")
 			if err != nil {
@@ -24,14 +24,14 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithBasicAuth("accountname", "apikey"))
 }
 
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /my/products/azone01/dns/records",
-			servermock2.ResponseFromFixture("get_records.json")).
+			servermock.ResponseFromFixture("get_records.json")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "azone01")
@@ -78,7 +78,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_GetRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /my/products/azone01/dns/records",
-			servermock2.ResponseFromFixture("bad_auth_error.json").
+			servermock.ResponseFromFixture("bad_auth_error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -91,7 +91,7 @@ func TestClient_GetRecords_error(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /my/products/azone01/dns/records",
-			servermock2.ResponseFromFixture("add_record.json")).
+			servermock.ResponseFromFixture("add_record.json")).
 		Build(t)
 
 	record := Record{
@@ -111,7 +111,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /my/products/azone01/dns/records",
-			servermock2.ResponseFromFixture("bad_zone_error.json").
+			servermock.ResponseFromFixture("bad_zone_error.json").
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
 
@@ -132,7 +132,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_EditRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /my/products/azone01/dns/records/123456789",
-			servermock2.ResponseFromFixture("success.json")).
+			servermock.ResponseFromFixture("success.json")).
 		Build(t)
 
 	record := Record{
@@ -150,7 +150,7 @@ func TestClient_EditRecord(t *testing.T) {
 func TestClient_EditRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /my/products/azone01/dns/records/123456789",
-			servermock2.ResponseFromFixture("invalid_record_id.json").
+			servermock.ResponseFromFixture("invalid_record_id.json").
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
 
@@ -169,7 +169,7 @@ func TestClient_EditRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /my/products/azone01/dns/records/123456789",
-			servermock2.ResponseFromFixture("success.json")).
+			servermock.ResponseFromFixture("success.json")).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "azone01", 123456789)
@@ -179,7 +179,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /my/products/azone01/dns/records/123456789",
-			servermock2.ResponseFromFixture("invalid_record_id.json").
+			servermock.ResponseFromFixture("invalid_record_id.json").
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
 

@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,8 +17,8 @@ func setupClient(server *httptest.Server) (*Client, error) {
 	return client, nil
 }
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("bob", "user", "secret")
 			client.HTTPClient = server.Client()
@@ -26,13 +26,13 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders())
+		servermock.CheckHeader().WithJSONHeaders())
 }
 
 func TestClient_Publish(t *testing.T) {
 	client := mockBuilder().
-		Route("PUT /Zone/example.com", servermock2.ResponseFromFixture("publish.json"),
-			servermock2.CheckRequestJSONBody(`{"publish":true,"notes":"my message"}`)).
+		Route("PUT /Zone/example.com", servermock.ResponseFromFixture("publish.json"),
+			servermock.CheckRequestJSONBody(`{"publish":true,"notes":"my message"}`)).
 		Build(t)
 
 	err := client.Publish(t.Context(), "example.com", "my message")
@@ -41,8 +41,8 @@ func TestClient_Publish(t *testing.T) {
 
 func TestClient_AddTXTRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /TXTRecord/example.com/example.com.", servermock2.ResponseFromFixture("create-txt-record.json"),
-			servermock2.CheckRequestJSONBody(`{"rdata":{"txtdata":"txt"},"ttl":"120"}`)).
+		Route("POST /TXTRecord/example.com/example.com.", servermock.ResponseFromFixture("create-txt-record.json"),
+			servermock.CheckRequestJSONBody(`{"rdata":{"txtdata":"txt"},"ttl":"120"}`)).
 		Build(t)
 
 	err := client.AddTXTRecord(t.Context(), "example.com", "example.com.", "txt", 120)

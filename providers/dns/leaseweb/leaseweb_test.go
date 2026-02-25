@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/go-acme/lego/v5/providers/dns/leaseweb/internal"
 	"github.com/stretchr/testify/require"
 )
@@ -120,8 +120,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.APIKey = "secret"
@@ -136,7 +136,7 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithJSONHeaders().
 			With(internal.AuthHeader, "secret"),
 	)
@@ -145,12 +145,12 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 func TestDNSProvider_Present_create(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /domains/example.com/resourceRecordSets/_acme-challenge.example.com./TXT",
-			servermock2.ResponseFromInternal("error_404.json").
+			servermock.ResponseFromInternal("error_404.json").
 				WithStatusCode(http.StatusNotFound),
 		).
 		Route("POST /domains/example.com/resourceRecordSets",
-			servermock2.ResponseFromInternal("createResourceRecordSet.json"),
-			servermock2.CheckRequestJSONBodyFromInternal("createResourceRecordSet-request.json"),
+			servermock.ResponseFromInternal("createResourceRecordSet.json"),
+			servermock.CheckRequestJSONBodyFromInternal("createResourceRecordSet-request.json"),
 		).
 		Build(t)
 
@@ -161,11 +161,11 @@ func TestDNSProvider_Present_create(t *testing.T) {
 func TestDNSProvider_Present_update(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /domains/example.com/resourceRecordSets/_acme-challenge.example.com./TXT",
-			servermock2.ResponseFromInternal("getResourceRecordSet.json"),
+			servermock.ResponseFromInternal("getResourceRecordSet.json"),
 		).
 		Route("PUT /domains/example.com/resourceRecordSets/_acme-challenge.example.com./TXT",
-			servermock2.ResponseFromInternal("updateResourceRecordSet.json"),
-			servermock2.CheckRequestJSONBodyFromInternal("updateResourceRecordSet-request.json"),
+			servermock.ResponseFromInternal("updateResourceRecordSet.json"),
+			servermock.CheckRequestJSONBodyFromInternal("updateResourceRecordSet-request.json"),
 		).
 		Build(t)
 
@@ -176,10 +176,10 @@ func TestDNSProvider_Present_update(t *testing.T) {
 func TestDNSProvider_CleanUp_delete(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /domains/example.com/resourceRecordSets/_acme-challenge.example.com./TXT",
-			servermock2.ResponseFromInternal("getResourceRecordSet2.json"),
+			servermock.ResponseFromInternal("getResourceRecordSet2.json"),
 		).
 		Route("DELETE /domains/example.com/resourceRecordSets/_acme-challenge.example.com./TXT",
-			servermock2.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusNoContent),
 		).
 		Build(t)
@@ -191,11 +191,11 @@ func TestDNSProvider_CleanUp_delete(t *testing.T) {
 func TestDNSProvider_CleanUp_update(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /domains/example.com/resourceRecordSets/_acme-challenge.example.com./TXT",
-			servermock2.ResponseFromInternal("getResourceRecordSet.json"),
+			servermock.ResponseFromInternal("getResourceRecordSet.json"),
 		).
 		Route("PUT /domains/example.com/resourceRecordSets/_acme-challenge.example.com./TXT",
-			servermock2.ResponseFromInternal("updateResourceRecordSet.json"),
-			servermock2.CheckRequestJSONBodyFromInternal("updateResourceRecordSet-request2.json"),
+			servermock.ResponseFromInternal("updateResourceRecordSet.json"),
+			servermock.CheckRequestJSONBodyFromInternal("updateResourceRecordSet-request2.json"),
 		).
 		Build(t)
 

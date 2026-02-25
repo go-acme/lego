@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(server.URL)
 			if err != nil {
@@ -27,9 +27,9 @@ func mockBuilder() *servermock2.Builder[*Client] {
 func TestClient_Login(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock2.ResponseFromFixture("login.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("login-request.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("login.json"),
+			servermock.CheckRequestJSONBodyFromFixture("login-request.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("login", ""),
 		).
 		Build(t)
@@ -43,7 +43,7 @@ func TestClient_Login(t *testing.T) {
 func TestClient_Login_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock2.ResponseFromFixture("error.json"),
+			servermock.ResponseFromFixture("error.json"),
 		).
 		Build(t)
 
@@ -54,9 +54,9 @@ func TestClient_Login_error(t *testing.T) {
 func TestClient_GetClientID(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock2.ResponseFromFixture("client_get_id.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("client_get_id-request.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("client_get_id.json"),
+			servermock.CheckRequestJSONBodyFromFixture("client_get_id-request.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("client_get_id", ""),
 		).
 		Build(t)
@@ -70,9 +70,9 @@ func TestClient_GetClientID(t *testing.T) {
 func TestClient_GetZoneID(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock2.ResponseFromFixture("dns_zone_get_id.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("dns_zone_get_id-request.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("dns_zone_get_id.json"),
+			servermock.CheckRequestJSONBodyFromFixture("dns_zone_get_id-request.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("dns_zone_get_id", ""),
 		).
 		Build(t)
@@ -86,9 +86,9 @@ func TestClient_GetZoneID(t *testing.T) {
 func TestClient_GetZone(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock2.ResponseFromFixture("dns_zone_get.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("dns_zone_get-request.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("dns_zone_get.json"),
+			servermock.CheckRequestJSONBodyFromFixture("dns_zone_get-request.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("dns_zone_get", ""),
 		).
 		Build(t)
@@ -112,9 +112,9 @@ func TestClient_GetZone(t *testing.T) {
 func TestClient_GetTXT(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock2.ResponseFromFixture("dns_txt_get.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("dns_txt_get-request.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("dns_txt_get.json"),
+			servermock.CheckRequestJSONBodyFromFixture("dns_txt_get-request.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("dns_txt_get", ""),
 		).
 		Build(t)
@@ -130,9 +130,9 @@ func TestClient_GetTXT(t *testing.T) {
 func TestClient_AddTXT(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock2.ResponseFromFixture("dns_txt_add.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("dns_txt_add-request.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("dns_txt_add.json"),
+			servermock.CheckRequestJSONBodyFromFixture("dns_txt_add-request.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("dns_txt_add", ""),
 		).
 		Build(t)
@@ -161,9 +161,9 @@ func TestClient_AddTXT(t *testing.T) {
 func TestClient_DeleteTXT(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock2.ResponseFromFixture("dns_txt_delete.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("dns_txt_delete-request.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("dns_txt_delete.json"),
+			servermock.CheckRequestJSONBodyFromFixture("dns_txt_delete-request.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("dns_txt_delete", ""),
 		).
 		Build(t)

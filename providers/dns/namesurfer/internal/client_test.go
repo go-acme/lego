@@ -4,13 +4,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(server.URL, "user", "secret")
 			if err != nil {
@@ -21,7 +21,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithJSONHeaders(),
 	)
 }
@@ -29,8 +29,8 @@ func mockBuilder() *servermock2.Builder[*Client] {
 func TestClient_AddDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /jsonrpc10",
-			servermock2.ResponseFromFixture("addDNSRecord.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("addDNSRecord-request.json"),
+			servermock.ResponseFromFixture("addDNSRecord.json"),
+			servermock.CheckRequestJSONBodyFromFixture("addDNSRecord-request.json"),
 		).
 		Build(t)
 
@@ -48,7 +48,7 @@ func TestClient_AddDNSRecord(t *testing.T) {
 func TestClient_AddDNSRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /jsonrpc10",
-			servermock2.ResponseFromFixture("error.json"),
+			servermock.ResponseFromFixture("error.json"),
 		).
 		Build(t)
 
@@ -69,8 +69,8 @@ func TestClient_AddDNSRecord_error(t *testing.T) {
 func TestClient_UpdateDNSHost(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /jsonrpc10",
-			servermock2.ResponseFromFixture("updateDNSHost.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("updateDNSHost-request.json"),
+			servermock.ResponseFromFixture("updateDNSHost.json"),
+			servermock.CheckRequestJSONBodyFromFixture("updateDNSHost-request.json"),
 		).
 		Build(t)
 
@@ -88,8 +88,8 @@ func TestClient_UpdateDNSHost(t *testing.T) {
 func TestClient_SearchDNSHosts(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /jsonrpc10",
-			servermock2.ResponseFromFixture("searchDNSHosts.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("searchDNSHosts-request.json"),
+			servermock.ResponseFromFixture("searchDNSHosts.json"),
+			servermock.CheckRequestJSONBodyFromFixture("searchDNSHosts-request.json"),
 		).
 		Build(t)
 
@@ -108,8 +108,8 @@ func TestClient_SearchDNSHosts(t *testing.T) {
 func TestClient_ListZones(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /jsonrpc10",
-			servermock2.ResponseFromFixture("listZones.json"),
-			servermock2.CheckRequestJSONBodyFromFixture("listZones-request.json"),
+			servermock.ResponseFromFixture("listZones.json"),
+			servermock.CheckRequestJSONBodyFromFixture("listZones-request.json"),
 		).
 		Build(t)
 

@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("secret", "shortname", "")
 			if err != nil {
@@ -24,15 +24,15 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().WithJSONHeaders().
 			WithAuthorization("APIToken secret"))
 }
 
 func TestClient_CreateRRSet(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA",
-			servermock2.ResponseFromFixture("create.json"),
-			servermock2.CheckRequestJSONBody(`{"dns_zone_name":"example.com","group_name":"groupA","rrset":{"description":"lego","ttl":60,"txt_record":{"name":"wwww","values":["txt"]}}}`)).
+			servermock.ResponseFromFixture("create.json"),
+			servermock.CheckRequestJSONBody(`{"dns_zone_name":"example.com","group_name":"groupA","rrset":{"description":"lego","ttl":60,"txt_record":{"name":"wwww","values":["txt"]}}}`)).
 		Build(t)
 
 	rrSet := RRSet{
@@ -65,7 +65,7 @@ func TestClient_CreateRRSet(t *testing.T) {
 func TestClient_CreateRRSet_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA",
-			servermock2.Noop().WithStatusCode(http.StatusBadRequest)).
+			servermock.Noop().WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
 	rrSet := RRSet{
@@ -84,7 +84,7 @@ func TestClient_CreateRRSet_error(t *testing.T) {
 func TestClient_GetRRSet(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
-			servermock2.ResponseFromFixture("get.json")).
+			servermock.ResponseFromFixture("get.json")).
 		Build(t)
 
 	result, err := client.GetRRSet(t.Context(), "example.com", "groupA", "www", "TXT")
@@ -111,7 +111,7 @@ func TestClient_GetRRSet(t *testing.T) {
 func TestClient_GetRRSet_not_found(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
-			servermock2.ResponseFromFixture("error_404.json").WithStatusCode(http.StatusNotFound)).
+			servermock.ResponseFromFixture("error_404.json").WithStatusCode(http.StatusNotFound)).
 		Build(t)
 
 	result, err := client.GetRRSet(t.Context(), "example.com", "groupA", "www", "TXT")
@@ -123,7 +123,7 @@ func TestClient_GetRRSet_not_found(t *testing.T) {
 func TestClient_GetRRSet_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
-			servermock2.Noop().WithStatusCode(http.StatusBadRequest)).
+			servermock.Noop().WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
 	_, err := client.GetRRSet(t.Context(), "example.com", "groupA", "www", "TXT")
@@ -133,7 +133,7 @@ func TestClient_GetRRSet_error(t *testing.T) {
 func TestClient_DeleteRRSet(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
-			servermock2.ResponseFromFixture("get.json")).
+			servermock.ResponseFromFixture("get.json")).
 		Build(t)
 
 	result, err := client.DeleteRRSet(t.Context(), "example.com", "groupA", "www", "TXT")
@@ -160,7 +160,7 @@ func TestClient_DeleteRRSet(t *testing.T) {
 func TestClient_DeleteRRSet_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
-			servermock2.Noop().WithStatusCode(http.StatusBadRequest)).
+			servermock.Noop().WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
 	_, err := client.DeleteRRSet(t.Context(), "example.com", "groupA", "www", "TXT")
@@ -170,8 +170,8 @@ func TestClient_DeleteRRSet_error(t *testing.T) {
 func TestClient_ReplaceRRSet(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
-			servermock2.ResponseFromFixture("get.json"),
-			servermock2.CheckRequestJSONBody(`{"dns_zone_name":"example.com","group_name":"groupA","type":"TXT","rrset":{"description":"lego","ttl":60,"txt_record":{"name":"wwww","values":["txt"]}}}`)).
+			servermock.ResponseFromFixture("get.json"),
+			servermock.CheckRequestJSONBody(`{"dns_zone_name":"example.com","group_name":"groupA","type":"TXT","rrset":{"description":"lego","ttl":60,"txt_record":{"name":"wwww","values":["txt"]}}}`)).
 		Build(t)
 
 	rrSet := RRSet{
@@ -207,7 +207,7 @@ func TestClient_ReplaceRRSet(t *testing.T) {
 func TestClient_ReplaceRRSet_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /api/config/dns/namespaces/system/dns_zones/example.com/rrsets/groupA/www/TXT",
-			servermock2.Noop().WithStatusCode(http.StatusBadRequest)).
+			servermock.Noop().WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
 	rrSet := RRSet{

@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -55,10 +55,10 @@ func TestClient_UpdateTxtRecord(t *testing.T) {
 		t.Run(test.code, func(t *testing.T) {
 			t.Parallel()
 
-			client := servermock2.NewBuilder[*Client](setupClient, servermock2.CheckHeader().WithContentTypeFromURLEncoded()).
+			client := servermock.NewBuilder[*Client](setupClient, servermock.CheckHeader().WithContentTypeFromURLEncoded()).
 				Route("POST /",
-					servermock2.RawStringResponse(test.code),
-					servermock2.CheckForm().Strict().
+					servermock.RawStringResponse(test.code),
+					servermock.CheckForm().Strict().
 						With("hostname", "_acme-challenge.example.com").
 						With("password", "secret").
 						With("txt", "foo")).

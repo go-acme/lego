@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -155,8 +155,8 @@ func TestLiveCleanUp(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func mockBuilder() *servermock2.Builder[*DNSProvider] {
-	return servermock2.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.Username = "user"
@@ -172,7 +172,7 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock2.CheckQueryParameter().
+		servermock.CheckQueryParameter().
 			With("login", "user").
 			With("passwd", "secret").
 			With("input_format", "json").
@@ -183,13 +183,13 @@ func mockBuilder() *servermock2.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /dns/getData",
-			servermock2.ResponseFromInternal("getData-real.json"),
-			servermock2.CheckQueryParameter().
+			servermock.ResponseFromInternal("getData-real.json"),
+			servermock.CheckQueryParameter().
 				With("input_data", `{"fqdn":"_acme-challenge.example.com"}`),
 		).
 		Route("GET /dns/changeRecords",
-			servermock2.ResponseFromInternal("changeRecords-doc.json"),
-			servermock2.CheckQueryParameter().
+			servermock.ResponseFromInternal("changeRecords-doc.json"),
+			servermock.CheckQueryParameter().
 				With("input_data", `{"fqdn":"_acme-challenge.example.com","records":{"TXT":[{"txtdata":"v=spf1 redirect=beget.com","ttl":300},{"value":"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY","priority":10,"ttl":300}]}}`),
 		).
 		Build(t)
@@ -201,13 +201,13 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /dns/getData",
-			servermock2.ResponseFromInternal("getData.json"),
-			servermock2.CheckQueryParameter().
+			servermock.ResponseFromInternal("getData.json"),
+			servermock.CheckQueryParameter().
 				With("input_data", `{"fqdn":"_acme-challenge.example.com"}`),
 		).
 		Route("GET /dns/changeRecords",
-			servermock2.ResponseFromInternal("changeRecords-doc.json"),
-			servermock2.CheckQueryParameter().
+			servermock.ResponseFromInternal("changeRecords-doc.json"),
+			servermock.CheckQueryParameter().
 				With("input_data", `{"fqdn":"_acme-challenge.example.com","records":{"TXT":[{"txtdata":"foo","ttl":300}]}}`),
 		).
 		Build(t)
@@ -219,12 +219,12 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 func TestDNSProvider_CleanUp_empty(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /dns/getData",
-			servermock2.ResponseFromInternal("getData_empty.json"),
-			servermock2.CheckQueryParameter().
+			servermock.ResponseFromInternal("getData_empty.json"),
+			servermock.CheckQueryParameter().
 				With("input_data", `{"fqdn":"_acme-challenge.example.com"}`),
 		).
 		Route("/",
-			servermock2.Noop().WithStatusCode(http.StatusInternalServerError)).
+			servermock.Noop().WithStatusCode(http.StatusInternalServerError)).
 		Build(t)
 
 	err := provider.CleanUp(t.Context(), "example.com", "", "123d==")

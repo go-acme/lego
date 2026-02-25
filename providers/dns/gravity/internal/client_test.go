@@ -5,13 +5,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock2.Builder[*Client] {
-	return servermock2.NewBuilder[*Client](
+func mockBuilder() *servermock.Builder[*Client] {
+	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(server.URL, "user", "secret")
 			if err != nil {
@@ -22,7 +22,7 @@ func mockBuilder() *servermock2.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock2.CheckHeader().
+		servermock.CheckHeader().
 			WithJSONHeaders(),
 	)
 }
@@ -37,9 +37,9 @@ func TestClient_Login(t *testing.T) {
 					Path:  "/",
 				})
 
-				servermock2.ResponseFromFixture("login.json").ServeHTTP(rw, req)
+				servermock.ResponseFromFixture("login.json").ServeHTTP(rw, req)
 			}),
-			servermock2.CheckRequestJSONBodyFromFixture("login-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("login-request.json")).
 		Build(t)
 
 	auth, err := client.Login(t.Context())
@@ -60,7 +60,7 @@ func TestClient_Login(t *testing.T) {
 func TestClient_Login_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/v1/auth/login",
-			servermock2.ResponseFromFixture("error.json").
+			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -71,7 +71,7 @@ func TestClient_Login_error(t *testing.T) {
 func TestClient_Me(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/v1/auth/me",
-			servermock2.ResponseFromFixture("me.json")).
+			servermock.ResponseFromFixture("me.json")).
 		Build(t)
 
 	info, err := client.Me(t.Context())
@@ -92,8 +92,8 @@ func TestClient_Me(t *testing.T) {
 func TestClient_GetDNSZones(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/v1/dns/",
-			servermock2.ResponseFromFixture("zones.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.ResponseFromFixture("zones.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Build(t)
 
@@ -116,10 +116,10 @@ func TestClient_GetDNSZones(t *testing.T) {
 func TestClient_CreateDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/v1/dns/zones/records",
-			servermock2.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusNoContent),
-			servermock2.CheckRequestJSONBodyFromFixture("create_record-request.json"),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json"),
+			servermock.CheckQueryParameter().Strict().
 				With("zone", "example.com.").
 				With("uid", "123").
 				With("hostname", "_acme-challenge")).
@@ -139,9 +139,9 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 func TestClient_DeleteDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /api/v1/dns/zones/records",
-			servermock2.Noop().
+			servermock.Noop().
 				WithStatusCode(http.StatusNoContent),
-			servermock2.CheckQueryParameter().Strict().
+			servermock.CheckQueryParameter().Strict().
 				With("zone", "example.com.").
 				With("uid", "123").
 				With("type", "TXT").

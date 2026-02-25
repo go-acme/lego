@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="html">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.148.2">
+    <meta name="generator" content="Relearn 8.0.0">
+    <meta name="description" content="This guide explains various ways to obtain a new certificate.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Obtain a Certificate :: Let’s Encrypt client and ACME library written in Go.">
+    <meta name="twitter:description" content="This guide explains various ways to obtain a new certificate.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/usage/cli/obtain-a-certificate/index.html">
+    <meta property="og:site_name" content="Let’s Encrypt client and ACME library written in Go.">
+    <meta property="og:title" content="Obtain a Certificate :: Let’s Encrypt client and ACME library written in Go.">
+    <meta property="og:description" content="This guide explains various ways to obtain a new certificate.">
+    <meta property="og:locale" content="en">
+    <meta property="og:type" content="article">
+    <meta property="article:section" content="Usage">
+    <meta property="article:published_time" content="2019-03-03T16:39:46+01:00">
+    <meta property="article:modified_time" content="2024-11-29T09:06:30-05:00">
+    <meta itemprop="name" content="Obtain a Certificate :: Let’s Encrypt client and ACME library written in Go.">
+    <meta itemprop="description" content="This guide explains various ways to obtain a new certificate.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2024-11-29T09:06:30-05:00">
+    <meta itemprop="wordCount" content="730">
+    <title>Obtain a Certificate :: Let’s Encrypt client and ACME library written in Go.</title>
+    <link href="/lego/images/favicon.svg?1772057697" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1772057697" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1772057697" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1772057697" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1772057697" defer></script>
+    <script src="/lego/js/search.min.js?1772057697" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1772057697";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1772057697" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1772057697" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1772057697" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1772057697" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/fontawesome-all.min.css?1772057697" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/fontawesome-all.min.css?1772057697" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1772057697" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1772057697" rel="stylesheet">
+    <link href="/lego/css/format-html.min.css?1772057697" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/usage\/cli\/obtain-a-certificate\/index.html';
+      window.relearn.relBasePath='..\/..\/..';
+      window.relearn.relBaseUri='..\/..\/..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableAnchorCopy=false;
+      window.relearn.disableAnchorScrolling=false;
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // legal
+      window.relearn.getItem = (s,n) => {return s.getItem(n)};
+      window.relearn.setItem = (s,n,v) => {return s.setItem(n,v)};
+      window.relearn.removeItem = (s,n) => {return s.removeItem(n)};
+      // translations
+      window.T_Copy_to_clipboard = `Copy to clipboard`;
+      window.T_Copied_to_clipboard = `Copied to clipboard!`;
+      window.T_Copy_link_to_clipboard = `Copy link to clipboard`;
+      window.T_Link_copied_to_clipboard = `Copied link to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantname = "my-custom-variant";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.relearn.setItem(window.localStorage, window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.relearn.getItem(window.localStorage, window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.relearn.getItem(window.localStorage, window.relearn.absBaseUri + "/variant") ?? "";
+        if( variant == window.relearn.customvariantname ){
+        }else if( !variant || !window.relearn.themevariants.includes(variant) ){
+          variant = window.relearn.themevariants[0];
+          window.relearn.setItem(window.localStorage, window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+  </head>
+  <body class="mobile-support html" data-url="/lego/usage/cli/obtain-a-certificate/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar">
+        <div class="topbar-wrapper">
+          <div class="topbar-sidebar-divider"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide"><button class="topbar-control" onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button>
+            </div>
+            <div class="topbar-button topbar-button-toc" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show"><button class="topbar-control" onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-list-alt"></i></button>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+<nav class="TableOfContents">
+  <ul>
+    <li><a href="#using-the-built-in-web-server">Using the built-in web server</a></li>
+    <li><a href="#using-a-dns-provider">Using a DNS provider</a></li>
+    <li><a href="#using-a-custom-certificate-signing-request-csr">Using a custom certificate signing request (CSR)</a></li>
+    <li><a href="#using-an-existing-running-web-server">Using an existing, running web server</a></li>
+    <li><a href="#running-a-script-afterward">Running a script afterward</a>
+      <ul>
+        <li><a href="#use-case">Use case</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/usage/index.html"><span itemprop="name">Usage</span></a><meta itemprop="position" content="2">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/usage/cli/index.html"><span itemprop="name">CLI</span></a><meta itemprop="position" content="3">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">Obtain a Certificate</span><meta itemprop="position" content="4"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-prev" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show"><a class="topbar-control" href="/lego/usage/cli/general-instructions/index.html" title="General Instructions (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a>
+            </div>
+            <div class="topbar-button topbar-button-next" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show"><a class="topbar-control" href="/lego/usage/cli/renew-a-certificate/index.html" title="Renew a Certificate (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a>
+            </div>
+            <div class="topbar-button topbar-button-more" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show"><button class="topbar-control" onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable usage" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="obtain-a-certificate">Obtain a Certificate</h1>
+
+<p>This guide explains various ways to obtain a new certificate.</p>
+<h2 id="using-the-built-in-web-server">Using the built-in web server</h2>
+<p>Open a terminal, and execute the following command (insert your own email address and domain):</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego --email<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;you@example.com&#34;</span> --domains<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;example.com&#34;</span> --http run</span></span></code></pre></div>
+<p>You will find your certificate in the <code>.lego</code> folder of the current working directory:</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ ls -1 ./.lego/certificates
+</span></span><span style="display:flex;"><span>example.com.crt
+</span></span><span style="display:flex;"><span>example.com.issuer.crt
+</span></span><span style="display:flex;"><span>example.com.json
+</span></span><span style="display:flex;"><span>example.com.key
+</span></span><span style="display:flex;"><span>[maybe more files for different domains...]
+</span></span></code></pre></div>
+<p>where</p>
+<ul>
+<li><code>example.com.crt</code> is the server certificate (including the CA certificate),</li>
+<li><code>example.com.key</code> is the private key needed for the server certificate,</li>
+<li><code>example.com.issuer.crt</code> is the CA certificate, and</li>
+<li><code>example.com.json</code> contains some JSON encoded meta information.</li>
+</ul>
+<p>For each domain, you will have a set of these four files.
+For wildcard certificates (<code>*.example.com</code>), the filenames will look like <code>_.example.com.crt</code>.</p>
+<p>The <code>.crt</code> and <code>.key</code> files are PEM-encoded x509 certificates and private keys.
+If you&rsquo;re looking for a <code>cert.pem</code> and <code>privkey.pem</code>, you can just use <code>example.com.crt</code> and <code>example.com.key</code>.</p>
+<h2 id="using-a-dns-provider">Using a DNS provider</h2>
+<p>If you can&rsquo;t or don&rsquo;t want to start a web server, you need to use a DNS provider.
+lego comes with <a href="https://go-acme.github.io/lego/dns/#dns-providers" rel="external" target="_blank">support for many</a> providers,
+and you need to pick the one where your domain&rsquo;s DNS settings are set up.
+Typically, this is the registrar where you bought the domain, but in some cases this can be another third-party provider.</p>
+<p>For this example, let&rsquo;s assume you have set up Gandi for your domain.</p>
+<p>Execute this command:</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>GANDI_API_KEY<span style="color:#f92672">=</span>xxx <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>lego --email <span style="color:#e6db74">&#34;you@example.com&#34;</span> --dns gandi --domains <span style="color:#e6db74">&#34;example.org&#34;</span> --domains <span style="color:#e6db74">&#34;*.example.org&#34;</span> run</span></span></code></pre></div>
+
+<details open class=" box cstyle notices default">
+  <summary class="box-label" tabindex="-1">
+    <i class="fa-fw fas fa-info-circle"></i> 
+    For a zone that has multiple SOAs
+  </summary>
+  <div class="box-content">
+<p>This can often be found where your DNS provider has a zone entry for an internal network (i.e. a corporate network, or home LAN) as well as the public internet.
+In this case, point lego at an external authoritative server for the zone using the additional parameter <code>--dns.resolvers</code>.</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>GANDI_API_KEY<span style="color:#f92672">=</span>xxx <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>lego --email <span style="color:#e6db74">&#34;you@example.com&#34;</span> --dns gandi --dns.resolvers 9.9.9.9:53 --domains <span style="color:#e6db74">&#34;example.org&#34;</span> --domains <span style="color:#e6db74">&#34;*.example.org&#34;</span> run</span></span></code></pre></div>
+<p><a href="https://go-acme.github.io/lego/usage/cli/options/#dns-resolvers-and-challenge-verification" rel="external" target="_blank">More information about resolvers.</a></p>
+  </div>
+</details>
+<h2 id="using-a-custom-certificate-signing-request-csr">Using a custom certificate signing request (CSR)</h2>
+<p>The first step in the process of obtaining certificates involves creating a signing request.
+This CSR bundles various information, including the domain name(s) and a public key.
+By default, lego will hide this step from you, but if you already have a CSR, you can easily reuse it:</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego --email<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;you@example.com&#34;</span> --http --csr<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/path/to/csr.pem&#34;</span> run</span></span></code></pre></div>
+<p>lego will infer the domains to be validated based on the contents of the CSR, so make sure the CSR&rsquo;s Common Name and optional SubjectAltNames are set correctly.</p>
+<h2 id="using-an-existing-running-web-server">Using an existing, running web server</h2>
+<p>If you have an existing server running on port 80, the <code>--http</code> option also requires the <code>--http.webroot</code> option.
+This just writes the http-01 challenge token to the given directory in the folder <code>.well-known/acme-challenge</code> and does not start a server.</p>
+<p>The given directory <strong>should</strong> be publicly served as <code>/</code> on the domain(s) for the validation to complete.</p>
+<p>If the given directory is not publicly served you will have to support rewriting the request to the directory;</p>
+<p>You could also implement a rewrite to rewrite <code>.well-known/acme-challenge</code> to the given directory <code>.well-known/acme-challenge</code>.</p>
+<p>You should be able to run an existing webserver on port 80 and have lego write the token file with the HTTP-01 challenge key authorization to <code>&lt;webroot dir&gt;/.well-known/acme-challenge/</code> by running something like:</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego --accept-tos --email you@example.com --http --http.webroot /path/to/webroot --domains example.com run</span></span></code></pre></div>
+<h2 id="running-a-script-afterward">Running a script afterward</h2>
+<p>You can easily hook into the certificate-obtaining process by providing the path to a script:</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego --email<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;you@example.com&#34;</span> --domains<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;example.com&#34;</span> --http run --run-hook<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;./myscript.sh&#34;</span></span></span></code></pre></div>
+<p>Some information is provided through environment variables:</p>
+<ul>
+<li><code>LEGO_ACCOUNT_EMAIL</code>: the email of the account.</li>
+<li><code>LEGO_CERT_DOMAIN</code>: the main domain of the certificate.</li>
+<li><code>LEGO_CERT_PATH</code>: the path of the certificate.</li>
+<li><code>LEGO_CERT_KEY_PATH</code>: the path of the certificate key.</li>
+<li><code>LEGO_CERT_PEM_PATH</code>: (only with <code>--pem</code>) the path to the PEM certificate.</li>
+<li><code>LEGO_CERT_PFX_PATH</code>: (only with <code>--pfx</code>) the path to the PFX certificate.</li>
+</ul>
+<h3 id="use-case">Use case</h3>
+<p>A typical use case is distribute the certificate for other services and reload them if necessary.
+Since PEM-formatted TLS certificates are understood by many programs, it is relatively simple to use certificates for more than a web server.</p>
+<p>This example script installs the new certificate for a mail server, and reloads it.
+Beware: this is just a starting point, error checking is omitted for brevity.</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e">#!/bin/bash
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># copy certificates to a directory controlled by Postfix</span>
+</span></span><span style="display:flex;"><span>postfix_cert_dir<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/etc/postfix/certificates&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># our Postfix server only handles mail for @example.com domain</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> <span style="color:#e6db74">&#34;</span>$LEGO_CERT_DOMAIN<span style="color:#e6db74">&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;example.com&#34;</span> <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>  install -u postfix -g postfix -m <span style="color:#ae81ff">0644</span> <span style="color:#e6db74">&#34;</span>$LEGO_CERT_PATH<span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span>$postfix_cert_dir<span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>  install -u postfix -g postfix -m <span style="color:#ae81ff">0640</span> <span style="color:#e6db74">&#34;</span>$LEGO_CERT_KEY_PATH<span style="color:#e6db74">&#34;</span>  <span style="color:#e6db74">&#34;</span>$postfix_cert_dir<span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  systemctl reload postfix@-service
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">fi</span></span></span></code></pre></div>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Nov 29, 2024
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <aside id="R-sidebar" class="default-animation">
+      <div id="R-header-topbar" class="default-animation"></div>
+      <div id="R-header-wrapper" class="default-animation">
+        <div id="R-header" class="default-animation">
+<a id="logo" href="/lego"><img src="/lego/images/lego-logo-white.min.svg" alt="lego logo"></a>
+
+        </div>
+        <search><form action="/lego/search/index.html" method="get">
+          <div class="searchbox default-animation">
+            <button class="search-detail" type="submit" title="Search (CTRL+ALT+f)"><i class="fas fa-search"></i></button>
+            <label class="a11y-only" for="R-search-by">Search</label>
+            <input data-search-input id="R-search-by" name="search-by" class="search-by" type="search" placeholder="Search...">
+            <button class="search-clear" type="button" data-search-clear="" title="Clear search"><i class="fas fa-times" title="Clear search"></i></button>
+          </div>
+        </form></search>
+      </div>
+      <div id="R-homelinks" class="default-animation">
+        <div class="R-menu-divider default-animation">
+          <hr class="padding">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-homelinks">
+          <ul class="space collapsible-menu">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-headercontrols">
+          <ul class="">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding">
+        </div>
+      </div>
+      <div id="R-content-wrapper" class="highlightable">
+        <div class="R-sidebarmenu R-shortcutmenu-main">
+          <ul class="enlarge morespace collapsible-menu">
+            <li class="" data-nav-id="/lego/installation/index.html"><a class="padding" href="/lego/installation/index.html">Installation<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="parent " data-nav-id="/lego/usage/index.html"><a class="padding" href="/lego/usage/index.html">Usage<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-62f9042a23780ab51a3b699210e86d03" class="collapsible-menu">
+            <li class="parent alwaysopen " data-nav-id="/lego/usage/cli/index.html"><a class="padding" href="/lego/usage/cli/index.html">CLI<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-4a11f628b349cd36ac0e30ff65e0c32d" class="collapsible-menu">
+            <li class="" data-nav-id="/lego/usage/cli/general-instructions/index.html"><a class="padding" href="/lego/usage/cli/general-instructions/index.html">General Instructions<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="active " data-nav-id="/lego/usage/cli/obtain-a-certificate/index.html"><a class="padding" href="/lego/usage/cli/obtain-a-certificate/index.html">Obtain a Certificate<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/usage/cli/renew-a-certificate/index.html"><a class="padding" href="/lego/usage/cli/renew-a-certificate/index.html">Renew a Certificate<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/usage/cli/options/index.html"><a class="padding" href="/lego/usage/cli/options/index.html">Options<i class="fa-fw fas fa-check read-icon"></i></a></li></ul></li>
+            <li class="alwaysopen " data-nav-id="/lego/usage/library/index.html"><a class="padding" href="/lego/usage/library/index.html">Library<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-332f375a09ba0f3ac5cc95ba537f7b6e" class="collapsible-menu"></ul></li></ul></li>
+            <li class="" data-nav-id="/lego/dns/index.html"><a class="padding" href="/lego/dns/index.html">DNS Providers<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-1a5c4aa622b091f451ffa4fea9c3a5f1" class="collapsible-menu"></ul></li>
+          </ul>
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-shortcuts">
+          <div class="nav-title padding">More</div>
+          <ul class="space collapsible-menu">
+            <li class="" data-nav-id="https://github.com/go-acme/lego"><a class="padding" href="https://github.com/go-acme/lego" rel="external" target="_blank"><i class='fab fa-fw fa-github'></i> GitHub repo<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/issues"><a class="padding" href="https://github.com/go-acme/lego/issues" rel="external" target="_blank"><i class='fas fa-fw fa-bug'></i> Issues<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/discussions"><a class="padding" href="https://github.com/go-acme/lego/discussions" rel="external" target="_blank"><i class='fas fa-fw fa-comments'></i> Discussions<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          </ul>
+        </div>
+        <div id="R-footer-margin"></div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-footercontrols">
+          <ul class="">
+            <li class="R-historyclearer">
+              <div class="padding menu-control">
+                <i class="fa-fw fas fa-history"></i>
+                <span>&nbsp;</span>
+                <div class="control-style">
+                  <button>Clear History</button>
+                </div>
+                <div class="clear"></div>
+              </div>
+            </li>
+          </ul>
+        </div>
+<div id="R-footer"><p>Built with <a href="https://github.com/McShelby/hugo-theme-relearn" title="love"><i class="fas fa-heart"></i></a> by <a href="https://gohugo.io/">Hugo</a></p></div>
+      </div>
+    </aside>
+    <script src="/lego/js/clipboard/clipboard.min.js?1772057697" defer></script>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1772057697" defer></script>
+    <script src="/lego/js/theme.min.js?1772057697" defer></script>
+  </body>
+</html>

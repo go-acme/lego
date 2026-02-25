@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="html">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.148.2">
+    <meta name="generator" content="Relearn 8.0.0">
+    <meta name="description" content="This page describes various command line options.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Options :: Let’s Encrypt client and ACME library written in Go.">
+    <meta name="twitter:description" content="This page describes various command line options.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/usage/cli/options/index.html">
+    <meta property="og:site_name" content="Let’s Encrypt client and ACME library written in Go.">
+    <meta property="og:title" content="Options :: Let’s Encrypt client and ACME library written in Go.">
+    <meta property="og:description" content="This page describes various command line options.">
+    <meta property="og:locale" content="en">
+    <meta property="og:type" content="article">
+    <meta property="article:section" content="Usage">
+    <meta property="article:published_time" content="2019-03-03T16:39:46+01:00">
+    <meta property="article:modified_time" content="2025-10-29T19:18:38+01:00">
+    <meta itemprop="name" content="Options :: Let’s Encrypt client and ACME library written in Go.">
+    <meta itemprop="description" content="This page describes various command line options.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2025-10-29T19:18:38+01:00">
+    <meta itemprop="wordCount" content="2686">
+    <title>Options :: Let’s Encrypt client and ACME library written in Go.</title>
+    <link href="/lego/images/favicon.svg?1772057697" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1772057697" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1772057697" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1772057697" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1772057697" defer></script>
+    <script src="/lego/js/search.min.js?1772057697" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1772057697";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1772057697" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1772057697" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1772057697" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1772057697" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/fontawesome-all.min.css?1772057697" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/fontawesome-all.min.css?1772057697" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1772057697" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1772057697" rel="stylesheet">
+    <link href="/lego/css/format-html.min.css?1772057697" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/usage\/cli\/options\/index.html';
+      window.relearn.relBasePath='..\/..\/..';
+      window.relearn.relBaseUri='..\/..\/..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableAnchorCopy=false;
+      window.relearn.disableAnchorScrolling=false;
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // legal
+      window.relearn.getItem = (s,n) => {return s.getItem(n)};
+      window.relearn.setItem = (s,n,v) => {return s.setItem(n,v)};
+      window.relearn.removeItem = (s,n) => {return s.removeItem(n)};
+      // translations
+      window.T_Copy_to_clipboard = `Copy to clipboard`;
+      window.T_Copied_to_clipboard = `Copied to clipboard!`;
+      window.T_Copy_link_to_clipboard = `Copy link to clipboard`;
+      window.T_Link_copied_to_clipboard = `Copied link to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantname = "my-custom-variant";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.relearn.setItem(window.localStorage, window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.relearn.getItem(window.localStorage, window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.relearn.getItem(window.localStorage, window.relearn.absBaseUri + "/variant") ?? "";
+        if( variant == window.relearn.customvariantname ){
+        }else if( !variant || !window.relearn.themevariants.includes(variant) ){
+          variant = window.relearn.themevariants[0];
+          window.relearn.setItem(window.localStorage, window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+  </head>
+  <body class="mobile-support html" data-url="/lego/usage/cli/options/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar">
+        <div class="topbar-wrapper">
+          <div class="topbar-sidebar-divider"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide"><button class="topbar-control" onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button>
+            </div>
+            <div class="topbar-button topbar-button-toc" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show"><button class="topbar-control" onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-list-alt"></i></button>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+<nav class="TableOfContents">
+  <ul>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#lets-encrypt-acme-server">Let&rsquo;s Encrypt ACME server</a></li>
+    <li><a href="#running-without-root-privileges">Running without root privileges</a></li>
+    <li><a href="#port-usage">Port Usage</a></li>
+    <li><a href="#dns-resolvers-and-challenge-verification">DNS Resolvers and Challenge Verification</a></li>
+    <li><a href="#other-options">Other options</a>
+      <ul>
+        <li><a href="#lego_ca_certificates">LEGO_CA_CERTIFICATES</a></li>
+        <li><a href="#lego_ca_system_cert_pool">LEGO_CA_SYSTEM_CERT_POOL</a></li>
+        <li><a href="#lego_ca_server_name">LEGO_CA_SERVER_NAME</a></li>
+        <li><a href="#lego_disable_cname_support">LEGO_DISABLE_CNAME_SUPPORT</a></li>
+        <li><a href="#lego_debug_client_verbose_error">LEGO_DEBUG_CLIENT_VERBOSE_ERROR</a></li>
+        <li><a href="#lego_debug_dns_api_http_client">LEGO_DEBUG_DNS_API_HTTP_CLIENT</a></li>
+        <li><a href="#lego_debug_acme_http_client">LEGO_DEBUG_ACME_HTTP_CLIENT</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/usage/index.html"><span itemprop="name">Usage</span></a><meta itemprop="position" content="2">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/usage/cli/index.html"><span itemprop="name">CLI</span></a><meta itemprop="position" content="3">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">Options</span><meta itemprop="position" content="4"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-prev" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show"><a class="topbar-control" href="/lego/usage/cli/renew-a-certificate/index.html" title="Renew a Certificate (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a>
+            </div>
+            <div class="topbar-button topbar-button-next" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show"><a class="topbar-control" href="/lego/usage/library/index.html" title="Library (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a>
+            </div>
+            <div class="topbar-button topbar-button-more" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show"><button class="topbar-control" onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable usage" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="options">Options</h1>
+
+<h2 id="usage">Usage</h2>
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+<div class="tab-panel" data-tab-group="b52be5eb0354f37055af8f83beac35f9">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      data-tab-item="lego-helpfa-fw-fas-fa-terminal"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('b52be5eb0354f37055af8f83beac35f9','lego-helpfa-fw-fas-fa-terminal')"
+    >
+      <span class="tab-nav-text"><i class="fa-fw fas fa-terminal"></i> lego help</span>
+    </button>
+    <button
+      data-tab-item="lego-help-runfa-fw-fas-fa-terminal"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('b52be5eb0354f37055af8f83beac35f9','lego-help-runfa-fw-fas-fa-terminal')"
+    >
+      <span class="tab-nav-text"><i class="fa-fw fas fa-terminal"></i> lego help run</span>
+    </button>
+    <button
+      data-tab-item="lego-help-renewfa-fw-fas-fa-terminal"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('b52be5eb0354f37055af8f83beac35f9','lego-help-renewfa-fw-fas-fa-terminal')"
+    >
+      <span class="tab-nav-text"><i class="fa-fw fas fa-terminal"></i> lego help renew</span>
+    </button>
+    <button
+      data-tab-item="lego-help-revokefa-fw-fas-fa-terminal"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('b52be5eb0354f37055af8f83beac35f9','lego-help-revokefa-fw-fas-fa-terminal')"
+    >
+      <span class="tab-nav-text"><i class="fa-fw fas fa-terminal"></i> lego help revoke</span>
+    </button>
+    <button
+      data-tab-item="lego-help-listfa-fw-fas-fa-terminal"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('b52be5eb0354f37055af8f83beac35f9','lego-help-listfa-fw-fas-fa-terminal')"
+    >
+      <span class="tab-nav-text"><i class="fa-fw fas fa-terminal"></i> lego help list</span>
+    </button>
+    <button
+      data-tab-item="lego-dnshelpfa-fw-fas-fa-terminal"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('b52be5eb0354f37055af8f83beac35f9','lego-dnshelpfa-fw-fas-fa-terminal')"
+    >
+      <span class="tab-nav-text"><i class="fa-fw fas fa-terminal"></i> lego dnshelp</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      data-tab-item="lego-helpfa-fw-fas-fa-terminal"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0"><code>NAME:
+   lego - Let&#39;s Encrypt client written in Go
+
+USAGE:
+   lego [global options] command [command options]
+
+COMMANDS:
+   run      Register an account, then create and install a certificate
+   revoke   Revoke a certificate
+   renew    Renew a certificate
+   dnshelp  Shows additional help for the &#39;--dns&#39; global option
+   list     Display certificates and accounts information.
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --domains value, -d value [ --domains value, -d value ]      Add a domain to the process. Can be specified multiple times.
+   --server value, -s value                                     CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: &#34;https://acme-v02.api.letsencrypt.org/directory&#34;) [$LEGO_SERVER]
+   --accept-tos, -a                                             By setting this flag to true you indicate that you accept the current Let&#39;s Encrypt terms of service. (default: false)
+   --email value, -m value                                      Email used for registration and recovery contact. [$LEGO_EMAIL]
+   --disable-cn                                                 Disable the use of the common name in the CSR. (default: false)
+   --csr value, -c value                                        Certificate signing request filename, if an external CSR is to be used.
+   --eab                                                        Use External Account Binding for account registration. Requires --kid and --hmac. (default: false) [$LEGO_EAB]
+   --kid value                                                  Key identifier from External CA. Used for External Account Binding. [$LEGO_EAB_KID]
+   --hmac value                                                 MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding. [$LEGO_EAB_HMAC]
+   --key-type value, -k value                                   Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384. (default: &#34;ec256&#34;)
+   --filename value                                             (deprecated) Filename of the generated certificate.
+   --path value                                                 Directory to use for storing the data. (default: &#34;./.lego&#34;) [$LEGO_PATH]
+   --http                                                       Use the HTTP-01 challenge to solve challenges. Can be mixed with other types of challenges. (default: false)
+   --http.port value                                            Set the port and interface to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port. (default: &#34;:80&#34;)
+   --http.delay value                                           Delay between the starts of the HTTP server (use for HTTP-01 based challenges) and the validation of the challenge. (default: 0s)
+   --http.proxy-header value                                    Validate against this HTTP header when solving HTTP-01 based challenges behind a reverse proxy. (default: &#34;Host&#34;)
+   --http.webroot value                                         Set the webroot folder to use for HTTP-01 based challenges to write directly to the .well-known/acme-challenge file. This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge
+   --http.memcached-host value [ --http.memcached-host value ]  Set the memcached host(s) to use for HTTP-01 based challenges. Challenges will be written to all specified hosts.
+   --http.s3-bucket value                                       Set the S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.
+   --tls                                                        Use the TLS-ALPN-01 challenge to solve challenges. Can be mixed with other types of challenges. (default: false)
+   --tls.port value                                             Set the port and interface to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port. (default: &#34;:443&#34;)
+   --tls.delay value                                            Delay between the start of the TLS listener (use for TLSALPN-01 based challenges) and the validation of the challenge. (default: 0s)
+   --dns value                                                  Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run &#39;lego dnshelp&#39; for help on usage.
+   --dns.disable-cp                                             (deprecated) use dns.propagation-disable-ans instead. (default: false)
+   --dns.propagation-disable-ans                                By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers. (default: false)
+   --dns.propagation-rns                                        By setting this flag to true, use all the recursive nameservers to check the propagation of the TXT record. (default: false)
+   --dns.propagation-wait value                                 By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. (default: 0s)
+   --dns.resolvers value [ --dns.resolvers value ]              Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination. For DNS-01 challenge verification, the authoritative DNS server is queried directly. Supported: host:port. The default is to use the system resolvers, or Google&#39;s DNS resolvers if the system&#39;s cannot be determined.
+   --http-timeout value                                         Set the HTTP timeout value to a specific value in seconds. (default: 0)
+   --tls-skip-verify                                            Skip the TLS verification of the ACME server. (default: false)
+   --dns-timeout value                                          Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries. (default: 10)
+   --pem                                                        Generate an additional .pem (base64) file by concatenating the .key and .crt files together. (default: false)
+   --pfx                                                        Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together. (default: false) [$LEGO_PFX]
+   --pfx.pass value                                             The password used to encrypt the .pfx (PCKS#12) file. (default: &#34;changeit&#34;) [$LEGO_PFX_PASSWORD]
+   --pfx.format value                                           The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256. (default: &#34;RC2&#34;) [$LEGO_PFX_FORMAT]
+   --cert.timeout value                                         Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30)
+   --overall-request-limit value                                ACME overall requests limit. (default: 18)
+   --user-agent value                                           Add to the user-agent sent to the CA to identify an application embedding lego-cli
+   --help, -h                                                   show help</code></pre></div>
+      </div>
+    </div>
+    <div
+      data-tab-item="lego-help-runfa-fw-fas-fa-terminal"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0"><code>NAME:
+   lego run - Register an account, then create and install a certificate
+
+USAGE:
+   lego run [command options]
+
+OPTIONS:
+   --no-bundle                               Do not create a certificate bundle by adding the issuers certificate to the new certificate. (default: false)
+   --must-staple                             Include the OCSP must staple TLS extension in the CSR and generated certificate. Only works if the CSR is generated by lego. (default: false)
+   --not-before value                        Set the notBefore field in the certificate (RFC3339 format)
+   --not-after value                         Set the notAfter field in the certificate (RFC3339 format)
+   --private-key value                       Path to private key (in PEM encoding) for the certificate. By default, the private key is generated.
+   --preferred-chain value                   If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.
+   --profile value                           If the CA offers multiple certificate profiles (draft-ietf-acme-profiles), choose this one.
+   --always-deactivate-authorizations value  Force the authorizations to be relinquished even if the certificate request was successful.
+   --run-hook value                          Define a hook. The hook is executed when the certificates are effectively created.
+   --run-hook-timeout value                  Define the timeout for the hook execution. (default: 2m0s)
+   --help, -h                                show help</code></pre></div>
+      </div>
+    </div>
+    <div
+      data-tab-item="lego-help-renewfa-fw-fas-fa-terminal"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0"><code>NAME:
+   lego renew - Renew a certificate
+
+USAGE:
+   lego renew [command options]
+
+OPTIONS:
+   --days value                              The number of days left on a certificate to renew it. (default: 30)
+   --dynamic                                 Compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates). This supersedes --days and will be the default behavior in Lego v5. (default: false)
+   --ari-disable                             Do not use the renewalInfo endpoint (RFC9773) to check if a certificate should be renewed. (default: false)
+   --ari-wait-to-renew-duration value        The maximum duration you&#39;re willing to sleep for a renewal time returned by the renewalInfo endpoint. (default: 0s)
+   --reuse-key                               Used to indicate you want to reuse your current private key for the new certificate. (default: false)
+   --no-bundle                               Do not create a certificate bundle by adding the issuers certificate to the new certificate. (default: false)
+   --must-staple                             Include the OCSP must staple TLS extension in the CSR and generated certificate. Only works if the CSR is generated by lego. (default: false)
+   --not-before value                        Set the notBefore field in the certificate (RFC3339 format)
+   --not-after value                         Set the notAfter field in the certificate (RFC3339 format)
+   --preferred-chain value                   If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.
+   --profile value                           If the CA offers multiple certificate profiles (draft-ietf-acme-profiles), choose this one.
+   --always-deactivate-authorizations value  Force the authorizations to be relinquished even if the certificate request was successful.
+   --renew-hook value                        Define a hook. The hook is executed only when the certificates are effectively renewed.
+   --renew-hook-timeout value                Define the timeout for the hook execution. (default: 2m0s)
+   --no-random-sleep                         Do not add a random sleep before the renewal. We do not recommend using this flag if you are doing your renewals in an automated way. (default: false)
+   --force-cert-domains                      Check and ensure that the cert&#39;s domain list matches those passed in the domains argument. (default: false)
+   --help, -h                                show help</code></pre></div>
+      </div>
+    </div>
+    <div
+      data-tab-item="lego-help-revokefa-fw-fas-fa-terminal"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0"><code>NAME:
+   lego revoke - Revoke a certificate
+
+USAGE:
+   lego revoke [command options]
+
+OPTIONS:
+   --keep, -k      Keep the certificates after the revocation instead of archiving them. (default: false)
+   --reason value  Identifies the reason for the certificate revocation. See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1. Valid values are: 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged), 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL), 9 (privilegeWithdrawn), or 10 (aACompromise). (default: 0)
+   --help, -h      show help</code></pre></div>
+      </div>
+    </div>
+    <div
+      data-tab-item="lego-help-listfa-fw-fas-fa-terminal"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0"><code>NAME:
+   lego list - Display certificates and accounts information.
+
+USAGE:
+   lego list [command options]
+
+OPTIONS:
+   --accounts, -a  Display accounts. (default: false)
+   --names, -n     Display certificate common names only. (default: false)
+   --help, -h      show help</code></pre></div>
+      </div>
+    </div>
+    <div
+      data-tab-item="lego-dnshelpfa-fw-fas-fa-terminal"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0"><code>Credentials for DNS providers must be passed through environment variables.
+
+To display the documentation for a specific DNS provider, run:
+
+  $ lego dnshelp -c code
+
+Supported DNS providers:
+  acme-dns, active24, alidns, aliesa, allinkl, alwaysdata, anexia, artfiles, arvancloud, auroradns, autodns, axelname, azion, azure, azuredns, baiducloud, beget, binarylane, bindman, bluecat, bluecatv2, bookmyname, brandit, bunny, checkdomain, civo, clouddns, cloudflare, cloudns, cloudru, cloudxns, com35, conoha, conohav3, constellix, corenetworks, cpanel, ddnss, derak, desec, designate, digitalocean, directadmin, dnsexit, dnshomede, dnsimple, dnsmadeeasy, dnspod, dode, domeneshop, dreamhost, duckdns, dyn, dyndnsfree, dynu, easydns, edgecenter, edgedns, edgeone, efficientip, epik, exec, exoscale, f5xc, freemyip, gandi, gandiv5, gcloud, gcore, gigahostno, glesys, godaddy, googledomains, gravity, hetzner, hostingde, hostinger, hostingnl, hosttech, httpnet, httpreq, huaweicloud, hurricane, hyperone, ibmcloud, iij, iijdpf, infoblox, infomaniak, internetbs, inwx, ionos, ionoscloud, ipv64, ispconfig, ispconfigddns, iwantmyname, jdcloud, joker, keyhelp, leaseweb, liara, lightsail, limacity, linode, liquidweb, loopia, luadns, mailinabox, manageengine, manual, metaname, metaregistrar, mijnhost, mittwald, myaddr, mydnsjp, mythicbeasts, namecheap, namedotcom, namesilo, namesurfer, nearlyfreespeech, neodigit, netcup, netlify, nicmanager, nicru, nifcloud, njalla, nodion, ns1, octenium, oraclecloud, otc, ovh, pdns, plesk, porkbun, rackspace, rainyun, rcodezero, regfish, regru, rfc2136, rimuhosting, route53, safedns, sakuracloud, scaleway, selectel, selectelv2, selfhostde, servercow, shellrent, simply, sonic, spaceship, stackpath, syse, technitium, tencentcloud, timewebcloud, todaynic, transip, ultradns, uniteddomains, variomedia, vegadns, vercel, versio, vinyldns, virtualname, vkcloud, volcengine, vscale, vultr, webnames, webnamesca, websupport, wedos, westcn, yandex, yandex360, yandexcloud, zoneedit, zoneee, zonomi
+
+More information: https://go-acme.github.io/lego/dns</code></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p>When using the standard <code>--path</code> option, all certificates and account configurations are saved to a folder <code>.lego</code> in the current working directory.</p>
+<h2 id="lets-encrypt-acme-server">Let&rsquo;s Encrypt ACME server</h2>
+<p>lego defaults to communicating with the production Let&rsquo;s Encrypt ACME server.
+If you&rsquo;d like to test something without issuing real certificates, consider using the staging endpoint instead:</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego --server<span style="color:#f92672">=</span>https://acme-staging-v02.api.letsencrypt.org/directory …</span></span></code></pre></div>
+<h2 id="running-without-root-privileges">Running without root privileges</h2>
+<p>The CLI does not require root permissions but needs to bind to port 80 and 443 for certain challenges.
+To run the CLI without <code>sudo</code>, you have four options:</p>
+<ul>
+<li>Use <code>setcap 'cap_net_bind_service=+ep' /path/to/lego</code> (Linux only)</li>
+<li>Pass the <code>--http.port</code> or/and the <code>--tls.port</code> option and specify a custom port to bind to. In this case you have to forward port 80/443 to these custom ports (see <a href="/lego/usage/cli/options/index.html#port-usage">Port Usage</a>).</li>
+<li>Pass the <code>--http.webroot</code> option and specify the path to your webroot folder. In this case the challenge will be written in a file in <code>.well-known/acme-challenge/</code> inside your webroot.</li>
+<li>Pass the <code>--dns</code> option and specify a DNS provider.</li>
+</ul>
+<h2 id="port-usage">Port Usage</h2>
+<p>By default, lego assumes it is able to bind to ports 80 and 443 to solve challenges.
+If this is not possible in your environment, you can use the <code>--http.port</code> and <code>--tls.port</code> options to instruct
+lego to listen on that interface:port for any incoming challenges.</p>
+<p>If you are using either of these options, make sure you setup a proxy to redirect traffic to the chosen ports.</p>
+<p><strong>HTTP Port:</strong> All plaintext HTTP requests to port <strong>80</strong> which begin with a request path of <code>/.well-known/acme-challenge/</code> for the HTTP challenge<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>.</p>
+<p><strong>TLS Port:</strong> All TLS handshakes on port <strong>443</strong> for the TLS-ALPN challenge.</p>
+<p>This traffic redirection is only needed as long as lego solves challenges. As soon as you have received your certificates you can deactivate the forwarding.</p>
+<h2 id="dns-resolvers-and-challenge-verification">DNS Resolvers and Challenge Verification</h2>
+<p>When using a DNS challenge provider (via <code>--dns &lt;name&gt;</code>), Lego tries to ensure the ACME challenge token is properly setup before instructing the ACME provider to perform the validation.</p>
+<p>This involves a few DNS queries to different servers:</p>
+<ol>
+<li>
+<p>Determining the DNS zone and resolving CNAMEs.</p>
+<p>The DNS zone for a given domain is determined by the SOA record, which contains the authoritative name server for the domain and all its subdomains.
+For simple domains like <code>example.com</code>, this is usually <code>example.com</code> itself.
+For other domains (like <code>fra.eu.cdn.example.com</code>), this can get complicated, as <code>cdn.example.com</code> may be delegated to the CDN provider, which means for <code>cdn.example.com</code> must exist a different SOA record.</p>
+<p>To find the correct zone, Lego requests the SOA record for each DNS label (starting on the leaf domain, i.e. the left-most DNS label).
+If there is no SOA record, Lego requests the SOA record of the parent label, then for its parent, etc., until it reaches the apex domain<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup>.
+Should any DNS label on the way be a CNAME, it is resolved as per usual.</p>
+<p>In the default configuration, Lego uses the system name servers for this, and falls back to Google&rsquo;s DNS servers, should they be absent.</p>
+</li>
+<li>
+<p>Verifying the challenge token.</p>
+<p>The <code>_acme-challenge.&lt;yourdomain&gt;</code> TXT record must be correctly installed.
+Lego verifies this by directly querying the authoritative name server for this record (as detected in the previous step).</p>
+</li>
+</ol>
+<p>Strictly speaking, this verification step is not necessary, but helps to protect your ACME account.
+Remember that some ACME providers impose a rate limit on certain actions (at the time of writing, Let&rsquo;s Encrypt allows 300 new certificate orders per account per 3 hours).</p>
+<p>There are also situations, where this verification step doesn&rsquo;t work as expected:</p>
+<ul>
+<li>A &ldquo;split DNS&rdquo; setup gives different answers to clients on the internal network (Lego) vs. on the public internet (Let&rsquo;s Encrypt).</li>
+<li>With &ldquo;hidden master&rdquo; setups, Lego may be able to directly talk to the primary DNS server, while the <code>_acme-challenge</code> record might not have fully propagated to the (public) secondary servers, yet.</li>
+</ul>
+<p>The effect is the same: Lego determined the challenge token to be installed correctly, while Let&rsquo;s Encrypt has a different view, and rejects the certificate order.</p>
+<p>In these cases, you can instruct Lego to use a different DNS resolver, using the <code>--dns.resolvers</code> flag.
+You should prefer one on the public internet, otherwise you might be susceptible to the same problem.</p>
+<h2 id="other-options">Other options</h2>
+<h3 id="lego_ca_certificates">LEGO_CA_CERTIFICATES</h3>
+<p>The environment variable <code>LEGO_CA_CERTIFICATES</code> allows to specify the path to PEM-encoded CA certificates
+that can be used to authenticate an ACME server with an HTTPS certificate not issued by a CA in the system-wide trusted root list.</p>
+<p>Multiple file paths can be added by using <code>:</code> (unix) or <code>;</code> (Windows) as a separator.</p>
+<p>Example:</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># On Unix system</span>
+</span></span><span style="display:flex;"><span>LEGO_CA_CERTIFICATES<span style="color:#f92672">=</span>/foo/cert1.pem:/foo/cert2.pem</span></span></code></pre></div>
+<h3 id="lego_ca_system_cert_pool">LEGO_CA_SYSTEM_CERT_POOL</h3>
+<p>The environment variable <code>LEGO_CA_SYSTEM_CERT_POOL</code> can be used to define if the certificates pool must use a copy of the system cert pool.</p>
+<p>Example:</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>LEGO_CA_SYSTEM_CERT_POOL<span style="color:#f92672">=</span>true</span></span></code></pre></div>
+<h3 id="lego_ca_server_name">LEGO_CA_SERVER_NAME</h3>
+<p>The environment variable <code>LEGO_CA_SERVER_NAME</code> allows to specify the CA server name used to authenticate an ACME server
+with an HTTPS certificate not issued by a CA in the system-wide trusted root list.</p>
+<p>Example:</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>LEGO_CA_SERVER_NAME<span style="color:#f92672">=</span>foo</span></span></code></pre></div>
+<h3 id="lego_disable_cname_support">LEGO_DISABLE_CNAME_SUPPORT</h3>
+<p>By default, lego follows CNAME, the environment variable <code>LEGO_DISABLE_CNAME_SUPPORT</code> allows to disable this support.</p>
+<p>Example:</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>LEGO_DISABLE_CNAME_SUPPORT<span style="color:#f92672">=</span>false</span></span></code></pre></div>
+<h3 id="lego_debug_client_verbose_error">LEGO_DEBUG_CLIENT_VERBOSE_ERROR</h3>
+<p>The environment variable <code>LEGO_DEBUG_CLIENT_VERBOSE_ERROR</code> allows to enrich error messages from some of the DNS clients.</p>
+<p>Example:</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>LEGO_DEBUG_CLIENT_VERBOSE_ERROR<span style="color:#f92672">=</span>true</span></span></code></pre></div>
+<h3 id="lego_debug_dns_api_http_client">LEGO_DEBUG_DNS_API_HTTP_CLIENT</h3>
+<blockquote>
+<p><strong>⚠️ WARNING: This will expose credentials in the log output! ⚠️</strong></p>
+<p>Do not run this in production environments, or if you can&rsquo;t be sure that logs aren&rsquo;t accessed by third parties or tools (like log collectors).</p>
+<p>You have been warned. Here be dragons.</p></blockquote>
+<p>The environment variable <code>LEGO_DEBUG_DNS_API_HTTP_CLIENT</code> allows debugging the DNS API interaction.
+It will dump the full request and response to the log output.</p>
+<p>Some DNS providers don&rsquo;t support this option.</p>
+<p>Example:</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>LEGO_DEBUG_DNS_API_HTTP_CLIENT<span style="color:#f92672">=</span>true</span></span></code></pre></div>
+<h3 id="lego_debug_acme_http_client">LEGO_DEBUG_ACME_HTTP_CLIENT</h3>
+<p>The environment variable <code>LEGO_DEBUG_ACME_HTTP_CLIENT</code> allows debug the calls to the ACME server.</p>
+<p>Example:</p>
+<div class="highlight wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>LEGO_DEBUG_ACME_HTTP_CLIENT<span style="color:#f92672">=</span>true</span></span></code></pre></div>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>You must ensure that incoming validation requests contains the correct value for the HTTP <code>Host</code> header. If you operate lego behind a non-transparent reverse proxy (such as Apache or NGINX), you might need to alter the header field using <code>--http.proxy-header X-Forwarded-Host</code>.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>The apex domain is the domain you have registered with your domain registrar. For gTLDs (<code>.com</code>, <code>.fyi</code>) this is the 2nd level domain, but for ccTLDs, this can either be the 2nd level (<code>.de</code>) or 3rd level domain (<code>.co.uk</code>).&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Oct 29, 2025
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <aside id="R-sidebar" class="default-animation">
+      <div id="R-header-topbar" class="default-animation"></div>
+      <div id="R-header-wrapper" class="default-animation">
+        <div id="R-header" class="default-animation">
+<a id="logo" href="/lego"><img src="/lego/images/lego-logo-white.min.svg" alt="lego logo"></a>
+
+        </div>
+        <search><form action="/lego/search/index.html" method="get">
+          <div class="searchbox default-animation">
+            <button class="search-detail" type="submit" title="Search (CTRL+ALT+f)"><i class="fas fa-search"></i></button>
+            <label class="a11y-only" for="R-search-by">Search</label>
+            <input data-search-input id="R-search-by" name="search-by" class="search-by" type="search" placeholder="Search...">
+            <button class="search-clear" type="button" data-search-clear="" title="Clear search"><i class="fas fa-times" title="Clear search"></i></button>
+          </div>
+        </form></search>
+      </div>
+      <div id="R-homelinks" class="default-animation">
+        <div class="R-menu-divider default-animation">
+          <hr class="padding">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-homelinks">
+          <ul class="space collapsible-menu">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-headercontrols">
+          <ul class="">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding">
+        </div>
+      </div>
+      <div id="R-content-wrapper" class="highlightable">
+        <div class="R-sidebarmenu R-shortcutmenu-main">
+          <ul class="enlarge morespace collapsible-menu">
+            <li class="" data-nav-id="/lego/installation/index.html"><a class="padding" href="/lego/installation/index.html">Installation<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="parent " data-nav-id="/lego/usage/index.html"><a class="padding" href="/lego/usage/index.html">Usage<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-62f9042a23780ab51a3b699210e86d03" class="collapsible-menu">
+            <li class="parent alwaysopen " data-nav-id="/lego/usage/cli/index.html"><a class="padding" href="/lego/usage/cli/index.html">CLI<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-4a11f628b349cd36ac0e30ff65e0c32d" class="collapsible-menu">
+            <li class="" data-nav-id="/lego/usage/cli/general-instructions/index.html"><a class="padding" href="/lego/usage/cli/general-instructions/index.html">General Instructions<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/usage/cli/obtain-a-certificate/index.html"><a class="padding" href="/lego/usage/cli/obtain-a-certificate/index.html">Obtain a Certificate<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/usage/cli/renew-a-certificate/index.html"><a class="padding" href="/lego/usage/cli/renew-a-certificate/index.html">Renew a Certificate<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="active " data-nav-id="/lego/usage/cli/options/index.html"><a class="padding" href="/lego/usage/cli/options/index.html">Options<i class="fa-fw fas fa-check read-icon"></i></a></li></ul></li>
+            <li class="alwaysopen " data-nav-id="/lego/usage/library/index.html"><a class="padding" href="/lego/usage/library/index.html">Library<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-332f375a09ba0f3ac5cc95ba537f7b6e" class="collapsible-menu"></ul></li></ul></li>
+            <li class="" data-nav-id="/lego/dns/index.html"><a class="padding" href="/lego/dns/index.html">DNS Providers<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-1a5c4aa622b091f451ffa4fea9c3a5f1" class="collapsible-menu"></ul></li>
+          </ul>
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-shortcuts">
+          <div class="nav-title padding">More</div>
+          <ul class="space collapsible-menu">
+            <li class="" data-nav-id="https://github.com/go-acme/lego"><a class="padding" href="https://github.com/go-acme/lego" rel="external" target="_blank"><i class='fab fa-fw fa-github'></i> GitHub repo<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/issues"><a class="padding" href="https://github.com/go-acme/lego/issues" rel="external" target="_blank"><i class='fas fa-fw fa-bug'></i> Issues<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/discussions"><a class="padding" href="https://github.com/go-acme/lego/discussions" rel="external" target="_blank"><i class='fas fa-fw fa-comments'></i> Discussions<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          </ul>
+        </div>
+        <div id="R-footer-margin"></div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-footercontrols">
+          <ul class="">
+            <li class="R-historyclearer">
+              <div class="padding menu-control">
+                <i class="fa-fw fas fa-history"></i>
+                <span>&nbsp;</span>
+                <div class="control-style">
+                  <button>Clear History</button>
+                </div>
+                <div class="clear"></div>
+              </div>
+            </li>
+          </ul>
+        </div>
+<div id="R-footer"><p>Built with <a href="https://github.com/McShelby/hugo-theme-relearn" title="love"><i class="fas fa-heart"></i></a> by <a href="https://gohugo.io/">Hugo</a></p></div>
+      </div>
+    </aside>
+    <script src="/lego/js/clipboard/clipboard.min.js?1772057697" defer></script>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1772057697" defer></script>
+    <script src="/lego/js/theme.min.js?1772057697" defer></script>
+  </body>
+</html>

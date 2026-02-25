@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="html">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.148.2">
+    <meta name="generator" content="Relearn 8.0.0">
+    <meta name="description" content="Lego can be use as a CLI.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="CLI :: Let’s Encrypt client and ACME library written in Go.">
+    <meta name="twitter:description" content="Lego can be use as a CLI.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/usage/cli/index.html">
+    <meta property="og:site_name" content="Let’s Encrypt client and ACME library written in Go.">
+    <meta property="og:title" content="CLI :: Let’s Encrypt client and ACME library written in Go.">
+    <meta property="og:description" content="Lego can be use as a CLI.">
+    <meta property="og:locale" content="en">
+    <meta property="og:type" content="website">
+    <meta itemprop="name" content="CLI :: Let’s Encrypt client and ACME library written in Go.">
+    <meta itemprop="description" content="Lego can be use as a CLI.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2022-06-17T00:25:42+02:00">
+    <meta itemprop="wordCount" content="49">
+    <title>CLI :: Let’s Encrypt client and ACME library written in Go.</title>
+    <link href="/lego/usage/cli/index.xml" rel="alternate" type="application/rss+xml" title="CLI :: Let’s Encrypt client and ACME library written in Go.">
+    <link href="/lego/images/favicon.svg?1772057697" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1772057697" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1772057697" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1772057697" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1772057697" defer></script>
+    <script src="/lego/js/search.min.js?1772057697" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1772057697";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1772057697" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1772057697" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1772057697" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1772057697" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/fontawesome-all.min.css?1772057697" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/fontawesome-all.min.css?1772057697" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1772057697" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1772057697" rel="stylesheet">
+    <link href="/lego/css/format-html.min.css?1772057697" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/usage\/cli\/index.html';
+      window.relearn.relBasePath='..\/..';
+      window.relearn.relBaseUri='..\/..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableAnchorCopy=false;
+      window.relearn.disableAnchorScrolling=false;
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // legal
+      window.relearn.getItem = (s,n) => {return s.getItem(n)};
+      window.relearn.setItem = (s,n,v) => {return s.setItem(n,v)};
+      window.relearn.removeItem = (s,n) => {return s.removeItem(n)};
+      // translations
+      window.T_Copy_to_clipboard = `Copy to clipboard`;
+      window.T_Copied_to_clipboard = `Copied to clipboard!`;
+      window.T_Copy_link_to_clipboard = `Copy link to clipboard`;
+      window.T_Link_copied_to_clipboard = `Copied link to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantname = "my-custom-variant";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.relearn.setItem(window.localStorage, window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.relearn.getItem(window.localStorage, window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.relearn.getItem(window.localStorage, window.relearn.absBaseUri + "/variant") ?? "";
+        if( variant == window.relearn.customvariantname ){
+        }else if( !variant || !window.relearn.themevariants.includes(variant) ){
+          variant = window.relearn.themevariants[0];
+          window.relearn.setItem(window.localStorage, window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+  </head>
+  <body class="mobile-support html" data-url="/lego/usage/cli/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar">
+        <div class="topbar-wrapper">
+          <div class="topbar-sidebar-divider"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide"><button class="topbar-control" onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button>
+            </div>
+            <div class="topbar-button topbar-button-toc" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show"><button class="topbar-control" onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-list-alt"></i></button>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper"> 
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/usage/index.html"><span itemprop="name">Usage</span></a><meta itemprop="position" content="2">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">CLI</span><meta itemprop="position" content="3"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-prev" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show"><a class="topbar-control" href="/lego/usage/index.html" title="Usage (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a>
+            </div>
+            <div class="topbar-button topbar-button-next" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show"><a class="topbar-control" href="/lego/usage/cli/general-instructions/index.html" title="General Instructions (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a>
+            </div>
+            <div class="topbar-button topbar-button-more" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show"><button class="topbar-control" onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable usage" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="cli">CLI</h1>
+
+<p>Lego can be use as a CLI.</p>
+<div class="children children-h2 children-sort-">
+  <h2 class="children-title" id="general-instructions"><a href="/lego/usage/cli/general-instructions/index.html">General Instructions</a></h2><p>Read this first to clarify some assumptions made by the following guides.</p>
+  <h2 class="children-title" id="obtain-a-certificate"><a href="/lego/usage/cli/obtain-a-certificate/index.html">Obtain a Certificate</a></h2><p><p>This guide explains various ways to obtain a new certificate.</p></p>
+  <h2 class="children-title" id="renew-a-certificate"><a href="/lego/usage/cli/renew-a-certificate/index.html">Renew a Certificate</a></h2><p><p>This guide describes how to renew existing certificates.</p></p>
+  <h2 class="children-title" id="options"><a href="/lego/usage/cli/options/index.html">Options</a></h2><p>This page describes various command line options.</p>
+</div>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 17, 2022
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <aside id="R-sidebar" class="default-animation">
+      <div id="R-header-topbar" class="default-animation"></div>
+      <div id="R-header-wrapper" class="default-animation">
+        <div id="R-header" class="default-animation">
+<a id="logo" href="/lego"><img src="/lego/images/lego-logo-white.min.svg" alt="lego logo"></a>
+
+        </div>
+        <search><form action="/lego/search/index.html" method="get">
+          <div class="searchbox default-animation">
+            <button class="search-detail" type="submit" title="Search (CTRL+ALT+f)"><i class="fas fa-search"></i></button>
+            <label class="a11y-only" for="R-search-by">Search</label>
+            <input data-search-input id="R-search-by" name="search-by" class="search-by" type="search" placeholder="Search...">
+            <button class="search-clear" type="button" data-search-clear="" title="Clear search"><i class="fas fa-times" title="Clear search"></i></button>
+          </div>
+        </form></search>
+      </div>
+      <div id="R-homelinks" class="default-animation">
+        <div class="R-menu-divider default-animation">
+          <hr class="padding">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-homelinks">
+          <ul class="space collapsible-menu">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-headercontrols">
+          <ul class="">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding">
+        </div>
+      </div>
+      <div id="R-content-wrapper" class="highlightable">
+        <div class="R-sidebarmenu R-shortcutmenu-main">
+          <ul class="enlarge morespace collapsible-menu">
+            <li class="" data-nav-id="/lego/installation/index.html"><a class="padding" href="/lego/installation/index.html">Installation<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="parent " data-nav-id="/lego/usage/index.html"><a class="padding" href="/lego/usage/index.html">Usage<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-62f9042a23780ab51a3b699210e86d03" class="collapsible-menu">
+            <li class="active parent alwaysopen " data-nav-id="/lego/usage/cli/index.html"><a class="padding" href="/lego/usage/cli/index.html">CLI<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-4a11f628b349cd36ac0e30ff65e0c32d" class="collapsible-menu">
+            <li class="" data-nav-id="/lego/usage/cli/general-instructions/index.html"><a class="padding" href="/lego/usage/cli/general-instructions/index.html">General Instructions<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/usage/cli/obtain-a-certificate/index.html"><a class="padding" href="/lego/usage/cli/obtain-a-certificate/index.html">Obtain a Certificate<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/usage/cli/renew-a-certificate/index.html"><a class="padding" href="/lego/usage/cli/renew-a-certificate/index.html">Renew a Certificate<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/usage/cli/options/index.html"><a class="padding" href="/lego/usage/cli/options/index.html">Options<i class="fa-fw fas fa-check read-icon"></i></a></li></ul></li>
+            <li class="alwaysopen " data-nav-id="/lego/usage/library/index.html"><a class="padding" href="/lego/usage/library/index.html">Library<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-332f375a09ba0f3ac5cc95ba537f7b6e" class="collapsible-menu"></ul></li></ul></li>
+            <li class="" data-nav-id="/lego/dns/index.html"><a class="padding" href="/lego/dns/index.html">DNS Providers<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-1a5c4aa622b091f451ffa4fea9c3a5f1" class="collapsible-menu"></ul></li>
+          </ul>
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-shortcuts">
+          <div class="nav-title padding">More</div>
+          <ul class="space collapsible-menu">
+            <li class="" data-nav-id="https://github.com/go-acme/lego"><a class="padding" href="https://github.com/go-acme/lego" rel="external" target="_blank"><i class='fab fa-fw fa-github'></i> GitHub repo<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/issues"><a class="padding" href="https://github.com/go-acme/lego/issues" rel="external" target="_blank"><i class='fas fa-fw fa-bug'></i> Issues<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/discussions"><a class="padding" href="https://github.com/go-acme/lego/discussions" rel="external" target="_blank"><i class='fas fa-fw fa-comments'></i> Discussions<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          </ul>
+        </div>
+        <div id="R-footer-margin"></div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-footercontrols">
+          <ul class="">
+            <li class="R-historyclearer">
+              <div class="padding menu-control">
+                <i class="fa-fw fas fa-history"></i>
+                <span>&nbsp;</span>
+                <div class="control-style">
+                  <button>Clear History</button>
+                </div>
+                <div class="clear"></div>
+              </div>
+            </li>
+          </ul>
+        </div>
+<div id="R-footer"><p>Built with <a href="https://github.com/McShelby/hugo-theme-relearn" title="love"><i class="fas fa-heart"></i></a> by <a href="https://gohugo.io/">Hugo</a></p></div>
+      </div>
+    </aside>
+    <script src="/lego/js/clipboard/clipboard.min.js?1772057697" defer></script>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1772057697" defer></script>
+    <script src="/lego/js/theme.min.js?1772057697" defer></script>
+  </body>
+</html>

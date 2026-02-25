@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Lego :: Let’s Encrypt client and ACME library written in Go.</title>
+    <link>https://go-acme.github.io/lego/index.html</link>
+    <description>Let’s Encrypt client and ACME library written in Go.&#xA;Important lego is an independent, free, and open-source project, if you value it, consider supporting it! ❤️&#xA;This project is not owned by a company. I’m not an employee of a company.&#xA;I don’t have gifted domains/accounts from DNS companies.&#xA;I’ve been maintaining it for about 10 years.&#xA;Features ACME v2 RFC 8555 Support RFC 8737: TLS Application‑Layer Protocol Negotiation (ALPN) Challenge Extension Support RFC 8738: issues certificates for IP addresses Support RFC 9773: Renewal Information (ARI) Extension Support draft-ietf-acme-profiles-00: Profiles Extension Comes with about 180 DNS providers Register with CA Obtain certificates, both from scratch or with an existing CSR Renew certificates Revoke certificates Robust implementation of ACME challenges: HTTP (http-01) DNS (dns-01) TLS (tls-alpn-01) SAN certificate support CNAME support by default Custom challenge solvers Certificate bundling OCSP helper function</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Tue, 09 Dec 2025 16:25:30 +0100</lastBuildDate>
+    <atom:link href="https://go-acme.github.io/lego/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Installation</title>
+      <link>https://go-acme.github.io/lego/installation/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/installation/index.html</guid>
+      <description>Binaries To get the binary just download the latest release for your OS/Arch from the release page and put the binary somewhere convenient. lego does not assume anything about the location you run it from.&#xA;From Docker docker run goacme/lego -h From package managers ArchLinux (official):&#xA;pacman -S lego ArchLinux (AUR) (official):&#xA;yay -S lego-bin Snap (official):&#xA;sudo snap install lego Note: The snap can only write to the /var/snap/lego/common/.lego directory.</description>
+    </item>
+    <item>
+      <title>Usage</title>
+      <link>https://go-acme.github.io/lego/usage/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/usage/index.html</guid>
+      <description>CLILego can be use as a CLI.&#xA;LibraryLego can be used as a Go Library.</description>
+    </item>
+    <item>
+      <title>DNS Providers</title>
+      <link>https://go-acme.github.io/lego/dns/index.html</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      <guid>https://go-acme.github.io/lego/dns/index.html</guid>
+      <description>Important lego is an independent, free, and open-source project, if you value it, consider supporting it! ❤️&#xA;This project is not owned by a company. I’m not an employee of a company.&#xA;I don’t have gifted domains/accounts from DNS companies.&#xA;I’ve been maintaining it for about 10 years.&#xA;Configuration and Credentials Credentials and DNS configuration for DNS providers must be passed through environment variables.</description>
+    </item>
+  </channel>
+</rss>

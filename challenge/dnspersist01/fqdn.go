@@ -11,8 +11,8 @@ import (
  * The 2 files should be kept in sync.
  */
 
-// DomainsSeq generates a sequence of domain names derived from a domain (FQDN or not) in descending order.
-func DomainsSeq(fqdn string) iter.Seq[string] {
+// domainsSeq generates a sequence of domain names derived from a domain (FQDN or not) in descending order.
+func domainsSeq(fqdn string) iter.Seq[string] {
 	return func(yield func(string) bool) {
 		if fqdn == "" {
 			return

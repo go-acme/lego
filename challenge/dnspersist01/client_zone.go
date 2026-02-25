@@ -43,7 +43,7 @@ func (c *Client) fetchSoaByFqdn(ctx context.Context, fqdn string, nameservers []
 		r   *dns.Msg
 	)
 
-	for domain := range DomainsSeq(fqdn) {
+	for domain := range domainsSeq(fqdn) {
 		r, err = c.sendQueryCustom(ctx, domain, dns.TypeSOA, nameservers, true)
 		if err != nil {
 			continue

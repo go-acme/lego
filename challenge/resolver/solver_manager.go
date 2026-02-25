@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnspersist01"
 	"github.com/go-acme/lego/v5/challenge/http01"
 	"github.com/go-acme/lego/v5/challenge/tlsalpn01"
 	"github.com/go-acme/lego/v5/log"
@@ -21,9 +22,21 @@ import (
 
 type byType []acme.Challenge
 
-func (a byType) Len() int           { return len(a) }
-func (a byType) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a byType) Less(i, j int) bool { return a[i].Type > a[j].Type }
+func (a byType) Len() int      { return len(a) }
+func (a byType) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a byType) Less(i, j int) bool {
+	// When users configure both DNS and DNS-PERSIST-01, prefer DNS-01 to avoid
+	// unexpectedly selecting the manual-only DNS-PERSIST-01 workflow.
+	if a[i].Type == string(challenge.DNS01) && a[j].Type == string(challenge.DNSPersist01) {
+		return true
+	}
+
+	if a[i].Type == string(challenge.DNSPersist01) && a[j].Type == string(challenge.DNS01) {
+		return false
+	}
+
+	return a[i].Type > a[j].Type
+}
 
 type SolverManager struct {
 	core    *api.Core
@@ -52,6 +65,18 @@ func (c *SolverManager) SetTLSALPN01Provider(p challenge.Provider, opts ...tlsal
 // SetDNS01Provider specifies a custom provider p that can solve the given DNS-01 challenge.
 func (c *SolverManager) SetDNS01Provider(p challenge.Provider, opts ...dns01.ChallengeOption) error {
 	c.solvers[challenge.DNS01] = dns01.NewChallenge(c.core, validate, p, opts...)
+	return nil
+}
+
+// SetDNSPersist01 configures the dns-persist-01 challenge solver.
+func (c *SolverManager) SetDNSPersist01(opts ...dnspersist01.ChallengeOption) error {
+	chlg, err := dnspersist01.NewChallenge(c.core, validate, opts...)
+	if err != nil {
+		return err
+	}
+
+	c.solvers[challenge.DNSPersist01] = chlg
+
 	return nil
 }
 

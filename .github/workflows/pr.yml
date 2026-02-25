@@ -44,10 +44,10 @@ jobs:
           install-only: true
 
       - name: Install Pebble
-        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble@v2.9.0
+        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble@v2.10.0
 
       - name: Install challtestsrv
-        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble-challtestsrv@v2.9.0
+        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble-challtestsrv@v2.10.0
 
       - name: Set up a Memcached server
         run: docker run -d --rm -p 11211:11211 memcached:1.6-alpine

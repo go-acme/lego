@@ -281,7 +281,7 @@ type Challenge struct {
 	// A challenge object with an error MUST have status equal to "invalid".
 	Error *ProblemDetails `json:"error,omitempty"`
 
-	// token (required, string):
+	// token (required for dns-01, http-01, tlsalpn-01, string):
 	// A random value that uniquely identifies the challenge.
 	// This value MUST have at least 128 bits of entropy.
 	// It MUST NOT contain any characters outside the base64url alphabet,
@@ -290,6 +290,11 @@ type Challenge struct {
 	// https://www.rfc-editor.org/rfc/rfc8555.html#section-8.3
 	// https://www.rfc-editor.org/rfc/rfc8555.html#section-8.4
 	Token string `json:"token"`
+
+	// issuer-domain-names (required for dns-persist-01, []string):
+	// A list of Issuer Domain Names used for dns-persist-01 challenges.
+	// https://www.ietf.org/archive/id/draft-ietf-acme-dns-persist-00.html#section-3.1
+	IssuerDomainNames []string `json:"issuer-domain-names,omitempty"`
 
 	// https://www.rfc-editor.org/rfc/rfc8555.html#section-8.1
 	KeyAuthorization string `json:"keyAuthorization"`

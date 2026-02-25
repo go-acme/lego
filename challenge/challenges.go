@@ -18,6 +18,9 @@ const (
 	// Note: GetRecord returns a DNS record which will fulfill this challenge.
 	DNS01 = Type("dns-01")
 
+	// DNSPersist01 is the "dns-persist-01" ACME challenge https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist.
+	DNSPersist01 = Type("dns-persist-01")
+
 	// TLSALPN01 is the "tls-alpn-01" ACME challenge https://www.rfc-editor.org/rfc/rfc8737.html
 	TLSALPN01 = Type("tls-alpn-01")
 )

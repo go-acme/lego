@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dnspersist01"
 	"github.com/go-acme/lego/v5/challenge/http01"
 	"github.com/go-acme/lego/v5/challenge/tlsalpn01"
 	"github.com/go-acme/lego/v5/lego"
@@ -17,12 +19,14 @@ import (
 	"github.com/go-acme/lego/v5/providers/http/memcached"
 	"github.com/go-acme/lego/v5/providers/http/s3"
 	"github.com/go-acme/lego/v5/providers/http/webroot"
+	"github.com/go-acme/lego/v5/registration"
 	"github.com/urfave/cli/v3"
 )
 
-func setupChallenges(cmd *cli.Command, client *lego.Client) {
-	if !cmd.Bool(flgHTTP) && !cmd.Bool(flgTLS) && !cmd.IsSet(flgDNS) {
-		log.Fatal(fmt.Sprintf("No challenge selected. You must specify at least one challenge: `--%s`, `--%s`, `--%s`.", flgHTTP, flgTLS, flgDNS))
+//nolint:gocyclo // challenge setup dispatch is expected to branch by enabled challenge type.
+func setupChallenges(cmd *cli.Command, client *lego.Client, account registration.User) {
+	if !cmd.Bool(flgHTTP) && !cmd.Bool(flgTLS) && !cmd.IsSet(flgDNS) && !cmd.Bool(flgDNSPersist) {
+		log.Fatal(fmt.Sprintf("No challenge selected. You must specify at least one challenge: `--%s`, `--%s`, `--%s`, `--%s`.", flgHTTP, flgTLS, flgDNS, flgDNSPersist))
 	}
 
 	if cmd.Bool(flgHTTP) {
@@ -43,6 +47,13 @@ func setupChallenges(cmd *cli.Command, client *lego.Client) {
 		err := setupDNS(cmd, client)
 		if err != nil {
 			log.Fatal("Could not set DNS challenge provider.", log.ErrorAttr(err))
+		}
+	}
+
+	if cmd.Bool(flgDNSPersist) {
+		err := setupDNSPersist(cmd, client, account)
+		if err != nil {
+			log.Fatal("Could not set DNS-PERSIST-01 challenge provider.", log.ErrorAttr(err))
 		}
 	}
 }
@@ -162,7 +173,7 @@ func setupTLSProvider(cmd *cli.Command) challenge.Provider {
 }
 
 func setupDNS(cmd *cli.Command, client *lego.Client) error {
-	err := validatePropagationExclusiveOptions(cmd)
+	err := validatePropagationExclusiveOptions(cmd, flgDNSPropagationWait, flgDNSPropagationDisableANS, flgDNSPropagationDisableRNS)
 	if err != nil {
 		return err
 	}
@@ -186,29 +197,70 @@ func setupDNS(cmd *cli.Command, client *lego.Client) error {
 
 	err = client.Challenge.SetDNS01Provider(provider,
 		dns01.CondOption(shouldWait,
-			dns01.PropagationWait(cmd.Duration(flgDNSPropagationWait), true)),
+			dns01.PropagationWait(cmd.Duration(flgDNSPropagationWait), true),
+		),
 		dns01.CondOption(!shouldWait && cmd.Bool(flgDNSPropagationDisableANS),
-			dns01.DisableAuthoritativeNssPropagationRequirement()),
+			dns01.DisableAuthoritativeNssPropagationRequirement(),
+		),
 		dns01.CondOption(!shouldWait && cmd.Bool(flgDNSPropagationDisableRNS),
-			dns01.DisableRecursiveNSsPropagationRequirement()),
+			dns01.DisableRecursiveNSsPropagationRequirement(),
+		),
 	)
 
 	return err
 }
 
-func validatePropagationExclusiveOptions(cmd *cli.Command) error {
-	if !cmd.IsSet(flgDNSPropagationWait) {
+func setupDNSPersist(cmd *cli.Command, client *lego.Client, account registration.User) error {
+	if account == nil || account.GetRegistration() == nil || account.GetRegistration().URI == "" {
+		return errors.New("dns-persist-01 requires a registered account with an account URI")
+	}
+
+	err := validatePropagationExclusiveOptions(cmd, flgDNSPersistPropagationWait, flgDNSPersistPropagationDisableANS, flgDNSPersistIssuerDomainName)
+	if err != nil {
+		return err
+	}
+
+	resolvers := cmd.StringSlice(flgDNSPersistResolvers)
+	shouldWait := cmd.IsSet(flgDNSPersistPropagationWait)
+
+	return client.Challenge.SetDNSPersist01(
+		dnspersist01.WithAccountURI(account.GetRegistration().URI),
+		dnspersist01.WithIssuerDomainName(cmd.String(flgDNSPersistIssuerDomainName)),
+		dnspersist01.CondOptions(len(resolvers) > 0,
+			dnspersist01.WithNameservers(resolvers),
+			dnspersist01.AddRecursiveNameservers(resolvers),
+		),
+		dnspersist01.CondOptions(cmd.IsSet(flgDNSPersistPersistUntil),
+			dnspersist01.WithPersistUntil(cmd.Timestamp(flgDNSPersistPersistUntil)),
+		),
+		dnspersist01.CondOptions(cmd.IsSet(flgDNSPersistTimeout),
+			dnspersist01.WithDNSTimeout(time.Duration(cmd.Int(flgDNSPersistTimeout))*time.Second),
+		),
+		dnspersist01.CondOptions(shouldWait,
+			dnspersist01.PropagationWait(cmd.Duration(flgDNSPersistPropagationWait), true),
+		),
+		dnspersist01.CondOptions(!shouldWait,
+			dnspersist01.CondOptions(cmd.Bool(flgDNSPersistPropagationDisableANS),
+				dnspersist01.DisableAuthoritativeNssPropagationRequirement(),
+			),
+			dnspersist01.CondOptions(cmd.Bool(flgDNSSPersistPropagationDisableRNS),
+				dnspersist01.DisableRecursiveNSsPropagationRequirement(),
+			),
+		),
+	)
+}
+
+func validatePropagationExclusiveOptions(cmd *cli.Command, flgWait, flgANS, flgDNS string) error {
+	if !cmd.IsSet(flgWait) {
 		return nil
 	}
 
-	if isSetBool(cmd, flgDNSPropagationDisableANS) {
-		return fmt.Errorf("'%s' and '%s' are mutually exclusive",
-			flgDNSPropagationWait, flgDNSPropagationDisableANS)
+	if isSetBool(cmd, flgANS) {
+		return fmt.Errorf("'%s' and '%s' are mutually exclusive", flgWait, flgANS)
 	}
 
-	if isSetBool(cmd, flgDNSPropagationDisableRNS) {
-		return fmt.Errorf("'%s' and '%s' are mutually exclusive",
-			flgDNSPropagationWait, flgDNSPropagationDisableRNS)
+	if isSetBool(cmd, flgDNS) {
+		return fmt.Errorf("'%s' and '%s' are mutually exclusive", flgWait, flgDNS)
 	}
 
 	return nil

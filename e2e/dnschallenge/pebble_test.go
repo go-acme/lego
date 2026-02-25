@@ -10,25 +10,33 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/challenge/dnspersist01"
 	"github.com/stretchr/testify/require"
 )
 
 const persistLabel = "_validation-persist."
 
-func updateDNS(t *testing.T, accountURI, domain string) {
+func updateDNS(t *testing.T, accountURI, issuerDomainName string) {
 	t.Helper()
 
-	value, err := dnspersist01.BuildIssueValue(testPersistIssuer, accountURI, true, time.Time{})
+	authz := acme.Authorization{
+		Identifier: acme.Identifier{
+			Value: "example.net", // Note: unused inside the tests.
+		},
+		Wildcard: true,
+	}
+
+	info, err := dnspersist01.GetChallengeInfo(authz, testPersistIssuer, accountURI, time.Time{})
 	require.NoError(t, err)
 
 	client := newChallTestSrvClient()
 
-	err = client.SetPersistRecord(domain, value)
+	err = client.SetPersistRecord(issuerDomainName, info.Value)
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		err = client.ClearPersistRecord(domain)
+		err = client.ClearPersistRecord(issuerDomainName)
 		require.NoError(t, err)
 	})
 }

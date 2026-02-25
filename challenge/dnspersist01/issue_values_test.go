@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBuildIssueValue(t *testing.T) {
+func Test_buildIssueValue(t *testing.T) {
 	testCases := []struct {
 		desc              string
 		issuer            string
@@ -49,7 +49,7 @@ func TestBuildIssueValue(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			actual, err := BuildIssueValue(test.issuer, test.accountURI, test.wildcard, test.persistUTC)
+			actual, err := buildIssueValue(test.issuer, test.accountURI, test.wildcard, test.persistUTC)
 			if test.expectErrContains != "" {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, test.expectErrContains)
@@ -63,7 +63,7 @@ func TestBuildIssueValue(t *testing.T) {
 	}
 }
 
-func TestParseIssueValue(t *testing.T) {
+func Test_parseIssueValue(t *testing.T) {
 	testCases := []struct {
 		desc              string
 		value             string
@@ -192,7 +192,7 @@ func TestParseIssueValue(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			parsed, err := ParseIssueValue(test.value)
+			parsed, err := parseIssueValue(test.value)
 			if test.expectErrContains != "" {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, test.expectErrContains)

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/challenge/dnspersist01"
@@ -141,10 +142,17 @@ func TestChallengeDNSPersist_Run_NewAccount(t *testing.T) {
 			return
 		}
 
-		txtValue, err := dnspersist01.BuildIssueValue(testPersistIssuer, accountURI, true, time.Time{})
+		authz := acme.Authorization{
+			Identifier: acme.Identifier{
+				Value: testPersistCLIDomain,
+			},
+			Wildcard: true,
+		}
+
+		info, err := dnspersist01.GetChallengeInfo(authz, testPersistIssuer, accountURI, time.Time{})
 		require.NoError(t, err)
 
-		err = client.SetPersistRecord(testPersistCLIDomain, txtValue)
+		err = client.SetPersistRecord(testPersistCLIDomain, info.Value)
 		if err != nil {
 			errChan <- fmt.Errorf("set TXT record: %w", err)
 			return

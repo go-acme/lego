@@ -171,7 +171,7 @@ func (c *Challenge) selectIssuerDomainName(challIssuers []string, records []TXTR
 
 func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName string, wildcard bool) bool {
 	for _, record := range records {
-		parsed, err := ParseIssueValue(record.Value)
+		parsed, err := parseIssueValue(record.Value)
 		if err != nil {
 			continue
 		}
@@ -217,7 +217,7 @@ func GetChallengeInfo(authz acme.Authorization, issuerDomainName, accountURI str
 		return ChallengeInfo{}, errors.New("dnspersist01: domain cannot be empty")
 	}
 
-	value, err := BuildIssueValue(issuerDomainName, accountURI, authz.Wildcard, persistUntil)
+	value, err := buildIssueValue(issuerDomainName, accountURI, authz.Wildcard, persistUntil)
 	if err != nil {
 		return ChallengeInfo{}, err
 	}

@@ -23,10 +23,10 @@ type IssueValue struct {
 	PersistUntil     time.Time
 }
 
-// BuildIssueValue constructs an RFC 8659 issue-value for a dns-persist-01 TXT record.
+// buildIssueValue constructs an RFC 8659 issue-value for a dns-persist-01 TXT record.
 // issuerDomainName and accountURI are required.
 // wildcard and persistUntil are optional.
-func BuildIssueValue(issuerDomainName, accountURI string, wildcard bool, persistUntil time.Time) (string, error) {
+func buildIssueValue(issuerDomainName, accountURI string, wildcard bool, persistUntil time.Time) (string, error) {
 	if accountURI == "" {
 		return "", errors.New("dnspersist01: ACME account URI cannot be empty")
 	}
@@ -49,20 +49,12 @@ func BuildIssueValue(issuerDomainName, accountURI string, wildcard bool, persist
 	return value, nil
 }
 
-// trimWSP trims RFC 5234 WSP (SP / HTAB) characters from both ends of a string,
-// as referenced by RFC 8659.
-func trimWSP(s string) string {
-	return strings.TrimFunc(s, func(r rune) bool {
-		return r == ' ' || r == '\t'
-	})
-}
-
-// ParseIssueValue parses the issuer-domain-name and parameters
+// parseIssueValue parses the issuer-domain-name and parameters
 // for an RFC 8659 issue-value TXT record and returns the extracted fields.
 // It returns an error if any portion of the value is malformed.
 //
 //nolint:gocyclo // parsing and validating tagged parameters requires branching
-func ParseIssueValue(value string) (IssueValue, error) {
+func parseIssueValue(value string) (IssueValue, error) {
 	fields := strings.Split(value, ";")
 
 	issuerDomainName := trimWSP(fields[0])
@@ -149,4 +141,12 @@ func ParseIssueValue(value string) (IssueValue, error) {
 	}
 
 	return parsed, nil
+}
+
+// trimWSP trims RFC 5234 WSP (SP / HTAB) characters from both ends of a string,
+// as referenced by RFC 8659.
+func trimWSP(s string) string {
+	return strings.TrimFunc(s, func(r rune) bool {
+		return r == ' ' || r == '\t'
+	})
 }

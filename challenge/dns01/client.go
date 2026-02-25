@@ -84,10 +84,10 @@ func (c *Client) sendQuery(ctx context.Context, fqdn string, rtype uint16, recur
 }
 
 func (c *Client) sendQueryCustom(ctx context.Context, fqdn string, rtype uint16, nameservers []string, recursive bool) (*dns.Msg, error) {
-	m := createDNSMsg(fqdn, rtype, recursive)
+	m := internal.CreateDNSMsg(fqdn, rtype, recursive)
 
 	if len(nameservers) == 0 {
-		return nil, &DNSError{Message: "empty list of nameservers"}
+		return nil, &internal.DNSError{Message: "empty list of nameservers"}
 	}
 
 	var (
@@ -116,7 +116,7 @@ func (c *Client) exchange(ctx context.Context, m *dns.Msg, ns string) (*dns.Msg,
 	if c.tcpOnly {
 		r, _, err := c.tcpClient.ExchangeContext(ctx, m, ns)
 		if err != nil {
-			return r, &DNSError{Message: "DNS call error", MsgIn: m, NS: ns, Err: err}
+			return r, &internal.DNSError{Message: "DNS call error", MsgIn: m, NS: ns, Err: err}
 		}
 
 		return r, nil
@@ -130,20 +130,8 @@ func (c *Client) exchange(ctx context.Context, m *dns.Msg, ns string) (*dns.Msg,
 	}
 
 	if err != nil {
-		return r, &DNSError{Message: "DNS call error", MsgIn: m, NS: ns, Err: err}
+		return r, &internal.DNSError{Message: "DNS call error", MsgIn: m, NS: ns, Err: err}
 	}
 
 	return r, nil
-}
-
-func createDNSMsg(fqdn string, rtype uint16, recursive bool) *dns.Msg {
-	m := new(dns.Msg)
-	m.SetQuestion(fqdn, rtype)
-	m.SetEdns0(4096, false)
-
-	if !recursive {
-		m.RecursionDesired = false
-	}
-
-	return m
 }

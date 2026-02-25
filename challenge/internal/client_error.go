@@ -1,9 +1,4 @@
-package dnspersist01
-
-/*
- * NOTE(ldez): This file is a duplication of `dns01/client_error.go`.
- * The 2 files should be kept in sync.
- */
+package internal
 
 import (
 	"fmt"

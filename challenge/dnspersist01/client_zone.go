@@ -75,9 +75,9 @@ func (c *Client) fetchSoaByFqdn(ctx context.Context, fqdn string, nameservers []
 			// NXDOMAIN
 		default:
 			// Any response code other than NOERROR and NXDOMAIN is treated as error
-			return "", &DNSError{Message: fmt.Sprintf("unexpected response for '%s'", domain), MsgOut: r}
+			return "", &internal.DNSError{Message: fmt.Sprintf("unexpected response for '%s'", domain), MsgOut: r}
 		}
 	}
 
-	return "", &DNSError{Message: fmt.Sprintf("could not find the start of authority for '%s'", fqdn), MsgOut: r, Err: err}
+	return "", &internal.DNSError{Message: fmt.Sprintf("could not find the start of authority for '%s'", fqdn), MsgOut: r, Err: err}
 }

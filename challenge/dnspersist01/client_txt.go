@@ -90,7 +90,7 @@ func (c *Client) lookupTXT(ctx context.Context, fqdn string, nameservers []strin
 		case dns.RcodeNameError:
 			return result, nil
 		default:
-			return result, &DNSError{Message: fmt.Sprintf("unexpected response for '%s'", name), MsgOut: msg}
+			return result, &internal.DNSError{Message: fmt.Sprintf("unexpected response for '%s'", name), MsgOut: msg}
 		}
 	}
 }

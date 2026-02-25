@@ -14,7 +14,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/providers/dns/internal/ptr"
+	"github.com/go-acme/lego/v5/internal/ptr"
 )
 
 var _ challenge.ProviderTimeout = (*DNSProviderPublic)(nil)

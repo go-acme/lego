@@ -9,8 +9,8 @@ import (
 
 	baidudns "github.com/baidubce/bce-sdk-go/services/dns"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/ptr"
 	"github.com/go-acme/lego/v5/platform/config/env"
-	"github.com/go-acme/lego/v5/providers/dns/internal/ptr"
 )
 
 // Environment variables names.

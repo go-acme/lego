@@ -9,6 +9,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -17,11 +18,15 @@ import (
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dnspersist01"
 	"github.com/go-acme/lego/v5/internal/env"
+	"github.com/go-acme/lego/v5/log"
 )
 
 // Environment variables names.
 const (
 	envNamespace = "DNSPERSIST_MANUAL_"
+
+	EnvMode = envNamespace + "MODE"
+	EnvWait = envNamespace + "WAIT"
 
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -35,6 +40,11 @@ const (
 	defaultPollingInterval = 2 * time.Second
 )
 
+const (
+	modeStdin = "stdin"
+	modeWait  = "wait"
+)
+
 const maxTXTStringOctets = 255
 
 var _ challenge.PersistentProvider = (*Provider)(nil)
@@ -42,12 +52,17 @@ var _ challenge.PersistentProvider = (*Provider)(nil)
 type Provider struct {
 	propagationTimeout  time.Duration
 	propagationInterval time.Duration
+
+	mode string
+	wait time.Duration
 }
 
 func NewProvider() *Provider {
 	return &Provider{
 		propagationTimeout:  env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
 		propagationInterval: env.GetOrDefaultSecond(EnvPollingInterval, defaultPollingInterval),
+		mode:                env.GetOrDefaultString(EnvMode, modeStdin),
+		wait:                env.GetOrDefaultSecond(EnvWait, 1*time.Minute),
 	}
 }
 
@@ -57,8 +72,21 @@ func (p *Provider) Persist(_ context.Context, authz acme.Authorization, issuerDo
 		return err
 	}
 
+	if p.mode == modeWait {
+		log.Warn("Waiting for TXT record creation.",
+			slog.Duration("wait", p.wait),
+			slog.String("target", info.FQDN),
+			slog.String("value", formatTXTValue(info.Value)),
+		)
+
+		time.Sleep(p.wait)
+
+		return nil
+	}
+
 	fmt.Println("lego: Please create a TXT record with the following value:")
 	fmt.Printf("%s IN TXT %s\n", info.FQDN, formatTXTValue(info.Value))
+
 	fmt.Println("lego: Press 'Enter' once the record is available.")
 
 	_, err = bufio.NewReader(os.Stdin).ReadBytes('\n')

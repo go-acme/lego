@@ -13,8 +13,8 @@ import (
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/internal/wait"
 	"github.com/go-acme/lego/v5/log"
-	"github.com/go-acme/lego/v5/platform/wait"
 	"github.com/miekg/dns"
 )
 

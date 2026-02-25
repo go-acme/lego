@@ -14,8 +14,8 @@ import (
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v5/internal/errutils"
+	"github.com/go-acme/lego/v5/internal/wait"
 	"github.com/go-acme/lego/v5/log"
-	"github.com/go-acme/lego/v5/platform/wait"
 )
 
 const defaultBaseURL = "https://api.dynu.com/v2"

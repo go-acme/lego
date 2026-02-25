@@ -6,7 +6,7 @@ import (
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/platform/wait"
+	"github.com/go-acme/lego/v5/internal/wait"
 	"github.com/vinyldns/go-vinyldns/vinyldns"
 )
 

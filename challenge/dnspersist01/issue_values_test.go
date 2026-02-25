@@ -67,13 +67,13 @@ func Test_parseIssueValue(t *testing.T) {
 	testCases := []struct {
 		desc              string
 		value             string
-		expected          IssueValue
+		expected          *IssueValue
 		expectErrContains string
 	}{
 		{
 			desc:  "basic",
 			value: "authority.example; accounturi=https://authority.example/acct/123",
-			expected: IssueValue{
+			expected: &IssueValue{
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
 			},
@@ -81,7 +81,7 @@ func Test_parseIssueValue(t *testing.T) {
 		{
 			desc:  "wildcard policy is case-insensitive",
 			value: "authority.example; accounturi=https://authority.example/acct/123; policy=wIlDcArD",
-			expected: IssueValue{
+			expected: &IssueValue{
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
 				Policy:           "wIlDcArD",
@@ -90,7 +90,7 @@ func Test_parseIssueValue(t *testing.T) {
 		{
 			desc:  "unknown param",
 			value: "authority.example; accounturi=https://authority.example/acct/123; extra=value",
-			expected: IssueValue{
+			expected: &IssueValue{
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
 			},
@@ -98,7 +98,7 @@ func Test_parseIssueValue(t *testing.T) {
 		{
 			desc:  "unknown tag with empty value",
 			value: "authority.example; accounturi=https://authority.example/acct/123; foo=",
-			expected: IssueValue{
+			expected: &IssueValue{
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
 			},
@@ -106,7 +106,7 @@ func Test_parseIssueValue(t *testing.T) {
 		{
 			desc:  "unknown tags with unusual formatting are ignored",
 			value: "authority.example;accounturi=https://authority.example/acct/123;bad tag=value;\nweird=\\x01337",
-			expected: IssueValue{
+			expected: &IssueValue{
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
 			},
@@ -114,7 +114,7 @@ func Test_parseIssueValue(t *testing.T) {
 		{
 			desc:  "all known fields with heavy whitespace",
 			value: "   authority.example   ;   accounturi   =   https://authority.example/acct/123   ;   policy   =   wildcard   ;   persistUntil   =   4102444800   ",
-			expected: IssueValue{
+			expected: &IssueValue{
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
 				Policy:           "wildcard",
@@ -124,7 +124,7 @@ func Test_parseIssueValue(t *testing.T) {
 		{
 			desc:  "policy other than wildcard is treated as absent",
 			value: "authority.example; accounturi=https://authority.example/acct/123; policy=notwildcard",
-			expected: IssueValue{
+			expected: &IssueValue{
 				IssuerDomainName: "authority.example",
 				AccountURI:       "https://authority.example/acct/123",
 			},
@@ -132,7 +132,7 @@ func Test_parseIssueValue(t *testing.T) {
 		{
 			desc:  "missing accounturi",
 			value: "authority.example",
-			expected: IssueValue{
+			expected: &IssueValue{
 				IssuerDomainName: "authority.example",
 			},
 		},

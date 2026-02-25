@@ -1,6 +1,7 @@
 package dnspersist01
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"strconv"
@@ -21,6 +22,22 @@ type IssueValue struct {
 	AccountURI       string
 	Policy           string
 	PersistUntil     time.Time
+}
+
+func (v *IssueValue) match(other IssueValue) bool {
+	if cmp.Or(
+		cmp.Compare(v.IssuerDomainName, other.IssuerDomainName),
+		cmp.Compare(v.AccountURI, other.AccountURI),
+		v.PersistUntil.Compare(other.PersistUntil),
+	) != 0 {
+		return false
+	}
+
+	if strings.EqualFold(other.Policy, policyWildcard) && !strings.EqualFold(v.Policy, policyWildcard) {
+		return false
+	}
+
+	return true
 }
 
 // buildIssueValue constructs an RFC 8659 issue-value for a dns-persist-01 TXT record.
@@ -54,15 +71,15 @@ func buildIssueValue(issuerDomainName, accountURI string, wildcard bool, persist
 // It returns an error if any portion of the value is malformed.
 //
 //nolint:gocyclo // parsing and validating tagged parameters requires branching
-func parseIssueValue(value string) (IssueValue, error) {
+func parseIssueValue(value string) (*IssueValue, error) {
 	fields := strings.Split(value, ";")
 
 	issuerDomainName := trimWSP(fields[0])
 	if issuerDomainName == "" {
-		return IssueValue{}, errors.New("missing issuer-domain-name")
+		return nil, errors.New("missing issuer-domain-name")
 	}
 
-	parsed := IssueValue{
+	parsed := &IssueValue{
 		IssuerDomainName: issuerDomainName,
 	}
 
@@ -72,24 +89,24 @@ func parseIssueValue(value string) (IssueValue, error) {
 	for _, raw := range fields[1:] {
 		part := trimWSP(raw)
 		if part == "" {
-			return IssueValue{}, errors.New("empty parameter or trailing semicolon provided")
+			return nil, errors.New("empty parameter or trailing semicolon provided")
 		}
 
 		// Capture each tag=value pair.
 		tag, val, found := strings.Cut(part, "=")
 		if !found {
-			return IssueValue{}, fmt.Errorf("malformed parameter %q should be tag=value pair", part)
+			return nil, fmt.Errorf("malformed parameter %q should be tag=value pair", part)
 		}
 
 		tag = trimWSP(tag)
 
 		if tag == "" {
-			return IssueValue{}, fmt.Errorf("malformed parameter %q, empty tag", part)
+			return nil, fmt.Errorf("malformed parameter %q, empty tag", part)
 		}
 
 		canonicalTag := strings.ToLower(tag)
 		if seenTags[canonicalTag] {
-			return IssueValue{}, fmt.Errorf("duplicate parameter %q", tag)
+			return nil, fmt.Errorf("duplicate parameter %q", tag)
 		}
 
 		seenTags[canonicalTag] = true
@@ -102,7 +119,7 @@ func parseIssueValue(value string) (IssueValue, error) {
 				continue
 			}
 
-			return IssueValue{}, fmt.Errorf("malformed value %q for tag %q", val, tag)
+			return nil, fmt.Errorf("malformed value %q for tag %q", val, tag)
 		}
 
 		// Finally, capture expected tag values.
@@ -111,7 +128,7 @@ func parseIssueValue(value string) (IssueValue, error) {
 		switch canonicalTag {
 		case paramAccountURI:
 			if val == "" {
-				return IssueValue{}, fmt.Errorf("empty value provided for mandatory %q", paramAccountURI)
+				return nil, fmt.Errorf("empty value provided for mandatory %q", paramAccountURI)
 			}
 
 			parsed.AccountURI = val
@@ -130,7 +147,7 @@ func parseIssueValue(value string) (IssueValue, error) {
 		case paramPersistUntil:
 			ts, err := strconv.ParseInt(val, 10, 64)
 			if err != nil {
-				return IssueValue{}, fmt.Errorf("malformed %q: %w", paramPersistUntil, err)
+				return nil, fmt.Errorf("malformed %q: %w", paramPersistUntil, err)
 			}
 
 			parsed.PersistUntil = time.Unix(ts, 0).UTC()

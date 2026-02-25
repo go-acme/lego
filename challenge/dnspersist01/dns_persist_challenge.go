@@ -170,36 +170,24 @@ func (c *Challenge) selectIssuerDomainName(challIssuers []string, records []TXTR
 }
 
 func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName string, wildcard bool) bool {
-	for _, record := range records {
-		parsed, err := parseIssueValue(record.Value)
-		if err != nil {
-			continue
-		}
-
-		if parsed.IssuerDomainName != issuerDomainName {
-			continue
-		}
-
-		if parsed.AccountURI != c.accountURI {
-			continue
-		}
-
-		if wildcard && !strings.EqualFold(parsed.Policy, policyWildcard) {
-			continue
-		}
-
-		if c.persistUntil.IsZero() {
-			if !parsed.PersistUntil.IsZero() {
-				continue
-			}
-		} else if parsed.PersistUntil.IsZero() || !parsed.PersistUntil.Equal(c.persistUntil) {
-			continue
-		}
-
-		return true
+	iv := IssueValue{
+		IssuerDomainName: issuerDomainName,
+		AccountURI:       c.accountURI,
+		PersistUntil:     c.persistUntil,
 	}
 
-	return false
+	if wildcard {
+		iv.Policy = policyWildcard
+	}
+
+	return slices.ContainsFunc(records, func(record TXTRecord) bool {
+		parsed, err := parseIssueValue(record.Value)
+		if err != nil {
+			return false
+		}
+
+		return parsed.match(iv)
+	})
 }
 
 // GetAuthorizationDomainName returns the fully qualified DNS label

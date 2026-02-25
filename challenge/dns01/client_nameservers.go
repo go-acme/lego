@@ -9,8 +9,6 @@ import (
 	"github.com/miekg/dns"
 )
 
-const defaultResolvConf = "/etc/resolv.conf"
-
 // checkNameserversPropagation queries each of the recursive nameservers for the expected TXT record.
 func (c *Client) checkNameserversPropagation(ctx context.Context, fqdn, value string, addPort bool) (bool, error) {
 	return c.checkNameserversPropagationCustom(ctx, fqdn, value, c.recursiveNameservers, addPort)

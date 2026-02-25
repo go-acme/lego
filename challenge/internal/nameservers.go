@@ -7,6 +7,8 @@ import (
 	"github.com/miekg/dns"
 )
 
+const DefaultResolvConf = "/etc/resolv.conf"
+
 // GetNameservers attempts to get systems nameservers before falling back to the defaults.
 func GetNameservers(path string, stack challenge.NetworkStack) []string {
 	config, err := dns.ClientConfigFromFile(path)

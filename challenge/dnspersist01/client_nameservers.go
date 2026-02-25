@@ -9,8 +9,6 @@ import (
 	"github.com/miekg/dns"
 )
 
-const defaultResolvConf = "/etc/resolv.conf"
-
 func (c *Client) checkNameserversPropagation(ctx context.Context, fqdn string, addPort, recursive bool, matcher RecordMatcher) (bool, error) {
 	return c.checkNameserversPropagationCustom(ctx, fqdn, c.recursiveNameservers, addPort, recursive, matcher)
 }

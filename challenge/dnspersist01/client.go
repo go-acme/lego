@@ -51,7 +51,7 @@ func NewClient(opts *Options) *Client {
 	}
 
 	if len(opts.RecursiveNameservers) == 0 {
-		opts.RecursiveNameservers = internal.GetNameservers(defaultResolvConf, opts.NetworkStack)
+		opts.RecursiveNameservers = internal.GetNameservers(internal.DefaultResolvConf, opts.NetworkStack)
 	}
 
 	if opts.Timeout == 0 {

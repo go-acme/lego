@@ -51,7 +51,7 @@ func NewResolver(nameservers []string) *Resolver {
 
 	return &Resolver{
 		Nameservers: ParseNameservers(nameservers),
-		Timeout:     defaultDNSTimeout,
+		Timeout:     dnsTimeout,
 	}
 }
 
@@ -107,7 +107,7 @@ func (r *Resolver) lookupTXT(fqdn string, nameservers []string, recursive bool) 
 
 	timeout := r.Timeout
 	if timeout <= 0 {
-		timeout = defaultDNSTimeout
+		timeout = dnsTimeout
 	}
 
 	const maxCNAMEFollows = 50

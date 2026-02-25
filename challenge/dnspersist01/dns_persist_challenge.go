@@ -148,16 +148,13 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		fmt.Printf("dnspersist01: Found existing matching TXT record for %s, no need to create a new one\n", fqdn)
 	}
 
-	timeout := c.propagationTimeout
-	interval := c.propagationInterval
-
 	log.Info("acme: Checking DNS-PERSIST-01 record propagation.",
 		log.DomainAttr(domain), slog.String("nameservers", strings.Join(c.getRecursiveNameservers(), ",")),
 	)
 
-	time.Sleep(interval)
+	time.Sleep(c.propagationInterval)
 
-	err = wait.For("propagation", timeout, interval, func() (bool, error) {
+	err = wait.For("propagation", c.propagationTimeout, c.propagationInterval, func() (bool, error) {
 		ok, callErr := c.preCheck.call(domain, fqdn, matcher, c.checkDNSPropagation)
 		if !ok || callErr != nil {
 			log.Info("acme: Waiting for DNS-PERSIST-01 record propagation.", log.DomainAttr(domain))

@@ -3,6 +3,8 @@ package resolver
 import (
 	"bytes"
 	"fmt"
+	"maps"
+	"slices"
 	"sort"
 )
 
@@ -24,4 +26,8 @@ func (e obtainError) Error() string {
 	}
 
 	return buffer.String()
+}
+
+func (e obtainError) Unwrap() []error {
+	return slices.AppendSeq(make([]error, 0, len(e)), maps.Values(e))
 }

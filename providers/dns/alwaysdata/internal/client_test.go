@@ -6,14 +6,14 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("secret", "")
 			if err != nil {
@@ -25,7 +25,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders().
 			WithBasicAuth("secret", ""),
 	)
@@ -34,7 +34,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_ListDomains(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domain/",
-			servermock.ResponseFromFixture("domains.json")).
+			servermock2.ResponseFromFixture("domains.json")).
 		Build(t)
 
 	result, err := client.ListDomains(t.Context())
@@ -54,8 +54,8 @@ func TestClient_AddRecord(t *testing.T) {
 
 	client := mockBuilder().
 		Route("POST /record/",
-			servermock.Noop().WithStatusCode(http.StatusCreated),
-			servermock.CheckRequestJSONBodyFromFixture("record_add-request.json")).
+			servermock2.Noop().WithStatusCode(http.StatusCreated),
+			servermock2.CheckRequestJSONBodyFromFixture("record_add-request.json")).
 		Build(t)
 
 	record := RecordRequest{
@@ -74,7 +74,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /record/789/",
-			servermock.Noop()).
+			servermock2.Noop()).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), 789)
@@ -84,8 +84,8 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_ListRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /record/",
-			servermock.ResponseFromFixture("records.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("records.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("domain", "132").
 				With("name", "_acme-challenge"),
 		).

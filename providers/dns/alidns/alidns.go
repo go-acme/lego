@@ -13,8 +13,8 @@ import (
 	alidns "github.com/go-acme/alidns-20150109/v4/client"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/platform/config/env"
-	"github.com/go-acme/lego/v5/providers/dns/internal/ptr"
+	"github.com/go-acme/lego/v5/internal/env"
+	"github.com/go-acme/lego/v5/internal/ptr"
 	"golang.org/x/net/idna"
 )
 

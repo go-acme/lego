@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("example.com", "user", "secret")
 			if err != nil {
@@ -25,7 +25,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders().
+		servermock2.CheckHeader().WithJSONHeaders().
 			WithRegexp("Authorization", `Basic .+`).
 			WithRegexp("Date", `\d+-\d+-\d+T\d{2}:\d{2}:\d{2}.*`).
 			With("Accept-Language", "en_us"))
@@ -34,7 +34,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_GetServices(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/user/self/service",
-			servermock.ResponseFromFixture("services.json")).
+			servermock2.ResponseFromFixture("services.json")).
 		Build(t)
 
 	services, err := client.GetServices(t.Context())
@@ -67,7 +67,7 @@ func TestClient_GetServices(t *testing.T) {
 func TestClient_GetServices_errors(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/user/self/service",
-			servermock.ResponseFromFixture("error_v1.json").
+			servermock2.ResponseFromFixture("error_v1.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -78,7 +78,7 @@ func TestClient_GetServices_errors(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v2/service/aaa/dns/record",
-			servermock.ResponseFromFixture("records.json")).
+			servermock2.ResponseFromFixture("records.json")).
 		Build(t)
 
 	filter := RecordFilter{
@@ -106,7 +106,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_GetRecords_errors(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v2/service/aaa/dns/record",
-			servermock.ResponseFromFixture("error_403.json").
+			servermock2.ResponseFromFixture("error_403.json").
 				WithStatusCode(http.StatusForbidden)).
 		Build(t)
 
@@ -123,7 +123,7 @@ func TestClient_GetRecords_errors(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /v2/service/aaa/dns/record",
-			servermock.Noop().
+			servermock2.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 
@@ -134,7 +134,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_CreateRecord_errors(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /v2/service/aaa/dns/record",
-			servermock.ResponseFromFixture("error_403.json").
+			servermock2.ResponseFromFixture("error_403.json").
 				WithStatusCode(http.StatusForbidden)).
 		Build(t)
 
@@ -145,7 +145,7 @@ func TestClient_CreateRecord_errors(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v2/service/aaa/dns/record/123",
-			servermock.Noop().
+			servermock2.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 
@@ -156,7 +156,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v2/service/aaa/dns/record/123",
-			servermock.ResponseFromFixture("error_403.json").
+			servermock2.ResponseFromFixture("error_403.json").
 				WithStatusCode(http.StatusForbidden)).
 		Build(t)
 

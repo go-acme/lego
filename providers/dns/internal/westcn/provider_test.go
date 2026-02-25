@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -57,8 +57,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(
+func mockBuilder() *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := &Config{
 				Username:           "user",
@@ -76,18 +76,18 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithContentTypeFromURLEncoded())
 }
 
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /domain/",
-			servermock.ResponseFromInternal("adddnsrecord.json").
+			servermock2.ResponseFromInternal("adddnsrecord.json").
 				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("act", "adddnsrecord"),
-			servermock.CheckForm().UsePostForm().Strict().
+			servermock2.CheckForm().UsePostForm().Strict().
 				With("domain", "example.com").
 				With("host", "_acme-challenge").
 				With("ttl", "120").
@@ -107,11 +107,11 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /domain/",
-			servermock.ResponseFromInternal("deldnsrecord.json").
+			servermock2.ResponseFromInternal("deldnsrecord.json").
 				WithHeader("Content-Type", "application/json", "Charset=gb2312"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("act", "deldnsrecord"),
-			servermock.CheckForm().UsePostForm().Strict().
+			servermock2.CheckForm().UsePostForm().Strict().
 				With("id", "123").
 				With("domain", "example.com").
 				With("username", "user").

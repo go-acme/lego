@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/dnsmock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	dnsmock2 "github.com/go-acme/lego/v5/internal/tester/dnsmock"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/require"
 )
@@ -164,9 +164,9 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider_Present_success(t *testing.T) {
 	dns01.DefaultClient().ClearFqdnCache()
 
-	addr := dnsmock.NewServer().
-		Query(fakeZone+" SOA", dnsmock.SOA("")).
-		Update(fakeZone+" SOA", dnsmock.Noop).
+	addr := dnsmock2.NewServer().
+		Query(fakeZone+" SOA", dnsmock2.SOA("")).
+		Update(fakeZone+" SOA", dnsmock2.Noop).
 		Build(t)
 
 	config := NewDefaultConfig()
@@ -184,10 +184,10 @@ func TestDNSProvider_Present_success_updatePacket(t *testing.T) {
 
 	reqChan := make(chan *dns.Msg, 1)
 
-	addr := dnsmock.NewServer().
-		Query("_acme-challenge.123456789.www.example.com. SOA", dnsmock.SOA(fakeZone)).
+	addr := dnsmock2.NewServer().
+		Query("_acme-challenge.123456789.www.example.com. SOA", dnsmock2.SOA(fakeZone)).
 		Update(fakeZone+" SOA", func(w dns.ResponseWriter, req *dns.Msg) {
-			dnsmock.Noop(w, req)
+			dnsmock2.Noop(w, req)
 
 			// Only talk back when it is not the SOA RR.
 			reqChan <- req
@@ -239,8 +239,8 @@ func TestDNSProvider_Present_success_updatePacket(t *testing.T) {
 func TestDNSProvider_Present_error(t *testing.T) {
 	dns01.DefaultClient().ClearFqdnCache()
 
-	addr := dnsmock.NewServer().
-		Query(fakeZone+" SOA", dnsmock.Error(dns.RcodeNotZone)).
+	addr := dnsmock2.NewServer().
+		Query(fakeZone+" SOA", dnsmock2.Error(dns.RcodeNotZone)).
 		Build(t)
 
 	config := NewDefaultConfig()
@@ -260,8 +260,8 @@ func TestDNSProvider_Present_error(t *testing.T) {
 func TestDNSProvider_Present_tsig_success(t *testing.T) {
 	dns01.DefaultClient().ClearFqdnCache()
 
-	addr := dnsmock.NewServer().
-		Query(fakeZone+" SOA", dnsmock.SOA("")).
+	addr := dnsmock2.NewServer().
+		Query(fakeZone+" SOA", dnsmock2.SOA("")).
 		Update(fakeZone+" SOA", handleTSIG).
 		Build(t, func(server *dns.Server) error {
 			server.TsigSecret = map[string]string{fakeTsigKey: fakeTsigSecret}
@@ -284,8 +284,8 @@ func TestDNSProvider_Present_tsig_success(t *testing.T) {
 func TestDNSProvider_Present_tsig_error(t *testing.T) {
 	dns01.DefaultClient().ClearFqdnCache()
 
-	addr := dnsmock.NewServer().
-		Query(fakeZone+" SOA", dnsmock.SOA("")).
+	addr := dnsmock2.NewServer().
+		Query(fakeZone+" SOA", dnsmock2.SOA("")).
 		Update(fakeZone+" SOA", handleTSIG).
 		Build(t, func(server *dns.Server) error {
 			server.TsigSecret = map[string]string{"example.org": fakeTsigSecret}

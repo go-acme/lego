@@ -20,9 +20,9 @@ import (
 	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/platform/config/env"
-	"github.com/go-acme/lego/v5/platform/wait"
-	"github.com/go-acme/lego/v5/providers/dns/internal/ptr"
+	"github.com/go-acme/lego/v5/internal/env"
+	"github.com/go-acme/lego/v5/internal/ptr"
+	"github.com/go-acme/lego/v5/internal/wait"
 )
 
 // Environment variables names.

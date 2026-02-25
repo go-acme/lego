@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,8 +18,8 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_UpdateTXTRecord(t *testing.T) {
-	client := servermock.NewBuilder[*Client](setupClient).
-		Route("GET /", nil, servermock.CheckQueryParameter().Strict().
+	client := servermock2.NewBuilder[*Client](setupClient).
+		Route("GET /", nil, servermock2.CheckQueryParameter().Strict().
 			With("rid", "123456").
 			With("content", "txt").
 			With("username", "user").
@@ -32,8 +32,8 @@ func TestClient_UpdateTXTRecord(t *testing.T) {
 }
 
 func TestClient_UpdateTXTRecord_error(t *testing.T) {
-	client := servermock.NewBuilder[*Client](setupClient).
-		Route("GET /", servermock.Noop().WithStatusCode(http.StatusBadRequest)).
+	client := servermock2.NewBuilder[*Client](setupClient).
+		Route("GET /", servermock2.Noop().WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
 	err := client.UpdateTXTRecord(t.Context(), "123456", "txt")

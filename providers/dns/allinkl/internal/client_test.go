@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -22,9 +22,9 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_GetDNSSettings(t *testing.T) {
-	client := servermock.NewBuilder[*Client](setupClient).
-		Route("POST /KasApi.php", servermock.ResponseFromFixture("get_dns_settings.xml"),
-			servermock.CheckRequestBodyFromFixture("get_dns_settings-request.xml").
+	client := servermock2.NewBuilder[*Client](setupClient).
+		Route("POST /KasApi.php", servermock2.ResponseFromFixture("get_dns_settings.xml"),
+			servermock2.CheckRequestBodyFromFixture("get_dns_settings-request.xml").
 				IgnoreWhitespace()).
 		Build(t)
 
@@ -101,9 +101,9 @@ func TestClient_GetDNSSettings(t *testing.T) {
 }
 
 func TestClient_GetDNSSettings_error_flood_protection(t *testing.T) {
-	client := servermock.NewBuilder[*Client](setupClient).
+	client := servermock2.NewBuilder[*Client](setupClient).
 		Route("POST /KasApi.php",
-			servermock.ResponseFromFixture("flood_protection.xml"),
+			servermock2.ResponseFromFixture("flood_protection.xml"),
 		).
 		Build(t)
 
@@ -116,9 +116,9 @@ func TestClient_GetDNSSettings_error_flood_protection(t *testing.T) {
 }
 
 func TestClient_AddDNSSettings(t *testing.T) {
-	client := servermock.NewBuilder[*Client](setupClient).
-		Route("POST /KasApi.php", servermock.ResponseFromFixture("add_dns_settings.xml"),
-			servermock.CheckRequestBodyFromFixture("add_dns_settings-request.xml").
+	client := servermock2.NewBuilder[*Client](setupClient).
+		Route("POST /KasApi.php", servermock2.ResponseFromFixture("add_dns_settings.xml"),
+			servermock2.CheckRequestBodyFromFixture("add_dns_settings-request.xml").
 				IgnoreWhitespace()).
 		Build(t)
 
@@ -136,9 +136,9 @@ func TestClient_AddDNSSettings(t *testing.T) {
 }
 
 func TestClient_DeleteDNSSettings(t *testing.T) {
-	client := servermock.NewBuilder[*Client](setupClient).
-		Route("POST /KasApi.php", servermock.ResponseFromFixture("delete_dns_settings.xml"),
-			servermock.CheckRequestBodyFromFixture("delete_dns_settings-request.xml").
+	client := servermock2.NewBuilder[*Client](setupClient).
+		Route("POST /KasApi.php", servermock2.ResponseFromFixture("delete_dns_settings.xml"),
+			servermock2.CheckRequestBodyFromFixture("delete_dns_settings-request.xml").
 				IgnoreWhitespace()).
 		Build(t)
 

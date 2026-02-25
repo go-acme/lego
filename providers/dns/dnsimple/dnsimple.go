@@ -11,8 +11,8 @@ import (
 	"github.com/dnsimple/dnsimple-go/v4/dnsimple"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/internal/useragent"
-	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"golang.org/x/oauth2"
 )

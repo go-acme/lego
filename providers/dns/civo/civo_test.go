@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -131,8 +131,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(
+func mockBuilder() *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.HTTPClient = server.Client()
@@ -147,7 +147,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders().
 			With("Authorization", "Bearer secret").
 			WithRegexp("User-Agent", `goacme-lego/[0-9.]+ \(.+\)`),
@@ -158,13 +158,13 @@ func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		// https://www.civo.com/api/dns#list-domain-names
 		Route("GET /dns",
-			servermock.ResponseFromInternal("list_domain_names.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("list_domain_names.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("region", "LON1")).
 		// https://www.civo.com/api/dns#create-a-new-dns-record
 		Route("POST /dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
-			servermock.ResponseFromInternal("create_dns_record.json"),
-			servermock.CheckRequestJSONBodyFromInternal("create_dns_record-request.json")).
+			servermock2.ResponseFromInternal("create_dns_record.json"),
+			servermock2.CheckRequestJSONBodyFromInternal("create_dns_record-request.json")).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "abd", "123d==")
@@ -175,18 +175,18 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		// https://www.civo.com/api/dns#list-domain-names
 		Route("GET /dns",
-			servermock.ResponseFromInternal("list_domain_names.json"),
-			servermock.CheckQueryParameter().
+			servermock2.ResponseFromInternal("list_domain_names.json"),
+			servermock2.CheckQueryParameter().
 				With("region", "LON1")).
 		// https://www.civo.com/api/dns#list-dns-records
 		Route("GET /dns/7088fcea-7658-43e6-97fa-273f901978fd/records",
-			servermock.ResponseFromInternal("list_dns_records.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("list_dns_records.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("region", "LON1")).
 		// https://www.civo.com/api/dns#deleting-a-dns-record
 		Route("DELETE /dns/edc5dacf-a2ad-4757-41ee-c12f06259c70/records/76cc107f-fbef-4e2b-b97f-f5d34f4075d3",
-			servermock.ResponseFromInternal("delete_dns_record.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("delete_dns_record.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("region", "LON1")).
 		Build(t)
 

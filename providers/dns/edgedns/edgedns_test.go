@@ -6,7 +6,7 @@ import (
 
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/edgegrid"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/platform/tester"
+	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/stretchr/testify/require"
 )
 

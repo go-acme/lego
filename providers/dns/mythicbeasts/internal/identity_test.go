@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -19,8 +19,8 @@ func mockContext(t *testing.T) context.Context {
 	return context.WithValue(t.Context(), tokenKey, &Token{Token: fakeToken})
 }
 
-func mockBuilderIdentity() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilderIdentity() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
 			client.HTTPClient = server.Client()
@@ -28,17 +28,17 @@ func mockBuilderIdentity() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithBasicAuth("user", "secret"),
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithContentTypeFromURLEncoded())
 }
 
 func TestClient_obtainToken(t *testing.T) {
 	client := mockBuilderIdentity().
 		Route("POST /",
-			servermock.ResponseFromFixture("token.json"),
-			servermock.CheckForm().Strict().
+			servermock2.ResponseFromFixture("token.json"),
+			servermock2.CheckForm().Strict().
 				With("grant_type", "client_credentials")).
 		Build(t)
 
@@ -55,8 +55,8 @@ func TestClient_obtainToken(t *testing.T) {
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
 	client := mockBuilderIdentity().
 		Route("POST /",
-			servermock.ResponseFromFixture("token.json"),
-			servermock.CheckForm().Strict().
+			servermock2.ResponseFromFixture("token.json"),
+			servermock2.CheckForm().Strict().
 				With("grant_type", "client_credentials")).
 		Build(t)
 

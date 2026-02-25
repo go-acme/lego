@@ -7,13 +7,13 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("secret")
 			client.baseURL, _ = url.Parse(server.URL)
@@ -21,16 +21,16 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders(),
+		servermock2.CheckHeader().WithJSONHeaders(),
 	)
 }
 
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/example.com/records",
-			servermock.ResponseFromFixture("add_record.json").
+			servermock2.ResponseFromFixture("add_record.json").
 				WithStatusCode(http.StatusCreated),
-			servermock.CheckRequestJSONBodyFromFixture("add_record-request.json")).
+			servermock2.CheckRequestJSONBodyFromFixture("add_record-request.json")).
 		Build(t)
 
 	record := Record{
@@ -62,7 +62,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/example.com/records",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -80,7 +80,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_RemoveRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/example.com/records/1234567",
-			servermock.Noop().
+			servermock2.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 
@@ -91,7 +91,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 func TestClient_RemoveRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/example.com/records/1234567",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 

@@ -5,12 +5,12 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder(func(server *httptest.Server) (*Client, error) {
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder(func(server *httptest.Server) (*Client, error) {
 		client, err := NewClient("user", "secret")
 		if err != nil {
 			return nil, err
@@ -26,7 +26,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_CreateTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /txt-create.php",
-			servermock.ResponseFromFixture("success.xml")).
+			servermock2.ResponseFromFixture("success.xml")).
 		Build(t)
 
 	err := client.CreateTXTRecord(t.Context(), "_acme-challenge.example.com", "value")
@@ -36,7 +36,7 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 func TestClient_CreateTXTRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /txt-create.php",
-			servermock.ResponseFromFixture("error.xml")).
+			servermock2.ResponseFromFixture("error.xml")).
 		Build(t)
 
 	err := client.CreateTXTRecord(t.Context(), "_acme-challenge.example.com", "value")
@@ -46,7 +46,7 @@ func TestClient_CreateTXTRecord_error(t *testing.T) {
 func TestClient_DeleteTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /txt-delete.php",
-			servermock.ResponseFromFixture("success.xml")).
+			servermock2.ResponseFromFixture("success.xml")).
 		Build(t)
 
 	err := client.DeleteTXTRecord(t.Context(), "_acme-challenge.example.com", "value")
@@ -56,7 +56,7 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 func TestClient_DeleteTXTRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /txt-delete.php",
-			servermock.ResponseFromFixture("error.xml")).
+			servermock2.ResponseFromFixture("error.xml")).
 		Build(t)
 
 	err := client.DeleteTXTRecord(t.Context(), "_acme-challenge.example.com", "value")

@@ -3,7 +3,7 @@ package internal
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -11,14 +11,14 @@ import (
 const fakeToken = "BAMAuthToken: dQfuRMTUxNjc3MjcyNDg1ODppcGFybXM="
 
 func TestClient_CreateAuthenticatedContext(t *testing.T) {
-	client := servermock.NewBuilder[*Client](setupClient).
+	client := servermock2.NewBuilder[*Client](setupClient).
 		Route("GET /Services/REST/v1/login",
-			servermock.RawStringResponse(fakeToken),
-			servermock.CheckQueryParameter().
+			servermock2.RawStringResponse(fakeToken),
+			servermock2.CheckQueryParameter().
 				With("username", "user").
 				With("password", "secret")).
 		Route("DELETE /Services/REST/v1/delete", nil,
-			servermock.CheckHeader().
+			servermock2.CheckHeader().
 				WithAuthorization(fakeToken)).
 		Build(t)
 

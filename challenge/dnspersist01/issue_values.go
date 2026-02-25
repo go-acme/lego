@@ -150,8 +150,3 @@ func ParseIssueValue(value string) (IssueValue, error) {
 
 	return parsed, nil
 }
-
-// Pointer returns a pointer to v.
-// TODO(ldez) factorize.
-// TODO(ldez) it must be replaced with the builtin 'new' function when min Go 1.26.
-func Pointer[T any](v T) *T { return &v }

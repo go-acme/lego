@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("secret")
 			if err != nil {
@@ -24,7 +24,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders().
 			With(AuthHeader, "secret"),
 	)
@@ -33,8 +33,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_CreateRRSet(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/resourceRecordSets",
-			servermock.ResponseFromFixture("createResourceRecordSet.json"),
-			servermock.CheckRequestJSONBodyFromFixture("createResourceRecordSet-request.json"),
+			servermock2.ResponseFromFixture("createResourceRecordSet.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("createResourceRecordSet-request.json"),
 		).
 		Build(t)
 
@@ -62,7 +62,7 @@ func TestClient_CreateRRSet(t *testing.T) {
 func TestClient_GetRRSet(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains/example.com/resourceRecordSets/_acme-challenge.example.com./TXT",
-			servermock.ResponseFromFixture("getResourceRecordSet.json"),
+			servermock2.ResponseFromFixture("getResourceRecordSet.json"),
 		).
 		Build(t)
 
@@ -83,7 +83,7 @@ func TestClient_GetRRSet(t *testing.T) {
 func TestClient_GetRRSet_error_404(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /domains/example.com/resourceRecordSets/_acme-challenge.example.com./TXT",
-			servermock.ResponseFromFixture("error_404.json").
+			servermock2.ResponseFromFixture("error_404.json").
 				WithStatusCode(http.StatusNotFound),
 		).
 		Build(t)
@@ -98,8 +98,8 @@ func TestClient_GetRRSet_error_404(t *testing.T) {
 func TestClient_UpdateRRSet(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /domains/example.com/resourceRecordSets/_acme-challenge.example.com./TXT",
-			servermock.ResponseFromFixture("updateResourceRecordSet.json"),
-			servermock.CheckRequestJSONBodyFromFixture("updateResourceRecordSet-request.json"),
+			servermock2.ResponseFromFixture("updateResourceRecordSet.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("updateResourceRecordSet-request.json"),
 		).
 		Build(t)
 
@@ -127,7 +127,7 @@ func TestClient_UpdateRRSet(t *testing.T) {
 func TestClient_DeleteRRSet(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/resourceRecordSets/_acme-challenge.example.com./TXT",
-			servermock.Noop().
+			servermock2.Noop().
 				WithStatusCode(http.StatusNoContent),
 		).
 		Build(t)
@@ -139,7 +139,7 @@ func TestClient_DeleteRRSet(t *testing.T) {
 func TestClient_DeleteRRSet_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/resourceRecordSets/_acme-challenge.example.com./TXT",
-			servermock.ResponseFromFixture("error_401.json").
+			servermock2.ResponseFromFixture("error_401.json").
 				WithStatusCode(http.StatusUnauthorized),
 		).
 		Build(t)

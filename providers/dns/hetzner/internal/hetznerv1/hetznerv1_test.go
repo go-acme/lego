@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -119,8 +119,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(
+func mockBuilder() *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.APIToken = "secret"
@@ -135,7 +135,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders().
 			WithAuthorization("Bearer secret"),
 	)
@@ -144,10 +144,10 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/add_records",
-			servermock.ResponseFromFixture("add_rrset_records.json"),
-			servermock.CheckRequestJSONBodyFromFixture("add_rrset_records-request.json")).
+			servermock2.ResponseFromFixture("add_rrset_records.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("add_rrset_records-request.json")).
 		Route("GET /actions/1",
-			servermock.ResponseFromFixture("get_action_success.json")).
+			servermock2.ResponseFromFixture("get_action_success.json")).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "", "foobar")
@@ -157,10 +157,10 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_Present_error(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/add_records",
-			servermock.ResponseFromFixture("add_rrset_records.json"),
-			servermock.CheckRequestJSONBodyFromFixture("add_rrset_records-request.json")).
+			servermock2.ResponseFromFixture("add_rrset_records.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("add_rrset_records-request.json")).
 		Route("GET /actions/1",
-			servermock.ResponseFromFixture("get_action_error.json")).
+			servermock2.ResponseFromFixture("get_action_error.json")).
 		Build(t)
 
 	provider.config.PollingInterval = 20 * time.Millisecond
@@ -173,10 +173,10 @@ func TestDNSProvider_Present_error(t *testing.T) {
 func TestDNSProvider_Present_running(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/add_records",
-			servermock.ResponseFromFixture("add_rrset_records.json"),
-			servermock.CheckRequestJSONBodyFromFixture("add_rrset_records-request.json")).
+			servermock2.ResponseFromFixture("add_rrset_records.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("add_rrset_records-request.json")).
 		Route("GET /actions/1",
-			servermock.ResponseFromFixture("get_action_running.json")).
+			servermock2.ResponseFromFixture("get_action_running.json")).
 		Build(t)
 
 	provider.config.PollingInterval = 20 * time.Millisecond
@@ -189,10 +189,10 @@ func TestDNSProvider_Present_running(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/remove_records",
-			servermock.ResponseFromFixture("remove_rrset_records.json"),
-			servermock.CheckRequestJSONBodyFromFixture("remove_rrset_records-request.json")).
+			servermock2.ResponseFromFixture("remove_rrset_records.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("remove_rrset_records-request.json")).
 		Route("GET /actions/1",
-			servermock.ResponseFromFixture("get_action_success.json")).
+			servermock2.ResponseFromFixture("get_action_success.json")).
 		Build(t)
 
 	err := provider.CleanUp(t.Context(), "example.com", "", "foobar")
@@ -202,10 +202,10 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 func TestDNSProvider_CleanUp_error(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/remove_records",
-			servermock.ResponseFromFixture("remove_rrset_records.json"),
-			servermock.CheckRequestJSONBodyFromFixture("remove_rrset_records-request.json")).
+			servermock2.ResponseFromFixture("remove_rrset_records.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("remove_rrset_records-request.json")).
 		Route("GET /actions/1",
-			servermock.ResponseFromFixture("get_action_error.json")).
+			servermock2.ResponseFromFixture("get_action_error.json")).
 		Build(t)
 
 	provider.config.PollingInterval = 20 * time.Millisecond
@@ -218,10 +218,10 @@ func TestDNSProvider_CleanUp_error(t *testing.T) {
 func TestDNSProvider_CleanUp_running(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /zones/example.com/rrsets/_acme-challenge/TXT/actions/remove_records",
-			servermock.ResponseFromFixture("remove_rrset_records.json"),
-			servermock.CheckRequestJSONBodyFromFixture("remove_rrset_records-request.json")).
+			servermock2.ResponseFromFixture("remove_rrset_records.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("remove_rrset_records-request.json")).
 		Route("GET /actions/1",
-			servermock.ResponseFromFixture("get_action_running.json")).
+			servermock2.ResponseFromFixture("get_action_running.json")).
 		Build(t)
 
 	provider.config.PollingInterval = 20 * time.Millisecond

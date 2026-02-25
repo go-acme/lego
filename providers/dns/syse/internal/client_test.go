@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient(map[string]string{
 				"example.com": "secret",
@@ -26,7 +26,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders(),
 	)
 }
@@ -34,8 +34,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/example.com",
-			servermock.ResponseFromFixture("create_record.json"),
-			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
+			servermock2.ResponseFromFixture("create_record.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("create_record-request.json")).
 		Build(t)
 
 	record := Record{
@@ -64,7 +64,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_CreateRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/example.com",
-			servermock.RawStringResponse(http.StatusText(http.StatusUnauthorized)).
+			servermock2.RawStringResponse(http.StatusText(http.StatusUnauthorized)).
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -83,7 +83,7 @@ func TestClient_CreateRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns/example.com/1234",
-			servermock.Noop()).
+			servermock2.Noop()).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "example.com", "1234")
@@ -93,7 +93,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns/example.com/1234",
-			servermock.RawStringResponse(http.StatusText(http.StatusUnauthorized)).
+			servermock2.RawStringResponse(http.StatusText(http.StatusUnauthorized)).
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 

@@ -16,8 +16,8 @@ import (
 	"github.com/go-acme/lego/v5/challenge/dnspersist01"
 	"github.com/go-acme/lego/v5/challenge/http01"
 	"github.com/go-acme/lego/v5/challenge/tlsalpn01"
+	"github.com/go-acme/lego/v5/internal/wait"
 	"github.com/go-acme/lego/v5/log"
-	"github.com/go-acme/lego/v5/platform/wait"
 )
 
 type byType []acme.Challenge

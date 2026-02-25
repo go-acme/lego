@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/nrdcg/oci-go-sdk/common/v1065"
 	"github.com/stretchr/testify/require"
 )
@@ -241,18 +241,18 @@ func TestNewDNSProvider_instance_principal(t *testing.T) {
 
 			envTest.ClearEnv()
 
-			serverURL := servermock.NewBuilder(
+			serverURL := servermock2.NewBuilder(
 				func(server *httptest.Server) (string, error) {
 					return server.URL, nil
 				}).
-				Route("GET /instance/region", servermock.RawStringResponse("oc1")).
+				Route("GET /instance/region", servermock2.RawStringResponse("oc1")).
 				// To generate fake certificates:
 				//     go run `go env GOROOT`/src/crypto/tls/generate_cert.go --host example.org --ca --start-date "Jan 1 00:00:00 1970" --duration=1000000h
-				Route("GET /identity/cert.pem", servermock.ResponseFromFixture("cert.pem")).
-				Route("GET /identity/key.pem", servermock.ResponseFromFixture("key.pem")).
-				Route("GET /identity/intermediate.pem", servermock.ResponseFromFixture("cert.pem")).
+				Route("GET /identity/cert.pem", servermock2.ResponseFromFixture("cert.pem")).
+				Route("GET /identity/key.pem", servermock2.ResponseFromFixture("key.pem")).
+				Route("GET /identity/intermediate.pem", servermock2.ResponseFromFixture("cert.pem")).
 				// https://github.com/oracle/oci-go-sdk/blob/413a2f277f95c5eb76e26a0e0833c396a518bf50/common/auth/jwt_test.go#L12
-				Route("POST /v1/x509", servermock.RawStringResponse(`{"token":"eyJhbGciOiJSUzI1NiIsImtpZCI6ImFzdyIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJvcGMub3JhY2xlLmNvbSIsImV4cCI6MTUxMTgzODc5MywiaWF0IjoxNTExODE3MTkzLCJpc3MiOiJhdXRoU2VydmljZS5vcmFjbGUuY29tIiwib3BjLWNlcnR0eXBlIjoiaW5zdGFuY2UiLCJvcGMtY29tcGFydG1lbnQiOiJvY2lkMS5jb21wYXJ0bWVudC5vYzEuLmJsdWhibHVoYmx1aCIsIm9wYy1pbnN0YW5jZSI6Im9jaWQxLmluc3RhbmNlLm9jMS5waHguYmx1aGJsdWhibHVoIiwib3BjLXRlbmFudCI6Im9jaWR2MTp0ZW5hbmN5Om9jMTpwaHg6MTIzNDU2Nzg5MDpibHVoYmx1aGJsdWgiLCJwdHlwZSI6Imluc3RhbmNlIiwic3ViIjoib2NpZDEuaW5zdGFuY2Uub2MxLnBoeC5ibHVoYmx1aGJsdWgiLCJ0ZW5hbnQiOiJvY2lkdjE6dGVuYW5jeTpvYzE6cGh4OjEyMzQ1Njc4OTA6Ymx1aGJsdWhibHVoIiwidHR5cGUiOiJ4NTA5In0.zen7q2yJSpMjzH4ym_H7VEwZA0-vTT4Wcild-HRfLxX6A1ej4tlpACa7A24j5JoZYI4mHooZVJ8e7ZezFenK0zZx5j8RbIjsqJKwroYXExOiBXLCUwMWOLXIndEsUzzGLqnPfKHXd80vrhMLmtkVTCJqBMzvPUSYkH_ciWgmjP9m0YETdQ9ifghkADhZGt9IlnOswg0s3Bx9ASwxFZEtom0BmU9GwEuITTTZfKvndk785BlNeZMOjhovaD97-LYpv5B_PiWEz8zialK5zxjijLCw06zyA8CQRQqmVCagNUPilfz_BcPyImzvFDuzQcPyDkTcsB7weX35tafHmA_Ul"}`)).
+				Route("POST /v1/x509", servermock2.RawStringResponse(`{"token":"eyJhbGciOiJSUzI1NiIsImtpZCI6ImFzdyIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJvcGMub3JhY2xlLmNvbSIsImV4cCI6MTUxMTgzODc5MywiaWF0IjoxNTExODE3MTkzLCJpc3MiOiJhdXRoU2VydmljZS5vcmFjbGUuY29tIiwib3BjLWNlcnR0eXBlIjoiaW5zdGFuY2UiLCJvcGMtY29tcGFydG1lbnQiOiJvY2lkMS5jb21wYXJ0bWVudC5vYzEuLmJsdWhibHVoYmx1aCIsIm9wYy1pbnN0YW5jZSI6Im9jaWQxLmluc3RhbmNlLm9jMS5waHguYmx1aGJsdWhibHVoIiwib3BjLXRlbmFudCI6Im9jaWR2MTp0ZW5hbmN5Om9jMTpwaHg6MTIzNDU2Nzg5MDpibHVoYmx1aGJsdWgiLCJwdHlwZSI6Imluc3RhbmNlIiwic3ViIjoib2NpZDEuaW5zdGFuY2Uub2MxLnBoeC5ibHVoYmx1aGJsdWgiLCJ0ZW5hbnQiOiJvY2lkdjE6dGVuYW5jeTpvYzE6cGh4OjEyMzQ1Njc4OTA6Ymx1aGJsdWhibHVoIiwidHR5cGUiOiJ4NTA5In0.zen7q2yJSpMjzH4ym_H7VEwZA0-vTT4Wcild-HRfLxX6A1ej4tlpACa7A24j5JoZYI4mHooZVJ8e7ZezFenK0zZx5j8RbIjsqJKwroYXExOiBXLCUwMWOLXIndEsUzzGLqnPfKHXd80vrhMLmtkVTCJqBMzvPUSYkH_ciWgmjP9m0YETdQ9ifghkADhZGt9IlnOswg0s3Bx9ASwxFZEtom0BmU9GwEuITTTZfKvndk785BlNeZMOjhovaD97-LYpv5B_PiWEz8zialK5zxjijLCw06zyA8CQRQqmVCagNUPilfz_BcPyImzvFDuzQcPyDkTcsB7weX35tafHmA_Ul"}`)).
 				Build(t)
 
 			envVars := map[string]string{

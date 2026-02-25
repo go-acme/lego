@@ -7,13 +7,13 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder(
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("secret")
 			client.HTTPClient = server.Client()
@@ -21,7 +21,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders().
 			With("API-TOKEN", "secret"),
 	)
@@ -30,9 +30,9 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/dns",
-			servermock.ResponseFromFixture("add_record.json"),
-			servermock.CheckQueryParameter().Strict(),
-			servermock.CheckRequestJSONBodyFromFixture("add_record-request.json")).
+			servermock2.ResponseFromFixture("add_record.json"),
+			servermock2.CheckQueryParameter().Strict(),
+			servermock2.CheckRequestJSONBodyFromFixture("add_record-request.json")).
 		Build(t)
 
 	record := Record{
@@ -59,9 +59,9 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/dns",
-			servermock.ResponseFromFixture("delete_record.json"),
-			servermock.CheckQueryParameter().Strict(),
-			servermock.CheckRequestJSONBodyFromFixture("delete_record-request.json")).
+			servermock2.ResponseFromFixture("delete_record.json"),
+			servermock2.CheckQueryParameter().Strict(),
+			servermock2.CheckRequestJSONBodyFromFixture("delete_record-request.json")).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "example.com", "12345")
@@ -71,7 +71,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/dns",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
@@ -82,7 +82,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 func TestClient_DeleteRecord_error_other(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/dns",
-			servermock.ResponseFromFixture("error_other.json").
+			servermock2.ResponseFromFixture("error_other.json").
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
 

@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -118,8 +118,8 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(
+func mockBuilder() *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.APIKey = "secret"
@@ -134,7 +134,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 			return provider, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders().
 			With("API-TOKEN", "secret"),
 	)
@@ -143,9 +143,9 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /domains/example.com/dns",
-			servermock.ResponseFromInternal("add_record.json"),
-			servermock.CheckQueryParameter().Strict(),
-			servermock.CheckRequestJSONBodyFromInternal("add_record-request.json")).
+			servermock2.ResponseFromInternal("add_record.json"),
+			servermock2.CheckQueryParameter().Strict(),
+			servermock2.CheckRequestJSONBodyFromInternal("add_record-request.json")).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
@@ -155,9 +155,9 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("DELETE /domains/example.com/dns",
-			servermock.ResponseFromInternal("delete_record.json"),
-			servermock.CheckQueryParameter().Strict(),
-			servermock.CheckRequestJSONBodyFromInternal("delete_record-request.json")).
+			servermock2.ResponseFromInternal("delete_record.json"),
+			servermock2.CheckQueryParameter().Strict(),
+			servermock2.CheckRequestJSONBodyFromInternal("delete_record-request.json")).
 		Build(t)
 
 	provider.recordIDs["abc"] = "12345"

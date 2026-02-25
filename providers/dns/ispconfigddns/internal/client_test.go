@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,12 +21,12 @@ func setupClient(server *httptest.Server) (*Client, error) {
 }
 
 func TestClient_AddTXTRecord(t *testing.T) {
-	client := servermock.NewBuilder[*Client](setupClient).
+	client := servermock2.NewBuilder[*Client](setupClient).
 		Route("POST /ddns/update.php",
-			servermock.Noop(),
-			servermock.CheckHeader().
+			servermock2.Noop(),
+			servermock2.CheckHeader().
 				WithBasicAuth("anonymous", "secret"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("action", "add").
 				With("zone", "example.com").
 				With("type", "TXT").
@@ -40,9 +40,9 @@ func TestClient_AddTXTRecord(t *testing.T) {
 }
 
 func TestClient_AddTXTRecord_error(t *testing.T) {
-	client := servermock.NewBuilder[*Client](setupClient).
+	client := servermock2.NewBuilder[*Client](setupClient).
 		Route("POST /ddns/update.php",
-			servermock.RawStringResponse("Missing or invalid token.").
+			servermock2.RawStringResponse("Missing or invalid token.").
 				WithStatusCode(http.StatusUnauthorized),
 		).
 		Build(t)
@@ -52,12 +52,12 @@ func TestClient_AddTXTRecord_error(t *testing.T) {
 }
 
 func TestClient_DeleteTXTRecord(t *testing.T) {
-	client := servermock.NewBuilder[*Client](setupClient).
+	client := servermock2.NewBuilder[*Client](setupClient).
 		Route("DELETE /ddns/update.php",
-			servermock.Noop(),
-			servermock.CheckHeader().
+			servermock2.Noop(),
+			servermock2.CheckHeader().
 				WithBasicAuth("anonymous", "secret"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.CheckQueryParameter().Strict().
 				With("action", "delete").
 				With("zone", "example.com").
 				With("type", "TXT").
@@ -71,9 +71,9 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 }
 
 func TestClient_DeleteTXTRecord_error(t *testing.T) {
-	client := servermock.NewBuilder[*Client](setupClient).
+	client := servermock2.NewBuilder[*Client](setupClient).
 		Route("DELETE /ddns/update.php",
-			servermock.RawStringResponse("Missing or invalid token.").
+			servermock2.RawStringResponse("Missing or invalid token.").
 				WithStatusCode(http.StatusUnauthorized),
 		).
 		Build(t)

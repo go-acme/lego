@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
-	"github.com/go-acme/lego/v5/providers/dns/internal/ptr"
+	"github.com/go-acme/lego/v5/internal/ptr"
 	"github.com/stretchr/testify/require"
 )
 

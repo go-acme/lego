@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -42,10 +42,10 @@ func TestClient_SetRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client := servermock.NewBuilder[*Client](setupClient, servermock.CheckHeader().WithJSONHeaders()).
+			client := servermock2.NewBuilder[*Client](setupClient, servermock2.CheckHeader().WithJSONHeaders()).
 				Route("PUT /host",
-					servermock.RawStringResponse(test.response),
-					servermock.CheckRequestJSONBody(`{"userid":"foo","apikey":"secret","hostname":"example.com","value":"txttxttxt","ttl":10,"type":"TXT"}`)).
+					servermock2.RawStringResponse(test.response),
+					servermock2.CheckRequestJSONBody(`{"userid":"foo","apikey":"secret","hostname":"example.com","value":"txttxttxt","ttl":10,"type":"TXT"}`)).
 				Build(t)
 
 			err := client.SetRecord(t.Context(), "example.com", "txttxttxt", 10)

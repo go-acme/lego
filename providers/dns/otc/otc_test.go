@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/go-acme/lego/v5/providers/dns/otc/internal"
 	"github.com/stretchr/testify/require"
 )
@@ -219,12 +219,12 @@ func TestLiveCleanUp(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder(false).
 		Route("GET /v2/zones",
-			servermock.ResponseFromInternal("zones_GET.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("zones_GET.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Route("POST /v2/zones/123123/recordsets",
-			servermock.Noop(),
-			servermock.CheckRequestJSONBodyFromInternal("zones-recordsets_POST-request.json")).
+			servermock2.Noop(),
+			servermock2.CheckRequestJSONBodyFromInternal("zones-recordsets_POST-request.json")).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "", "123d==")
@@ -234,13 +234,13 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_Present_private(t *testing.T) {
 	provider := mockBuilder(true).
 		Route("GET /v2/zones",
-			servermock.ResponseFromInternal("zones_GET.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("zones_GET.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "example.com.").
 				With("type", "private")).
 		Route("POST /v2/zones/123123/recordsets",
-			servermock.Noop(),
-			servermock.CheckRequestJSONBodyFromInternal("zones-recordsets_POST-request.json")).
+			servermock2.Noop(),
+			servermock2.CheckRequestJSONBodyFromInternal("zones-recordsets_POST-request.json")).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "", "123d==")
@@ -250,8 +250,8 @@ func TestDNSProvider_Present_private(t *testing.T) {
 func TestDNSProvider_Present_emptyZone(t *testing.T) {
 	provider := mockBuilder(false).
 		Route("GET /v2/zones",
-			servermock.ResponseFromInternal("zones_GET_empty.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("zones_GET_empty.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Build(t)
 
@@ -262,16 +262,16 @@ func TestDNSProvider_Present_emptyZone(t *testing.T) {
 func TestDNSProvider_Cleanup(t *testing.T) {
 	provider := mockBuilder(false).
 		Route("GET /v2/zones",
-			servermock.ResponseFromInternal("zones_GET.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("zones_GET.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Route("GET /v2/zones/123123/recordsets",
-			servermock.ResponseFromInternal("zones-recordsets_GET.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("zones-recordsets_GET.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT")).
 		Route("DELETE /v2/zones/123123/recordsets/321321",
-			servermock.ResponseFromInternal("zones-recordsets_DELETE.json")).
+			servermock2.ResponseFromInternal("zones-recordsets_DELETE.json")).
 		Build(t)
 
 	err := provider.CleanUp(t.Context(), "example.com", "", "123d==")
@@ -281,17 +281,17 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 func TestDNSProvider_Cleanup_private(t *testing.T) {
 	provider := mockBuilder(true).
 		Route("GET /v2/zones",
-			servermock.ResponseFromInternal("zones_GET.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("zones_GET.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "example.com.").
 				With("type", "private")).
 		Route("GET /v2/zones/123123/recordsets",
-			servermock.ResponseFromInternal("zones-recordsets_GET.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("zones-recordsets_GET.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT")).
 		Route("DELETE /v2/zones/123123/recordsets/321321",
-			servermock.ResponseFromInternal("zones-recordsets_DELETE.json")).
+			servermock2.ResponseFromInternal("zones-recordsets_DELETE.json")).
 		Build(t)
 
 	err := provider.CleanUp(t.Context(), "example.com", "", "123d==")
@@ -301,12 +301,12 @@ func TestDNSProvider_Cleanup_private(t *testing.T) {
 func TestDNSProvider_Cleanup_emptyRecordset(t *testing.T) {
 	provider := mockBuilder(false).
 		Route("GET /v2/zones",
-			servermock.ResponseFromInternal("zones_GET.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("zones_GET.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "example.com.")).
 		Route("GET /v2/zones/123123/recordsets",
-			servermock.ResponseFromInternal("zones-recordsets_GET_empty.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromInternal("zones-recordsets_GET_empty.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge.example.com.").
 				With("type", "TXT")).
 		Build(t)
@@ -315,8 +315,8 @@ func TestDNSProvider_Cleanup_emptyRecordset(t *testing.T) {
 	require.EqualError(t, err, "otc: unable to get record _acme-challenge.example.com. for zone example.com: record not found")
 }
 
-func mockBuilder(private bool) *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(
+func mockBuilder(private bool) *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.HTTPClient = server.Client()
@@ -329,7 +329,7 @@ func mockBuilder(private bool) *servermock.Builder[*DNSProvider] {
 
 			return NewDNSProviderConfig(config)
 		},
-		servermock.CheckHeader().WithJSONHeaders(),
+		servermock2.CheckHeader().WithJSONHeaders(),
 	).
 		Route("POST /v3/auth/token", internal.IdentityHandlerMock())
 }

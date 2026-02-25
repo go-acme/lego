@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -51,8 +51,8 @@ func TestDNSProvider_Present(t *testing.T) {
 
 			provider := mockBuilder().
 				Route("GET /",
-					servermock.ResponseFromInternal(test.getHostsResponse),
-					servermock.CheckForm().Strict().
+					servermock2.ResponseFromInternal(test.getHostsResponse),
+					servermock2.CheckForm().Strict().
 						With("ClientIp", "10.0.0.1").
 						With("Command", "namecheap.domains.dns.getHosts").
 						With("SLD", ch.sld).
@@ -62,8 +62,8 @@ func TestDNSProvider_Present(t *testing.T) {
 						With("ApiUser", "foo"),
 				).
 				Route("POST /",
-					servermock.ResponseFromInternal(test.setHostsResponse),
-					servermock.CheckForm().
+					servermock2.ResponseFromInternal(test.setHostsResponse),
+					servermock2.CheckForm().
 						With("ClientIp", "10.0.0.1").
 						With("Command", "namecheap.domains.dns.setHosts").
 						With("SLD", ch.sld).
@@ -91,8 +91,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 			provider := mockBuilder().
 				Route("GET /",
-					servermock.ResponseFromInternal(test.getHostsResponse),
-					servermock.CheckForm().Strict().
+					servermock2.ResponseFromInternal(test.getHostsResponse),
+					servermock2.CheckForm().Strict().
 						With("ClientIp", "10.0.0.1").
 						With("Command", "namecheap.domains.dns.getHosts").
 						With("SLD", ch.sld).
@@ -102,8 +102,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 						With("ApiUser", "foo"),
 				).
 				Route("POST /",
-					servermock.ResponseFromInternal(test.setHostsResponse),
-					servermock.CheckForm().
+					servermock2.ResponseFromInternal(test.setHostsResponse),
+					servermock2.CheckForm().
 						With("ClientIp", "10.0.0.1").
 						With("Command", "namecheap.domains.dns.setHosts").
 						With("SLD", ch.sld).
@@ -175,8 +175,8 @@ func Test_newPseudoRecord_domainSplit(t *testing.T) {
 	}
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
+func mockBuilder() *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(func(server *httptest.Server) (*DNSProvider, error) {
 		config := NewDefaultConfig()
 		config.HTTPClient = server.Client()
 		config.BaseURL = server.URL

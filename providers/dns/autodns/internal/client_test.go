@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret", 123)
 			client.HTTPClient = server.Client()
@@ -20,7 +20,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithBasicAuth("user", "secret").
 			WithJSONHeaders())
 }
@@ -28,9 +28,9 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_AddRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zone/example.com/_stream",
-			servermock.ResponseFromFixture("add_record.json"),
-			servermock.CheckRequestJSONBodyFromFixture("add_record-request.json"),
-			servermock.CheckHeader().
+			servermock2.ResponseFromFixture("add_record.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("add_record-request.json"),
+			servermock2.CheckHeader().
 				With("X-Domainrobot-Context", "123")).
 		Build(t)
 
@@ -93,7 +93,7 @@ func TestClient_AddRecords(t *testing.T) {
 func TestClient_AddRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zone/example.com/_stream",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -111,9 +111,9 @@ func TestClient_AddRecords_error(t *testing.T) {
 func TestClient_RemoveRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zone/example.com/_stream",
-			servermock.ResponseFromFixture("remove_record.json"),
-			servermock.CheckRequestJSONBodyFromFixture("remove_record-request.json"),
-			servermock.CheckHeader().
+			servermock2.ResponseFromFixture("remove_record.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("remove_record-request.json"),
+			servermock2.CheckHeader().
 				With("X-Domainrobot-Context", "123")).
 		Build(t)
 

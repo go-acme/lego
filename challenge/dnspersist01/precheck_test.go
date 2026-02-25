@@ -3,20 +3,20 @@ package dnspersist01
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/dnsmock"
+	dnsmock2 "github.com/go-acme/lego/v5/internal/tester/dnsmock"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_preCheck_checkDNSPropagation(t *testing.T) {
-	addr := dnsmock.NewServer().
+	addr := dnsmock2.NewServer().
 		Query("ns0.lego.localhost. A",
-			dnsmock.Answer(fakeA("ns0.lego.localhost.", "127.0.0.1"))).
+			dnsmock2.Answer(fakeA("ns0.lego.localhost.", "127.0.0.1"))).
 		Query("ns1.lego.localhost. A",
-			dnsmock.Answer(fakeA("ns1.lego.localhost.", "127.0.0.1"))).
+			dnsmock2.Answer(fakeA("ns1.lego.localhost.", "127.0.0.1"))).
 		Query("example.com. TXT",
-			dnsmock.Answer(
+			dnsmock2.Answer(
 				fakeTXT("example.com.", "one", 10),
 				fakeTXT("example.com.", "two", 10),
 				fakeTXT("example.com.", "three", 10),
@@ -25,7 +25,7 @@ func Test_preCheck_checkDNSPropagation(t *testing.T) {
 			),
 		).
 		Query("acme-staging.api.example.com. TXT",
-			dnsmock.Answer(
+			dnsmock2.Answer(
 				fakeTXT("acme-staging.api.example.com.", "one", 10),
 				fakeTXT("acme-staging.api.example.com.", "two", 10),
 				fakeTXT("acme-staging.api.example.com.", "three", 10),
@@ -33,11 +33,11 @@ func Test_preCheck_checkDNSPropagation(t *testing.T) {
 				fakeTXT("acme-staging.api.example.com.", "five", 10),
 			),
 		).
-		Query("acme-staging.api.example.com. SOA", dnsmock.Error(dns.RcodeNameError)).
-		Query("api.example.com. SOA", dnsmock.Error(dns.RcodeNameError)).
-		Query("example.com. SOA", dnsmock.SOA("")).
+		Query("acme-staging.api.example.com. SOA", dnsmock2.Error(dns.RcodeNameError)).
+		Query("api.example.com. SOA", dnsmock2.Error(dns.RcodeNameError)).
+		Query("example.com. SOA", dnsmock2.SOA("")).
 		Query("example.com. NS",
-			dnsmock.Answer(
+			dnsmock2.Answer(
 				fakeNS("example.com.", "ns0.lego.localhost."),
 				fakeNS("example.com.", "ns1.lego.localhost."),
 			),

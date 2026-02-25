@@ -11,8 +11,8 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/log"
-	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/bluecat/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )

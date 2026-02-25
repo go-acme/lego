@@ -5,13 +5,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("a", "b", "c")
 			if err != nil {
@@ -23,7 +23,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders(),
+		servermock2.CheckHeader().WithJSONHeaders(),
 	)
 }
 
@@ -130,8 +130,8 @@ func TestGetDNSRecordIdx(t *testing.T) {
 
 func TestClient_GetDNSRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /", servermock.ResponseFromFixture("get_dns_records.json"),
-			servermock.CheckRequestJSONBodyFromFixture("get_dns_records-request.json")).
+		Route("POST /", servermock2.ResponseFromFixture("get_dns_records.json"),
+			servermock2.CheckRequestJSONBodyFromFixture("get_dns_records-request.json")).
 		Build(t)
 
 	expected := []DNSRecord{{
@@ -166,17 +166,17 @@ func TestClient_GetDNSRecords_errors(t *testing.T) {
 	}{
 		{
 			desc:     "HTTP error",
-			handler:  servermock.Noop().WithStatusCode(http.StatusInternalServerError),
+			handler:  servermock2.Noop().WithStatusCode(http.StatusInternalServerError),
 			expected: `error when sending the request: unexpected status code: [status code: 500] body: `,
 		},
 		{
 			desc:     "API error",
-			handler:  servermock.ResponseFromFixture("get_dns_records_error.json"),
+			handler:  servermock2.ResponseFromFixture("get_dns_records_error.json"),
 			expected: `error when sending the request: an error occurred during the action infoDnsRecords: [Status=error, StatusCode=4013, ShortMessage=Validation Error., LongMessage=Message is empty.]`,
 		},
 		{
 			desc:     "responsedata marshaling error",
-			handler:  servermock.ResponseFromFixture("get_dns_records_error_unmarshal.json"),
+			handler:  servermock2.ResponseFromFixture("get_dns_records_error_unmarshal.json"),
 			expected: `error when sending the request: unable to unmarshal response: [status code: 200] body: "" error: json: cannot unmarshal string into Go value of type internal.InfoDNSRecordsResponse`,
 		},
 	}

@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,10 +22,10 @@ func setupClient(credentials map[string]string) func(server *httptest.Server) (*
 func TestClient_Add(t *testing.T) {
 	txtValue := "123456789012"
 
-	client := servermock.NewBuilder[*Client](setupClient(map[string]string{"example.org": "secret"})).
+	client := servermock2.NewBuilder[*Client](setupClient(map[string]string{"example.org": "secret"})).
 		Route("POST /",
-			servermock.RawStringResponse(fmt.Sprintf("%s %s", successCode, txtValue)),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.RawStringResponse(fmt.Sprintf("%s %s", successCode, txtValue)),
+			servermock2.CheckQueryParameter().Strict().
 				With("acme", addAction).With("txt", txtValue)).
 		Build(t)
 
@@ -36,10 +36,10 @@ func TestClient_Add(t *testing.T) {
 func TestClient_Add_error(t *testing.T) {
 	txtValue := "123456789012"
 
-	client := servermock.NewBuilder[*Client](setupClient(map[string]string{"example.com": "secret"})).
+	client := servermock2.NewBuilder[*Client](setupClient(map[string]string{"example.com": "secret"})).
 		Route("POST /",
-			servermock.RawStringResponse(fmt.Sprintf("%s %s", successCode, txtValue)),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.RawStringResponse(fmt.Sprintf("%s %s", successCode, txtValue)),
+			servermock2.CheckQueryParameter().Strict().
 				With("acme", addAction).With("txt", txtValue)).
 		Build(t)
 
@@ -51,10 +51,10 @@ func TestClient_Add_error(t *testing.T) {
 func TestClient_Remove(t *testing.T) {
 	txtValue := "ABCDEFGHIJKL"
 
-	client := servermock.NewBuilder[*Client](setupClient(map[string]string{"example.org": "secret"})).
+	client := servermock2.NewBuilder[*Client](setupClient(map[string]string{"example.org": "secret"})).
 		Route("POST /",
-			servermock.RawStringResponse(fmt.Sprintf("%s %s", successCode, txtValue)),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.RawStringResponse(fmt.Sprintf("%s %s", successCode, txtValue)),
+			servermock2.CheckQueryParameter().Strict().
 				With("acme", removeAction).With("txt", txtValue)).
 		Build(t)
 
@@ -95,10 +95,10 @@ func TestClient_Remove_error(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client := servermock.NewBuilder[*Client](setupClient(map[string]string{"example.com": "secret"})).
+			client := servermock2.NewBuilder[*Client](setupClient(map[string]string{"example.com": "secret"})).
 				Route("POST /",
-					servermock.RawStringResponse(test.response),
-					servermock.CheckQueryParameter().Strict().
+					servermock2.RawStringResponse(test.response),
+					servermock2.CheckQueryParameter().Strict().
 						With("acme", removeAction).With("txt", txtValue)).
 				Build(t)
 

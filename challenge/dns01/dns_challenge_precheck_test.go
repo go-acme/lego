@@ -3,34 +3,34 @@ package dns01
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/dnsmock"
+	dnsmock2 "github.com/go-acme/lego/v5/internal/tester/dnsmock"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_preCheck_checkDNSPropagation(t *testing.T) {
 	mockDefault(t,
-		dnsmock.NewServer().
+		dnsmock2.NewServer().
 			// This line is here to produce an error if the calls don't go on the right DNS server.
-			Query("acme-staging.api.example.com. SOA", dnsmock.Error(dns.RcodeNameError)).
+			Query("acme-staging.api.example.com. SOA", dnsmock2.Error(dns.RcodeNameError)).
 			// This line is here to produce an error if the calls don't go on the right DNS server.
-			Query("api.example.com. SOA", dnsmock.Error(dns.RcodeNameError)).
-			Query("example.com. SOA", dnsmock.SOA("")).
+			Query("api.example.com. SOA", dnsmock2.Error(dns.RcodeNameError)).
+			Query("example.com. SOA", dnsmock2.SOA("")).
 			Query("example.com. NS",
-				dnsmock.Answer(
+				dnsmock2.Answer(
 					fakeNS("example.com.", "ns0.lego.localhost."),
 					fakeNS("example.com.", "ns1.lego.localhost."),
 				),
 			).
 			Build(t),
 		mockResolver(
-			dnsmock.NewServer().
+			dnsmock2.NewServer().
 				Query("ns0.lego.localhost. A",
-					dnsmock.Answer(fakeA("ns0.lego.localhost."))).
+					dnsmock2.Answer(fakeA("ns0.lego.localhost."))).
 				Query("ns1.lego.localhost. A",
-					dnsmock.Answer(fakeA("ns1.lego.localhost."))).
+					dnsmock2.Answer(fakeA("ns1.lego.localhost."))).
 				Query("example.com. TXT",
-					dnsmock.Answer(
+					dnsmock2.Answer(
 						fakeTXT("example.com.", "one"),
 						fakeTXT("example.com.", "two"),
 						fakeTXT("example.com.", "three"),
@@ -82,13 +82,13 @@ func Test_preCheck_checkDNSPropagation(t *testing.T) {
 
 func Test_preCheck_checkDNSPropagation_requireRecursiveNssPropagation(t *testing.T) {
 	// The 2 DNS servers must have the same data as we required full propagation.
-	builder := dnsmock.NewServer().
+	builder := dnsmock2.NewServer().
 		Query("ns0.lego.localhost. A",
-			dnsmock.Answer(fakeA("ns0.lego.localhost."))).
+			dnsmock2.Answer(fakeA("ns0.lego.localhost."))).
 		Query("ns1.lego.localhost. A",
-			dnsmock.Answer(fakeA("ns1.lego.localhost."))).
+			dnsmock2.Answer(fakeA("ns1.lego.localhost."))).
 		Query("example.com. TXT",
-			dnsmock.Answer(
+			dnsmock2.Answer(
 				fakeTXT("example.com.", "one"),
 				fakeTXT("example.com.", "two"),
 				fakeTXT("example.com.", "three"),
@@ -96,9 +96,9 @@ func Test_preCheck_checkDNSPropagation_requireRecursiveNssPropagation(t *testing
 				fakeTXT("example.com.", "five"),
 			),
 		).
-		Query("example.com. SOA", dnsmock.SOA("")).
+		Query("example.com. SOA", dnsmock2.SOA("")).
 		Query("example.com. NS",
-			dnsmock.Answer(
+			dnsmock2.Answer(
 				fakeNS("example.com.", "ns0.lego.localhost."),
 				fakeNS("example.com.", "ns1.lego.localhost."),
 			),

@@ -3,7 +3,7 @@ package dns01
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/dnsmock"
+	dnsmock2 "github.com/go-acme/lego/v5/internal/tester/dnsmock"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -28,9 +28,9 @@ func lookupSoaByFqdnTestCases(t *testing.T) []lookupSoaByFqdnTestCase {
 			zone:      "example.com.",
 			primaryNs: "ns1.example.com.",
 			nameservers: []string{
-				dnsmock.NewServer().
-					Query("mail.example.com. SOA", dnsmock.CNAME("example.com.")).
-					Query("example.com. SOA", dnsmock.SOA("")).
+				dnsmock2.NewServer().
+					Query("mail.example.com. SOA", dnsmock2.CNAME("example.com.")).
+					Query("example.com. SOA", dnsmock2.SOA("")).
 					Build(t).
 					String(),
 			},
@@ -41,9 +41,9 @@ func lookupSoaByFqdnTestCases(t *testing.T) []lookupSoaByFqdnTestCase {
 			zone:      "example.com.",
 			primaryNs: "ns1.example.com.",
 			nameservers: []string{
-				dnsmock.NewServer().
-					Query("foo.example.com. SOA", dnsmock.Error(dns.RcodeNameError)).
-					Query("example.com. SOA", dnsmock.SOA("")).
+				dnsmock2.NewServer().
+					Query("foo.example.com. SOA", dnsmock2.Error(dns.RcodeNameError)).
+					Query("example.com. SOA", dnsmock2.SOA("")).
 					Build(t).
 					String(),
 			},
@@ -54,10 +54,10 @@ func lookupSoaByFqdnTestCases(t *testing.T) []lookupSoaByFqdnTestCase {
 			zone:      "ac.",
 			primaryNs: "ns1.nic.ac.",
 			nameservers: []string{
-				dnsmock.NewServer().
-					Query("example.com.ac. SOA", dnsmock.Error(dns.RcodeNameError)).
-					Query("com.ac. SOA", dnsmock.Error(dns.RcodeNameError)).
-					Query("ac. SOA", dnsmock.SOA("")).
+				dnsmock2.NewServer().
+					Query("example.com.ac. SOA", dnsmock2.Error(dns.RcodeNameError)).
+					Query("com.ac. SOA", dnsmock2.Error(dns.RcodeNameError)).
+					Query("ac. SOA", dnsmock2.SOA("")).
 					Build(t).
 					String(),
 			},
@@ -68,9 +68,9 @@ func lookupSoaByFqdnTestCases(t *testing.T) []lookupSoaByFqdnTestCase {
 			zone:      "example.com.",
 			primaryNs: "ns1.example.com.",
 			nameservers: []string{
-				dnsmock.NewServer().
-					Query("cross-zone-example.example.com. SOA", dnsmock.CNAME("example.org.")).
-					Query("example.com. SOA", dnsmock.SOA("")).
+				dnsmock2.NewServer().
+					Query("cross-zone-example.example.com. SOA", dnsmock2.CNAME("example.org.")).
+					Query("example.com. SOA", dnsmock2.SOA("")).
 					Build(t).
 					String(),
 			},
@@ -80,10 +80,10 @@ func lookupSoaByFqdnTestCases(t *testing.T) []lookupSoaByFqdnTestCase {
 			fqdn: "test.lego.invalid.",
 			zone: "lego.invalid.",
 			nameservers: []string{
-				dnsmock.NewServer().
-					Query("test.lego.invalid. SOA", dnsmock.Error(dns.RcodeNameError)).
-					Query("lego.invalid. SOA", dnsmock.Error(dns.RcodeNameError)).
-					Query("invalid. SOA", dnsmock.Error(dns.RcodeNameError)).
+				dnsmock2.NewServer().
+					Query("test.lego.invalid. SOA", dnsmock2.Error(dns.RcodeNameError)).
+					Query("lego.invalid. SOA", dnsmock2.Error(dns.RcodeNameError)).
+					Query("invalid. SOA", dnsmock2.Error(dns.RcodeNameError)).
 					Build(t).
 					String(),
 			},
@@ -97,9 +97,9 @@ func lookupSoaByFqdnTestCases(t *testing.T) []lookupSoaByFqdnTestCase {
 			nameservers: []string{
 				":7053",
 				":8053",
-				dnsmock.NewServer().
-					Query("mail.example.com. SOA", dnsmock.CNAME("example.com.")).
-					Query("example.com. SOA", dnsmock.SOA("")).
+				dnsmock2.NewServer().
+					Query("mail.example.com. SOA", dnsmock2.CNAME("example.com.")).
+					Query("example.com. SOA", dnsmock2.SOA("")).
 					Build(t).
 					String(),
 			},

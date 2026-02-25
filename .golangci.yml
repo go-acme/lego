@@ -239,7 +239,7 @@ linters:
         text: '`payed` is a misspelling of `paid`'
         linters:
           - misspell
-      - path: platform/tester/env_test.go
+      - path: internal/tester/env_test.go
         linters:
           - thelper
       - path: providers/dns/oraclecloud/oraclecloud_test.go

@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder() *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client, err := NewClient("user", "secret")
 			if err != nil {
@@ -24,7 +24,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			With("API-User", "user").
 			With("API-Key", "secret").
 			WithJSONHeaders(),
@@ -34,8 +34,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_AddTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/add-txt-record",
-			servermock.ResponseFromFixture("add_txt_record.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("add_txt_record.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("hostName", "foo.example.com").
 				With("txt", "value")).
 		Build(t)
@@ -55,7 +55,7 @@ func TestClient_AddTXTRecord(t *testing.T) {
 func TestClient_AddTXTRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/add-txt-record",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 
@@ -66,8 +66,8 @@ func TestClient_AddTXTRecord_error(t *testing.T) {
 func TestClient_DeleteTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/delete-txt-record",
-			servermock.ResponseFromFixture("delete_txt_record.json"),
-			servermock.CheckQueryParameter().Strict().
+			servermock2.ResponseFromFixture("delete_txt_record.json"),
+			servermock2.CheckQueryParameter().Strict().
 				With("hostName", "foo.example.com").
 				With("txt", "value")).
 		Build(t)
@@ -87,7 +87,7 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 func TestClient_DeleteTXTRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/delete-txt-record",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest)).
 		Build(t)
 

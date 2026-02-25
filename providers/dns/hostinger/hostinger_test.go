@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -92,8 +92,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
-	return servermock.NewBuilder(
+func mockBuilder() *servermock2.Builder[*DNSProvider] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.APIToken = "secret"
@@ -108,7 +108,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 			return p, nil
 		},
-		servermock.CheckHeader().
+		servermock2.CheckHeader().
 			WithJSONHeaders().
 			WithAuthorization("Bearer secret"),
 	)
@@ -117,8 +117,8 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("PUT /api/dns/v1/zones/example.com",
-			servermock.ResponseFromInternal("update_dns_records.json"),
-			servermock.CheckRequestJSONBodyFromInternal("update_dns_records-request.json")).
+			servermock2.ResponseFromInternal("update_dns_records.json"),
+			servermock2.CheckRequestJSONBodyFromInternal("update_dns_records-request.json")).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "", "123d==")
@@ -128,10 +128,10 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp_update(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /api/dns/v1/zones/example.com",
-			servermock.ResponseFromInternal("get_dns_records_acme.json")).
+			servermock2.ResponseFromInternal("get_dns_records_acme.json")).
 		Route("PUT /api/dns/v1/zones/example.com",
-			servermock.ResponseFromInternal("update_dns_records.json"),
-			servermock.CheckRequestJSONBodyFromInternal("update_dns_records_base-request.json")).
+			servermock2.ResponseFromInternal("update_dns_records.json"),
+			servermock2.CheckRequestJSONBodyFromInternal("update_dns_records_base-request.json")).
 		Build(t)
 
 	err := provider.CleanUp(t.Context(), "example.com", "", "123d==")
@@ -141,10 +141,10 @@ func TestDNSProvider_CleanUp_update(t *testing.T) {
 func TestDNSProvider_CleanUp_delete(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /api/dns/v1/zones/example.com",
-			servermock.ResponseFromInternal("get_dns_records_empty.json")).
+			servermock2.ResponseFromInternal("get_dns_records_empty.json")).
 		Route("DELETE /api/dns/v1/zones/example.com",
-			servermock.ResponseFromInternal("delete_dns_records.json"),
-			servermock.CheckRequestJSONBody(`{"filters":[{"name":"_acme-challenge","type":"TXT"}]}`)).
+			servermock2.ResponseFromInternal("delete_dns_records.json"),
+			servermock2.CheckRequestJSONBody(`{"filters":[{"name":"_acme-challenge","type":"TXT"}]}`)).
 		Build(t)
 
 	err := provider.CleanUp(t.Context(), "example.com", "", "123d==")

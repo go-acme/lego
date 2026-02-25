@@ -6,28 +6,28 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 const apiKey = "key"
 
-func mockBuilder(teamID string) *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
+func mockBuilder(teamID string) *servermock2.Builder[*Client] {
+	return servermock2.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(OAuthStaticAccessToken(server.Client(), apiKey), teamID)
 			client.baseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders().
+		servermock2.CheckHeader().WithJSONHeaders().
 			WithAuthorization("Bearer "+apiKey))
 }
 
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder("").
-		Route("GET /api/v1/zones/example.com/dns-records", servermock.ResponseFromFixture("RecordsResponse.json")).
+		Route("GET /api/v1/zones/example.com/dns-records", servermock2.ResponseFromFixture("RecordsResponse.json")).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "example.com")
@@ -51,7 +51,7 @@ func TestClient_GetRecords(t *testing.T) {
 
 func TestClient_GetRecord(t *testing.T) {
 	client := mockBuilder("").
-		Route("GET /api/v1/zones/example.com/dns-records/123", servermock.ResponseFromFixture("RecordResponse.json")).
+		Route("GET /api/v1/zones/example.com/dns-records/123", servermock2.ResponseFromFixture("RecordResponse.json")).
 		Build(t)
 
 	record, err := client.GetRecord(t.Context(), "example.com", "123")
@@ -74,9 +74,9 @@ func TestClient_GetRecord(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder("").
 		Route("POST /api/v1/zones/example.com/dns-records",
-			servermock.ResponseFromFixture("RecordResponse.json").
+			servermock2.ResponseFromFixture("RecordResponse.json").
 				WithStatusCode(http.StatusCreated),
-			servermock.CheckRequestJSONBody(`{"name":"string","type":"string","ttl":3600,"contents":[{"text":"string"}]}`)).
+			servermock2.CheckRequestJSONBody(`{"name":"string","type":"string","ttl":3600,"contents":[{"text":"string"}]}`)).
 		Build(t)
 
 	data := Record{
@@ -111,10 +111,10 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_CreateRecord_withTeamID(t *testing.T) {
 	client := mockBuilder("123").
 		Route("POST /api/v1/zones/example.com/dns-records",
-			servermock.ResponseFromFixture("RecordResponse.json").
+			servermock2.ResponseFromFixture("RecordResponse.json").
 				WithStatusCode(http.StatusCreated),
-			servermock.CheckRequestJSONBody(`{"name":"string","type":"string","ttl":3600,"contents":[{"text":"string"}]}`),
-			servermock.CheckQueryParameter().Strict().With("teamID", "123"),
+			servermock2.CheckRequestJSONBody(`{"name":"string","type":"string","ttl":3600,"contents":[{"text":"string"}]}`),
+			servermock2.CheckQueryParameter().Strict().With("teamID", "123"),
 		).
 		Build(t)
 
@@ -150,7 +150,7 @@ func TestClient_CreateRecord_withTeamID(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder("").
 		Route("DELETE /api/v1/zones/example.com/dns-records/123",
-			servermock.Noop().
+			servermock2.Noop().
 				WithStatusCode(http.StatusNoContent)).
 		Build(t)
 
@@ -161,7 +161,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_NotFound_Response(t *testing.T) {
 	client := mockBuilder("").
 		Route("DELETE /api/v1/zones/example.com/dns-records/123",
-			servermock.Noop().
+			servermock2.Noop().
 				WithStatusCode(http.StatusNotFound)).
 		Build(t)
 
@@ -172,7 +172,7 @@ func TestClient_DeleteRecord_NotFound_Response(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder("").
 		Route("DELETE /api/v1/zones/example.com/dns-records/123",
-			servermock.ResponseFromFixture("error.json").
+			servermock2.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 

@@ -8,11 +8,11 @@ import (
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/acme/api/internal/sender"
-	"github.com/go-acme/lego/v5/platform/tester/servermock"
+	servermock2 "github.com/go-acme/lego/v5/internal/tester/servermock"
 )
 
-func mockBuilder() *servermock.Builder[*Manager] {
-	return servermock.NewBuilder(
+func mockBuilder() *servermock2.Builder[*Manager] {
+	return servermock2.NewBuilder(
 		func(server *httptest.Server) (*Manager, error) {
 			doer := sender.NewDoer(server.Client(), "lego-test")
 
@@ -24,7 +24,7 @@ func mockBuilder() *servermock.Builder[*Manager] {
 			rw.Header().Set("Replay-Nonce", "12345")
 			rw.Header().Set("Retry-After", "0")
 
-			servermock.JSONEncode(&acme.Challenge{Type: "http-01", Status: "Valid", URL: "https://example.com/", Token: "token"}).ServeHTTP(rw, req)
+			servermock2.JSONEncode(&acme.Challenge{Type: "http-01", Status: "Valid", URL: "https://example.com/", Token: "token"}).ServeHTTP(rw, req)
 		}))
 }
 

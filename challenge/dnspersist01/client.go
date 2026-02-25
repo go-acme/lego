@@ -81,6 +81,10 @@ func (c *Client) sendQuery(ctx context.Context, fqdn string, rtype uint16, recur
 	return c.sendQueryCustom(ctx, fqdn, rtype, c.recursiveNameservers, recursive)
 }
 
+/*
+ * NOTE(ldez): This function is a duplication of `Client.sendQueryCustom()` from `dns01/client.go`.
+ * The 2 functions should be kept in sync.
+ */
 func (c *Client) sendQueryCustom(ctx context.Context, fqdn string, rtype uint16, nameservers []string, recursive bool) (*dns.Msg, error) {
 	m := internal.CreateDNSMsg(fqdn, rtype, recursive)
 

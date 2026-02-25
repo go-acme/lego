@@ -10,6 +10,8 @@ import (
 	"github.com/miekg/dns"
 )
 
+const maxCNAMEFollows = 50
+
 // TXTRecord captures a DNS TXT record value and its TTL.
 type TXTRecord struct {
 	Value string
@@ -49,8 +51,6 @@ func (c *Client) lookupTXT(ctx context.Context, fqdn string, nameservers []strin
 		return result, errors.New("empty list of nameservers")
 	}
 
-	const maxCNAMEFollows = 50
-
 	name := dns.Fqdn(fqdn)
 	seen := map[string]struct{}{}
 	followed := 0
@@ -69,7 +69,7 @@ func (c *Client) lookupTXT(ctx context.Context, fqdn string, nameservers []strin
 
 		switch msg.Rcode {
 		case dns.RcodeSuccess:
-			records := extractTXT(msg, name)
+			records := extractTXTRecords(msg, name)
 			if len(records) > 0 {
 				result.Records = records
 				return result, nil
@@ -95,7 +95,7 @@ func (c *Client) lookupTXT(ctx context.Context, fqdn string, nameservers []strin
 	}
 }
 
-func extractTXT(msg *dns.Msg, name string) []TXTRecord {
+func extractTXTRecords(msg *dns.Msg, name string) []TXTRecord {
 	var records []TXTRecord
 
 	for _, rr := range msg.Answer {

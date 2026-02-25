@@ -1,20 +1,19 @@
 package dnschallenge
 
 import (
-	"bytes"
 	"context"
-	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/challenge/dnspersist01"
@@ -29,19 +28,19 @@ const (
 	testPersistBaseDomain = "persist.localhost"
 	testPersistDomain     = "*." + testPersistBaseDomain
 	testPersistIssuer     = "pebble.letsencrypt.org"
+)
 
+const (
 	testPersistCLIDomain         = "persist-cli.localhost"
 	testPersistCLIWildcardDomain = "*." + testPersistCLIDomain
-	testPersistCLIEmail          = "persist-e2e@example.com"
-	testPersistCLIFreshEmail     = "persist-e2e-fresh@example.com"
-	testPersistCLIRenewEmail     = "persist-e2e-renew@example.com"
+
+	testPersistCLIEmail      = "persist-e2e@example.com"
+	testPersistCLIFreshEmail = "persist-e2e-fresh@example.com"
+	testPersistCLIRenewEmail = "persist-e2e-renew@example.com"
 )
 
 func TestChallengeDNSPersist_Client_Obtain(t *testing.T) {
-	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
-	require.NoError(t, err)
-
-	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+	t.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
@@ -59,11 +58,7 @@ func TestChallengeDNSPersist_Client_Obtain(t *testing.T) {
 
 	user.registration = reg
 
-	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistBaseDomain)
-	txtValue := mustDNSPersistIssueValue(t, reg.URI)
-
-	setTXTRecord(t, txtHost, txtValue)
-	defer clearTXTRecord(t, txtHost)
+	updateDNS(t, reg.URI, testPersistBaseDomain)
 
 	mockDefaultPersist(t)
 
@@ -96,21 +91,14 @@ func TestChallengeDNSPersist_Client_Obtain(t *testing.T) {
 func TestChallengeDNSPersist_Run(t *testing.T) {
 	loader.CleanLegoFiles(context.Background())
 
-	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
-	require.NoError(t, err)
-
-	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+	t.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 
 	accountURI := createCLIAccountState(t, testPersistCLIEmail)
 	require.NotEmpty(t, accountURI)
 
-	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistCLIDomain)
-	txtValue := mustDNSPersistIssueValue(t, accountURI)
+	updateDNS(t, accountURI, testPersistCLIDomain)
 
-	setTXTRecord(t, txtHost, txtValue)
-	defer clearTXTRecord(t, txtHost)
-
-	err = load.RunLego(
+	err := load.RunLego(
 		context.Background(),
 		"run",
 		"--email", testPersistCLIEmail,
@@ -129,13 +117,14 @@ func TestChallengeDNSPersist_Run(t *testing.T) {
 func TestChallengeDNSPersist_Run_NewAccount(t *testing.T) {
 	loader.CleanLegoFiles(context.Background())
 
-	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
-	require.NoError(t, err)
+	t.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 
-	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+	client := newChallTestSrvClient()
 
-	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistCLIDomain)
-	defer clearTXTRecord(t, txtHost)
+	defer func() {
+		err := client.ClearPersistRecord(testPersistCLIDomain)
+		require.NoError(t, err)
+	}()
 
 	stdinReader, stdinWriter := io.Pipe()
 
@@ -146,18 +135,16 @@ func TestChallengeDNSPersist_Run_NewAccount(t *testing.T) {
 	go func() {
 		defer func() { _ = stdinWriter.Close() }()
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		accountURI, waitErr := waitForCLIAccountURI(ctx, testPersistCLIFreshEmail)
+		accountURI, waitErr := waitForAccountFile(t.Context(), testPersistCLIFreshEmail)
 		if waitErr != nil {
 			errChan <- fmt.Errorf("wait for account URI: %w", waitErr)
 			return
 		}
 
-		txtValue := mustDNSPersistIssueValue(t, accountURI)
+		txtValue, err := dnspersist01.BuildIssueValue(testPersistIssuer, accountURI, true, time.Time{})
+		require.NoError(t, err)
 
-		err = setTXTRecordRaw(txtHost, txtValue)
+		err = client.SetPersistRecord(testPersistCLIDomain, txtValue)
 		if err != nil {
 			errChan <- fmt.Errorf("set TXT record: %w", err)
 			return
@@ -172,7 +159,7 @@ func TestChallengeDNSPersist_Run_NewAccount(t *testing.T) {
 		errChan <- nil
 	}()
 
-	err = load.RunLegoWithInput(
+	err := load.RunLegoWithInput(
 		context.Background(),
 		stdinReader,
 		"run",
@@ -193,21 +180,14 @@ func TestChallengeDNSPersist_Run_NewAccount(t *testing.T) {
 func TestChallengeDNSPersist_Renew(t *testing.T) {
 	loader.CleanLegoFiles(context.Background())
 
-	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
-	require.NoError(t, err)
-
-	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+	t.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 
 	accountURI := createCLIAccountState(t, testPersistCLIRenewEmail)
 	require.NotEmpty(t, accountURI)
 
-	txtHost := fmt.Sprintf("_validation-persist.%s", testPersistCLIDomain)
-	txtValue := mustDNSPersistIssueValue(t, accountURI)
+	updateDNS(t, accountURI, testPersistCLIDomain)
 
-	setTXTRecord(t, txtHost, txtValue)
-	defer clearTXTRecord(t, txtHost)
-
-	err = load.RunLego(
+	err := load.RunLego(
 		context.Background(),
 		"run",
 		"--email", testPersistCLIRenewEmail,
@@ -239,61 +219,6 @@ func TestChallengeDNSPersist_Renew(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func setTXTRecord(t *testing.T, host, value string) {
-	t.Helper()
-
-	err := setTXTRecordRaw(host, value)
-	require.NoError(t, err)
-}
-
-func setTXTRecordRaw(host, value string) error {
-	body, err := json.Marshal(map[string]string{
-		"host":  host,
-		"value": value,
-	})
-	if err != nil {
-		return err
-	}
-
-	resp, err := http.Post("http://localhost:8055/set-txt", "application/json", bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status: %d", resp.StatusCode)
-	}
-
-	return nil
-}
-
-func clearTXTRecord(t *testing.T, host string) {
-	t.Helper()
-
-	body, err := json.Marshal(map[string]string{
-		"host": host,
-	})
-	require.NoError(t, err)
-
-	resp, err := http.Post("http://localhost:8055/clear-txt", "application/json", bytes.NewReader(body))
-	require.NoError(t, err)
-
-	defer func() { _ = resp.Body.Close() }()
-
-	require.Equal(t, http.StatusOK, resp.StatusCode)
-}
-
-func mustDNSPersistIssueValue(t *testing.T, accountURI string) string {
-	t.Helper()
-
-	value, err := dnspersist01.BuildIssueValue(testPersistIssuer, accountURI, true, time.Time{})
-	require.NoError(t, err)
-
-	return value
-}
-
 func createCLIAccountState(t *testing.T, email string) string {
 	t.Helper()
 
@@ -304,6 +229,7 @@ func createCLIAccountState(t *testing.T, email string) string {
 		email:      email,
 		privateKey: privateKey,
 	}
+
 	config := lego.NewConfig(user)
 	config.CADirURL = "https://localhost:15000/dir"
 
@@ -315,14 +241,17 @@ func createCLIAccountState(t *testing.T, email string) string {
 	require.NotEmpty(t, reg.URI)
 
 	keyType := certcrypto.EC256
-	accountPathRoot := filepath.Join(".lego", "accounts", "localhost_15000", email, string(keyType))
+
+	accountPathRoot := getAccountPath(email, keyType)
+
 	err = os.MkdirAll(accountPathRoot, 0o700)
 	require.NoError(t, err)
 
-	err = saveAccountPrivateKey(filepath.Join(accountPathRoot, email+".key"), privateKey)
+	err = os.WriteFile(filepath.Join(accountPathRoot, email+".key"), certcrypto.PEMEncode(privateKey), 0o600)
 	require.NoError(t, err)
 
 	accountPath := filepath.Join(accountPathRoot, "account.json")
+
 	content, err := json.MarshalIndent(struct {
 		ID           string                 `json:"id"`
 		Email        string                 `json:"email"`
@@ -342,33 +271,19 @@ func createCLIAccountState(t *testing.T, email string) string {
 	return reg.URI
 }
 
-func saveAccountPrivateKey(path string, privateKey crypto.PrivateKey) error {
-	return os.WriteFile(path, certcrypto.PEMEncode(privateKey), 0o600)
-}
-
-func cliAccountFilePath(email string) string {
-	return filepath.Join(".lego", "accounts", "localhost_15000", email, string(certcrypto.EC256), "account.json")
-}
-
-func waitForCLIAccountURI(ctx context.Context, email string) (string, error) {
-	accountPath := cliAccountFilePath(email)
+func waitForAccountFile(ctx context.Context, email string) (string, error) {
+	accountPath := filepath.Join(getAccountPath(email, certcrypto.EC256), "account.json")
 
 	type accountFile struct {
 		Registration *registration.Resource `json:"registration"`
 	}
 
-	ticker := time.NewTicker(50 * time.Millisecond)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return "", ctx.Err()
-		case <-ticker.C:
+	return backoff.Retry(ctx,
+		func() (string, error) {
 			content, err := os.ReadFile(accountPath)
 			if err != nil {
-				if os.IsNotExist(err) {
-					continue
+				if !os.IsNotExist(err) {
+					return "", backoff.Permanent(err)
 				}
 
 				return "", err
@@ -378,14 +293,21 @@ func waitForCLIAccountURI(ctx context.Context, email string) (string, error) {
 
 			err = json.Unmarshal(content, &account)
 			if err != nil {
-				continue
+				return "", err
 			}
 
 			if account.Registration != nil && account.Registration.URI != "" {
 				return account.Registration.URI, nil
 			}
-		}
-	}
+
+			return "", errors.New("account URI not found")
+		},
+		backoff.WithBackOff(backoff.NewConstantBackOff(50*time.Millisecond)),
+		backoff.WithMaxElapsedTime(10*time.Second))
+}
+
+func getAccountPath(accountID string, keyType certcrypto.KeyType) string {
+	return filepath.Join(".lego", "accounts", "localhost_15000", accountID, string(keyType))
 }
 
 func mockDefaultPersist(t *testing.T) {

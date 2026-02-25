@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/log"
-	"github.com/go-acme/lego/v5/platform/config/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/octenium/internal"
 	"github.com/hashicorp/go-retryablehttp"

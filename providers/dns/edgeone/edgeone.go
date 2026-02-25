@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/internal/ptr"
-	"github.com/go-acme/lego/v5/platform/config/env"
 	teo "github.com/go-acme/tencentedgdeone/v20220901"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"

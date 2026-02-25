@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/platform/config/env"
+	"github.com/go-acme/lego/v5/internal/env"
 )
 
 // Environment variables names.

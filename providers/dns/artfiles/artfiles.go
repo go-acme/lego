@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/platform/config/env"
+	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/providers/dns/artfiles/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )

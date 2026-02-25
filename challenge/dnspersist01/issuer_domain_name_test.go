@@ -4,10 +4,64 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-acme/lego/v5/acme"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidateIssuerDomainName_Errors(t *testing.T) {
+func Test_validateIssuerDomainNames(t *testing.T) {
+	testCases := []struct {
+		desc    string
+		issuers []string
+		assert  assert.ErrorAssertionFunc
+	}{
+		{
+			desc:   "missing issuers",
+			assert: assert.Error,
+		},
+		{
+			desc:    "too many issuers",
+			issuers: []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
+			assert:  assert.Error,
+		},
+		{
+			desc:    "valid issuer",
+			issuers: []string{"ca.example"},
+			assert:  assert.NoError,
+		},
+		{
+			desc:    "issuer all uppercase",
+			issuers: []string{"CA.EXAMPLE"},
+			assert:  assert.Error,
+		},
+		{
+			desc:    "issuer contains underscore",
+			issuers: []string{"ca_.example"},
+			assert:  assert.Error,
+		},
+		{
+			desc:    "issuer not in A-label format",
+			issuers: []string{"bücher.example"},
+			assert:  assert.Error,
+		},
+		{
+			desc:    "issuer too long",
+			issuers: []string{strings.Repeat("a", 63) + "." + strings.Repeat("b", 63) + "." + strings.Repeat("c", 63) + "." + strings.Repeat("d", 63)},
+			assert:  assert.Error,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			err := validateIssuerDomainNames(acme.Challenge{IssuerDomainNames: test.issuers})
+			test.assert(t, err)
+		})
+	}
+}
+
+func Test_validateIssuerDomainName_errors(t *testing.T) {
 	testCases := []struct {
 		desc      string
 		name      string
@@ -45,7 +99,7 @@ func TestValidateIssuerDomainName_Errors(t *testing.T) {
 	}
 }
 
-func TestValidateIssuerDomainName_ErrorNonCanonicalALabel(t *testing.T) {
+func Test_validateIssuerDomainName_errorNonCanonicalALabel(t *testing.T) {
 	mockIssuerDomainNameToASCII(t, func(string) (string, error) {
 		return "different.example", nil
 	})
@@ -54,7 +108,7 @@ func TestValidateIssuerDomainName_ErrorNonCanonicalALabel(t *testing.T) {
 	require.EqualError(t, err, "issuer-domain-name must be represented in A-label format")
 }
 
-func TestValidateIssuerDomainName_Valid(t *testing.T) {
+func Test_validateIssuerDomainName_Valid(t *testing.T) {
 	mockIssuerDomainNameToASCII(t, func(name string) (string, error) {
 		return name, nil
 	})

@@ -20,22 +20,12 @@ import (
 
 const validationLabel = "_validation-persist"
 
-const (
-	// DefaultPropagationTimeout default propagation timeout.
-	DefaultPropagationTimeout = 60 * time.Second
-
-	// DefaultPollingInterval default polling interval.
-	DefaultPollingInterval = 2 * time.Second
-)
-
 // ValidateFunc validates a challenge with the ACME server.
 type ValidateFunc func(ctx context.Context, core *api.Core, domain string, chlng acme.Challenge) error
 
-// ChallengeInfo contains the information used to create a dns-persist-01 TXT
-// record.
+// ChallengeInfo contains the information used to create a dns-persist-01 TXT record.
 type ChallengeInfo struct {
-	// FQDN is the full-qualified challenge domain (i.e.
-	// `_validation-persist.[domain].`).
+	// FQDN is the full-qualified challenge domain (i.e. `_validation-persist.[domain].`).
 	FQDN string
 
 	// Value contains the TXT record value, an RFC 8659 issue-value.
@@ -45,30 +35,25 @@ type ChallengeInfo struct {
 	IssuerDomainName string
 }
 
-// Challenge implements the dns-persist-01 challenge exclusively with manual
-// instructions for TXT record creation.
+// Challenge implements the dns-persist-01 challenge.
 type Challenge struct {
 	core     *api.Core
 	validate ValidateFunc
+	provider challenge.PersistentProvider
 	preCheck preCheck
 
 	accountURI                   string
 	userSuppliedIssuerDomainName string
 	persistUntil                 time.Time
-
-	propagationTimeout  time.Duration
-	propagationInterval time.Duration
 }
 
 // NewChallenge creates a dns-persist-01 challenge.
-func NewChallenge(core *api.Core, validate ValidateFunc, opts ...ChallengeOption) (*Challenge, error) {
+func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.PersistentProvider, opts ...ChallengeOption) (*Challenge, error) {
 	chlg := &Challenge{
 		core:     core,
 		validate: validate,
+		provider: provider,
 		preCheck: newPreCheck(),
-
-		propagationTimeout:  DefaultPropagationTimeout,
-		propagationInterval: DefaultPollingInterval,
 	}
 
 	for _, opt := range opts {
@@ -120,29 +105,24 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	}
 
 	if !matcher(result.Records) {
-		info, infoErr := GetChallengeInfo(domain, issuerDomainName, c.accountURI, authz.Wildcard, c.persistUntil)
-		if infoErr != nil {
-			return infoErr
-		}
-
-		displayRecordCreationInstructions(info.FQDN, info.Value)
-
-		waitErr := waitForUser()
-		if waitErr != nil {
-			return waitErr
+		err = c.provider.Persist(ctx, authz, issuerDomainName, c.accountURI, c.persistUntil)
+		if err != nil {
+			return err
 		}
 	} else {
 		fmt.Printf("dnspersist01: Found existing matching TXT record for %s, no need to create a new one\n", fqdn)
 	}
+
+	timeout, interval := c.provider.Timeout()
 
 	log.Info("acme: waiting for DNS-PERSIST-01 record propagation.",
 		log.DomainAttr(domain),
 		slog.String("nameservers", strings.Join(DefaultClient().recursiveNameservers, ",")),
 	)
 
-	time.Sleep(c.propagationInterval)
+	time.Sleep(interval)
 
-	err = wait.For("propagation", c.propagationTimeout, c.propagationInterval, func() (bool, error) {
+	err = wait.For("propagation", timeout, interval, func() (bool, error) {
 		ok, callErr := c.preCheck.call(ctx, domain, fqdn, matcher)
 		if !ok || callErr != nil {
 			log.Info("acme: Waiting for DNS-PERSIST-01 record propagation.", log.DomainAttr(domain))
@@ -222,65 +202,29 @@ func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName stri
 	return false
 }
 
-// GetAuthorizationDomainName returns the fully-qualified DNS label used by the
-// dns-persist-01 challenge for the given domain.
+// GetAuthorizationDomainName returns the fully qualified DNS label
+// used by the dns-persist-01 challenge for the given domain.
 func GetAuthorizationDomainName(domain string) string {
 	return dns.Fqdn(validationLabel + "." + domain)
 }
 
-// GetChallengeInfo returns information used to create a DNS TXT record which
-// can fulfill the `dns-persist-01` challenge. Domain, issuerDomainName, and
-// accountURI parameters are required. Wildcard and persistUntil parameters are
-// optional.
-func GetChallengeInfo(domain, issuerDomainName, accountURI string, wildcard bool, persistUntil time.Time) (ChallengeInfo, error) {
-	if domain == "" {
+// GetChallengeInfo returns information used to create a DNS TXT record
+// which can fulfill the `dns-persist-01` challenge.
+// Domain, issuerDomainName, and accountURI parameters are required.
+// Wildcard and persistUntil parameters are optional.
+func GetChallengeInfo(authz acme.Authorization, issuerDomainName, accountURI string, persistUntil time.Time) (ChallengeInfo, error) {
+	if authz.Identifier.Value == "" {
 		return ChallengeInfo{}, errors.New("dnspersist01: domain cannot be empty")
 	}
 
-	value, err := BuildIssueValue(issuerDomainName, accountURI, wildcard, persistUntil)
+	value, err := BuildIssueValue(issuerDomainName, accountURI, authz.Wildcard, persistUntil)
 	if err != nil {
 		return ChallengeInfo{}, err
 	}
 
 	return ChallengeInfo{
-		FQDN:             GetAuthorizationDomainName(domain),
+		FQDN:             GetAuthorizationDomainName(authz.Identifier.Value),
 		Value:            value,
 		IssuerDomainName: issuerDomainName,
 	}, nil
-}
-
-// validateIssuerDomainNames validates the ACME challenge "issuer-domain-names"
-// array for dns-persist-01.
-//
-// Rules enforced:
-//   - The array is required and must contain at least 1 entry.
-//   - The array must not contain more than 10 entries; larger arrays are
-//     treated as malformed challenges and rejected.
-//
-// Each issuer-domain-name must be a normalized domain name:
-//   - represented in A-label (Punycode, RFC5890) form
-//   - all lowercase
-//   - no trailing dot
-//   - maximum total length of 253 octets
-//
-// The returned list is intended for issuer selection when constructing or
-// matching dns-persist-01 TXT records. The challenge can be satisfied by using
-// any one valid issuer-domain-name from this list.
-func validateIssuerDomainNames(chlng acme.Challenge) error {
-	if len(chlng.IssuerDomainNames) == 0 {
-		return errors.New("issuer-domain-names missing from the challenge")
-	}
-
-	if len(chlng.IssuerDomainNames) > 10 {
-		return errors.New(" issuer-domain-names exceeds maximum length of 10")
-	}
-
-	for _, issuerDomainName := range chlng.IssuerDomainNames {
-		err := validateIssuerDomainName(issuerDomainName)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

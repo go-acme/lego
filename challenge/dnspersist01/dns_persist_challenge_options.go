@@ -33,9 +33,9 @@ func CondOptions(condition bool, opt ...ChallengeOption) ChallengeOption {
 	}
 }
 
-// WithAccountURI sets the ACME account URI bound to dns-persist-01 records. It
-// is required both to construct the `accounturi=` parameter and to match
-// already-provisioned TXT records that should be updated.
+// WithAccountURI sets the ACME account URI bound to dns-persist-01 records.
+// It is required both to construct the `accounturi=` parameter and
+// to match already-provisioned TXT records that should be updated.
 func WithAccountURI(accountURI string) ChallengeOption {
 	return func(chlg *Challenge) error {
 		if accountURI == "" {
@@ -49,9 +49,9 @@ func WithAccountURI(accountURI string) ChallengeOption {
 }
 
 // WithIssuerDomainName forces the issuer-domain-name used for dns-persist-01.
-// When set, it overrides automatic issuer selection and must match one of the
-// issuer-domain-names offered in the ACME challenge. User input is normalized
-// and validated at configuration time.
+// When set, it overrides automatic issuer selection and
+// must match one of the issuer-domain-names offered in the ACME challenge.
+// User input is normalized and validated at configuration time.
 func WithIssuerDomainName(issuerDomainName string) ChallengeOption {
 	return func(chlg *Challenge) error {
 		if issuerDomainName == "" {
@@ -74,8 +74,7 @@ func WithIssuerDomainName(issuerDomainName string) ChallengeOption {
 	}
 }
 
-// WithPersistUntil sets the optional persistUntil value used when constructing
-// dns-persist-01 TXT records.
+// WithPersistUntil sets the optional persistUntil value used when constructing dns-persist-01 TXT records.
 func WithPersistUntil(persistUntil time.Time) ChallengeOption {
 	return func(chlg *Challenge) error {
 		if persistUntil.IsZero() {

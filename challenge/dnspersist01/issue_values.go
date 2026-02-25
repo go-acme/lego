@@ -23,9 +23,9 @@ type IssueValue struct {
 	PersistUntil     time.Time
 }
 
-// BuildIssueValue constructs an RFC 8659 issue-value for a dns-persist-01 TXT
-// record. issuerDomainName and accountURI are required. wildcard and
-// persistUntil are optional.
+// BuildIssueValue constructs an RFC 8659 issue-value for a dns-persist-01 TXT record.
+// issuerDomainName and accountURI are required.
+// wildcard and persistUntil are optional.
 func BuildIssueValue(issuerDomainName, accountURI string, wildcard bool, persistUntil time.Time) (string, error) {
 	if accountURI == "" {
 		return "", errors.New("dnspersist01: ACME account URI cannot be empty")
@@ -49,17 +49,17 @@ func BuildIssueValue(issuerDomainName, accountURI string, wildcard bool, persist
 	return value, nil
 }
 
-// trimWSP trims RFC 5234 WSP (SP / HTAB) characters from both ends of a
-// string, as referenced by RFC 8659.
+// trimWSP trims RFC 5234 WSP (SP / HTAB) characters from both ends of a string,
+// as referenced by RFC 8659.
 func trimWSP(s string) string {
 	return strings.TrimFunc(s, func(r rune) bool {
 		return r == ' ' || r == '\t'
 	})
 }
 
-// ParseIssueValue parses the issuer-domain-name and parameters for an RFC
-// 8659 issue-value TXT record and returns the extracted fields. It returns
-// an error if any portion of the value is malformed.
+// ParseIssueValue parses the issuer-domain-name and parameters
+// for an RFC 8659 issue-value TXT record and returns the extracted fields.
+// It returns an error if any portion of the value is malformed.
 //
 //nolint:gocyclo // parsing and validating tagged parameters requires branching
 func ParseIssueValue(value string) (IssueValue, error) {
@@ -90,7 +90,6 @@ func ParseIssueValue(value string) (IssueValue, error) {
 		}
 
 		tag = trimWSP(tag)
-		val = trimWSP(val)
 
 		if tag == "" {
 			return IssueValue{}, fmt.Errorf("malformed parameter %q, empty tag", part)
@@ -102,6 +101,9 @@ func ParseIssueValue(value string) (IssueValue, error) {
 		}
 
 		seenTags[canonicalTag] = true
+
+		val = trimWSP(val)
+
 		// Ensure values contain no whitespace/control/non-ASCII characters.
 		for _, r := range val {
 			if (r >= 0x21 && r <= 0x3A) || (r >= 0x3C && r <= 0x7E) {
@@ -123,13 +125,11 @@ func ParseIssueValue(value string) (IssueValue, error) {
 			parsed.AccountURI = val
 
 		case paramPolicy:
-			// Per the dns-persist-01 specification, if the policy tag is
-			// present parameter's tag and defined values MUST be treated as
-			// case-insensitive.
+			// Per the dns-persist-01 specification,
+			// if the policy tag is present parameter's tag and defined values MUST be treated as case-insensitive.
 			if val != "" && !strings.EqualFold(val, policyWildcard) {
-				// If the policy parameter's value is anything other than
-				// "wildcard", the a CA MUST proceed as if the policy parameter
-				// were not present.
+				// If the policy parameter's value is anything other than "wildcard",
+				// the CA MUST proceed as if the policy parameter were not present.
 				val = ""
 			}
 

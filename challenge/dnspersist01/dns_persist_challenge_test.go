@@ -13,17 +13,18 @@ import (
 func TestGetChallengeInfo(t *testing.T) {
 	testCases := []struct {
 		desc             string
-		domain           string
+		authz            acme.Authorization
 		issuerDomainName string
 		accountURI       string
-		wildcard         bool
 		persistUntil     time.Time
 		expected         ChallengeInfo
 		expectErr        string
 	}{
 		{
-			desc:             "basic",
-			domain:           "example.com",
+			desc: "basic",
+			authz: acme.Authorization{
+				Identifier: acme.Identifier{Value: "example.com"},
+			},
 			issuerDomainName: "authority.example",
 			accountURI:       "https://ca.example/acct/123",
 			expected: ChallengeInfo{
@@ -33,8 +34,10 @@ func TestGetChallengeInfo(t *testing.T) {
 			},
 		},
 		{
-			desc:             "subdomain",
-			domain:           "api.example.com",
+			desc: "subdomain",
+			authz: acme.Authorization{
+				Identifier: acme.Identifier{Value: "api.example.com"},
+			},
 			issuerDomainName: "authority.example",
 			accountURI:       "https://ca.example/acct/123",
 			expected: ChallengeInfo{
@@ -44,11 +47,13 @@ func TestGetChallengeInfo(t *testing.T) {
 			},
 		},
 		{
-			desc:             "wildcard with normalized issuer",
-			domain:           "example.com",
+			desc: "wildcard with normalized issuer",
+			authz: acme.Authorization{
+				Identifier: acme.Identifier{Value: "example.com"},
+				Wildcard:   true,
+			},
 			issuerDomainName: "authority.example",
 			accountURI:       "https://ca.example/acct/123",
-			wildcard:         true,
 			expected: ChallengeInfo{
 				FQDN:             "_validation-persist.example.com.",
 				Value:            "authority.example; accounturi=https://ca.example/acct/123; policy=wildcard",
@@ -56,53 +61,67 @@ func TestGetChallengeInfo(t *testing.T) {
 			},
 		},
 		{
-			desc:             "uppercase issuer is rejected",
-			domain:           "example.com",
+			desc: "uppercase issuer is rejected",
+			authz: acme.Authorization{
+				Identifier: acme.Identifier{Value: "example.com"},
+			},
 			issuerDomainName: "Authority.Example.",
 			accountURI:       "https://ca.example/acct/123",
 			expectErr:        "issuer-domain-name must be lowercase",
 		},
 		{
-			desc:             "unicode issuer is rejected",
-			domain:           "example.com",
+			desc: "unicode issuer is rejected",
+			authz: acme.Authorization{
+				Identifier: acme.Identifier{Value: "example.com"},
+			},
 			issuerDomainName: "bücher.example",
 			accountURI:       "https://ca.example/acct/123",
 			expectErr:        "must be a lowercase LDH label",
 		},
 		{
-			desc:             "issuer with trailing dot is rejected",
-			domain:           "example.com",
+			desc: "issuer with trailing dot is rejected",
+			authz: acme.Authorization{
+				Identifier: acme.Identifier{Value: "example.com"},
+			},
 			issuerDomainName: "authority.example.",
 			accountURI:       "https://ca.example/acct/123",
 			expectErr:        "issuer-domain-name must not have a trailing dot",
 		},
 		{
-			desc:             "issuer with empty label is rejected",
-			domain:           "example.com",
+			desc: "issuer with empty label is rejected",
+			authz: acme.Authorization{
+				Identifier: acme.Identifier{Value: "example.com"},
+			},
 			issuerDomainName: "authority..example",
 			accountURI:       "https://ca.example/acct/123",
 			expectErr:        "issuer-domain-name contains an empty label",
 		},
 		{
-			desc:             "issuer label length over 63 is rejected",
-			domain:           "example.com",
+			desc: "issuer label length over 63 is rejected",
+			authz: acme.Authorization{
+				Identifier: acme.Identifier{Value: "example.com"},
+			},
 			issuerDomainName: strings.Repeat("a", 64) + ".example",
 			accountURI:       "https://ca.example/acct/123",
 			expectErr:        "issuer-domain-name label exceeds the maximum length of 63 octets",
 		},
 		{
-			desc:             "issuer with malformed punycode a-label is rejected",
-			domain:           "example.com",
+			desc: "issuer with malformed punycode a-label is rejected",
+			authz: acme.Authorization{
+				Identifier: acme.Identifier{Value: "example.com"},
+			},
 			issuerDomainName: "xn--a.example",
 			accountURI:       "https://ca.example/acct/123",
 			expectErr:        "issuer-domain-name must be represented in A-label format:",
 		},
 		{
-			desc:             "includes persistUntil",
-			domain:           "example.com",
+			desc: "includes persistUntil",
+			authz: acme.Authorization{
+				Identifier: acme.Identifier{Value: "example.com"},
+				Wildcard:   true,
+			},
 			issuerDomainName: "authority.example",
 			accountURI:       "https://ca.example/acct/123",
-			wildcard:         true,
 			persistUntil:     time.Unix(4102444800, 0).UTC(),
 			expected: ChallengeInfo{
 				FQDN:             "_validation-persist.example.com.",
@@ -112,21 +131,25 @@ func TestGetChallengeInfo(t *testing.T) {
 		},
 		{
 			desc:             "empty domain",
-			domain:           "",
+			authz:            acme.Authorization{},
 			issuerDomainName: "authority.example",
 			accountURI:       "https://ca.example/acct/123",
 			expectErr:        "domain cannot be empty",
 		},
 		{
-			desc:             "empty account uri",
-			domain:           "example.com",
+			desc: "empty account uri",
+			authz: acme.Authorization{
+				Identifier: acme.Identifier{Value: "example.com"},
+			},
 			issuerDomainName: "authority.example",
 			accountURI:       "",
 			expectErr:        "ACME account URI cannot be empty",
 		},
 		{
-			desc:             "invalid issuer",
-			domain:           "example.com",
+			desc: "invalid issuer",
+			authz: acme.Authorization{
+				Identifier: acme.Identifier{Value: "example.com"},
+			},
 			issuerDomainName: "ca_.example",
 			accountURI:       "https://ca.example/acct/123",
 			expectErr:        "must be a lowercase LDH label",
@@ -137,7 +160,7 @@ func TestGetChallengeInfo(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			actual, err := GetChallengeInfo(test.domain, test.issuerDomainName, test.accountURI, test.wildcard, test.persistUntil)
+			actual, err := GetChallengeInfo(test.authz, test.issuerDomainName, test.accountURI, test.persistUntil)
 			if test.expectErr != "" {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, test.expectErr)
@@ -148,58 +171,6 @@ func TestGetChallengeInfo(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, actual)
-		})
-	}
-}
-
-func Test_validateIssuerDomainNames(t *testing.T) {
-	testCases := []struct {
-		desc    string
-		issuers []string
-		assert  assert.ErrorAssertionFunc
-	}{
-		{
-			desc:   "missing issuers",
-			assert: assert.Error,
-		},
-		{
-			desc:    "too many issuers",
-			issuers: []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
-			assert:  assert.Error,
-		},
-		{
-			desc:    "valid issuer",
-			issuers: []string{"ca.example"},
-			assert:  assert.NoError,
-		},
-		{
-			desc:    "issuer all uppercase",
-			issuers: []string{"CA.EXAMPLE"},
-			assert:  assert.Error,
-		},
-		{
-			desc:    "issuer contains underscore",
-			issuers: []string{"ca_.example"},
-			assert:  assert.Error,
-		},
-		{
-			desc:    "issuer not in A-label format",
-			issuers: []string{"bücher.example"},
-			assert:  assert.Error,
-		},
-		{
-			desc:    "issuer too long",
-			issuers: []string{strings.Repeat("a", 63) + "." + strings.Repeat("b", 63) + "." + strings.Repeat("c", 63) + "." + strings.Repeat("d", 63)},
-			assert:  assert.Error,
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			err := validateIssuerDomainNames(acme.Challenge{IssuerDomainNames: test.issuers})
-			test.assert(t, err)
 		})
 	}
 }
@@ -400,7 +371,14 @@ func TestChallenge_hasMatchingRecord(t *testing.T) {
 func mustChallengeValue(t *testing.T, issuerDomainName, accountURI string, wildcard bool, persistUntil time.Time) string {
 	t.Helper()
 
-	info, err := GetChallengeInfo("example.com", issuerDomainName, accountURI, wildcard, persistUntil)
+	authz := acme.Authorization{
+		Identifier: acme.Identifier{
+			Value: "example.com",
+		},
+		Wildcard: wildcard,
+	}
+
+	info, err := GetChallengeInfo(authz, issuerDomainName, accountURI, persistUntil)
 	require.NoError(t, err)
 
 	return info.Value

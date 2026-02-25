@@ -3,6 +3,8 @@ package challenge
 import (
 	"context"
 	"time"
+
+	"github.com/go-acme/lego/v5/acme"
 )
 
 // Provider enables implementing a custom challenge
@@ -27,5 +29,12 @@ type Provider interface {
 // defined for the Provider.
 type ProviderTimeout interface {
 	Provider
+	Timeout() (timeout, interval time.Duration)
+}
+
+// PersistentProvider enables implementing a custom challenge provider of DNS-PERSISTENT-01.
+// IMPORTANT: this interface is experimental and may change without notice.
+type PersistentProvider interface {
+	Persist(ctx context.Context, authz acme.Authorization, issuerDomainName, accountURI string, persistUntil time.Time) error
 	Timeout() (timeout, interval time.Duration)
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/go-acme/lego/v5/challenge/dnspersist01"
 	"github.com/go-acme/lego/v5/challenge/http01"
 	"github.com/go-acme/lego/v5/challenge/tlsalpn01"
+	"github.com/go-acme/lego/v5/internal/dnspersist"
 	"github.com/go-acme/lego/v5/internal/wait"
 	"github.com/go-acme/lego/v5/log"
 )
@@ -69,8 +70,9 @@ func (c *SolverManager) SetDNS01Provider(p challenge.Provider, opts ...dns01.Cha
 }
 
 // SetDNSPersist01 configures the dns-persist-01 challenge solver.
+// IMPORTANT: this method is experimental and may change without notice.
 func (c *SolverManager) SetDNSPersist01(opts ...dnspersist01.ChallengeOption) error {
-	chlg, err := dnspersist01.NewChallenge(c.core, validate, opts...)
+	chlg, err := dnspersist01.NewChallenge(c.core, validate, dnspersist.NewProvider(), opts...)
 	if err != nil {
 		return err
 	}

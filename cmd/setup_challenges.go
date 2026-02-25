@@ -26,7 +26,8 @@ import (
 //nolint:gocyclo // challenge setup dispatch is expected to branch by enabled challenge type.
 func setupChallenges(cmd *cli.Command, client *lego.Client, account registration.User) {
 	if !cmd.Bool(flgHTTP) && !cmd.Bool(flgTLS) && !cmd.IsSet(flgDNS) && !cmd.Bool(flgDNSPersist) {
-		log.Fatal(fmt.Sprintf("No challenge selected. You must specify at least one challenge: `--%s`, `--%s`, `--%s`, `--%s`.", flgHTTP, flgTLS, flgDNS, flgDNSPersist))
+		log.Fatal(fmt.Sprintf("No challenge selected. You must specify at least one challenge: `--%s`, `--%s`, `--%s`, `--%s`.",
+			flgHTTP, flgTLS, flgDNS, flgDNSPersist))
 	}
 
 	if cmd.Bool(flgHTTP) {

@@ -14,9 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/challenge"
-	"github.com/go-acme/lego/v5/challenge/dnspersist01"
 	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/log"
 )
@@ -66,17 +64,12 @@ func NewProvider() *Provider {
 	}
 }
 
-func (p *Provider) Persist(_ context.Context, authz acme.Authorization, issuerDomainName, accountURI string, persistUntil time.Time) error {
-	info, err := dnspersist01.GetChallengeInfo(authz, issuerDomainName, accountURI, persistUntil)
-	if err != nil {
-		return err
-	}
-
+func (p *Provider) Persist(_ context.Context, fqdn, value string) error {
 	if p.mode == modeWait {
 		log.Warn("Waiting for TXT record creation.",
 			slog.Duration("wait", p.wait),
-			slog.String("target", info.FQDN),
-			slog.String("value", formatTXTValue(info.Value)),
+			slog.String("target", fqdn),
+			slog.String("value", formatTXTValue(value)),
 		)
 
 		time.Sleep(p.wait)
@@ -85,11 +78,11 @@ func (p *Provider) Persist(_ context.Context, authz acme.Authorization, issuerDo
 	}
 
 	fmt.Println("lego: Please create a TXT record with the following value:")
-	fmt.Printf("%s IN TXT %s\n", info.FQDN, formatTXTValue(info.Value))
+	fmt.Printf("%s IN TXT %s\n", fqdn, formatTXTValue(value))
 
 	fmt.Println("lego: Press 'Enter' once the record is available.")
 
-	_, err = bufio.NewReader(os.Stdin).ReadBytes('\n')
+	_, err := bufio.NewReader(os.Stdin).ReadBytes('\n')
 	if err != nil {
 		return fmt.Errorf("dnspersist01-manual: read stdin: %w", err)
 	}

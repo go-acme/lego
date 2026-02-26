@@ -80,7 +80,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 
 	result, err := DefaultClient().LookupTXT(ctx, fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnspersist01: %w", err)
 	}
 
 	issuerDomainName, err := c.selectIssuerDomainName(chlng.IssuerDomainNames, result.Records, authz.Wildcard)
@@ -93,7 +93,14 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	}
 
 	if !matcher(result.Records) {
-		err = c.provider.Persist(ctx, authz, issuerDomainName, c.accountURI, c.persistUntil)
+		var info ChallengeInfo
+
+		info, err = GetChallengeInfo(authz, issuerDomainName, c.accountURI, c.persistUntil)
+		if err != nil {
+			return err
+		}
+
+		err = c.provider.Persist(ctx, info.FQDN, info.Value)
 		if err != nil {
 			return err
 		}
@@ -198,7 +205,7 @@ func GetChallengeInfo(authz acme.Authorization, issuerDomainName, accountURI str
 
 	value, err := buildIssueValue(issuerDomainName, accountURI, authz.Wildcard, persistUntil)
 	if err != nil {
-		return ChallengeInfo{}, err
+		return ChallengeInfo{}, fmt.Errorf("dnspersist01: %w", err)
 	}
 
 	return ChallengeInfo{

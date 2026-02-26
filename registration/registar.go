@@ -16,14 +16,6 @@ import (
 
 const mailTo = "mailto:"
 
-// Resource represents all important information about a registration
-// of which the client needs to keep track itself.
-// WARNING: will be removed in the future (acme.ExtendedAccount), https://github.com/go-acme/lego/issues/855.
-type Resource struct {
-	Body acme.Account `json:"body"`
-	URI  string       `json:"uri,omitempty"`
-}
-
 type RegisterOptions struct {
 	TermsOfServiceAgreed bool
 }
@@ -47,7 +39,7 @@ func NewRegistrar(core *api.Core, user User) *Registrar {
 }
 
 // Register the current account to the ACME server.
-func (r *Registrar) Register(ctx context.Context, options RegisterOptions) (*Resource, error) {
+func (r *Registrar) Register(ctx context.Context, options RegisterOptions) (*acme.ExtendedAccount, error) {
 	if r == nil || r.user == nil {
 		return nil, errors.New("acme: cannot register a nil client or user")
 	}
@@ -59,6 +51,7 @@ func (r *Registrar) Register(ctx context.Context, options RegisterOptions) (*Res
 
 	if r.user.GetEmail() != "" {
 		log.Info("acme: Registering the account.", slog.String("email", r.user.GetEmail()))
+
 		accMsg.Contact = []string{mailTo + r.user.GetEmail()}
 	}
 
@@ -71,11 +64,11 @@ func (r *Registrar) Register(ctx context.Context, options RegisterOptions) (*Res
 		}
 	}
 
-	return &Resource{URI: account.Location, Body: account.Account}, nil
+	return &account, nil
 }
 
 // RegisterWithExternalAccountBinding Register the current account to the ACME server.
-func (r *Registrar) RegisterWithExternalAccountBinding(ctx context.Context, options RegisterEABOptions) (*Resource, error) {
+func (r *Registrar) RegisterWithExternalAccountBinding(ctx context.Context, options RegisterEABOptions) (*acme.ExtendedAccount, error) {
 	accMsg := acme.Account{
 		TermsOfServiceAgreed: options.TermsOfServiceAgreed,
 		Contact:              []string{},
@@ -83,6 +76,7 @@ func (r *Registrar) RegisterWithExternalAccountBinding(ctx context.Context, opti
 
 	if r.user.GetEmail() != "" {
 		log.Info("acme: Registering the account.", slog.String("email", r.user.GetEmail()))
+
 		accMsg.Contact = []string{mailTo + r.user.GetEmail()}
 	}
 
@@ -95,35 +89,36 @@ func (r *Registrar) RegisterWithExternalAccountBinding(ctx context.Context, opti
 		}
 	}
 
-	return &Resource{URI: account.Location, Body: account.Account}, nil
+	return &account, nil
 }
 
 // QueryRegistration runs a POST request on the client's registration and returns the result.
 //
 // This is similar to the Register function,
 // but acting on an existing registration link and resource.
-func (r *Registrar) QueryRegistration(ctx context.Context) (*Resource, error) {
+func (r *Registrar) QueryRegistration(ctx context.Context) (*acme.ExtendedAccount, error) {
 	if r == nil || r.user == nil || r.user.GetRegistration() == nil {
 		return nil, errors.New("acme: cannot query the registration of a nil client or user")
 	}
 
 	// Log the URL here instead of the email as the email may not be set
-	log.Info("acme: Querying the account.", slog.String("registrationURI", r.user.GetRegistration().URI))
+	log.Info("acme: Querying the account.", slog.String("registrationURI", r.user.GetRegistration().Location))
 
-	account, err := r.core.Accounts.Get(ctx, r.user.GetRegistration().URI)
+	account, err := r.core.Accounts.Get(ctx, r.user.GetRegistration().Location)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Resource{
-		Body: account,
-		// Location: header is not returned so this needs to be populated off of existing URI
-		URI: r.user.GetRegistration().URI,
+	return &acme.ExtendedAccount{
+		Account: account,
+
+		// Location: header is not returned, so this needs to be populated off of the existing URI
+		Location: r.user.GetRegistration().Location,
 	}, nil
 }
 
 // UpdateRegistration update the user registration on the ACME server.
-func (r *Registrar) UpdateRegistration(ctx context.Context, options RegisterOptions) (*Resource, error) {
+func (r *Registrar) UpdateRegistration(ctx context.Context, options RegisterOptions) (*acme.ExtendedAccount, error) {
 	if r == nil || r.user == nil {
 		return nil, errors.New("acme: cannot update a nil client or user")
 	}
@@ -138,14 +133,14 @@ func (r *Registrar) UpdateRegistration(ctx context.Context, options RegisterOpti
 		accMsg.Contact = []string{mailTo + r.user.GetEmail()}
 	}
 
-	accountURL := r.user.GetRegistration().URI
+	accountURL := r.user.GetRegistration().Location
 
 	account, err := r.core.Accounts.Update(ctx, accountURL, accMsg)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Resource{URI: accountURL, Body: account}, nil
+	return &acme.ExtendedAccount{Account: account, Location: accountURL}, nil
 }
 
 // DeleteRegistration deletes the client's user registration from the ACME server.
@@ -156,12 +151,12 @@ func (r *Registrar) DeleteRegistration(ctx context.Context) error {
 
 	log.Info("acme: Deleting the account.", slog.String("email", r.user.GetEmail()))
 
-	return r.core.Accounts.Deactivate(ctx, r.user.GetRegistration().URI)
+	return r.core.Accounts.Deactivate(ctx, r.user.GetRegistration().Location)
 }
 
 // ResolveAccountByKey will attempt to look up an account using the given account key
 // and return its registration resource.
-func (r *Registrar) ResolveAccountByKey(ctx context.Context) (*Resource, error) {
+func (r *Registrar) ResolveAccountByKey(ctx context.Context) (*acme.ExtendedAccount, error) {
 	log.Info("acme: Trying to resolve the account by key")
 
 	accMsg := acme.Account{OnlyReturnExisting: true}
@@ -171,12 +166,12 @@ func (r *Registrar) ResolveAccountByKey(ctx context.Context) (*Resource, error) 
 		return nil, err
 	}
 
-	return &Resource{URI: account.Location, Body: account.Account}, nil
+	return &account, nil
 }
 
 // RegisterWithZeroSSL registers the current account to the ZeroSSL.
 // It uses either an access key or an email to generate an EAB.
-func RegisterWithZeroSSL(ctx context.Context, r *Registrar, email string) (*Resource, error) {
+func RegisterWithZeroSSL(ctx context.Context, r *Registrar, email string) (*acme.ExtendedAccount, error) {
 	zc := zerossl.NewClient()
 
 	value, find := os.LookupEnv(zerossl.EnvZeroSSLAccessKey)

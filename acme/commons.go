@@ -86,7 +86,7 @@ type ExtendedAccount struct {
 	Account
 
 	// Contains the value of the response header `Location`
-	Location string `json:"-"`
+	Location string `json:"accountURL,omitempty"`
 }
 
 // Account the ACME account Object.

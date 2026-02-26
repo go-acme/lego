@@ -55,16 +55,16 @@ func TestChallengeDNSPersist_Client_Obtain(t *testing.T) {
 
 	reg, err := client.Registration.Register(context.Background(), registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
-	require.NotEmpty(t, reg.URI)
+	require.NotEmpty(t, reg.Location)
 
 	user.registration = reg
 
-	updateDNS(t, reg.URI, testPersistBaseDomain)
+	updateDNS(t, reg.Location, testPersistBaseDomain)
 
 	mockDefaultPersist(t)
 
 	err = client.Challenge.SetDNSPersist01(
-		dnspersist01.WithAccountURI(reg.URI),
+		dnspersist01.WithAccountURI(reg.Location),
 		dnspersist01.DisableAuthoritativeNssPropagationRequirement(),
 	)
 	require.NoError(t, err)
@@ -246,7 +246,7 @@ func createCLIAccountState(t *testing.T, email string) string {
 
 	reg, err := client.Registration.Register(context.Background(), registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
-	require.NotEmpty(t, reg.URI)
+	require.NotEmpty(t, reg.Location)
 
 	keyType := certcrypto.EC256
 
@@ -261,10 +261,10 @@ func createCLIAccountState(t *testing.T, email string) string {
 	accountPath := filepath.Join(accountPathRoot, "account.json")
 
 	content, err := json.MarshalIndent(struct {
-		ID           string                 `json:"id"`
-		Email        string                 `json:"email"`
-		KeyType      certcrypto.KeyType     `json:"keyType"`
-		Registration *registration.Resource `json:"registration"`
+		ID           string                `json:"id"`
+		Email        string                `json:"email"`
+		KeyType      certcrypto.KeyType    `json:"keyType"`
+		Registration *acme.ExtendedAccount `json:"registration"`
 	}{
 		ID:           email,
 		Email:        email,
@@ -276,14 +276,14 @@ func createCLIAccountState(t *testing.T, email string) string {
 	err = os.WriteFile(accountPath, content, 0o600)
 	require.NoError(t, err)
 
-	return reg.URI
+	return reg.Location
 }
 
 func waitForAccountFile(ctx context.Context, email string) (string, error) {
 	accountPath := filepath.Join(getAccountPath(email, certcrypto.EC256), "account.json")
 
 	type accountFile struct {
-		Registration *registration.Resource `json:"registration"`
+		Registration *acme.ExtendedAccount `json:"registration"`
 	}
 
 	return backoff.Retry(ctx,
@@ -304,8 +304,8 @@ func waitForAccountFile(ctx context.Context, email string) (string, error) {
 				return "", err
 			}
 
-			if account.Registration != nil && account.Registration.URI != "" {
-				return account.Registration.URI, nil
+			if account.Registration != nil && account.Registration.Location != "" {
+				return account.Registration.Location, nil
 			}
 
 			return "", errors.New("account URI not found")

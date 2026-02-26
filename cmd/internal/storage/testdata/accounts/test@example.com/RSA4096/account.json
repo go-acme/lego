@@ -3,9 +3,7 @@
 	"email": "account@example.com",
 	"keyType": "RSA4096",
 	"registration": {
-		"body": {
-			"status": "valid"
-		},
-		"uri": "https://example.org/acme/acct/123456"
+		"status": "valid",
+		"accountURL": "https://example.org/acme/acct/123456"
 	}
 }

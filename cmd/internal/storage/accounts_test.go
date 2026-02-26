@@ -9,7 +9,6 @@ import (
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
-	"github.com/go-acme/lego/v5/registration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -46,8 +45,8 @@ func TestAccountsStorage_Save(t *testing.T) {
 		Email:   "account@example.com",
 		ID:      accountID,
 		KeyType: keyType,
-		Registration: &registration.Resource{
-			Body: acme.Account{
+		Registration: &acme.ExtendedAccount{
+			Account: acme.Account{
 				Status:                 "valid",
 				Contact:                []string{"contact@example.com"},
 				TermsOfServiceAgreed:   true,
@@ -55,7 +54,7 @@ func TestAccountsStorage_Save(t *testing.T) {
 				OnlyReturnExisting:     true,
 				ExternalAccountBinding: []byte(`"EAB"`),
 			},
-			URI: "https://ame.example.com",
+			Location: "https://ame.example.com",
 		},
 		key: crypto.PrivateKey(""),
 	}
@@ -116,11 +115,11 @@ func TestAccountsStorage_Get_existingAccount(t *testing.T) {
 	assert.Equal(t, "test@example.com", account.GetID())
 	assert.Equal(t, certcrypto.RSA4096, account.KeyType)
 
-	expectedRegistration := &registration.Resource{
-		Body: acme.Account{
+	expectedRegistration := &acme.ExtendedAccount{
+		Account: acme.Account{
 			Status: "valid",
 		},
-		URI: "https://example.org/acme/acct/123456",
+		Location: "https://example.org/acme/acct/123456",
 	}
 
 	assert.Equal(t, expectedRegistration, account.GetRegistration())

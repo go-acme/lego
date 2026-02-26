@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/challenge/http01"
@@ -420,9 +421,9 @@ func TestChallengeHTTP_Client_Registration_QueryRegistration(t *testing.T) {
 
 	require.NotNil(t, resource)
 
-	assert.Equal(t, "valid", resource.Body.Status)
-	assert.Regexp(t, `https://localhost:14000/list-orderz/[\w\d]+`, resource.Body.Orders)
-	assert.Regexp(t, `https://localhost:14000/my-account/[\w\d]+`, resource.URI)
+	assert.Equal(t, "valid", resource.Status)
+	assert.Regexp(t, `https://localhost:14000/list-orderz/[\w\d]+`, resource.Orders)
+	assert.Regexp(t, `https://localhost:14000/my-account/[\w\d]+`, resource.Location)
 }
 
 func TestChallengeTLS_Client_Obtain(t *testing.T) {
@@ -588,25 +589,25 @@ func TestRegistrar_UpdateAccount(t *testing.T) {
 	regOptions := registration.RegisterOptions{TermsOfServiceAgreed: true}
 	reg, err := client.Registration.Register(ctx, regOptions)
 	require.NoError(t, err)
-	require.Equal(t, []string{"mailto:" + testEmail1}, reg.Body.Contact)
+	require.Equal(t, []string{"mailto:" + testEmail1}, reg.Contact)
 	user.registration = reg
 
 	user.email = testEmail2
 	resource, err := client.Registration.UpdateRegistration(ctx, regOptions)
 	require.NoError(t, err)
-	require.Equal(t, []string{"mailto:" + testEmail2}, resource.Body.Contact)
-	require.Equal(t, reg.URI, resource.URI)
+	require.Equal(t, []string{"mailto:" + testEmail2}, resource.Contact)
+	require.Equal(t, reg.Location, resource.Location)
 }
 
 type fakeUser struct {
 	email        string
 	privateKey   crypto.PrivateKey
-	registration *registration.Resource
+	registration *acme.ExtendedAccount
 }
 
-func (f *fakeUser) GetEmail() string                        { return f.email }
-func (f *fakeUser) GetRegistration() *registration.Resource { return f.registration }
-func (f *fakeUser) GetPrivateKey() crypto.PrivateKey        { return f.privateKey }
+func (f *fakeUser) GetEmail() string                       { return f.email }
+func (f *fakeUser) GetRegistration() *acme.ExtendedAccount { return f.registration }
+func (f *fakeUser) GetPrivateKey() crypto.PrivateKey       { return f.privateKey }
 
 func createTestCSRFile(t *testing.T, raw bool) string {
 	t.Helper()

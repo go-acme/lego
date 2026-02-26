@@ -4,19 +4,16 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"strings"
-
-	"github.com/miekg/dns"
 )
 
 // checkRecursiveNameserversPropagation queries each of the recursive nameservers for the expected TXT record.
 func (c *Client) checkRecursiveNameserversPropagation(ctx context.Context, fqdn string, matcher RecordMatcher) (bool, error) {
-	return c.checkNameserversPropagationCustom(ctx, fqdn, c.recursiveNameservers, matcher, false, true)
+	return c.checkNameserversPropagationCustom(ctx, fqdn, c.core.GetRecursiveNameservers(), matcher, false, true)
 }
 
 // checkRecursiveNameserversPropagation queries each of the authoritative nameservers for the expected TXT record.
 func (c *Client) checkAuthoritativeNameserversPropagation(ctx context.Context, fqdn string, matcher RecordMatcher) (bool, error) {
-	authoritativeNss, err := c.lookupAuthoritativeNameservers(ctx, fqdn)
+	authoritativeNss, err := c.core.LookupAuthoritativeNameservers(ctx, fqdn)
 	if err != nil {
 		return false, err
 	}
@@ -41,35 +38,4 @@ func (c *Client) checkNameserversPropagationCustom(ctx context.Context, fqdn str
 	}
 
 	return true, nil
-}
-
-// lookupAuthoritativeNameservers returns the authoritative nameservers for the given fqdn.
-/*
- * NOTE(ldez): This function is a duplication of `lookupAuthoritativeNameservers()` from `dns01/client_nameservers.go`.
- * The 2 functions should be kept in sync.
- */
-func (c *Client) lookupAuthoritativeNameservers(ctx context.Context, fqdn string) ([]string, error) {
-	var authoritativeNss []string
-
-	zone, err := c.FindZoneByFqdn(ctx, fqdn)
-	if err != nil {
-		return nil, fmt.Errorf("could not find zone: %w", err)
-	}
-
-	r, err := c.sendQuery(ctx, zone, dns.TypeNS, true)
-	if err != nil {
-		return nil, fmt.Errorf("NS call failed: %w", err)
-	}
-
-	for _, rr := range r.Answer {
-		if ns, ok := rr.(*dns.NS); ok {
-			authoritativeNss = append(authoritativeNss, strings.ToLower(ns.Ns))
-		}
-	}
-
-	if len(authoritativeNss) > 0 {
-		return authoritativeNss, nil
-	}
-
-	return nil, fmt.Errorf("[zone=%s] could not determine authoritative nameservers", zone)
 }

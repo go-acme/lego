@@ -9,9 +9,9 @@ import (
 )
 
 func TestDNSError_Error(t *testing.T) {
-	msgIn := CreateDNSMsg("example.com.", dns.TypeTXT, true)
+	msgIn := createDNSMsg("example.com.", dns.TypeTXT, true)
 
-	msgOut := CreateDNSMsg("example.org.", dns.TypeSOA, true)
+	msgOut := createDNSMsg("example.org.", dns.TypeSOA, true)
 	msgOut.Rcode = dns.RcodeNameError
 
 	testCases := []struct {

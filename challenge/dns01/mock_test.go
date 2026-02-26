@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:unparam // Keep the name for test readability.
 func fakeNS(name, ns string) *dns.NS {
 	return &dns.NS{
 		Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeNS, Class: dns.ClassINET, Ttl: 172800},

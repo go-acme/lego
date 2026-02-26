@@ -37,7 +37,7 @@ func (r TXTResult) String() string {
 // LookupTXT resolves TXT records at fqdn.
 // If CNAMEs are returned, they are followed up to 50 times to resolve TXT records.
 func (c *Client) LookupTXT(ctx context.Context, fqdn string) (TXTResult, error) {
-	return c.lookupTXT(ctx, fqdn, c.recursiveNameservers, true)
+	return c.lookupTXT(ctx, fqdn, c.core.GetRecursiveNameservers(), true)
 }
 
 func (c *Client) lookupTXT(ctx context.Context, fqdn string, nameservers []string, recursive bool) (TXTResult, error) {
@@ -62,7 +62,7 @@ func (c *Client) lookupTXT(ctx context.Context, fqdn string, nameservers []strin
 
 		seen[name] = struct{}{}
 
-		msg, err := c.sendQueryCustom(ctx, name, dns.TypeTXT, nameservers, recursive)
+		msg, err := c.core.SendQueryCustom(ctx, name, dns.TypeTXT, nameservers, recursive)
 		if err != nil {
 			return result, err
 		}

@@ -11,10 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-/*
- * NOTE(ldez): This function is a duplication of `fakeNS` from `dns01/mock_test.go`.
- * The 2 functions should be kept in sync.
- */
 func fakeNS(name, ns string) *dns.NS {
 	return &dns.NS{
 		Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeNS, Class: dns.ClassINET, Ttl: 172800},
@@ -22,10 +18,6 @@ func fakeNS(name, ns string) *dns.NS {
 	}
 }
 
-/*
- * NOTE(ldez): This function is a partial duplication of `fakeA` from `dns01/mock_test.go`.
- * The 2 functions should be kept in sync.
- */
 func fakeA(name, ip string) *dns.A {
 	return &dns.A{
 		Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: 10},
@@ -33,10 +25,6 @@ func fakeA(name, ip string) *dns.A {
 	}
 }
 
-/*
- * NOTE(ldez): This function is a partial duplication of `fakeTXT` from `dns01/mock_test.go`.
- * The 2 functions should be kept in sync.
- */
 func fakeTXT(name, value string, ttl uint32) *dns.TXT {
 	return &dns.TXT{
 		Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeTXT, Class: dns.ClassINET, Ttl: ttl},

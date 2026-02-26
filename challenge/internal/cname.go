@@ -23,8 +23,8 @@ func ExtractCNAME(msg *dns.Msg, name string) string {
 	return ""
 }
 
-// MsgContainsCNAME checks for a CNAME answer in msg.
-func MsgContainsCNAME(msg *dns.Msg) bool {
+// msgContainsCNAME checks for a CNAME answer in msg.
+func msgContainsCNAME(msg *dns.Msg) bool {
 	return slices.ContainsFunc(msg.Answer, func(rr dns.RR) bool {
 		_, ok := rr.(*dns.CNAME)
 		return ok

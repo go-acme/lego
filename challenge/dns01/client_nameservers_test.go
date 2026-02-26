@@ -1,11 +1,9 @@
 package dns01
 
 import (
-	"sort"
 	"testing"
 
 	dnsmock2 "github.com/go-acme/lego/v5/internal/tester/dnsmock"
-	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -71,116 +69,6 @@ func TestClient_checkNameserversPropagationCustom_authoritativeNss(t *testing.T)
 				require.ErrorContains(t, err, test.expectedError)
 				assert.False(t, ok)
 			}
-		})
-	}
-}
-
-func TestClient_lookupAuthoritativeNameservers_OK(t *testing.T) {
-	testCases := []struct {
-		desc          string
-		fakeDNSServer *dnsmock2.Builder
-		fqdn          string
-		expected      []string
-	}{
-		{
-			fqdn: "en.wikipedia.org.localhost.",
-			fakeDNSServer: dnsmock2.NewServer().
-				Query("en.wikipedia.org.localhost SOA", dnsmock2.CNAME("dyna.wikimedia.org.localhost")).
-				Query("wikipedia.org.localhost SOA", dnsmock2.SOA("")).
-				Query("wikipedia.org.localhost NS",
-					dnsmock2.Answer(
-						fakeNS("wikipedia.org.localhost.", "ns0.wikimedia.org.localhost."),
-						fakeNS("wikipedia.org.localhost.", "ns1.wikimedia.org.localhost."),
-						fakeNS("wikipedia.org.localhost.", "ns2.wikimedia.org.localhost."),
-					),
-				),
-			expected: []string{"ns0.wikimedia.org.localhost.", "ns1.wikimedia.org.localhost.", "ns2.wikimedia.org.localhost."},
-		},
-		{
-			fqdn: "www.google.com.localhost.",
-			fakeDNSServer: dnsmock2.NewServer().
-				Query("www.google.com.localhost. SOA", dnsmock2.Noop).
-				Query("google.com.localhost. SOA", dnsmock2.SOA("")).
-				Query("google.com.localhost. NS",
-					dnsmock2.Answer(
-						fakeNS("google.com.localhost.", "ns1.google.com.localhost."),
-						fakeNS("google.com.localhost.", "ns2.google.com.localhost."),
-						fakeNS("google.com.localhost.", "ns3.google.com.localhost."),
-						fakeNS("google.com.localhost.", "ns4.google.com.localhost."),
-					),
-				),
-			expected: []string{"ns1.google.com.localhost.", "ns2.google.com.localhost.", "ns3.google.com.localhost.", "ns4.google.com.localhost."},
-		},
-		{
-			fqdn: "mail.proton.me.localhost.",
-			fakeDNSServer: dnsmock2.NewServer().
-				Query("mail.proton.me.localhost. SOA", dnsmock2.Noop).
-				Query("proton.me.localhost. SOA", dnsmock2.SOA("")).
-				Query("proton.me.localhost. NS",
-					dnsmock2.Answer(
-						fakeNS("proton.me.localhost.", "ns1.proton.me.localhost."),
-						fakeNS("proton.me.localhost.", "ns2.proton.me.localhost."),
-						fakeNS("proton.me.localhost.", "ns3.proton.me.localhost."),
-					),
-				),
-			expected: []string{"ns1.proton.me.localhost.", "ns2.proton.me.localhost.", "ns3.proton.me.localhost."},
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.fqdn, func(t *testing.T) {
-			client := NewClient(&Options{RecursiveNameservers: []string{test.fakeDNSServer.Build(t).String()}})
-
-			nss, err := client.lookupAuthoritativeNameservers(t.Context(), test.fqdn)
-			require.NoError(t, err)
-
-			sort.Strings(nss)
-			sort.Strings(test.expected)
-
-			assert.Equal(t, test.expected, nss)
-		})
-	}
-}
-
-func TestClient_lookupAuthoritativeNameservers_error(t *testing.T) {
-	testCases := []struct {
-		desc          string
-		fqdn          string
-		fakeDNSServer *dnsmock2.Builder
-		error         string
-	}{
-		{
-			desc: "NXDOMAIN",
-			fqdn: "example.invalid.",
-			fakeDNSServer: dnsmock2.NewServer().
-				Query(". SOA", dnsmock2.Error(dns.RcodeNameError)),
-			error: "could not find zone: [fqdn=example.invalid.] could not find the start of authority for 'example.invalid.' [question='invalid. IN  SOA', code=NXDOMAIN]",
-		},
-		{
-			desc: "NS error",
-			fqdn: "example.com.",
-			fakeDNSServer: dnsmock2.NewServer().
-				Query("example.com. SOA", dnsmock2.SOA("")).
-				Query("example.com. NS", dnsmock2.Error(dns.RcodeServerFailure)),
-			error: "[zone=example.com.] could not determine authoritative nameservers",
-		},
-		{
-			desc: "empty NS",
-			fqdn: "example.com.",
-			fakeDNSServer: dnsmock2.NewServer().
-				Query("example.com. SOA", dnsmock2.SOA("")).
-				Query("example.me NS", dnsmock2.Noop),
-			error: "[zone=example.com.] could not determine authoritative nameservers",
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			client := NewClient(&Options{RecursiveNameservers: []string{test.fakeDNSServer.Build(t).String()}})
-
-			_, err := client.lookupAuthoritativeNameservers(t.Context(), test.fqdn)
-			require.Error(t, err)
-			assert.EqualError(t, err, test.error)
 		})
 	}
 }

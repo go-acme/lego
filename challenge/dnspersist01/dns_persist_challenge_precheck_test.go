@@ -66,6 +66,8 @@ func Test_preCheck_checkDNSPropagation(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			DefaultClient().ClearFqdnCache()
+
 			match := func(records []TXTRecord) bool {
 				for _, record := range records {
 					if record.Value == test.value {

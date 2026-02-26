@@ -2,16 +2,9 @@ package dns01
 
 import (
 	"context"
-	"errors"
-	"os"
-	"strconv"
-	"sync"
 	"sync/atomic"
-	"time"
 
-	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/internal"
-	"github.com/miekg/dns"
 )
 
 var defaultClient atomic.Pointer[Client]
@@ -26,112 +19,37 @@ func SetDefaultClient(c *Client) {
 	defaultClient.Store(c)
 }
 
-type Options struct {
-	RecursiveNameservers []string
-	Timeout              time.Duration
-	TCPOnly              bool
-	NetworkStack         challenge.NetworkStack
-}
+type Options = internal.Options
 
 type Client struct {
-	recursiveNameservers []string
+	core *internal.Client
 
 	// authoritativeNSPort used by authoritative NS.
 	// For testing purposes only.
 	authoritativeNSPort string
-
-	tcpClient *dns.Client
-	udpClient *dns.Client
-	tcpOnly   bool
-
-	fqdnSoaCache   map[string]*soaCacheEntry
-	muFqdnSoaCache sync.Mutex
 }
 
 func NewClient(opts *Options) *Client {
-	if opts == nil {
-		tcpOnly, _ := strconv.ParseBool(os.Getenv("LEGO_EXPERIMENTAL_DNS_TCP_ONLY"))
-		opts = &Options{TCPOnly: tcpOnly}
-	}
-
-	if len(opts.RecursiveNameservers) == 0 {
-		opts.RecursiveNameservers = internal.GetNameservers(internal.DefaultResolvConf, opts.NetworkStack)
-	}
-
-	if opts.Timeout == 0 {
-		opts.Timeout = internal.DNSTimeout
-	}
-
 	return &Client{
-		recursiveNameservers: internal.ParseNameservers(opts.RecursiveNameservers),
-		authoritativeNSPort:  "53",
-		tcpClient: &dns.Client{
-			Net:     opts.NetworkStack.Network("tcp"),
-			Timeout: opts.Timeout,
-		},
-		udpClient: &dns.Client{
-			Net:     opts.NetworkStack.Network("udp"),
-			Timeout: opts.Timeout,
-		},
-		tcpOnly:        opts.TCPOnly,
-		fqdnSoaCache:   map[string]*soaCacheEntry{},
-		muFqdnSoaCache: sync.Mutex{},
+		core: internal.NewClient(opts),
+
+		authoritativeNSPort: "53",
 	}
 }
 
-func (c *Client) sendQuery(ctx context.Context, fqdn string, rtype uint16, recursive bool) (*dns.Msg, error) {
-	return c.sendQueryCustom(ctx, fqdn, rtype, c.recursiveNameservers, recursive)
+// FindZoneByFqdn determines the zone apex for the given fqdn
+// by recursing up the domain labels until the nameserver returns a SOA record in the answer section.
+func (c *Client) FindZoneByFqdn(ctx context.Context, fqdn string) (string, error) {
+	return c.core.FindZoneByFqdn(ctx, fqdn)
 }
 
-func (c *Client) sendQueryCustom(ctx context.Context, fqdn string, rtype uint16, nameservers []string, recursive bool) (*dns.Msg, error) {
-	m := internal.CreateDNSMsg(fqdn, rtype, recursive)
-
-	if len(nameservers) == 0 {
-		return nil, &internal.DNSError{Message: "empty list of nameservers"}
-	}
-
-	var (
-		r      *dns.Msg
-		err    error
-		errAll error
-	)
-
-	for _, ns := range nameservers {
-		r, err = c.exchange(ctx, m, ns)
-		if err == nil && len(r.Answer) > 0 {
-			break
-		}
-
-		errAll = errors.Join(errAll, err)
-	}
-
-	if err != nil {
-		return r, errAll
-	}
-
-	return r, nil
+// FindZoneByFqdnCustom determines the zone apex for the given fqdn
+// by recursing up the domain labels until the nameserver returns a SOA record in the answer section.
+func (c *Client) FindZoneByFqdnCustom(ctx context.Context, fqdn string, nameservers []string) (string, error) {
+	return c.core.FindZoneByFqdnCustom(ctx, fqdn, nameservers)
 }
 
-func (c *Client) exchange(ctx context.Context, m *dns.Msg, ns string) (*dns.Msg, error) {
-	if c.tcpOnly {
-		r, _, err := c.tcpClient.ExchangeContext(ctx, m, ns)
-		if err != nil {
-			return r, &internal.DNSError{Message: "DNS call error", MsgIn: m, NS: ns, Err: err}
-		}
-
-		return r, nil
-	}
-
-	r, _, err := c.udpClient.ExchangeContext(ctx, m, ns)
-
-	if r != nil && r.Truncated {
-		// If the TCP request succeeds, the "err" will reset to nil
-		r, _, err = c.tcpClient.ExchangeContext(ctx, m, ns)
-	}
-
-	if err != nil {
-		return r, &internal.DNSError{Message: "DNS call error", MsgIn: m, NS: ns, Err: err}
-	}
-
-	return r, nil
+// ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
+func (c *Client) ClearFqdnCache() {
+	c.core.ClearFqdnCache()
 }

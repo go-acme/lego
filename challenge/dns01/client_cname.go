@@ -11,7 +11,7 @@ import (
 )
 
 func (c *Client) resolveCNAME(ctx context.Context, fqdn string) (string, error) {
-	r, err := c.sendQuery(ctx, fqdn, dns.TypeTXT, true)
+	r, err := c.core.SendQuery(ctx, fqdn, dns.TypeTXT, true)
 	if err != nil {
 		return "", fmt.Errorf("initial recursive nameserver: %w", err)
 	}
@@ -27,7 +27,7 @@ func (c *Client) lookupCNAME(ctx context.Context, fqdn string) string {
 	// recursion counter so it doesn't spin out of control
 	for range 50 {
 		// Keep following CNAMEs
-		r, err := c.sendQuery(ctx, fqdn, dns.TypeCNAME, true)
+		r, err := c.core.SendQuery(ctx, fqdn, dns.TypeCNAME, true)
 		if err != nil {
 			log.Debug("Lookup CNAME.",
 				slog.String("fqdn", fqdn),

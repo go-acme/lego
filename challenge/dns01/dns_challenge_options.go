@@ -10,8 +10,8 @@ import (
 
 type ChallengeOption func(*Challenge) error
 
-// CondOption Conditional challenge option.
-func CondOption(condition bool, opt ChallengeOption) ChallengeOption {
+// CondOptions Conditional challenge options.
+func CondOptions(condition bool, opt ...ChallengeOption) ChallengeOption {
 	if !condition {
 		// NoOp options
 		return func(*Challenge) error {
@@ -19,7 +19,16 @@ func CondOption(condition bool, opt ChallengeOption) ChallengeOption {
 		}
 	}
 
-	return opt
+	return func(chlg *Challenge) error {
+		for _, opt := range opt {
+			err := opt(chlg)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
 }
 
 func DisableAuthoritativeNssPropagationRequirement() ChallengeOption {

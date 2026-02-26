@@ -197,14 +197,16 @@ func setupDNS(cmd *cli.Command, client *lego.Client) error {
 	shouldWait := cmd.IsSet(flgDNSPropagationWait)
 
 	err = client.Challenge.SetDNS01Provider(provider,
-		dns01.CondOption(shouldWait,
+		dns01.CondOptions(shouldWait,
 			dns01.PropagationWait(cmd.Duration(flgDNSPropagationWait), true),
 		),
-		dns01.CondOption(!shouldWait && cmd.Bool(flgDNSPropagationDisableANS),
-			dns01.DisableAuthoritativeNssPropagationRequirement(),
-		),
-		dns01.CondOption(!shouldWait && cmd.Bool(flgDNSPropagationDisableRNS),
-			dns01.DisableRecursiveNSsPropagationRequirement(),
+		dns01.CondOptions(!shouldWait,
+			dns01.CondOptions(cmd.Bool(flgDNSPropagationDisableANS),
+				dns01.DisableAuthoritativeNssPropagationRequirement(),
+			),
+			dns01.CondOptions(cmd.Bool(flgDNSPropagationDisableRNS),
+				dns01.DisableRecursiveNSsPropagationRequirement(),
+			),
 		),
 	)
 

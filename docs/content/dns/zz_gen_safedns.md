@@ -1,12 +1,12 @@
 ---
-title: "UKFast SafeDNS"
+title: "ANS SafeDNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: safedns
 dnsprovider:
   since:    "v4.6.0"
   code:     "safedns"
-  url:      "https://www.ukfast.co.uk/dns-hosting.html"
+  url:      "https://www.ans.co.uk/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [UKFast SafeDNS](https://www.ukfast.co.uk/dns-hosting.html).
+Configuration for [ANS SafeDNS](https://www.ans.co.uk/).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Configuration for [UKFast SafeDNS](https://www.ukfast.co.uk/dns-hosting.html).
 - Since: v4.6.0
 
 
-Here is an example bash command using the UKFast SafeDNS provider:
+Here is an example bash command using the ANS SafeDNS provider:
 
 ```bash
 SAFEDNS_AUTH_TOKEN=xxxxxx \

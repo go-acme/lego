@@ -3374,7 +3374,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "safedns":
 		// generated from: providers/dns/safedns/safedns.toml
-		ew.writeln(`Configuration for UKFast SafeDNS.`)
+		ew.writeln(`Configuration for ANS SafeDNS.`)
 		ew.writeln(`Code:	'safedns'`)
 		ew.writeln(`Since:	'v4.6.0'`)
 		ew.writeln()

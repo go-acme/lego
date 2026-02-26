@@ -2,12 +2,26 @@ package dns01
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/go-acme/lego/v5/challenge/internal"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/miekg/dns"
 )
+
+func (c *Client) resolveCNAME(ctx context.Context, fqdn string) (string, error) {
+	r, err := c.sendQuery(ctx, fqdn, dns.TypeTXT, true)
+	if err != nil {
+		return "", fmt.Errorf("initial recursive nameserver: %w", err)
+	}
+
+	if r.Rcode == dns.RcodeSuccess {
+		fqdn = updateDomainWithCName(r, fqdn)
+	}
+
+	return fqdn, nil
+}
 
 func (c *Client) lookupCNAME(ctx context.Context, fqdn string) string {
 	// recursion counter so it doesn't spin out of control

@@ -3,8 +3,6 @@ package dns01
 import (
 	"context"
 	"fmt"
-
-	"github.com/miekg/dns"
 )
 
 // PreCheckFunc checks DNS propagation before notifying ACME that the DNS challenge is ready.
@@ -53,13 +51,9 @@ func (p preCheck) checkDNSPropagation(ctx context.Context, fqdn, value string) (
 	client := DefaultClient()
 
 	// Initial attempt to resolve at the recursive NS (require getting CNAME)
-	r, err := client.sendQuery(ctx, fqdn, dns.TypeTXT, true)
+	fqdn, err := client.resolveCNAME(ctx, fqdn)
 	if err != nil {
 		return false, fmt.Errorf("initial recursive nameserver: %w", err)
-	}
-
-	if r.Rcode == dns.RcodeSuccess {
-		fqdn = updateDomainWithCName(r, fqdn)
 	}
 
 	if p.requireRecursiveNssPropagation {

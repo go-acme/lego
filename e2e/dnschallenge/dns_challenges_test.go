@@ -74,13 +74,8 @@ func TestChallengeDNS_Run(t *testing.T) {
 }
 
 func TestChallengeDNS_Client_Obtain(t *testing.T) {
-	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
-	require.NoError(t, err)
-
-	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
-
-	err = os.Setenv("EXEC_PATH", "../fixtures/update-dns.sh")
-	require.NoError(t, err)
+	t.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
+	t.Setenv("EXEC_PATH", "../fixtures/update-dns.sh")
 
 	defer func() { _ = os.Unsetenv("EXEC_PATH") }()
 
@@ -137,13 +132,8 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 }
 
 func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
-	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
-	require.NoError(t, err)
-
-	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
-
-	err = os.Setenv("EXEC_PATH", "../fixtures/update-dns.sh")
-	require.NoError(t, err)
+	t.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
+	t.Setenv("EXEC_PATH", "../fixtures/update-dns.sh")
 
 	defer func() { _ = os.Unsetenv("EXEC_PATH") }()
 

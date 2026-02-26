@@ -1,4 +1,4 @@
-package dns01
+package internal
 
 import (
 	"context"
@@ -50,7 +50,7 @@ func (c *Client) fetchSoaByFqdn(ctx context.Context, fqdn string, nameservers []
 	)
 
 	for domain := range DomainsSeq(fqdn) {
-		r, err = c.sendQueryCustom(ctx, domain, dns.TypeSOA, nameservers, true)
+		r, err = c.SendQueryCustom(ctx, domain, dns.TypeSOA, nameservers, true)
 		if err != nil {
 			continue
 		}
@@ -68,7 +68,7 @@ func (c *Client) fetchSoaByFqdn(ctx context.Context, fqdn string, nameservers []
 
 			// CNAME records cannot/should not exist at the root of a zone.
 			// So we skip a domain when a CNAME is found.
-			if dnsMsgContainsCNAME(r) {
+			if msgContainsCNAME(r) {
 				continue
 			}
 

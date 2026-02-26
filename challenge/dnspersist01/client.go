@@ -1,7 +1,6 @@
-package dns01
+package dnspersist01
 
 import (
-	"context"
 	"sync/atomic"
 
 	"github.com/go-acme/lego/v5/challenge/internal"
@@ -35,18 +34,6 @@ func NewClient(opts *Options) *Client {
 
 		authoritativeNSPort: "53",
 	}
-}
-
-// FindZoneByFqdn determines the zone apex for the given fqdn
-// by recursing up the domain labels until the nameserver returns a SOA record in the answer section.
-func (c *Client) FindZoneByFqdn(ctx context.Context, fqdn string) (string, error) {
-	return c.core.FindZoneByFqdn(ctx, fqdn)
-}
-
-// FindZoneByFqdnCustom determines the zone apex for the given fqdn
-// by recursing up the domain labels until the nameserver returns a SOA record in the answer section.
-func (c *Client) FindZoneByFqdnCustom(ctx context.Context, fqdn string, nameservers []string) (string, error) {
-	return c.core.FindZoneByFqdnCustom(ctx, fqdn, nameservers)
 }
 
 // ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.

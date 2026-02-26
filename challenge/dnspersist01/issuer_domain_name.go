@@ -5,11 +5,47 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/go-acme/lego/v5/acme"
 	"golang.org/x/net/idna"
 )
 
 //nolint:gochecknoglobals // test seam for injecting IDNA conversion failures/variants.
 var issuerDomainNameToASCII = idna.Lookup.ToASCII
+
+// validateIssuerDomainNames validates the ACME challenge "issuer-domain-names" array for dns-persist-01.
+//
+// Rules enforced:
+//   - The array is required and must contain at least 1 entry.
+//   - The array must not contain more than 10 entries;
+//     larger arrays are treated as malformed challenges and rejected.
+//
+// Each issuer-domain-name must be a normalized domain name:
+//   - represented in A-label (Punycode, RFC5890) form
+//   - all lowercase
+//   - no trailing dot
+//   - maximum total length of 253 octets
+//
+// The returned list is intended for issuer selection
+// when constructing or matching dns-persist-01 TXT records.
+// The challenge can be satisfied by using any one valid issuer-domain-name from this list.
+func validateIssuerDomainNames(chlng acme.Challenge) error {
+	if len(chlng.IssuerDomainNames) == 0 {
+		return errors.New("issuer-domain-names missing from the challenge")
+	}
+
+	if len(chlng.IssuerDomainNames) > 10 {
+		return errors.New("issuer-domain-names exceeds maximum length of 10")
+	}
+
+	for _, issuerDomainName := range chlng.IssuerDomainNames {
+		err := validateIssuerDomainName(issuerDomainName)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 // validateIssuerDomainName validates a single issuer-domain-name according to
 // the following rules:
@@ -36,8 +72,7 @@ func validateIssuerDomainName(name string) error {
 		return errors.New("issuer-domain-name exceeds the maximum length of 253 octets")
 	}
 
-	labels := strings.SplitSeq(name, ".")
-	for label := range labels {
+	for label := range strings.SplitSeq(name, ".") {
 		if label == "" {
 			return errors.New("issuer-domain-name contains an empty label")
 		}
@@ -88,12 +123,11 @@ func isLowerAlphaNum(c byte) bool {
 	return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
 }
 
-// normalizeUserSuppliedIssuerDomainName normalizes a user supplied
-// issuer-domain-name for comparison. Note: DO NOT normalize issuer-domain-names
-// from the challenge, as they are expected to already be in the correct format.
+// normalizeUserSuppliedIssuerDomainName normalizes a user supplied issuer-domain-name for comparison.
+// Note: DO NOT normalize issuer-domain-names from the challenge,
+// as they are expected to already be in the correct format.
 func normalizeUserSuppliedIssuerDomainName(name string) (string, error) {
-	n := strings.TrimSpace(strings.TrimSuffix(name, "."))
-	n = strings.ToLower(n)
+	n := strings.ToLower(strings.TrimSpace(strings.TrimSuffix(name, ".")))
 
 	ascii, err := idna.Lookup.ToASCII(n)
 	if err != nil {

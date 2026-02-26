@@ -3,8 +3,6 @@ package dns01
 import (
 	"context"
 	"fmt"
-
-	"github.com/miekg/dns"
 )
 
 // PreCheckFunc checks DNS propagation before notifying ACME that the DNS challenge is ready.
@@ -53,17 +51,13 @@ func (p preCheck) checkDNSPropagation(ctx context.Context, fqdn, value string) (
 	client := DefaultClient()
 
 	// Initial attempt to resolve at the recursive NS (require getting CNAME)
-	r, err := client.sendQuery(ctx, fqdn, dns.TypeTXT, true)
+	fqdn, err := client.resolveCNAME(ctx, fqdn)
 	if err != nil {
 		return false, fmt.Errorf("initial recursive nameserver: %w", err)
 	}
 
-	if r.Rcode == dns.RcodeSuccess {
-		fqdn = updateDomainWithCName(r, fqdn)
-	}
-
 	if p.requireRecursiveNssPropagation {
-		_, err = client.checkNameserversPropagation(ctx, fqdn, value, false)
+		_, err = client.checkRecursiveNameserversPropagation(ctx, fqdn, value)
 		if err != nil {
 			return false, fmt.Errorf("recursive nameservers: %w", err)
 		}
@@ -73,12 +67,7 @@ func (p preCheck) checkDNSPropagation(ctx context.Context, fqdn, value string) (
 		return true, nil
 	}
 
-	authoritativeNss, err := client.lookupAuthoritativeNameservers(ctx, fqdn)
-	if err != nil {
-		return false, err
-	}
-
-	found, err := client.checkNameserversPropagationCustom(ctx, fqdn, value, authoritativeNss, true)
+	found, err := client.checkAuthoritativeNameserversPropagation(ctx, fqdn, value)
 	if err != nil {
 		return found, fmt.Errorf("authoritative nameservers: %w", err)
 	}

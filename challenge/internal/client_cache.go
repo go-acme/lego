@@ -1,4 +1,4 @@
-package dns01
+package internal
 
 import (
 	"time"

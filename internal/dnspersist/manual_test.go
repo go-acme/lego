@@ -1,4 +1,4 @@
-package dnspersist01
+package dnspersist
 
 import (
 	"fmt"

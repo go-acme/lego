@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/require"
 )
@@ -32,27 +33,59 @@ func fakeTXT(name, value string, ttl uint32) *dns.TXT {
 }
 
 // mockResolver modifies the default DNS resolver to use a custom network address during the test execution.
-// IMPORTANT: it modifies global variables.
-func mockResolver(t *testing.T, addr net.Addr) string {
+// IMPORTANT: it modifying std global variables.
+/*
+ * NOTE(ldez): This function is a partial duplication of `mockResolver` from `dns01/mock_test.go`.
+ * The 2 functions should be kept in sync.
+ */
+func mockResolver(authoritativeNS net.Addr) func(t *testing.T, client *Client) {
+	return func(t *testing.T, client *Client) {
+		t.Helper()
+
+		t.Log("authoritativeNS", authoritativeNS)
+
+		_, port, err := net.SplitHostPort(authoritativeNS.String())
+		require.NoError(t, err)
+
+		client.authoritativeNSPort = port
+
+		originalResolver := net.DefaultResolver
+
+		t.Cleanup(func() {
+			net.DefaultResolver = originalResolver
+		})
+
+		net.DefaultResolver = &net.Resolver{
+			PreferGo: true,
+			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				d := net.Dialer{Timeout: 1 * time.Second}
+
+				return d.DialContext(ctx, network, authoritativeNS.String())
+			},
+		}
+	}
+}
+
+/*
+ * NOTE(ldez): This function is a partial duplication of `mockDefault` from `dns01/mock_test.go`.
+ * The 2 functions should be kept in sync.
+ */
+func mockDefault(t *testing.T, recursiveNS net.Addr, opts ...func(t *testing.T, client *Client)) {
 	t.Helper()
 
-	_, port, err := net.SplitHostPort(addr.String())
-	require.NoError(t, err)
-
-	originalResolver := net.DefaultResolver
+	backup := DefaultClient()
 
 	t.Cleanup(func() {
-		net.DefaultResolver = originalResolver
+		SetDefaultClient(backup)
 	})
 
-	net.DefaultResolver = &net.Resolver{
-		PreferGo: true,
-		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-			d := net.Dialer{Timeout: 1 * time.Second}
+	t.Log("recursiveNS", recursiveNS)
 
-			return d.DialContext(ctx, network, addr.String())
-		},
+	client := NewClient(&Options{RecursiveNameservers: []string{recursiveNS.String()}, NetworkStack: challenge.IPv4Only})
+
+	for _, opt := range opts {
+		opt(t, client)
 	}
 
-	return port
+	SetDefaultClient(client)
 }

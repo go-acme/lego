@@ -3,6 +3,7 @@ package dns01
 import (
 	"iter"
 
+	"github.com/go-acme/lego/v5/challenge/internal"
 	"github.com/miekg/dns"
 )
 
@@ -33,15 +34,5 @@ func UnFqdnDomainsSeq(fqdn string) iter.Seq[string] {
 
 // DomainsSeq generates a sequence of domain names derived from a domain (FQDN or not) in descending order.
 func DomainsSeq(fqdn string) iter.Seq[string] {
-	return func(yield func(string) bool) {
-		if fqdn == "" {
-			return
-		}
-
-		for _, index := range dns.Split(fqdn) {
-			if !yield(fqdn[index:]) {
-				return
-			}
-		}
-	}
+	return internal.DomainsSeq(fqdn)
 }

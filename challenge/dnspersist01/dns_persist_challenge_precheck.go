@@ -55,7 +55,7 @@ func (p preCheck) checkDNSPropagation(ctx context.Context, fqdn string, matcher 
 	client := DefaultClient()
 
 	// Initial attempt to resolve at the recursive NS (require to get CNAME)
-	result, err := client.lookupTXT(ctx, fqdn, client.recursiveNameservers, true)
+	result, err := client.LookupTXT(ctx, fqdn)
 	if err != nil {
 		return false, fmt.Errorf("initial recursive nameserver: %w", err)
 	}
@@ -66,7 +66,7 @@ func (p preCheck) checkDNSPropagation(ctx context.Context, fqdn string, matcher 
 	}
 
 	if p.requireRecursiveNssPropagation {
-		_, err = client.checkNameserversPropagation(ctx, effectiveFQDN, false, true, matcher)
+		_, err = client.checkRecursiveNameserversPropagation(ctx, effectiveFQDN, matcher)
 		if err != nil {
 			return false, fmt.Errorf("recursive nameservers: %w", err)
 		}
@@ -76,12 +76,7 @@ func (p preCheck) checkDNSPropagation(ctx context.Context, fqdn string, matcher 
 		return true, nil
 	}
 
-	authoritativeNss, err := client.lookupAuthoritativeNameservers(ctx, effectiveFQDN)
-	if err != nil {
-		return false, err
-	}
-
-	found, err := client.checkNameserversPropagationCustom(ctx, effectiveFQDN, authoritativeNss, true, false, matcher)
+	found, err := client.checkAuthoritativeNameserversPropagation(ctx, effectiveFQDN, matcher)
 	if err != nil {
 		return found, fmt.Errorf("authoritative nameservers: %w", err)
 	}

@@ -9,11 +9,22 @@ import (
 	"github.com/miekg/dns"
 )
 
-func (c *Client) checkNameserversPropagation(ctx context.Context, fqdn string, addPort, recursive bool, matcher RecordMatcher) (bool, error) {
-	return c.checkNameserversPropagationCustom(ctx, fqdn, c.recursiveNameservers, addPort, recursive, matcher)
+// checkRecursiveNameserversPropagation queries each of the recursive nameservers for the expected TXT record.
+func (c *Client) checkRecursiveNameserversPropagation(ctx context.Context, fqdn string, matcher RecordMatcher) (bool, error) {
+	return c.checkNameserversPropagationCustom(ctx, fqdn, c.recursiveNameservers, matcher, false, true)
 }
 
-func (c *Client) checkNameserversPropagationCustom(ctx context.Context, fqdn string, nameservers []string, addPort, recursive bool, matcher RecordMatcher) (bool, error) {
+// checkRecursiveNameserversPropagation queries each of the authoritative nameservers for the expected TXT record.
+func (c *Client) checkAuthoritativeNameserversPropagation(ctx context.Context, fqdn string, matcher RecordMatcher) (bool, error) {
+	authoritativeNss, err := c.lookupAuthoritativeNameservers(ctx, fqdn)
+	if err != nil {
+		return false, err
+	}
+
+	return c.checkNameserversPropagationCustom(ctx, fqdn, authoritativeNss, matcher, true, false)
+}
+
+func (c *Client) checkNameserversPropagationCustom(ctx context.Context, fqdn string, nameservers []string, matcher RecordMatcher, addPort, recursive bool) (bool, error) {
 	for _, ns := range nameservers {
 		if addPort {
 			ns = net.JoinHostPort(ns, c.authoritativeNSPort)

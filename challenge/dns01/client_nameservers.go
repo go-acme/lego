@@ -9,9 +9,19 @@ import (
 	"github.com/miekg/dns"
 )
 
-// checkNameserversPropagation queries each of the recursive nameservers for the expected TXT record.
-func (c *Client) checkNameserversPropagation(ctx context.Context, fqdn, value string, addPort bool) (bool, error) {
-	return c.checkNameserversPropagationCustom(ctx, fqdn, value, c.recursiveNameservers, addPort)
+// checkRecursiveNameserversPropagation queries each of the recursive nameservers for the expected TXT record.
+func (c *Client) checkRecursiveNameserversPropagation(ctx context.Context, fqdn, value string) (bool, error) {
+	return c.checkNameserversPropagationCustom(ctx, fqdn, value, c.recursiveNameservers, false)
+}
+
+// checkRecursiveNameserversPropagation queries each of the authoritative nameservers for the expected TXT record.
+func (c *Client) checkAuthoritativeNameserversPropagation(ctx context.Context, fqdn, value string) (bool, error) {
+	authoritativeNss, err := c.lookupAuthoritativeNameservers(ctx, fqdn)
+	if err != nil {
+		return false, err
+	}
+
+	return c.checkNameserversPropagationCustom(ctx, fqdn, value, authoritativeNss, true)
 }
 
 // checkNameserversPropagationCustom queries each of the given nameservers for the expected TXT record.

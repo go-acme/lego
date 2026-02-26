@@ -63,7 +63,7 @@ func (p preCheck) checkDNSPropagation(ctx context.Context, fqdn, value string) (
 	}
 
 	if p.requireRecursiveNssPropagation {
-		_, err = client.checkNameserversPropagation(ctx, fqdn, value, false)
+		_, err = client.checkRecursiveNameserversPropagation(ctx, fqdn, value)
 		if err != nil {
 			return false, fmt.Errorf("recursive nameservers: %w", err)
 		}
@@ -73,12 +73,7 @@ func (p preCheck) checkDNSPropagation(ctx context.Context, fqdn, value string) (
 		return true, nil
 	}
 
-	authoritativeNss, err := client.lookupAuthoritativeNameservers(ctx, fqdn)
-	if err != nil {
-		return false, err
-	}
-
-	found, err := client.checkNameserversPropagationCustom(ctx, fqdn, value, authoritativeNss, true)
+	found, err := client.checkAuthoritativeNameserversPropagation(ctx, fqdn, value)
 	if err != nil {
 		return found, fmt.Errorf("authoritative nameservers: %w", err)
 	}

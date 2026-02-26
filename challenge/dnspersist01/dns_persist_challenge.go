@@ -21,18 +21,6 @@ const validationLabel = "_validation-persist"
 // ValidateFunc validates a challenge with the ACME server.
 type ValidateFunc func(ctx context.Context, core *api.Core, domain string, chlng acme.Challenge) error
 
-// ChallengeInfo contains the information used to create a dns-persist-01 TXT record.
-type ChallengeInfo struct {
-	// FQDN is the full-qualified challenge domain (i.e. `_validation-persist.[domain].`).
-	FQDN string
-
-	// Value contains the TXT record value, an RFC 8659 issue-value.
-	Value string
-
-	// IssuerDomainName is the normalized issuer-domain-name used in Value.
-	IssuerDomainName string
-}
-
 // Challenge implements the dns-persist-01 challenge.
 type Challenge struct {
 	core     *api.Core
@@ -75,6 +63,8 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	if domain == "" {
 		return errors.New("dnspersist01: empty identifier")
 	}
+
+	log.Info("dnspersist01: trying to solve the challenge.", log.DomainAttr(domain))
 
 	chlng, err := challenge.FindChallenge(challenge.DNSPersist01, authz)
 	if err != nil {
@@ -183,6 +173,18 @@ func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName stri
 
 		return parsed.match(iv)
 	})
+}
+
+// ChallengeInfo contains the information used to create a dns-persist-01 TXT record.
+type ChallengeInfo struct {
+	// FQDN is the full-qualified challenge domain (i.e. `_validation-persist.[domain].`).
+	FQDN string
+
+	// Value contains the TXT record value, an RFC 8659 issue-value.
+	Value string
+
+	// IssuerDomainName is the normalized issuer-domain-name used in Value.
+	IssuerDomainName string
 }
 
 // GetChallengeInfo returns information used to create a DNS TXT record

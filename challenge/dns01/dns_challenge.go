@@ -15,6 +15,7 @@ import (
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/internal/wait"
 	"github.com/go-acme/lego/v5/log"
+	"github.com/miekg/dns"
 )
 
 const (
@@ -28,7 +29,7 @@ const (
 	DefaultTTL = 120
 )
 
-const prefix = "_acme-challenge"
+const challengeLabel = "_acme-challenge"
 
 type ValidateFunc func(ctx context.Context, core *api.Core, domain string, chlng acme.Challenge) error
 
@@ -62,6 +63,7 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 // It does not validate record propagation or do anything at all with the ACME server.
 func (c *Challenge) PreSolve(ctx context.Context, authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
+
 	log.Info("dns01: preparing to solve the challenge.", log.DomainAttr(domain))
 
 	chlng, err := challenge.FindChallenge(challenge.DNS01, authz)
@@ -89,6 +91,7 @@ func (c *Challenge) PreSolve(ctx context.Context, authz acme.Authorization) erro
 
 func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
+
 	log.Info("dns01: trying to solve the challenge.", log.DomainAttr(domain))
 
 	chlng, err := challenge.FindChallenge(challenge.DNS01, authz)
@@ -202,13 +205,13 @@ func GetChallengeInfo(ctx context.Context, domain, keyAuth string) ChallengeInfo
 
 	ok, _ := strconv.ParseBool(os.Getenv("LEGO_DISABLE_CNAME_SUPPORT"))
 
-	fqdn := fmt.Sprintf("%s.%s.", prefix, domain)
+	fqdn := getAuthorizationDomainName(domain)
 
 	return ChallengeInfo{
 		Value:         value,
 		FQDN:          getChallengeFQDN(ctx, fqdn, false),
 		EffectiveFQDN: getChallengeFQDN(ctx, fqdn, !ok),
-		Prefix:        prefix,
+		Prefix:        challengeLabel,
 	}
 }
 
@@ -218,4 +221,10 @@ func getChallengeFQDN(ctx context.Context, fqdn string, followCNAME bool) string
 	}
 
 	return DefaultClient().lookupCNAME(ctx, fqdn)
+}
+
+// getAuthorizationDomainName returns the fully qualified DNS label
+// used by the dns-01 challenge for the given domain.
+func getAuthorizationDomainName(domain string) string {
+	return dns.Fqdn(challengeLabel + "." + domain)
 }

@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"slices"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme"
@@ -59,7 +57,7 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Pers
 	for _, opt := range opts {
 		err := opt(chlg)
 		if err != nil {
-			return nil, fmt.Errorf("dnspersist01: %w", err)
+			log.Warn("dnspersist01: challenge option skipped.", log.ErrorAttr(err))
 		}
 	}
 
@@ -88,7 +86,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		return fmt.Errorf("dnspersist01: %w", err)
 	}
 
-	fqdn := GetAuthorizationDomainName(domain)
+	fqdn := getAuthorizationDomainName(domain)
 
 	result, err := DefaultClient().LookupTXT(ctx, fqdn)
 	if err != nil {
@@ -110,22 +108,19 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 			return err
 		}
 	} else {
-		fmt.Printf("dnspersist01: Found existing matching TXT record for %s, no need to create a new one\n", fqdn)
+		log.Info("dnspersist01: found existing matching TXT record for %s, no need to create a new one", log.DomainAttr(fqdn))
 	}
 
 	timeout, interval := c.provider.Timeout()
 
-	log.Info("acme: waiting for DNS-PERSIST-01 record propagation.",
-		log.DomainAttr(domain),
-		slog.String("nameservers", strings.Join(DefaultClient().recursiveNameservers, ",")),
-	)
+	log.Info("dnspersist01: waiting for record propagation.", log.DomainAttr(domain))
 
 	time.Sleep(interval)
 
 	err = wait.For("propagation", timeout, interval, func() (bool, error) {
 		ok, callErr := c.preCheck.call(ctx, domain, fqdn, matcher)
 		if !ok || callErr != nil {
-			log.Info("acme: Waiting for DNS-PERSIST-01 record propagation.", log.DomainAttr(domain))
+			log.Info("dnspersist01: waiting for record propagation.", log.DomainAttr(domain))
 		}
 
 		return ok, callErr
@@ -190,12 +185,6 @@ func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName stri
 	})
 }
 
-// GetAuthorizationDomainName returns the fully qualified DNS label
-// used by the dns-persist-01 challenge for the given domain.
-func GetAuthorizationDomainName(domain string) string {
-	return dns.Fqdn(validationLabel + "." + domain)
-}
-
 // GetChallengeInfo returns information used to create a DNS TXT record
 // which can fulfill the `dns-persist-01` challenge.
 // Domain, issuerDomainName, and accountURI parameters are required.
@@ -211,8 +200,14 @@ func GetChallengeInfo(authz acme.Authorization, issuerDomainName, accountURI str
 	}
 
 	return ChallengeInfo{
-		FQDN:             GetAuthorizationDomainName(authz.Identifier.Value),
+		FQDN:             getAuthorizationDomainName(authz.Identifier.Value),
 		Value:            value,
 		IssuerDomainName: issuerDomainName,
 	}, nil
+}
+
+// getAuthorizationDomainName returns the fully qualified DNS label
+// used by the dns-persist-01 challenge for the given domain.
+func getAuthorizationDomainName(domain string) string {
+	return dns.Fqdn(validationLabel + "." + domain)
 }

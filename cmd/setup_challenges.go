@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/challenge/dnspersist01"
@@ -23,7 +22,7 @@ import (
 )
 
 //nolint:gocyclo // challenge setup dispatch is expected to branch by enabled challenge type.
-func setupChallenges(cmd *cli.Command, client *lego.Client, account *acme.ExtendedAccount) {
+func setupChallenges(cmd *cli.Command, client *lego.Client) {
 	if !cmd.Bool(flgHTTP) && !cmd.Bool(flgTLS) && !cmd.IsSet(flgDNS) && !cmd.Bool(flgDNSPersist) {
 		log.Fatal(fmt.Sprintf("No challenge selected. You must specify at least one challenge: `--%s`, `--%s`, `--%s`, `--%s`.",
 			flgHTTP, flgTLS, flgDNS, flgDNSPersist))
@@ -51,7 +50,7 @@ func setupChallenges(cmd *cli.Command, client *lego.Client, account *acme.Extend
 	}
 
 	if cmd.Bool(flgDNSPersist) {
-		err := setupDNSPersist(cmd, client, account)
+		err := setupDNSPersist(cmd, client)
 		if err != nil {
 			log.Fatal("Could not set DNS-PERSIST-01 challenge provider.", log.ErrorAttr(err))
 		}
@@ -212,7 +211,7 @@ func setupDNS(cmd *cli.Command, client *lego.Client) error {
 	return err
 }
 
-func setupDNSPersist(cmd *cli.Command, client *lego.Client, account *acme.ExtendedAccount) error {
+func setupDNSPersist(cmd *cli.Command, client *lego.Client) error {
 	err := validatePropagationExclusiveOptions(cmd, flgDNSPersistPropagationWait, flgDNSPersistPropagationDisableANS, flgDNSPersistIssuerDomainName)
 	if err != nil {
 		return err
@@ -231,7 +230,6 @@ func setupDNSPersist(cmd *cli.Command, client *lego.Client, account *acme.Extend
 	shouldWait := cmd.IsSet(flgDNSPersistPropagationWait)
 
 	return client.Challenge.SetDNSPersist01(
-		dnspersist01.WithAccountURI(account.Location),
 		dnspersist01.WithIssuerDomainName(cmd.String(flgDNSPersistIssuerDomainName)),
 		dnspersist01.CondOptions(cmd.IsSet(flgDNSPersistPersistUntil),
 			dnspersist01.WithPersistUntil(cmd.Timestamp(flgDNSPersistPersistUntil)),

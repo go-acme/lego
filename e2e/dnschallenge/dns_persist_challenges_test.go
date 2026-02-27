@@ -64,7 +64,6 @@ func TestChallengeDNSPersist_Client_Obtain(t *testing.T) {
 	mockDefaultPersist(t)
 
 	err = client.Challenge.SetDNSPersist01(
-		dnspersist01.WithAccountURI(reg.Location),
 		dnspersist01.DisableAuthoritativeNssPropagationRequirement(),
 	)
 	require.NoError(t, err)

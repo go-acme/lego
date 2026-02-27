@@ -28,7 +28,9 @@ type Challenge struct {
 	provider challenge.PersistentProvider
 	preCheck preCheck
 
-	accountURI                   string
+	// only for testing purposes
+	accountURI string
+
 	userSuppliedIssuerDomainName string
 	persistUntil                 time.Time
 }
@@ -47,10 +49,6 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Pers
 		if err != nil {
 			log.Warn("dnspersist01: challenge option skipped.", log.ErrorAttr(err))
 		}
-	}
-
-	if chlg.accountURI == "" {
-		return nil, errors.New("dnspersist01: account URI cannot be empty")
 	}
 
 	return chlg, nil
@@ -95,7 +93,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	if !matcher(result.Records) {
 		var info ChallengeInfo
 
-		info, err = GetChallengeInfo(authz, issuerDomainName, c.accountURI, c.persistUntil)
+		info, err = GetChallengeInfo(authz, issuerDomainName, c.getAccountURI(), c.persistUntil)
 		if err != nil {
 			return err
 		}
@@ -164,7 +162,7 @@ func (c *Challenge) selectIssuerDomainName(challIssuers []string, records []TXTR
 func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName string, wildcard bool) bool {
 	iv := IssueValue{
 		IssuerDomainName: issuerDomainName,
-		AccountURI:       c.accountURI,
+		AccountURI:       c.getAccountURI(),
 		PersistUntil:     c.persistUntil,
 	}
 
@@ -180,6 +178,14 @@ func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName stri
 
 		return parsed.match(iv)
 	})
+}
+
+func (c *Challenge) getAccountURI() string {
+	if c.accountURI != "" {
+		return c.accountURI
+	}
+
+	return c.core.GetKid()
 }
 
 // ChallengeInfo contains the information used to create a dns-persist-01 TXT record.

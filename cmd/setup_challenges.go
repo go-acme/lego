@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
 	"net"
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/challenge/dnspersist01"
@@ -19,12 +19,11 @@ import (
 	"github.com/go-acme/lego/v5/providers/http/memcached"
 	"github.com/go-acme/lego/v5/providers/http/s3"
 	"github.com/go-acme/lego/v5/providers/http/webroot"
-	"github.com/go-acme/lego/v5/registration"
 	"github.com/urfave/cli/v3"
 )
 
 //nolint:gocyclo // challenge setup dispatch is expected to branch by enabled challenge type.
-func setupChallenges(cmd *cli.Command, client *lego.Client, account registration.User) {
+func setupChallenges(cmd *cli.Command, client *lego.Client, account *acme.ExtendedAccount) {
 	if !cmd.Bool(flgHTTP) && !cmd.Bool(flgTLS) && !cmd.IsSet(flgDNS) && !cmd.Bool(flgDNSPersist) {
 		log.Fatal(fmt.Sprintf("No challenge selected. You must specify at least one challenge: `--%s`, `--%s`, `--%s`, `--%s`.",
 			flgHTTP, flgTLS, flgDNS, flgDNSPersist))
@@ -213,11 +212,7 @@ func setupDNS(cmd *cli.Command, client *lego.Client) error {
 	return err
 }
 
-func setupDNSPersist(cmd *cli.Command, client *lego.Client, account registration.User) error {
-	if account == nil || account.GetRegistration() == nil || account.GetRegistration().URI == "" {
-		return errors.New("dns-persist-01 requires a registered account with an account URI")
-	}
-
+func setupDNSPersist(cmd *cli.Command, client *lego.Client, account *acme.ExtendedAccount) error {
 	err := validatePropagationExclusiveOptions(cmd, flgDNSPersistPropagationWait, flgDNSPersistPropagationDisableANS, flgDNSPersistIssuerDomainName)
 	if err != nil {
 		return err
@@ -236,7 +231,7 @@ func setupDNSPersist(cmd *cli.Command, client *lego.Client, account registration
 	shouldWait := cmd.IsSet(flgDNSPersistPropagationWait)
 
 	return client.Challenge.SetDNSPersist01(
-		dnspersist01.WithAccountURI(account.GetRegistration().URI),
+		dnspersist01.WithAccountURI(account.Location),
 		dnspersist01.WithIssuerDomainName(cmd.String(flgDNSPersistIssuerDomainName)),
 		dnspersist01.CondOptions(cmd.IsSet(flgDNSPersistPersistUntil),
 			dnspersist01.WithPersistUntil(cmd.Timestamp(flgDNSPersistPersistUntil)),

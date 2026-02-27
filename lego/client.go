@@ -42,7 +42,7 @@ func NewClient(config *Config) (*Client, error) {
 
 	var kid string
 	if reg := config.User.GetRegistration(); reg != nil {
-		kid = reg.URI
+		kid = reg.Location
 	}
 
 	core, err := api.New(config.HTTPClient, config.UserAgent, config.CADirURL, kid, privateKey)

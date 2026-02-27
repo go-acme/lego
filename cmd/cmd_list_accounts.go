@@ -100,9 +100,9 @@ func readAccounts(cmd *cli.Command) ([]ListAccount, error) {
 
 		var server string
 
-		uri, err := url.Parse(account.Registration.URI)
+		uri, err := url.Parse(account.Registration.Location)
 		if err != nil {
-			log.Error("Parsing account registration URI.", log.ErrorAttr(err))
+			log.Error("Parsing account registration Location.", log.ErrorAttr(err))
 		} else {
 			server = fmt.Sprintf("%s://%s", uri.Scheme, uri.Host)
 		}

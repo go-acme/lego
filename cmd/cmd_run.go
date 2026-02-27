@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
-	"github.com/go-acme/lego/v5/registration"
 	"github.com/urfave/cli/v3"
 )
 
@@ -60,7 +60,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	if account.Registration == nil {
-		var reg *registration.Resource
+		var reg *acme.ExtendedAccount
 
 		reg, err = registerAccount(ctx, cmd, client)
 		if err != nil {
@@ -75,7 +75,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		fmt.Printf(rootPathWarningMessage, accountsStorage.GetRootPath())
 	}
 
-	setupChallenges(cmd, client, account)
+	setupChallenges(cmd, client, account.GetRegistration())
 
 	certRes, err := obtainCertificate(ctx, cmd, client)
 	if err != nil {

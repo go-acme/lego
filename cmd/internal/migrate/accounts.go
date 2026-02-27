@@ -10,11 +10,22 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/mattn/go-zglob"
 )
+
+type OldAccount struct {
+	Email        string       `json:"email"`
+	Registration *OldResource `json:"registration"`
+}
+
+type OldResource struct {
+	Body acme.Account `json:"body"`
+	URI  string       `json:"uri,omitempty"`
+}
 
 // Accounts migrates the old accounts directory structure to the new one.
 func Accounts(root string) error {
@@ -31,25 +42,32 @@ func Accounts(root string) error {
 			return fmt.Errorf("could not read the account file %q: %w", srcAccountFilePath, err)
 		}
 
-		var account storage.Account
+		var oldAccount OldAccount
 
-		err = json.Unmarshal(data, &account)
+		err = json.Unmarshal(data, &oldAccount)
 		if err != nil {
 			return fmt.Errorf("could not parse the account file %q: %w", srcAccountFilePath, err)
 		}
 
-		account.ID = account.GetID()
+		account := storage.Account{
+			ID:    oldAccount.Email,
+			Email: oldAccount.Email,
+			Registration: &acme.ExtendedAccount{
+				Account:  oldAccount.Registration.Body,
+				Location: oldAccount.Registration.URI,
+			},
+		}
 
 		accountsDir := filepath.Dir(srcAccountFilePath)
 
-		srcKeyPath := filepath.Join(accountsDir, "keys", account.ID+storage.ExtKey)
+		srcKeyPath := filepath.Join(accountsDir, "keys", account.GetID()+storage.ExtKey)
 
 		account.KeyType, err = getKeyType(srcKeyPath)
 		if err != nil {
 			return fmt.Errorf("could not guess the account key type: %w", err)
 		}
 
-		newAccountDir := filepath.Join(accountsDir, string(account.KeyType))
+		newAccountDir := filepath.Join(accountsDir, string(account.GetKeyType()))
 
 		err = os.MkdirAll(newAccountDir, 0o700)
 		if err != nil {
@@ -58,7 +76,7 @@ func Accounts(root string) error {
 
 		// Rename the private key file.
 
-		dstKeyPath := filepath.Join(newAccountDir, account.ID+storage.ExtKey)
+		dstKeyPath := filepath.Join(newAccountDir, account.GetID()+storage.ExtKey)
 
 		err = os.Rename(srcKeyPath, dstKeyPath)
 		if err != nil {

@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
@@ -77,7 +78,7 @@ func register(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-func registerAccount(ctx context.Context, cmd *cli.Command, client *lego.Client) (*registration.Resource, error) {
+func registerAccount(ctx context.Context, cmd *cli.Command, client *lego.Client) (*acme.ExtendedAccount, error) {
 	accepted := handleTOS(cmd, client)
 	if !accepted {
 		log.Fatal("You did not accept the TOS. Unable to proceed.")

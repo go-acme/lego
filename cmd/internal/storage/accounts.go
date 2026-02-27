@@ -13,10 +13,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
-	"github.com/go-acme/lego/v5/registration"
 )
 
 const (
@@ -166,7 +166,7 @@ func (s *AccountsStorage) getAccount(ctx context.Context, keyType certcrypto.Key
 
 	account.key, err = s.readPrivateKey(keyType, effectiveAccountID)
 	if err == nil {
-		if account.Registration != nil && account.Registration.Body.Status != "" {
+		if account.Registration != nil && account.Registration.Status != "" {
 			return account, nil
 		}
 
@@ -293,7 +293,7 @@ func (s *AccountsStorage) getRootUserPath(effectiveAccountID string) string {
 }
 
 // tryRecoverRegistration tries to recover the registration from the private key.
-func (s *AccountsStorage) tryRecoverRegistration(ctx context.Context, privateKey crypto.PrivateKey) (*registration.Resource, error) {
+func (s *AccountsStorage) tryRecoverRegistration(ctx context.Context, privateKey crypto.PrivateKey) (*acme.ExtendedAccount, error) {
 	// couldn't load account but got a key. Try to look the account up.
 	config := lego.NewConfig(&Account{key: privateKey})
 	config.CADirURL = s.server.String()

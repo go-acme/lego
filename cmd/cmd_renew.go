@@ -90,7 +90,7 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 			return nil, fmt.Errorf("new client: %w", err)
 		}
 
-		setupChallenges(cmd, client, account)
+		setupChallenges(cmd, client, account.GetRegistration())
 
 		return client, nil
 	})

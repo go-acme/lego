@@ -3,18 +3,18 @@ package storage
 import (
 	"crypto"
 
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
-	"github.com/go-acme/lego/v5/registration"
 )
 
 const AccountIDPlaceholder = "noemail@example.com"
 
 // Account represents a users local saved credentials.
 type Account struct {
-	ID           string                 `json:"id"`
-	Email        string                 `json:"email"`
-	KeyType      certcrypto.KeyType     `json:"keyType"`
-	Registration *registration.Resource `json:"registration"`
+	ID           string                `json:"id"`
+	Email        string                `json:"email"`
+	KeyType      certcrypto.KeyType    `json:"keyType"`
+	Registration *acme.ExtendedAccount `json:"registration"`
 
 	key crypto.PrivateKey
 }
@@ -46,7 +46,7 @@ func (a *Account) GetPrivateKey() crypto.PrivateKey {
 }
 
 // GetRegistration returns the server registration.
-func (a *Account) GetRegistration() *registration.Resource {
+func (a *Account) GetRegistration() *acme.ExtendedAccount {
 	return a.Registration
 }
 

@@ -6,31 +6,26 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/go-acme/lego/v5/challenge/internal"
 	"github.com/go-acme/lego/v5/log"
 )
 
 // ChallengeOption configures the dns-persist-01 challenge.
-type ChallengeOption func(*Challenge) error
+type ChallengeOption = internal.ChallengeOption[*Challenge]
 
 // CondOptions Conditional challenge options.
 func CondOptions(condition bool, opt ...ChallengeOption) ChallengeOption {
-	if !condition {
-		// NoOp options
-		return func(*Challenge) error {
-			return nil
-		}
-	}
+	return internal.CondOptions(condition, opt...)
+}
 
-	return func(chlg *Challenge) error {
-		for _, opt := range opt {
-			err := opt(chlg)
-			if err != nil {
-				return err
-			}
-		}
+// LazyCondOption Lazy conditional challenge option.
+func LazyCondOption(condition bool, fn func() ChallengeOption) ChallengeOption {
+	return internal.LazyCondOption(condition, fn)
+}
 
-		return nil
-	}
+// CombineOptions Combines multiple challenge options into one.
+func CombineOptions(opts ...ChallengeOption) ChallengeOption {
+	return internal.CombineOptions(opts...)
 }
 
 // WithIssuerDomainName forces the issuer-domain-name used for dns-persist-01.

@@ -29,11 +29,6 @@ func NewJWS(privateKey crypto.PrivateKey, kid string, nonceManager *nonces.Manag
 	}
 }
 
-// SetKid Sets a key identifier.
-func (j *JWS) SetKid(kid string) {
-	j.kid = kid
-}
-
 // SignContent Signs a content with the JWS.
 func (j *JWS) SignContent(ctx context.Context, url string, content []byte) (*jose.JSONWebSignature, error) {
 	var alg jose.SignatureAlgorithm

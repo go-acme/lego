@@ -28,7 +28,6 @@ type Challenge struct {
 	provider challenge.PersistentProvider
 	preCheck preCheck
 
-	accountURI                   string
 	userSuppliedIssuerDomainName string
 	persistUntil                 time.Time
 }
@@ -49,10 +48,6 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Pers
 		}
 	}
 
-	if chlg.accountURI == "" {
-		return nil, errors.New("dnspersist01: account URI cannot be empty")
-	}
-
 	return chlg, nil
 }
 
@@ -62,6 +57,11 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	domain := authz.Identifier.Value
 	if domain == "" {
 		return errors.New("dnspersist01: empty identifier")
+	}
+
+	accountURI := c.core.GetKid()
+	if accountURI == "" {
+		return errors.New("dnspersist01: ACME account URI cannot be empty")
 	}
 
 	log.Info("dnspersist01: trying to solve the challenge.", log.DomainAttr(domain))
@@ -83,19 +83,19 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		return fmt.Errorf("dnspersist01: %w", err)
 	}
 
-	issuerDomainName, err := c.selectIssuerDomainName(chlng.IssuerDomainNames, result.Records, authz.Wildcard)
+	issuerDomainName, err := c.selectIssuerDomainName(chlng.IssuerDomainNames, result.Records, accountURI, authz.Wildcard)
 	if err != nil {
 		return fmt.Errorf("dnspersist01: %w", err)
 	}
 
 	matcher := func(records []TXTRecord) bool {
-		return c.hasMatchingRecord(records, issuerDomainName, authz.Wildcard)
+		return c.hasMatchingRecord(records, issuerDomainName, accountURI, authz.Wildcard)
 	}
 
 	if !matcher(result.Records) {
 		var info ChallengeInfo
 
-		info, err = GetChallengeInfo(authz, issuerDomainName, c.accountURI, c.persistUntil)
+		info, err = GetChallengeInfo(authz, issuerDomainName, accountURI, c.persistUntil)
 		if err != nil {
 			return err
 		}
@@ -108,25 +108,29 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		log.Info("dnspersist01: found existing matching TXT record for %s, no need to create a new one", log.DomainAttr(fqdn))
 	}
 
+	err = c.waitForPropagation(ctx, domain, fqdn, matcher)
+	if err != nil {
+		return err
+	}
+
+	return c.validate(ctx, c.core, domain, chlng)
+}
+
+func (c *Challenge) waitForPropagation(ctx context.Context, domain, fqdn string, matcher RecordMatcher) error {
 	timeout, interval := c.provider.Timeout()
 
 	log.Info("dnspersist01: waiting for record propagation.", log.DomainAttr(domain))
 
 	time.Sleep(interval)
 
-	err = wait.For("propagation", timeout, interval, func() (bool, error) {
-		ok, callErr := c.preCheck.call(ctx, domain, fqdn, matcher)
-		if !ok || callErr != nil {
+	return wait.For("propagation", timeout, interval, func() (bool, error) {
+		stop, callErr := c.preCheck.call(ctx, domain, fqdn, matcher)
+		if !stop || callErr != nil {
 			log.Info("dnspersist01: waiting for record propagation.", log.DomainAttr(domain))
 		}
 
-		return ok, callErr
+		return stop, callErr
 	})
-	if err != nil {
-		return err
-	}
-
-	return c.validate(ctx, c.core, domain, chlng)
 }
 
 // selectIssuerDomainName selects the issuer-domain-name to use for a dns-persist-01 challenge.
@@ -136,7 +140,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 // the first issuer-domain-name with a matching TXT record is selected.
 // If no issuer-domain-name has a matching TXT record,
 // a deterministic default issuer-domain-name is selected using lexicographic ordering.
-func (c *Challenge) selectIssuerDomainName(challIssuers []string, records []TXTRecord, wildcard bool) (string, error) {
+func (c *Challenge) selectIssuerDomainName(challIssuers []string, records []TXTRecord, accountURI string, wildcard bool) (string, error) {
 	if len(challIssuers) == 0 {
 		return "", errors.New("issuer-domain-names missing from the challenge")
 	}
@@ -153,7 +157,7 @@ func (c *Challenge) selectIssuerDomainName(challIssuers []string, records []TXTR
 	}
 
 	for _, issuerDomainName := range sortedIssuers {
-		if c.hasMatchingRecord(records, issuerDomainName, wildcard) {
+		if c.hasMatchingRecord(records, issuerDomainName, accountURI, wildcard) {
 			return issuerDomainName, nil
 		}
 	}
@@ -161,10 +165,10 @@ func (c *Challenge) selectIssuerDomainName(challIssuers []string, records []TXTR
 	return sortedIssuers[0], nil
 }
 
-func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName string, wildcard bool) bool {
+func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName, accountURI string, wildcard bool) bool {
 	iv := IssueValue{
 		IssuerDomainName: issuerDomainName,
-		AccountURI:       c.accountURI,
+		AccountURI:       accountURI,
 		PersistUntil:     c.persistUntil,
 	}
 
@@ -175,6 +179,7 @@ func (c *Challenge) hasMatchingRecord(records []TXTRecord, issuerDomainName stri
 	return slices.ContainsFunc(records, func(record TXTRecord) bool {
 		parsed, err := parseIssueValue(record.Value)
 		if err != nil {
+			log.Debug("dnspersist01: failed to parse TXT record value", log.ErrorAttr(err))
 			return false
 		}
 

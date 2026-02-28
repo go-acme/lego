@@ -16,11 +16,10 @@ func (a *AccountService) New(ctx context.Context, req acme.Account) (acme.Extend
 	var account acme.Account
 
 	resp, err := a.core.post(ctx, a.core.GetDirectory().NewAccountURL, req, &account)
+
 	location := getLocation(resp)
 
-	if location != "" {
-		a.core.jws.SetKid(location)
-	}
+	a.core.setKid(location)
 
 	if err != nil {
 		return acme.ExtendedAccount{Location: location}, err

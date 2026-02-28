@@ -75,7 +75,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		fmt.Printf(rootPathWarningMessage, accountsStorage.GetRootPath())
 	}
 
-	setupChallenges(cmd, client, account.GetRegistration())
+	setupChallenges(cmd, client)
 
 	certRes, err := obtainCertificate(ctx, cmd, client)
 	if err != nil {

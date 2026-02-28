@@ -33,21 +33,6 @@ func CondOptions(condition bool, opt ...ChallengeOption) ChallengeOption {
 	}
 }
 
-// WithAccountURI sets the ACME account URI bound to dns-persist-01 records.
-// It is required both to construct the `accounturi=` parameter and
-// to match already-provisioned TXT records that should be updated.
-func WithAccountURI(accountURI string) ChallengeOption {
-	return func(chlg *Challenge) error {
-		if accountURI == "" {
-			return errors.New("ACME account URI cannot be empty")
-		}
-
-		chlg.accountURI = accountURI
-
-		return nil
-	}
-}
-
 // WithIssuerDomainName forces the issuer-domain-name used for dns-persist-01.
 // When set, it overrides automatic issuer selection and
 // must match one of the issuer-domain-names offered in the ACME challenge.

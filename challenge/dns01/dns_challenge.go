@@ -121,12 +121,12 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	time.Sleep(interval)
 
 	err = wait.For("propagation", timeout, interval, func() (bool, error) {
-		stop, errP := c.preCheck.call(ctx, domain, info.EffectiveFQDN, info.Value)
-		if !stop || errP != nil {
+		stop, callErr := c.preCheck.call(ctx, domain, info.EffectiveFQDN, info.Value)
+		if !stop || callErr != nil {
 			log.Info("dns01: waiting for record propagation.", log.DomainAttr(domain))
 		}
 
-		return stop, errP
+		return stop, callErr
 	})
 	if err != nil {
 		return err

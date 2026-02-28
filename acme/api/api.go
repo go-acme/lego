@@ -22,9 +22,12 @@ import (
 type Core struct {
 	doer         *sender.Doer
 	nonceManager *nonces.Manager
-	jws          *secure.JWS
 	directory    acme.Directory
-	HTTPClient   *http.Client
+
+	HTTPClient *http.Client
+
+	privateKey crypto.PrivateKey
+	kid        string
 
 	common         service // Reuse a single struct instead of allocating one for each service on the heap.
 	Accounts       *AccountService
@@ -46,9 +49,16 @@ func New(httpClient *http.Client, userAgent, caDirURL, kid string, privateKey cr
 
 	nonceManager := nonces.NewManager(doer, dir.NewNonceURL)
 
-	jws := secure.NewJWS(privateKey, kid, nonceManager)
+	c := &Core{
+		doer:         doer,
+		nonceManager: nonceManager,
+		directory:    dir,
 
-	c := &Core{doer: doer, nonceManager: nonceManager, jws: jws, directory: dir, HTTPClient: httpClient}
+		privateKey: privateKey,
+		kid:        kid,
+
+		HTTPClient: httpClient,
+	}
 
 	c.common.core = c
 	c.Accounts = (*AccountService)(&c.common)
@@ -58,6 +68,21 @@ func New(httpClient *http.Client, userAgent, caDirURL, kid string, privateKey cr
 	c.Orders = (*OrderService)(&c.common)
 
 	return c, nil
+}
+
+func (a *Core) jws() *secure.JWS {
+	return secure.NewJWS(a.privateKey, a.kid, a.nonceManager)
+}
+
+// setKid Sets the key identifier (account URI).
+func (a *Core) setKid(kid string) {
+	if kid != "" {
+		a.kid = kid
+	}
+}
+
+func (a *Core) GetKid() string {
+	return a.kid
 }
 
 // post performs an HTTP POST request and parses the response body as JSON,
@@ -109,7 +134,7 @@ func (a *Core) retrievablePost(ctx context.Context, uri string, content []byte, 
 }
 
 func (a *Core) signedPost(ctx context.Context, uri string, content []byte, response any) (*http.Response, error) {
-	signedContent, err := a.jws.SignContent(ctx, uri, content)
+	signedContent, err := a.jws().SignContent(ctx, uri, content)
 	if err != nil {
 		return nil, fmt.Errorf("failed to post JWS message: failed to sign content: %w", err)
 	}
@@ -128,7 +153,7 @@ func (a *Core) signedPost(ctx context.Context, uri string, content []byte, respo
 }
 
 func (a *Core) signEABContent(newAccountURL, kid string, hmac []byte) ([]byte, error) {
-	eabJWS, err := a.jws.SignEABContent(newAccountURL, kid, hmac)
+	eabJWS, err := a.jws().SignEABContent(newAccountURL, kid, hmac)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +163,7 @@ func (a *Core) signEABContent(newAccountURL, kid string, hmac []byte) ([]byte, e
 
 // GetKeyAuthorization Gets the key authorization.
 func (a *Core) GetKeyAuthorization(token string) (string, error) {
-	return a.jws.GetKeyAuthorization(token)
+	return a.jws().GetKeyAuthorization(token)
 }
 
 func (a *Core) GetDirectory() acme.Directory {

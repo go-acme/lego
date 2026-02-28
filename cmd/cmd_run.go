@@ -10,29 +10,14 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
 )
 
 func createRun() *cli.Command {
 	return &cli.Command{
-		Name:  "run",
-		Usage: "Register an account, then create and install a certificate",
-		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
-			// we require either domains or csr, but not both
-			hasDomains := len(cmd.StringSlice(flgDomains)) > 0
-
-			hasCsr := cmd.String(flgCSR) != ""
-			if hasDomains && hasCsr {
-				log.Fatal("Please specify either --domains/-d or --csr, but not both")
-			}
-
-			if !hasDomains && !hasCsr {
-				log.Fatal("Please specify --domains/-d (or --csr if you already have a CSR)")
-			}
-
-			return ctx, validateNetworkStack(cmd)
-		},
+		Name:   "run",
+		Usage:  "Register an account, then create and install a certificate",
+		Before: runFlagsValidation,
 		Action: run,
 		Flags:  createRunFlags(),
 	}

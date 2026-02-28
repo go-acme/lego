@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log/slog"
 	"net"
 	"strings"
@@ -21,13 +20,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-//nolint:gocyclo // challenge setup dispatch is expected to branch by enabled challenge type.
 func setupChallenges(cmd *cli.Command, client *lego.Client) {
-	if !cmd.Bool(flgHTTP) && !cmd.Bool(flgTLS) && !cmd.IsSet(flgDNS) && !cmd.Bool(flgDNSPersist) {
-		log.Fatal(fmt.Sprintf("No challenge selected. You must specify at least one challenge: `--%s`, `--%s`, `--%s`, `--%s`.",
-			flgHTTP, flgTLS, flgDNS, flgDNSPersist))
-	}
-
 	if cmd.Bool(flgHTTP) {
 		err := client.Challenge.SetHTTP01Provider(setupHTTPProvider(cmd), http01.SetDelay(cmd.Duration(flgHTTPDelay)))
 		if err != nil {
@@ -57,7 +50,6 @@ func setupChallenges(cmd *cli.Command, client *lego.Client) {
 	}
 }
 
-//nolint:gocyclo // the complexity is expected.
 func setupHTTPProvider(cmd *cli.Command) challenge.Provider {
 	switch {
 	case cmd.IsSet(flgHTTPWebroot):
@@ -97,19 +89,9 @@ func setupHTTPProvider(cmd *cli.Command) challenge.Provider {
 		return ps
 
 	case cmd.IsSet(flgHTTPPort):
-		iface := cmd.String(flgHTTPPort)
-
-		if !strings.Contains(iface, ":") {
-			log.Fatal(
-				fmt.Sprintf("The --%s switch only accepts interface:port or :port for its argument.", flgHTTPPort),
-				slog.String("flag", flgHTTPPort),
-				slog.String("port", cmd.String(flgHTTPPort)),
-			)
-		}
-
-		host, port, err := net.SplitHostPort(iface)
+		host, port, err := parseAddress(cmd, flgHTTPPort)
 		if err != nil {
-			log.Fatal("Could not split host and port.", slog.String("iface", iface), log.ErrorAttr(err))
+			log.Fatal("Invalid address.", log.ErrorAttr(err))
 		}
 
 		srv := http01.NewProviderServerWithOptions(http01.Options{
@@ -144,14 +126,9 @@ func setupHTTPProvider(cmd *cli.Command) challenge.Provider {
 func setupTLSProvider(cmd *cli.Command) challenge.Provider {
 	switch {
 	case cmd.IsSet(flgTLSPort):
-		iface := cmd.String(flgTLSPort)
-		if !strings.Contains(iface, ":") {
-			log.Fatal(fmt.Sprintf("The --%s switch only accepts interface:port or :port for its argument.", flgTLSPort))
-		}
-
-		host, port, err := net.SplitHostPort(iface)
+		host, port, err := parseAddress(cmd, flgTLSPort)
 		if err != nil {
-			log.Fatal("Could not split host and port.", slog.String("iface", iface), log.ErrorAttr(err))
+			log.Fatal("Invalid address.", log.ErrorAttr(err))
 		}
 
 		return tlsalpn01.NewProviderServerWithOptions(tlsalpn01.Options{
@@ -172,11 +149,6 @@ func setupTLSProvider(cmd *cli.Command) challenge.Provider {
 }
 
 func setupDNS(cmd *cli.Command, client *lego.Client) error {
-	err := validatePropagationExclusiveOptions(cmd, flgDNSPropagationWait, flgDNSPropagationDisableANS, flgDNSPropagationDisableRNS)
-	if err != nil {
-		return err
-	}
-
 	provider, err := dns.NewDNSChallengeProviderByName(cmd.String(flgDNS))
 	if err != nil {
 		return err
@@ -212,11 +184,6 @@ func setupDNS(cmd *cli.Command, client *lego.Client) error {
 }
 
 func setupDNSPersist(cmd *cli.Command, client *lego.Client) error {
-	err := validatePropagationExclusiveOptions(cmd, flgDNSPersistPropagationWait, flgDNSPersistPropagationDisableANS, flgDNSPersistIssuerDomainName)
-	if err != nil {
-		return err
-	}
-
 	opts := &dnspersist01.Options{RecursiveNameservers: cmd.StringSlice(flgDNSPersistResolvers)}
 
 	if cmd.IsSet(flgDNSPersistTimeout) {
@@ -248,22 +215,6 @@ func setupDNSPersist(cmd *cli.Command, client *lego.Client) error {
 	)
 }
 
-func validatePropagationExclusiveOptions(cmd *cli.Command, flgWait, flgANS, flgDNS string) error {
-	if !cmd.IsSet(flgWait) {
-		return nil
-	}
-
-	if isSetBool(cmd, flgANS) {
-		return fmt.Errorf("'%s' and '%s' are mutually exclusive", flgWait, flgANS)
-	}
-
-	if isSetBool(cmd, flgDNS) {
-		return fmt.Errorf("'%s' and '%s' are mutually exclusive", flgWait, flgDNS)
-	}
-
-	return nil
-}
-
 func getNetworkStack(cmd *cli.Command) challenge.NetworkStack {
 	switch {
 	case cmd.Bool(flgIPv4Only):
@@ -275,8 +226,4 @@ func getNetworkStack(cmd *cli.Command) challenge.NetworkStack {
 	default:
 		return challenge.DualStack
 	}
-}
-
-func isSetBool(cmd *cli.Command, name string) bool {
-	return cmd.IsSet(name) && cmd.Bool(name)
 }

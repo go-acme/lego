@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -30,7 +31,7 @@ func newClient(cmd *cli.Command, account registration.User, keyType certcrypto.K
 		return nil, fmt.Errorf("new client: %w", err)
 	}
 
-	if client.GetExternalAccountRequired() && !cmd.IsSet(flgEAB) { // TODO(ldez): handle this flag.
+	if client.GetExternalAccountRequired() && !cmd.IsSet(flgEAB) {
 		return nil, errors.New("server requires External Account Binding (EAB)")
 	}
 
@@ -186,14 +187,6 @@ func newObtainForCSRRequest(cmd *cli.Command, csr *x509.CertificateRequest) cert
 	}
 }
 
-func validateNetworkStack(cmd *cli.Command) error {
-	if cmd.Bool(flgIPv4Only) && cmd.Bool(flgIPv6Only) {
-		return fmt.Errorf("cannot specify both --%s and --%s", flgIPv4Only, flgIPv6Only)
-	}
-
-	return nil
-}
-
 func newAccountsStorageConfig(cmd *cli.Command) storage.AccountsStorageConfig {
 	return storage.AccountsStorageConfig{
 		BasePath:  cmd.String(flgPath),
@@ -209,4 +202,20 @@ func newSaveOptions(cmd *cli.Command) *storage.SaveOptions {
 		PFXFormat:   cmd.String(flgPFXPass),
 		PFXPassword: cmd.String(flgPFXFormat),
 	}
+}
+
+func parseAddress(cmd *cli.Command, flgName string) (string, string, error) {
+	address := cmd.String(flgName)
+
+	if !strings.Contains(address, ":") {
+		return "", "", fmt.Errorf("the flag '--%s' only accepts 'interface:port' or ':port' for its argument: '%s'",
+			flgName, address)
+	}
+
+	host, port, err := net.SplitHostPort(address)
+	if err != nil {
+		return "", "", fmt.Errorf("could not split address '%s': %w", address, err)
+	}
+
+	return host, port, nil
 }

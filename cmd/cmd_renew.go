@@ -34,26 +34,8 @@ func createRenew() *cli.Command {
 		Name:   "renew",
 		Usage:  "Renew a certificate",
 		Action: renew,
-		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
-			hasDomains := len(cmd.StringSlice(flgDomains)) > 0
-			hasCsr := cmd.String(flgCSR) != ""
-			hasCertID := cmd.String(flgCertName) != ""
-
-			if hasDomains && hasCsr {
-				log.Fatal(fmt.Sprintf("Please specify either --%s/-d or --%s, but not both", flgDomains, flgCSR))
-			}
-
-			if !hasCertID && !hasDomains && !hasCsr {
-				log.Fatal(fmt.Sprintf("Please specify --%s or --%s/-d (or --%s if you already have a CSR)", flgCertName, flgDomains, flgCSR))
-			}
-
-			if cmd.Bool(flgForceCertDomains) && hasCsr {
-				log.Fatal(fmt.Sprintf("--%s only works with --%s/-d, --%s doesn't support this option.", flgForceCertDomains, flgDomains, flgCSR))
-			}
-
-			return ctx, validateNetworkStack(cmd)
-		},
-		Flags: createRenewFlags(),
+		Before: renewFlagsValidation,
+		Flags:  createRenewFlags(),
 	}
 }
 

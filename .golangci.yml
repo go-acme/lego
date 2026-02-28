@@ -211,7 +211,7 @@ linters:
         text: Logger is a global variable
         linters:
           - gochecknoglobals
-      - path: e2e/(dnschallenge/)?[\d\w]+_test.go
+      - path: e2e/(dnschallenge/|eab/)?[\d\w]+_test.go
         text: load is a global variable
         linters:
           - gochecknoglobals

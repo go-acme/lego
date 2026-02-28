@@ -18,6 +18,7 @@ import (
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/challenge/dnspersist01"
+	"github.com/go-acme/lego/v5/e2e/internal"
 	"github.com/go-acme/lego/v5/e2e/loader"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/registration"
@@ -46,7 +47,7 @@ func TestChallengeDNSPersist_Client_Obtain(t *testing.T) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	user := &fakeUser{privateKey: privateKey}
+	user := &internal.FakeUser{PrivateKey: privateKey}
 	config := lego.NewConfig(user)
 	config.CADirURL = "https://localhost:15000/dir"
 
@@ -57,7 +58,7 @@ func TestChallengeDNSPersist_Client_Obtain(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, reg.Location)
 
-	user.registration = reg
+	user.Registration = reg
 
 	updateDNS(t, reg.Location, testPersistBaseDomain)
 
@@ -119,7 +120,7 @@ func TestChallengeDNSPersist_Run_NewAccount(t *testing.T) {
 
 	t.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 
-	client := newChallTestSrvClient()
+	client := internal.NewChallTestSrvClient()
 
 	defer func() {
 		err := client.ClearPersistRecord(testPersistCLIDomain)
@@ -232,9 +233,9 @@ func createCLIAccountState(t *testing.T, email string) string {
 	privateKey, err := certcrypto.GeneratePrivateKey(certcrypto.EC256)
 	require.NoError(t, err)
 
-	user := &fakeUser{
-		email:      email,
-		privateKey: privateKey,
+	user := &internal.FakeUser{
+		Email:      email,
+		PrivateKey: privateKey,
 	}
 
 	config := lego.NewConfig(user)
@@ -327,4 +328,28 @@ func mockDefaultPersist(t *testing.T) {
 	})
 
 	dnspersist01.SetDefaultClient(dnspersist01.NewClient(&dnspersist01.Options{RecursiveNameservers: []string{":8053"}}))
+}
+
+func updateDNS(t *testing.T, accountURI, issuerDomainName string) {
+	t.Helper()
+
+	authz := acme.Authorization{
+		Identifier: acme.Identifier{
+			Value: "example.net", // Note: unused inside the tests.
+		},
+		Wildcard: true,
+	}
+
+	info, err := dnspersist01.GetChallengeInfo(authz, testPersistIssuer, accountURI, time.Time{})
+	require.NoError(t, err)
+
+	client := internal.NewChallTestSrvClient()
+
+	err = client.SetPersistRecord(issuerDomainName, info.Value)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		err = client.ClearPersistRecord(issuerDomainName)
+		require.NoError(t, err)
+	})
 }

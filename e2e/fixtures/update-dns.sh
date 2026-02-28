@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
+
 # Simple DNS challenge exec solver.
-# Use challtestsrv https://github.com/letsencrypt/boulder/tree/master/test/challtestsrv
+# Use challtestsrv https://github.com/letsencrypt/pebble/tree/main/cmd/pebble-challtestsrv#dns-01
 
 set -e
 

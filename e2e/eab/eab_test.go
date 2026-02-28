@@ -2,15 +2,14 @@ package eab
 
 import (
 	"context"
-	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"os"
 	"testing"
 
-	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/challenge/http01"
+	"github.com/go-acme/lego/v5/e2e/internal"
 	"github.com/go-acme/lego/v5/e2e/loader"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/registration"
@@ -71,7 +70,7 @@ func TestChallengeHTTP_Client_Obtain_EAB(t *testing.T) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	user := &fakeUser{privateKey: privateKey}
+	user := &internal.FakeUser{PrivateKey: privateKey}
 	config := lego.NewConfig(user)
 	config.CADirURL = load.PebbleOptions.HealthCheckURL
 
@@ -92,7 +91,7 @@ func TestChallengeHTTP_Client_Obtain_EAB(t *testing.T) {
 	reg, err := client.Registration.RegisterWithExternalAccountBinding(ctx, options)
 	require.NoError(t, err)
 
-	user.registration = reg
+	user.Registration = reg
 
 	request := certificate.ObtainRequest{
 		Domains: []string{testDomain1},
@@ -111,13 +110,3 @@ func TestChallengeHTTP_Client_Obtain_EAB(t *testing.T) {
 	assert.NotEmpty(t, resource.IssuerCertificate)
 	assert.Empty(t, resource.CSR)
 }
-
-type fakeUser struct {
-	email        string
-	privateKey   crypto.PrivateKey
-	registration *acme.ExtendedAccount
-}
-
-func (f *fakeUser) GetEmail() string                       { return f.email }
-func (f *fakeUser) GetRegistration() *acme.ExtendedAccount { return f.registration }
-func (f *fakeUser) GetPrivateKey() crypto.PrivateKey       { return f.privateKey }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/url"
 
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/challenge/resolver"
@@ -70,12 +71,7 @@ func NewClient(config *Config) (*Client, error) {
 	}, nil
 }
 
-// GetToSURL returns the current ToS URL from the Directory.
-func (c *Client) GetToSURL() string {
-	return c.core.GetDirectory().Meta.TermsOfService
-}
-
-// GetExternalAccountRequired returns the External Account Binding requirement of the Directory.
-func (c *Client) GetExternalAccountRequired() bool {
-	return c.core.GetDirectory().Meta.ExternalAccountRequired
+// GetServerMetadata returns the current server metadata from the Directory.
+func (c *Client) GetServerMetadata() acme.Meta {
+	return c.core.GetDirectory().Meta
 }

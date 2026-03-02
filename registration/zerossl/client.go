@@ -121,5 +121,5 @@ func parseError(req *http.Request, resp *http.Response) error {
 }
 
 func IsZeroSSL(server string) bool {
-	return strings.HasPrefix(server, "https://acme.zerossl.com/")
+	return strings.HasPrefix(server, "https://acme.zerossl.com/") || strings.EqualFold(server, "zerossl")
 }

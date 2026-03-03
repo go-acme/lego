@@ -1,0 +1,28 @@
+Name = "Com Laude"
+Description = ''''''
+URL = "https://comlaude.com/"
+Code = "comlaude"
+Since = "v4.33.0"
+
+Example = '''
+COMLAUDE_USERNAME="xxx" \
+COMLAUDE_PASSWORD="yyy" \
+COMLAUDE_API_KEY="zzz" \
+COMLAUDE_GROUP_ID="abc" \
+lego --dns comlaude -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    COMLAUDE_USERNAME = "username"
+    COMLAUDE_PASSWORD = "password"
+    COMLAUDE_API_KEY = "API ley"
+    COMLAUDE_GROUP_ID = "Group ID"
+  [Configuration.Additional]
+    COMLAUDE_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    COMLAUDE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    COMLAUDE_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    COMLAUDE_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://api.comlaude.com/docs#/"

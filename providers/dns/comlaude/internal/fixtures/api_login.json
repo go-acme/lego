@@ -1,0 +1,21 @@
+{
+  "errors": [
+    "string"
+  ],
+  "messages": [
+    {
+      "code": "correct_login_details",
+      "message": "Log-in details correct"
+    }
+  ],
+  "data": [
+    {
+      "token_type": "Bearer",
+      "expires_in": 7600,
+      "access_token": "xxx",
+      "refresh_token": "",
+      "dnsdashboard_link": 1
+    }
+  ],
+  "status_code": 200
+}

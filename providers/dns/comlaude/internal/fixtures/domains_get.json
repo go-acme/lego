@@ -1,0 +1,182 @@
+{
+  "errors": [
+    "string"
+  ],
+  "messages": [
+    "string"
+  ],
+  "data": [
+    {
+      "id": "e32f37b7-a251-4981-9613-4d3dac6c4532",
+      "name": "example.com",
+      "idn_name": "example.com",
+      "idn": {
+        "translation": "string",
+        "language": "string"
+      },
+      "tld": "string",
+      "country_code": "string",
+      "management_status": "string",
+      "management_type": "string",
+      "registered_at": "2026-03-03T14:44:40.012Z",
+      "expires_at": "2026-03-03T14:44:40.012Z",
+      "updated_at": "2026-03-03T14:44:40.012Z",
+      "created_at": "2026-03-03T14:44:40.012Z",
+      "managed_at": "2026-03-03T14:44:40.012Z",
+      "premium": true,
+      "key_domain": true,
+      "whois_privacy": true,
+      "hidden_owner": true,
+      "local_presence": true,
+      "registry_lock": {
+        "enabled": true,
+        "expires_at": "2026-03-03T14:44:40.012Z"
+      },
+      "flagged": true,
+      "nameservers": {
+        "names": [
+          "string"
+        ],
+        "labels": [
+          "string"
+        ]
+      },
+      "signing_keys": {
+        "ds": [
+          {
+            "key_tag": "string",
+            "algorithm": "string",
+            "digest_type": "string",
+            "digest": "string"
+          }
+        ],
+        "dnskey": [
+          {
+            "flags": "string",
+            "protocol": "string",
+            "algorithm": "string",
+            "public_key": "string"
+          }
+        ]
+      },
+      "registrant": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "string",
+        "email": "user@example.com",
+        "country_code": "string",
+        "organisation": "string",
+        "vat_number": "string",
+        "organisation_number": "string"
+      },
+      "administrative": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "string",
+        "email": "user@example.com",
+        "country_code": "string",
+        "organisation": "string",
+        "vat_number": "string",
+        "organisation_number": "string"
+      },
+      "technical": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "string",
+        "email": "user@example.com",
+        "country_code": "string",
+        "organisation": "string",
+        "vat_number": "string",
+        "organisation_number": "string"
+      },
+      "billing": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "string",
+        "email": "user@example.com",
+        "country_code": "string",
+        "organisation": "string",
+        "vat_number": "string",
+        "organisation_number": "string"
+      },
+      "account": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "string",
+        "parent": {
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "string"
+        }
+      },
+      "supplier": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "string",
+        "key": "string"
+      },
+      "active_zone": {
+        "id": "62b873d3-a31c-4921-a309-548810913c4f",
+        "default_record_ttl": 0,
+        "signed": true,
+        "resource_record_count": 0,
+        "secondary": {
+          "enabled": 0,
+          "primary_ip": "string",
+          "other_ips": [
+            "string"
+          ],
+          "default_record_ttl": 0
+        },
+        "networks": [
+          "string"
+        ]
+      },
+      "dnssec": true,
+      "external_comments": "string",
+      "tags": [
+        {
+          "id": 0,
+          "name": "string",
+          "type": "string"
+        }
+      ],
+      "domain_supplier_details": {
+        "status": [
+          "string"
+        ],
+        "expires_at": "2026-03-03",
+        "updated_at": "2026-03-03",
+        "registered_at": "2026-03-03",
+        "info_updated_at": "2026-03-03"
+      },
+      "manager": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "string",
+        "email": "user@example.com",
+        "country_code": "string",
+        "organisation": "string",
+        "vat_number": "string",
+        "organisation_number": "string"
+      },
+      "rdap_redacted": true
+    }
+  ],
+  "status_code": 200,
+  "name_results": [
+    {
+      "key": "string",
+      "count": 0
+    }
+  ],
+  "term_results": [
+    {
+      "key": "string",
+      "count": 0
+    }
+  ],
+  "pagination": {
+    "total": 0,
+    "count": 0,
+    "per_page": 0,
+    "current_page": 0,
+    "total_pages": 0,
+    "first": "string",
+    "last": "string",
+    "prev": "string",
+    "next": "string"
+  }
+}

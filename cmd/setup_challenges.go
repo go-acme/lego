@@ -208,7 +208,7 @@ func setupDNSPersist(cmd *cli.Command, client *lego.Client) error {
 			dnspersist01.CondOptions(cmd.Bool(flgDNSPersistPropagationDisableANS),
 				dnspersist01.DisableAuthoritativeNssPropagationRequirement(),
 			),
-			dnspersist01.CondOptions(cmd.Bool(flgDNSSPersistPropagationDisableRNS),
+			dnspersist01.CondOptions(cmd.Bool(flgDNSPersistPropagationDisableRNS),
 				dnspersist01.DisableRecursiveNSsPropagationRequirement(),
 			),
 		),

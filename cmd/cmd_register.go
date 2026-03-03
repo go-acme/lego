@@ -105,6 +105,12 @@ func registerAccount(ctx context.Context, cmd *cli.Command, client *lego.Client)
 }
 
 func handleTOS(cmd *cli.Command, client *lego.Client) bool {
+	// metadata items are optional, and termsOfService too.
+	urlTOS := client.GetServerMetadata().TermsOfService
+	if urlTOS == "" {
+		return true
+	}
+
 	// Check for a global accept override
 	if cmd.Bool(flgAcceptTOS) {
 		return true
@@ -112,7 +118,7 @@ func handleTOS(cmd *cli.Command, client *lego.Client) bool {
 
 	reader := bufio.NewReader(os.Stdin)
 
-	log.Warn("Please review the TOS", slog.String("url", client.GetToSURL()))
+	log.Warn("Please review the TOS", slog.String("url", urlTOS))
 
 	for {
 		fmt.Println("Do you accept the TOS? Y/n")

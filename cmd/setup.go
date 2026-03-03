@@ -31,7 +31,7 @@ func newClient(cmd *cli.Command, account registration.User, keyType certcrypto.K
 		return nil, fmt.Errorf("new client: %w", err)
 	}
 
-	if client.GetExternalAccountRequired() && !cmd.IsSet(flgEAB) {
+	if client.GetServerMetadata().ExternalAccountRequired && !cmd.IsSet(flgEAB) {
 		return nil, errors.New("server requires External Account Binding (EAB)")
 	}
 

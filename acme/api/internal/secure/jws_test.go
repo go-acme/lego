@@ -2,6 +2,8 @@ package secure
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -45,6 +47,26 @@ func TestJWS_SignEAB(t *testing.T) {
 	jws := NewJWS(privKey, "https://example.com", &MockNonceManager{})
 
 	content, err := jws.SignEAB("https://foo.example/a", "https://foo.example/b", x509.MarshalPKCS1PrivateKey(privKey))
+	require.NoError(t, err)
+
+	check(t, content)
+}
+
+func TestJWS_SignKeyChange(t *testing.T) {
+	const (
+		kid      = "https://example.com/acme/acct/evOfKhNU60wg"
+		endpoint = "https://example.com/acme/key-change"
+	)
+
+	oldKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+
+	jws := NewJWS(oldKey, kid, &MockNonceManager{})
+
+	newKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+	require.NoError(t, err)
+
+	content, err := jws.SignKeyChange(endpoint, newKey)
 	require.NoError(t, err)
 
 	check(t, content)

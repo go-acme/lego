@@ -2,6 +2,7 @@ package registration
 
 import (
 	"context"
+	"crypto"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -167,6 +168,11 @@ func (r *Registrar) ResolveAccountByKey(ctx context.Context) (*acme.ExtendedAcco
 	}
 
 	return &account, nil
+}
+
+// KeyRollover will attempt to change the account key.
+func (r *Registrar) KeyRollover(ctx context.Context, newKey crypto.PrivateKey) error {
+	return r.core.Accounts.KeyChange(ctx, newKey)
 }
 
 // RegisterWithZeroSSL registers the current account to the ZeroSSL.

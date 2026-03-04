@@ -2,6 +2,8 @@ package e2e
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/pem"
@@ -91,6 +93,39 @@ func TestRegistrar_UpdateAccount(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []string{"mailto:" + testEmail2}, resource.Contact)
 	require.Equal(t, reg.Location, resource.Location)
+}
+
+func TestRegistrar_KeyRollover(t *testing.T) {
+	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	require.NoError(t, err)
+
+	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+
+	oldKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	user := &internal.FakeUser{
+		PrivateKey: oldKey,
+		Email:      testEmail1,
+	}
+
+	config := lego.NewConfig(user)
+	config.CADirURL = load.PebbleOptions.HealthCheckURL
+
+	client, err := lego.NewClient(config)
+	require.NoError(t, err)
+
+	ctx := t.Context()
+
+	regOptions := registration.RegisterOptions{TermsOfServiceAgreed: true}
+	_, err = client.Registration.Register(ctx, regOptions)
+	require.NoError(t, err)
+
+	newKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+	require.NoError(t, err)
+
+	err = client.Registration.KeyRollover(ctx, newKey)
+	require.NoError(t, err)
 }
 
 func createTestCSRFile(t *testing.T, raw bool) string {

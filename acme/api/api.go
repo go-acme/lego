@@ -85,6 +85,10 @@ func (a *Core) GetKid() string {
 	return a.kid
 }
 
+func (a *Core) setPrivateKey(privateKey crypto.PrivateKey) {
+	a.privateKey = privateKey
+}
+
 // post performs an HTTP POST request and parses the response body as JSON,
 // into the provided respBody object.
 func (a *Core) post(ctx context.Context, uri string, reqBody, response any) (*http.Response, error) {

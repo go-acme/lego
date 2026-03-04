@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"crypto"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -87,6 +88,25 @@ func (a *AccountService) Deactivate(ctx context.Context, accountURL string) erro
 	_, err := a.core.post(ctx, accountURL, req, nil)
 
 	return err
+}
+
+// KeyChange Changes the account key.
+func (a *AccountService) KeyChange(ctx context.Context, newKey crypto.PrivateKey) error {
+	uri := a.core.GetDirectory().KeyChangeURL
+
+	eabJWS, err := a.core.jws().SignKeyChange(uri, newKey)
+	if err != nil {
+		return err
+	}
+
+	_, err = a.core.retrievablePost(ctx, uri, []byte(eabJWS.FullSerialize()), nil)
+	if err != nil {
+		return err
+	}
+
+	a.core.setPrivateKey(newKey)
+
+	return nil
 }
 
 func decodeEABHmac(hmacEncoded string) ([]byte, error) {

@@ -7,8 +7,11 @@ import (
 	"crypto/elliptic"
 	"crypto/rsa"
 	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"fmt"
 
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-jose/go-jose/v4"
 )
 
@@ -98,6 +101,40 @@ func (j *JWS) GetKeyAuthorization(token string) (string, error) {
 	keyThumb := base64.RawURLEncoding.EncodeToString(thumbBytes)
 
 	return token + "." + keyThumb, nil
+}
+
+func (j *JWS) SignKeyChange(url string, newKey crypto.PrivateKey) (*jose.JSONWebSignature, error) {
+	if j.kid == "" {
+		return nil, errors.New("missing kid")
+	}
+
+	oldKeyJWS := jose.JSONWebKey{Key: j.privKey}
+
+	oldKeyJSON, err := oldKeyJWS.Public().MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+
+	kc := acme.KeyChange{
+		Account: j.kid,
+		OldKey:  oldKeyJSON,
+	}
+
+	signKey := jose.SigningKey{Algorithm: signatureAlgorithm(newKey), Key: newKey}
+
+	options := &jose.SignerOptions{
+		EmbedJWK: true,
+		ExtraHeaders: map[jose.HeaderKey]any{
+			"url": url,
+		},
+	}
+
+	kcJSON, err := json.Marshal(kc)
+	if err != nil {
+		return nil, err
+	}
+
+	return sign(kcJSON, signKey, options)
 }
 
 func sign(content []byte, signKey jose.SigningKey, options *jose.SignerOptions) (*jose.JSONWebSignature, error) {

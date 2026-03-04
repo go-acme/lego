@@ -70,8 +70,8 @@ func New(httpClient *http.Client, userAgent, caDirURL, kid string, privateKey cr
 	return c, nil
 }
 
-func (a *Core) jws() *secure.JWS {
-	return secure.NewJWS(a.privateKey, a.kid, a.nonceManager)
+func (a *Core) signer() *secure.Signer {
+	return secure.NewSigner(a.privateKey, a.kid)
 }
 
 // setKid Sets the key identifier (account URI).
@@ -138,7 +138,7 @@ func (a *Core) retrievablePost(ctx context.Context, uri string, content []byte, 
 }
 
 func (a *Core) signedPost(ctx context.Context, uri string, content []byte, response any) (*http.Response, error) {
-	signedContent, err := a.jws().SignContent(ctx, uri, content)
+	signedContent, err := a.signer().SignContent(a.nonceManager.NewNonceSource(ctx), uri, content)
 	if err != nil {
 		return nil, fmt.Errorf("failed to post JWS message: failed to sign content: %w", err)
 	}
@@ -158,7 +158,7 @@ func (a *Core) signedPost(ctx context.Context, uri string, content []byte, respo
 
 // GetKeyAuthorization Gets the key authorization.
 func (a *Core) GetKeyAuthorization(token string) (string, error) {
-	return a.jws().GetKeyAuthorization(token)
+	return a.signer().GetKeyAuthorization(token)
 }
 
 func (a *Core) GetDirectory() acme.Directory {

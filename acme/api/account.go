@@ -36,7 +36,7 @@ func (a *AccountService) NewEAB(ctx context.Context, req acme.Account, kid, hmac
 		return acme.ExtendedAccount{}, err
 	}
 
-	eabJWS, err := a.core.jws().SignEAB(a.core.GetDirectory().NewAccountURL, kid, hmac)
+	eabJWS, err := a.core.signer().SignEAB(a.core.GetDirectory().NewAccountURL, kid, hmac)
 	if err != nil {
 		return acme.ExtendedAccount{}, fmt.Errorf("acme: error signing eab content: %w", err)
 	}
@@ -94,7 +94,7 @@ func (a *AccountService) Deactivate(ctx context.Context, accountURL string) erro
 func (a *AccountService) KeyChange(ctx context.Context, newKey crypto.Signer) error {
 	uri := a.core.GetDirectory().KeyChangeURL
 
-	eabJWS, err := a.core.jws().SignKeyChange(uri, newKey)
+	eabJWS, err := a.core.signer().SignKeyChange(uri, newKey)
 	if err != nil {
 		return err
 	}

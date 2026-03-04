@@ -76,7 +76,7 @@ func ParsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 // Borrowed from Go standard library, to handle various private key and PEM block types.
 // https://github.com/golang/go/blob/693748e9fa385f1e2c3b91ca9acbb6c0ad2d133d/src/crypto/tls/tls.go#L291-L308
 // https://github.com/golang/go/blob/693748e9fa385f1e2c3b91ca9acbb6c0ad2d133d/src/crypto/tls/tls.go#L238
-func ParsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
+func ParsePEMPrivateKey(key []byte) (crypto.Signer, error) {
 	keyBlockDER, _ := pem.Decode(key)
 	if keyBlockDER == nil {
 		return nil, errors.New("invalid PEM block")
@@ -92,7 +92,11 @@ func ParsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
 
 	if key, err := x509.ParsePKCS8PrivateKey(keyBlockDER.Bytes); err == nil {
 		switch key := key.(type) {
-		case *rsa.PrivateKey, *ecdsa.PrivateKey, ed25519.PrivateKey:
+		case *rsa.PrivateKey:
+			return key, nil
+		case *ecdsa.PrivateKey:
+			return key, nil
+		case ed25519.PrivateKey:
 			return key, nil
 		default:
 			return nil, fmt.Errorf("found unknown private key type in PKCS#8 wrapping: %T", key)
@@ -106,7 +110,7 @@ func ParsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
 	return nil, errors.New("failed to parse private key")
 }
 
-func GeneratePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
+func GeneratePrivateKey(keyType KeyType) (crypto.Signer, error) {
 	switch keyType {
 	case EC256:
 		return ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -132,7 +136,7 @@ type CSROptions struct {
 	EmailAddresses []string
 }
 
-func CreateCSR(privateKey crypto.PrivateKey, opts CSROptions) ([]byte, error) {
+func CreateCSR(privateKey crypto.Signer, opts CSROptions) ([]byte, error) {
 	var (
 		dnsNames    []string
 		ipAddresses []net.IP

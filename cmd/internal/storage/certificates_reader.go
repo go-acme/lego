@@ -32,7 +32,7 @@ func (s *CertificatesStorage) ReadCertificate(certID string) ([]*x509.Certificat
 	return ReadCertificateFile(s.GetFileName(certID, ExtCert))
 }
 
-func (s *CertificatesStorage) ReadPrivateKey(certID string) (crypto.PrivateKey, error) {
+func (s *CertificatesStorage) ReadPrivateKey(certID string) (crypto.Signer, error) {
 	privateKey, err := ReadPrivateKeyFile(s.GetFileName(certID, ExtKey))
 	if err != nil {
 		return nil, fmt.Errorf("error while parsing the private key for %q: %w", certID, err)

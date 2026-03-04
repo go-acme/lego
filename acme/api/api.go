@@ -26,7 +26,7 @@ type Core struct {
 
 	HTTPClient *http.Client
 
-	privateKey crypto.PrivateKey
+	privateKey crypto.Signer
 	kid        string
 
 	common         service // Reuse a single struct instead of allocating one for each service on the heap.
@@ -38,7 +38,7 @@ type Core struct {
 }
 
 // New Creates a new Core.
-func New(httpClient *http.Client, userAgent, caDirURL, kid string, privateKey crypto.PrivateKey) (*Core, error) {
+func New(httpClient *http.Client, userAgent, caDirURL, kid string, privateKey crypto.Signer) (*Core, error) {
 	doer := sender.NewDoer(httpClient, userAgent)
 
 	// NOTE(ldez) add context as a parameter of the constructor?
@@ -85,7 +85,7 @@ func (a *Core) GetKid() string {
 	return a.kid
 }
 
-func (a *Core) setPrivateKey(privateKey crypto.PrivateKey) {
+func (a *Core) setPrivateKey(privateKey crypto.Signer) {
 	a.privateKey = privateKey
 }
 

@@ -38,7 +38,7 @@ func TestGenerateCSR(t *testing.T) {
 
 	testCases := []struct {
 		desc       string
-		privateKey crypto.PrivateKey
+		privateKey crypto.Signer
 		opts       CSROptions
 		expected   expected
 	}{

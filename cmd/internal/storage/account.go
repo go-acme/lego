@@ -16,10 +16,10 @@ type Account struct {
 	KeyType      certcrypto.KeyType    `json:"keyType"`
 	Registration *acme.ExtendedAccount `json:"registration"`
 
-	key crypto.PrivateKey
+	key crypto.Signer
 }
 
-func NewAccount(email, id string, keyType certcrypto.KeyType, key crypto.PrivateKey) *Account {
+func NewAccount(email, id string, keyType certcrypto.KeyType, key crypto.Signer) *Account {
 	return &Account{Email: email, ID: id, KeyType: keyType, key: key}
 }
 
@@ -41,7 +41,7 @@ func (a *Account) GetKeyType() certcrypto.KeyType {
 }
 
 // GetPrivateKey returns the private account key.
-func (a *Account) GetPrivateKey() crypto.PrivateKey {
+func (a *Account) GetPrivateKey() crypto.Signer {
 	return a.key
 }
 

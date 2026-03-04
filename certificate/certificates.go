@@ -71,7 +71,7 @@ type Resource struct {
 // See https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.2.
 type ObtainRequest struct {
 	Domains        []string
-	PrivateKey     crypto.PrivateKey
+	PrivateKey     crypto.Signer
 	MustStaple     bool
 	EmailAddresses []string
 
@@ -103,7 +103,7 @@ type ObtainRequest struct {
 type ObtainForCSRRequest struct {
 	CSR *x509.CertificateRequest
 
-	PrivateKey crypto.PrivateKey
+	PrivateKey crypto.Signer
 
 	NotBefore        time.Time
 	NotAfter         time.Time
@@ -548,7 +548,7 @@ func (c *Certifier) Renew(ctx context.Context, certRes Resource, options *RenewO
 		return c.ObtainForCSR(ctx, request)
 	}
 
-	var privateKey crypto.PrivateKey
+	var privateKey crypto.Signer
 	if certRes.PrivateKey != nil {
 		privateKey, err = certcrypto.ParsePEMPrivateKey(certRes.PrivateKey)
 		if err != nil {

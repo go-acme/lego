@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"crypto"
 	"os"
 	"path/filepath"
 	"strings"
@@ -41,6 +40,9 @@ func TestAccountsStorage_Save(t *testing.T) {
 	accountID := "test@example.com"
 	keyType := certcrypto.RSA4096
 
+	privateKey, err := certcrypto.GeneratePrivateKey(keyType)
+	require.NoError(t, err)
+
 	account := &Account{
 		Email:   "account@example.com",
 		ID:      accountID,
@@ -56,7 +58,7 @@ func TestAccountsStorage_Save(t *testing.T) {
 			},
 			Location: "https://ame.example.com",
 		},
-		key: crypto.PrivateKey(""),
+		key: privateKey,
 	}
 
 	accountFilePath := storage.getAccountFilePath(keyType, accountID)

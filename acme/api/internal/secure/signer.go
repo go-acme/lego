@@ -1,7 +1,6 @@
 package secure
 
 import (
-	"context"
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -15,35 +14,32 @@ import (
 	"github.com/go-jose/go-jose/v4"
 )
 
-type nonceSourceCreator interface {
-	NewNonceSource(ctx context.Context) jose.NonceSource
-}
-
-// JWS Represents a JWS.
-type JWS struct {
+// Signer Represents a Signer.
+type Signer struct {
 	privKey crypto.Signer
 	kid     string // Key identifier
-	nonces  nonceSourceCreator
 }
 
-// NewJWS Create a new JWS.
-func NewJWS(privateKey crypto.Signer, kid string, nonceManager nonceSourceCreator) *JWS {
-	return &JWS{
+// NewSigner Create a new Signer.
+func NewSigner(privateKey crypto.Signer, kid string) *Signer {
+	return &Signer{
 		privKey: privateKey,
-		nonces:  nonceManager,
 		kid:     kid,
 	}
 }
 
-// SignContent Signs a content with the JWS.
-func (j *JWS) SignContent(ctx context.Context, url string, content []byte) (*jose.JSONWebSignature, error) {
+// SignContent Signs a content with the Signer.
+func (j *Signer) SignContent(ns jose.NonceSource, url string, content []byte) (*jose.JSONWebSignature, error) {
 	signKey := jose.SigningKey{
 		Algorithm: signatureAlgorithm(j.privKey),
-		Key:       jose.JSONWebKey{Key: j.privKey, KeyID: j.kid},
+		Key: jose.JSONWebKey{
+			Key:   j.privKey,
+			KeyID: j.kid,
+		},
 	}
 
 	options := &jose.SignerOptions{
-		NonceSource: j.nonces.NewNonceSource(ctx),
+		NonceSource: ns,
 		ExtraHeaders: map[jose.HeaderKey]any{
 			"url": url,
 		},
@@ -53,8 +49,8 @@ func (j *JWS) SignContent(ctx context.Context, url string, content []byte) (*jos
 	return sign(content, signKey, options)
 }
 
-// SignEAB Signs an external account binding with the JWS.
-func (j *JWS) SignEAB(url, kid string, hmac []byte) (*jose.JSONWebSignature, error) {
+// SignEAB Signs an external account binding with the Signer.
+func (j *Signer) SignEAB(url, kid string, hmac []byte) (*jose.JSONWebSignature, error) {
 	jwk := jose.JSONWebKey{Key: j.privKey}
 
 	jwkJSON, err := jwk.Public().MarshalJSON()
@@ -62,7 +58,10 @@ func (j *JWS) SignEAB(url, kid string, hmac []byte) (*jose.JSONWebSignature, err
 		return nil, fmt.Errorf("acme: error encoding eab jwk key: %w", err)
 	}
 
-	signKey := jose.SigningKey{Algorithm: jose.HS256, Key: hmac}
+	signKey := jose.SigningKey{
+		Algorithm: jose.HS256,
+		Key:       hmac,
+	}
 
 	options := &jose.SignerOptions{
 		EmbedJWK: false,
@@ -81,7 +80,7 @@ func (j *JWS) SignEAB(url, kid string, hmac []byte) (*jose.JSONWebSignature, err
 }
 
 // GetKeyAuthorization Gets the key authorization for a token.
-func (j *JWS) GetKeyAuthorization(token string) (string, error) {
+func (j *Signer) GetKeyAuthorization(token string) (string, error) {
 	publicKey := j.privKey.Public()
 
 	// Generate the Key Authorization for the challenge
@@ -98,7 +97,7 @@ func (j *JWS) GetKeyAuthorization(token string) (string, error) {
 	return token + "." + keyThumb, nil
 }
 
-func (j *JWS) SignKeyChange(url string, newKey crypto.Signer) (*jose.JSONWebSignature, error) {
+func (j *Signer) SignKeyChange(url string, newKey crypto.Signer) (*jose.JSONWebSignature, error) {
 	if j.kid == "" {
 		return nil, errors.New("missing kid")
 	}
@@ -115,7 +114,10 @@ func (j *JWS) SignKeyChange(url string, newKey crypto.Signer) (*jose.JSONWebSign
 		OldKey:  oldKeyJSON,
 	}
 
-	signKey := jose.SigningKey{Algorithm: signatureAlgorithm(newKey), Key: newKey}
+	signKey := jose.SigningKey{
+		Algorithm: signatureAlgorithm(newKey),
+		Key:       newKey,
+	}
 
 	options := &jose.SignerOptions{
 		EmbedJWK: true,

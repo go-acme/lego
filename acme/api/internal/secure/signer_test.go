@@ -1,7 +1,6 @@
 package secure
 
 import (
-	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -16,43 +15,37 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type MockNonceManager struct{}
-
-func (f *MockNonceManager) NewNonceSource(ctx context.Context) jose.NonceSource {
-	return &MockNonceSource{}
-}
-
 type MockNonceSource struct{}
 
 func (b *MockNonceSource) Nonce() (string, error) {
 	return "xxxNoncexxx", nil
 }
 
-func TestJWS_SignContent(t *testing.T) {
+func TestSigner_SignContent(t *testing.T) {
 	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err)
 
-	jws := NewJWS(privKey, "https://example.com", &MockNonceManager{})
+	signer := NewSigner(privKey, "https://example.com")
 
-	content, err := jws.SignContent(t.Context(), "https://foo.example", []byte("{}"))
+	content, err := signer.SignContent(&MockNonceSource{}, "https://foo.example", []byte("{}"))
 	require.NoError(t, err)
 
 	check(t, content)
 }
 
-func TestJWS_SignEAB(t *testing.T) {
+func TestSigner_SignEAB(t *testing.T) {
 	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err)
 
-	jws := NewJWS(privKey, "https://example.com", &MockNonceManager{})
+	signer := NewSigner(privKey, "https://example.com")
 
-	content, err := jws.SignEAB("https://foo.example/a", "https://foo.example/b", x509.MarshalPKCS1PrivateKey(privKey))
+	content, err := signer.SignEAB("https://foo.example/a", "https://foo.example/b", x509.MarshalPKCS1PrivateKey(privKey))
 	require.NoError(t, err)
 
 	check(t, content)
 }
 
-func TestJWS_SignKeyChange(t *testing.T) {
+func TestSigner_SignKeyChange(t *testing.T) {
 	const (
 		kid      = "https://example.com/acme/acct/evOfKhNU60wg"
 		endpoint = "https://example.com/acme/key-change"
@@ -61,12 +54,12 @@ func TestJWS_SignKeyChange(t *testing.T) {
 	oldKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err)
 
-	jws := NewJWS(oldKey, kid, &MockNonceManager{})
+	signer := NewSigner(oldKey, kid)
 
 	newKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	require.NoError(t, err)
 
-	content, err := jws.SignKeyChange(endpoint, newKey)
+	content, err := signer.SignKeyChange(endpoint, newKey)
 	require.NoError(t, err)
 
 	check(t, content)

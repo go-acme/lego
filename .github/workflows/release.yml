@@ -77,11 +77,11 @@ jobs:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
           AUR_KEY: ${{ secrets.AUR_KEY }}
 
-      - uses: actions/attest-build-provenance@v3
+      - uses: actions/attest@v4
         with:
           subject-checksums: ./dist/lego_${{ fromJSON(steps.goreleaser.outputs.metadata).version }}_checksums.txt
           github-token: ${{ secrets.GH_TOKEN_REPO }}
-      - uses: actions/attest-build-provenance@v3
+      - uses: actions/attest@v4
         with:
           subject-checksums: ./dist/digests.txt
           github-token: ${{ secrets.GH_TOKEN_REPO }}

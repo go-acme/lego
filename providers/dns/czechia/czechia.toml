@@ -1,0 +1,22 @@
+Name = "Czechia"
+Description = ''''''
+URL = "https://www.czechia.com/"
+Code = "czechia"
+Since = "v4.33.0"
+
+Example = '''
+CZECHIA_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
+lego --dns czechia -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    CZECHIA_TOKEN = "Authorization token"
+  [Configuration.Additional]
+    CZECHIA_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    CZECHIA_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    CZECHIA_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    CZECHIA_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://api.czechia.com/swagger/index.html"

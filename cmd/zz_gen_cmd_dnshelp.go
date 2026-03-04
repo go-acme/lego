@@ -49,6 +49,7 @@ func allDNSCodes() string {
 		"constellix",
 		"corenetworks",
 		"cpanel",
+		"czechia",
 		"ddnss",
 		"derak",
 		"desec",
@@ -1025,6 +1026,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/cpanel`)
+
+	case "czechia":
+		// generated from: providers/dns/czechia/czechia.toml
+		ew.writeln(`Configuration for Czechia.`)
+		ew.writeln(`Code:	'czechia'`)
+		ew.writeln(`Since:	'v4.33.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "CZECHIA_TOKEN":	Authorization token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CZECHIA_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "CZECHIA_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "CZECHIA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "CZECHIA_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/czechia`)
 
 	case "ddnss":
 		// generated from: providers/dns/ddnss/ddnss.toml

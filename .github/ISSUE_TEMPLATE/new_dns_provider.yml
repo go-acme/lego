@@ -14,9 +14,15 @@ body:
           required: true
         - label: Yes, I know that the lego maintainers don't have an account in all DNS providers in the world.
           required: true
+
+  - type: checkboxes
+    id: pr
+    attributes:
+      label: Implementation
+      options:
         - label: Yes, I'm able to create a pull request and be able to maintain the implementation.
           required: false
-        - label: Yes, I'm able to test an implementation if someone creates a pull request to add the support of this DNS provider.
+        - label: Yes, I can test an implementation with the help of the maintainers if someone creates a pull request.
           required: false
 
   - type: dropdown

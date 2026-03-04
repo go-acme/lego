@@ -43,6 +43,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/constellix"
 	"github.com/go-acme/lego/v5/providers/dns/corenetworks"
 	"github.com/go-acme/lego/v5/providers/dns/cpanel"
+	"github.com/go-acme/lego/v5/providers/dns/czechia"
 	"github.com/go-acme/lego/v5/providers/dns/ddnss"
 	"github.com/go-acme/lego/v5/providers/dns/derak"
 	"github.com/go-acme/lego/v5/providers/dns/desec"
@@ -273,6 +274,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return corenetworks.NewDNSProvider()
 	case "cpanel":
 		return cpanel.NewDNSProvider()
+	case "czechia":
+		return czechia.NewDNSProvider()
 	case "ddnss":
 		return ddnss.NewDNSProvider()
 	case "derak":

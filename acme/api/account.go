@@ -29,20 +29,20 @@ func (a *AccountService) New(ctx context.Context, req acme.Account) (acme.Extend
 }
 
 // NewEAB Creates a new account with an External Account Binding.
-func (a *AccountService) NewEAB(ctx context.Context, accMsg acme.Account, kid, hmacEncoded string) (acme.ExtendedAccount, error) {
+func (a *AccountService) NewEAB(ctx context.Context, req acme.Account, kid, hmacEncoded string) (acme.ExtendedAccount, error) {
 	hmac, err := decodeEABHmac(hmacEncoded)
 	if err != nil {
 		return acme.ExtendedAccount{}, err
 	}
 
-	eabJWS, err := a.core.signEABContent(a.core.GetDirectory().NewAccountURL, kid, hmac)
+	eabJWS, err := a.core.jws().SignEAB(a.core.GetDirectory().NewAccountURL, kid, hmac)
 	if err != nil {
 		return acme.ExtendedAccount{}, fmt.Errorf("acme: error signing eab content: %w", err)
 	}
 
-	accMsg.ExternalAccountBinding = eabJWS
+	req.ExternalAccountBinding = []byte(eabJWS.FullSerialize())
 
-	return a.New(ctx, accMsg)
+	return a.New(ctx, req)
 }
 
 // Get Retrieves an account.

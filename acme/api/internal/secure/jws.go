@@ -9,19 +9,22 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/go-acme/lego/v5/acme/api/internal/nonces"
 	"github.com/go-jose/go-jose/v4"
 )
+
+type nonceSourceCreator interface {
+	NewNonceSource(ctx context.Context) jose.NonceSource
+}
 
 // JWS Represents a JWS.
 type JWS struct {
 	privKey crypto.PrivateKey
 	kid     string // Key identifier
-	nonces  *nonces.Manager
+	nonces  nonceSourceCreator
 }
 
 // NewJWS Create a new JWS.
-func NewJWS(privateKey crypto.PrivateKey, kid string, nonceManager *nonces.Manager) *JWS {
+func NewJWS(privateKey crypto.PrivateKey, kid string, nonceManager nonceSourceCreator) *JWS {
 	return &JWS{
 		privKey: privateKey,
 		nonces:  nonceManager,
@@ -31,50 +34,24 @@ func NewJWS(privateKey crypto.PrivateKey, kid string, nonceManager *nonces.Manag
 
 // SignContent Signs a content with the JWS.
 func (j *JWS) SignContent(ctx context.Context, url string, content []byte) (*jose.JSONWebSignature, error) {
-	var alg jose.SignatureAlgorithm
-
-	switch k := j.privKey.(type) {
-	case *rsa.PrivateKey:
-		alg = jose.RS256
-	case *ecdsa.PrivateKey:
-		if k.Curve == elliptic.P256() {
-			alg = jose.ES256
-		} else if k.Curve == elliptic.P384() {
-			alg = jose.ES384
-		}
-	}
-
 	signKey := jose.SigningKey{
-		Algorithm: alg,
+		Algorithm: signatureAlgorithm(j.privKey),
 		Key:       jose.JSONWebKey{Key: j.privKey, KeyID: j.kid},
 	}
 
-	options := jose.SignerOptions{
-		NonceSource: nonces.NewNonceSource(ctx, j.nonces),
+	options := &jose.SignerOptions{
+		NonceSource: j.nonces.NewNonceSource(ctx),
 		ExtraHeaders: map[jose.HeaderKey]any{
 			"url": url,
 		},
+		EmbedJWK: j.kid == "",
 	}
 
-	if j.kid == "" {
-		options.EmbedJWK = true
-	}
-
-	signer, err := jose.NewSigner(signKey, &options)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create jose signer: %w", err)
-	}
-
-	signed, err := signer.Sign(content)
-	if err != nil {
-		return nil, fmt.Errorf("failed to sign content: %w", err)
-	}
-
-	return signed, nil
+	return sign(content, signKey, options)
 }
 
-// SignEABContent Signs an external account binding content with the JWS.
-func (j *JWS) SignEABContent(url, kid string, hmac []byte) (*jose.JSONWebSignature, error) {
+// SignEAB Signs an external account binding with the JWS.
+func (j *JWS) SignEAB(url, kid string, hmac []byte) (*jose.JSONWebSignature, error) {
 	jwk := jose.JSONWebKey{Key: j.privKey}
 
 	jwkJSON, err := jwk.Public().MarshalJSON()
@@ -82,23 +59,19 @@ func (j *JWS) SignEABContent(url, kid string, hmac []byte) (*jose.JSONWebSignatu
 		return nil, fmt.Errorf("acme: error encoding eab jwk key: %w", err)
 	}
 
-	signer, err := jose.NewSigner(
-		jose.SigningKey{Algorithm: jose.HS256, Key: hmac},
-		&jose.SignerOptions{
-			EmbedJWK: false,
-			ExtraHeaders: map[jose.HeaderKey]any{
-				"kid": kid,
-				"url": url,
-			},
+	signKey := jose.SigningKey{Algorithm: jose.HS256, Key: hmac}
+
+	options := &jose.SignerOptions{
+		EmbedJWK: false,
+		ExtraHeaders: map[jose.HeaderKey]any{
+			"kid": kid,
+			"url": url,
 		},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create External Account Binding jose signer: %w", err)
 	}
 
-	signed, err := signer.Sign(jwkJSON)
+	signed, err := sign(jwkJSON, signKey, options)
 	if err != nil {
-		return nil, fmt.Errorf("failed to External Account Binding sign content: %w", err)
+		return nil, fmt.Errorf("EAB: %w", err)
 	}
 
 	return signed, nil
@@ -108,11 +81,9 @@ func (j *JWS) SignEABContent(url, kid string, hmac []byte) (*jose.JSONWebSignatu
 func (j *JWS) GetKeyAuthorization(token string) (string, error) {
 	var publicKey crypto.PublicKey
 
-	switch k := j.privKey.(type) {
-	case *ecdsa.PrivateKey:
-		publicKey = k.Public()
-	case *rsa.PrivateKey:
-		publicKey = k.Public()
+	signer, ok := j.privKey.(crypto.Signer)
+	if ok {
+		publicKey = signer.Public()
 	}
 
 	// Generate the Key Authorization for the challenge
@@ -127,4 +98,35 @@ func (j *JWS) GetKeyAuthorization(token string) (string, error) {
 	keyThumb := base64.RawURLEncoding.EncodeToString(thumbBytes)
 
 	return token + "." + keyThumb, nil
+}
+
+func sign(content []byte, signKey jose.SigningKey, options *jose.SignerOptions) (*jose.JSONWebSignature, error) {
+	signer, err := jose.NewSigner(signKey, options)
+	if err != nil {
+		return nil, fmt.Errorf("new jose signer: %w", err)
+	}
+
+	signed, err := signer.Sign(content)
+	if err != nil {
+		return nil, fmt.Errorf("sign content: %w", err)
+	}
+
+	return signed, nil
+}
+
+func signatureAlgorithm(privKey crypto.PrivateKey) jose.SignatureAlgorithm {
+	var alg jose.SignatureAlgorithm
+
+	switch k := privKey.(type) {
+	case *rsa.PrivateKey:
+		alg = jose.RS256
+	case *ecdsa.PrivateKey:
+		if k.Curve == elliptic.P256() {
+			alg = jose.ES256
+		} else if k.Curve == elliptic.P384() {
+			alg = jose.ES384
+		}
+	}
+
+	return alg
 }

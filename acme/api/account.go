@@ -91,7 +91,7 @@ func (a *AccountService) Deactivate(ctx context.Context, accountURL string) erro
 }
 
 // KeyChange Changes the account key.
-func (a *AccountService) KeyChange(ctx context.Context, newKey crypto.PrivateKey) error {
+func (a *AccountService) KeyChange(ctx context.Context, newKey crypto.Signer) error {
 	uri := a.core.GetDirectory().KeyChangeURL
 
 	eabJWS, err := a.core.jws().SignKeyChange(uri, newKey)

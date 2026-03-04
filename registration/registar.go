@@ -171,7 +171,7 @@ func (r *Registrar) ResolveAccountByKey(ctx context.Context) (*acme.ExtendedAcco
 }
 
 // KeyRollover will attempt to change the account key.
-func (r *Registrar) KeyRollover(ctx context.Context, newKey crypto.PrivateKey) error {
+func (r *Registrar) KeyRollover(ctx context.Context, newKey crypto.Signer) error {
 	return r.core.Accounts.KeyChange(ctx, newKey)
 }
 

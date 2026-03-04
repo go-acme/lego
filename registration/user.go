@@ -11,5 +11,5 @@ import (
 type User interface {
 	GetEmail() string
 	GetRegistration() *acme.ExtendedAccount
-	GetPrivateKey() crypto.PrivateKey
+	GetPrivateKey() crypto.Signer
 }

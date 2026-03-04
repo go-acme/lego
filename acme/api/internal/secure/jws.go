@@ -21,13 +21,13 @@ type nonceSourceCreator interface {
 
 // JWS Represents a JWS.
 type JWS struct {
-	privKey crypto.PrivateKey
+	privKey crypto.Signer
 	kid     string // Key identifier
 	nonces  nonceSourceCreator
 }
 
 // NewJWS Create a new JWS.
-func NewJWS(privateKey crypto.PrivateKey, kid string, nonceManager nonceSourceCreator) *JWS {
+func NewJWS(privateKey crypto.Signer, kid string, nonceManager nonceSourceCreator) *JWS {
 	return &JWS{
 		privKey: privateKey,
 		nonces:  nonceManager,
@@ -82,12 +82,7 @@ func (j *JWS) SignEAB(url, kid string, hmac []byte) (*jose.JSONWebSignature, err
 
 // GetKeyAuthorization Gets the key authorization for a token.
 func (j *JWS) GetKeyAuthorization(token string) (string, error) {
-	var publicKey crypto.PublicKey
-
-	signer, ok := j.privKey.(crypto.Signer)
-	if ok {
-		publicKey = signer.Public()
-	}
+	publicKey := j.privKey.Public()
 
 	// Generate the Key Authorization for the challenge
 	jwk := &jose.JSONWebKey{Key: publicKey}
@@ -103,7 +98,7 @@ func (j *JWS) GetKeyAuthorization(token string) (string, error) {
 	return token + "." + keyThumb, nil
 }
 
-func (j *JWS) SignKeyChange(url string, newKey crypto.PrivateKey) (*jose.JSONWebSignature, error) {
+func (j *JWS) SignKeyChange(url string, newKey crypto.Signer) (*jose.JSONWebSignature, error) {
 	if j.kid == "" {
 		return nil, errors.New("missing kid")
 	}
@@ -151,7 +146,7 @@ func sign(content []byte, signKey jose.SigningKey, options *jose.SignerOptions) 
 	return signed, nil
 }
 
-func signatureAlgorithm(privKey crypto.PrivateKey) jose.SignatureAlgorithm {
+func signatureAlgorithm(privKey crypto.Signer) jose.SignatureAlgorithm {
 	var alg jose.SignatureAlgorithm
 
 	switch k := privKey.(type) {

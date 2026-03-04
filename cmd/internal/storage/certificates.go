@@ -92,7 +92,7 @@ func SanitizedName(name string) string {
 }
 
 // ReadPrivateKeyFile reads a private key file.
-func ReadPrivateKeyFile(filename string) (crypto.PrivateKey, error) {
+func ReadPrivateKeyFile(filename string) (crypto.Signer, error) {
 	keyBytes, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("reading the private key: %w", err)

@@ -138,7 +138,7 @@ func getKeyType(srcKeyPath string) (certcrypto.KeyType, error) {
 	return kt, nil
 }
 
-func guessKeyType(key crypto.PrivateKey) (certcrypto.KeyType, error) {
+func guessKeyType(key crypto.Signer) (certcrypto.KeyType, error) {
 	switch k := key.(type) {
 	case *rsa.PrivateKey:
 		switch k.Size() {

@@ -204,7 +204,7 @@ func (s *AccountsStorage) getAccount(ctx context.Context, keyType certcrypto.Key
 }
 
 // createPrivateKey generates a new private key and saves it to a file.
-func (s *AccountsStorage) createPrivateKey(keyType certcrypto.KeyType, effectiveAccountID string) (crypto.PrivateKey, error) {
+func (s *AccountsStorage) createPrivateKey(keyType certcrypto.KeyType, effectiveAccountID string) (crypto.Signer, error) {
 	keysPath := s.getKeyPath(keyType, effectiveAccountID)
 
 	accKeyPath := filepath.Join(keysPath, effectiveAccountID+".key")
@@ -242,7 +242,7 @@ func (s *AccountsStorage) createPrivateKey(keyType certcrypto.KeyType, effective
 }
 
 // readPrivateKey reads the private key from a file.
-func (s *AccountsStorage) readPrivateKey(keyType certcrypto.KeyType, effectiveAccountID string) (crypto.PrivateKey, error) {
+func (s *AccountsStorage) readPrivateKey(keyType certcrypto.KeyType, effectiveAccountID string) (crypto.Signer, error) {
 	keysPath := s.getKeyPath(keyType, effectiveAccountID)
 
 	accKeyPath := filepath.Join(keysPath, effectiveAccountID+".key")
@@ -293,7 +293,7 @@ func (s *AccountsStorage) getRootUserPath(effectiveAccountID string) string {
 }
 
 // tryRecoverRegistration tries to recover the registration from the private key.
-func (s *AccountsStorage) tryRecoverRegistration(ctx context.Context, privateKey crypto.PrivateKey) (*acme.ExtendedAccount, error) {
+func (s *AccountsStorage) tryRecoverRegistration(ctx context.Context, privateKey crypto.Signer) (*acme.ExtendedAccount, error) {
 	// couldn't load account but got a key. Try to look the account up.
 	config := lego.NewConfig(&Account{key: privateKey})
 	config.CADirURL = s.server.String()

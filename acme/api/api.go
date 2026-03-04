@@ -85,6 +85,10 @@ func (a *Core) GetKid() string {
 	return a.kid
 }
 
+func (a *Core) setPrivateKey(privateKey crypto.PrivateKey) {
+	a.privateKey = privateKey
+}
+
 // post performs an HTTP POST request and parses the response body as JSON,
 // into the provided respBody object.
 func (a *Core) post(ctx context.Context, uri string, reqBody, response any) (*http.Response, error) {
@@ -150,15 +154,6 @@ func (a *Core) signedPost(ctx context.Context, uri string, content []byte, respo
 	}
 
 	return resp, err
-}
-
-func (a *Core) signEABContent(newAccountURL, kid string, hmac []byte) ([]byte, error) {
-	eabJWS, err := a.jws().SignEABContent(newAccountURL, kid, hmac)
-	if err != nil {
-		return nil, err
-	}
-
-	return []byte(eabJWS.FullSerialize()), nil
 }
 
 // GetKeyAuthorization Gets the key authorization.

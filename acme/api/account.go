@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"crypto"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -29,20 +30,20 @@ func (a *AccountService) New(ctx context.Context, req acme.Account) (acme.Extend
 }
 
 // NewEAB Creates a new account with an External Account Binding.
-func (a *AccountService) NewEAB(ctx context.Context, accMsg acme.Account, kid, hmacEncoded string) (acme.ExtendedAccount, error) {
+func (a *AccountService) NewEAB(ctx context.Context, req acme.Account, kid, hmacEncoded string) (acme.ExtendedAccount, error) {
 	hmac, err := decodeEABHmac(hmacEncoded)
 	if err != nil {
 		return acme.ExtendedAccount{}, err
 	}
 
-	eabJWS, err := a.core.signEABContent(a.core.GetDirectory().NewAccountURL, kid, hmac)
+	eabJWS, err := a.core.jws().SignEAB(a.core.GetDirectory().NewAccountURL, kid, hmac)
 	if err != nil {
 		return acme.ExtendedAccount{}, fmt.Errorf("acme: error signing eab content: %w", err)
 	}
 
-	accMsg.ExternalAccountBinding = eabJWS
+	req.ExternalAccountBinding = []byte(eabJWS.FullSerialize())
 
-	return a.New(ctx, accMsg)
+	return a.New(ctx, req)
 }
 
 // Get Retrieves an account.
@@ -87,6 +88,25 @@ func (a *AccountService) Deactivate(ctx context.Context, accountURL string) erro
 	_, err := a.core.post(ctx, accountURL, req, nil)
 
 	return err
+}
+
+// KeyChange Changes the account key.
+func (a *AccountService) KeyChange(ctx context.Context, newKey crypto.PrivateKey) error {
+	uri := a.core.GetDirectory().KeyChangeURL
+
+	eabJWS, err := a.core.jws().SignKeyChange(uri, newKey)
+	if err != nil {
+		return err
+	}
+
+	_, err = a.core.retrievablePost(ctx, uri, []byte(eabJWS.FullSerialize()), nil)
+	if err != nil {
+		return err
+	}
+
+	a.core.setPrivateKey(newKey)
+
+	return nil
 }
 
 func decodeEABHmac(hmacEncoded string) ([]byte, error) {

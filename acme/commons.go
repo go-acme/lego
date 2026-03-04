@@ -377,3 +377,10 @@ type RenewalInfo struct {
 	//	Callers SHOULD provide this URL to their operator, if present.
 	ExplanationURL string `json:"explanationURL"`
 }
+
+// KeyChange is the response to POST requests made the keyChange endpoint.
+// - https://www.rfc-editor.org/rfc/rfc8555.html#section-7.3.5
+type KeyChange struct {
+	Account string          `json:"account"`
+	OldKey  json.RawMessage `json:"oldKey"`
+}

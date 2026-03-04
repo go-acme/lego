@@ -78,6 +78,10 @@ func GetFromResponse(resp *http.Response) (string, error) {
 	return nonce, nil
 }
 
+func (n *Manager) NewNonceSource(ctx context.Context) jose.NonceSource {
+	return NewNonceSource(ctx, n)
+}
+
 var _ jose.NonceSource = (*NonceSource)(nil)
 
 // NonceSource implements [jose.NonceSource].

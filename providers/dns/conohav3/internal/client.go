@@ -18,21 +18,18 @@ const dnsServiceBaseURL = "https://dns-service.%s.conoha.io"
 
 // Client is a ConoHa API client.
 type Client struct {
-	token string
-
 	baseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient returns a client instance logged into the ConoHa service.
-func NewClient(region, token string) (*Client, error) {
+func NewClient(region string) (*Client, error) {
 	baseURL, err := url.Parse(fmt.Sprintf(dnsServiceBaseURL, region))
 	if err != nil {
 		return nil, err
 	}
 
 	return &Client{
-		token:      token,
 		baseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}, nil
@@ -147,10 +144,6 @@ func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID string) er
 }
 
 func (c *Client) do(req *http.Request, result any) error {
-	if c.token != "" {
-		req.Header.Set("X-Auth-Token", c.token)
-	}
-
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)
@@ -192,6 +185,11 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	tok := getToken(ctx)
+	if tok != "" {
+		req.Header.Set("X-Auth-Token", tok)
 	}
 
 	req.Header.Set("Accept", "application/json")

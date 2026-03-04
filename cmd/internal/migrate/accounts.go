@@ -1,10 +1,6 @@
 package migrate
 
 import (
-	"crypto"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rsa"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -130,41 +126,10 @@ func getKeyType(srcKeyPath string) (certcrypto.KeyType, error) {
 		return "", fmt.Errorf("could not read the private key file %q: %w", srcKeyPath, err)
 	}
 
-	kt, err := guessKeyType(pk)
+	kt, err := guessPrivateKeyType(pk)
 	if err != nil {
 		return "", fmt.Errorf("could not guess the private key type: %w", err)
 	}
 
 	return kt, nil
-}
-
-func guessKeyType(key crypto.Signer) (certcrypto.KeyType, error) {
-	switch k := key.(type) {
-	case *rsa.PrivateKey:
-		switch k.Size() {
-		case 256:
-			return certcrypto.RSA2048, nil
-		case 384:
-			return certcrypto.RSA3072, nil
-		case 512:
-			return certcrypto.RSA4096, nil
-		case 1024:
-			return certcrypto.RSA8192, nil
-		default:
-			return "", fmt.Errorf("unsupported RSA key size: %d", k.Size())
-		}
-
-	case *ecdsa.PrivateKey:
-		switch k.Curve {
-		case elliptic.P256():
-			return certcrypto.EC256, nil
-		case elliptic.P384():
-			return certcrypto.EC384, nil
-		default:
-			return "", fmt.Errorf("unsupported ECDSA key size: %d", k.Curve.Params().BitSize)
-		}
-
-	default:
-		return "", fmt.Errorf("unsupported key type: %T", key)
-	}
 }

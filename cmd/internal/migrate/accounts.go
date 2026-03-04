@@ -3,6 +3,7 @@ package migrate
 import (
 	"crypto"
 	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rsa"
 	"encoding/json"
 	"fmt"
@@ -154,10 +155,10 @@ func guessKeyType(key crypto.PrivateKey) (certcrypto.KeyType, error) {
 		}
 
 	case *ecdsa.PrivateKey:
-		switch k.Curve.Params().BitSize {
-		case 256:
+		switch k.Curve {
+		case elliptic.P256():
 			return certcrypto.EC256, nil
-		case 384:
+		case elliptic.P384():
 			return certcrypto.EC384, nil
 		default:
 			return "", fmt.Errorf("unsupported ECDSA key size: %d", k.Curve.Params().BitSize)

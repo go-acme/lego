@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/aziontech/azionapi-go-sdk/idns"
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -26,6 +27,8 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

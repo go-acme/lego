@@ -9,10 +9,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/providers/dns/internal/active24/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

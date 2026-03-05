@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/internal/wait"
@@ -30,6 +31,8 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

@@ -29,6 +29,8 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
+
 // Config is used to configure the creation of the DNSProvider.
 type Config = active24.Config
 

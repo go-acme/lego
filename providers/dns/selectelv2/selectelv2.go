@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/internal/useragent"
@@ -51,6 +52,8 @@ const (
 )
 
 const tokenHeader = "X-Auth-Token"
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 var errNotFound = errors.New("rrset not found")
 

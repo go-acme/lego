@@ -7,12 +7,15 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 )
 
 const (
 	dnsTemplate = `%s %d IN TXT %q`
 )
+
+var _ challenge.Provider = (*DNSProvider)(nil)
 
 // DNSProvider is an implementation of the ChallengeProvider interface.
 type DNSProvider struct{}

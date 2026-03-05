@@ -12,6 +12,7 @@ import (
 	"github.com/alibabacloud-go/tea/dara"
 	"github.com/aliyun/credentials-go/credentials"
 	esa "github.com/go-acme/esa-20240910/v2/client"
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/internal/ptr"
@@ -34,6 +35,8 @@ const (
 )
 
 const defaultRegionID = "cn-hangzhou"
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

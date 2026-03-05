@@ -8,6 +8,7 @@ import (
 	"time"
 
 	baidudns "github.com/baidubce/bce-sdk-go/services/dns"
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/internal/ptr"
@@ -27,6 +28,8 @@ const (
 
 // 300 is the minimum TTL for free users.
 const defaultTTL = 300
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

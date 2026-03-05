@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/jdcloud-sdk-go/services/domainservice/apis"
 	jdcclient "github.com/go-acme/jdcloud-sdk-go/services/domainservice/client"
 	domainservice "github.com/go-acme/jdcloud-sdk-go/services/domainservice/models"
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/internal/env"
 )
@@ -30,6 +31,8 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {

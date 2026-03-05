@@ -1,11 +1,12 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"regexp"
-	"strconv"
 	"time"
+
+	"github.com/go-acme/lego/v5/acme/api/internal/sender"
+	"github.com/go-acme/lego/v5/log"
 )
 
 type service struct {
@@ -52,36 +53,15 @@ func getLocation(resp *http.Response) string {
 }
 
 // getRetryAfter get the value of the header Retry-After.
-func getRetryAfter(resp *http.Response) string {
+func getRetryAfter(resp *http.Response) time.Duration {
 	if resp == nil {
-		return ""
+		return 0
 	}
 
-	return resp.Header.Get("Retry-After")
-}
-
-// ParseRetryAfter parses the Retry-After header value according to RFC 7231.
-// The header can be either delay-seconds (numeric) or HTTP-date (RFC 1123 format).
-// https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.3
-// Returns the duration until the retry time.
-// TODO(ldez): unexposed this function in v5.
-func ParseRetryAfter(value string) (time.Duration, error) {
-	if value == "" {
-		return 0, nil
+	retryAfter, err := sender.ParseRetryAfter(resp.Header.Get("Retry-After"))
+	if err != nil {
+		log.Warn("Failed to parse Retry-After header.", log.ErrorAttr(err))
 	}
 
-	if seconds, err := strconv.ParseInt(value, 10, 64); err == nil {
-		return time.Duration(seconds) * time.Second, nil
-	}
-
-	if retryTime, err := time.Parse(time.RFC1123, value); err == nil {
-		duration := time.Until(retryTime)
-		if duration < 0 {
-			return 0, nil
-		}
-
-		return duration, nil
-	}
-
-	return 0, fmt.Errorf("invalid Retry-After value: %q", value)
+	return retryAfter
 }

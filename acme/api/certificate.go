@@ -70,6 +70,8 @@ func (c *CertificateService) get(ctx context.Context, certURL string, bundle boo
 		return nil, nil, err
 	}
 
+	defer func() { _ = resp.Body.Close() }()
+
 	data, err := io.ReadAll(http.MaxBytesReader(nil, resp.Body, maxBodySize))
 	if err != nil {
 		return nil, resp.Header, err

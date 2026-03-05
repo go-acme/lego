@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math/rand"
+	"math/rand/v2"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -136,7 +136,7 @@ func getRandomSalt() []byte {
 	// This is the only part of this that needs to be serialized.
 	salt := make([]byte, 16)
 	for i := range 16 {
-		salt[i] = saltBytes[rand.Intn(len(saltBytes))]
+		salt[i] = saltBytes[rand.IntN(len(saltBytes))]
 	}
 
 	return salt

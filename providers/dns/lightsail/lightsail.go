@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"strconv"
 	"time"
 
@@ -98,7 +98,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 				options.Backoff = retry.BackoffDelayerFunc(func(attempt int, err error) (time.Duration, error) {
 					retryCount := min(attempt, 7)
 
-					delay := (1 << uint(retryCount)) * (rand.Intn(50) + 200)
+					delay := (1 << uint(retryCount)) * (rand.IntN(50) + 200)
 
 					return time.Duration(delay) * time.Millisecond, nil
 				})

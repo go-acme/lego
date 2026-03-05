@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/x509"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme"
@@ -31,7 +31,7 @@ func (r *RenewalInfo) ShouldRenewAt(now time.Time, willingToSleep time.Duration)
 	// Select a uniform random time within the suggested window.
 	rt := start
 	if window := end.Sub(start); window > 0 {
-		randomDuration := time.Duration(rand.Int63n(int64(window)))
+		randomDuration := time.Duration(rand.Int64N(int64(window)))
 		rt = rt.Add(randomDuration)
 	}
 

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"slices"
 	"sort"
@@ -391,8 +391,7 @@ func randomSleep(cmd *cli.Command) {
 		// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L472
 		const jitter = 8 * time.Minute
 
-		rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-		sleepTime := time.Duration(rnd.Int63n(int64(jitter)))
+		sleepTime := time.Duration(rand.Int64N(int64(jitter)))
 
 		log.Info("renewal: random delay.", slog.Duration("sleep", sleepTime))
 		time.Sleep(sleepTime)

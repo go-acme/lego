@@ -39,7 +39,9 @@ func createMigrate() *cli.Command {
 func confirmMigration(cmd *cli.Command) bool {
 	reader := bufio.NewReader(os.Stdin)
 
-	log.Warnf(log.LazySprintf("Please create a backup of %q before the migration", cmd.String(flgPath)))
+	log.Warnf(log.LazySprintf("The migration will not work if the certificates have been generated with the '--filename' flag."+
+		" Use the flag '--%s' to only migrate accounts.", flgAccountOnly))
+	log.Warnf(log.LazySprintf("Please create a backup of %q before the migration.", cmd.String(flgPath)))
 
 	for {
 		fmt.Println("Continue? Y/n")

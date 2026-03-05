@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/internal/errutils"
 )
 
 type RequestOption func(*http.Request) error
@@ -90,7 +91,7 @@ func (d *Doer) newRequest(ctx context.Context, method, uri string, body io.Reade
 func (d *Doer) do(req *http.Request, response any) (*http.Response, error) {
 	resp, err := d.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, errutils.NewHTTPDoError(req, err)
 	}
 
 	if err = checkError(req, resp); err != nil {
@@ -100,14 +101,14 @@ func (d *Doer) do(req *http.Request, response any) (*http.Response, error) {
 	if response != nil {
 		raw, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return resp, err
+			return resp, errutils.NewReadResponseError(req, resp.StatusCode, err)
 		}
 
 		defer resp.Body.Close()
 
 		err = json.Unmarshal(raw, response)
 		if err != nil {
-			return resp, fmt.Errorf("failed to unmarshal %q to type %T: %w", raw, response, err)
+			return resp, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 		}
 	}
 

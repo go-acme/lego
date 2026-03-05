@@ -47,6 +47,10 @@ func New(httpClient *http.Client, userAgent, caDirURL, kid string, privateKey cr
 		return nil, err
 	}
 
+	return newCore(httpClient, doer, dir, kid, privateKey)
+}
+
+func newCore(httpClient *http.Client, doer *sender.Doer, dir acme.Directory, kid string, privateKey crypto.Signer) (*Core, error) {
 	nonceManager := nonces.NewManager(doer, dir.NewNonceURL)
 
 	c := &Core{
@@ -57,6 +61,7 @@ func New(httpClient *http.Client, userAgent, caDirURL, kid string, privateKey cr
 		privateKey: privateKey,
 		kid:        kid,
 
+		// NOTE(ldez): use the doer instead of the HTTP client? (only related to OCSP)
 		HTTPClient: httpClient,
 	}
 
@@ -167,9 +172,13 @@ func (a *Core) GetDirectory() acme.Directory {
 
 func getDirectory(ctx context.Context, do *sender.Doer, caDirURL string) (acme.Directory, error) {
 	var dir acme.Directory
-	if _, err := do.Get(ctx, caDirURL, &dir); err != nil {
+
+	resp, err := do.Get(ctx, caDirURL, &dir)
+	if err != nil {
 		return dir, fmt.Errorf("get directory at '%s': %w", caDirURL, err)
 	}
+
+	defer func() { _ = resp.Body.Close() }()
 
 	if dir.NewAccountURL == "" {
 		return dir, errors.New("directory missing new registration URL")

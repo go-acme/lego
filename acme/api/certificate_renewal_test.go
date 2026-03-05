@@ -50,8 +50,7 @@ func TestCertificateService_GetRenewalInfo(t *testing.T) {
 						"end": "2020-03-17T18:21:09Z"
 					},
 					"explanationUrl": "https://aricapable.ca.example/docs/renewal-advice/"
-				}
-			}`).
+				}`).
 				WithHeader("Content-Type", "application/json").
 				WithHeader("Retry-After", "21600")).
 		BuildHTTPS(t)
@@ -83,8 +82,7 @@ func TestCertificateService_GetRenewalInfo_retryAfter(t *testing.T) {
 					"end": "2020-03-17T18:21:09Z"
 				},
 				"explanationUrl": "https://aricapable.ca.example/docs/renewal-advice/"
-			}
-		}`).
+			}`).
 				WithHeader("Content-Type", "application/json").
 				WithHeader("Retry-After", time.Now().UTC().Add(6*time.Hour).Format(time.RFC1123))).
 		BuildHTTPS(t)

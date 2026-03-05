@@ -242,12 +242,13 @@ type Authorization struct {
 	Wildcard bool `json:"wildcard,omitempty"`
 }
 
-// ExtendedChallenge a extended Challenge.
+// ExtendedChallenge an extended Challenge.
 type ExtendedChallenge struct {
 	Challenge
 
 	// Contains the value of the response header `Retry-After`
-	RetryAfter string `json:"-"`
+	RetryAfter time.Duration `json:"-"`
+
 	// Contains the value of the response header `Link` rel="up"
 	AuthorizationURL string `json:"-"`
 }
@@ -362,7 +363,7 @@ type ExtendedRenewalInfo struct {
 	// Conforming clients SHOULD query the renewalInfo URL again after the RetryAfter period has passed,
 	// as the server may provide a different suggestedWindow.
 	// https://www.rfc-editor.org/rfc/rfc9773.html#section-4.2
-	RetryAfter time.Duration
+	RetryAfter time.Duration `json:"-"`
 }
 
 // RenewalInfo is the response to GET requests made the renewalInfo endpoint.

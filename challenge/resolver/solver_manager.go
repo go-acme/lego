@@ -121,8 +121,8 @@ func validate(ctx context.Context, core *api.Core, domain string, chlg acme.Chal
 		return nil
 	}
 
-	retryAfter, err := api.ParseRetryAfter(chlng.RetryAfter)
-	if err != nil || retryAfter == 0 {
+	retryAfter := chlng.RetryAfter
+	if retryAfter == 0 {
 		// The ACME server MUST return a Retry-After.
 		// If it doesn't, or if it's invalid, we'll just poll hard.
 		// Boulder does not implement the ability to retry challenges or the Retry-After header.

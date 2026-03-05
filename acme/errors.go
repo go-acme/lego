@@ -3,6 +3,7 @@ package acme
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 // Errors types.
@@ -85,7 +86,7 @@ func (e *AlreadyReplacedError) Unwrap() error {
 type RateLimitedError struct {
 	*ProblemDetails
 
-	RetryAfter string
+	RetryAfter time.Duration
 }
 
 func (e *RateLimitedError) Unwrap() error {

@@ -7,7 +7,9 @@ import (
 	"io"
 	"net/http"
 	"runtime"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/internal/errutils"
@@ -153,9 +155,11 @@ func checkError(req *http.Request, resp *http.Response) error {
 		return &acme.AlreadyReplacedError{ProblemDetails: errorDetails}
 
 	case errorDetails.HTTPStatus == http.StatusTooManyRequests && errorDetails.Type == acme.RateLimitedErr:
+		retryAfter, _ := ParseRetryAfter(resp.Header.Get("Retry-After"))
+
 		return &acme.RateLimitedError{
 			ProblemDetails: errorDetails,
-			RetryAfter:     resp.Header.Get("Retry-After"),
+			RetryAfter:     retryAfter,
 		}
 
 	default:
@@ -186,4 +190,29 @@ func (r *httpsOnly) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	return r.rt.RoundTrip(req)
+}
+
+// ParseRetryAfter parses the Retry-After header value according to RFC 7231.
+// The header can be either delay-seconds (numeric) or HTTP-date (RFC 1123 format).
+// https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.3
+// Returns the duration until the retry time.
+func ParseRetryAfter(value string) (time.Duration, error) {
+	if value == "" {
+		return 0, nil
+	}
+
+	if seconds, err := strconv.ParseInt(value, 10, 64); err == nil {
+		return time.Duration(seconds) * time.Second, nil
+	}
+
+	if retryTime, err := time.Parse(time.RFC1123, value); err == nil {
+		duration := time.Until(retryTime)
+		if duration < 0 {
+			return 0, nil
+		}
+
+		return duration, nil
+	}
+
+	return 0, fmt.Errorf("invalid Retry-After value: %q", value)
 }

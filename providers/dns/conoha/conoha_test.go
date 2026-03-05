@@ -23,13 +23,12 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
-			desc: "complete credentials, but login failed",
+			desc: "complete credentials",
 			envVars: map[string]string{
 				EnvTenantID:    "tenant_id",
 				EnvAPIUsername: "api_username",
 				EnvAPIPassword: "api_password",
 			},
-			expected: `conoha: failed to log in: unexpected status code: [status code: 401] body: {"unauthorized":{"message":"Invalid user: api_username","code":401}}`,
 		},
 		{
 			desc: "missing credentials",
@@ -99,8 +98,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		password string
 	}{
 		{
-			desc:     "complete credentials, but login failed",
-			expected: `conoha: failed to log in: unexpected status code: [status code: 401] body: {"unauthorized":{"message":"Invalid user: api_username","code":401}}`,
+			desc:     "complete credentials",
 			tenant:   "tenant_id",
 			username: "api_username",
 			password: "api_password",

@@ -173,12 +173,10 @@ func (a *Core) GetDirectory() acme.Directory {
 func getDirectory(ctx context.Context, do *sender.Doer, caDirURL string) (acme.Directory, error) {
 	var dir acme.Directory
 
-	resp, err := do.Get(ctx, caDirURL, &dir)
+	_, err := do.Get(ctx, caDirURL, &dir)
 	if err != nil {
 		return dir, fmt.Errorf("get directory at '%s': %w", caDirURL, err)
 	}
-
-	defer func() { _ = resp.Body.Close() }()
 
 	if dir.NewAccountURL == "" {
 		return dir, errors.New("directory missing new registration URL")

@@ -37,8 +37,6 @@ func (c *CertificateService) GetRenewalInfo(ctx context.Context, certID string) 
 		return nil, err
 	}
 
-	defer func() { _ = resp.Body.Close() }()
-
 	if retry := resp.Header.Get("Retry-After"); retry != "" {
 		info.RetryAfter, err = ParseRetryAfter(retry)
 		if err != nil {

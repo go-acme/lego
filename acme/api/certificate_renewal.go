@@ -5,10 +5,8 @@ import (
 	"crypto/x509"
 	"encoding/asn1"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/go-acme/lego/v5/acme"
 )
@@ -32,24 +30,14 @@ func (c *CertificateService) GetRenewalInfo(ctx context.Context, certID string) 
 		return nil, errors.New("renewalInfo[get]: 'certID' cannot be empty")
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.core.GetDirectory().RenewalInfo+"/"+certID, nil)
-	if err != nil {
-		return nil, err
-	}
+	info := new(acme.ExtendedRenewalInfo)
 
-	resp, err := c.core.HTTPClient.Do(req)
+	resp, err := c.core.doer.Get(ctx, c.core.GetDirectory().RenewalInfo+"/"+certID, info)
 	if err != nil {
 		return nil, err
 	}
 
 	defer func() { _ = resp.Body.Close() }()
-
-	info := new(acme.ExtendedRenewalInfo)
-
-	err = json.NewDecoder(resp.Body).Decode(info)
-	if err != nil {
-		return nil, err
-	}
 
 	if retry := resp.Header.Get("Retry-After"); retry != "" {
 		info.RetryAfter, err = ParseRetryAfter(retry)

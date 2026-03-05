@@ -61,6 +61,8 @@ func (n *Manager) getNonce(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("failed to get nonce from HTTP HEAD: %w", err)
 	}
 
+	defer func() { _ = resp.Body.Close() }()
+
 	return GetFromResponse(resp)
 }
 

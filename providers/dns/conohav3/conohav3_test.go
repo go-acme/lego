@@ -23,13 +23,12 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
-			desc: "complete credentials, but login failed",
+			desc: "complete credentials",
 			envVars: map[string]string{
 				EnvTenantID:    "tenant_id",
 				EnvAPIUserID:   "api_user_id",
 				EnvAPIPassword: "api_password",
 			},
-			expected: `conohav3: failed to log in: unexpected status code: [status code: 400] body: {"code": 400, "error": "user does not exist"}`,
 		},
 		{
 			desc: "missing credentials",
@@ -99,8 +98,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		password string
 	}{
 		{
-			desc:     "complete credentials, but login failed",
-			expected: `conohav3: failed to log in: unexpected status code: [status code: 400] body: {"code": 400, "error": "user does not exist"}`,
+			desc:     "complete credentials",
 			tenant:   "tenant_id",
 			userid:   "api_user_id",
 			password: "api_password",

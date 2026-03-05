@@ -16,6 +16,10 @@ import (
 
 const identityBaseURL = "https://identity.%s.conoha.io"
 
+type token string
+
+const tokenKey token = "token"
+
 type Identifier struct {
 	baseURL    *url.URL
 	HTTPClient *http.Client
@@ -68,4 +72,17 @@ func (c *Identifier) do(req *http.Request) (string, error) {
 	_, _ = io.Copy(io.Discard, resp.Body)
 
 	return token, nil
+}
+
+func WithContext(ctx context.Context, credential string) context.Context {
+	return context.WithValue(ctx, tokenKey, credential)
+}
+
+func getToken(ctx context.Context) string {
+	credential, ok := ctx.Value(tokenKey).(string)
+	if !ok {
+		return ""
+	}
+
+	return credential
 }

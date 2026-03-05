@@ -19,7 +19,7 @@ import (
 func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client, err := NewClient("tyo1", "secret")
+			client, err := NewClient("tyo1")
 			if err != nil {
 				return nil, err
 			}
@@ -71,7 +71,9 @@ func TestClient_GetDomainID(t *testing.T) {
 				Route("GET /v1/domains", servermock.ResponseFromFixture(test.response)).
 				Build(t)
 
-			domainID, err := client.GetDomainID(t.Context(), test.domainName)
+			ctx := WithContext(t.Context(), "secret")
+
+			domainID, err := client.GetDomainID(ctx, test.domainName)
 
 			if test.expected.error {
 				require.Error(t, err)
@@ -141,7 +143,9 @@ func TestClient_CreateRecord(t *testing.T) {
 				TTL:  300,
 			}
 
-			err := client.CreateRecord(t.Context(), domainID, record)
+			ctx := WithContext(t.Context(), "secret")
+
+			err := client.CreateRecord(ctx, domainID, record)
 			test.assert(t, err)
 		})
 	}
@@ -153,7 +157,9 @@ func TestClient_GetRecordID(t *testing.T) {
 			servermock.ResponseFromFixture("domains-records_GET.json")).
 		Build(t)
 
-	recordID, err := client.GetRecordID(t.Context(), "89acac79-38e7-497d-807c-a011e1310438", "www.example.com.", "A", "15.185.172.153")
+	ctx := WithContext(t.Context(), "secret")
+
+	recordID, err := client.GetRecordID(ctx, "89acac79-38e7-497d-807c-a011e1310438", "www.example.com.", "A", "15.185.172.153")
 	require.NoError(t, err)
 
 	assert.Equal(t, "2e32e609-3a4f-45ba-bdef-e50eacd345ad", recordID)
@@ -165,6 +171,8 @@ func TestClient_DeleteRecord(t *testing.T) {
 			servermock.ResponseFromFixture("domains-records_GET.json")).
 		Build(t)
 
-	err := client.DeleteRecord(t.Context(), "89acac79-38e7-497d-807c-a011e1310438", "2e32e609-3a4f-45ba-bdef-e50eacd345ad")
+	ctx := WithContext(t.Context(), "secret")
+
+	err := client.DeleteRecord(ctx, "89acac79-38e7-497d-807c-a011e1310438", "2e32e609-3a4f-45ba-bdef-e50eacd345ad")
 	require.NoError(t, err)
 }

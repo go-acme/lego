@@ -1,0 +1,164 @@
+package configuration
+
+import (
+	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/lego"
+)
+
+const DefaultAccountID = "noemail@example.com"
+
+const defaultLegoDirectory = ".lego"
+
+const (
+	defaultHTTP01    = "http-01"
+	defaultTLSALPN01 = "tls-alpn-01"
+)
+
+const (
+	defaultHTTPAddress = ":80"
+	defaultTLSAddress  = ":443"
+)
+
+func ApplyDefaults(cfg *Configuration) {
+	if cfg.Storage == "" {
+		cfg.Storage = defaultLegoDirectory
+	}
+
+	if len(cfg.Servers) == 0 {
+		cfg.Servers = make(map[string]*Server)
+	}
+
+	if len(cfg.Accounts) == 0 {
+		cfg.Accounts = make(map[string]*Account)
+	}
+
+	if len(cfg.Challenges) == 0 {
+		cfg.Challenges = make(map[string]*Challenge)
+	}
+
+	if len(cfg.Certificates) == 0 {
+		cfg.Certificates = make(map[string]*Certificate)
+	}
+
+	applyServersDefaults(cfg)
+	applyAccountsDefaults(cfg)
+	applyChallengesDefaults(cfg)
+	applyCertificatesDefaults(cfg)
+
+	// Must be last, because the certificate definition needs to know if there is an explicit account.
+	cfg.Accounts[DefaultAccountID] = &Account{
+		Server:  lego.DirectoryURLLetsEncrypt,
+		KeyType: string(certcrypto.EC256),
+	}
+}
+
+func applyServersDefaults(cfg *Configuration) {
+	for _, server := range cfg.Servers {
+		if server.OverallRequestLimit <= 0 {
+			server.OverallRequestLimit = certificate.DefaultOverallRequestLimit
+		}
+	}
+}
+
+func applyAccountsDefaults(cfg *Configuration) {
+	for _, account := range cfg.Accounts {
+		if account.KeyType == "" {
+			account.KeyType = string(certcrypto.EC256)
+		}
+
+		if account.Server == "" {
+			account.Server = lego.DirectoryURLLetsEncrypt
+		}
+	}
+}
+
+func applyChallengesDefaults(cfg *Configuration) {
+	for _, challenge := range cfg.Challenges {
+		if challenge.TLS != nil && challenge.TLS.Address == "" {
+			challenge.TLS.Address = defaultTLSAddress
+		}
+
+		if challenge.HTTP != nil && challenge.HTTP.Address == "" {
+			challenge.HTTP.Address = defaultHTTPAddress
+		}
+	}
+}
+
+func applyCertificatesDefaults(cfg *Configuration) {
+	defaultAccount := getDefaultAccountID(cfg)
+
+	var needDefaultHTTP01, needDefaultTLSALPN01 bool
+
+	for _, cert := range cfg.Certificates {
+		if cert.Account == "" {
+			cert.Account = defaultAccount
+		}
+
+		applyRenewDefaults(cert)
+
+		if cert.Challenge == defaultHTTP01 {
+			needDefaultHTTP01 = true
+			continue
+		}
+
+		if cert.Challenge == defaultTLSALPN01 {
+			needDefaultTLSALPN01 = true
+			continue
+		}
+
+		if cert.Challenge == "" && len(cfg.Challenges) == 1 {
+			// If there is only one challenge, use it by default.
+			for c := range cfg.Challenges {
+				cert.Challenge = c
+			}
+		}
+	}
+
+	if needDefaultHTTP01 {
+		setDefaultHTTP01(cfg)
+	}
+
+	if needDefaultTLSALPN01 {
+		setDefaultTLSALPN01(cfg)
+	}
+}
+
+func applyRenewDefaults(cert *Certificate) {
+	if cert.Renew == nil {
+		cert.Renew = &RenewConfiguration{}
+	}
+
+	if cert.Renew.ARI == nil {
+		cert.Renew.ARI = &ARIConfiguration{}
+	}
+}
+
+func setDefaultHTTP01(cfg *Configuration) {
+	if _, ok := cfg.Challenges[defaultHTTP01]; !ok {
+		cfg.Challenges[defaultHTTP01] = &Challenge{HTTP: &HTTPChallenge{
+			Address: defaultHTTPAddress,
+		}}
+	}
+}
+
+func setDefaultTLSALPN01(cfg *Configuration) {
+	if _, ok := cfg.Challenges[defaultTLSALPN01]; !ok {
+		cfg.Challenges[defaultTLSALPN01] = &Challenge{TLS: &TLSChallenge{
+			Address: defaultTLSAddress,
+		}}
+	}
+}
+
+func getDefaultAccountID(cfg *Configuration) string {
+	switch len(cfg.Accounts) {
+	case 0:
+		return DefaultAccountID
+	case 1:
+		for a := range cfg.Accounts {
+			return a
+		}
+	}
+
+	return ""
+}

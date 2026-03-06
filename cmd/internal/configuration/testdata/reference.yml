@@ -1,0 +1,83 @@
+# This is not a valid configuration file.
+# This must be moved/used as a reference inside the documentation.
+
+storage: /tmp/lego
+networkStack: ipv6
+userAgent: foo
+
+servers:
+  myserver:
+    url: https://example.com
+    overallRequestLimit: 18
+    tlsSkipVerify: true
+    httpTimeout: 0
+    certTimeout: 30
+
+accounts:
+  foo:
+    server: https://example.com
+    email: foo@example.com
+    keyType: RSA2048
+    acceptsTermsOfService: true
+    eab:
+      kid: foo
+      hmacKey: foo
+
+challenges:
+  one:
+    http:
+      address: ":80"
+      delay: 0s
+      proxyHeader: Host
+      webroot: /tmp/webroot
+      memcachedHosts:
+        - memcached:11211
+      s3Bucket: 's3-bucket'
+  two:
+    tls:
+      address: ":443"
+      delay: 0s
+  three:
+    dns:
+      provider: cloudflare
+      propagation:
+        disableAuthoritativeNameservers: true
+        disableRecursiveNameservers: true
+        wait: 0s
+      dnsTimeout: 10
+      resolvers:
+        - 1.1.1.1:53
+  four:
+    dnsPersist:
+      issuerDomainName: example.com
+      persistUntil: 2020-01-01T00:00:00Z
+      propagation:
+        disableAuthoritativeNameservers: true
+        disableRecursiveNameservers: true
+        wait: 0s
+
+certificates:
+  foo: # when a section is removed, clean/archive the related files.
+    challenge: one
+    account: foo
+    domains:
+      - example.com
+      - '*.example.com'
+    csr: /tmp/foo.csr
+    preferredChain: "ISRG Root X1"
+    profile: "tls"
+    enableCommonName: true
+    notBefore: ""
+    notAfter: ""
+    noBundle: false
+    mustStaple: false
+    alwaysDeactivateAuthorizations: false
+    renew:
+      reuseKey: true
+      ari:
+        disable: false
+        waitToRenewDuration: 1m
+
+log:
+  level: debug
+  format: text

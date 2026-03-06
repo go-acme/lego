@@ -1,0 +1,11 @@
+challenges:
+  three:
+    dns:
+      provider: cloudflare
+
+certificates:
+  foo:
+    challenge: three
+    domains:
+      - example.com
+      - '*.example.com'

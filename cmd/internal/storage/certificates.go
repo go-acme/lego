@@ -27,7 +27,6 @@ const (
 
 const (
 	baseCertificatesFolderName = "certificates"
-	baseArchivesFolderName     = "archives"
 )
 
 // CertificatesStorage a certificates' storage.
@@ -44,15 +43,16 @@ const (
 //	     │      └── archived certificates directory
 //	     └── "path" option
 type CertificatesStorage struct {
-	rootPath    string
-	archivePath string
+	archiver *Archiver
+
+	rootPath string
 }
 
 // NewCertificatesStorage create a new certificates storage.
 func NewCertificatesStorage(basePath string) *CertificatesStorage {
 	return &CertificatesStorage{
-		rootPath:    getCertificatesRootPath(basePath),
-		archivePath: getCertificatesArchivePath(basePath),
+		archiver: NewArchiver(basePath),
+		rootPath: filepath.Join(basePath, baseCertificatesFolderName),
 	}
 }
 
@@ -64,14 +64,6 @@ func CreateNonExistingFolder(path string) error {
 	}
 
 	return nil
-}
-
-func getCertificatesRootPath(basePath string) string {
-	return filepath.Join(basePath, baseCertificatesFolderName)
-}
-
-func getCertificatesArchivePath(basePath string) string {
-	return filepath.Join(basePath, baseArchivesFolderName)
 }
 
 // SanitizedName Make sure no funny chars are in the cert names (like wildcards ;)).

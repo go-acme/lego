@@ -39,6 +39,10 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("set up account: %w", err)
 	}
 
+	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
+
+	hookManager := newHookManager(cmd, certsStorage, account)
+
 	client, err := newClient(cmd, account, keyType)
 	if err != nil {
 		return fmt.Errorf("new client: %w", err)
@@ -62,7 +66,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 
 	setupChallenges(cmd, client)
 
-	certRes, err := obtainCertificate(ctx, cmd, client)
+	certRes, err := obtainCertificate(ctx, cmd, client, hookManager)
 	if err != nil {
 		// Make sure to return a non-zero exit code if ObtainSANCertificate returned at least one error.
 		// Due to us not returning partial certificate we can just exit here instead of at the end.
@@ -74,8 +78,6 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		certRes.ID = certID
 	}
 
-	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
-
 	options := newSaveOptions(cmd)
 
 	err = certsStorage.Save(certRes, options)
@@ -83,20 +85,20 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
 
-	meta := map[string]string{
-		// TODO(ldez) add account ID.
-		hook.EnvAccountEmail: account.Email,
-	}
-
-	hook.AddPathToMetadata(meta, certRes, certsStorage, options)
-
-	return hook.Launch(ctx, cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout), meta)
+	return hookManager.Deploy(ctx, certRes, options)
 }
 
-func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Client) (*certificate.Resource, error) {
+func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Client, hookManager *hook.Manager) (*certificate.Resource, error) {
 	domains := cmd.StringSlice(flgDomains)
 
 	if len(domains) > 0 {
+		err := hookManager.Pre(ctx, cmd.String(flgCertName), domains)
+		if err != nil {
+			return nil, err
+		}
+
+		defer func() { _ = hookManager.Post(ctx) }()
+
 		// obtain a certificate, generating a new private key
 		request := newObtainRequest(cmd, domains)
 
@@ -118,6 +120,13 @@ func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Clien
 	if err != nil {
 		return nil, err
 	}
+
+	err = hookManager.Pre(ctx, cmd.String(flgCertName), certcrypto.ExtractDomainsCSR(csr))
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() { _ = hookManager.Post(ctx) }()
 
 	// obtain a certificate for this CSR
 	request := newObtainForCSRRequest(cmd, csr)

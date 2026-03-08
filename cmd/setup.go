@@ -17,6 +17,7 @@ import (
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
@@ -202,6 +203,16 @@ func newSaveOptions(cmd *cli.Command) *storage.SaveOptions {
 		PFXFormat:   cmd.String(flgPFXPass),
 		PFXPassword: cmd.String(flgPFXFormat),
 	}
+}
+
+func newHookManager(cmd *cli.Command, certsStorage *storage.CertificatesStorage, account *storage.Account) *hook.Manager {
+	return hook.NewManager(
+		certsStorage,
+		hook.WithPre(cmd.String(flgPreHook), cmd.Duration(flgPreHookTimeout)),
+		hook.WithDeploy(cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout)),
+		hook.WithPost(cmd.String(flgPostHook), cmd.Duration(flgPostHookTimeout)),
+		hook.WithAccountMetadata(account),
+	)
 }
 
 func parseAddress(cmd *cli.Command, flgName string) (string, string, error) {

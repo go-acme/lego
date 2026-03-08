@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -59,14 +58,4 @@ func Test_Launch_errors(t *testing.T) {
 			require.EqualError(t, err, test.expected)
 		})
 	}
-}
-
-func Test_metaToEnv(t *testing.T) {
-	env := metaToEnv(map[string]string{
-		"foo": "bar",
-	})
-
-	expected := []string{"foo=bar"}
-
-	assert.Equal(t, expected, env)
 }

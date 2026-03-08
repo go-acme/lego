@@ -143,8 +143,12 @@ const (
 
 // Flags names related to hooks.
 const (
+	flgPreHook           = "pre-hook"
+	flgPreHookTimeout    = "pre-hook-timeout"
 	flgDeployHook        = "deploy-hook"
 	flgDeployHookTimeout = "deploy-hook-timeout"
+	flgPostHook          = "post-hook"
+	flgPostHookTimeout   = "post-hook-timeout"
 )
 
 // Flag names related to logs.
@@ -614,19 +618,55 @@ func createObtainFlags() []cli.Flag {
 	}
 }
 
-func createHookFlags() []cli.Flag {
+func createPreHookFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.StringFlag{
+			Category: categoryHooks,
+			Name:     flgPreHook,
+			Sources:  cli.EnvVars(toEnvName(flgPreHook)),
+			Usage:    "Define a pre-hook. This hook is runs, before the renewal, in cases where a certificate will be effectively renewed.",
+		},
+		&cli.DurationFlag{
+			Category: categoryHooks,
+			Name:     flgPreHookTimeout,
+			Sources:  cli.EnvVars(toEnvName(flgPreHookTimeout)),
+			Usage:    "Define the timeout for the pre-hook execution.",
+			Value:    2 * time.Minute,
+		},
+	}
+}
+
+func createDeployHookFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Category: categoryHooks,
 			Name:     flgDeployHook,
 			Sources:  cli.EnvVars(toEnvName(flgDeployHook)),
-			Usage:    "Define a hook. The hook is executed only when the certificates are effectively created/renewed.",
+			Usage:    "Define a hook. The hook is runs, after the renewal, in cases where a certificate is successfully created/renewed.",
 		},
 		&cli.DurationFlag{
 			Category: categoryHooks,
 			Name:     flgDeployHookTimeout,
 			Sources:  cli.EnvVars(toEnvName(flgDeployHookTimeout)),
 			Usage:    "Define the timeout for the hook execution.",
+			Value:    2 * time.Minute,
+		},
+	}
+}
+
+func createPostHookFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.StringFlag{
+			Category: categoryHooks,
+			Name:     flgPostHook,
+			Sources:  cli.EnvVars(toEnvName(flgPostHook)),
+			Usage:    "Define a post-hook. This hook runs, after the renewal, in cases where a certificate renewed, regardless of whether any errors occurred.",
+		},
+		&cli.DurationFlag{
+			Category: categoryHooks,
+			Name:     flgPostHookTimeout,
+			Sources:  cli.EnvVars(toEnvName(flgPostHookTimeout)),
+			Usage:    "Define the timeout for the post-hook execution.",
 			Value:    2 * time.Minute,
 		},
 	}
@@ -663,7 +703,9 @@ func createRunFlags() []cli.Flag {
 	flags = append(flags, createAcceptFlag())
 	flags = append(flags, createChallengesFlags()...)
 	flags = append(flags, createObtainFlags()...)
-	flags = append(flags, createHookFlags()...)
+	flags = append(flags, createPreHookFlags()...)
+	flags = append(flags, createDeployHookFlags()...)
+	flags = append(flags, createPostHookFlags()...)
 
 	flags = append(flags,
 		&cli.StringFlag{
@@ -688,7 +730,9 @@ func createRenewFlags() []cli.Flag {
 	flags = append(flags, createStorageFlags()...)
 	flags = append(flags, createChallengesFlags()...)
 	flags = append(flags, createObtainFlags()...)
-	flags = append(flags, createHookFlags()...)
+	flags = append(flags, createPreHookFlags()...)
+	flags = append(flags, createDeployHookFlags()...)
+	flags = append(flags, createPostHookFlags()...)
 
 	flags = append(flags,
 		&cli.IntFlag{

@@ -39,8 +39,8 @@ type Record struct {
 	Host     string `json:"host,omitempty"`
 	TTL      int    `json:"ttl,omitempty"`
 	RData    string `json:"rdata,omitempty"`
-	Updated  bool   `json:"updated"`
-	Locked   bool   `json:"locked"`
+	Updated  *bool  `json:"updated"`
+	Locked   *bool  `json:"locked"`
 	IsDynDNS *bool  `json:"isDynDns"`
 	Proxy    string `json:"proxy,omitempty"`
 }
@@ -53,14 +53,14 @@ type URLForward struct {
 	Title       string `json:"title,omitempty"`
 	Keywords    string `json:"keywords,omitempty"`
 	Description string `json:"description,omitempty"`
-	Updated     bool   `json:"updated,omitempty"`
+	Updated     *bool  `json:"updated,omitempty"`
 }
 
 type MailForward struct {
 	ID          int    `json:"id,omitempty"`
 	Source      string `json:"source,omitempty"`
 	Destination string `json:"destination,omitempty"`
-	Updated     bool   `json:"updated,omitempty"`
+	Updated     *bool  `json:"updated,omitempty"`
 }
 
 type Report struct {

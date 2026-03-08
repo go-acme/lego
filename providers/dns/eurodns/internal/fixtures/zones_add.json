@@ -16,8 +16,8 @@
       "host": "_acme-challenge",
       "ttl": 600,
       "rdata": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
-      "updated": false,
-      "locked": false,
+      "updated": null,
+      "locked": null,
       "isDynDns": null
     }
   ],

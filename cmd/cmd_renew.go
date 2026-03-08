@@ -189,7 +189,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 }
 
 func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
-	csr, err := readCSRFile(cmd.String(flgCSR))
+	csr, err := storage.ReadCSRFile(cmd.String(flgCSR))
 	if err != nil {
 		return fmt.Errorf("could not read CSR file %q: %w", cmd.String(flgCSR), err)
 	}

@@ -116,7 +116,7 @@ func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Clien
 	}
 
 	// read the CSR
-	csr, err := readCSRFile(cmd.String(flgCSR))
+	csr, err := storage.ReadCSRFile(cmd.String(flgCSR))
 	if err != nil {
 		return nil, err
 	}

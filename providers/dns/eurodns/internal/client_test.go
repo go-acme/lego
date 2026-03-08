@@ -73,7 +73,7 @@ func TestClient_SaveZone(t *testing.T) {
 		Type:    "TXT",
 		Host:    "_acme-challenge",
 		RData:   "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
-		TTL:     120,
+		TTL:     600,
 		Updated: true,
 	}
 
@@ -107,7 +107,7 @@ func TestClient_ValidateZone(t *testing.T) {
 		Type:    "TXT",
 		Host:    "_acme-challenge",
 		RData:   "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
-		TTL:     120,
+		TTL:     600,
 		Updated: true,
 	}
 

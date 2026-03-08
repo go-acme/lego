@@ -41,7 +41,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, internal.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
@@ -118,7 +118,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	zone.Records = append(zone.Records, internal.Record{
 		Type:    "TXT",
 		Host:    subDomain,
-		TTL:     d.config.TTL,
+		TTL:     internal.TTLRounder(d.config.TTL),
 		RData:   info.Value,
 		Updated: true,
 	})

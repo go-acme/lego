@@ -14,7 +14,7 @@
     {
       "type": "TXT",
       "host": "_acme-challenge",
-      "ttl": 120,
+      "ttl": 600,
       "rdata": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
       "updated": true,
       "locked": false,

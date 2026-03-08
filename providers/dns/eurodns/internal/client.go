@@ -47,6 +47,7 @@ func NewClient(appID, apiKey string) (*Client, error) {
 }
 
 // GetZone gets a DNS Zone.
+// https://docapi.eurodns.com/#/dnsprovider/getdnszone
 func (c *Client) GetZone(ctx context.Context, domain string) (*Zone, error) {
 	endpoint := c.BaseURL.JoinPath(domain)
 
@@ -66,6 +67,7 @@ func (c *Client) GetZone(ctx context.Context, domain string) (*Zone, error) {
 }
 
 // SaveZone saves a DNS Zone.
+// https://docapi.eurodns.com/#/dnsprovider/savednszone
 func (c *Client) SaveZone(ctx context.Context, domain string, zone *Zone) error {
 	endpoint := c.BaseURL.JoinPath(domain)
 
@@ -78,6 +80,7 @@ func (c *Client) SaveZone(ctx context.Context, domain string, zone *Zone) error 
 }
 
 // ValidateZone validates DNS Zone.
+// https://docapi.eurodns.com/#/dnsprovider/checkdnszone
 func (c *Client) ValidateZone(ctx context.Context, domain string, zone *Zone) (*Zone, error) {
 	endpoint := c.BaseURL.JoinPath(domain, "check")
 
@@ -163,4 +166,18 @@ func parseError(req *http.Request, resp *http.Response) error {
 	}
 
 	return fmt.Errorf("%d: %w", resp.StatusCode, &errAPI)
+}
+
+const DefaultTTL = 600
+
+// TTLRounder rounds the given TTL in seconds to the next accepted value.
+// Accepted TTL values are: 600, 900, 1800,3600, 7200, 14400, 21600, 43200, 86400, 172800, 432000, 604800.
+func TTLRounder(ttl int) int {
+	for _, validTTL := range []int{DefaultTTL, 900, 1800, 3600, 7200, 14400, 21600, 43200, 86400, 172800, 432000, 604800} {
+		if ttl <= validTTL {
+			return validTTL
+		}
+	}
+
+	return DefaultTTL
 }

@@ -1,0 +1,8 @@
+{
+  "errors": [
+    {
+      "code": "INVALID_API_KEY",
+      "title": "Invalid API Key"
+    }
+  ]
+}

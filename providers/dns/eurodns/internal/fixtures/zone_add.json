@@ -1,0 +1,46 @@
+{
+  "name": "example.com",
+  "domainConnect": true,
+  "records": [
+    {
+      "id": 1000,
+      "type": "A",
+      "host": "@",
+      "ttl": 600,
+      "rdata": "string",
+      "updated": true,
+      "locked": true,
+      "isDynDns": true,
+      "proxy": "ON"
+    },
+    {
+      "type": "TXT",
+      "host": "_acme-challenge",
+      "ttl": 600,
+      "rdata": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "updated": null,
+      "locked": null,
+      "isDynDns": null
+    }
+  ],
+  "urlForwards": [
+    {
+      "id": 2000,
+      "forwardType": "FRAME",
+      "host": "string",
+      "url": "string",
+      "title": "string",
+      "keywords": "string",
+      "description": "string",
+      "updated": true
+    }
+  ],
+  "mailForwards": [
+    {
+      "id": 3000,
+      "source": "string",
+      "destination": "string",
+      "updated": true
+    }
+  ]
+}

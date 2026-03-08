@@ -48,7 +48,7 @@
     "recordErrors": [
       {
         "messages": [
-          "string"
+          "\"120\" is not a valid TTL"
         ],
         "record": {
           "id": 1000,

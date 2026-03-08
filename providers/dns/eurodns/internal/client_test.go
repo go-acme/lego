@@ -218,6 +218,8 @@ func TestClient_ValidateZone_report(t *testing.T) {
 		Report:        fakeReport(),
 	}
 
+	assert.EqualError(t, zone.Report, `record error (ERROR): "120" is not a valid TTL, URL forward error (ERROR): string, mail forward error (ERROR): string, zone error (ERROR): string`)
+
 	assert.Equal(t, expected, zone)
 }
 
@@ -283,7 +285,7 @@ func fakeReport() *Report {
 	return &Report{
 		IsValid: false,
 		RecordErrors: []RecordError{{
-			Messages: []string{"string"},
+			Messages: []string{`"120" is not a valid TTL`},
 			Severity: "ERROR",
 			Record:   fakeARecord(),
 		}},

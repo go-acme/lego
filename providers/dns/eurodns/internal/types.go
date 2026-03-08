@@ -95,7 +95,7 @@ func (r *Report) Error() string {
 
 type RecordError struct {
 	Messages []string `json:"messages,omitempty"`
-	Record   *Record  `json:"record,omitempty"`
+	Record   Record   `json:"record"`
 	Severity string   `json:"severity,omitempty"`
 }
 
@@ -104,9 +104,9 @@ func (e *RecordError) Error() string {
 }
 
 type URLForwardError struct {
-	Messages   []string    `json:"messages,omitempty"`
-	URLForward *URLForward `json:"urlForward,omitempty"`
-	Severity   string      `json:"severity,omitempty"`
+	Messages   []string   `json:"messages,omitempty"`
+	URLForward URLForward `json:"urlForward"`
+	Severity   string     `json:"severity,omitempty"`
 }
 
 func (e *URLForwardError) Error() string {
@@ -114,9 +114,9 @@ func (e *URLForwardError) Error() string {
 }
 
 type MailForwardError struct {
-	Messages    []string     `json:"messages,omitempty"`
-	MailForward *MailForward `json:"mailForward,omitempty"`
-	Severity    string       `json:"severity,omitempty"`
+	Messages    []string    `json:"messages,omitempty"`
+	MailForward MailForward `json:"mailForward"`
+	Severity    string      `json:"severity,omitempty"`
 }
 
 func (e *MailForwardError) Error() string {

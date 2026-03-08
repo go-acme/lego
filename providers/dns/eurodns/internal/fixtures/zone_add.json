@@ -1,10 +1,12 @@
 {
-  "name": "string",
+  "name": "example.com",
   "domainConnect": true,
   "records": [
     {
+      "id": 1000,
       "type": "A",
-      "host": "string",
+      "host": "@",
+      "ttl": 600,
       "rdata": "string",
       "updated": true,
       "locked": true,
@@ -23,6 +25,7 @@
   ],
   "urlForwards": [
     {
+      "id": 2000,
       "forwardType": "FRAME",
       "host": "string",
       "url": "string",
@@ -34,94 +37,10 @@
   ],
   "mailForwards": [
     {
+      "id": 3000,
       "source": "string",
       "destination": "string",
       "updated": true
     }
-  ],
-  "report": {
-    "isValid": true,
-    "recordErrors": [
-      {
-        "messages": [
-          "string"
-        ],
-        "record": {
-          "type": "A",
-          "host": "string",
-          "rdata": "string",
-          "updated": true,
-          "locked": true,
-          "isDynDns": true,
-          "proxy": "ON"
-        },
-        "severity": "ERROR"
-      }
-    ],
-    "urlForwardErrors": [
-      {
-        "messages": [
-          "string"
-        ],
-        "urlForward": {
-          "forwardType": "FRAME",
-          "host": "string",
-          "url": "string",
-          "title": "string",
-          "keywords": "string",
-          "description": "string",
-          "updated": true
-        },
-        "severity": "ERROR"
-      }
-    ],
-    "mailForwardErrors": [
-      {
-        "messages": [
-          "string"
-        ],
-        "mailForward": {
-          "source": "string",
-          "destination": "string",
-          "updated": true
-        },
-        "severity": "ERROR"
-      }
-    ],
-    "zoneErrors": [
-      {
-        "message": "string",
-        "records": [
-          {
-            "type": "A",
-            "host": "string",
-            "rdata": "string",
-            "updated": true,
-            "locked": true,
-            "isDynDns": true,
-            "proxy": "ON"
-          }
-        ],
-        "urlForwards": [
-          {
-            "forwardType": "FRAME",
-            "host": "string",
-            "url": "string",
-            "title": "string",
-            "keywords": "string",
-            "description": "string",
-            "updated": true
-          }
-        ],
-        "mailForwards": [
-          {
-            "source": "string",
-            "destination": "string",
-            "updated": true
-          }
-        ],
-        "severity": "ERROR"
-      }
-    ]
-  }
+  ]
 }

@@ -180,7 +180,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.ResponseFromInternal("zone_get.json"),
 		).
 		Route("POST /example.com/check",
-			servermock.ResponseFromInternal("zone_get.json"),
+			servermock.ResponseFromInternal("zone_add_validate_ok.json"),
 			servermock.CheckRequestJSONBodyFromInternal("zone_add.json"),
 		).
 		Route("PUT /example.com",

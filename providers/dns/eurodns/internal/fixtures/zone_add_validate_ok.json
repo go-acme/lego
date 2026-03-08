@@ -23,6 +23,27 @@
       "isDynDns": null
     }
   ],
-  "urlForwards": [],
-  "mailForwards": []
+  "urlForwards": [
+    {
+      "id": 2000,
+      "forwardType": "FRAME",
+      "host": "string",
+      "url": "string",
+      "title": "string",
+      "keywords": "string",
+      "description": "string",
+      "updated": true
+    }
+  ],
+  "mailForwards": [
+    {
+      "id": 3000,
+      "source": "string",
+      "destination": "string",
+      "updated": true
+    }
+  ],
+  "report": {
+    "isValid": true
+  }
 }

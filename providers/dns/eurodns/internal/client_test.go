@@ -70,11 +70,10 @@ func TestClient_SaveZone(t *testing.T) {
 		Build(t)
 
 	record := Record{
-		Type:    "TXT",
-		Host:    "_acme-challenge",
-		RData:   "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
-		TTL:     600,
-		Updated: true,
+		Type:  "TXT",
+		Host:  "_acme-challenge",
+		RData: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		TTL:   600,
 	}
 
 	err := client.SaveZone(context.Background(), "example.com", expectedZone(record))
@@ -104,11 +103,10 @@ func TestClient_ValidateZone(t *testing.T) {
 		Build(t)
 
 	record := Record{
-		Type:    "TXT",
-		Host:    "_acme-challenge",
-		RData:   "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
-		TTL:     600,
-		Updated: true,
+		Type:  "TXT",
+		Host:  "_acme-challenge",
+		RData: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		TTL:   600,
 	}
 
 	zone, err := client.ValidateZone(context.Background(), "example.com", expectedZone(record))

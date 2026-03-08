@@ -73,7 +73,7 @@ OPTIONS:
 
    --deploy-hook string            Define a hook. The hook is runs, after the renewal, in cases where a certificate is successfully created/renewed. [$LEGO_DEPLOY_HOOK]
    --deploy-hook-timeout duration  Define the timeout for the hook execution. (default: 2m0s) [$LEGO_DEPLOY_HOOK_TIMEOUT]
-   --post-hook string              Define a post-hook. This hook runs, after the renewal, in cases where a certificate  renewed, regardless of whether any errors occurred. [$LEGO_POST_HOOK]
+   --post-hook string              Define a post-hook. This hook runs, after the renewal, in cases where a certificate renewed, regardless of whether any errors occurred. [$LEGO_POST_HOOK]
    --post-hook-timeout duration    Define the timeout for the post-hook execution. (default: 2m0s) [$LEGO_POST_HOOK_TIMEOUT]
    --pre-hook string               Define a pre-hook. This hook is runs, before the renewal, in cases where a certificate will be effectively renewed. [$LEGO_PRE_HOOK]
    --pre-hook-timeout duration     Define the timeout for the pre-hook execution. (default: 2m0s) [$LEGO_PRE_HOOK_TIMEOUT]
@@ -185,7 +185,7 @@ OPTIONS:
 
    --deploy-hook string            Define a hook. The hook is runs, after the renewal, in cases where a certificate is successfully created/renewed. [$LEGO_DEPLOY_HOOK]
    --deploy-hook-timeout duration  Define the timeout for the hook execution. (default: 2m0s) [$LEGO_DEPLOY_HOOK_TIMEOUT]
-   --post-hook string              Define a post-hook. This hook runs, after the renewal, in cases where a certificate  renewed, regardless of whether any errors occurred. [$LEGO_POST_HOOK]
+   --post-hook string              Define a post-hook. This hook runs, after the renewal, in cases where a certificate renewed, regardless of whether any errors occurred. [$LEGO_POST_HOOK]
    --post-hook-timeout duration    Define the timeout for the post-hook execution. (default: 2m0s) [$LEGO_POST_HOOK_TIMEOUT]
    --pre-hook string               Define a pre-hook. This hook is runs, before the renewal, in cases where a certificate will be effectively renewed. [$LEGO_PRE_HOOK]
    --pre-hook-timeout duration     Define the timeout for the pre-hook execution. (default: 2m0s) [$LEGO_PRE_HOOK_TIMEOUT]

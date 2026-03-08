@@ -1,6 +1,6 @@
-Name = "UKFast SafeDNS"
+Name = "ANS SafeDNS"
 Description = ''''''
-URL = "https://www.ukfast.co.uk/dns-hosting.html"
+URL = "https://www.ans.co.uk/"
 Code = "safedns"
 Since = "v4.6.0"
 

@@ -19,7 +19,7 @@ const defaultBaseURL = "https://api.ukfast.io/safedns/v1"
 
 const authorizationHeader = "Authorization"
 
-// Client the UKFast SafeDNS client.
+// Client the ANS SafeDNS client.
 type Client struct {
 	authToken string
 

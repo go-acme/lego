@@ -80,6 +80,26 @@ func TestClient_SaveZone(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestClient_SaveZone_emptyForwards(t *testing.T) {
+	client := mockBuilder().
+		Route("PUT /example.com",
+			servermock.Noop().
+				WithStatusCode(http.StatusNoContent),
+			servermock.CheckRequestJSONBodyFromFixture("zones_add_empty_forwards.json"),
+		).
+		Build(t)
+
+	record := Record{
+		Type:  "TXT",
+		Host:  "_acme-challenge",
+		RData: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		TTL:   600,
+	}
+
+	err := client.SaveZone(context.Background(), "example.com", expectedZoneSlim(record))
+	require.NoError(t, err)
+}
+
 func TestClient_SaveZone_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /example.com",
@@ -212,5 +232,21 @@ func expectedZone(records ...Record) *Zone {
 				}},
 			}},
 		},
+	}
+}
+
+func expectedZoneSlim(records ...Record) *Zone {
+	rs := []Record{{
+		Type:  "A",
+		Host:  "string",
+		RData: "string",
+	}}
+
+	rs = append(rs, records...)
+
+	return &Zone{
+		Name:          "string",
+		DomainConnect: true,
+		Records:       rs,
 	}
 }

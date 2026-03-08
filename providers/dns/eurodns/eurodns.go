@@ -128,7 +128,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	if validation.Report != nil && !validation.Report.IsValid {
-		return fmt.Errorf("eurodns: %w", validation.Report)
+		return fmt.Errorf("eurodns: validation report: %w", validation.Report)
 	}
 
 	err = d.client.SaveZone(ctx, authZone, zone)
@@ -179,7 +179,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	if validation.Report != nil && !validation.Report.IsValid {
-		return fmt.Errorf("eurodns: %w", validation.Report)
+		return fmt.Errorf("eurodns: validation report: %w", validation.Report)
 	}
 
 	err = d.client.SaveZone(ctx, authZone, zone)

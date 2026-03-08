@@ -27,9 +27,9 @@ type Error struct {
 type Zone struct {
 	Name          string        `json:"name,omitempty"`
 	DomainConnect bool          `json:"domainConnect,omitempty"`
-	Records       []Record      `json:"records,omitempty"`
-	URLForwards   []URLForward  `json:"urlForwards,omitempty"`
-	MailForwards  []MailForward `json:"mailForwards,omitempty"`
+	Records       []Record      `json:"records"`
+	URLForwards   []URLForward  `json:"urlForwards"`
+	MailForwards  []MailForward `json:"mailForwards"`
 	Report        *Report       `json:"report,omitempty"`
 }
 

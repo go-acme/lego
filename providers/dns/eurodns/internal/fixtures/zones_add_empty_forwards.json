@@ -1,0 +1,25 @@
+{
+  "name": "string",
+  "domainConnect": true,
+  "records": [
+    {
+      "type": "A",
+      "host": "string",
+      "rdata": "string",
+      "updated": null,
+      "locked": null,
+      "isDynDns": null
+    },
+    {
+      "type": "TXT",
+      "host": "_acme-challenge",
+      "ttl": 600,
+      "rdata": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "updated": null,
+      "locked": null,
+      "isDynDns": null
+    }
+  ],
+  "urlForwards": [],
+  "mailForwards": []
+}

@@ -71,6 +71,14 @@ func (c *Client) GetZone(ctx context.Context, domain string) (*Zone, error) {
 func (c *Client) SaveZone(ctx context.Context, domain string, zone *Zone) error {
 	endpoint := c.BaseURL.JoinPath(domain)
 
+	if len(zone.URLForwards) == 0 {
+		zone.URLForwards = make([]URLForward, 0)
+	}
+
+	if len(zone.MailForwards) == 0 {
+		zone.MailForwards = make([]MailForward, 0)
+	}
+
 	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, zone)
 	if err != nil {
 		return err
@@ -83,6 +91,14 @@ func (c *Client) SaveZone(ctx context.Context, domain string, zone *Zone) error 
 // https://docapi.eurodns.com/#/dnsprovider/checkdnszone
 func (c *Client) ValidateZone(ctx context.Context, domain string, zone *Zone) (*Zone, error) {
 	endpoint := c.BaseURL.JoinPath(domain, "check")
+
+	if len(zone.URLForwards) == 0 {
+		zone.URLForwards = make([]URLForward, 0)
+	}
+
+	if len(zone.MailForwards) == 0 {
+		zone.MailForwards = make([]MailForward, 0)
+	}
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, zone)
 	if err != nil {

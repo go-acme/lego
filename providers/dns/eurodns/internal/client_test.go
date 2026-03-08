@@ -37,7 +37,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_GetZone(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /example.com",
-			servermock.ResponseFromFixture("get_zone.json"),
+			servermock.ResponseFromFixture("zone_get.json"),
 		).
 		Build(t)
 
@@ -66,7 +66,7 @@ func TestClient_SaveZone(t *testing.T) {
 		Route("PUT /example.com",
 			servermock.Noop().
 				WithStatusCode(http.StatusNoContent),
-			servermock.CheckRequestJSONBodyFromFixture("zones_add.json"),
+			servermock.CheckRequestJSONBodyFromFixture("zone_add.json"),
 		).
 		Build(t)
 
@@ -86,7 +86,7 @@ func TestClient_SaveZone_emptyForwards(t *testing.T) {
 		Route("PUT /example.com",
 			servermock.Noop().
 				WithStatusCode(http.StatusNoContent),
-			servermock.CheckRequestJSONBodyFromFixture("zones_add_empty_forwards.json"),
+			servermock.CheckRequestJSONBodyFromFixture("zone_add_empty_forwards.json"),
 		).
 		Build(t)
 
@@ -118,8 +118,8 @@ func TestClient_SaveZone_error(t *testing.T) {
 func TestClient_ValidateZone(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /example.com/check",
-			servermock.ResponseFromFixture("zones_add.json"),
-			servermock.CheckRequestJSONBodyFromFixture("zones_add.json"),
+			servermock.ResponseFromFixture("zone_add.json"),
+			servermock.CheckRequestJSONBodyFromFixture("zone_add.json"),
 		).
 		Build(t)
 

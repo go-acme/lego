@@ -177,16 +177,16 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /example.com",
-			servermock.ResponseFromInternal("get_zone.json"),
+			servermock.ResponseFromInternal("zone_get.json"),
 		).
 		Route("POST /example.com/check",
-			servermock.ResponseFromInternal("get_zone.json"),
-			servermock.CheckRequestJSONBodyFromInternal("zones_add.json"),
+			servermock.ResponseFromInternal("zone_get.json"),
+			servermock.CheckRequestJSONBodyFromInternal("zone_add.json"),
 		).
 		Route("PUT /example.com",
 			servermock.Noop().
 				WithStatusCode(http.StatusNoContent),
-			servermock.CheckRequestJSONBodyFromInternal("zones_add.json"),
+			servermock.CheckRequestJSONBodyFromInternal("zone_add.json"),
 		).
 		Build(t)
 
@@ -197,16 +197,16 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /example.com",
-			servermock.ResponseFromInternal("zones_add.json"),
+			servermock.ResponseFromInternal("zone_add.json"),
 		).
 		Route("POST /example.com/check",
-			servermock.ResponseFromInternal("zones_remove.json"),
-			servermock.CheckRequestJSONBodyFromInternal("zones_remove.json"),
+			servermock.ResponseFromInternal("zone_remove.json"),
+			servermock.CheckRequestJSONBodyFromInternal("zone_remove.json"),
 		).
 		Route("PUT /example.com",
 			servermock.Noop().
 				WithStatusCode(http.StatusNoContent),
-			servermock.CheckRequestJSONBodyFromInternal("zones_remove.json"),
+			servermock.CheckRequestJSONBodyFromInternal("zone_remove.json"),
 		).
 		Build(t)
 

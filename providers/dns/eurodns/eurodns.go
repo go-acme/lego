@@ -116,10 +116,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	zone.Records = append(zone.Records, internal.Record{
-		Type:  "TXT",
-		Host:  subDomain,
-		TTL:   d.config.TTL,
-		RData: info.Value,
+		Type:    "TXT",
+		Host:    subDomain,
+		TTL:     d.config.TTL,
+		RData:   info.Value,
+		Updated: true,
 	})
 
 	validation, err := d.client.ValidateZone(ctx, authZone, zone)

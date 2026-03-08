@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/acme/api/internal/sender"
 )
 
 // ErrNoARI is returned when the server does not advertise a renewal info endpoint.
@@ -37,7 +38,7 @@ func (c *CertificateService) GetRenewalInfo(ctx context.Context, certID string) 
 		return nil, err
 	}
 
-	info.RetryAfter = getRetryAfter(resp)
+	info.RetryAfter = sender.GetRetryAfter(resp)
 
 	return info, nil
 }

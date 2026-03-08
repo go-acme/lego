@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/acme/api/internal/sender"
 )
 
 type ChallengeService service
@@ -24,8 +25,8 @@ func (c *ChallengeService) New(ctx context.Context, chlgURL string) (acme.Extend
 		return acme.ExtendedChallenge{}, err
 	}
 
-	chlng.AuthorizationURL = getLink(resp.Header, "up")
-	chlng.RetryAfter = getRetryAfter(resp)
+	chlng.AuthorizationURL = sender.GetLink(resp.Header, "up")
+	chlng.RetryAfter = sender.GetRetryAfter(resp)
 
 	return chlng, nil
 }
@@ -43,8 +44,8 @@ func (c *ChallengeService) Get(ctx context.Context, chlgURL string) (acme.Extend
 		return acme.ExtendedChallenge{}, err
 	}
 
-	chlng.AuthorizationURL = getLink(resp.Header, "up")
-	chlng.RetryAfter = getRetryAfter(resp)
+	chlng.AuthorizationURL = sender.GetLink(resp.Header, "up")
+	chlng.RetryAfter = sender.GetRetryAfter(resp)
 
 	return chlng, nil
 }

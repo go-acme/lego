@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/acme/api/internal/sender"
 )
 
 type AccountService service
@@ -18,7 +19,7 @@ func (a *AccountService) New(ctx context.Context, req acme.Account) (acme.Extend
 
 	resp, err := a.core.post(ctx, a.core.GetDirectory().NewAccountURL, req, &account)
 
-	location := getLocation(resp)
+	location := sender.GetLocation(resp)
 
 	a.core.setKid(location)
 

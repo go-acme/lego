@@ -8,7 +8,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/stretchr/testify/assert"
@@ -148,39 +147,4 @@ func errorAs[T error](t *testing.T, err error) {
 
 	var zero T
 	assert.ErrorAs(t, err, &zero)
-}
-
-func TestParseRetryAfter(t *testing.T) {
-	testCases := []struct {
-		desc     string
-		value    string
-		expected time.Duration
-	}{
-		{
-			desc:     "empty header value",
-			value:    "",
-			expected: time.Duration(0),
-		},
-		{
-			desc:     "delay-seconds",
-			value:    "123",
-			expected: 123 * time.Second,
-		},
-		{
-			desc:     "HTTP-date",
-			value:    time.Now().Add(3 * time.Second).Format(time.RFC1123),
-			expected: 3 * time.Second,
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			rt, err := ParseRetryAfter(test.value)
-			require.NoError(t, err)
-
-			assert.InDelta(t, test.expected.Seconds(), rt.Seconds(), 1)
-		})
-	}
 }

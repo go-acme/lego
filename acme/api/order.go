@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/acme/api/internal/sender"
 )
 
 // OrderOptions used to create an order (optional).
@@ -93,7 +94,7 @@ func (o *OrderService) New(ctx context.Context, domains []string, opts *OrderOpt
 
 	return acme.ExtendedOrder{
 		Order:    order,
-		Location: resp.Header.Get("Location"),
+		Location: sender.GetLocation(resp),
 	}, nil
 }
 

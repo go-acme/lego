@@ -18,6 +18,10 @@ import (
 	"github.com/go-acme/lego/v5/log"
 )
 
+type service struct {
+	core *Core
+}
+
 // Core ACME/LE core API.
 type Core struct {
 	doer         *sender.Doer

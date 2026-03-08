@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/acme/api/internal/sender"
 )
 
 // maxBodySize is the maximum size of body that we will read.
@@ -39,7 +40,7 @@ func (c *CertificateService) GetAll(ctx context.Context, certURL string, bundle 
 
 	// URLs of "alternate" link relation
 	// - https://www.rfc-editor.org/rfc/rfc8555.html#section-7.4.2
-	alts := getLinks(headers, "alternate")
+	alts := sender.GetLinks(headers, "alternate")
 
 	for _, alt := range alts {
 		altCert, _, err := c.get(ctx, alt, bundle)

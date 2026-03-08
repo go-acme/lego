@@ -151,10 +151,10 @@ func sign(content []byte, signKey jose.SigningKey, options *jose.SignerOptions) 
 func signatureAlgorithm(privKey crypto.Signer) jose.SignatureAlgorithm {
 	var alg jose.SignatureAlgorithm
 
-	switch k := privKey.(type) {
-	case *rsa.PrivateKey:
+	switch k := privKey.Public().(type) {
+	case *rsa.PublicKey:
 		alg = jose.RS256
-	case *ecdsa.PrivateKey:
+	case *ecdsa.PublicKey:
 		if k.Curve == elliptic.P256() {
 			alg = jose.ES256
 		} else if k.Curve == elliptic.P384() {

@@ -624,7 +624,7 @@ func createPreHookFlags() []cli.Flag {
 			Category: categoryHooks,
 			Name:     flgPreHook,
 			Sources:  cli.EnvVars(toEnvName(flgPreHook)),
-			Usage:    "Define a pre-hook. This hook is runs, before the renewal, in cases where a certificate will be effectively renewed.",
+			Usage:    "Define a pre-hook. This hook runs, before the creation or the renewal, in cases where a certificate will be effectively created/renewed.",
 		},
 		&cli.DurationFlag{
 			Category: categoryHooks,
@@ -642,7 +642,7 @@ func createDeployHookFlags() []cli.Flag {
 			Category: categoryHooks,
 			Name:     flgDeployHook,
 			Sources:  cli.EnvVars(toEnvName(flgDeployHook)),
-			Usage:    "Define a hook. The hook is runs, after the renewal, in cases where a certificate is successfully created/renewed.",
+			Usage:    "Define a hook. The hook runs, after the creation or the renewal, in cases where a certificate is successfully created/renewed.",
 		},
 		&cli.DurationFlag{
 			Category: categoryHooks,
@@ -660,7 +660,7 @@ func createPostHookFlags() []cli.Flag {
 			Category: categoryHooks,
 			Name:     flgPostHook,
 			Sources:  cli.EnvVars(toEnvName(flgPostHook)),
-			Usage:    "Define a post-hook. This hook runs, after the renewal, in cases where a certificate renewed, regardless of whether any errors occurred.",
+			Usage:    "Define a post-hook. This hook runs, after the creation or the renewal, in cases where a certificate is created/renewed, regardless of whether any errors occurred.",
 		},
 		&cli.DurationFlag{
 			Category: categoryHooks,

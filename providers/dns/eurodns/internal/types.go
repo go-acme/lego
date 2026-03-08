@@ -41,7 +41,7 @@ type Record struct {
 	RData    string `json:"rdata,omitempty"`
 	Updated  bool   `json:"updated"`
 	Locked   bool   `json:"locked"`
-	IsDynDNS bool   `json:"isDynDns"`
+	IsDynDNS *bool  `json:"isDynDns"`
 	Proxy    string `json:"proxy,omitempty"`
 }
 

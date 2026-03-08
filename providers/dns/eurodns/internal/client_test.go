@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -137,7 +138,7 @@ func expectedZone(records ...Record) *Zone {
 		RData:    "string",
 		Updated:  true,
 		Locked:   true,
-		IsDynDNS: true,
+		IsDynDNS: ptr.Pointer(true),
 		Proxy:    "ON",
 	}}
 
@@ -194,7 +195,7 @@ func expectedZone(records ...Record) *Zone {
 					RData:    "string",
 					Updated:  true,
 					Locked:   true,
-					IsDynDNS: true,
+					IsDynDNS: ptr.Pointer(true),
 					Proxy:    "ON",
 				}},
 				URLForwards: []URLForward{{

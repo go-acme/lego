@@ -74,6 +74,7 @@ func allDNSCodes() string {
 		"edgeone",
 		"efficientip",
 		"epik",
+		"eurodns",
 		"exec",
 		"exoscale",
 		"f5xc",
@@ -1561,6 +1562,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/epik`)
+
+	case "eurodns":
+		// generated from: providers/dns/eurodns/eurodns.toml
+		ew.writeln(`Configuration for EuroDNS.`)
+		ew.writeln(`Code:	'eurodns'`)
+		ew.writeln(`Since:	'v4.33.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "EURODNS_API_KEY":	API key`)
+		ew.writeln(`	- "EURODNS_APP_ID":	Application ID`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "EURODNS_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "EURODNS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "EURODNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "EURODNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/eurodns`)
 
 	case "exec":
 		// generated from: providers/dns/exec/exec.toml

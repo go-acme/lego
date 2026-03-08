@@ -32,6 +32,23 @@
   ],
   "report": {
     "isValid": true,
+    "recordErrors": [
+      {
+        "messages": [
+          "string"
+        ],
+        "record": {
+          "type": "A",
+          "host": "string",
+          "rdata": "string",
+          "updated": true,
+          "locked": true,
+          "isDynDns": true,
+          "proxy": "ON"
+        },
+        "severity": "ERROR"
+      }
+    ],
     "urlForwardErrors": [
       {
         "messages": [

@@ -65,7 +65,7 @@ type MailForward struct {
 
 type Report struct {
 	IsValid           bool               `json:"isValid,omitempty"`
-	RecordErrors      []RecordError      `json:"report,omitempty"`
+	RecordErrors      []RecordError      `json:"recordErrors,omitempty"`
 	URLForwardErrors  []URLForwardError  `json:"urlForwardErrors,omitempty"`
 	MailForwardErrors []MailForwardError `json:"mailForwardErrors,omitempty"`
 	ZoneErrors        []ZoneError        `json:"zoneErrors,omitempty"`
@@ -95,7 +95,7 @@ func (r *Report) Error() string {
 
 type RecordError struct {
 	Messages []string `json:"messages,omitempty"`
-	Record   *Record  `json:"recordErrors,omitempty"`
+	Record   *Record  `json:"record,omitempty"`
 	Severity string   `json:"severity,omitempty"`
 }
 

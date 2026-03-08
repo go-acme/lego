@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"slices"
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester/servermock"
@@ -43,7 +44,7 @@ func TestClient_GetZone(t *testing.T) {
 	zone, err := client.GetZone(context.Background(), "example.com")
 	require.NoError(t, err)
 
-	assert.Equal(t, expectedZone(), zone)
+	assert.Equal(t, fakeZone(), zone)
 }
 
 func TestClient_GetZone_error(t *testing.T) {
@@ -76,7 +77,7 @@ func TestClient_SaveZone(t *testing.T) {
 		TTL:   600,
 	}
 
-	err := client.SaveZone(context.Background(), "example.com", expectedZone(record))
+	err := client.SaveZone(context.Background(), "example.com", fakeZone(record))
 	require.NoError(t, err)
 }
 
@@ -96,7 +97,7 @@ func TestClient_SaveZone_emptyForwards(t *testing.T) {
 		TTL:   600,
 	}
 
-	err := client.SaveZone(context.Background(), "example.com", expectedZoneSlim(record))
+	err := client.SaveZone(context.Background(), "example.com", fakeZoneSlim(record))
 	require.NoError(t, err)
 }
 
@@ -108,7 +109,7 @@ func TestClient_SaveZone_error(t *testing.T) {
 		).
 		Build(t)
 
-	err := client.SaveZone(context.Background(), "example.com", expectedZone())
+	err := client.SaveZone(context.Background(), "example.com", fakeZone())
 	require.Error(t, err)
 
 	require.EqualError(t, err, "401: INVALID_API_KEY: Invalid API Key")
@@ -129,10 +130,10 @@ func TestClient_ValidateZone(t *testing.T) {
 		TTL:   600,
 	}
 
-	zone, err := client.ValidateZone(context.Background(), "example.com", expectedZone(record))
+	zone, err := client.ValidateZone(context.Background(), "example.com", fakeZone(record))
 	require.NoError(t, err)
 
-	assert.Equal(t, expectedZone(record), zone)
+	assert.Equal(t, fakeZone(record), zone)
 }
 
 func TestClient_ValidateZone_error(t *testing.T) {
@@ -143,13 +144,13 @@ func TestClient_ValidateZone_error(t *testing.T) {
 		).
 		Build(t)
 
-	_, err := client.ValidateZone(context.Background(), "example.com", expectedZone())
+	_, err := client.ValidateZone(context.Background(), "example.com", fakeZone())
 	require.Error(t, err)
 
 	require.EqualError(t, err, "401: INVALID_API_KEY: Invalid API Key")
 }
 
-func expectedZone(records ...Record) *Zone {
+func fakeZone(records ...Record) *Zone {
 	rs := []Record{{
 		Type:     "A",
 		Host:     "string",
@@ -160,12 +161,10 @@ func expectedZone(records ...Record) *Zone {
 		Proxy:    "ON",
 	}}
 
-	rs = append(rs, records...)
-
 	return &Zone{
 		Name:          "string",
 		DomainConnect: true,
-		Records:       rs,
+		Records:       slices.Concat(rs, records),
 		URLForwards: []URLForward{{
 			ForwardType: "FRAME",
 			Host:        "string",
@@ -182,6 +181,19 @@ func expectedZone(records ...Record) *Zone {
 		}},
 		Report: &Report{
 			IsValid: true,
+			RecordErrors: []RecordError{{
+				Messages: []string{"string"},
+				Severity: "ERROR",
+				Record: &Record{
+					Type:     "A",
+					Host:     "string",
+					RData:    "string",
+					Updated:  ptr.Pointer(true),
+					Locked:   ptr.Pointer(true),
+					IsDynDNS: ptr.Pointer(true),
+					Proxy:    "ON",
+				},
+			}},
 			URLForwardErrors: []URLForwardError{{
 				Messages: []string{"string"},
 				Severity: "ERROR",
@@ -235,18 +247,16 @@ func expectedZone(records ...Record) *Zone {
 	}
 }
 
-func expectedZoneSlim(records ...Record) *Zone {
+func fakeZoneSlim(records ...Record) *Zone {
 	rs := []Record{{
 		Type:  "A",
 		Host:  "string",
 		RData: "string",
 	}}
 
-	rs = append(rs, records...)
-
 	return &Zone{
 		Name:          "string",
 		DomainConnect: true,
-		Records:       rs,
+		Records:       slices.Concat(rs, records),
 	}
 }

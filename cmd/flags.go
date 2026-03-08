@@ -660,7 +660,7 @@ func createPostHookFlags() []cli.Flag {
 			Category: categoryHooks,
 			Name:     flgPostHook,
 			Sources:  cli.EnvVars(toEnvName(flgPostHook)),
-			Usage:    "Define a post-hook. This hook runs, after the renewal, in cases where a certificate  renewed, regardless of whether any errors occurred.",
+			Usage:    "Define a post-hook. This hook runs, after the renewal, in cases where a certificate renewed, regardless of whether any errors occurred.",
 		},
 		&cli.DurationFlag{
 			Category: categoryHooks,

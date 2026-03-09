@@ -1,27 +1,21 @@
 package cmd
 
 import (
-	"context"
 	"crypto/x509"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/cmd/internal"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/urfave/cli/v3"
 )
 
@@ -62,69 +56,13 @@ func newClientConfig(cmd *cli.Command, account registration.User, keyType certcr
 		}
 	}
 
-	retryClient := retryablehttp.NewClient()
-	retryClient.RetryMax = 5
-	retryClient.HTTPClient = config.HTTPClient
-	retryClient.CheckRetry = checkRetry
-	retryClient.Logger = nil
-
-	if _, v := os.LookupEnv("LEGO_DEBUG_ACME_HTTP_CLIENT"); v {
-		retryClient.Logger = log.Default()
-	}
-
-	config.HTTPClient = retryClient.StandardClient()
+	config.HTTPClient = internal.NewRetryableClient(config.HTTPClient)
 
 	return config
 }
 
 func getUserAgent(cmd *cli.Command) string {
 	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", cmd.String(flgUserAgent), cmd.Version))
-}
-
-func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
-	rt, err := retryablehttp.ErrorPropagatedRetryPolicy(ctx, resp, err)
-	if err != nil {
-		return rt, err
-	}
-
-	if resp == nil {
-		return rt, nil
-	}
-
-	if resp.StatusCode/100 == 2 {
-		return rt, nil
-	}
-
-	all, err := io.ReadAll(resp.Body)
-	if err == nil {
-		var errorDetails *acme.ProblemDetails
-
-		err = json.Unmarshal(all, &errorDetails)
-		if err != nil {
-			return rt, fmt.Errorf("%s %s: %s", resp.Request.Method, resp.Request.URL.Redacted(), string(all))
-		}
-
-		switch errorDetails.Type {
-		case acme.BadNonceErr:
-			return false, &acme.NonceError{
-				ProblemDetails: errorDetails,
-			}
-
-		case acme.AlreadyReplacedErr:
-			if errorDetails.HTTPStatus == http.StatusConflict {
-				return false, &acme.AlreadyReplacedError{
-					ProblemDetails: errorDetails,
-				}
-			}
-
-		default:
-			log.Warnf(log.LazySprintf("retry: %v", errorDetails))
-
-			return rt, errorDetails
-		}
-	}
-
-	return rt, nil
 }
 
 func newObtainRequest(cmd *cli.Command, domains []string) certificate.ObtainRequest {

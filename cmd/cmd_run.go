@@ -62,7 +62,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 			return fmt.Errorf("could not save the account file: %w", err)
 		}
 
-		fmt.Printf(rootPathWarningMessage, accountsStorage.GetRootPath())
+		fmt.Printf(storage.RootPathWarningMessage, accountsStorage.GetRootPath())
 	}
 
 	setupChallenges(cmd, client)

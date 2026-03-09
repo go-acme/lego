@@ -19,23 +19,8 @@ import (
 	"software.sslmate.com/src/go-pkcs12"
 )
 
-func CreateLogFlags() []cli.Flag {
-	return []cli.Flag{
-		&cli.StringFlag{
-			Category: categoryLogs,
-			Name:     FlgLogLevel,
-			Sources:  cli.EnvVars(toEnvName(FlgLogLevel)),
-			Usage:    "Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'.",
-			Value:    "info",
-		},
-		&cli.StringFlag{
-			Category: categoryLogs,
-			Name:     FlgLogFormat,
-			Sources:  cli.EnvVars(toEnvName(FlgLogFormat)),
-			Usage:    "Set the logging format. Supported values: 'colored', 'text', 'json'.",
-			Value:    "colored",
-		},
-	}
+func CreateRootFlags() []cli.Flag {
+	return createLogFlags()
 }
 
 func CreateRunFlags() []cli.Flag {
@@ -722,6 +707,25 @@ func createPathFlag(forceCreation bool) cli.Flag {
 			return nil
 		},
 		Required: true,
+	}
+}
+
+func createLogFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.StringFlag{
+			Category: categoryLogs,
+			Name:     FlgLogLevel,
+			Sources:  cli.EnvVars(toEnvName(FlgLogLevel)),
+			Usage:    "Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'.",
+			Value:    "info",
+		},
+		&cli.StringFlag{
+			Category: categoryLogs,
+			Name:     FlgLogFormat,
+			Sources:  cli.EnvVars(toEnvName(FlgLogFormat)),
+			Usage:    "Set the logging format. Supported values: 'colored', 'text', 'json'.",
+			Value:    "colored",
+		},
 	}
 }
 

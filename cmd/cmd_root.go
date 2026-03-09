@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v3"
@@ -25,7 +26,7 @@ func CreateRootCommand() *cli.Command {
 
 			return ctx, nil
 		},
-		Flags:    CreateLogFlags(),
+		Flags:    flags.CreateLogFlags(),
 		Commands: CreateCommands(),
 	}
 }
@@ -46,24 +47,26 @@ func CreateCommands() []*cli.Command {
 func setUpLogger(cmd *cli.Command) {
 	var logger *slog.Logger
 
-	switch cmd.String(flgLogFormat) {
+	level := getLogLeveler(cmd.String(flags.FlgLogLevel))
+
+	switch cmd.String(flags.FlgLogFormat) {
 	case "json":
 		opts := &slog.HandlerOptions{
-			Level: getLogLeveler(cmd.String(flgLogLevel)),
+			Level: level,
 		}
 
 		logger = slog.New(slog.NewJSONHandler(os.Stdout, opts))
 
 	case "text":
 		opts := &slog.HandlerOptions{
-			Level: getLogLeveler(cmd.String(flgLogLevel)),
+			Level: level,
 		}
 
 		logger = slog.New(slog.NewTextHandler(os.Stdout, opts))
 
 	default:
 		opts := []slogor.OptionFn{
-			slogor.SetLevel(getLogLeveler(cmd.String(flgLogLevel))),
+			slogor.SetLevel(level),
 			slogor.SetTimeFormat(rfc3339NanoNatural),
 		}
 

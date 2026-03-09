@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/migrate"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
@@ -21,18 +22,18 @@ func createMigrate() *cli.Command {
 				return nil
 			}
 
-			err := migrate.Accounts(cmd.String(flgPath))
+			err := migrate.Accounts(cmd.String(flags.FlgPath))
 			if err != nil {
 				return err
 			}
 
-			if cmd.Bool(flgAccountOnly) {
+			if cmd.Bool(flags.FlgAccountOnly) {
 				return nil
 			}
 
-			return migrate.Certificates(cmd.String(flgPath))
+			return migrate.Certificates(cmd.String(flags.FlgPath))
 		},
-		Flags: createMigrateFlags(),
+		Flags: flags.CreateMigrateFlags(),
 	}
 }
 
@@ -40,8 +41,8 @@ func confirmMigration(cmd *cli.Command) bool {
 	reader := bufio.NewReader(os.Stdin)
 
 	log.Warnf(log.LazySprintf("The migration will not work if the certificates have been generated with the '--filename' flag."+
-		" Use the flag '--%s' to only migrate accounts.", flgAccountOnly))
-	log.Warnf(log.LazySprintf("Please create a backup of %q before the migration.", cmd.String(flgPath)))
+		" Use the flag '--%s' to only migrate accounts.", flags.FlgAccountOnly))
+	log.Warnf(log.LazySprintf("Please create a backup of %q before the migration.", cmd.String(flags.FlgPath)))
 
 	for {
 		fmt.Println("Continue? Y/n")

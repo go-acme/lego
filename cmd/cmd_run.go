@@ -7,6 +7,7 @@ import (
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
@@ -17,14 +18,14 @@ func createRun() *cli.Command {
 	return &cli.Command{
 		Name:   "run",
 		Usage:  "Register an account, then create and install a certificate",
-		Before: runFlagsValidation,
+		Before: flags.RunFlagsValidation,
 		Action: run,
-		Flags:  createRunFlags(),
+		Flags:  flags.CreateRunFlags(),
 	}
 }
 
 func run(ctx context.Context, cmd *cli.Command) error {
-	keyType, err := certcrypto.GetKeyType(cmd.String(flgKeyType))
+	keyType, err := certcrypto.GetKeyType(cmd.String(flags.FlgKeyType))
 	if err != nil {
 		return fmt.Errorf("get the key type: %w", err)
 	}
@@ -34,12 +35,12 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
-	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flgEmail), cmd.String(flgAccountID))
+	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
 
-	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
+	certsStorage := storage.NewCertificatesStorage(cmd.String(flags.FlgPath))
 
 	hookManager := newHookManager(cmd, certsStorage, account)
 
@@ -73,7 +74,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("obtain certificate: %w", err)
 	}
 
-	certID := cmd.String(flgCertName)
+	certID := cmd.String(flags.FlgCertName)
 	if certID != "" {
 		certRes.ID = certID
 	}
@@ -89,10 +90,10 @@ func run(ctx context.Context, cmd *cli.Command) error {
 }
 
 func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Client, hookManager *hook.Manager) (*certificate.Resource, error) {
-	domains := cmd.StringSlice(flgDomains)
+	domains := cmd.StringSlice(flags.FlgDomains)
 
 	if len(domains) > 0 {
-		err := hookManager.Pre(ctx, cmd.String(flgCertName), domains)
+		err := hookManager.Pre(ctx, cmd.String(flags.FlgCertName), domains)
 		if err != nil {
 			return nil, err
 		}
@@ -103,10 +104,10 @@ func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Clien
 		request := newObtainRequest(cmd, domains)
 
 		// TODO(ldez): factorize?
-		if cmd.IsSet(flgPrivateKey) {
+		if cmd.IsSet(flags.FlgPrivateKey) {
 			var err error
 
-			request.PrivateKey, err = storage.ReadPrivateKeyFile(cmd.String(flgPrivateKey))
+			request.PrivateKey, err = storage.ReadPrivateKeyFile(cmd.String(flags.FlgPrivateKey))
 			if err != nil {
 				return nil, fmt.Errorf("load private key: %w", err)
 			}
@@ -116,12 +117,12 @@ func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Clien
 	}
 
 	// read the CSR
-	csr, err := storage.ReadCSRFile(cmd.String(flgCSR))
+	csr, err := storage.ReadCSRFile(cmd.String(flags.FlgCSR))
 	if err != nil {
 		return nil, err
 	}
 
-	err = hookManager.Pre(ctx, cmd.String(flgCertName), certcrypto.ExtractDomainsCSR(csr))
+	err = hookManager.Pre(ctx, cmd.String(flags.FlgCertName), certcrypto.ExtractDomainsCSR(csr))
 	if err != nil {
 		return nil, err
 	}
@@ -132,10 +133,10 @@ func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Clien
 	request := newObtainForCSRRequest(cmd, csr)
 
 	// TODO(ldez): factorize?
-	if cmd.IsSet(flgPrivateKey) {
+	if cmd.IsSet(flags.FlgPrivateKey) {
 		var err error
 
-		request.PrivateKey, err = storage.ReadPrivateKeyFile(cmd.String(flgPrivateKey))
+		request.PrivateKey, err = storage.ReadPrivateKeyFile(cmd.String(flags.FlgPrivateKey))
 		if err != nil {
 			return nil, fmt.Errorf("load private key: %w", err)
 		}

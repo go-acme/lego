@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
@@ -34,12 +35,12 @@ func createRegister() *cli.Command {
 		Name:   "register",
 		Usage:  "Register an account.",
 		Action: register,
-		Flags:  createRegisterFlags(),
+		Flags:  flags.CreateRegisterFlags(),
 	}
 }
 
 func register(ctx context.Context, cmd *cli.Command) error {
-	keyType, err := certcrypto.GetKeyType(cmd.String(flgKeyType))
+	keyType, err := certcrypto.GetKeyType(cmd.String(flags.FlgKeyType))
 	if err != nil {
 		return fmt.Errorf("get the key type: %w", err)
 	}
@@ -49,7 +50,7 @@ func register(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
-	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flgEmail), cmd.String(flgAccountID))
+	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
@@ -84,12 +85,12 @@ func registerAccount(ctx context.Context, cmd *cli.Command, client *lego.Client)
 		log.Fatal("You did not accept the TOS. Unable to proceed.")
 	}
 
-	if cmd.Bool(flgEAB) {
-		kid := cmd.String(flgEABKID)
-		hmacEncoded := cmd.String(flgEABHMAC)
+	if cmd.Bool(flags.FlgEAB) {
+		kid := cmd.String(flags.FlgEABKID)
+		hmacEncoded := cmd.String(flags.FlgEABHMAC)
 
 		if kid == "" || hmacEncoded == "" {
-			log.Fatal(fmt.Sprintf("Requires arguments --%s and --%s.", flgEABKID, flgEABHMAC))
+			log.Fatal(fmt.Sprintf("Requires arguments --%s and --%s.", flags.FlgEABKID, flags.FlgEABHMAC))
 		}
 
 		return client.Registration.RegisterWithExternalAccountBinding(ctx, registration.RegisterEABOptions{
@@ -97,8 +98,8 @@ func registerAccount(ctx context.Context, cmd *cli.Command, client *lego.Client)
 			Kid:                  kid,
 			HmacEncoded:          hmacEncoded,
 		})
-	} else if zerossl.IsZeroSSL(cmd.String(flgServer)) {
-		return registration.RegisterWithZeroSSL(ctx, client.Registration, cmd.String(flgEmail))
+	} else if zerossl.IsZeroSSL(cmd.String(flags.FlgServer)) {
+		return registration.RegisterWithZeroSSL(ctx, client.Registration, cmd.String(flags.FlgEmail))
 	}
 
 	return client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})
@@ -112,7 +113,7 @@ func handleTOS(cmd *cli.Command, client *lego.Client) bool {
 	}
 
 	// Check for a global accept override
-	if cmd.Bool(flgAcceptTOS) {
+	if cmd.Bool(flags.FlgAcceptTOS) {
 		return true
 	}
 

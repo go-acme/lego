@@ -75,6 +75,7 @@ func allDNSCodes() string {
 		"efficientip",
 		"epik",
 		"eurodns",
+		"excedo",
 		"exec",
 		"exoscale",
 		"f5xc",
@@ -1583,6 +1584,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/eurodns`)
+
+	case "excedo":
+		// generated from: providers/dns/excedo/excedo.toml
+		ew.writeln(`Configuration for Excedo.`)
+		ew.writeln(`Code:	'excedo'`)
+		ew.writeln(`Since:	'v4.33.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "EXCEDO_API_KEY":	API key`)
+		ew.writeln(`	- "EXCEDO_API_URL":	API base URL`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "EXCEDO_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "EXCEDO_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 10)`)
+		ew.writeln(`	- "EXCEDO_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 300)`)
+		ew.writeln(`	- "EXCEDO_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/excedo`)
 
 	case "exec":
 		// generated from: providers/dns/exec/exec.toml

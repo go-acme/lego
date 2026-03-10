@@ -1,0 +1,23 @@
+{
+  "code": 1000,
+  "desc": "Command completed successfully",
+  "dns": {
+    "example.com": {
+      "dnstype": "type",
+      "recordusage": {
+        "used": 74
+      },
+      "records": [
+        {
+          "recordid": "1234",
+          "name": "_acme-challenge.example.com",
+          "type": "TXT",
+          "content": "txt-value",
+          "ttl": "60",
+          "prio": null,
+          "change_date": null
+        }
+      ]
+    }
+  }
+}

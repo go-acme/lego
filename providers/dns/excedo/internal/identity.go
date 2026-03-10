@@ -61,7 +61,7 @@ func (c *Client) authenticate(ctx context.Context) (string, error) {
 	return c.token.Token, nil
 }
 
-func (c *Client) doAuthenticated(ctx context.Context, req *http.Request, result any) error {
+func (c *Client) doAuthenticated(ctx context.Context, req *http.Request, result responseChecker) error {
 	token, err := c.authenticate(ctx)
 	if err != nil {
 		return err

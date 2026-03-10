@@ -1,8 +1,33 @@
 package internal
 
+import "fmt"
+
 type BaseResponse struct {
 	Code        int    `json:"code"`
 	Description string `json:"desc"`
+}
+
+func (r BaseResponse) Check() error {
+	// Response codes:
+	// - 1000: Command completed successfully
+	// - 1300: Command completed successfully; no messages
+	// - 2001: Command syntax error
+	// - 2002: Command use error
+	// - 2003: Required parameter missing
+	// - 2004: Parameter value range error
+	// - 2104: Billing failure
+	// - 2200: Authentication error
+	// - 2201: Authorization error
+	// - 2303: Object does not exist
+	// - 2304: Object status prohibits operation
+	// - 2309: Object duplicate found
+	// - 2400: Command failed
+	// - 2500: Command failed; server closing connection
+	if r.Code != 1000 && r.Code != 1300 {
+		return fmt.Errorf("%d: %s", r.Code, r.Description)
+	}
+
+	return nil
 }
 
 type GetRecordsResponse struct {

@@ -19,21 +19,9 @@ import (
 	querystring "github.com/google/go-querystring/query"
 )
 
-// Response codes:
-// - 1000: Command completed successfully
-// - 1300: Command completed successfully; no messages
-// - 2001: Command syntax error
-// - 2002: Command use error
-// - 2003: Required parameter missing
-// - 2004: Parameter value range error
-// - 2104: Billing failure
-// - 2200: Authentication error
-// - 2201: Authorization error
-// - 2303: Object does not exist
-// - 2304: Object status prohibits operation
-// - 2309: Object duplicate found
-// - 2400: Command failed
-// - 2500: Command failed; server closing connection
+type responseChecker interface {
+	Check() error
+}
 
 // Client the Excedo API client.
 type Client struct {
@@ -84,10 +72,6 @@ func (c *Client) AddRecord(ctx context.Context, record Record) (int64, error) {
 		return 0, err
 	}
 
-	if result.Code != 1000 && result.Code != 1300 {
-		return 0, fmt.Errorf("%d: %s", result.Code, result.Description)
-	}
-
 	return result.RecordID, nil
 }
 
@@ -111,10 +95,6 @@ func (c *Client) DeleteRecord(ctx context.Context, zone, recordID string) error 
 		return err
 	}
 
-	if result.Code != 1000 && result.Code != 1300 {
-		return fmt.Errorf("%d: %s", result.Code, result.Description)
-	}
-
 	return nil
 }
 
@@ -123,6 +103,7 @@ func (c *Client) GetRecords(ctx context.Context, zone string) (map[string]Zone, 
 
 	query := endpoint.Query()
 	query.Set("domainname", zone)
+
 	endpoint.RawQuery = query.Encode()
 
 	req, err := newFormRequest(ctx, http.MethodGet, endpoint, nil)
@@ -137,14 +118,10 @@ func (c *Client) GetRecords(ctx context.Context, zone string) (map[string]Zone, 
 		return nil, err
 	}
 
-	if result.Code != 1000 && result.Code != 1300 {
-		return nil, fmt.Errorf("%d: %s", result.Code, result.Description)
-	}
-
 	return result.DNS, nil
 }
 
-func (c *Client) do(req *http.Request, result any) error {
+func (c *Client) do(req *http.Request, result responseChecker) error {
 	useragent.SetHeader(req.Header)
 
 	resp, err := c.HTTPClient.Do(req)
@@ -174,7 +151,7 @@ func (c *Client) do(req *http.Request, result any) error {
 		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
-	return nil
+	return result.Check()
 }
 
 func newMultipartRequest(ctx context.Context, method string, endpoint *url.URL, data map[string]string) (*http.Request, error) {

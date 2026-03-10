@@ -59,6 +59,30 @@ func TestClient_AddRecord(t *testing.T) {
 	assert.EqualValues(t, 19695822, recordID)
 }
 
+func TestClient_AddRecord_error(t *testing.T) {
+	client := mockBuilder().
+		Route("POST /dns/addrecord/",
+			servermock.ResponseFromFixture("error.json"),
+		).
+		Build(t)
+
+	client.token = &ExpirableToken{
+		Token:   "session-token",
+		Expires: time.Now().Add(6 * time.Hour),
+	}
+
+	record := Record{
+		DomainName: "example.com",
+		Name:       "_acme-challenge",
+		Type:       "TXT",
+		Content:    "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		TTL:        "60",
+	}
+
+	_, err := client.AddRecord(t.Context(), record)
+	require.EqualError(t, err, "2003: Required parameter missing")
+}
+
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/deleterecord/",

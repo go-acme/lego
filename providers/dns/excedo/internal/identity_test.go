@@ -22,3 +22,14 @@ func TestClient_Login(t *testing.T) {
 
 	assert.Equal(t, "session-token", token)
 }
+
+func TestClient_Login_error(t *testing.T) {
+	client := mockBuilder().
+		Route("GET /authenticate/login/",
+			servermock.ResponseFromFixture("error.json"),
+		).
+		Build(t)
+
+	_, err := client.Login(t.Context())
+	require.EqualError(t, err, "2003: Required parameter missing")
+}

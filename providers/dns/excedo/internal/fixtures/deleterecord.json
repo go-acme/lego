@@ -1,0 +1,14 @@
+{
+  "code": 1000,
+  "desc": "Command completed successfully",
+  "session": {
+    "accID": "1234",
+    "usrID": "1234",
+    "status": "active",
+    "expire": {
+      "date": "2026-03-10 19:03:18",
+      "seconds": 5678
+    }
+  },
+  "runtime": 0.2852
+}

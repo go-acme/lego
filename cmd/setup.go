@@ -36,7 +36,7 @@ func newClient(cmd *cli.Command, account registration.User, keyType certcrypto.K
 func newClientConfig(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) *lego.Config {
 	config := lego.NewConfig(account)
 	config.CADirURL = cmd.String(flags.FlgServer)
-	config.UserAgent = getUserAgent(cmd)
+	config.UserAgent = getUserAgentFromFlag(cmd)
 
 	config.Certificate = lego.CertificateConfig{
 		KeyType:             keyType,
@@ -62,8 +62,12 @@ func newClientConfig(cmd *cli.Command, account registration.User, keyType certcr
 	return config
 }
 
-func getUserAgent(cmd *cli.Command) string {
-	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", cmd.String(flags.FlgUserAgent), cmd.Version))
+func getUserAgentFromFlag(cmd *cli.Command) string {
+	return getUserAgent(cmd, cmd.String(flags.FlgUserAgent))
+}
+
+func getUserAgent(cmd *cli.Command, ua string) string {
+	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", ua, cmd.Version))
 }
 
 func newObtainRequest(cmd *cli.Command, domains []string) certificate.ObtainRequest {
@@ -97,7 +101,7 @@ func newAccountsStorageConfig(cmd *cli.Command) storage.AccountsStorageConfig {
 	return storage.AccountsStorageConfig{
 		BasePath:  cmd.String(flags.FlgPath),
 		Server:    cmd.String(flags.FlgServer),
-		UserAgent: getUserAgent(cmd),
+		UserAgent: getUserAgentFromFlag(cmd),
 	}
 }
 

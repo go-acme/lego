@@ -141,7 +141,7 @@ If your DNS provider is not supported, please open an [issue](https://github.com
   <td><a href="https://go-acme.github.io/lego/dns/epik/">Epik</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/eurodns/">EuroDNS</a></td>
 </tr><tr>
-  <td><a href="https://go-acme.github.io/lego/dns/excedo/">Excedo DNS</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/excedo/">Excedo</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/exoscale/">Exoscale</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/exec/">External program</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/f5xc/">F5 XC</a></td>

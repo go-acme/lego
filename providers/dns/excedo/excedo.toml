@@ -1,0 +1,29 @@
+Name = "Excedo DNS"
+Description = ''''''
+URL = "your-base-url"
+Code = "excedo"
+Since = "v4.0.0"
+
+Example = '''
+EXCEDO_API_KEY=your-api-key \
+EXCEDO_API_URL=your-base-url \
+lego --dns excedo -d '*.example.com' -d example.com run
+'''
+
+Additional = '''
+## Description
+
+The provider logs in with the API key (`GET /authenticate/login/`) and uses the
+returned token for subsequent DNS record requests.
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    EXCEDO_API_KEY = "API key"
+    EXCEDO_API_URL = "API base URL"
+  [Configuration.Additional]
+    EXCEDO_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)"
+    EXCEDO_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 300)"
+    EXCEDO_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 10)"
+
+[Links]

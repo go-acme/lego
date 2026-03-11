@@ -1,4 +1,4 @@
-package migrate
+package certcrypto
 
 import (
 	"crypto"
@@ -9,13 +9,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 // NOTE(ldez) RSA4096 and RSA8192 are not tested because the key generation is very slow.
-func Test_guessPrivateKeyType(t *testing.T) {
+func TestGetPrivateKeyType(t *testing.T) {
 	mustGenerateKey := func(c crypto.Signer, err error) crypto.Signer {
 		require.NoError(t, err)
 		return c
@@ -24,27 +23,27 @@ func Test_guessPrivateKeyType(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		key      crypto.Signer
-		expected certcrypto.KeyType
+		expected KeyType
 	}{
 		{
 			desc:     "ECDSA256",
 			key:      mustGenerateKey(ecdsa.GenerateKey(elliptic.P256(), rand.Reader)),
-			expected: certcrypto.EC256,
+			expected: EC256,
 		},
 		{
 			desc:     "ECDSA384",
 			key:      mustGenerateKey(ecdsa.GenerateKey(elliptic.P384(), rand.Reader)),
-			expected: certcrypto.EC384,
+			expected: EC384,
 		},
 		{
 			desc:     "RSA2048",
 			key:      mustGenerateKey(rsa.GenerateKey(rand.Reader, 2048)),
-			expected: certcrypto.RSA2048,
+			expected: RSA2048,
 		},
 		{
 			desc:     "RSA3072",
 			key:      mustGenerateKey(rsa.GenerateKey(rand.Reader, 3072)),
-			expected: certcrypto.RSA3072,
+			expected: RSA3072,
 		},
 	}
 
@@ -52,7 +51,7 @@ func Test_guessPrivateKeyType(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			keyType, err := guessPrivateKeyType(test.key)
+			keyType, err := GetPrivateKeyType(test.key)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, keyType)
@@ -60,38 +59,38 @@ func Test_guessPrivateKeyType(t *testing.T) {
 	}
 }
 
-func Test_guessPrivateKeyType_error(t *testing.T) {
+func TestGetPrivateKeyType_error(t *testing.T) {
 	key, err := ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
 	require.NoError(t, err)
 
-	_, err = guessPrivateKeyType(key)
+	_, err = GetPrivateKeyType(key)
 	require.EqualError(t, err, "unsupported ECDSA curve: 224")
 }
 
-func Test_guessCertificateKeyType(t *testing.T) {
+func TestGetCertificateKeyType(t *testing.T) {
 	path := "./testdata/cert-p256.pem"
 
 	data, err := os.ReadFile(path)
 	require.NoError(t, err)
 
-	cert, err := certcrypto.ParsePEMCertificate(data)
+	cert, err := ParsePEMCertificate(data)
 	require.NoError(t, err)
 
-	keyType, err := guessCertificateKeyType(cert)
+	keyType, err := GetCertificateKeyType(cert)
 	require.NoError(t, err)
 
-	assert.Equal(t, certcrypto.EC256, keyType)
+	assert.Equal(t, EC256, keyType)
 }
 
-func Test_guessCertKeyType_error(t *testing.T) {
+func TestGetCertificateKeyType_error(t *testing.T) {
 	path := "./testdata/cert-p224.pem"
 
 	data, err := os.ReadFile(path)
 	require.NoError(t, err)
 
-	cert, err := certcrypto.ParsePEMCertificate(data)
+	cert, err := ParsePEMCertificate(data)
 	require.NoError(t, err)
 
-	_, err = guessCertificateKeyType(cert)
+	_, err = GetCertificateKeyType(cert)
 	require.EqualError(t, err, "unsupported ECDSA curve: 224")
 }

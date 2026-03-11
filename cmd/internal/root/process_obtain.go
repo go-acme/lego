@@ -24,7 +24,7 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 	for accountID, challengesInfo := range createCertificatesMapping(cfg) {
 		accountConfig := cfg.Accounts[accountID]
 
-		keyType, err := certcrypto.GetKeyType(accountConfig.KeyType)
+		keyType, err := certcrypto.ToKeyType(accountConfig.KeyType)
 		if err != nil {
 			return err
 		}

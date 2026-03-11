@@ -22,7 +22,7 @@ func createRevoke() *cli.Command {
 }
 
 func revoke(ctx context.Context, cmd *cli.Command) error {
-	keyType, err := certcrypto.GetKeyType(cmd.String(flags.FlgKeyType))
+	keyType, err := certcrypto.ToKeyType(cmd.String(flags.FlgKeyType))
 	if err != nil {
 		return fmt.Errorf("get the key type: %w", err)
 	}

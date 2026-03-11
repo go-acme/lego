@@ -84,12 +84,14 @@ func migrateCertificate(oldCertRes oldResource, certResourceFilePath string) err
 
 	var kt string
 
-	keyType, err := guessCertificateKeyType(cert)
+	keyType, err := certcrypto.GetCertificateKeyType(cert)
 	if err != nil {
 		log.Warn("could not guess the certificate key type", slog.String("filepath", certResourceFilePath))
 	} else {
 		kt = string(keyType)
 	}
+
+	// TODO(ldez) save key type
 
 	log.Info("Saving the certificate file.", slog.String("filepath", certResourceFilePath), slog.String("keyType", kt))
 

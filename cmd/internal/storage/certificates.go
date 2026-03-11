@@ -3,6 +3,7 @@ package storage
 import (
 	"crypto"
 	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"log/slog"
 	"os"
@@ -26,7 +27,6 @@ const (
 
 const (
 	baseCertificatesFolderName = "certificates"
-	baseArchivesFolderName     = "archives"
 )
 
 // CertificatesStorage a certificates' storage.
@@ -43,15 +43,16 @@ const (
 //	     │      └── archived certificates directory
 //	     └── "path" option
 type CertificatesStorage struct {
-	rootPath    string
-	archivePath string
+	archiver *Archiver
+
+	rootPath string
 }
 
 // NewCertificatesStorage create a new certificates storage.
 func NewCertificatesStorage(basePath string) *CertificatesStorage {
 	return &CertificatesStorage{
-		rootPath:    getCertificatesRootPath(basePath),
-		archivePath: getCertificatesArchivePath(basePath),
+		archiver: NewArchiver(basePath),
+		rootPath: filepath.Join(basePath, baseCertificatesFolderName),
 	}
 }
 
@@ -63,14 +64,6 @@ func CreateNonExistingFolder(path string) error {
 	}
 
 	return nil
-}
-
-func getCertificatesRootPath(basePath string) string {
-	return filepath.Join(basePath, baseCertificatesFolderName)
-}
-
-func getCertificatesArchivePath(basePath string) string {
-	return filepath.Join(basePath, baseArchivesFolderName)
 }
 
 // SanitizedName Make sure no funny chars are in the cert names (like wildcards ;)).
@@ -119,4 +112,38 @@ func ReadCertificateFile(filename string) ([]*x509.Certificate, error) {
 	}
 
 	return certs, nil
+}
+
+// ReadCSRFile reads a CSR file.
+func ReadCSRFile(filename string) (*x509.CertificateRequest, error) {
+	bytes, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	raw := bytes
+
+	// see if we can find a PEM-encoded CSR
+	var p *pem.Block
+
+	rest := bytes
+	for {
+		// decode a PEM block
+		p, rest = pem.Decode(rest)
+
+		// did we fail?
+		if p == nil {
+			break
+		}
+
+		// did we get a CSR?
+		if p.Type == "CERTIFICATE REQUEST" || p.Type == "NEW CERTIFICATE REQUEST" {
+			raw = p.Bytes
+		}
+	}
+
+	// no PEM-encoded CSR
+	// assume we were given a DER-encoded ASN.1 CSR
+	// (if this assumption is wrong, parsing these bytes will fail)
+	return x509.ParseCertificateRequest(raw)
 }

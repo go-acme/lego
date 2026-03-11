@@ -9,10 +9,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
@@ -93,34 +89,7 @@ func (s *CertificatesStorage) Save(certRes *certificate.Resource, opts *SaveOpti
 
 // Archive moves the certificate files to the archive folder.
 func (s *CertificatesStorage) Archive(certID string) error {
-	err := CreateNonExistingFolder(s.archivePath)
-	if err != nil {
-		return fmt.Errorf("could not check/create the archive folder %q: %w", s.archivePath, err)
-	}
-
-	baseFilename := filepath.Join(s.rootPath, SanitizedName(certID))
-
-	matches, err := filepath.Glob(baseFilename + ".*")
-	if err != nil {
-		return err
-	}
-
-	for _, oldFile := range matches {
-		if strings.TrimSuffix(oldFile, filepath.Ext(oldFile)) != baseFilename && oldFile != baseFilename+ExtIssuer {
-			continue
-		}
-
-		date := strconv.FormatInt(time.Now().Unix(), 10)
-		filename := date + "." + filepath.Base(oldFile)
-		newFile := filepath.Join(s.archivePath, filename)
-
-		err = os.Rename(oldFile, newFile)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return s.archiver.archiveCertificate(certID)
 }
 
 func (s *CertificatesStorage) saveResource(certRes *certificate.Resource) error {

@@ -87,6 +87,11 @@ func (c *SolverManager) Remove(chlgType challenge.Type) {
 	delete(c.solvers, chlgType)
 }
 
+// RemoveAll removes all challenge types from the available solvers.
+func (c *SolverManager) RemoveAll() {
+	clear(c.solvers)
+}
+
 // Checks all challenges from the server in order and returns the first matching solver.
 func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
 	// Allow to have a deterministic challenge order

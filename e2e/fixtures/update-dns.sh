@@ -10,13 +10,13 @@ case "$1" in
     echo  "Present"
     payload="{\"host\":\"$2\", \"value\":\"$3\"}"
     echo "payload=${payload}"
-    curl -s -X POST -d "${payload}" localhost:8055/set-txt
+    curl -s -X POST -d "${payload}" localhost:8555/set-txt
     ;;
   "cleanup")
     echo  "cleanup"
     payload="{\"host\":\"$2\"}"
     echo "payload=${payload}"
-    curl -s -X POST -d "${payload}" localhost:8055/clear-txt
+    curl -s -X POST -d "${payload}" localhost:8555/clear-txt
     ;;
   *)
     echo "OOPS"

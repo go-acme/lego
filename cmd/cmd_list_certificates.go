@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/mattn/go-zglob"
 	"github.com/urfave/cli/v3"
@@ -30,12 +31,12 @@ func createListCertificates() *cli.Command {
 		Name:   "certificates",
 		Usage:  "Display information about certificates.",
 		Action: listCertificates,
-		Flags:  createListFlags(),
+		Flags:  flags.CreateListFlags(),
 	}
 }
 
 func listCertificates(ctx context.Context, cmd *cli.Command) error {
-	if cmd.Bool(flgFormatJSON) {
+	if cmd.Bool(flags.FlgFormatJSON) {
 		return listCertificatesJSON(ctx, cmd)
 	}
 
@@ -90,7 +91,7 @@ func listCertificatesJSON(_ context.Context, cmd *cli.Command) error {
 }
 
 func readCertificates(cmd *cli.Command) ([]ListCertificate, error) {
-	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
+	certsStorage := storage.NewCertificatesStorage(cmd.String(flags.FlgPath))
 
 	matches, err := zglob.Glob(filepath.Join(certsStorage.GetRootPath(), "**", "*.json"))
 	if err != nil {

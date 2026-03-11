@@ -14,7 +14,7 @@ const caDirectory = "https://localhost:15000/dir"
 var load = loader.EnvLoader{
 	PebbleOptions: &loader.CmdOption{
 		HealthCheckURL: caDirectory,
-		Args:           []string{"-strict", "-config", "fixtures/pebble-config-dns.json", "-dnsserver", "localhost:8053"},
+		Args:           []string{"-strict", "-config", "fixtures/pebble-config-dns.json", "-dnsserver", "localhost:8553"},
 		Env:            []string{"PEBBLE_VA_NOSLEEP=1", "PEBBLE_WFE_NONCEREJECT=20"},
 		Dir:            "../",
 	},
@@ -25,7 +25,7 @@ var load = loader.EnvLoader{
 		"LEGO_DEBUG_ACME_HTTP_CLIENT=1",
 	},
 	ChallSrv: &loader.CmdOption{
-		Args: []string{"-http01", ":5012", "-tlsalpn01", ":5011"},
+		Args: []string{"-dnsserver", ":8553", "-http01", ":5012", "-tlsalpn01", ":5011", "-management", ":8555"},
 	},
 }
 

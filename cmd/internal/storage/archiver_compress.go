@@ -13,6 +13,8 @@ func compressDirectory(name, dir, comment string) error {
 		return err
 	}
 
+	defer func() { _ = file.Close() }()
+
 	writer := zip.NewWriter(file)
 
 	defer func() { _ = writer.Close() }()
@@ -37,6 +39,8 @@ func compressFiles(dest string, files []string, comment string) error {
 	if err != nil {
 		return err
 	}
+
+	defer func() { _ = file.Close() }()
 
 	writer := zip.NewWriter(file)
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
@@ -12,6 +13,12 @@ import (
 )
 
 func TestArchiver_Accounts(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		// The error is:
+		// TempDir RemoveAll cleanup: unlinkat C:\Users\RUNNER~1\AppData\Local\Temp\xxx: The process cannot access the file because it is being used by another process.
+		t.Skip("skipping test on Windows")
+	}
+
 	cfg := &configuration.Configuration{
 		Storage: t.TempDir(),
 		Accounts: map[string]*configuration.Account{

@@ -142,6 +142,11 @@ const (
 	FlgLogFormat = "log.format"
 )
 
+// Flag names related to the configuration file.
+const (
+	FlgConfig = "config"
+)
+
 // Flag names related to the specific run command.
 const (
 	FlgPrivateKey = "private-key"

@@ -20,7 +20,19 @@ import (
 )
 
 func CreateRootFlags() []cli.Flag {
-	return createLogFlags()
+	flags := []cli.Flag{
+		&cli.StringFlag{
+			Name:    FlgConfig,
+			Aliases: []string{FlgConfig},
+			Sources: cli.EnvVars(toEnvName(FlgConfig)),
+			Usage:   "Path to the configuration file.",
+			Local:   true,
+		},
+	}
+
+	flags = append(flags, createLogFlags()...)
+
+	return flags
 }
 
 func CreateRunFlags() []cli.Flag {

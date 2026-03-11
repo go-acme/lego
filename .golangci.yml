@@ -258,6 +258,15 @@ linters:
         text: Function 'renewForDomains' has too many statements
         linters:
           - funlen
+      - path: cmd/internal/root/process_obtain.go
+        text: (cognitive|cyclomatic) complexity \d+ of func `obtain` is high
+        linters:
+          - gocognit
+          - gocyclo
+      - path: cmd/internal/root/process_renew.go
+        text: cyclomatic complexity \d+ of func `renewForDomains` is high
+        linters:
+          - gocyclo
       - path: providers/dns/cpanel/cpanel.go
         text: cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high
         linters:

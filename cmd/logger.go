@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"cmp"
 	"log/slog"
 	"os"
 	"strings"
@@ -15,12 +16,22 @@ import (
 
 const rfc3339NanoNatural = "2006-01-02T15:04:05.000000000Z07:00"
 
-func setUpLogger(cmd *cli.Command) {
-	level := getLogLeveler(cmd.String(flags.FlgLogLevel))
+func setUpLogger(cmd *cli.Command, logCfg *configuration.Log) {
+	cfg := &configuration.Log{}
+
+	if logCfg == nil {
+		cfg.Level = cmd.String(flags.FlgLogLevel)
+		cfg.Format = cmd.String(flags.FlgLogFormat)
+	} else {
+		cfg.Level = cmp.Or(logCfg.Level, cmd.String(flags.FlgLogLevel))
+		cfg.Format = cmp.Or(logCfg.Format, cmd.String(flags.FlgLogFormat))
+	}
+
+	level := getLogLeveler(cfg.Level)
 
 	var logger *slog.Logger
 
-	switch cmd.String(flags.FlgLogFormat) {
+	switch cfg.Format {
 	case configuration.LogFormatJSON:
 		opts := &slog.HandlerOptions{
 			Level: level,

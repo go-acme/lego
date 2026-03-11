@@ -45,7 +45,7 @@ func register(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	if account.Registration == nil {
-		client, err := newClient(cmd, account, keyType)
+		client, err := newClient(cmd, account)
 		if err != nil {
 			return fmt.Errorf("new client: %w", err)
 		}

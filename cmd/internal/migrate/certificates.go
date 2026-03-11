@@ -82,18 +82,12 @@ func migrateCertificate(oldCertRes oldResource, certResourceFilePath string) err
 
 	certRes.Domains = slices.Concat(cert.DNSNames, toStringSlice(cert.IPAddresses))
 
-	var kt string
-
-	keyType, err := certcrypto.GetCertificateKeyType(cert)
+	certRes.KeyType, err = certcrypto.GetCertificateKeyType(cert)
 	if err != nil {
 		log.Warn("could not guess the certificate key type", slog.String("filepath", certResourceFilePath))
-	} else {
-		kt = string(keyType)
 	}
 
-	// TODO(ldez) save key type
-
-	log.Info("Saving the certificate file.", slog.String("filepath", certResourceFilePath), slog.String("keyType", kt))
+	log.Info("Saving the certificate file.", slog.String("filepath", certResourceFilePath), slog.String("keyType", string(certRes.KeyType)))
 
 	f, err := os.Create(certResourceFilePath)
 	if err != nil {

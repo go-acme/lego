@@ -1,12 +1,15 @@
 package e2e
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"os"
 	"testing"
 
+	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/challenge/tlsalpn01"
 	"github.com/go-acme/lego/v5/e2e/internal"
@@ -150,7 +153,7 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &internal.FakeUser{PrivateKey: privateKey}
@@ -176,6 +179,7 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 
 	request := certificate.ObtainRequest{
 		Domains:    []string{testDomain1},
+		KeyType:    certcrypto.RSA2048,
 		Bundle:     true,
 		PrivateKey: privateKeyCSR,
 	}
@@ -198,7 +202,7 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &internal.FakeUser{PrivateKey: privateKey}
@@ -243,7 +247,7 @@ func TestChallengeTLS_Client_ObtainForCSR_profile(t *testing.T) {
 
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &internal.FakeUser{PrivateKey: privateKey}

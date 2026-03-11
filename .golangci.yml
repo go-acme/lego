@@ -264,7 +264,7 @@ linters:
           - gocognit
           - gocyclo
       - path: cmd/internal/root/process_renew.go
-        text: cyclomatic complexity \d+ of func `renewForDomains` is high
+        text: cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high
         linters:
           - gocyclo
       - path: providers/dns/cpanel/cpanel.go

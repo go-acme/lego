@@ -1,8 +1,9 @@
 package e2e
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/rsa"
 	"os"
 	"testing"
 	"time"
@@ -41,7 +42,7 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &internal.FakeUser{PrivateKey: privateKey}
@@ -63,6 +64,7 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 
 	request := certificate.ObtainRequest{
 		Domains: []string{testDomain1},
+		KeyType: certcrypto.RSA2048,
 		Bundle:  true,
 	}
 	resource, err := client.Certificate.Obtain(ctx, request)
@@ -84,7 +86,7 @@ func TestChallengeHTTP_Client_Obtain_profile(t *testing.T) {
 
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &internal.FakeUser{PrivateKey: privateKey}
@@ -106,6 +108,7 @@ func TestChallengeHTTP_Client_Obtain_profile(t *testing.T) {
 
 	request := certificate.ObtainRequest{
 		Domains: []string{testDomain1},
+		KeyType: certcrypto.RSA2048,
 		Bundle:  true,
 		Profile: "shortlived",
 	}
@@ -128,7 +131,7 @@ func TestChallengeHTTP_Client_Obtain_emails_csr(t *testing.T) {
 
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &internal.FakeUser{PrivateKey: privateKey}
@@ -150,6 +153,7 @@ func TestChallengeHTTP_Client_Obtain_emails_csr(t *testing.T) {
 
 	request := certificate.ObtainRequest{
 		Domains:        []string{testDomain1},
+		KeyType:        certcrypto.RSA2048,
 		Bundle:         true,
 		EmailAddresses: []string{testEmail1},
 	}
@@ -172,7 +176,7 @@ func TestChallengeHTTP_Client_Obtain_notBefore_notAfter(t *testing.T) {
 
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &internal.FakeUser{PrivateKey: privateKey}
@@ -196,6 +200,7 @@ func TestChallengeHTTP_Client_Obtain_notBefore_notAfter(t *testing.T) {
 
 	request := certificate.ObtainRequest{
 		Domains:   []string{testDomain1},
+		KeyType:   certcrypto.RSA2048,
 		NotBefore: now.Add(1 * time.Hour),
 		NotAfter:  now.Add(2 * time.Hour),
 		Bundle:    true,
@@ -224,7 +229,7 @@ func TestChallengeHTTP_Client_Registration_QueryRegistration(t *testing.T) {
 
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &internal.FakeUser{PrivateKey: privateKey}

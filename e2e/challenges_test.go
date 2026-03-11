@@ -163,7 +163,7 @@ func createTestCSRFile(t *testing.T, raw bool) string {
 func createTestCSR(t *testing.T) []byte {
 	t.Helper()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err)
 
 	csr, err := certcrypto.CreateCSR(privateKey, certcrypto.CSROptions{

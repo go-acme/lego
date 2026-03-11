@@ -63,7 +63,7 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 	certsStorage := storage.NewCertificatesStorage(cmd.String(flags.FlgPath))
 
 	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
-		client, err := newClient(cmd, account, keyType)
+		client, err := newClient(cmd, account)
 		if err != nil {
 			return nil, fmt.Errorf("new client: %w", err)
 		}
@@ -159,7 +159,10 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 
 	randomSleep(cmd)
 
-	request := newObtainRequest(cmd, renewalDomains)
+	request, err := newObtainRequest(cmd, renewalDomains)
+	if err != nil {
+		return err
+	}
 
 	if cmd.Bool(flags.FlgReuseKey) {
 		request.PrivateKey, err = certsStorage.ReadPrivateKey(certID)

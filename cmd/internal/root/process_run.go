@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
@@ -33,8 +34,14 @@ func obtainCertificate(ctx context.Context, client *lego.Client, certConfig *con
 	domains := certConfig.Domains
 
 	if len(domains) > 0 {
+		keyType, err := certcrypto.ToKeyType(certConfig.KeyType)
+		if err != nil {
+			return nil, fmt.Errorf("get the key type: %w", err)
+		}
+
 		request := certificate.ObtainRequest{
 			Domains:                        domains,
+			KeyType:                        keyType,
 			MustStaple:                     certConfig.MustStaple,
 			NotBefore:                      certConfig.NotBefore,
 			NotAfter:                       certConfig.NotAfter,

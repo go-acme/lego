@@ -1,11 +1,14 @@
 package dnschallenge
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
 	"os"
 	"testing"
 
+	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/e2e/internal"
@@ -47,7 +50,7 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 
 	defer func() { _ = os.Unsetenv("EXEC_PATH") }()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &internal.FakeUser{PrivateKey: privateKey}
@@ -81,6 +84,7 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 
 	request := certificate.ObtainRequest{
 		Domains:    domains,
+		KeyType:    certcrypto.RSA2048,
 		Bundle:     true,
 		PrivateKey: privateKeyCSR,
 	}
@@ -104,7 +108,7 @@ func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
 
 	defer func() { _ = os.Unsetenv("EXEC_PATH") }()
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &internal.FakeUser{PrivateKey: privateKey}
@@ -138,6 +142,7 @@ func TestChallengeDNS_Client_Obtain_profile(t *testing.T) {
 
 	request := certificate.ObtainRequest{
 		Domains:    domains,
+		KeyType:    certcrypto.RSA2048,
 		Bundle:     true,
 		PrivateKey: privateKeyCSR,
 		Profile:    "shortlived",

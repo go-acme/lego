@@ -80,6 +80,8 @@ type Certificate struct {
 	Domains []string `yaml:"domains,omitempty"`
 	CSR     string   `yaml:"csr,omitempty"`
 
+	KeyType string `yaml:"keyType,omitempty"`
+
 	Challenge string `yaml:"challenge,omitempty"`
 	Account   string `yaml:"account,omitempty"`
 

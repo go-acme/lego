@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/registration"
 )
@@ -49,7 +48,6 @@ func NewConfig(user registration.User) *Config {
 		User:       user,
 		HTTPClient: createDefaultHTTPClient(),
 		Certificate: CertificateConfig{
-			KeyType:             certcrypto.RSA2048,
 			Timeout:             30 * time.Second,
 			OverallRequestLimit: certificate.DefaultOverallRequestLimit,
 		},
@@ -57,7 +55,6 @@ func NewConfig(user registration.User) *Config {
 }
 
 type CertificateConfig struct {
-	KeyType             certcrypto.KeyType
 	Timeout             time.Duration
 	OverallRequestLimit int
 }

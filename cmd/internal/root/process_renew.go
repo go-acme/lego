@@ -64,7 +64,10 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 	// This is just meant to be informal for the user.
 	log.Info("acme: Trying renewal.",
 		log.CertNameAttr(certID),
-		slog.Any("time-remaining", log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
+		slog.Any(
+			"time-remaining",
+			log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC())),
+		),
 	)
 
 	client, err := lazyClient()
@@ -149,7 +152,10 @@ func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certCon
 	// This is just meant to be informal for the user.
 	log.Info("acme: Trying renewal.",
 		log.CertNameAttr(certID),
-		slog.Any("time-remaining", log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
+		slog.Any(
+			"time-remaining",
+			log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC())),
+		),
 	)
 
 	client, err := lazyClient()
@@ -285,14 +291,14 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 
 	renewalTime := renewalInfo.ShouldRenewAt(now, willingToSleep)
 	if renewalTime == nil {
-		log.Info("acme: renewalInfo endpoint indicates that renewal is not needed.", log.CertNameAttr(domain))
+		log.Info("RenewalInfo endpoint indicates that renewal is not needed.", log.CertNameAttr(domain))
 		return nil
 	}
 
-	log.Info("acme: renewalInfo endpoint indicates that renewal is needed.", log.CertNameAttr(domain))
+	log.Info("RenewalInfo endpoint indicates that renewal is needed.", log.CertNameAttr(domain))
 
 	if renewalInfo.ExplanationURL != "" {
-		log.Info("acme: renewalInfo endpoint provided an explanation.",
+		log.Info("RenewalInfo endpoint provided an explanation.",
 			log.CertNameAttr(domain),
 			slog.String("explanationURL", renewalInfo.ExplanationURL),
 		)

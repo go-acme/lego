@@ -98,6 +98,7 @@ func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
 	sort.Sort(byType(authz.Challenges))
 
 	domain := challenge.GetTargetedDomain(authz)
+
 	for _, chlg := range authz.Challenges {
 		if solvr, ok := c.solvers[challenge.Type(chlg.Type)]; ok {
 			log.Debug("acme: Use solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))

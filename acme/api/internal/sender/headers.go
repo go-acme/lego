@@ -58,7 +58,7 @@ func GetRetryAfter(resp *http.Response) time.Duration {
 
 	retryAfter, err := parseRetryAfter(resp.Header.Get("Retry-After"))
 	if err != nil {
-		log.Warn("Failed to parse Retry-After header.", log.ErrorAttr(err))
+		log.Warn("acme: Failed to parse Retry-After header.", log.ErrorAttr(err))
 	}
 
 	return retryAfter

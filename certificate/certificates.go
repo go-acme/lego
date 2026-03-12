@@ -391,7 +391,15 @@ func (c *Certifier) getForCSR(ctx context.Context, certRes *Resource, order acme
 		timeout = 30 * time.Second
 	}
 
-	err = wait.For("certificate", timeout, timeout/60, func() (bool, error) {
+	interval := timeout / 60
+
+	log.Info("acme: waiting for certificates.",
+		slog.Duration("timeout", timeout),
+		slog.Duration("interval", interval),
+		log.DomainsAttr(certRes.Domains),
+	)
+
+	err = wait.For(timeout, interval, func() (bool, error) {
 		ord, errW := c.core.Orders.Get(ctx, order.Location)
 		if errW != nil {
 			return false, errW
@@ -404,8 +412,11 @@ func (c *Certifier) getForCSR(ctx context.Context, certRes *Resource, order acme
 
 		return done, nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("acme: %w", err)
+	}
 
-	return certRes, err
+	return certRes, nil
 }
 
 // checkResponse checks to see if the certificate is ready and a link is contained in the response.

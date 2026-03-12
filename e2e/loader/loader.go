@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/exec"
@@ -18,6 +19,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/internal/wait"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/ldez/grignotin/goenv"
 )
 
@@ -197,7 +199,9 @@ func (l *EnvLoader) cmdPebble(ctx context.Context) (*exec.Cmd, *bytes.Buffer) {
 func pebbleHealthCheck(options *CmdOption) {
 	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 
-	err := wait.For("pebble", 10*time.Second, 500*time.Millisecond, func() (bool, error) {
+	log.Info("pebble: waiting for health check.", slog.String("url", options.HealthCheckURL))
+
+	err := wait.For(10*time.Second, 500*time.Millisecond, func() (bool, error) {
 		resp, err := client.Get(options.HealthCheckURL)
 		if err != nil {
 			return false, err

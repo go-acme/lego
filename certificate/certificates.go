@@ -460,7 +460,7 @@ func (c *Certifier) checkResponse(ctx context.Context, certRes *Resource, order 
 		}
 	}
 
-	log.Info("lego has been configured to prefer certificate chains with issuer, but no chain from the CA matched this issuer. Using the default certificate chain instead.",
+	log.Warn("lego has been configured to prefer certificate chains with issuer, but no chain from the CA matched this issuer. Using the default certificate chain instead.",
 		slog.String("preferredChain", preferredChain),
 	)
 

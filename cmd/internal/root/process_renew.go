@@ -76,7 +76,7 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 
 	keyType, err := certcrypto.ToKeyType(certConfig.KeyType)
 	if err != nil {
-		return fmt.Errorf("get the key type: %w", err)
+		return err
 	}
 
 	request := certificate.ObtainRequest{

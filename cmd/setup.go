@@ -72,7 +72,7 @@ func getUserAgent(cmd *cli.Command, ua string) string {
 func newObtainRequest(cmd *cli.Command, domains []string) (certificate.ObtainRequest, error) {
 	keyType, err := certcrypto.ToKeyType(cmd.String(flags.FlgKeyType))
 	if err != nil {
-		return certificate.ObtainRequest{}, fmt.Errorf("get the key type (certificate): %w", err)
+		return certificate.ObtainRequest{}, err
 	}
 
 	return certificate.ObtainRequest{

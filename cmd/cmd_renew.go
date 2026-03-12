@@ -43,7 +43,7 @@ func createRenew() *cli.Command {
 func renew(ctx context.Context, cmd *cli.Command) error {
 	keyType, err := certcrypto.ToKeyType(cmd.String(flags.FlgKeyType))
 	if err != nil {
-		return fmt.Errorf("get the key type: %w", err)
+		return err
 	}
 
 	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))

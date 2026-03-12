@@ -155,7 +155,7 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 				return
 			}
 
-			log.Info("Served key authentication.", log.DomainAttr(domain))
+			log.Debug("Served key authentication.", log.DomainAttr(domain))
 
 			return
 		}

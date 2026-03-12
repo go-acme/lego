@@ -30,7 +30,7 @@
       "domain_dnssec_data": null,
       "domain_protected_email": null,
       "zone_created": "2025-11-23 16:17:29",
-      "zone_updated": false,
+      "zone_updated": 1700000000,
       "external_dns": "0",
       "record_count": 4,
       "zone_name_display": "example.com"
@@ -59,7 +59,7 @@
       "domain_dnssec_data": null,
       "domain_protected_email": null,
       "zone_created": "2025-11-23 15:13:27",
-      "zone_updated": false,
+      "zone_updated": 1700000000,
       "external_dns": "0",
       "record_count": 5,
       "zone_name_display": "example.org"
@@ -88,7 +88,7 @@
       "domain_dnssec_data": null,
       "domain_protected_email": null,
       "zone_created": "2025-11-23 16:37:15",
-      "zone_updated": false,
+      "zone_updated": 1700000000,
       "external_dns": "0",
       "record_count": 4,
       "zone_name_display": "example.\u30C6\u30B9\u30C8"

@@ -93,7 +93,10 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 
 				client.Challenge.RemoveAll()
 
-				setupChallenges(client, chlgConfig, networkStack)
+				errC = setupChallenges(client, chlgConfig, networkStack)
+				if errC != nil {
+					return nil, fmt.Errorf("setup challenges: %w", errC)
+				}
 
 				return client, nil
 			})

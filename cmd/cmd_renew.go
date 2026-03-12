@@ -68,7 +68,10 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 			return nil, fmt.Errorf("new client: %w", err)
 		}
 
-		setupChallenges(cmd, client)
+		err = setupChallenges(cmd, client)
+		if err != nil {
+			return nil, fmt.Errorf("setup challenges: %w", err)
+		}
 
 		return client, nil
 	})

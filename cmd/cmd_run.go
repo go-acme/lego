@@ -66,7 +66,10 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		log.Warnf(log.LazySprintf(storage.RootPathWarningMessage, accountsStorage.GetRootPath()))
 	}
 
-	setupChallenges(cmd, client)
+	err = setupChallenges(cmd, client)
+	if err != nil {
+		return fmt.Errorf("setup challenges: %w", err)
+	}
 
 	certRes, err := obtainCertificate(ctx, cmd, client, hookManager)
 	if err != nil {

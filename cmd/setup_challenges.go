@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"log/slog"
+	"fmt"
 	"net"
 	"strings"
 	"time"
@@ -13,7 +13,6 @@ import (
 	"github.com/go-acme/lego/v5/challenge/tlsalpn01"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/lego"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/providers/dns"
 	"github.com/go-acme/lego/v5/providers/http/memcached"
 	"github.com/go-acme/lego/v5/providers/http/s3"
@@ -21,132 +20,123 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func setupChallenges(cmd *cli.Command, client *lego.Client) {
+func setupChallenges(cmd *cli.Command, client *lego.Client) error {
 	if cmd.Bool(flags.FlgHTTP) {
-		err := client.Challenge.SetHTTP01Provider(setupHTTPProvider(cmd), http01.SetDelay(cmd.Duration(flags.FlgHTTPDelay)))
+		err := setupHTTPProvider(cmd, client)
 		if err != nil {
-			log.Fatal("Could not set HTTP challenge provider.", log.ErrorAttr(err))
+			return fmt.Errorf("HTTP challenge provider: %w", err)
 		}
 	}
 
 	if cmd.Bool(flags.FlgTLS) {
-		err := client.Challenge.SetTLSALPN01Provider(setupTLSProvider(cmd), tlsalpn01.SetDelay(cmd.Duration(flags.FlgTLSDelay)))
+		err := setupTLSProvider(cmd, client)
 		if err != nil {
-			log.Fatal("Could not set TLS challenge provider.", log.ErrorAttr(err))
+			return fmt.Errorf("TLS challenge provider: %w", err)
 		}
 	}
 
 	if cmd.IsSet(flags.FlgDNS) {
 		err := setupDNS(cmd, client)
 		if err != nil {
-			log.Fatal("Could not set DNS challenge provider.", log.ErrorAttr(err))
+			return fmt.Errorf("DNS challenge provider: %w", err)
 		}
 	}
 
 	if cmd.Bool(flags.FlgDNSPersist) {
 		err := setupDNSPersist(cmd, client)
 		if err != nil {
-			log.Fatal("Could not set DNS-PERSIST-01 challenge provider.", log.ErrorAttr(err))
+			return fmt.Errorf("DNS-PERSIST challenge provider: %w", err)
 		}
 	}
+
+	return nil
 }
 
-func setupHTTPProvider(cmd *cli.Command) challenge.Provider {
+func setupHTTPProvider(cmd *cli.Command, client *lego.Client) error {
+	provider, err := createHTTPProvider(cmd)
+	if err != nil {
+		return fmt.Errorf("create: %w", err)
+	}
+
+	return client.Challenge.SetHTTP01Provider(provider, http01.SetDelay(cmd.Duration(flags.FlgHTTPDelay)))
+}
+
+func createHTTPProvider(cmd *cli.Command) (challenge.Provider, error) {
 	switch {
 	case cmd.IsSet(flags.FlgHTTPWebroot):
 		ps, err := webroot.NewHTTPProvider(cmd.String(flags.FlgHTTPWebroot))
 		if err != nil {
-			log.Fatal("Could not create the webroot provider.",
-				slog.String("flag", flags.FlgHTTPWebroot),
-				slog.String("webRoot", cmd.String(flags.FlgHTTPWebroot)),
-				log.ErrorAttr(err),
-			)
+			return nil, fmt.Errorf("webroot provider (%s): %w", cmd.String(flags.FlgHTTPWebroot), err)
 		}
 
-		return ps
+		return ps, nil
 
 	case cmd.IsSet(flags.FlgHTTPMemcachedHost):
 		ps, err := memcached.NewMemcachedProvider(cmd.StringSlice(flags.FlgHTTPMemcachedHost))
 		if err != nil {
-			log.Fatal("Could not create the memcached provider.",
-				slog.String("flag", flags.FlgHTTPMemcachedHost),
-				slog.String("memcachedHosts", strings.Join(cmd.StringSlice(flags.FlgHTTPMemcachedHost), ", ")),
-				log.ErrorAttr(err),
-			)
+			return nil, fmt.Errorf("memcached provider (%s): %w", strings.Join(cmd.StringSlice(flags.FlgHTTPMemcachedHost), ", "), err)
 		}
 
-		return ps
+		return ps, nil
 
 	case cmd.IsSet(flags.FlgHTTPS3Bucket):
 		ps, err := s3.NewHTTPProvider(cmd.String(flags.FlgHTTPS3Bucket))
 		if err != nil {
-			log.Fatal("Could not create the S3 provider.",
-				slog.String("flag", flags.FlgHTTPS3Bucket),
-				slog.String("bucket", cmd.String(flags.FlgHTTPS3Bucket)),
-				log.ErrorAttr(err),
-			)
+			return nil, fmt.Errorf("S3 provider (%s): %w", cmd.String(flags.FlgHTTPS3Bucket), err)
 		}
 
-		return ps
+		return ps, nil
 
 	case cmd.IsSet(flags.FlgHTTPPort):
 		host, port, err := parseAddress(cmd, flags.FlgHTTPPort)
 		if err != nil {
-			log.Fatal("Invalid address.", log.ErrorAttr(err))
+			return nil, err
 		}
 
-		srv := http01.NewProviderServerWithOptions(http01.Options{
+		ps := http01.NewProviderServerWithOptions(http01.Options{
 			Network: getNetworkStack(cmd).Network("tcp"),
 			Address: net.JoinHostPort(host, port),
 		})
 
 		if header := cmd.String(flags.FlgHTTPProxyHeader); header != "" {
-			srv.SetProxyHeader(header)
+			ps.SetProxyHeader(header)
 		}
 
-		return srv
+		return ps, nil
 
-	case cmd.Bool(flags.FlgHTTP):
-		srv := http01.NewProviderServerWithOptions(http01.Options{
+	default:
+		ps := http01.NewProviderServerWithOptions(http01.Options{
 			Network: getNetworkStack(cmd).Network("tcp"),
 			Address: net.JoinHostPort("", ":80"),
 		})
 
 		if header := cmd.String(flags.FlgHTTPProxyHeader); header != "" {
-			srv.SetProxyHeader(header)
+			ps.SetProxyHeader(header)
 		}
 
-		return srv
-
-	default:
-		log.Fatal("Invalid HTTP challenge options.")
-		return nil
+		return ps, nil
 	}
 }
 
-func setupTLSProvider(cmd *cli.Command) challenge.Provider {
-	switch {
-	case cmd.IsSet(flags.FlgTLSPort):
+func setupTLSProvider(cmd *cli.Command, client *lego.Client) error {
+	options := tlsalpn01.Options{
+		Network: getNetworkStack(cmd).Network("tcp"),
+	}
+
+	if cmd.IsSet(flags.FlgTLSPort) {
 		host, port, err := parseAddress(cmd, flags.FlgTLSPort)
 		if err != nil {
-			log.Fatal("Invalid address.", log.ErrorAttr(err))
+			return err
 		}
 
-		return tlsalpn01.NewProviderServerWithOptions(tlsalpn01.Options{
-			Network: getNetworkStack(cmd).Network("tcp"),
-			Host:    host,
-			Port:    port,
-		})
-
-	case cmd.Bool(flags.FlgTLS):
-		return tlsalpn01.NewProviderServerWithOptions(tlsalpn01.Options{
-			Network: getNetworkStack(cmd).Network("tcp"),
-		})
-
-	default:
-		log.Fatal("Invalid HTTP challenge options.")
-		return nil
+		options.Host = host
+		options.Port = port
 	}
+
+	return client.Challenge.SetTLSALPN01Provider(
+		tlsalpn01.NewProviderServerWithOptions(options),
+		tlsalpn01.SetDelay(cmd.Duration(flags.FlgTLSDelay)),
+	)
 }
 
 func setupDNS(cmd *cli.Command, client *lego.Client) error {
@@ -167,7 +157,7 @@ func setupDNS(cmd *cli.Command, client *lego.Client) error {
 
 	shouldWait := cmd.IsSet(flags.FlgDNSPropagationWait)
 
-	err = client.Challenge.SetDNS01Provider(provider,
+	return client.Challenge.SetDNS01Provider(provider,
 		dns01.CondOptions(shouldWait,
 			dns01.PropagationWait(cmd.Duration(flags.FlgDNSPropagationWait), true),
 		),
@@ -180,8 +170,6 @@ func setupDNS(cmd *cli.Command, client *lego.Client) error {
 			),
 		),
 	)
-
-	return err
 }
 
 func setupDNSPersist(cmd *cli.Command, client *lego.Client) error {

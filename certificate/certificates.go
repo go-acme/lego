@@ -283,12 +283,16 @@ func (c *Certifier) ObtainForCSR(ctx context.Context, request ObtainForCSRReques
 
 	failures := newObtainError()
 
-	var privateKey []byte
-	if request.PrivateKey != nil {
-		privateKey = certcrypto.PEMEncode(request.PrivateKey)
+	certRes := &Resource{
+		ID:      domains[0],
+		Domains: domains,
 	}
 
-	cert, err := c.getForCSR(ctx, domains, order, request.Bundle, request.CSR.Raw, privateKey, request.PreferredChain)
+	if request.PrivateKey != nil {
+		certRes.PrivateKey = certcrypto.PEMEncode(request.PrivateKey)
+	}
+
+	cert, err := c.getForCSR(ctx, certRes, order, request.CSR.Raw, request.Bundle, request.PreferredChain)
 	if err != nil {
 		for _, auth := range authz {
 			failures.Add(challenge.GetTargetedDomain(auth), err)
@@ -353,25 +357,26 @@ func (c *Certifier) getForOrder(ctx context.Context, domains []string, order acm
 		return nil, err
 	}
 
-	return c.getForCSR(ctx, domains, order, request.Bundle, csr, certcrypto.PEMEncode(privateKey), request.PreferredChain)
+	certRes := &Resource{
+		ID:         domains[0],
+		Domains:    domains,
+		PrivateKey: certcrypto.PEMEncode(privateKey),
+	}
+
+	return c.getForCSR(ctx, certRes, order, csr, request.Bundle, request.PreferredChain)
 }
 
-func (c *Certifier) getForCSR(ctx context.Context, domains []string, order acme.ExtendedOrder, bundle bool, csr, privateKeyPem []byte, preferredChain string) (*Resource, error) {
+func (c *Certifier) getForCSR(ctx context.Context, certRes *Resource, order acme.ExtendedOrder, csr []byte, bundle bool, preferredChain string) (*Resource, error) {
 	respOrder, err := c.core.Orders.UpdateForCSR(ctx, order.Finalize, csr)
 	if err != nil {
 		return nil, err
 	}
 
-	certRes := &Resource{
-		ID:         domains[0],
-		Domains:    domains,
-		CertURL:    respOrder.Certificate,
-		PrivateKey: privateKeyPem,
-	}
+	certRes.CertURL = respOrder.Certificate
 
 	if respOrder.Status == acme.StatusValid {
 		// if the certificate is available right away, shortcut!
-		ok, errR := c.checkResponse(ctx, respOrder, certRes, bundle, preferredChain)
+		ok, errR := c.checkResponse(ctx, certRes, respOrder, bundle, preferredChain)
 		if errR != nil {
 			return nil, errR
 		}
@@ -392,7 +397,7 @@ func (c *Certifier) getForCSR(ctx context.Context, domains []string, order acme.
 			return false, errW
 		}
 
-		done, errW := c.checkResponse(ctx, ord, certRes, bundle, preferredChain)
+		done, errW := c.checkResponse(ctx, certRes, ord, bundle, preferredChain)
 		if errW != nil {
 			return false, errW
 		}
@@ -411,7 +416,7 @@ func (c *Certifier) getForCSR(ctx context.Context, domains []string, order acme.
 // The certRes input should already have the Domain (common name) field populated.
 //
 // If bundle is true, the certificate will be bundled with the issuer's cert.
-func (c *Certifier) checkResponse(ctx context.Context, order acme.ExtendedOrder, certRes *Resource, bundle bool, preferredChain string) (bool, error) {
+func (c *Certifier) checkResponse(ctx context.Context, certRes *Resource, order acme.ExtendedOrder, bundle bool, preferredChain string) (bool, error) {
 	valid, err := checkOrderStatus(order)
 	if err != nil || !valid {
 		return valid, err

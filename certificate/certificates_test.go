@@ -196,7 +196,7 @@ func Test_checkResponse(t *testing.T) {
 
 	certRes := &Resource{}
 
-	valid, err := certifier.checkResponse(t.Context(), order, certRes, true, "")
+	valid, err := certifier.checkResponse(t.Context(), certRes, order, true, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
@@ -232,7 +232,7 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 
 	certRes := &Resource{}
 
-	valid, err := certifier.checkResponse(t.Context(), order, certRes, true, "")
+	valid, err := certifier.checkResponse(t.Context(), certRes, order, true, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
@@ -268,7 +268,7 @@ func Test_checkResponse_no_bundle(t *testing.T) {
 
 	certRes := &Resource{}
 
-	valid, err := certifier.checkResponse(t.Context(), order, certRes, false, "")
+	valid, err := certifier.checkResponse(t.Context(), certRes, order, false, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
@@ -314,7 +314,7 @@ func Test_checkResponse_alternate(t *testing.T) {
 		Domains: []string{"example.com"},
 	}
 
-	valid, err := certifier.checkResponse(t.Context(), order, certRes, true, "DST Root CA X3")
+	valid, err := certifier.checkResponse(t.Context(), certRes, order, true, "DST Root CA X3")
 	require.NoError(t, err)
 
 	assert.True(t, valid)

@@ -194,6 +194,9 @@ func (s *AccountsStorage) getAccount(ctx context.Context, keyType certcrypto.Key
 			slog.Any("keyType", keyType),
 		)
 
+		// The private key was regenerated, so the registration is no longer valid.
+		account.Registration = nil
+
 		account.key, err = s.createPrivateKey(keyType, effectiveAccountID)
 		if err != nil {
 			return nil, fmt.Errorf("new private key creation: %w", err)

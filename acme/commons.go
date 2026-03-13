@@ -350,12 +350,6 @@ type RawCertificate struct {
 	Issuer []byte
 }
 
-// Window is a window of time.
-type Window struct {
-	Start time.Time `json:"start"`
-	End   time.Time `json:"end"`
-}
-
 type ExtendedRenewalInfo struct {
 	RenewalInfo
 
@@ -377,6 +371,12 @@ type RenewalInfo struct {
 	//	or a page documenting which certificates are affected by a mass revocation event.
 	//	Callers SHOULD provide this URL to their operator, if present.
 	ExplanationURL string `json:"explanationURL"`
+}
+
+// Window is a window of time.
+type Window struct {
+	Start time.Time `json:"start"`
+	End   time.Time `json:"end"`
 }
 
 // KeyChange is the response to POST requests made the keyChange endpoint.

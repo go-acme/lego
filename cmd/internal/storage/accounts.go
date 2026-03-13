@@ -111,7 +111,7 @@ func (s *AccountsStorage) GetRootPath() string {
 }
 
 // Save saves the account to a file (only the JSON file).
-func (s *AccountsStorage) Save(keyType certcrypto.KeyType, account *Account) error {
+func (s *AccountsStorage) Save(account *Account) error {
 	if account.ID == "" {
 		account.ID = account.GetID()
 	}
@@ -121,7 +121,7 @@ func (s *AccountsStorage) Save(keyType certcrypto.KeyType, account *Account) err
 		return err
 	}
 
-	return os.WriteFile(s.getAccountFilePath(keyType, account.GetID()), jsonBytes, filePerm)
+	return os.WriteFile(s.getAccountFilePath(account.GetKeyType(), account.GetID()), jsonBytes, filePerm)
 }
 
 // Get gets an account from a file or creates a new one (the files are saved).
@@ -134,7 +134,7 @@ func (s *AccountsStorage) Get(ctx context.Context, keyType certcrypto.KeyType, e
 			return nil, err
 		}
 
-		err = s.Save(keyType, account)
+		err = s.Save(account)
 		if err != nil {
 			return nil, err
 		}
@@ -211,7 +211,7 @@ func (s *AccountsStorage) getAccount(ctx context.Context, keyType certcrypto.Key
 		return nil, fmt.Errorf("could not load the account file, registration cannot be resolved on the server (accountID: %s): %w", effectiveAccountID, err)
 	}
 
-	err = s.Save(keyType, account)
+	err = s.Save(account)
 	if err != nil {
 		return nil, fmt.Errorf("could not save the account file, registration is nil (accountID: %s): %w", effectiveAccountID, err)
 	}

@@ -73,7 +73,7 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 
 			account.Registration = reg
 
-			if errC = accountsStorage.Save(keyType, account); errC != nil {
+			if errC = accountsStorage.Save(account); errC != nil {
 				return fmt.Errorf("could not save the account file: %w", errC)
 			}
 

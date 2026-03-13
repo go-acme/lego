@@ -56,7 +56,7 @@ func register(ctx context.Context, cmd *cli.Command) error {
 		}
 
 		account.Registration = reg
-		if err = accountsStorage.Save(keyType, account); err != nil {
+		if err = accountsStorage.Save(account); err != nil {
 			return fmt.Errorf("could not save the account file: %w", err)
 		}
 

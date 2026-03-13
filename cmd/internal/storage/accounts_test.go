@@ -66,7 +66,7 @@ func TestAccountsStorage_Save(t *testing.T) {
 	err = os.MkdirAll(filepath.Dir(accountFilePath), 0o755)
 	require.NoError(t, err)
 
-	err = storage.Save(keyType, account)
+	err = storage.Save(account)
 	require.NoError(t, err)
 
 	require.FileExists(t, accountFilePath)

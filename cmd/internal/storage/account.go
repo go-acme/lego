@@ -18,10 +18,6 @@ type Account struct {
 	key crypto.Signer
 }
 
-func NewAccount(email, id string, keyType certcrypto.KeyType, key crypto.Signer) *Account {
-	return &Account{Email: email, ID: id, KeyType: keyType, key: key}
-}
-
 /** Implementation of the registration.User interface **/
 
 // GetID returns the effective account ID.

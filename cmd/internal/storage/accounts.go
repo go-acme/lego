@@ -154,7 +154,12 @@ func (s *AccountsStorage) createAccount(keyType certcrypto.KeyType, email, accou
 		return nil, err
 	}
 
-	return NewAccount(email, effectiveAccountID, keyType, privateKey), nil
+	return &Account{
+		ID:      effectiveAccountID,
+		Email:   email,
+		KeyType: keyType,
+		key:     privateKey,
+	}, nil
 }
 
 // getAccount gets the account from a file.

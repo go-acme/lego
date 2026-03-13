@@ -181,39 +181,39 @@ func (s *AccountsStorage) getAccount(ctx context.Context, keyType certcrypto.Key
 	}
 
 	account.key, err = s.readPrivateKey(keyType, effectiveAccountID)
-	if err == nil {
-		if account.Registration != nil && account.Registration.Status != "" {
-			return account, nil
+	if err != nil {
+		var privateKeyNotFound *PrivateKeyNotFound
+
+		if !errors.As(err, &privateKeyNotFound) {
+			return nil, err
 		}
 
-		account.Registration, err = s.tryRecoverRegistration(ctx, account.key)
-		if err != nil {
-			return nil, fmt.Errorf("could not load the account file, registration is nil (accountID: %s): %w", effectiveAccountID, err)
-		}
+		// TODO(ldez): debug level?
+		log.Info("No key found for the account. Generating a new private key.",
+			slog.String("accountID", effectiveAccountID),
+			slog.Any("keyType", keyType),
+		)
 
-		err = s.Save(keyType, account)
+		account.key, err = s.createPrivateKey(keyType, effectiveAccountID)
 		if err != nil {
-			return nil, fmt.Errorf("could not save the account file, registration is nil (accountID: %s): %w", effectiveAccountID, err)
+			return nil, fmt.Errorf("new private key creation: %w", err)
 		}
 
 		return account, nil
 	}
 
-	var privateKeyNotFound *PrivateKeyNotFound
-
-	if !errors.As(err, &privateKeyNotFound) {
-		return nil, err
+	if account.Registration != nil && account.Registration.Status != "" {
+		return account, nil
 	}
 
-	// TODO(ldez): debug level?
-	log.Info("No key found for the account. Generating a new private key.",
-		slog.String("accountID", effectiveAccountID),
-		slog.Any("keyType", keyType),
-	)
-
-	account.key, err = s.createPrivateKey(keyType, effectiveAccountID)
+	account.Registration, err = s.tryRecoverRegistration(ctx, account.key)
 	if err != nil {
-		return nil, fmt.Errorf("new private key creation: %w", err)
+		return nil, fmt.Errorf("could not load the account file, registration cannot be resolved on the server (accountID: %s): %w", effectiveAccountID, err)
+	}
+
+	err = s.Save(keyType, account)
+	if err != nil {
+		return nil, fmt.Errorf("could not save the account file, registration is nil (accountID: %s): %w", effectiveAccountID, err)
 	}
 
 	return account, nil

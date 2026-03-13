@@ -61,9 +61,7 @@ func TestChallengeHTTP_Run_EAB(t *testing.T) {
 		"--eab.kid", "kid-3",
 		"--eab.hmac", "HjudV5qnbreN-n9WyFSH-t4HXuEx_XFen45zuxY-G1h6fr74V3cUM_dVlwQZBWmc",
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 func TestChallengeHTTP_Client_Obtain_EAB(t *testing.T) {

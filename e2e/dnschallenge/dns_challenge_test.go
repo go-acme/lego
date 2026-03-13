@@ -38,9 +38,7 @@ func TestChallengeDNS_Run(t *testing.T) {
 		"-d", testDomain2,
 		"-d", testDomain1,
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 func TestChallengeDNS_Client_Obtain(t *testing.T) {

@@ -31,9 +31,7 @@ func TestChallengeHTTP_Run(t *testing.T) {
 		"--http",
 		"--http.port", ":5002",
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 func TestChallengeHTTP_Client_Obtain(t *testing.T) {

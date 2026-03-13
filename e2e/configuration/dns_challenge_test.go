@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/e2e/loader"
+	"github.com/stretchr/testify/require"
 )
 
 func TestChallengeDNS_Run_simple(t *testing.T) {
@@ -14,9 +15,7 @@ func TestChallengeDNS_Run_simple(t *testing.T) {
 		"--config", filepath.Join("fixtures", "lego_dns-simple.yml"),
 		"--log.level", "debug",
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 func TestChallengeDNS_Run_explicit_challenge(t *testing.T) {
@@ -26,7 +25,5 @@ func TestChallengeDNS_Run_explicit_challenge(t *testing.T) {
 		"--config", filepath.Join("fixtures", "lego_dns-explicit.yml"),
 		"--log.level", "debug",
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }

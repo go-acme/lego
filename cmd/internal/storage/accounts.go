@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"context"
 	"crypto"
 	"encoding/json"
 	"encoding/pem"
@@ -13,9 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
-	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 )
 
@@ -46,8 +43,7 @@ func (e *PrivateKeyNotFound) Error() string {
 type AccountsStorageConfig struct {
 	BasePath string
 
-	Server    string
-	UserAgent string
+	Server string
 }
 
 // AccountsStorage A storage for account data.
@@ -87,8 +83,7 @@ type AccountsStorageConfig struct {
 type AccountsStorage struct {
 	rootPath string
 
-	server    *url.URL
-	userAgent string
+	server *url.URL
 }
 
 // NewAccountsStorage Creates a new AccountsStorage.
@@ -99,9 +94,8 @@ func NewAccountsStorage(config AccountsStorageConfig) (*AccountsStorage, error) 
 	}
 
 	return &AccountsStorage{
-		rootPath:  filepath.Join(config.BasePath, baseAccountsRootFolderName),
-		server:    serverURL,
-		userAgent: config.UserAgent,
+		rootPath: filepath.Join(config.BasePath, baseAccountsRootFolderName),
+		server:   serverURL,
 	}, nil
 }
 
@@ -125,7 +119,7 @@ func (s *AccountsStorage) Save(account *Account) error {
 }
 
 // Get gets an account from a file or creates a new one (the files are saved).
-func (s *AccountsStorage) Get(ctx context.Context, keyType certcrypto.KeyType, email, accountID string) (*Account, error) {
+func (s *AccountsStorage) Get(keyType certcrypto.KeyType, email, accountID string) (*Account, error) {
 	effectiveAccountID := getEffectiveAccountID(email, accountID)
 
 	if !s.existsAccountFile(keyType, effectiveAccountID) {
@@ -142,7 +136,7 @@ func (s *AccountsStorage) Get(ctx context.Context, keyType certcrypto.KeyType, e
 		return account, nil
 	}
 
-	return s.getAccount(ctx, keyType, effectiveAccountID)
+	return s.getAccount(keyType, effectiveAccountID)
 }
 
 // createAccount creates a new account.
@@ -163,9 +157,9 @@ func (s *AccountsStorage) createAccount(keyType certcrypto.KeyType, email, accou
 }
 
 // getAccount gets the account from a file.
-// It will also try to recover the registration if it's missing (and save the account file).
+// It will flag the account as needing recovery if the registration is missing.
 // And it will also create a new private key if it doesn't exist (and save the private key file).
-func (s *AccountsStorage) getAccount(ctx context.Context, keyType certcrypto.KeyType, effectiveAccountID string) (*Account, error) {
+func (s *AccountsStorage) getAccount(keyType certcrypto.KeyType, effectiveAccountID string) (*Account, error) {
 	accountFilePath := s.getAccountFilePath(keyType, effectiveAccountID)
 
 	fileBytes, err := os.ReadFile(accountFilePath)
@@ -202,6 +196,11 @@ func (s *AccountsStorage) getAccount(ctx context.Context, keyType certcrypto.Key
 			return nil, fmt.Errorf("new private key creation: %w", err)
 		}
 
+		err := s.Save(account)
+		if err != nil {
+			return nil, fmt.Errorf("could not save the account file: %w", err)
+		}
+
 		return account, nil
 	}
 
@@ -209,15 +208,8 @@ func (s *AccountsStorage) getAccount(ctx context.Context, keyType certcrypto.Key
 		return account, nil
 	}
 
-	account.Registration, err = s.tryRecoverRegistration(ctx, account.key)
-	if err != nil {
-		return nil, fmt.Errorf("could not load the account file, registration cannot be resolved on the server (accountID: %s): %w", effectiveAccountID, err)
-	}
-
-	err = s.Save(account)
-	if err != nil {
-		return nil, fmt.Errorf("could not save the account file, registration is nil (accountID: %s): %w", effectiveAccountID, err)
-	}
+	// The registration is missing, but there is an existing private key, so the account needs recovery.
+	account.NeedsRecovery = true
 
 	return account, nil
 }
@@ -309,26 +301,6 @@ func (s *AccountsStorage) getKeyPath(keyType certcrypto.KeyType, effectiveAccoun
 // getRootUserPath returns the path to the root folder for an account.
 func (s *AccountsStorage) getRootUserPath(effectiveAccountID string) string {
 	return filepath.Join(s.rootPath, sanitizeHost(s.server), effectiveAccountID)
-}
-
-// tryRecoverRegistration tries to recover the registration from the private key.
-func (s *AccountsStorage) tryRecoverRegistration(ctx context.Context, privateKey crypto.Signer) (*acme.ExtendedAccount, error) {
-	// couldn't load account but got a key. Try to look the account up.
-	config := lego.NewConfig(&Account{key: privateKey})
-	config.CADirURL = s.server.String()
-	config.UserAgent = s.userAgent
-
-	client, err := lego.NewClient(config)
-	if err != nil {
-		return nil, err
-	}
-
-	reg, err := client.Registration.ResolveAccountByKey(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return reg, nil
 }
 
 func sanitizeHost(uri *url.URL) string {

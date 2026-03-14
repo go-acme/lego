@@ -20,6 +20,8 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+type lzSetUp func() (*lego.Client, error)
+
 func newClient(cmd *cli.Command, account registration.User) (*lego.Client, error) {
 	client, err := lego.NewClient(newClientConfig(cmd, account))
 	if err != nil {
@@ -104,9 +106,8 @@ func newObtainForCSRRequest(cmd *cli.Command, csr *x509.CertificateRequest) cert
 
 func newAccountsStorageConfig(cmd *cli.Command) storage.AccountsStorageConfig {
 	return storage.AccountsStorageConfig{
-		BasePath:  cmd.String(flags.FlgPath),
-		Server:    cmd.String(flags.FlgServer),
-		UserAgent: getUserAgentFromFlag(cmd),
+		BasePath: cmd.String(flags.FlgPath),
+		Server:   cmd.String(flags.FlgServer),
 	}
 }
 

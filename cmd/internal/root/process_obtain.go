@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/cmd/internal"
@@ -40,7 +39,7 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 			return err
 		}
 
-		account, err := accountsStorage.Get(ctx, keyType, accountConfig.Email, accountID)
+		account, err := accountsStorage.Get(keyType, accountConfig.Email, accountID)
 		if err != nil {
 			return err
 		}
@@ -58,22 +57,38 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 			return client, nil
 		})
 
-		if account.Registration == nil {
+		if account.NeedsRecovery {
 			client, errC := lazyClient()
 			if errC != nil {
 				return fmt.Errorf("set up client: %w", errC)
 			}
 
-			var reg *acme.ExtendedAccount
+			reg, errC := client.Registration.ResolveAccountByKey(ctx)
+			if errC != nil {
+				return fmt.Errorf("resolve account by key: %w", errC)
+			}
 
-			reg, errC = registerAccount(ctx, client, accountConfig)
+			account.Registration = reg
+
+			errC = accountsStorage.Save(account)
+			if errC != nil {
+				return fmt.Errorf("could not save the account file: %w", errC)
+			}
+		} else if account.Registration == nil || account.Registration.Status == "" {
+			client, errC := lazyClient()
+			if errC != nil {
+				return fmt.Errorf("set up client: %w", errC)
+			}
+
+			reg, errC := registerAccount(ctx, client, accountConfig)
 			if errC != nil {
 				return fmt.Errorf("could not complete registration: %w", errC)
 			}
 
 			account.Registration = reg
 
-			if errC = accountsStorage.Save(account); errC != nil {
+			errC = accountsStorage.Save(account)
+			if errC != nil {
 				return fmt.Errorf("could not save the account file: %w", errC)
 			}
 

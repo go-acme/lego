@@ -39,12 +39,29 @@ func register(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
-	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
+	account, err := accountsStorage.Get(keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
 
-	if account.Registration == nil {
+	if account.NeedsRecovery {
+		client, err := newClient(cmd, account)
+		if err != nil {
+			return fmt.Errorf("new client: %w", err)
+		}
+
+		reg, err := client.Registration.ResolveAccountByKey(ctx)
+		if err != nil {
+			return fmt.Errorf("resolve account by key: %w", err)
+		}
+
+		account.Registration = reg
+
+		err = accountsStorage.Save(account)
+		if err != nil {
+			return fmt.Errorf("could not save the account file: %w", err)
+		}
+	} else if account.Registration == nil || account.Registration.Status == "" {
 		client, err := newClient(cmd, account)
 		if err != nil {
 			return fmt.Errorf("new client: %w", err)

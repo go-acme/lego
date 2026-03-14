@@ -50,7 +50,7 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 				return nil, errC
 			}
 
-			if client.GetServerMetadata().ExternalAccountRequired && accountConfig.ExternalAccountBinding != nil {
+			if client.GetServerMetadata().ExternalAccountRequired && accountConfig.ExternalAccountBinding == nil {
 				return nil, errors.New("server requires External Account Binding (EAB)")
 			}
 

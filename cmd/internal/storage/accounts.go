@@ -216,9 +216,8 @@ func (s *AccountsStorage) getAccount(keyType certcrypto.KeyType, effectiveAccoun
 
 // createPrivateKey generates a new private key and saves it to a file.
 func (s *AccountsStorage) createPrivateKey(keyType certcrypto.KeyType, effectiveAccountID string) (crypto.Signer, error) {
-	keysPath := s.getKeyPath(keyType, effectiveAccountID)
-
-	accKeyPath := filepath.Join(keysPath, effectiveAccountID+".key")
+	accKeyPath := s.getAccountKeyPath(keyType, effectiveAccountID)
+	keysPath := filepath.Dir(accKeyPath)
 
 	err := CreateNonExistingFolder(keysPath)
 	if err != nil {
@@ -254,9 +253,7 @@ func (s *AccountsStorage) createPrivateKey(keyType certcrypto.KeyType, effective
 
 // readPrivateKey reads the private key from a file.
 func (s *AccountsStorage) readPrivateKey(keyType certcrypto.KeyType, effectiveAccountID string) (crypto.Signer, error) {
-	keysPath := s.getKeyPath(keyType, effectiveAccountID)
-
-	accKeyPath := filepath.Join(keysPath, effectiveAccountID+".key")
+	accKeyPath := s.getAccountKeyPath(keyType, effectiveAccountID)
 
 	if _, err := os.Stat(accKeyPath); os.IsNotExist(err) {
 		return nil, &PrivateKeyNotFound{AccountID: effectiveAccountID}
@@ -286,6 +283,10 @@ func (s *AccountsStorage) existsAccountFile(keyType certcrypto.KeyType, effectiv
 	}
 
 	return true
+}
+
+func (s *AccountsStorage) getAccountKeyPath(keyType certcrypto.KeyType, effectiveAccountID string) string {
+	return filepath.Join(s.getKeyPath(keyType, effectiveAccountID), effectiveAccountID+".key")
 }
 
 // getAccountFilePath returns the account file path.

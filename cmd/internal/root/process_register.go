@@ -11,11 +11,59 @@ import (
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
 	"github.com/go-acme/lego/v5/registration/zerossl"
 )
+
+func handleRegistration(ctx context.Context, lazyClient lzSetUp, accountConfig *configuration.Account, accountsStorage *storage.AccountsStorage, account *storage.Account) error {
+	if account.NeedsRecovery {
+		client, err := lazyClient()
+		if err != nil {
+			return fmt.Errorf("set up client: %w", err)
+		}
+
+		reg, err := client.Registration.ResolveAccountByKey(ctx)
+		if err != nil {
+			return fmt.Errorf("resolve account by key: %w", err)
+		}
+
+		account.Registration = reg
+
+		err = accountsStorage.Save(account)
+		if err != nil {
+			return fmt.Errorf("could not save the account file: %w", err)
+		}
+
+		return nil
+	}
+
+	if account.Registration == nil {
+		client, err := lazyClient()
+		if err != nil {
+			return fmt.Errorf("set up client: %w", err)
+		}
+
+		reg, err := registerAccount(ctx, client, accountConfig)
+		if err != nil {
+			return fmt.Errorf("could not complete registration: %w", err)
+		}
+
+		account.Registration = reg
+
+		if err = accountsStorage.Save(account); err != nil {
+			return fmt.Errorf("could not save the account file: %w", err)
+		}
+
+		log.Warnf(log.LazySprintf(storage.RootPathWarningMessage, accountsStorage.GetRootPath()))
+	} else {
+		log.Debug("Account already registered, skipping.", slog.String("account", account.GetID()))
+	}
+
+	return nil
+}
 
 func registerAccount(ctx context.Context, client *lego.Client, accountConfig *configuration.Account) (*acme.ExtendedAccount, error) {
 	accepted := handleTOS(client, accountConfig)

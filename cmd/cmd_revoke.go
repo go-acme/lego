@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
@@ -37,25 +38,18 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("set up account: %w", err)
 	}
 
-	client, err := newClient(cmd, account)
+	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
+		return newClient(cmd, account)
+	})
+
+	err = handleRegistration(ctx, cmd, lazyClient, accountsStorage, account, false)
 	if err != nil {
-		return fmt.Errorf("new client: %w", err)
+		return fmt.Errorf("registration: %w", err)
 	}
 
-	if account.NeedsRecovery {
-		reg, err := client.Registration.ResolveAccountByKey(ctx)
-		if err != nil {
-			return fmt.Errorf("resolve account by key: %w", err)
-		}
-
-		account.Registration = reg
-
-		err = accountsStorage.Save(account)
-		if err != nil {
-			return fmt.Errorf("could not save the account file: %w", err)
-		}
-	} else if account.Registration == nil {
-		return fmt.Errorf("the account %s is not registered", account.GetID())
+	client, err := lazyClient()
+	if err != nil {
+		return fmt.Errorf("new client: %w", err)
 	}
 
 	certsStorage := storage.NewCertificatesStorage(cmd.String(flags.FlgPath))

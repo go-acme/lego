@@ -55,38 +55,22 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
-		client, err := newClient(cmd, account)
-		if err != nil {
-			return nil, fmt.Errorf("new client: %w", err)
+		client, errC := newClient(cmd, account)
+		if errC != nil {
+			return nil, fmt.Errorf("new client: %w", errC)
 		}
 
-		err = setupChallenges(cmd, client)
-		if err != nil {
-			return nil, fmt.Errorf("setup challenges: %w", err)
+		errC = setupChallenges(cmd, client)
+		if errC != nil {
+			return nil, fmt.Errorf("setup challenges: %w", errC)
 		}
 
 		return client, nil
 	})
 
-	if account.NeedsRecovery {
-		client, err := lazyClient()
-		if err != nil {
-			return fmt.Errorf("set up client: %w", err)
-		}
-
-		reg, err := client.Registration.ResolveAccountByKey(ctx)
-		if err != nil {
-			return fmt.Errorf("resolve account by key: %w", err)
-		}
-
-		account.Registration = reg
-
-		err = accountsStorage.Save(account)
-		if err != nil {
-			return fmt.Errorf("could not save the account file: %w", err)
-		}
-	} else if account.Registration == nil {
-		return fmt.Errorf("the account %s is not registered", account.GetID())
+	err = handleRegistration(ctx, cmd, lazyClient, accountsStorage, account, false)
+	if err != nil {
+		return fmt.Errorf("registration: %w", err)
 	}
 
 	certsStorage := storage.NewCertificatesStorage(cmd.String(flags.FlgPath))

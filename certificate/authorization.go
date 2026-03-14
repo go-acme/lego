@@ -2,6 +2,7 @@ package certificate
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 )
 
 func (c *Certifier) getAuthorizations(ctx context.Context, order acme.ExtendedOrder) ([]acme.Authorization, error) {
-	resc, errc := make(chan acme.Authorization), make(chan domainError)
+	resc, errc := make(chan acme.Authorization), make(chan error)
 
 	delay := time.Second / time.Duration(c.overallRequestLimit)
 
@@ -20,7 +21,7 @@ func (c *Certifier) getAuthorizations(ctx context.Context, order acme.ExtendedOr
 		go func(authzURL string) {
 			authz, err := c.core.Authorizations.Get(ctx, authzURL)
 			if err != nil {
-				errc <- domainError{Domain: authz.Identifier.Value, Error: err}
+				errc <- err
 				return
 			}
 
@@ -30,14 +31,14 @@ func (c *Certifier) getAuthorizations(ctx context.Context, order acme.ExtendedOr
 
 	var responses []acme.Authorization
 
-	failures := newObtainError()
+	var failures error
 
 	for range len(order.Authorizations) {
 		select {
 		case res := <-resc:
 			responses = append(responses, res)
 		case err := <-errc:
-			failures.Add(err.Domain, err.Error)
+			failures = errors.Join(failures, err)
 		}
 	}
 
@@ -51,7 +52,7 @@ func (c *Certifier) getAuthorizations(ctx context.Context, order acme.ExtendedOr
 	close(resc)
 	close(errc)
 
-	return responses, failures.Join()
+	return responses, failures
 }
 
 func (c *Certifier) deactivateAuthorizations(ctx context.Context, order acme.ExtendedOrder, force bool) {

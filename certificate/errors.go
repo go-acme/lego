@@ -33,8 +33,3 @@ func (e *obtainError) Join() error {
 
 	return fmt.Errorf("error: one or more domains had a problem:\n%w", err)
 }
-
-type domainError struct {
-	Domain string
-	Error  error
-}

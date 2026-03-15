@@ -61,7 +61,7 @@ func TestAccountsStorage_Save(t *testing.T) {
 	server, err := url.Parse(account.Server)
 	require.NoError(t, err)
 
-	accountFilePath := storage.getAccountFilePath(server, keyType, accountID)
+	accountFilePath := storage.getAccountFilePath(server, accountID)
 
 	err = os.MkdirAll(filepath.Dir(accountFilePath), 0o755)
 	require.NoError(t, err)
@@ -70,7 +70,7 @@ func TestAccountsStorage_Save(t *testing.T) {
 	require.NoError(t, err)
 
 	require.FileExists(t, accountFilePath)
-	assert.NoFileExists(t, storage.getAccountKeyPath(server, keyType, accountID))
+	assert.NoFileExists(t, storage.getAccountKeyPath(server, accountID))
 
 	file, err := os.ReadFile(accountFilePath)
 	require.NoError(t, err)
@@ -99,8 +99,8 @@ func TestAccountsStorage_Get_newAccount(t *testing.T) {
 	assert.NotNil(t, account.GetPrivateKey())
 	assert.False(t, account.NeedsRecovery)
 
-	assert.FileExists(t, storage.getAccountFilePath(server, keyType, email))
-	assert.FileExists(t, storage.getAccountKeyPath(server, keyType, email))
+	assert.FileExists(t, storage.getAccountFilePath(server, email))
+	assert.FileExists(t, storage.getAccountKeyPath(server, email))
 }
 
 func TestAccountsStorage_Get_existingAccount(t *testing.T) {
@@ -126,12 +126,12 @@ func TestAccountsStorage_Get_existingAccount(t *testing.T) {
 		},
 	}
 
-	createFakeAccountFile(t, storage, server, keyType, accountID, existingAccount)
+	createFakeAccountFile(t, storage, server, accountID, existingAccount)
 
 	privateKey, err := certcrypto.GeneratePrivateKey(keyType)
 	require.NoError(t, err)
 
-	err = os.WriteFile(storage.getAccountKeyPath(server, keyType, accountID), certcrypto.PEMEncode(privateKey), 0o600)
+	err = os.WriteFile(storage.getAccountKeyPath(server, accountID), certcrypto.PEMEncode(privateKey), 0o600)
 	require.NoError(t, err)
 
 	account, err := storage.Get(server.String(), keyType, "", accountID)
@@ -178,7 +178,7 @@ func TestAccountsStorage_Get_existingAccount_withoutPrivateKey(t *testing.T) {
 		},
 	}
 
-	createFakeAccountFile(t, storage, server, keyType, accountID, existingAccount)
+	createFakeAccountFile(t, storage, server, accountID, existingAccount)
 
 	account, err := storage.Get(server.String(), keyType, "", accountID)
 	require.NoError(t, err)
@@ -210,12 +210,12 @@ func TestAccountsStorage_Get_existingAccount_withoutRegistration(t *testing.T) {
 		Server:  server.String(),
 	}
 
-	createFakeAccountFile(t, storage, server, keyType, accountID, existingAccount)
+	createFakeAccountFile(t, storage, server, accountID, existingAccount)
 
 	privateKey, err := certcrypto.GeneratePrivateKey(keyType)
 	require.NoError(t, err)
 
-	err = os.WriteFile(storage.getAccountKeyPath(server, keyType, accountID), certcrypto.PEMEncode(privateKey), 0o600)
+	err = os.WriteFile(storage.getAccountKeyPath(server, accountID), certcrypto.PEMEncode(privateKey), 0o600)
 	require.NoError(t, err)
 
 	account, err := storage.Get(server.String(), keyType, "", accountID)
@@ -231,10 +231,10 @@ func TestAccountsStorage_Get_existingAccount_withoutRegistration(t *testing.T) {
 	assert.NotNil(t, account.GetPrivateKey())
 }
 
-func createFakeAccountFile(t *testing.T, storage *AccountsStorage, server *url.URL, keyType certcrypto.KeyType, accountID string, existingAccount *Account) {
+func createFakeAccountFile(t *testing.T, storage *AccountsStorage, server *url.URL, accountID string, existingAccount *Account) {
 	t.Helper()
 
-	accountFilePath := storage.getAccountFilePath(server, keyType, accountID)
+	accountFilePath := storage.getAccountFilePath(server, accountID)
 
 	err := os.MkdirAll(filepath.Dir(accountFilePath), 0o700)
 	require.NoError(t, err)

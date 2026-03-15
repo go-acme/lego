@@ -1,28 +1,22 @@
 package cmd
 
 import (
-	"context"
 	"crypto/x509"
-	"encoding/json"
-	"encoding/pem"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/cmd/internal"
+	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/urfave/cli/v3"
 )
 
@@ -32,7 +26,7 @@ func newClient(cmd *cli.Command, account registration.User, keyType certcrypto.K
 		return nil, fmt.Errorf("new client: %w", err)
 	}
 
-	if client.GetServerMetadata().ExternalAccountRequired && !cmd.IsSet(flgEAB) {
+	if client.GetServerMetadata().ExternalAccountRequired && !cmd.IsSet(flags.FlgEAB) {
 		return nil, errors.New("server requires External Account Binding (EAB)")
 	}
 
@@ -41,20 +35,20 @@ func newClient(cmd *cli.Command, account registration.User, keyType certcrypto.K
 
 func newClientConfig(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) *lego.Config {
 	config := lego.NewConfig(account)
-	config.CADirURL = cmd.String(flgServer)
-	config.UserAgent = getUserAgent(cmd)
+	config.CADirURL = cmd.String(flags.FlgServer)
+	config.UserAgent = getUserAgentFromFlag(cmd)
 
 	config.Certificate = lego.CertificateConfig{
 		KeyType:             keyType,
-		Timeout:             time.Duration(cmd.Int(flgCertTimeout)) * time.Second,
-		OverallRequestLimit: cmd.Int(flgOverallRequestLimit),
+		Timeout:             time.Duration(cmd.Int(flags.FlgCertTimeout)) * time.Second,
+		OverallRequestLimit: cmd.Int(flags.FlgOverallRequestLimit),
 	}
 
-	if cmd.IsSet(flgHTTPTimeout) {
-		config.HTTPClient.Timeout = time.Duration(cmd.Int(flgHTTPTimeout)) * time.Second
+	if cmd.IsSet(flags.FlgHTTPTimeout) {
+		config.HTTPClient.Timeout = time.Duration(cmd.Int(flags.FlgHTTPTimeout)) * time.Second
 	}
 
-	if cmd.Bool(flgTLSSkipVerify) {
+	if cmd.Bool(flags.FlgTLSSkipVerify) {
 		defaultTransport, ok := config.HTTPClient.Transport.(*http.Transport)
 		if ok { // This is always true because the default client used by the CLI defined the transport.
 			tr := defaultTransport.Clone()
@@ -63,154 +57,69 @@ func newClientConfig(cmd *cli.Command, account registration.User, keyType certcr
 		}
 	}
 
-	retryClient := retryablehttp.NewClient()
-	retryClient.RetryMax = 5
-	retryClient.HTTPClient = config.HTTPClient
-	retryClient.CheckRetry = checkRetry
-	retryClient.Logger = nil
-
-	if _, v := os.LookupEnv("LEGO_DEBUG_ACME_HTTP_CLIENT"); v {
-		retryClient.Logger = log.Default()
-	}
-
-	config.HTTPClient = retryClient.StandardClient()
+	config.HTTPClient = internal.NewRetryableClient(config.HTTPClient)
 
 	return config
 }
 
-func getUserAgent(cmd *cli.Command) string {
-	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", cmd.String(flgUserAgent), cmd.Version))
+func getUserAgentFromFlag(cmd *cli.Command) string {
+	return getUserAgent(cmd, cmd.String(flags.FlgUserAgent))
 }
 
-func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
-	rt, err := retryablehttp.ErrorPropagatedRetryPolicy(ctx, resp, err)
-	if err != nil {
-		return rt, err
-	}
-
-	if resp == nil {
-		return rt, nil
-	}
-
-	if resp.StatusCode/100 == 2 {
-		return rt, nil
-	}
-
-	all, err := io.ReadAll(resp.Body)
-	if err == nil {
-		var errorDetails *acme.ProblemDetails
-
-		err = json.Unmarshal(all, &errorDetails)
-		if err != nil {
-			return rt, fmt.Errorf("%s %s: %s", resp.Request.Method, resp.Request.URL.Redacted(), string(all))
-		}
-
-		switch errorDetails.Type {
-		case acme.BadNonceErr:
-			return false, &acme.NonceError{
-				ProblemDetails: errorDetails,
-			}
-
-		case acme.AlreadyReplacedErr:
-			if errorDetails.HTTPStatus == http.StatusConflict {
-				return false, &acme.AlreadyReplacedError{
-					ProblemDetails: errorDetails,
-				}
-			}
-
-		default:
-			log.Warnf(log.LazySprintf("retry: %v", errorDetails))
-
-			return rt, errorDetails
-		}
-	}
-
-	return rt, nil
-}
-
-func readCSRFile(filename string) (*x509.CertificateRequest, error) {
-	bytes, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	raw := bytes
-
-	// see if we can find a PEM-encoded CSR
-	var p *pem.Block
-
-	rest := bytes
-	for {
-		// decode a PEM block
-		p, rest = pem.Decode(rest)
-
-		// did we fail?
-		if p == nil {
-			break
-		}
-
-		// did we get a CSR?
-		if p.Type == "CERTIFICATE REQUEST" || p.Type == "NEW CERTIFICATE REQUEST" {
-			raw = p.Bytes
-		}
-	}
-
-	// no PEM-encoded CSR
-	// assume we were given a DER-encoded ASN.1 CSR
-	// (if this assumption is wrong, parsing these bytes will fail)
-	return x509.ParseCertificateRequest(raw)
+func getUserAgent(cmd *cli.Command, ua string) string {
+	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", ua, cmd.Version))
 }
 
 func newObtainRequest(cmd *cli.Command, domains []string) certificate.ObtainRequest {
 	return certificate.ObtainRequest{
 		Domains:                        domains,
-		MustStaple:                     cmd.Bool(flgMustStaple),
-		NotBefore:                      cmd.Timestamp(flgNotBefore),
-		NotAfter:                       cmd.Timestamp(flgNotAfter),
-		Bundle:                         !cmd.Bool(flgNoBundle),
-		PreferredChain:                 cmd.String(flgPreferredChain),
-		EnableCommonName:               cmd.Bool(flgEnableCommonName),
-		Profile:                        cmd.String(flgProfile),
-		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
+		MustStaple:                     cmd.Bool(flags.FlgMustStaple),
+		NotBefore:                      cmd.Timestamp(flags.FlgNotBefore),
+		NotAfter:                       cmd.Timestamp(flags.FlgNotAfter),
+		Bundle:                         !cmd.Bool(flags.FlgNoBundle),
+		PreferredChain:                 cmd.String(flags.FlgPreferredChain),
+		EnableCommonName:               cmd.Bool(flags.FlgEnableCommonName),
+		Profile:                        cmd.String(flags.FlgProfile),
+		AlwaysDeactivateAuthorizations: cmd.Bool(flags.FlgAlwaysDeactivateAuthorizations),
 	}
 }
 
 func newObtainForCSRRequest(cmd *cli.Command, csr *x509.CertificateRequest) certificate.ObtainForCSRRequest {
 	return certificate.ObtainForCSRRequest{
 		CSR:                            csr,
-		NotBefore:                      cmd.Timestamp(flgNotBefore),
-		NotAfter:                       cmd.Timestamp(flgNotAfter),
-		Bundle:                         !cmd.Bool(flgNoBundle),
-		PreferredChain:                 cmd.String(flgPreferredChain),
-		EnableCommonName:               cmd.Bool(flgEnableCommonName),
-		Profile:                        cmd.String(flgProfile),
-		AlwaysDeactivateAuthorizations: cmd.Bool(flgAlwaysDeactivateAuthorizations),
+		NotBefore:                      cmd.Timestamp(flags.FlgNotBefore),
+		NotAfter:                       cmd.Timestamp(flags.FlgNotAfter),
+		Bundle:                         !cmd.Bool(flags.FlgNoBundle),
+		PreferredChain:                 cmd.String(flags.FlgPreferredChain),
+		EnableCommonName:               cmd.Bool(flags.FlgEnableCommonName),
+		Profile:                        cmd.String(flags.FlgProfile),
+		AlwaysDeactivateAuthorizations: cmd.Bool(flags.FlgAlwaysDeactivateAuthorizations),
 	}
 }
 
 func newAccountsStorageConfig(cmd *cli.Command) storage.AccountsStorageConfig {
 	return storage.AccountsStorageConfig{
-		BasePath:  cmd.String(flgPath),
-		Server:    cmd.String(flgServer),
-		UserAgent: getUserAgent(cmd),
+		BasePath:  cmd.String(flags.FlgPath),
+		Server:    cmd.String(flags.FlgServer),
+		UserAgent: getUserAgentFromFlag(cmd),
 	}
 }
 
 func newSaveOptions(cmd *cli.Command) *storage.SaveOptions {
 	return &storage.SaveOptions{
-		PEM:         cmd.Bool(flgPEM),
-		PFX:         cmd.Bool(flgPFX),
-		PFXFormat:   cmd.String(flgPFXPass),
-		PFXPassword: cmd.String(flgPFXFormat),
+		PEM:         cmd.Bool(flags.FlgPEM),
+		PFX:         cmd.Bool(flags.FlgPFX),
+		PFXFormat:   cmd.String(flags.FlgPFXPass),
+		PFXPassword: cmd.String(flags.FlgPFXFormat),
 	}
 }
 
 func newHookManager(cmd *cli.Command, certsStorage *storage.CertificatesStorage, account *storage.Account) *hook.Manager {
 	return hook.NewManager(
 		certsStorage,
-		hook.WithPre(cmd.String(flgPreHook), cmd.Duration(flgPreHookTimeout)),
-		hook.WithDeploy(cmd.String(flgDeployHook), cmd.Duration(flgDeployHookTimeout)),
-		hook.WithPost(cmd.String(flgPostHook), cmd.Duration(flgPostHookTimeout)),
+		hook.WithPre(cmd.String(flags.FlgPreHook), cmd.Duration(flags.FlgPreHookTimeout)),
+		hook.WithDeploy(cmd.String(flags.FlgDeployHook), cmd.Duration(flags.FlgDeployHookTimeout)),
+		hook.WithPost(cmd.String(flags.FlgPostHook), cmd.Duration(flags.FlgPostHookTimeout)),
 		hook.WithAccountMetadata(account),
 	)
 }

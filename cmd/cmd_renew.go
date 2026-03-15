@@ -17,6 +17,7 @@ import (
 
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
@@ -34,13 +35,13 @@ func createRenew() *cli.Command {
 		Name:   "renew",
 		Usage:  "Renew a certificate",
 		Action: renew,
-		Before: renewFlagsValidation,
-		Flags:  createRenewFlags(),
+		Before: flags.RenewFlagsValidation,
+		Flags:  flags.CreateRenewFlags(),
 	}
 }
 
 func renew(ctx context.Context, cmd *cli.Command) error {
-	keyType, err := certcrypto.GetKeyType(cmd.String(flgKeyType))
+	keyType, err := certcrypto.GetKeyType(cmd.String(flags.FlgKeyType))
 	if err != nil {
 		return fmt.Errorf("get the key type: %w", err)
 	}
@@ -50,7 +51,7 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
-	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flgEmail), cmd.String(flgAccountID))
+	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
@@ -59,7 +60,7 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("the account %s is not registered", account.GetID())
 	}
 
-	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
+	certsStorage := storage.NewCertificatesStorage(cmd.String(flags.FlgPath))
 
 	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
 		client, err := newClient(cmd, account, keyType)
@@ -75,7 +76,7 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 	hookManager := newHookManager(cmd, certsStorage, account)
 
 	// CSR
-	if cmd.IsSet(flgCSR) {
+	if cmd.IsSet(flags.FlgCSR) {
 		return renewForCSR(ctx, cmd, lazyClient, certsStorage, hookManager)
 	}
 
@@ -84,9 +85,9 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 }
 
 func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
-	domains := cmd.StringSlice(flgDomains)
+	domains := cmd.StringSlice(flags.FlgDomains)
 
-	certID := cmd.String(flgCertName)
+	certID := cmd.String(flags.FlgCertName)
 
 	switch {
 	case certID == "" && len(domains) > 0:
@@ -129,11 +130,11 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 	certDomains := certcrypto.ExtractDomains(cert)
 
 	renewalDomains := slices.Clone(domains)
-	if !cmd.Bool(flgForceCertDomains) {
+	if !cmd.Bool(flags.FlgForceCertDomains) {
 		renewalDomains = merge(certDomains, domains)
 	}
 
-	if ariRenewalTime == nil && !cmd.Bool(flgRenewForce) && sameDomains(certDomains, renewalDomains) &&
+	if ariRenewalTime == nil && !cmd.Bool(flags.FlgRenewForce) && sameDomains(certDomains, renewalDomains) &&
 		!isInRenewalPeriod(cert, certID, getFlagRenewDays(cmd), time.Now()) {
 		return nil
 	}
@@ -141,7 +142,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 	// This is just meant to be informal for the user.
 	log.Info("acme: Trying renewal.",
 		log.CertNameAttr(certID),
-		slog.Any("time-remaining", FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
+		slog.Any("time-remaining", log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
 	)
 
 	err = hookManager.Pre(ctx, certID, renewalDomains)
@@ -160,7 +161,7 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 
 	request := newObtainRequest(cmd, renewalDomains)
 
-	if cmd.Bool(flgReuseKey) {
+	if cmd.Bool(flags.FlgReuseKey) {
 		request.PrivateKey, err = certsStorage.ReadPrivateKey(certID)
 		if err != nil {
 			return err
@@ -189,12 +190,12 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 }
 
 func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
-	csr, err := readCSRFile(cmd.String(flgCSR))
+	csr, err := storage.ReadCSRFile(cmd.String(flags.FlgCSR))
 	if err != nil {
-		return fmt.Errorf("could not read CSR file %q: %w", cmd.String(flgCSR), err)
+		return fmt.Errorf("could not read CSR file %q: %w", cmd.String(flags.FlgCSR), err)
 	}
 
-	certID := cmd.String(flgCertName)
+	certID := cmd.String(flags.FlgCertName)
 	if certID == "" {
 		certID, err = certcrypto.GetCSRMainDomain(csr)
 		if err != nil {
@@ -222,7 +223,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 		return fmt.Errorf("CSR: %w", err)
 	}
 
-	if ariRenewalTime == nil && !cmd.Bool(flgRenewForce) && sameDomainsCertificate(cert, csr) &&
+	if ariRenewalTime == nil && !cmd.Bool(flags.FlgRenewForce) && sameDomainsCertificate(cert, csr) &&
 		!isInRenewalPeriod(cert, certID, getFlagRenewDays(cmd), time.Now()) {
 		return nil
 	}
@@ -230,7 +231,7 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 	// This is just meant to be informal for the user.
 	log.Info("acme: Trying renewal.",
 		log.CertNameAttr(certID),
-		slog.Any("time-remaining", FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
+		slog.Any("time-remaining", log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
 	)
 
 	err = hookManager.Pre(ctx, certID, certcrypto.ExtractDomainsCSR(csr))
@@ -269,8 +270,8 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 }
 
 func getFlagRenewDays(cmd *cli.Command) int {
-	if cmd.IsSet(flgRenewDays) {
-		return cmd.Int(flgRenewDays)
+	if cmd.IsSet(flags.FlgRenewDays) {
+		return cmd.Int(flags.FlgRenewDays)
 	}
 
 	return noDays
@@ -286,7 +287,7 @@ func isInRenewalPeriod(cert *x509.Certificate, certID string, days int, now time
 	log.Infof(
 		log.LazySprintf("Skip renewal: The certificate expires at %s, the renewal can be performed in %s.",
 			cert.NotAfter.Format(time.RFC3339),
-			FormattableDuration(dueDate.Sub(now)),
+			log.FormattableDuration(dueDate.Sub(now)),
 		),
 		log.CertNameAttr(certID),
 	)
@@ -315,7 +316,7 @@ func getDueDate(x509Cert *x509.Certificate, days int, now time.Time) time.Time {
 }
 
 func getARIInfo(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certID string, cert *x509.Certificate) (*time.Time, string, error) {
-	if cmd.Bool(flgARIDisable) {
+	if cmd.Bool(flags.FlgARIDisable) {
 		return nil, "", nil
 	}
 
@@ -324,7 +325,7 @@ func getARIInfo(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certI
 		return nil, "", fmt.Errorf("set up client: %w", err)
 	}
 
-	willingToSleep := cmd.Duration(flgARIWaitToRenewDuration)
+	willingToSleep := cmd.Duration(flags.FlgARIWaitToRenewDuration)
 
 	ariRenewalTime := getARIRenewalTime(ctx, willingToSleep, cert, certID, client)
 	if ariRenewalTime != nil {
@@ -394,7 +395,7 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 func randomSleep(cmd *cli.Command) {
 	// https://github.com/go-acme/lego/issues/1656
 	// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L435-L440
-	if !isatty.IsTerminal(os.Stdout.Fd()) && !cmd.Bool(flgNoRandomSleep) {
+	if !isatty.IsTerminal(os.Stdout.Fd()) && !cmd.Bool(flags.FlgNoRandomSleep) {
 		// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L472
 		const jitter = 8 * time.Minute
 
@@ -433,44 +434,4 @@ func sameDomains(a, b []string) bool {
 	sort.Strings(bClone)
 
 	return slices.Equal(aClone, bClone)
-}
-
-type FormattableDuration time.Duration
-
-func (f FormattableDuration) String() string {
-	d := time.Duration(f)
-
-	days := int(math.Trunc(d.Hours() / 24))
-	hours := int(d.Hours()) % 24
-	minutes := int(d.Minutes()) % 60
-	seconds := int(d.Seconds()) % 60
-	ns := int(d.Nanoseconds()) % int(time.Second)
-
-	s := new(strings.Builder)
-
-	if days > 0 {
-		_, _ = fmt.Fprintf(s, "%dd", days)
-	}
-
-	if hours > 0 {
-		_, _ = fmt.Fprintf(s, "%dh", hours)
-	}
-
-	if minutes > 0 {
-		_, _ = fmt.Fprintf(s, "%dm", minutes)
-	}
-
-	if seconds > 0 {
-		_, _ = fmt.Fprintf(s, "%ds", seconds)
-	}
-
-	if ns > 0 {
-		_, _ = fmt.Fprintf(s, "%dns", ns)
-	}
-
-	return s.String()
-}
-
-func (f FormattableDuration) LogValue() slog.Value {
-	return slog.StringValue(f.String())
 }

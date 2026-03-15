@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
@@ -16,12 +17,12 @@ func createRevoke() *cli.Command {
 		Name:   "revoke",
 		Usage:  "Revoke a certificate",
 		Action: revoke,
-		Flags:  createRevokeFlags(),
+		Flags:  flags.CreateRevokeFlags(),
 	}
 }
 
 func revoke(ctx context.Context, cmd *cli.Command) error {
-	keyType, err := certcrypto.GetKeyType(cmd.String(flgKeyType))
+	keyType, err := certcrypto.GetKeyType(cmd.String(flags.FlgKeyType))
 	if err != nil {
 		return fmt.Errorf("get the key type: %w", err)
 	}
@@ -31,7 +32,7 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
-	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flgEmail), cmd.String(flgAccountID))
+	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
@@ -45,12 +46,12 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("new client: %w", err)
 	}
 
-	certsStorage := storage.NewCertificatesStorage(cmd.String(flgPath))
+	certsStorage := storage.NewCertificatesStorage(cmd.String(flags.FlgPath))
 
-	reason := cmd.Uint(flgReason)
-	keep := cmd.Bool(flgKeep)
+	reason := cmd.Uint(flags.FlgReason)
+	keep := cmd.Bool(flags.FlgKeep)
 
-	for _, certID := range cmd.StringSlice(flgCertName) {
+	for _, certID := range cmd.StringSlice(flags.FlgCertName) {
 		err := revokeCertificate(ctx, client, certsStorage, certID, reason, keep)
 		if err != nil {
 			return err

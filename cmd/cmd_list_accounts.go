@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/mattn/go-zglob"
@@ -26,12 +27,12 @@ func createListAccounts() *cli.Command {
 		Name:   "accounts",
 		Usage:  "Display information about accounts.",
 		Action: listAccounts,
-		Flags:  createListFlags(),
+		Flags:  flags.CreateListFlags(),
 	}
 }
 
 func listAccounts(ctx context.Context, cmd *cli.Command) error {
-	if cmd.Bool(flgFormatJSON) {
+	if cmd.Bool(flags.FlgFormatJSON) {
 		return listAccountsJSON(ctx, cmd)
 	}
 

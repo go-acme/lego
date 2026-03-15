@@ -49,7 +49,7 @@ func TestChallengeDNSPersist_Client_Obtain(t *testing.T) {
 
 	user := &internal.FakeUser{PrivateKey: privateKey}
 	config := lego.NewConfig(user)
-	config.CADirURL = "https://localhost:15000/dir"
+	config.CADirURL = caDirectory
 
 	client, err := lego.NewClient(config)
 	require.NoError(t, err)
@@ -105,10 +105,10 @@ func TestChallengeDNSPersist_Run(t *testing.T) {
 		"--email", testPersistCLIEmail,
 		"--accept-tos",
 		"--dns-persist",
-		"--dns-persist.resolvers", ":8053",
+		"--dns-persist.resolvers", ":8553",
 		"--dns-persist.propagation.disable-ans",
 		"--dns-persist.issuer-domain-name", testPersistIssuer,
-		"--server", "https://localhost:15000/dir",
+		"--server", caDirectory,
 		"--domains", testPersistCLIWildcardDomain,
 		"--domains", testPersistCLIDomain,
 	)
@@ -120,7 +120,7 @@ func TestChallengeDNSPersist_Run_NewAccount(t *testing.T) {
 
 	t.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 
-	client := internal.NewChallTestSrvClient()
+	client := internal.NewChallTestSrvClient("8555")
 
 	defer func() {
 		err := client.ClearPersistRecord(testPersistCLIDomain)
@@ -174,10 +174,10 @@ func TestChallengeDNSPersist_Run_NewAccount(t *testing.T) {
 		"--email", testPersistCLIFreshEmail,
 		"--accept-tos",
 		"--dns-persist",
-		"--dns-persist.resolvers", ":8053",
+		"--dns-persist.resolvers", ":8553",
 		"--dns-persist.propagation.disable-ans",
 		"--dns-persist.issuer-domain-name", testPersistIssuer,
-		"--server", "https://localhost:15000/dir",
+		"--server", caDirectory,
 		"--domains", testPersistCLIWildcardDomain,
 		"--domains", testPersistCLIDomain,
 	)
@@ -201,10 +201,10 @@ func TestChallengeDNSPersist_Renew(t *testing.T) {
 		"--email", testPersistCLIRenewEmail,
 		"--accept-tos",
 		"--dns-persist",
-		"--dns-persist.resolvers", ":8053",
+		"--dns-persist.resolvers", ":8553",
 		"--dns-persist.propagation.disable-ans",
 		"--dns-persist.issuer-domain-name", testPersistIssuer,
-		"--server", "https://localhost:15000/dir",
+		"--server", caDirectory,
 		"--domains", testPersistCLIWildcardDomain,
 		"--domains", testPersistCLIDomain,
 	)
@@ -215,10 +215,10 @@ func TestChallengeDNSPersist_Renew(t *testing.T) {
 		"renew",
 		"--email", testPersistCLIRenewEmail,
 		"--dns-persist",
-		"--dns-persist.resolvers", ":8053",
+		"--dns-persist.resolvers", ":8553",
 		"--dns-persist.propagation.disable-ans",
 		"--dns-persist.issuer-domain-name", testPersistIssuer,
-		"--server", "https://localhost:15000/dir",
+		"--server", caDirectory,
 		"--domains", testPersistCLIWildcardDomain,
 		"--domains", testPersistCLIDomain,
 		"--renew-force",
@@ -239,7 +239,7 @@ func createCLIAccountState(t *testing.T, email string) string {
 	}
 
 	config := lego.NewConfig(user)
-	config.CADirURL = "https://localhost:15000/dir"
+	config.CADirURL = caDirectory
 
 	client, err := lego.NewClient(config)
 	require.NoError(t, err)
@@ -327,7 +327,7 @@ func mockDefaultPersist(t *testing.T) {
 		dnspersist01.SetDefaultClient(backup)
 	})
 
-	dnspersist01.SetDefaultClient(dnspersist01.NewClient(&dnspersist01.Options{RecursiveNameservers: []string{":8053"}}))
+	dnspersist01.SetDefaultClient(dnspersist01.NewClient(&dnspersist01.Options{RecursiveNameservers: []string{":8553"}}))
 }
 
 func updateDNS(t *testing.T, accountURI, issuerDomainName string) {
@@ -343,7 +343,7 @@ func updateDNS(t *testing.T, accountURI, issuerDomainName string) {
 	info, err := dnspersist01.GetChallengeInfo(authz, testPersistIssuer, accountURI, time.Time{})
 	require.NoError(t, err)
 
-	client := internal.NewChallTestSrvClient()
+	client := internal.NewChallTestSrvClient("8555")
 
 	err = client.SetPersistRecord(issuerDomainName, info.Value)
 	require.NoError(t, err)

@@ -29,7 +29,7 @@ func TestChallengeDNS_Run(t *testing.T) {
 		"run",
 		"--accept-tos",
 		"--dns", "exec",
-		"--dns.resolvers", ":8053",
+		"--dns.resolvers", ":8553",
 		"--dns.propagation.wait", "0",
 		"-s", caDirectory,
 		"-d", testDomain2,
@@ -164,5 +164,5 @@ func mockDefault(t *testing.T) {
 		dns01.SetDefaultClient(backup)
 	})
 
-	dns01.SetDefaultClient(dns01.NewClient(&dns01.Options{RecursiveNameservers: []string{":8053"}}))
+	dns01.SetDefaultClient(dns01.NewClient(&dns01.Options{RecursiveNameservers: []string{":8553"}}))
 }

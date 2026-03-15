@@ -1,11 +1,13 @@
 package cmd
 
 import (
-	"context"
+	"cmp"
 	"log/slog"
 	"os"
 	"strings"
 
+	"github.com/go-acme/lego/v5/cmd/internal/configuration"
+	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v3"
@@ -14,56 +16,39 @@ import (
 
 const rfc3339NanoNatural = "2006-01-02T15:04:05.000000000Z07:00"
 
-// CreateRootCommand Creates the root CLI command.
-func CreateRootCommand() *cli.Command {
-	return &cli.Command{
-		Name:                  "lego",
-		Usage:                 "ACME client written in Go",
-		EnableShellCompletion: true,
-		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
-			setUpLogger(cmd)
+func setUpLogger(cmd *cli.Command, logCfg *configuration.Log) {
+	cfg := &configuration.Log{}
 
-			return ctx, nil
-		},
-		Flags:    CreateLogFlags(),
-		Commands: CreateCommands(),
+	if logCfg == nil {
+		cfg.Level = cmd.String(flags.FlgLogLevel)
+		cfg.Format = cmd.String(flags.FlgLogFormat)
+	} else {
+		cfg.Level = cmp.Or(logCfg.Level, cmd.String(flags.FlgLogLevel))
+		cfg.Format = cmp.Or(logCfg.Format, cmd.String(flags.FlgLogFormat))
 	}
-}
 
-// CreateCommands Creates all CLI commands.
-func CreateCommands() []*cli.Command {
-	return []*cli.Command{
-		createRun(),
-		createRevoke(),
-		createRenew(),
-		createRegister(),
-		createDNSHelp(),
-		createList(),
-		createMigrate(),
-	}
-}
+	level := getLogLeveler(cfg.Level)
 
-func setUpLogger(cmd *cli.Command) {
 	var logger *slog.Logger
 
-	switch cmd.String(flgLogFormat) {
-	case "json":
+	switch cfg.Format {
+	case configuration.LogFormatJSON:
 		opts := &slog.HandlerOptions{
-			Level: getLogLeveler(cmd.String(flgLogLevel)),
+			Level: level,
 		}
 
 		logger = slog.New(slog.NewJSONHandler(os.Stdout, opts))
 
-	case "text":
+	case configuration.LogFormatText:
 		opts := &slog.HandlerOptions{
-			Level: getLogLeveler(cmd.String(flgLogLevel)),
+			Level: level,
 		}
 
 		logger = slog.New(slog.NewTextHandler(os.Stdout, opts))
 
 	default:
 		opts := []slogor.OptionFn{
-			slogor.SetLevel(getLogLeveler(cmd.String(flgLogLevel))),
+			slogor.SetLevel(level),
 			slogor.SetTimeFormat(rfc3339NanoNatural),
 		}
 

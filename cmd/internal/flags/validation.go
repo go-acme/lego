@@ -1,4 +1,4 @@
-package cmd
+package flags
 
 import (
 	"context"
@@ -7,19 +7,19 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func runFlagsValidation(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+func RunFlagsValidation(ctx context.Context, cmd *cli.Command) (context.Context, error) {
 	// we require either domains or csr, but not both
-	hasDomains := len(cmd.StringSlice(flgDomains)) > 0
+	hasDomains := len(cmd.StringSlice(FlgDomains)) > 0
 
-	hasCsr := cmd.String(flgCSR) != ""
+	hasCsr := cmd.String(FlgCSR) != ""
 	if hasDomains && hasCsr {
 		return ctx, fmt.Errorf("please specify either '--%s'/'-%s' or '--%s', but not both",
-			flgDomains, flgAliasDomains, flgCSR)
+			FlgDomains, flgAliasDomains, FlgCSR)
 	}
 
 	if !hasDomains && !hasCsr {
 		return ctx, fmt.Errorf("please specify '--%s'/'-%s' (or '--%s' if you already have a CSR)",
-			flgDomains, flgAliasDomains, flgCSR)
+			FlgDomains, flgAliasDomains, FlgCSR)
 	}
 
 	err := validateChallengeRequirements(cmd)
@@ -30,24 +30,24 @@ func runFlagsValidation(ctx context.Context, cmd *cli.Command) (context.Context,
 	return ctx, validateNetworkStack(cmd)
 }
 
-func renewFlagsValidation(ctx context.Context, cmd *cli.Command) (context.Context, error) {
-	hasDomains := len(cmd.StringSlice(flgDomains)) > 0
-	hasCsr := cmd.String(flgCSR) != ""
-	hasCertID := cmd.String(flgCertName) != ""
+func RenewFlagsValidation(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+	hasDomains := len(cmd.StringSlice(FlgDomains)) > 0
+	hasCsr := cmd.String(FlgCSR) != ""
+	hasCertID := cmd.String(FlgCertName) != ""
 
 	if hasDomains && hasCsr {
 		return ctx, fmt.Errorf("please specify either '--%s'/'-%s' or '--%s', but not both",
-			flgDomains, flgAliasDomains, flgCSR)
+			FlgDomains, flgAliasDomains, FlgCSR)
 	}
 
 	if !hasCertID && !hasDomains && !hasCsr {
 		return ctx, fmt.Errorf("please specify '--%s' or '--%s'/'-%s' (or '--%s' if you already have a CSR)",
-			flgCertName, flgDomains, flgAliasDomains, flgCSR)
+			FlgCertName, FlgDomains, flgAliasDomains, FlgCSR)
 	}
 
-	if cmd.Bool(flgForceCertDomains) && hasCsr {
+	if cmd.Bool(FlgForceCertDomains) && hasCsr {
 		return ctx, fmt.Errorf("'--%s' only works with '--%s'/'-%s', '--%s' doesn't support this option",
-			flgForceCertDomains, flgDomains, flgAliasDomains, flgCSR)
+			FlgForceCertDomains, FlgDomains, flgAliasDomains, FlgCSR)
 	}
 
 	err := validateChallengeRequirements(cmd)
@@ -59,28 +59,28 @@ func renewFlagsValidation(ctx context.Context, cmd *cli.Command) (context.Contex
 }
 
 func validateNetworkStack(cmd *cli.Command) error {
-	if cmd.Bool(flgIPv4Only) && cmd.Bool(flgIPv6Only) {
-		return fmt.Errorf("cannot specify both '--%s' and '--%s'", flgIPv4Only, flgIPv6Only)
+	if cmd.Bool(FlgIPv4Only) && cmd.Bool(FlgIPv6Only) {
+		return fmt.Errorf("cannot specify both '--%s' and '--%s'", FlgIPv4Only, FlgIPv6Only)
 	}
 
 	return nil
 }
 
 func validateChallengeRequirements(cmd *cli.Command) error {
-	if !cmd.Bool(flgHTTP) && !cmd.Bool(flgTLS) && !cmd.IsSet(flgDNS) && !cmd.Bool(flgDNSPersist) {
+	if !cmd.Bool(FlgHTTP) && !cmd.Bool(FlgTLS) && !cmd.IsSet(FlgDNS) && !cmd.Bool(FlgDNSPersist) {
 		return fmt.Errorf("no challenge selected: you must specify at least one challenge: '--%s', '--%s', '--%s', '--%s'",
-			flgHTTP, flgTLS, flgDNS, flgDNSPersist)
+			FlgHTTP, FlgTLS, FlgDNS, FlgDNSPersist)
 	}
 
-	if isSetBool(cmd, flgDNS) {
-		err := validatePropagationExclusiveOptions(cmd, flgDNSPropagationWait, flgDNSPropagationDisableANS, flgDNSPropagationDisableRNS)
+	if isSetBool(cmd, FlgDNS) {
+		err := validatePropagationExclusiveOptions(cmd, FlgDNSPropagationWait, FlgDNSPropagationDisableANS, FlgDNSPropagationDisableRNS)
 		if err != nil {
 			return err
 		}
 	}
 
-	if isSetBool(cmd, flgDNSPersist) {
-		err := validatePropagationExclusiveOptions(cmd, flgDNSPersistPropagationWait, flgDNSPersistPropagationDisableANS, flgDNSPersistIssuerDomainName)
+	if isSetBool(cmd, FlgDNSPersist) {
+		err := validatePropagationExclusiveOptions(cmd, FlgDNSPersistPropagationWait, FlgDNSPersistPropagationDisableANS, FlgDNSPersistIssuerDomainName)
 		if err != nil {
 			return err
 		}

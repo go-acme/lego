@@ -21,7 +21,8 @@ COMMANDS:
    help, h   Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --help, -h  show help
+   --config string, --config string  Path to the configuration file. [$LEGO_CONFIG]
+   --help, -h                        show help
 
    Flags related to logs:
 
@@ -39,7 +40,7 @@ USAGE:
    lego run
 
 OPTIONS:
-   --accept-tos, -a                                             By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service. [$LEGO_ACCEPT_TOS]
+   --accept-tos, -a                                             By setting this flag to true you indicate that you accept the current CA terms of service. [$LEGO_ACCEPT_TOS]
    --domains string, -d string [ --domains string, -d string ]  Add a domain. For multiple domains either repeat the option or provide a comma-separated list. [$LEGO_DOMAINS]
    --email string, -m string                                    Email used for registration and recovery contact. [$LEGO_EMAIL]
    --help, -h                                                   show help

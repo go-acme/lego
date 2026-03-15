@@ -43,15 +43,12 @@ const (
 //	     │      └── archived certificates directory
 //	     └── "path" option
 type CertificatesStorage struct {
-	archiver *Archiver
-
 	rootPath string
 }
 
 // NewCertificatesStorage create a new certificates storage.
 func NewCertificatesStorage(basePath string) *CertificatesStorage {
 	return &CertificatesStorage{
-		archiver: NewArchiver(basePath),
 		rootPath: filepath.Join(basePath, baseCertificatesFolderName),
 	}
 }

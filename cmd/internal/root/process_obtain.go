@@ -20,9 +20,7 @@ import (
 func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 	networkStack := getNetworkStack(cfg)
 
-	accountsStorage := storage.NewAccountsStorage(cfg.Storage)
-
-	certsStorage := storage.NewCertificatesStorage(cfg.Storage)
+	store := storage.New(cfg.Storage)
 
 	for accountID, challengesInfo := range createCertificatesMapping(cfg) {
 		accountConfig := cfg.Accounts[accountID]
@@ -34,7 +32,7 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 
 		serverConfig := configuration.GetServerConfig(cfg, accountID)
 
-		account, err := accountsStorage.Get(serverConfig.URL, keyType, accountConfig.Email, accountID)
+		account, err := store.Account.Get(serverConfig.URL, keyType, accountConfig.Email, accountID)
 		if err != nil {
 			return err
 		}
@@ -52,7 +50,7 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 			return client, nil
 		})
 
-		err = handleRegistration(ctx, lazyClient, accountConfig, accountsStorage, account)
+		err = handleRegistration(ctx, lazyClient, accountConfig, store.Account, account)
 		if err != nil {
 			return fmt.Errorf("registration: %w", err)
 		}
@@ -80,8 +78,8 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 				certConfig := cfg.Certificates[certID]
 
 				// Renew
-				if certsStorage.ExistsFile(certID, storage.ExtResource) {
-					err = renewCertificate(ctx, lazyClient, certID, certConfig, certsStorage)
+				if store.Certificate.ExistsFile(certID, storage.ExtResource) {
+					err = renewCertificate(ctx, lazyClient, certID, certConfig, store.Certificate)
 					if err != nil {
 						return err
 					}
@@ -90,7 +88,7 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 				}
 
 				// Run
-				err := runCertificate(ctx, lazySetup, certConfig, certsStorage)
+				err := runCertificate(ctx, lazySetup, certConfig, store.Certificate)
 				if err != nil {
 					return err
 				}

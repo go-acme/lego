@@ -56,14 +56,14 @@ func TestArchiver_Certificates(t *testing.T) {
 	require.Empty(t, archive)
 }
 
-func TestArchiver_archiveCertificate(t *testing.T) {
+func TestArchiver_Certificate(t *testing.T) {
 	domain := "example.com"
 
 	archiver := NewArchiver(t.TempDir())
 
 	domainFiles := generateFakeCertificateFiles(t, archiver.certificatesBasePath, domain)
 
-	err := archiver.archiveCertificate(domain)
+	err := archiver.Certificate(domain)
 	require.NoError(t, err)
 
 	for _, file := range domainFiles {
@@ -88,7 +88,7 @@ func TestArchiver_archiveCertificate_noFileRelatedToDomain(t *testing.T) {
 
 	domainFiles := generateFakeCertificateFiles(t, archiver.certificatesBasePath, "example.org")
 
-	err := archiver.archiveCertificate(domain)
+	err := archiver.Certificate(domain)
 	require.NoError(t, err)
 
 	for _, file := range domainFiles {
@@ -110,7 +110,7 @@ func TestArchiver_archiveCertificate_ambiguousDomain(t *testing.T) {
 	domainFiles := generateFakeCertificateFiles(t, archiver.certificatesBasePath, domain)
 	otherDomainFiles := generateFakeCertificateFiles(t, archiver.certificatesBasePath, domain+".example.org")
 
-	err := archiver.archiveCertificate(domain)
+	err := archiver.Certificate(domain)
 	require.NoError(t, err)
 
 	for _, file := range domainFiles {

@@ -20,6 +20,10 @@ import (
 func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 	networkStack := getNetworkStack(cfg)
 
+	accountsStorage := storage.NewAccountsStorage(cfg.Storage)
+
+	certsStorage := storage.NewCertificatesStorage(cfg.Storage)
+
 	for accountID, challengesInfo := range createCertificatesMapping(cfg) {
 		accountConfig := cfg.Accounts[accountID]
 
@@ -30,15 +34,7 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 
 		serverConfig := configuration.GetServerConfig(cfg, accountID)
 
-		accountsStorage, err := storage.NewAccountsStorage(storage.AccountsStorageConfig{
-			BasePath: cfg.Storage,
-			Server:   serverConfig.URL,
-		})
-		if err != nil {
-			return err
-		}
-
-		account, err := accountsStorage.Get(keyType, accountConfig.Email, accountID)
+		account, err := accountsStorage.Get(serverConfig.URL, keyType, accountConfig.Email, accountID)
 		if err != nil {
 			return err
 		}
@@ -60,8 +56,6 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 		if err != nil {
 			return fmt.Errorf("registration: %w", err)
 		}
-
-		certsStorage := storage.NewCertificatesStorage(cfg.Storage)
 
 		for challengeID, certIDs := range challengesInfo {
 			chlgConfig := cfg.Challenges[challengeID]

@@ -264,6 +264,7 @@ func TestChallengeTLS_Client_ObtainForCSR_profile(t *testing.T) {
 	require.NotNil(t, resource)
 	assert.Equal(t, testDomain1, resource.ID)
 	assert.Equal(t, []string{testDomain1, testDomain2}, resource.Domains)
+	assert.Equal(t, "shortlived", resource.Profile)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
 	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)

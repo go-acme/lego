@@ -49,6 +49,9 @@ type Resource struct {
 
 	KeyType certcrypto.KeyType `json:"keyType"`
 
+	PreferredChain string `json:"preferredChain,omitempty"`
+	Profile        string `json:"profile,omitempty"`
+
 	CertURL       string `json:"certUrl"`
 	CertStableURL string `json:"certStableUrl"`
 
@@ -224,6 +227,9 @@ func (c *Certifier) Obtain(ctx context.Context, request ObtainRequest) (*Resourc
 		if err != nil {
 			return nil, err
 		}
+
+		cert.PreferredChain = request.PreferredChain
+		cert.Profile = request.Profile
 	}
 
 	return cert, failures.Join()
@@ -311,6 +317,9 @@ func (c *Certifier) ObtainForCSR(ctx context.Context, request ObtainForCSRReques
 		if err != nil {
 			return nil, err
 		}
+
+		cert.PreferredChain = request.PreferredChain
+		cert.Profile = request.Profile
 	}
 
 	return cert, failures.Join()

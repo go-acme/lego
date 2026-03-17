@@ -51,12 +51,12 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 		}
 
 		switch errorDetails.Type {
-		case acme.BadNonceErr:
+		case acme.BadNonceErrorType:
 			return false, &acme.NonceError{
 				ProblemDetails: errorDetails,
 			}
 
-		case acme.AlreadyReplacedErr:
+		case acme.AlreadyReplacedErrorType:
 			if errorDetails.HTTPStatus == http.StatusConflict {
 				return false, &acme.AlreadyReplacedError{
 					ProblemDetails: errorDetails,

@@ -7,27 +7,29 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 )
 
+const envPrefix = "LEGO_HOOK_"
+
 // Metadata related to account.
 const (
-	EnvAccountID    = "LEGO_HOOK_ACCOUNT_ID"
-	EnvAccountEmail = "LEGO_HOOK_ACCOUNT_EMAIL"
+	EnvAccountID    = envPrefix + "ACCOUNT_ID"
+	EnvAccountEmail = envPrefix + "ACCOUNT_EMAIL"
 )
 
 // Metadata related to certificate.
 const (
-	EnvCertName          = "LEGO_HOOK_CERT_NAME"
-	EnvCertNameSanitized = "LEGO_HOOK_CERT_NAME_SANITIZED"
-	EnvCertDomains       = "LEGO_HOOK_CERT_DOMAINS"
-	EnvCertPath          = "LEGO_HOOK_CERT_PATH"
-	EnvCertKeyPath       = "LEGO_HOOK_CERT_KEY_PATH"
-	EnvIssuerCertKeyPath = "LEGO_HOOK_ISSUER_CERT_PATH"
-	EnvCertPEMPath       = "LEGO_HOOK_CERT_PEM_PATH"
-	EnvCertPFXPath       = "LEGO_HOOK_CERT_PFX_PATH"
+	EnvCertName          = envPrefix + "CERT_NAME"
+	EnvCertNameSanitized = envPrefix + "CERT_NAME_SANITIZED"
+	EnvCertDomains       = envPrefix + "CERT_DOMAINS"
+	EnvCertPath          = envPrefix + "CERT_PATH"
+	EnvCertKeyPath       = envPrefix + "CERT_KEY_PATH"
+	EnvIssuerCertKeyPath = envPrefix + "ISSUER_CERT_PATH"
+	EnvCertPEMPath       = envPrefix + "CERT_PEM_PATH"
+	EnvCertPFXPath       = envPrefix + "CERT_PFX_PATH"
 )
 
 func addAccountMetadata(meta map[string]string, account *storage.Account) {
-	meta[EnvAccountID] = account.ID
-	meta[EnvAccountEmail] = account.Email
+	meta[EnvAccountID] = account.GetID()
+	meta[EnvAccountEmail] = account.GetEmail()
 }
 
 func addCertificatePathsMetadata(meta map[string]string, certRes *certificate.Resource, certsStorage *storage.CertificatesStorage, options *storage.SaveOptions) {

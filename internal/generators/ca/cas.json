@@ -38,7 +38,7 @@
     "name": "Google Trust staging",
     "type": "staging",
     "code": "GoogleTrust-Staging",
-    "directoryURL": " https://dv.acme-v02.test-api.pki.goog/directory",
+    "directoryURL": "https://dv.acme-v02.test-api.pki.goog/directory",
     "documentationURL": "https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial#register-acme"
   },
   {

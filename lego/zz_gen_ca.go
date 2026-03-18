@@ -96,7 +96,7 @@ const (
 
 	// DirectoryURLGoogleTrustStaging is the directory URL for Google Trust staging.
 	// https://docs.cloud.google.com/certificate-manager/docs/public-ca-tutorial#register-acme
-	DirectoryURLGoogleTrustStaging = " https://dv.acme-v02.test-api.pki.goog/directory"
+	DirectoryURLGoogleTrustStaging = "https://dv.acme-v02.test-api.pki.goog/directory"
 
 	// DirectoryURLLetsEncrypt is the directory URL for Let's Encrypt.
 	// https://letsencrypt.org/docs/

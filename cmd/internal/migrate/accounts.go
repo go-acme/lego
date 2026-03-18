@@ -35,7 +35,7 @@ func Accounts(root string) error {
 	}
 
 	for _, srcAccountFilePath := range matches {
-		log.Info("Migrating an account file.", slog.String("filepath", srcAccountFilePath))
+		log.Debug("Migrating an account file.", slog.String("filepath", srcAccountFilePath))
 
 		data, err := os.ReadFile(srcAccountFilePath)
 		if err != nil {

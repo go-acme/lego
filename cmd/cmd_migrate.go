@@ -59,7 +59,7 @@ func confirmMigration(cmd *cli.Command) bool {
 		case "N":
 			return false
 		default:
-			fmt.Println("Your input was invalid. Please answer with one of Y/y, n/N or by pressing enter.")
+			log.Warn("Your input was invalid. Please answer with one of Y/y, n/N or by pressing enter.")
 		}
 	}
 }

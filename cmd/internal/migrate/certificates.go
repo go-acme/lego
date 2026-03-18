@@ -47,7 +47,7 @@ func Certificates(root string) error {
 			continue
 		}
 
-		log.Info("Migrating a certificate.", slog.String("filepath", certResourceFilePath))
+		log.Debug("Migrating a certificate.", slog.String("filepath", certResourceFilePath))
 
 		err = migrateCertificate(oldCertRes, certResourceFilePath)
 		if err != nil {
@@ -87,7 +87,7 @@ func migrateCertificate(oldCertRes oldResource, certResourceFilePath string) err
 		log.Warn("could not guess the certificate key type", slog.String("filepath", certResourceFilePath))
 	}
 
-	log.Info("Saving the certificate file.", slog.String("filepath", certResourceFilePath), slog.String("keyType", string(certRes.KeyType)))
+	log.Debug("Saving the certificate file.", slog.String("filepath", certResourceFilePath), slog.String("keyType", string(certRes.KeyType)))
 
 	f, err := os.Create(certResourceFilePath)
 	if err != nil {

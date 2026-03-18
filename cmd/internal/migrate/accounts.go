@@ -1,6 +1,7 @@
 package migrate
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
@@ -28,7 +30,7 @@ type OldResource struct {
 }
 
 // Accounts migrates the old accounts directory structure to the new one.
-func Accounts(root string) error {
+func Accounts(root string, cfg *configuration.Configuration) error {
 	matches, err := zglob.Glob(filepath.Join(root, "**", "account.json"))
 	if err != nil {
 		return err
@@ -56,10 +58,12 @@ func Accounts(root string) error {
 			accountID = filepath.Base(accountDir)
 		}
 
+		serverDir := filepath.Dir(accountDir)
+
 		account := storage.Account{
 			ID:     accountID,
 			Email:  oldAccount.Email,
-			Server: guessServer(filepath.Dir(accountDir)),
+			Server: guessServer(serverDir),
 			Registration: &acme.ExtendedAccount{
 				Account:  oldAccount.Registration.Body,
 				Location: oldAccount.Registration.URI,
@@ -73,34 +77,48 @@ func Accounts(root string) error {
 			return fmt.Errorf("could not guess the account key type: %w", err)
 		}
 
-		// Move the private key file.
-
-		dstKeyPath := filepath.Join(accountDir, account.GetID()+storage.ExtKey)
-
-		err = os.Rename(srcKeyPath, dstKeyPath)
+		err = migrateAccountFiles(accountDir, srcKeyPath, account)
 		if err != nil {
-			return fmt.Errorf("could not rename the private key file %q to %q: %w", srcKeyPath, dstKeyPath, err)
+			return fmt.Errorf("could not migrate the account: %w", err)
 		}
 
-		err = os.RemoveAll(filepath.Join(accountDir, "keys"))
-		if err != nil {
-			return fmt.Errorf("could not remove the old keys directory: %w", err)
+		cfg.Accounts[account.ID] = &configuration.Account{
+			Server:                cmp.Or(account.Server, "FIXME: Please define the server URL ("+serverDir+")"),
+			Email:                 account.Email,
+			KeyType:               string(account.KeyType),
+			AcceptsTermsOfService: true,
 		}
+	}
 
-		// Create the new account file.
+	return nil
+}
 
-		newAccountFile, err := os.Create(filepath.Join(accountDir, "account.json"))
-		if err != nil {
-			return fmt.Errorf("could not create the new account file: %w", err)
-		}
+func migrateAccountFiles(accountDir, srcKeyPath string, account storage.Account) error {
+	dstKeyPath := filepath.Join(accountDir, account.GetID()+storage.ExtKey)
 
-		encoder := json.NewEncoder(newAccountFile)
-		encoder.SetIndent("", "  ")
+	// Move the private key file.
+	err := os.Rename(srcKeyPath, dstKeyPath)
+	if err != nil {
+		return fmt.Errorf("could not rename the private key file %q to %q: %w", srcKeyPath, dstKeyPath, err)
+	}
 
-		err = encoder.Encode(account)
-		if err != nil {
-			return fmt.Errorf("could not encode the new account file: %w", err)
-		}
+	err = os.RemoveAll(filepath.Join(accountDir, "keys"))
+	if err != nil {
+		return fmt.Errorf("could not remove the old keys directory: %w", err)
+	}
+
+	// Create the new account file.
+	newAccountFile, err := os.Create(filepath.Join(accountDir, "account.json"))
+	if err != nil {
+		return fmt.Errorf("could not create the new account file: %w", err)
+	}
+
+	encoder := json.NewEncoder(newAccountFile)
+	encoder.SetIndent("", "  ")
+
+	err = encoder.Encode(account)
+	if err != nil {
+		return fmt.Errorf("could not encode the new account file: %w", err)
 	}
 
 	return nil

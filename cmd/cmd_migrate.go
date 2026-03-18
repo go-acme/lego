@@ -4,13 +4,17 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/migrate"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
+	"gopkg.in/yaml.v3"
 )
 
 func createMigrate() *cli.Command {
@@ -22,16 +26,26 @@ func createMigrate() *cli.Command {
 				return nil
 			}
 
-			err := migrate.Accounts(cmd.String(flags.FlgPath))
+			cfg := &configuration.Configuration{
+				Accounts:     map[string]*configuration.Account{},
+				Certificates: map[string]*configuration.Certificate{},
+			}
+
+			err := migrate.Accounts(cmd.String(flags.FlgPath), cfg)
 			if err != nil {
 				return err
 			}
 
 			if cmd.Bool(flags.FlgAccountOnly) {
-				return nil
+				return createConfigurationFile(cfg)
 			}
 
-			return migrate.Certificates(cmd.String(flags.FlgPath))
+			err = migrate.Certificates(cmd.String(flags.FlgPath), cfg)
+			if err != nil {
+				return err
+			}
+
+			return createConfigurationFile(cfg)
 		},
 		Flags: flags.CreateMigrateFlags(),
 	}
@@ -62,4 +76,29 @@ func confirmMigration(cmd *cli.Command) bool {
 			log.Warn("Your input was invalid. Please answer with one of Y/y, n/N or by pressing enter.")
 		}
 	}
+}
+
+func createConfigurationFile(cfg *configuration.Configuration) error {
+	file, err := os.Create(".lego.migration.yml")
+	if err != nil {
+		return err
+	}
+
+	defer func() { _ = file.Close() }()
+
+	filename, err := filepath.Abs(file.Name())
+	if err != nil {
+		filename = file.Name()
+	}
+
+	log.Debug("Creating the configuration file.", slog.String("filepath", filename))
+
+	err = yaml.NewEncoder(file).Encode(cfg)
+	if err != nil {
+		return fmt.Errorf("could not encode the configuration file: %w", err)
+	}
+
+	log.Warn("Please review the configuration file to handle the FIXME.", slog.String("filepath", filename))
+
+	return nil
 }

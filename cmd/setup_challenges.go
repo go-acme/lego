@@ -20,8 +20,13 @@ import (
 )
 
 func setupChallenges(ctx *cli.Context, client *lego.Client) {
-	if !ctx.Bool(flgHTTP) && !ctx.Bool(flgTLS) && !ctx.IsSet(flgDNS) {
-		log.Fatalf("No challenge selected. You must specify at least one challenge: `--%s`, `--%s`, `--%s`.", flgHTTP, flgTLS, flgDNS)
+	if !ctx.Bool(flgHTTP) && !ctx.Bool(flgTLS) && !ctx.IsSet(flgDNS) && !ctx.Bool(flgNoSolver) {
+		log.Fatalf("No challenge selected. You must specify at least one challenge: `--%s`, `--%s`, `--%s`, `--%s`.", flgHTTP, flgTLS, flgDNS, flgNoSolver)
+	}
+
+	if ctx.Bool(flgNoSolver) {
+		setupNoSolver(ctx, client)
+		return
 	}
 
 	if ctx.Bool(flgHTTP) {
@@ -181,3 +186,29 @@ func checkPropagationExclusiveOptions(ctx *cli.Context) error {
 func isSetBool(ctx *cli.Context, name string) bool {
 	return ctx.IsSet(name) && ctx.Bool(name)
 }
+
+func setupNoSolver(ctx *cli.Context, client *lego.Client) {
+	if !ctx.Bool(flgEAB) {
+		log.Fatalf("The `--%s` flag requires `--%s`. It should only be used when the ACME server pre-authorizes domains via EAB.", flgNoSolver, flgEAB)
+	}
+
+	err := client.Challenge.SetHTTP01Provider(&noopProvider{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = client.Challenge.SetTLSALPN01Provider(&noopProvider{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = client.Challenge.SetDNS01Provider(&noopProvider{})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+type noopProvider struct{}
+
+func (n *noopProvider) Present(domain, token, keyAuth string) error { return nil }
+func (n *noopProvider) CleanUp(domain, token, keyAuth string) error { return nil }

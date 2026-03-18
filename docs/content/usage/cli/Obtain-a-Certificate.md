@@ -104,6 +104,28 @@ You should be able to run an existing webserver on port 80 and have lego write t
 lego --accept-tos --email you@example.com --http --http.webroot /path/to/webroot --domains example.com run
 ```
 
+## Using no challenge solver
+
+Some ACME servers (such as enterprise/private CAs and managed PKI platforms using EAB) pre-authorize domains out-of-band.
+Means no challenge validation is required to obtain a certificate.
+In this scenario, using `--no-solver` skips challenge setup entirely:
+
+```bash
+lego \
+  --accept-tos \
+  --email you@example.com \
+  --server https://acme-eab.example.com/directory \
+  --eab \
+  --kid "$ACME_KEY_ID" \
+  --hmac "$ACME_KEY" \
+  --no-solver \
+  --domains example.com \
+  run
+```
+
+Only use `--no-solver` together with `--eab` when your ACME server pre-authorizes domains and does not require challenge validation.
+If your ACME server does require challenge validation, the certificate request will fail.
+
 ## Running a script afterward
 
 You can easily hook into the certificate-obtaining process by providing the path to a script:

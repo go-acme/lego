@@ -24,6 +24,7 @@ const (
 	flgKeyType                  = "key-type"
 	flgFilename                 = "filename"
 	flgPath                     = "path"
+	flgNoSolver                 = "no-solver"
 	flgHTTP                     = "http"
 	flgHTTPPort                 = "http.port"
 	flgHTTPDelay                = "http.delay"
@@ -128,6 +129,10 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			EnvVars: []string{envPath},
 			Usage:   "Directory to use for storing the data.",
 			Value:   defaultPath,
+		},
+		&cli.BoolFlag{
+			Name:  flgNoSolver,
+			Usage: "Disable the challenge solver. Cannot be mixed with other challenge types. Must be used together with `--eab`.",
 		},
 		&cli.BoolFlag{
 			Name:  flgHTTP,

@@ -6,6 +6,26 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v4.33.0
+
+- Release date: 2026-03-19
+- Tag: [v4.33.0](https://github.com/go-acme/lego/releases/tag/v4.33.0)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Excedo
+- **[dnsprovider]** Add DNS provider for EuroDNS
+- **[dnsprovider]** Add DNS provider for Czechia
+
+### Changed
+
+- **[lib]** feat: allow to Unwrap obtainError
+
+### Fixed
+
+- **[dnsprovider]** liara: add support for team ID
+- **[dnsprovider]** gigahostno: remove unused Zone fields
+
 ## v4.32.0
 
 - Release date: 2026-02-19

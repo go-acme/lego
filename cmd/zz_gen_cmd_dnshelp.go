@@ -141,6 +141,7 @@ func allDNSCodes() string {
 		"neodigit",
 		"netcup",
 		"netlify",
+		"netnod",
 		"nicmanager",
 		"nicru",
 		"nifcloud",
@@ -2958,6 +2959,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/netlify`)
+
+	case "netnod":
+		// generated from: providers/dns/netnod/netnod.toml
+		ew.writeln(`Configuration for Netnod.`)
+		ew.writeln(`Code:	'netnod'`)
+		ew.writeln(`Since:	'v4.34.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NETNOD_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NETNOD_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "NETNOD_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "NETNOD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "NETNOD_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/netnod`)
 
 	case "nicmanager":
 		// generated from: providers/dns/nicmanager/nicmanager.toml

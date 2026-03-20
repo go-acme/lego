@@ -1,0 +1,15 @@
+{
+  "rrsets": [
+    {
+      "name": "_acme-challenge.example.com.",
+      "type": "TXT",
+      "changetype": "PRUNE",
+      "records": [
+        {
+          "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+          "disabled": false
+        }
+      ]
+    }
+  ]
+}

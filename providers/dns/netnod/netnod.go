@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -109,11 +110,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Type:       "TXT",
 		TTL:        d.config.TTL,
 		ChangeType: internal.ChangeTypeExtend,
-		Records: []internal.Record{
-			{
-				Content: info.Value,
-			},
-		},
+		Records: []internal.Record{{
+			Content: strconv.Quote(info.Value),
+		}},
 	}}
 
 	err = d.client.PartialZoneUpdate(ctx, authZone, rrSets)
@@ -139,9 +138,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Name:       info.EffectiveFQDN,
 		Type:       "TXT",
 		ChangeType: internal.ChangeTypePrune,
-		Records: []internal.Record{
-			{Content: info.Value},
-		},
+		Records: []internal.Record{{
+			Content: strconv.Quote(info.Value),
+		}},
 	}}
 
 	err = d.client.PartialZoneUpdate(ctx, authZone, rrSets)

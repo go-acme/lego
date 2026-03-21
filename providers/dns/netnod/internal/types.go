@@ -27,7 +27,7 @@ type Zone struct {
 type RRSet struct {
 	Name       string   `json:"name,omitempty"`
 	Type       string   `json:"type,omitempty"`
-	TTL        int      `json:"ttl,omitempty"`
+	TTL        int      `json:"ttl"`
 	ChangeType string   `json:"changetype,omitempty"`
 	Records    []Record `json:"records,omitempty"`
 }

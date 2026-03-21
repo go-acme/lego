@@ -137,6 +137,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	rrSets := []internal.RRSet{{
 		Name:       info.EffectiveFQDN,
 		Type:       "TXT",
+		TTL:        d.config.TTL,
 		ChangeType: internal.ChangeTypePrune,
 		Records: []internal.Record{{
 			Content: strconv.Quote(info.Value),

@@ -39,12 +39,12 @@ func CreateRunFlags() []cli.Flag {
 	flags := []cli.Flag{
 		createDomainFlag(),
 		createCertNameFlag(),
+		createAcceptFlag(),
 	}
 
 	flags = append(flags, createAccountFlags()...)
 	flags = append(flags, createACMEClientFlags()...)
 	flags = append(flags, createStorageFlags()...)
-	flags = append(flags, createAcceptFlag())
 	flags = append(flags, createChallengesFlags()...)
 	flags = append(flags, createObtainFlags()...)
 	flags = append(flags, createPreHookFlags()...)
@@ -78,7 +78,13 @@ func CreateRenewFlags() []cli.Flag {
 	flags = append(flags, createDeployHookFlags()...)
 	flags = append(flags, createPostHookFlags()...)
 
-	flags = append(flags,
+	flags = append(flags, CreateRenewOnlyFlags()...)
+
+	return flags
+}
+
+func CreateRenewOnlyFlags() []cli.Flag {
+	return []cli.Flag{
 		&cli.IntFlag{
 			Name:    FlgRenewDays,
 			Sources: cli.EnvVars(toEnvName(FlgRenewDays)),
@@ -121,9 +127,7 @@ func CreateRenewFlags() []cli.Flag {
 			Sources:  cli.EnvVars(toEnvName(FlgForceCertDomains)),
 			Usage:    "Check and ensure that the cert's domain list matches those passed in the domains argument.",
 		},
-	)
-
-	return flags
+	}
 }
 
 func CreateRevokeFlags() []cli.Flag {

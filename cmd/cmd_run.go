@@ -37,8 +37,6 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("set up account: %w", err)
 	}
 
-	hookManager := newHookManager(cmd, store.Certificate, account)
-
 	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
 		return newClient(cmd, account)
 	})
@@ -47,6 +45,8 @@ func run(ctx context.Context, cmd *cli.Command) error {
 	if err != nil {
 		return fmt.Errorf("registration: %w", err)
 	}
+
+	hookManager := newHookManager(cmd, store.Certificate, account)
 
 	client, err := lazyClient()
 	if err != nil {

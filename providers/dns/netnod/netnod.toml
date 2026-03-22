@@ -1,0 +1,22 @@
+Name = "Netnod"
+Description = ''''''
+URL = "https://www.netnod.se/dns/"
+Code = "netnod"
+Since = "v4.34.0"
+
+Example = '''
+NETNOD_TOKEN="xxx" \
+lego --dns netnod -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    NETNOD_TOKEN = "API token"
+  [Configuration.Additional]
+    NETNOD_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    NETNOD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    NETNOD_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    NETNOD_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://docs.google.com/document/d/1GfpCZjhdniWzM3fjTSS73D0uCUnK478IzcXBIOYOemQ/edit?usp=sharing"

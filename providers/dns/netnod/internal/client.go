@@ -18,7 +18,7 @@ import (
 
 const defaultBaseURL = "https://primarydnsapi.netnod.se"
 
-// Client the  Netnod API client.
+// Client the Netnod API client.
 type Client struct {
 	token string
 

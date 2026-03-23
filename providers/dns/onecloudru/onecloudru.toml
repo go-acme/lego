@@ -1,0 +1,22 @@
+Name = "1cloud.ru"
+Description = ''''''
+URL = "https://1cloud.ru/"
+Code = "onecloudru"
+Since = "v4.34.0"
+
+Example = '''
+ONECLOUDRU_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
+lego --dns onecloudru -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    ONECLOUDRU_TOKEN = "API token"
+  [Configuration.Additional]
+    ONECLOUDRU_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    ONECLOUDRU_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    ONECLOUDRU_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)"
+    ONECLOUDRU_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://1cloud.ru/api/"

@@ -1,0 +1,46 @@
+[
+  {
+    "ID": 1,
+    "Name": "example.com",
+    "TechName": "example_com",
+    "State": "New",
+    "IsDelegate": true,
+    "LinkedRecords": [
+      {
+        "ID": 1,
+        "TypeRecord": "A",
+        "IP": "1.1.1.1",
+        "HostName": "@",
+        "Priority": "",
+        "Text": "",
+        "MnemonicName": "",
+        "ExtHostName": "",
+        "State": "New",
+        "TTL": 3600,
+        "CanonicalDescription": "example.com 3600 IN A 1.1.1.1"
+      }
+    ]
+  },
+  {
+    "ID": 2,
+    "Name": "test2.example",
+    "TechName": "test2_example",
+    "State": "Active",
+    "IsDelegate": true,
+    "LinkedRecords": [
+      {
+        "ID": 2,
+        "TypeRecord": "A",
+        "IP": "1.1.1.2",
+        "HostName": "@",
+        "Priority": "",
+        "Text": "",
+        "MnemonicName": "",
+        "ExtHostName": "",
+        "State": "Active",
+        "TTL": 3600,
+        "CanonicalDescription": "test2.example 3600 IN A 1.1.1.2"
+      }
+    ]
+  }
+]

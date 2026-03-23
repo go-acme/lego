@@ -149,6 +149,7 @@ func allDNSCodes() string {
 		"nodion",
 		"ns1",
 		"octenium",
+		"onecloudru",
 		"oraclecloud",
 		"otc",
 		"ovh",
@@ -3128,6 +3129,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/octenium`)
+
+	case "onecloudru":
+		// generated from: providers/dns/onecloudru/onecloudru.toml
+		ew.writeln(`Configuration for 1cloud.ru.`)
+		ew.writeln(`Code:	'onecloudru'`)
+		ew.writeln(`Since:	'v4.34.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ONECLOUDRU_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ONECLOUDRU_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "ONECLOUDRU_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "ONECLOUDRU_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "ONECLOUDRU_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/onecloudru`)
 
 	case "oraclecloud":
 		// generated from: providers/dns/oraclecloud/oraclecloud.toml

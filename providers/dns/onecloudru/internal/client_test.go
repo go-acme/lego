@@ -90,7 +90,7 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 		Text:     "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
-	record, err := client.CreateTXTRecord(t.Context(), ctrr)
+	domain, err := client.CreateTXTRecord(t.Context(), ctrr)
 	require.NoError(t, err)
 
 	expected := &Record{
@@ -102,7 +102,7 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 		CanonicalDescription: "_acme-challenge.test.example. 3600 IN TXT ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
-	assert.Equal(t, expected, record)
+	assert.Equal(t, expected, domain)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {

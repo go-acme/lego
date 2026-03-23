@@ -71,20 +71,14 @@ func (c *Client) CreateTXTRecord(ctx context.Context, request CreateTXTRecordReq
 		return nil, err
 	}
 
-	var results []*Record
+	result := new(Record)
 
-	err = c.do(req, &results)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, result := range results {
-		if result.Type == "TXT" && result.Text == request.Text {
-			return result, nil
-		}
-	}
-
-	return nil, errors.New("no TXT record created")
+	return result, nil
 }
 
 // DeleteRecord deletes a TXT record.

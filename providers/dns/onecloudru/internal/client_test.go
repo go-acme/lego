@@ -51,7 +51,7 @@ func TestClient_GetDomains(t *testing.T) {
 				Type:                 "A",
 				IP:                   "1.1.1.1",
 				HostName:             "@",
-				TTL:                  "3600",
+				TTL:                  3600,
 				CanonicalDescription: "example.com 3600 IN A 1.1.1.1",
 			}},
 		},
@@ -66,7 +66,7 @@ func TestClient_GetDomains(t *testing.T) {
 				Type:                 "A",
 				IP:                   "1.1.1.2",
 				HostName:             "@",
-				TTL:                  "3600",
+				TTL:                  3600,
 				CanonicalDescription: "test2.example 3600 IN A 1.1.1.2",
 			}},
 		},
@@ -98,7 +98,7 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 		Type:                 "TXT",
 		HostName:             "_acme-challenge.test.example.",
 		Text:                 "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
-		TTL:                  "300",
+		TTL:                  300,
 		CanonicalDescription: "_acme-challenge.test.example. 3600 IN TXT ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 

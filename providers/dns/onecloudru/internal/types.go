@@ -19,7 +19,7 @@ type Record struct {
 	Proto                string `json:"Proto,omitempty"`
 	Service              string `json:"Service,omitempty"`
 	Weight               string `json:"Weight,omitempty"`
-	TTL                  string `json:"TTL,omitempty"`
+	TTL                  int    `json:"TTL,omitempty"`
 	CanonicalDescription string `json:"CanonicalDescription,omitempty"`
 }
 

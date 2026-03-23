@@ -16,7 +16,7 @@
         "MnemonicName": "",
         "ExtHostName": "",
         "State": "New",
-        "TTL": "3600",
+        "TTL": 3600,
         "CanonicalDescription": "example.com 3600 IN A 1.1.1.1"
       }
     ]
@@ -38,7 +38,7 @@
         "MnemonicName": "",
         "ExtHostName": "",
         "State": "Active",
-        "TTL": "3600",
+        "TTL": 3600,
         "CanonicalDescription": "test2.example 3600 IN A 1.1.1.2"
       }
     ]

@@ -9,7 +9,7 @@
     "Proto": "",
     "Service": "",
     "Weight": "",
-    "TTL": "300",
+    "TTL": 300,
     "CanonicalDescription": "_acme-challenge.test.example. 3600 IN TXT ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
   }
 ]

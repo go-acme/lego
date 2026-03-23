@@ -47,7 +47,7 @@ func TestClient_GetDomains(t *testing.T) {
 			State:      "New",
 			IsDelegate: true,
 			LinkedRecords: []Record{{
-				ID:                   "1",
+				ID:                   1,
 				Type:                 "A",
 				IP:                   "1.1.1.1",
 				HostName:             "@",
@@ -62,7 +62,7 @@ func TestClient_GetDomains(t *testing.T) {
 			State:      "Active",
 			IsDelegate: true,
 			LinkedRecords: []Record{{
-				ID:                   "2",
+				ID:                   2,
 				Type:                 "A",
 				IP:                   "1.1.1.2",
 				HostName:             "@",
@@ -94,7 +94,7 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := &Record{
-		ID:                   "9",
+		ID:                   9,
 		Type:                 "TXT",
 		HostName:             "_acme-challenge.test.example.",
 		Text:                 "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
@@ -112,6 +112,6 @@ func TestClient_DeleteRecord(t *testing.T) {
 		).
 		Build(t)
 
-	err := client.DeleteRecord(t.Context(), "1", "9")
+	err := client.DeleteRecord(t.Context(), 1, 9)
 	require.NoError(t, err)
 }

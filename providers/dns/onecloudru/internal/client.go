@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
@@ -88,8 +89,8 @@ func (c *Client) CreateTXTRecord(ctx context.Context, request CreateTXTRecordReq
 
 // DeleteRecord deletes a TXT record.
 // https://1cloud.ru/api/dns/deleterecord
-func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID string) error {
-	endpoint := c.BaseURL.JoinPath("dns", domainID, recordID)
+func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int64) error {
+	endpoint := c.BaseURL.JoinPath("dns", strconv.FormatInt(domainID, 10), strconv.FormatInt(recordID, 10))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

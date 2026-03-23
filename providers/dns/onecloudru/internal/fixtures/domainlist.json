@@ -7,7 +7,7 @@
     "IsDelegate": true,
     "LinkedRecords": [
       {
-        "ID": "1",
+        "ID": 1,
         "TypeRecord": "A",
         "IP": "1.1.1.1",
         "HostName": "@",
@@ -29,7 +29,7 @@
     "IsDelegate": true,
     "LinkedRecords": [
       {
-        "ID": "2",
+        "ID": 2,
         "TypeRecord": "A",
         "IP": "1.1.1.2",
         "HostName": "@",

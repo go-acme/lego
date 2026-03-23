@@ -163,8 +163,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	tok := "abc"
 
-	provider.recordIDs[tok] = "9"
-	provider.domainIDs[tok] = "1"
+	provider.recordIDs[tok] = 9
+	provider.domainIDs[tok] = 1
 
 	err := provider.CleanUp("example.com", tok, "123d==")
 	require.NoError(t, err)

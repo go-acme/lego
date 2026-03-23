@@ -10,7 +10,7 @@ type Domain struct {
 }
 
 type Record struct {
-	ID                   string `json:"ID,omitempty"`
+	ID                   int64  `json:"ID,omitempty"`
 	Type                 string `json:"TypeRecord,omitempty"`
 	IP                   string `json:"IP,omitempty"`
 	HostName             string `json:"HostName,omitempty"`

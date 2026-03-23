@@ -58,10 +58,10 @@ type DNSProvider struct {
 	config *Config
 	client *internal.Client
 
-	recordIDs   map[string]string
+	recordIDs   map[string]int64
 	recordIDsMu sync.Mutex
 
-	domainIDs   map[string]string
+	domainIDs   map[string]int64
 	domainIDsMu sync.Mutex
 }
 
@@ -98,8 +98,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{
 		config:    config,
 		client:    client,
-		recordIDs: make(map[string]string),
-		domainIDs: make(map[string]string),
+		recordIDs: make(map[string]int64),
+		domainIDs: make(map[string]int64),
 	}, nil
 }
 
@@ -115,7 +115,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	d.domainIDsMu.Lock()
-	d.domainIDs[token] = strconv.FormatInt(zone.ID, 10)
+	d.domainIDs[token] = zone.ID
 	d.domainIDsMu.Unlock()
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)

@@ -5,7 +5,7 @@ type Domain struct {
 	Name          string   `json:"Name,omitempty"`
 	TechName      string   `json:"TechName,omitempty"`
 	State         string   `json:"State,omitempty"`
-	IsDelegate    string   `json:"IsDelegate,omitempty"`
+	IsDelegate    bool     `json:"IsDelegate,omitempty"`
 	LinkedRecords []Record `json:"LinkedRecords,omitempty"`
 }
 

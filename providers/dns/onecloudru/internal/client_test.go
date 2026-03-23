@@ -45,7 +45,7 @@ func TestClient_GetDomains(t *testing.T) {
 			Name:       "example.com",
 			TechName:   "example_com",
 			State:      "New",
-			IsDelegate: "true",
+			IsDelegate: true,
 			LinkedRecords: []Record{{
 				ID:                   "1",
 				Type:                 "A",
@@ -60,7 +60,7 @@ func TestClient_GetDomains(t *testing.T) {
 			Name:       "test2.example",
 			TechName:   "test2_example",
 			State:      "Active",
-			IsDelegate: "true",
+			IsDelegate: true,
 			LinkedRecords: []Record{{
 				ID:                   "2",
 				Type:                 "A",

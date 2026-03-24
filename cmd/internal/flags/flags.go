@@ -50,6 +50,7 @@ func CreateRunFlags() []cli.Flag {
 	flags = append(flags, createPreHookFlags()...)
 	flags = append(flags, createDeployHookFlags()...)
 	flags = append(flags, createPostHookFlags()...)
+	flags = append(flags, CreateRenewFlags()...)
 
 	flags = append(flags,
 		&cli.StringFlag{
@@ -64,65 +65,47 @@ func CreateRunFlags() []cli.Flag {
 }
 
 func CreateRenewFlags() []cli.Flag {
-	flags := []cli.Flag{
-		createDomainFlag(),
-		createCertNameFlag(),
-	}
-
-	flags = append(flags, createAccountFlags()...)
-	flags = append(flags, createACMEClientFlags()...)
-	flags = append(flags, createStorageFlags()...)
-	flags = append(flags, createChallengesFlags()...)
-	flags = append(flags, createObtainFlags()...)
-	flags = append(flags, createPreHookFlags()...)
-	flags = append(flags, createDeployHookFlags()...)
-	flags = append(flags, createPostHookFlags()...)
-
-	flags = append(flags, CreateRenewOnlyFlags()...)
-
-	return flags
-}
-
-func CreateRenewOnlyFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.IntFlag{
-			Name:    FlgRenewDays,
-			Sources: cli.EnvVars(toEnvName(FlgRenewDays)),
+			Category: categoryRenew,
+			Name:     FlgRenewDays,
+			Sources:  cli.EnvVars(toEnvName(FlgRenewDays)),
 			Usage: "The number of days left on a certificate to renew it." +
 				"\n\tBy default, compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates).",
 		},
 		&cli.BoolFlag{
-			Name:    FlgRenewForce,
-			Sources: cli.EnvVars(toEnvName(FlgRenewForce)),
-			Usage:   "Force the renewal of the certificate even if it is not due for renewal yet.",
+			Category: categoryRenew,
+			Name:     FlgRenewForce,
+			Sources:  cli.EnvVars(toEnvName(FlgRenewForce)),
+			Usage:    "Force the renewal of the certificate even if it is not due for renewal yet.",
 		},
 		&cli.BoolFlag{
-			Category: categoryARI,
+			Category: categoryRenew,
 			Name:     FlgARIDisable,
 			Sources:  cli.EnvVars(toEnvName(FlgARIDisable)),
-			Usage:    "Do not use the renewalInfo endpoint (RFC9773) to check if a certificate should be renewed.",
+			Usage:    "(ARI) Do not use the renewalInfo endpoint (RFC9773) to check if a certificate should be renewed.",
 		},
 		&cli.DurationFlag{
-			Category: categoryARI,
+			Category: categoryRenew,
 			Name:     FlgARIWaitToRenewDuration,
 			Sources:  cli.EnvVars(toEnvName(FlgARIWaitToRenewDuration)),
-			Usage:    "The maximum duration you're willing to sleep for a renewal time returned by the renewalInfo endpoint.",
+			Usage:    "(ARI) The maximum duration you're willing to sleep for a renewal time returned by the renewalInfo endpoint.",
 		},
 		&cli.BoolFlag{
-			Category: categoryAdvanced,
+			Category: categoryRenew,
 			Name:     FlgReuseKey,
 			Sources:  cli.EnvVars(toEnvName(FlgReuseKey)),
 			Usage:    "Used to indicate you want to reuse your current private key for the new certificate.",
 		},
 		&cli.BoolFlag{
-			Category: categoryAdvanced,
+			Category: categoryRenew,
 			Name:     FlgNoRandomSleep,
 			Sources:  cli.EnvVars(toEnvName(FlgNoRandomSleep)),
 			Usage: "Do not add a random sleep before the renewal." +
 				" We do not recommend using this flag if you are doing your renewals in an automated way.",
 		},
 		&cli.BoolFlag{
-			Category: categoryAdvanced,
+			Category: categoryRenew,
 			Name:     FlgForceCertDomains,
 			Sources:  cli.EnvVars(toEnvName(FlgForceCertDomains)),
 			Usage:    "Check and ensure that the cert's domain list matches those passed in the domains argument.",

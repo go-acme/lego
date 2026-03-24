@@ -250,14 +250,10 @@ linters:
         text: mu is a global variable
         linters:
           - gochecknoglobals
-      - path: cmd/cmd_renew.go
+      - path: cmd/cmd_run_renew.go
         text: cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high
         linters:
           - gocyclo
-      - path: cmd/cmd_renew.go
-        text: Function 'renewForDomains' has too many statements
-        linters:
-          - funlen
       - path: cmd/internal/root/process_obtain.go
         text: (cognitive|cyclomatic) complexity \d+ of func `obtain` is high
         linters:

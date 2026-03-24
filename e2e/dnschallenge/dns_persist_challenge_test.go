@@ -215,7 +215,7 @@ func TestChallengeDNSPersist_Renew(t *testing.T) {
 
 	err = load.RunLego(
 		context.Background(),
-		"renew",
+		"run",
 		"--email", testPersistCLIRenewEmail,
 		"--dns-persist",
 		"--dns-persist.resolvers", ":8553",

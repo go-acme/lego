@@ -15,7 +15,7 @@ const (
 	categoryEAB                   = "Flags related to External Account Binding:"
 	categoryACMEClient            = "Flags related to the ACME client:"
 	categoryAdvanced              = "Flags related to advanced options:"
-	categoryARI                   = "Flags related to ACME Renewal Information (ARI) Extension:"
+	categoryRenew                 = "Flags related to certificate renewal:"
 	categoryLogs                  = "Flags related to logs:"
 )
 

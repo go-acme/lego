@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
+	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/mattn/go-zglob"
 )
@@ -46,19 +49,21 @@ func Accounts(root string) error {
 			return fmt.Errorf("could not parse the account file %q: %w", srcAccountFilePath, err)
 		}
 
+		accountDir := filepath.Dir(srcAccountFilePath)
+
+		accountID := oldAccount.Email
+		if accountID == "" {
+			accountID = filepath.Base(accountDir)
+		}
+
 		account := storage.Account{
-			ID:    oldAccount.Email,
-			Email: oldAccount.Email,
+			ID:     accountID,
+			Email:  oldAccount.Email,
+			Server: guessServer(filepath.Dir(accountDir)),
 			Registration: &acme.ExtendedAccount{
 				Account:  oldAccount.Registration.Body,
 				Location: oldAccount.Registration.URI,
 			},
-		}
-
-		accountDir := filepath.Dir(srcAccountFilePath)
-
-		if account.ID == "" {
-			account.ID = filepath.Base(accountDir)
 		}
 
 		srcKeyPath := filepath.Join(accountDir, "keys", account.GetID()+storage.ExtKey)
@@ -113,4 +118,40 @@ func getKeyType(srcKeyPath string) (certcrypto.KeyType, error) {
 	}
 
 	return kt, nil
+}
+
+func guessServer(serverPath string) string {
+	serverDir := filepath.Base(serverPath)
+
+	// Some servers are not listed because the specific element is in the path and not the host.
+	servers := []string{
+		lego.DirectoryURLActalis,
+		lego.DirectoryURLDigicert,
+		lego.DirectoryURLFreeSSL,
+		lego.DirectoryURLGlobalSign,
+		lego.DirectoryURLGoogleTrust,
+		lego.DirectoryURLGoogleTrustStaging,
+		lego.DirectoryURLLetsEncrypt,
+		lego.DirectoryURLLetsEncryptStaging,
+		lego.DirectoryURLLiteSSL,
+		lego.DirectoryURLPeeringHub,
+		lego.DirectoryURLZeroSSL,
+	}
+
+	for _, se := range servers {
+		s, err := url.Parse(se)
+		if err != nil {
+			log.Error("server URL.", log.ErrorAttr(err))
+		}
+
+		if sanitizeHost(s) == serverDir {
+			return se
+		}
+	}
+
+	return ""
+}
+
+func sanitizeHost(uri *url.URL) string {
+	return strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(uri.Host)
 }

@@ -62,9 +62,12 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 	}
 
 	// This is just meant to be informal for the user.
-	log.Info("acme: Trying renewal.",
+	log.Info("Trying renewal.",
 		log.CertNameAttr(certID),
-		slog.Any("time-remaining", log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
+		slog.Any(
+			"time-remaining",
+			log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC())),
+		),
 	)
 
 	client, err := lazyClient()
@@ -76,7 +79,7 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 
 	keyType, err := certcrypto.ToKeyType(certConfig.KeyType)
 	if err != nil {
-		return fmt.Errorf("get the key type: %w", err)
+		return err
 	}
 
 	request := certificate.ObtainRequest{
@@ -121,7 +124,7 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
 	csr, err := storage.ReadCSRFile(certConfig.CSR)
 	if err != nil {
-		return fmt.Errorf("could not read CSR file %q: %w", certConfig.CSR, err)
+		return fmt.Errorf("CSR: could not read file %q: %w", certConfig.CSR, err)
 	}
 
 	certificates, err := certsStorage.ReadCertificate(certID)
@@ -133,7 +136,7 @@ func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certCon
 	cert := certificates[0]
 
 	if cert.IsCA {
-		return fmt.Errorf("certificate bundle for %q starts with a CA certificate", certID)
+		return fmt.Errorf("CSR: certificate bundle for %q starts with a CA certificate", certID)
 	}
 
 	ariRenewalTime, replacesCertID, err := getARIInfo(ctx, lazyClient, certID, certConfig.Renew, cert)
@@ -147,14 +150,17 @@ func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certCon
 	}
 
 	// This is just meant to be informal for the user.
-	log.Info("acme: Trying renewal.",
+	log.Info("Trying renewal.",
 		log.CertNameAttr(certID),
-		slog.Any("time-remaining", log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
+		slog.Any(
+			"time-remaining",
+			log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC())),
+		),
 	)
 
 	client, err := lazyClient()
 	if err != nil {
-		return fmt.Errorf("set up client: %w", err)
+		return fmt.Errorf("CSR: set up client: %w", err)
 	}
 
 	request := certificate.ObtainForCSRRequest{
@@ -265,7 +271,7 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 	renewalInfo, err := client.Certificate.GetRenewalInfo(ctx, cert)
 	if err != nil {
 		if errors.Is(err, api.ErrNoARI) {
-			log.Warn("acme: the server does not advertise a renewal info endpoint.",
+			log.Warn("The server does not advertise a renewal info endpoint.",
 				log.CertNameAttr(domain),
 				log.ErrorAttr(err),
 			)
@@ -273,7 +279,7 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 			return nil
 		}
 
-		log.Warn("acme: calling renewal info endpoint",
+		log.Warn("calling renewal info endpoint",
 			log.CertNameAttr(domain),
 			log.ErrorAttr(err),
 		)
@@ -285,14 +291,14 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 
 	renewalTime := renewalInfo.ShouldRenewAt(now, willingToSleep)
 	if renewalTime == nil {
-		log.Info("acme: renewalInfo endpoint indicates that renewal is not needed.", log.CertNameAttr(domain))
+		log.Info("RenewalInfo endpoint indicates that renewal is not needed.", log.CertNameAttr(domain))
 		return nil
 	}
 
-	log.Info("acme: renewalInfo endpoint indicates that renewal is needed.", log.CertNameAttr(domain))
+	log.Info("RenewalInfo endpoint indicates that renewal is needed.", log.CertNameAttr(domain))
 
 	if renewalInfo.ExplanationURL != "" {
-		log.Info("acme: renewalInfo endpoint provided an explanation.",
+		log.Info("RenewalInfo endpoint provided an explanation.",
 			log.CertNameAttr(domain),
 			slog.String("explanationURL", renewalInfo.ExplanationURL),
 		)

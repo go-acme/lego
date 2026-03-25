@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
 )
 
@@ -27,7 +28,7 @@ func createRun() *cli.Command {
 func run(ctx context.Context, cmd *cli.Command) error {
 	keyType, err := certcrypto.ToKeyType(cmd.String(flags.FlgKeyType))
 	if err != nil {
-		return fmt.Errorf("get the key type: %w", err)
+		return err
 	}
 
 	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
@@ -62,10 +63,13 @@ func run(ctx context.Context, cmd *cli.Command) error {
 			return fmt.Errorf("could not save the account file: %w", err)
 		}
 
-		fmt.Printf(storage.RootPathWarningMessage, accountsStorage.GetRootPath())
+		log.Warnf(log.LazySprintf(storage.RootPathWarningMessage, accountsStorage.GetRootPath()))
 	}
 
-	setupChallenges(cmd, client)
+	err = setupChallenges(cmd, client)
+	if err != nil {
+		return fmt.Errorf("setup challenges: %w", err)
+	}
 
 	certRes, err := obtainCertificate(ctx, cmd, client, hookManager)
 	if err != nil {

@@ -75,12 +75,12 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	if authID == "" && subAuthID == "" {
-		return nil, fmt.Errorf("ClouDNS: some credentials information are missing: %s or %s", EnvAuthID, EnvSubAuthID)
+		return nil, fmt.Errorf("cloudns: some credentials information are missing: %s or %s", EnvAuthID, EnvSubAuthID)
 	}
 
 	values, err := env.Get(EnvAuthPassword)
 	if err != nil {
-		return nil, fmt.Errorf("ClouDNS: %w", err)
+		return nil, fmt.Errorf("cloudns: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -94,12 +94,12 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for ClouDNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("ClouDNS: the configuration of the DNS provider is nil")
+		return nil, errors.New("cloudns: the configuration of the DNS provider is nil")
 	}
 
 	client, err := internal.NewClient(config.AuthID, config.SubAuthID, config.AuthPassword)
 	if err != nil {
-		return nil, fmt.Errorf("ClouDNS: %w", err)
+		return nil, fmt.Errorf("cloudns: %w", err)
 	}
 
 	if config.HTTPClient != nil {
@@ -117,12 +117,12 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	zone, err := d.client.GetZone(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("ClouDNS: %w", err)
+		return fmt.Errorf("cloudns: %w", err)
 	}
 
 	err = d.client.AddTxtRecord(ctx, zone.Name, info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("ClouDNS: %w", err)
+		return fmt.Errorf("cloudns: %w", err)
 	}
 
 	return d.waitNameservers(ctx, domain, zone)
@@ -134,12 +134,12 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 
 	zone, err := d.client.GetZone(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("ClouDNS: %w", err)
+		return fmt.Errorf("cloudns: %w", err)
 	}
 
 	records, err := d.client.ListTxtRecords(ctx, zone.Name, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("ClouDNS: %w", err)
+		return fmt.Errorf("cloudns: %w", err)
 	}
 
 	if len(records) == 0 {
@@ -149,7 +149,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	for _, record := range records {
 		err = d.client.RemoveTxtRecord(ctx, record.ID, zone.Name)
 		if err != nil {
-			return fmt.Errorf("ClouDNS: %w", err)
+			return fmt.Errorf("cloudns: %w", err)
 		}
 	}
 

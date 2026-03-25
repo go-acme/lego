@@ -31,7 +31,7 @@ func createRegister() *cli.Command {
 func register(ctx context.Context, cmd *cli.Command) error {
 	keyType, err := certcrypto.ToKeyType(cmd.String(flags.FlgKeyType))
 	if err != nil {
-		return fmt.Errorf("get the key type: %w", err)
+		return err
 	}
 
 	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
@@ -60,7 +60,7 @@ func register(ctx context.Context, cmd *cli.Command) error {
 			return fmt.Errorf("could not save the account file: %w", err)
 		}
 
-		fmt.Printf(storage.RootPathWarningMessage, accountsStorage.GetRootPath())
+		log.Warnf(log.LazySprintf(storage.RootPathWarningMessage, accountsStorage.GetRootPath()))
 	} else {
 		log.Info("Account already registered, skipping.")
 	}

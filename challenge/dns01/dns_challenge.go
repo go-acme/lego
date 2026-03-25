@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
@@ -116,11 +117,15 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		timeout, interval = DefaultPropagationTimeout, DefaultPollingInterval
 	}
 
-	log.Info("dns01: waiting for record propagation.", log.DomainAttr(domain))
+	log.Info("dns01: waiting for record propagation",
+		slog.Duration("timeout", timeout),
+		slog.Duration("interval", interval),
+		log.DomainAttr(domain),
+	)
 
 	time.Sleep(interval)
 
-	err = wait.For("propagation", timeout, interval, func() (bool, error) {
+	err = wait.For(timeout, interval, func() (bool, error) {
 		stop, callErr := c.preCheck.call(ctx, domain, info.EffectiveFQDN, info.Value)
 		if !stop || callErr != nil {
 			log.Info("dns01: waiting for record propagation.", log.DomainAttr(domain))
@@ -129,7 +134,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		return stop, callErr
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("dns01: %w", err)
 	}
 
 	chlng.KeyAuthorization = keyAuth

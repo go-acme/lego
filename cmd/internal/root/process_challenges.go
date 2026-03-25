@@ -1,7 +1,7 @@
 package root
 
 import (
-	"log/slog"
+	"fmt"
 	"net"
 	"strings"
 	"time"
@@ -13,82 +13,83 @@ import (
 	"github.com/go-acme/lego/v5/challenge/tlsalpn01"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/lego"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/providers/dns"
 	"github.com/go-acme/lego/v5/providers/http/memcached"
 	"github.com/go-acme/lego/v5/providers/http/s3"
 	"github.com/go-acme/lego/v5/providers/http/webroot"
 )
 
-func setupChallenges(client *lego.Client, chlgConfig *configuration.Challenge, networkStack challenge.NetworkStack) {
+func setupChallenges(client *lego.Client, chlgConfig *configuration.Challenge, networkStack challenge.NetworkStack) error {
 	if chlgConfig.HTTP != nil {
-		err := client.Challenge.SetHTTP01Provider(setupHTTPProvider(chlgConfig.HTTP, networkStack), http01.SetDelay(chlgConfig.HTTP.Delay))
+		err := setupHTTPProvider(client, chlgConfig.HTTP, networkStack)
 		if err != nil {
-			log.Fatal("Could not set HTTP challenge provider.", log.ErrorAttr(err))
+			return fmt.Errorf("HTTP challenge provider: %w", err)
 		}
 	}
 
 	if chlgConfig.TLS != nil {
-		err := client.Challenge.SetTLSALPN01Provider(setupTLSProvider(chlgConfig.TLS, networkStack), tlsalpn01.SetDelay(chlgConfig.TLS.Delay))
+		err := setupTLSProvider(client, chlgConfig.TLS, networkStack)
 		if err != nil {
-			log.Fatal("Could not set TLS challenge provider.", log.ErrorAttr(err))
+			return fmt.Errorf("TLS challenge provider: %w", err)
 		}
 	}
 
 	if chlgConfig.DNS != nil {
 		err := setupDNS(client, chlgConfig.DNS, networkStack)
 		if err != nil {
-			log.Fatal("Could not set DNS challenge provider.", log.ErrorAttr(err))
+			return fmt.Errorf("DNS challenge provider: %w", err)
 		}
 	}
 
 	if chlgConfig.DNSPersist != nil {
 		err := setupDNSPersist(client, chlgConfig.DNSPersist, networkStack)
 		if err != nil {
-			log.Fatal("Could not set DNS-PERSIST challenge provider.", log.ErrorAttr(err))
+			return fmt.Errorf("DNS-PERSIST challenge provider: %w", err)
 		}
 	}
+
+	return nil
 }
 
-func setupHTTPProvider(chlg *configuration.HTTPChallenge, networkStack challenge.NetworkStack) challenge.Provider {
+func setupHTTPProvider(client *lego.Client, chlg *configuration.HTTPChallenge, networkStack challenge.NetworkStack) error {
+	provider, err := createHTTPProvider(chlg, networkStack)
+	if err != nil {
+		return fmt.Errorf("create: %w", err)
+	}
+
+	return client.Challenge.SetHTTP01Provider(provider, http01.SetDelay(chlg.Delay))
+}
+
+func createHTTPProvider(chlg *configuration.HTTPChallenge, networkStack challenge.NetworkStack) (challenge.Provider, error) {
 	switch {
 	case chlg.Webroot != "":
 		ps, err := webroot.NewHTTPProvider(chlg.Webroot)
 		if err != nil {
-			log.Fatal("Could not create the webroot provider.",
-				slog.String("webRoot", chlg.Webroot),
-				log.ErrorAttr(err),
-			)
+			return nil, fmt.Errorf("webroot provider (%s): %w", chlg.Webroot, err)
 		}
 
-		return ps
+		return ps, nil
 
 	case len(chlg.MemcachedHosts) > 0:
 		ps, err := memcached.NewMemcachedProvider(chlg.MemcachedHosts)
 		if err != nil {
-			log.Fatal("Could not create the memcached provider.",
-				slog.String("memcachedHosts", strings.Join(chlg.MemcachedHosts, ", ")),
-				log.ErrorAttr(err),
-			)
+			return nil, fmt.Errorf("memcached provider (%s): %w", strings.Join(chlg.MemcachedHosts, ", "), err)
 		}
 
-		return ps
+		return ps, nil
 
 	case chlg.S3Bucket != "":
 		ps, err := s3.NewHTTPProvider(chlg.S3Bucket)
 		if err != nil {
-			log.Fatal("Could not create the S3 provider.",
-				slog.String("bucket", chlg.S3Bucket),
-				log.ErrorAttr(err),
-			)
+			return nil, fmt.Errorf("S3 provider (%s): %w", chlg.S3Bucket, err)
 		}
 
-		return ps
+		return ps, nil
 
 	case chlg.Address != "":
 		host, port, err := parseAddress(chlg.Address)
 		if err != nil {
-			log.Fatal("Could not split host and port.", slog.String("iface", chlg.Address), log.ErrorAttr(err))
+			return nil, err
 		}
 
 		srv := http01.NewProviderServerWithOptions(http01.Options{
@@ -100,7 +101,7 @@ func setupHTTPProvider(chlg *configuration.HTTPChallenge, networkStack challenge
 			srv.SetProxyHeader(header)
 		}
 
-		return srv
+		return srv, nil
 
 	default:
 		srv := http01.NewProviderServerWithOptions(http01.Options{
@@ -112,29 +113,29 @@ func setupHTTPProvider(chlg *configuration.HTTPChallenge, networkStack challenge
 			srv.SetProxyHeader(header)
 		}
 
-		return srv
+		return srv, nil
 	}
 }
 
-func setupTLSProvider(chlg *configuration.TLSChallenge, networkStack challenge.NetworkStack) challenge.Provider {
-	switch {
-	case chlg.Address != "":
+func setupTLSProvider(client *lego.Client, chlg *configuration.TLSChallenge, networkStack challenge.NetworkStack) error {
+	options := tlsalpn01.Options{
+		Network: networkStack.Network("tcp"),
+	}
+
+	if chlg.Address != "" {
 		host, port, err := parseAddress(chlg.Address)
 		if err != nil {
-			log.Fatal("Could not split host and port.", slog.String("iface", chlg.Address), log.ErrorAttr(err))
+			return err
 		}
 
-		return tlsalpn01.NewProviderServerWithOptions(tlsalpn01.Options{
-			Network: networkStack.Network("tcp"),
-			Host:    host,
-			Port:    port,
-		})
-
-	default:
-		return tlsalpn01.NewProviderServerWithOptions(tlsalpn01.Options{
-			Network: networkStack.Network("tcp"),
-		})
+		options.Host = host
+		options.Port = port
 	}
+
+	return client.Challenge.SetTLSALPN01Provider(
+		tlsalpn01.NewProviderServerWithOptions(options),
+		tlsalpn01.SetDelay(chlg.Delay),
+	)
 }
 
 func setupDNS(client *lego.Client, chlg *configuration.DNSChallenge, networkStack challenge.NetworkStack) error {

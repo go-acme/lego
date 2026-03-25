@@ -15,6 +15,7 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
 )
 
@@ -76,7 +77,7 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 				return fmt.Errorf("could not save the account file: %w", errC)
 			}
 
-			fmt.Printf(storage.RootPathWarningMessage, accountsStorage.GetRootPath())
+			log.Warnf(log.LazySprintf(storage.RootPathWarningMessage, accountsStorage.GetRootPath()))
 		}
 
 		certsStorage := storage.NewCertificatesStorage(cfg.Storage)
@@ -92,7 +93,10 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 
 				client.Challenge.RemoveAll()
 
-				setupChallenges(client, chlgConfig, networkStack)
+				errC = setupChallenges(client, chlgConfig, networkStack)
+				if errC != nil {
+					return nil, fmt.Errorf("setup challenges: %w", errC)
+				}
 
 				return client, nil
 			})

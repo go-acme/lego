@@ -94,17 +94,18 @@ func (c *SolverManager) RemoveAll() {
 
 // Checks all challenges from the server in order and returns the first matching solver.
 func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
-	// Allow to have a deterministic challenge order
+	// Allow having a deterministic challenge order
 	sort.Sort(byType(authz.Challenges))
 
 	domain := challenge.GetTargetedDomain(authz)
+
 	for _, chlg := range authz.Challenges {
 		if solvr, ok := c.solvers[challenge.Type(chlg.Type)]; ok {
-			log.Info("acme: use solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
+			log.Debug("acme: Use solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
 			return solvr
 		}
 
-		log.Info("acme: Could not find the solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
+		log.Error("acme: Could not find the solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
 	}
 
 	return nil

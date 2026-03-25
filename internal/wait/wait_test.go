@@ -17,7 +17,7 @@ func TestFor_timeout(t *testing.T) {
 
 		var io atomic.Int64
 
-		err := For("test", 3*time.Second, 1*time.Second, func() (bool, error) {
+		err := For(3*time.Second, 1*time.Second, func() (bool, error) {
 			io.Add(1)
 
 			return false, nil
@@ -25,7 +25,7 @@ func TestFor_timeout(t *testing.T) {
 
 		assert.Equal(t, 3*time.Second, time.Since(now))
 		require.EqualValues(t, 3, io.Load())
-		require.EqualError(t, err, "test: time limit exceeded")
+		require.EqualError(t, err, "time limit exceeded")
 	})
 }
 
@@ -35,7 +35,7 @@ func TestFor_timeout_with_error(t *testing.T) {
 
 		var io atomic.Int64
 
-		err := For("test", 3*time.Second, 1*time.Second, func() (bool, error) {
+		err := For(3*time.Second, 1*time.Second, func() (bool, error) {
 			io.Add(1)
 
 			// This allows be sure that the latest previous error is returned.
@@ -48,7 +48,7 @@ func TestFor_timeout_with_error(t *testing.T) {
 
 		assert.Equal(t, 3*time.Second, time.Since(now))
 		require.EqualValues(t, 3, io.Load())
-		require.EqualError(t, err, "test: time limit exceeded: last error: oops")
+		require.EqualError(t, err, "time limit exceeded: last error: oops")
 	})
 }
 
@@ -58,7 +58,7 @@ func TestFor_stop(t *testing.T) {
 
 		var io atomic.Int64
 
-		err := For("test", 3*time.Second, 1*time.Second, func() (bool, error) {
+		err := For(3*time.Second, 1*time.Second, func() (bool, error) {
 			io.Add(1)
 
 			return true, nil
@@ -76,7 +76,7 @@ func TestFor_stop_with_error(t *testing.T) {
 
 		var io atomic.Int64
 
-		err := For("test", 3*time.Second, 1*time.Second, func() (bool, error) {
+		err := For(3*time.Second, 1*time.Second, func() (bool, error) {
 			io.Add(1)
 
 			return true, errors.New("oops")

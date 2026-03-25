@@ -29,7 +29,7 @@ func (c *Client) lookupCNAME(ctx context.Context, fqdn string) string {
 		// Keep following CNAMEs
 		r, err := c.core.SendQuery(ctx, fqdn, dns.TypeCNAME, true)
 		if err != nil {
-			log.Debug("Lookup CNAME.",
+			log.Debug("dns01: Lookup CNAME.",
 				slog.String("fqdn", fqdn),
 				log.ErrorAttr(err),
 			)
@@ -49,7 +49,7 @@ func (c *Client) lookupCNAME(ctx context.Context, fqdn string) string {
 			break
 		}
 
-		log.Info("Found CNAME entry.",
+		log.Info("dns01: Found CNAME entry.",
 			slog.String("fqdn", fqdn),
 			slog.String("cname", cname),
 		)

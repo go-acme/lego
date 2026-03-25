@@ -149,7 +149,7 @@ func sequentialSolve(ctx context.Context, authSolvers []*selectedAuthSolver, fai
 			if len(authSolvers)-1 > i {
 				solvr := authSolver.solver.(sequential)
 				_, interval := solvr.Sequential()
-				log.Info("sequence: wait.", slog.Duration("interval", interval))
+				log.Info("sequence: wait.", slog.Duration("interval", interval), log.DomainAttr(domain))
 				time.Sleep(interval)
 			}
 

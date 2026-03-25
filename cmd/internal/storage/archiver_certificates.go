@@ -87,7 +87,7 @@ func (m *Archiver) archiveCertificates(skip func(resourceID string) bool) error 
 func (m *Archiver) archiveOneCertificate(filename, date string, resource *certificate.Resource) error {
 	dest := filepath.Join(m.certificatesArchivePath, strings.TrimSuffix(filepath.Base(filename), filepath.Ext(filename))+"_"+date+".zip")
 
-	log.Info("Archive certificate", log.CertNameAttr(resource.ID), slog.String("archives", dest))
+	log.Info("Archiving certificate", log.CertNameAttr(resource.ID), slog.String("archive", dest))
 
 	err := CreateNonExistingFolder(filepath.Dir(dest))
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"slices"
 	"sort"
 	"time"
@@ -110,7 +111,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 
 	err = c.waitForPropagation(ctx, domain, fqdn, matcher)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnspersist01: %w", err)
 	}
 
 	return c.validate(ctx, c.core, domain, chlng)
@@ -119,11 +120,15 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 func (c *Challenge) waitForPropagation(ctx context.Context, domain, fqdn string, matcher RecordMatcher) error {
 	timeout, interval := c.provider.Timeout()
 
-	log.Info("dnspersist01: waiting for record propagation.", log.DomainAttr(domain))
+	log.Info("dnspersist01: waiting for record propagation",
+		slog.Duration("timeout", timeout),
+		slog.Duration("interval", interval),
+		log.DomainAttr(domain),
+	)
 
 	time.Sleep(interval)
 
-	return wait.For("propagation", timeout, interval, func() (bool, error) {
+	return wait.For(timeout, interval, func() (bool, error) {
 		stop, callErr := c.preCheck.call(ctx, domain, fqdn, matcher)
 		if !stop || callErr != nil {
 			log.Info("dnspersist01: waiting for record propagation.", log.DomainAttr(domain))

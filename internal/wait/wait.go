@@ -2,21 +2,15 @@ package wait
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
-	"github.com/go-acme/lego/v5/log"
 )
 
 // For polls the given function 'f', once every 'interval', up to 'timeout'.
-func For(msg string, timeout, interval time.Duration, f func() (bool, error)) error {
-	log.Infof(log.LazySprintf("Wait for %s.", msg),
-		slog.Duration("timeout", timeout),
-		slog.Duration("interval", interval),
-	)
-
+func For(timeout, interval time.Duration, f func() (bool, error)) error {
 	var lastErr error
 
 	timeUp := time.After(timeout)
@@ -25,10 +19,10 @@ func For(msg string, timeout, interval time.Duration, f func() (bool, error)) er
 		select {
 		case <-timeUp:
 			if lastErr == nil {
-				return fmt.Errorf("%s: time limit exceeded", msg)
+				return errors.New("time limit exceeded")
 			}
 
-			return fmt.Errorf("%s: time limit exceeded: last error: %w", msg, lastErr)
+			return fmt.Errorf("time limit exceeded: last error: %w", lastErr)
 		default:
 		}
 

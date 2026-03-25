@@ -155,12 +155,12 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 				return
 			}
 
-			log.Info("Served key authentication.", log.DomainAttr(domain))
+			log.Debug("Served key authentication.", log.DomainAttr(domain))
 
 			return
 		}
 
-		log.Warn("Received request but the domain did not match any challenge. Please ensure you are passing the header properly.",
+		log.Warn("http01: Received request but the domain did not match any challenge. Please ensure you are passing the header properly.",
 			log.DomainAttr(r.Host),
 			slog.String("method", r.Method),
 			slog.String("header", s.matcher.name()),
@@ -181,7 +181,7 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 
 	err := httpServer.Serve(s.listener)
 	if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
-		log.Warn("HTTP server serve.", log.ErrorAttr(err))
+		log.Warn("http01: HTTP server serve.", log.ErrorAttr(err))
 	}
 
 	s.done <- true

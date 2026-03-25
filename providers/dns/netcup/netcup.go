@@ -130,7 +130,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	records, err := d.client.GetDNSRecords(ctxAuth, zone)
 	if err != nil {
 		// skip no existing records
-		log.Info("No existing records, error ignored.", slog.String("zone", zone), log.ErrorAttr(err))
+		log.Info("netcup: No existing records, error ignored.", slog.String("zone", zone), log.ErrorAttr(err))
 	}
 
 	records = append(records, record)

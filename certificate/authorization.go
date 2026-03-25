@@ -42,7 +42,7 @@ func (c *Certifier) getAuthorizations(ctx context.Context, order acme.ExtendedOr
 	}
 
 	for i, auth := range order.Authorizations {
-		log.Info("Authorization",
+		log.Debug("Authorization",
 			slog.String("url", order.Identifiers[i].Value),
 			slog.String("authz", auth),
 		)
@@ -58,7 +58,7 @@ func (c *Certifier) deactivateAuthorizations(ctx context.Context, order acme.Ext
 	for _, authzURL := range order.Authorizations {
 		auth, err := c.core.Authorizations.Get(ctx, authzURL)
 		if err != nil {
-			log.Info("Unable to get the authorization.",
+			log.Warn("Unable to get the authorization.",
 				slog.String("url", authzURL),
 				log.ErrorAttr(err),
 			)
@@ -75,7 +75,7 @@ func (c *Certifier) deactivateAuthorizations(ctx context.Context, order acme.Ext
 		log.Info("Deactivating authorization.", slog.String("url", authzURL))
 
 		if c.core.Authorizations.Deactivate(ctx, authzURL) != nil {
-			log.Info("Unable to deactivate the authorization.", slog.String("url", authzURL))
+			log.Warn("Unable to deactivate the authorization.", slog.String("url", authzURL))
 		}
 	}
 }

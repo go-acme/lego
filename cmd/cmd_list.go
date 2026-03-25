@@ -7,10 +7,9 @@ import (
 func createList() *cli.Command {
 	return &cli.Command{
 		Name:  "list",
-		Usage: "Display certificates and accounts information.",
+		Usage: "Display information about certificates.",
 		Commands: []*cli.Command{
 			createListCertificates(),
-			createListAccounts(),
 		},
 	}
 }

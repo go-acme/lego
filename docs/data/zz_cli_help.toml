@@ -13,9 +13,9 @@ USAGE:
 COMMANDS:
    run       Get or renew a certificate
    revoke    Revoke a certificate
-   register  Register an account.
+   accounts  Accounts management.
    dnshelp   Shows additional help for the '--dns' global option
-   list      Display certificates and accounts information.
+   list      Display information about certificates.
    migrate   Migrate certificates and accounts.
    help, h   Shows a list of commands or help for one command
 
@@ -191,14 +191,13 @@ OPTIONS:
 title   = "lego help list"
 content = """
 NAME:
-   lego list - Display certificates and accounts information.
+   lego list - Display information about certificates.
 
 USAGE:
    lego list [command [command options]]
 
 COMMANDS:
    certificates  Display information about certificates.
-   accounts      Display information about accounts.
 
 OPTIONS:
    --help, -h  show help

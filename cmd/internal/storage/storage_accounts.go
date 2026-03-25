@@ -107,7 +107,29 @@ func (s *AccountsStorage) Save(account *Account) error {
 
 	accountFilePath := s.getAccountFilePath(server, account.GetID())
 
+	err = os.MkdirAll(filepath.Dir(accountFilePath), 0o700)
+	if err != nil {
+		return fmt.Errorf("create the directory %q for the account: %w", filepath.Dir(accountFilePath), err)
+	}
+
 	return os.WriteFile(accountFilePath, jsonBytes, filePerm)
+}
+
+// SavePrivateKey saves the private key to a file defined by the account.
+func (s *AccountsStorage) SavePrivateKey(account *Account) error {
+	effectiveAccountID := account.GetID()
+
+	server, err := url.Parse(account.Server)
+	if err != nil {
+		return fmt.Errorf("invalid server URL %q: %w", account.Server, err)
+	}
+
+	err = s.savePrivateKey(server, effectiveAccountID, account.key)
+	if err != nil {
+		return fmt.Errorf("save the private key (accountID: %s): %w", effectiveAccountID, err)
+	}
+
+	return nil
 }
 
 // Get gets an account from a file or creates a new one (the files are saved).
@@ -228,22 +250,31 @@ func (s *AccountsStorage) getAccount(server *url.URL, keyType certcrypto.KeyType
 
 // createPrivateKey generates a new private key and saves it to a file.
 func (s *AccountsStorage) createPrivateKey(server *url.URL, keyType certcrypto.KeyType, effectiveAccountID string) (crypto.Signer, error) {
-	accKeyPath := s.getAccountKeyPath(server, effectiveAccountID)
-	keysPath := filepath.Dir(accKeyPath)
-
-	err := CreateNonExistingFolder(keysPath)
-	if err != nil {
-		return nil, fmt.Errorf("could not check/create the directory %q for the account (accountID: %s): %w", keysPath, effectiveAccountID, err)
-	}
-
 	privateKey, err := certcrypto.GeneratePrivateKey(keyType)
 	if err != nil {
 		return nil, fmt.Errorf("private key generation (accountID: %s): %w", effectiveAccountID, err)
 	}
 
+	err = s.savePrivateKey(server, effectiveAccountID, privateKey)
+	if err != nil {
+		return nil, fmt.Errorf("save the private key (accountID: %s): %w", effectiveAccountID, err)
+	}
+
+	return privateKey, nil
+}
+
+func (s *AccountsStorage) savePrivateKey(server *url.URL, effectiveAccountID string, privateKey crypto.Signer) error {
+	accKeyPath := s.getAccountKeyPath(server, effectiveAccountID)
+	keysPath := filepath.Dir(accKeyPath)
+
+	err := CreateNonExistingFolder(keysPath)
+	if err != nil {
+		return fmt.Errorf("could not check/create the directory %q for the account (accountID: %s): %w", keysPath, effectiveAccountID, err)
+	}
+
 	certOut, err := os.Create(accKeyPath)
 	if err != nil {
-		return nil, fmt.Errorf("private key file creation: (accountID: %s): %w", effectiveAccountID, err)
+		return fmt.Errorf("private key file creation: (accountID: %s): %w", effectiveAccountID, err)
 	}
 
 	defer func() {
@@ -257,10 +288,10 @@ func (s *AccountsStorage) createPrivateKey(server *url.URL, keyType certcrypto.K
 
 	err = pem.Encode(certOut, pemKey)
 	if err != nil {
-		return nil, fmt.Errorf("private key PEM encoding: (accountID: %s): %w", effectiveAccountID, err)
+		return fmt.Errorf("private key PEM encoding: (accountID: %s): %w", effectiveAccountID, err)
 	}
 
-	return privateKey, nil
+	return nil
 }
 
 // readPrivateKey reads the private key from a file.

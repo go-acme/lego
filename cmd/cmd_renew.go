@@ -44,12 +44,9 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
-	if err != nil {
-		return fmt.Errorf("accounts storage initialization: %w", err)
-	}
+	store := storage.New(cmd.String(flags.FlgPath))
 
-	account, err := accountsStorage.Get(keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
+	account, err := store.Account.Get(cmd.String(flags.FlgServer), keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
@@ -68,22 +65,20 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 		return client, nil
 	})
 
-	err = handleRegistration(ctx, cmd, lazyClient, accountsStorage, account, false)
+	err = handleRegistration(ctx, cmd, lazyClient, store.Account, account, false)
 	if err != nil {
 		return fmt.Errorf("registration: %w", err)
 	}
 
-	certsStorage := storage.NewCertificatesStorage(cmd.String(flags.FlgPath))
-
-	hookManager := newHookManager(cmd, certsStorage, account)
+	hookManager := newHookManager(cmd, store.Certificate, account)
 
 	// CSR
 	if cmd.IsSet(flags.FlgCSR) {
-		return renewForCSR(ctx, cmd, lazyClient, certsStorage, hookManager)
+		return renewForCSR(ctx, cmd, lazyClient, store.Certificate, hookManager)
 	}
 
 	// Domains
-	return renewForDomains(ctx, cmd, lazyClient, certsStorage, hookManager)
+	return renewForDomains(ctx, cmd, lazyClient, store.Certificate, hookManager)
 }
 
 func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {

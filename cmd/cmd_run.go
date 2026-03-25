@@ -30,25 +30,20 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
-	if err != nil {
-		return fmt.Errorf("accounts storage initialization: %w", err)
-	}
+	store := storage.New(cmd.String(flags.FlgPath))
 
-	account, err := accountsStorage.Get(keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
+	account, err := store.Account.Get(cmd.String(flags.FlgServer), keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
 
-	certsStorage := storage.NewCertificatesStorage(cmd.String(flags.FlgPath))
-
-	hookManager := newHookManager(cmd, certsStorage, account)
+	hookManager := newHookManager(cmd, store.Certificate, account)
 
 	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
 		return newClient(cmd, account)
 	})
 
-	err = handleRegistration(ctx, cmd, lazyClient, accountsStorage, account, true)
+	err = handleRegistration(ctx, cmd, lazyClient, store.Account, account, true)
 	if err != nil {
 		return fmt.Errorf("registration: %w", err)
 	}
@@ -77,7 +72,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 
 	options := newSaveOptions(cmd)
 
-	err = certsStorage.Save(certRes, options)
+	err = store.Certificate.Save(certRes, options)
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
 	}

@@ -4,13 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/mattn/go-zglob"
 	"github.com/urfave/cli/v3"
 )
@@ -18,8 +16,7 @@ import (
 type ListAccount struct {
 	storage.Account
 
-	Server string `json:"server,omitempty"`
-	Path   string `json:"path,omitempty"`
+	Path string `json:"path,omitempty"`
 }
 
 func createListAccounts() *cli.Command {
@@ -74,10 +71,7 @@ func listAccountsJSON(_ context.Context, cmd *cli.Command) error {
 }
 
 func readAccounts(cmd *cli.Command) ([]ListAccount, error) {
-	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
-	if err != nil {
-		return nil, err
-	}
+	accountsStorage := storage.NewAccountsStorage(cmd.String(flags.FlgPath))
 
 	matches, err := zglob.Glob(filepath.Join(accountsStorage.GetRootPath(), "**", "account.json"))
 	if err != nil {
@@ -99,18 +93,8 @@ func readAccounts(cmd *cli.Command) ([]ListAccount, error) {
 			return nil, err
 		}
 
-		var server string
-
-		uri, err := url.Parse(account.Registration.Location)
-		if err != nil {
-			log.Error("Parsing account registration Location.", log.ErrorAttr(err))
-		} else {
-			server = fmt.Sprintf("%s://%s", uri.Scheme, uri.Host)
-		}
-
 		accounts = append(accounts, ListAccount{
 			Account: account,
-			Server:  server,
 			Path:    filename,
 		})
 	}

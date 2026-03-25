@@ -1,9 +1,0 @@
-{
-	"id": "test@example.com",
-	"email": "account@example.com",
-	"keyType": "RSA4096",
-	"registration": {
-		"status": "valid",
-		"accountURL": "https://example.org/acme/acct/123456"
-	}
-}

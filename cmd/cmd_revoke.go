@@ -28,12 +28,9 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
-	if err != nil {
-		return fmt.Errorf("accounts storage initialization: %w", err)
-	}
+	store := storage.New(cmd.String(flags.FlgPath))
 
-	account, err := accountsStorage.Get(keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
+	account, err := store.Account.Get(cmd.String(flags.FlgServer), keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
@@ -42,7 +39,7 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 		return newClient(cmd, account)
 	})
 
-	err = handleRegistration(ctx, cmd, lazyClient, accountsStorage, account, false)
+	err = handleRegistration(ctx, cmd, lazyClient, store.Account, account, false)
 	if err != nil {
 		return fmt.Errorf("registration: %w", err)
 	}
@@ -52,13 +49,11 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("new client: %w", err)
 	}
 
-	certsStorage := storage.NewCertificatesStorage(cmd.String(flags.FlgPath))
-
 	reason := cmd.Uint(flags.FlgReason)
 	keep := cmd.Bool(flags.FlgKeep)
 
 	for _, certID := range cmd.StringSlice(flags.FlgCertName) {
-		err := revokeCertificate(ctx, client, certsStorage, certID, reason, keep)
+		err := revokeCertificate(ctx, client, store, certID, reason, keep)
 		if err != nil {
 			return err
 		}
@@ -67,10 +62,10 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-func revokeCertificate(ctx context.Context, client *lego.Client, certsStorage *storage.CertificatesStorage, certID string, reason uint, keep bool) error {
+func revokeCertificate(ctx context.Context, client *lego.Client, store *storage.Storage, certID string, reason uint, keep bool) error {
 	log.Info("Trying to revoke the certificate.", log.CertNameAttr(certID))
 
-	certBytes, err := certsStorage.ReadFile(certID, storage.ExtCert)
+	certBytes, err := store.Certificate.ReadFile(certID, storage.ExtCert)
 	if err != nil {
 		return fmt.Errorf("certificate reading for domain %s: %w", certID, err)
 	}
@@ -86,7 +81,7 @@ func revokeCertificate(ctx context.Context, client *lego.Client, certsStorage *s
 		return nil
 	}
 
-	err = certsStorage.Archive(certID)
+	err = store.Archiver.Certificate(certID)
 	if err != nil {
 		return err
 	}

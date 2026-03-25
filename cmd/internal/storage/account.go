@@ -10,9 +10,11 @@ import (
 
 // Account represents a users local saved credentials.
 type Account struct {
-	ID            string                `json:"id"`
-	Email         string                `json:"email"`
-	KeyType       certcrypto.KeyType    `json:"keyType"`
+	ID      string             `json:"id"`
+	Email   string             `json:"email"`
+	KeyType certcrypto.KeyType `json:"keyType"`
+	Server  string             `json:"server"`
+
 	Registration  *acme.ExtendedAccount `json:"registration"`
 	NeedsRecovery bool                  `json:"-"`
 

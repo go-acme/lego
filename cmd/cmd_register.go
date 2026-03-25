@@ -35,12 +35,9 @@ func register(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	accountsStorage, err := storage.NewAccountsStorage(newAccountsStorageConfig(cmd))
-	if err != nil {
-		return fmt.Errorf("accounts storage initialization: %w", err)
-	}
+	accountsStorage := storage.NewAccountsStorage(cmd.String(flags.FlgPath))
 
-	account, err := accountsStorage.Get(keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
+	account, err := accountsStorage.Get(cmd.String(flags.FlgServer), keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}

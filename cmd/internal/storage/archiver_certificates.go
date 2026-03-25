@@ -30,18 +30,18 @@ func (m *Archiver) Certificates(certificates map[string]*configuration.Certifica
 	return nil
 }
 
+func (m *Archiver) Certificate(certID string) error {
+	return m.archiveCertificates(func(resourceID string) bool {
+		return certID != resourceID
+	})
+}
+
 func (m *Archiver) archiveRemovedCertificates(certificates map[string]*configuration.Certificate) error {
 	// Only archive the certificates that are not in the configuration.
 	return m.archiveCertificates(func(resourceID string) bool {
 		_, ok := certificates[resourceID]
 
 		return ok
-	})
-}
-
-func (m *Archiver) archiveCertificate(certID string) error {
-	return m.archiveCertificates(func(resourceID string) bool {
-		return certID != resourceID
 	})
 }
 

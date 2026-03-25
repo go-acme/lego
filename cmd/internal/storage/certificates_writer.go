@@ -87,11 +87,6 @@ func (s *CertificatesStorage) Save(certRes *certificate.Resource, opts *SaveOpti
 	return s.saveResource(certRes)
 }
 
-// Archive moves the certificate files to the archive folder.
-func (s *CertificatesStorage) Archive(certID string) error {
-	return s.archiver.archiveCertificate(certID)
-}
-
 func (s *CertificatesStorage) saveResource(certRes *certificate.Resource) error {
 	jsonBytes, err := json.MarshalIndent(certRes, "", "\t")
 	if err != nil {

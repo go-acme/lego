@@ -104,13 +104,6 @@ func newObtainForCSRRequest(cmd *cli.Command, csr *x509.CertificateRequest) cert
 	}
 }
 
-func newAccountsStorageConfig(cmd *cli.Command) storage.AccountsStorageConfig {
-	return storage.AccountsStorageConfig{
-		BasePath: cmd.String(flags.FlgPath),
-		Server:   cmd.String(flags.FlgServer),
-	}
-}
-
 func newSaveOptions(cmd *cli.Command) *storage.SaveOptions {
 	return &storage.SaveOptions{
 		PEM:         cmd.Bool(flags.FlgPEM),

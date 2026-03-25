@@ -1,4 +1,4 @@
-package cmd
+package flags
 
 import (
 	"testing"
@@ -14,22 +14,22 @@ func Test_toEnvName(t *testing.T) {
 	}{
 		{
 			desc:     "only letters",
-			flag:     flgServer,
+			flag:     FlgServer,
 			expected: "LEGO_SERVER",
 		},
 		{
 			desc:     "letters and digits",
-			flag:     flgIPv6Only,
+			flag:     FlgIPv6Only,
 			expected: "LEGO_IPV6ONLY",
 		},
 		{
 			desc:     "hyphen",
-			flag:     flgHTTPPort,
+			flag:     FlgHTTPPort,
 			expected: "LEGO_HTTP_PORT",
 		},
 		{
 			desc:     "dot, hyphen",
-			flag:     flgDNSPropagationDisableRNS,
+			flag:     FlgDNSPropagationDisableRNS,
 			expected: "LEGO_DNS_PROPAGATION_DISABLE_RNS",
 		},
 	}

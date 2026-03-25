@@ -1,0 +1,19 @@
+challenges:
+  mychallenge:
+    dns:
+      provider: exec
+      propagation:
+        wait: 500ms
+      resolvers:
+        - :8853
+
+certificates:
+  'dns.localhost':
+    domains:
+      - dns.localhost
+      - '*.dns.localhost'
+
+accounts:
+  foo:
+    server: https://localhost:17000/dir
+    acceptsTermsOfService: true

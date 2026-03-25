@@ -89,12 +89,11 @@ func generate(ctx context.Context) error {
 // - do not include version information, because we're likely running against a snapshot
 // - skip DNS help and provider list, as initialization takes time, and we don't generate `lego dns --help` here.
 func createStubApp() *cli.Command {
-	return &cli.Command{
-		Name:     "lego",
-		Usage:    "ACME client written in Go",
-		Commands: cmd.CreateCommands(),
-		Flags:    cmd.CreateLogFlags(),
-	}
+	root := cmd.CreateRootCommand()
+	root.EnableShellCompletion = false
+	root.Before = nil
+
+	return root
 }
 
 func run(ctx context.Context, app *cli.Command, args []string) (h commandHelp, err error) {

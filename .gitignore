@@ -4,3 +4,5 @@
 .vscode/
 dist/
 builds/
+/.lego.yaml
+/.lego.yml

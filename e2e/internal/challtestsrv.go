@@ -17,8 +17,8 @@ type ChallTestSrvClient struct {
 	httpClient *http.Client
 }
 
-func NewChallTestSrvClient() *ChallTestSrvClient {
-	baseURL, _ := url.Parse("http://localhost:8055")
+func NewChallTestSrvClient(port string) *ChallTestSrvClient {
+	baseURL, _ := url.Parse("http://localhost:" + port)
 
 	return &ChallTestSrvClient{
 		baseURL:    baseURL,

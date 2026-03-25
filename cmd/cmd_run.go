@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"github.com/go-acme/lego/v5/certcrypto"
-	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
@@ -108,7 +107,7 @@ func obtain(ctx context.Context, cmd *cli.Command, certID string, lazyClient lzS
 	return obtainForDomains(ctx, cmd, client, certID, certsStorage, hookManager)
 }
 
-func renew(ctx context.Context, cmd *cli.Command, certID string, resource *certificate.Resource, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
+func renew(ctx context.Context, cmd *cli.Command, certID string, resource *storage.Certificate, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
 	if cmd.IsSet(flags.FlgCSR) {
 		return renewForCSR(ctx, cmd, lazyClient, certID, certsStorage, hookManager)
 	}

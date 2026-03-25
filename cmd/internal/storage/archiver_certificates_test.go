@@ -215,7 +215,7 @@ func generateFakeCertificateFiles(t *testing.T, dir, domain string) []string {
 
 	defer func() { _ = file.Close() }()
 
-	r := certificate.Resource{ID: domain}
+	r := Certificate{Resource: &certificate.Resource{ID: domain}}
 
 	err = json.NewEncoder(file).Encode(r)
 	require.NoError(t, err)

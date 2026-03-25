@@ -9,17 +9,17 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/log"
 )
 
-func (s *CertificatesStorage) ReadResource(certID string) (*certificate.Resource, error) {
+func (s *CertificatesStorage) ReadResource(certID string) (*Certificate, error) {
 	raw, err := s.ReadFile(certID, ExtResource)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load resource for domain %q: %w", certID, err)
 	}
 
-	resource := new(certificate.Resource)
+	resource := new(Certificate)
+
 	if err = json.Unmarshal(raw, resource); err != nil {
 		return nil, fmt.Errorf("unable to unmarshal resource for domain %q: %w", certID, err)
 	}

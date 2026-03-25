@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/mattn/go-zglob"
@@ -68,7 +67,7 @@ func (m *Archiver) archiveCertificates(skip func(resourceID string) bool) error 
 			return fmt.Errorf("reading certificate file %q: %w", filename, err)
 		}
 
-		resource := new(certificate.Resource)
+		resource := new(Certificate)
 
 		err = json.Unmarshal(file, resource)
 		if err != nil {
@@ -88,7 +87,7 @@ func (m *Archiver) archiveCertificates(skip func(resourceID string) bool) error 
 	return nil
 }
 
-func (m *Archiver) archiveOneCertificate(filename, date string, resource *certificate.Resource) error {
+func (m *Archiver) archiveOneCertificate(filename, date string, resource *Certificate) error {
 	dest := filepath.Join(m.certificatesArchivePath, strings.TrimSuffix(filepath.Base(filename), filepath.Ext(filename))+"_"+date+".zip")
 
 	log.Info("Archiving certificate", log.CertNameAttr(resource.ID), slog.String("archive", dest))

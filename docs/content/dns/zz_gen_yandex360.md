@@ -62,7 +62,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://yandex.ru/dev/api360/doc/ref/DomainDNSService.html)
+- [API documentation](https://yandex.ru/dev/api360/doc/ref/DomainDNSService/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/yandex360/yandex360.toml -->

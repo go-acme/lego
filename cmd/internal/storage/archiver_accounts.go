@@ -48,8 +48,7 @@ func (m *Archiver) archiveAccounts(cfg *configuration.Configuration) error {
 	date := strconv.FormatInt(time.Now().Unix(), 10)
 
 	for _, filename := range matches {
-		dirKt, _ := filepath.Split(filename)
-		dirAcc, kt := filepath.Split(filepath.Dir(dirKt))
+		dirAcc, _ := filepath.Split(filename)
 		dirSrv, accID := filepath.Split(filepath.Dir(dirAcc))
 		_, srv := filepath.Split(filepath.Dir(dirSrv))
 
@@ -66,15 +65,6 @@ func (m *Archiver) archiveAccounts(cfg *configuration.Configuration) error {
 			err = m.archiveAccount("accountID", dirAcc, srv, accID, date)
 			if err != nil {
 				return fmt.Errorf("archive account (accountID) %q: %w", accID, err)
-			}
-
-			continue
-		}
-
-		if _, ok := accountTree[srv][accID][kt]; !ok {
-			err := m.archiveAccount("keyType", dirKt, srv, accID, kt, date)
-			if err != nil {
-				return fmt.Errorf("archive account (keyType) %q: %w", kt, err)
 			}
 
 			continue
@@ -120,11 +110,11 @@ func (m *Archiver) cleanArchivedAccounts() error {
 	return m.cleanArchives(filepath.Join(m.accountsArchivePath, "**", "*.zip"))
 }
 
-func accountMapping(cfg *configuration.Configuration) (map[string]map[string]map[string]struct{}, error) {
-	// Server -> AccountID -> KeyType
-	accountTree := make(map[string]map[string]map[string]struct{})
+func accountMapping(cfg *configuration.Configuration) (map[string]map[string]struct{}, error) {
+	// Server -> AccountID
+	accountTree := make(map[string]map[string]struct{})
 
-	for accID, account := range cfg.Accounts {
+	for accID := range cfg.Accounts {
 		serverConfig := configuration.GetServerConfig(cfg, accID)
 
 		s, err := url.Parse(serverConfig.URL)
@@ -135,14 +125,10 @@ func accountMapping(cfg *configuration.Configuration) (map[string]map[string]map
 		server := sanitizeHost(s)
 
 		if _, ok := accountTree[server]; !ok {
-			accountTree[server] = make(map[string]map[string]struct{})
+			accountTree[server] = make(map[string]struct{})
 		}
 
-		if _, ok := accountTree[server][accID]; !ok {
-			accountTree[server][accID] = make(map[string]struct{})
-		}
-
-		accountTree[server][accID][account.KeyType] = struct{}{}
+		accountTree[server][accID] = struct{}{}
 	}
 
 	return accountTree, nil

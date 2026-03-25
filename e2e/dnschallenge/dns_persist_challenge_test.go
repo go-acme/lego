@@ -251,9 +251,7 @@ func createCLIAccountState(t *testing.T, email string) string {
 	require.NoError(t, err)
 	require.NotEmpty(t, reg.Location)
 
-	keyType := certcrypto.EC256
-
-	accountPathRoot := getAccountPath(email, keyType)
+	accountPathRoot := getAccountPath(email)
 
 	err = os.MkdirAll(accountPathRoot, 0o700)
 	require.NoError(t, err)
@@ -271,7 +269,7 @@ func createCLIAccountState(t *testing.T, email string) string {
 	}{
 		ID:           email,
 		Email:        email,
-		KeyType:      keyType,
+		KeyType:      certcrypto.EC256,
 		Registration: reg,
 	}, "", "\t")
 	require.NoError(t, err)
@@ -283,7 +281,7 @@ func createCLIAccountState(t *testing.T, email string) string {
 }
 
 func waitForAccountFile(ctx context.Context, email string) (string, error) {
-	accountPath := filepath.Join(getAccountPath(email, certcrypto.EC256), "account.json")
+	accountPath := filepath.Join(getAccountPath(email), "account.json")
 
 	type accountFile struct {
 		Registration *acme.ExtendedAccount `json:"registration"`
@@ -317,8 +315,8 @@ func waitForAccountFile(ctx context.Context, email string) (string, error) {
 		backoff.WithMaxElapsedTime(10*time.Second))
 }
 
-func getAccountPath(accountID string, keyType certcrypto.KeyType) string {
-	return filepath.Join(".lego", "accounts", "localhost_15000", accountID, string(keyType))
+func getAccountPath(accountID string) string {
+	return filepath.Join(".lego", "accounts", "localhost_15000", accountID)
 }
 
 func mockDefaultPersist(t *testing.T) {

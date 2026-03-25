@@ -56,10 +56,10 @@ func (e *PrivateKeyNotFound) Error() string {
 //	     │      └── root accounts directory
 //	     └── "path" option
 //
-// keysPath:
+// keyPath:
 //
-//	./.lego/accounts/localhost_14000/foo@example.com/RSA4096/
-//	     │      │             │             │          └── per key type directory
+//	./.lego/accounts/localhost_14000/foo@example.com/foo@example.com.key
+//	     │      │             │             │            └── private key
 //	     │      │             │             └── accountID
 //	     │      │             └── CA server ("server" option)
 //	     │      └── root accounts directory
@@ -67,9 +67,8 @@ func (e *PrivateKeyNotFound) Error() string {
 //
 // accountFilePath:
 //
-//	./.lego/accounts/localhost_14000/foo@example.com/RSA4096/account.json
-//	     │      │             │             │          │       └── account file
-//	     │      │             │             │          └── per key type directory
+//	./.lego/accounts/localhost_14000/foo@example.com/account.json
+//	     │      │             │             │            └── account file
 //	     │      │             │             └── accountID
 //	     │      │             └── CA server ("server" option)
 //	     │      └── root accounts directory
@@ -106,7 +105,7 @@ func (s *AccountsStorage) Save(account *Account) error {
 		return fmt.Errorf("invalid server URL %q: %w", account.Server, err)
 	}
 
-	accountFilePath := s.getAccountFilePath(server, account.GetKeyType(), account.GetID())
+	accountFilePath := s.getAccountFilePath(server, account.GetID())
 
 	return os.WriteFile(accountFilePath, jsonBytes, filePerm)
 }
@@ -120,7 +119,7 @@ func (s *AccountsStorage) Get(server string, keyType certcrypto.KeyType, email, 
 
 	effectiveAccountID := getEffectiveAccountID(email, accountID)
 
-	if !s.existsAccountFile(serverURL, keyType, effectiveAccountID) {
+	if !s.existsAccountFile(serverURL, effectiveAccountID) {
 		var account *Account
 
 		account, err = s.createAccount(serverURL, keyType, email, accountID)
@@ -166,7 +165,7 @@ func (s *AccountsStorage) createAccount(server *url.URL, keyType certcrypto.KeyT
 // It will flag the account as needing recovery if the registration is missing.
 // And it will also create a new private key if it doesn't exist (and save the private key file).
 func (s *AccountsStorage) getAccount(server *url.URL, keyType certcrypto.KeyType, effectiveAccountID string) (*Account, error) {
-	accountFilePath := s.getAccountFilePath(server, keyType, effectiveAccountID)
+	accountFilePath := s.getAccountFilePath(server, effectiveAccountID)
 
 	fileBytes, err := os.ReadFile(accountFilePath)
 	if err != nil {
@@ -187,7 +186,7 @@ func (s *AccountsStorage) getAccount(server *url.URL, keyType certcrypto.KeyType
 		}
 	}
 
-	account.key, err = s.readPrivateKey(server, keyType, effectiveAccountID)
+	account.key, err = s.readPrivateKey(server, effectiveAccountID)
 	if err != nil {
 		var privateKeyNotFound *PrivateKeyNotFound
 
@@ -229,7 +228,7 @@ func (s *AccountsStorage) getAccount(server *url.URL, keyType certcrypto.KeyType
 
 // createPrivateKey generates a new private key and saves it to a file.
 func (s *AccountsStorage) createPrivateKey(server *url.URL, keyType certcrypto.KeyType, effectiveAccountID string) (crypto.Signer, error) {
-	accKeyPath := s.getAccountKeyPath(server, keyType, effectiveAccountID)
+	accKeyPath := s.getAccountKeyPath(server, effectiveAccountID)
 	keysPath := filepath.Dir(accKeyPath)
 
 	err := CreateNonExistingFolder(keysPath)
@@ -265,8 +264,8 @@ func (s *AccountsStorage) createPrivateKey(server *url.URL, keyType certcrypto.K
 }
 
 // readPrivateKey reads the private key from a file.
-func (s *AccountsStorage) readPrivateKey(server *url.URL, keyType certcrypto.KeyType, effectiveAccountID string) (crypto.Signer, error) {
-	accKeyPath := s.getAccountKeyPath(server, keyType, effectiveAccountID)
+func (s *AccountsStorage) readPrivateKey(server *url.URL, effectiveAccountID string) (crypto.Signer, error) {
+	accKeyPath := s.getAccountKeyPath(server, effectiveAccountID)
 
 	if _, err := os.Stat(accKeyPath); os.IsNotExist(err) {
 		return nil, &PrivateKeyNotFound{AccountID: effectiveAccountID}
@@ -283,8 +282,8 @@ func (s *AccountsStorage) readPrivateKey(server *url.URL, keyType certcrypto.Key
 }
 
 // existsAccountFile checks if the account file exists.
-func (s *AccountsStorage) existsAccountFile(server *url.URL, keyType certcrypto.KeyType, effectiveAccountID string) bool {
-	accountFilePath := s.getAccountFilePath(server, keyType, effectiveAccountID)
+func (s *AccountsStorage) existsAccountFile(server *url.URL, effectiveAccountID string) bool {
+	accountFilePath := s.getAccountFilePath(server, effectiveAccountID)
 
 	if _, err := os.Stat(accountFilePath); os.IsNotExist(err) {
 		return false
@@ -299,18 +298,13 @@ func (s *AccountsStorage) existsAccountFile(server *url.URL, keyType certcrypto.
 }
 
 // getAccountKeyPath returns the account private key path.
-func (s *AccountsStorage) getAccountKeyPath(server *url.URL, keyType certcrypto.KeyType, effectiveAccountID string) string {
-	return filepath.Join(s.getKeyPath(server, keyType, effectiveAccountID), effectiveAccountID+".key")
+func (s *AccountsStorage) getAccountKeyPath(server *url.URL, effectiveAccountID string) string {
+	return filepath.Join(s.getRootUserPath(server, effectiveAccountID), effectiveAccountID+".key")
 }
 
 // getAccountFilePath returns the account file path.
-func (s *AccountsStorage) getAccountFilePath(server *url.URL, keyType certcrypto.KeyType, effectiveAccountID string) string {
-	return filepath.Join(s.getKeyPath(server, keyType, effectiveAccountID), accountFileName)
-}
-
-// getKeyPath returns the path to the folder that contains the private key for an account.
-func (s *AccountsStorage) getKeyPath(server *url.URL, keyType certcrypto.KeyType, effectiveAccountID string) string {
-	return filepath.Join(s.getRootUserPath(server, effectiveAccountID), string(keyType))
+func (s *AccountsStorage) getAccountFilePath(server *url.URL, effectiveAccountID string) string {
+	return filepath.Join(s.getRootUserPath(server, effectiveAccountID), accountFileName)
 }
 
 // getRootUserPath returns the path to the root folder for an account.

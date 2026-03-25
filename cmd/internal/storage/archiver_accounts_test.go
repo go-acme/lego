@@ -28,8 +28,8 @@ func TestArchiver_Accounts(t *testing.T) {
 	err := os.MkdirAll(archiver.accountsBasePath, 0o700)
 	require.NoError(t, err)
 
-	generateFakeAccountFiles(t, archiver.accountsBasePath, "ca.example.com", "EC256", "foo")
-	generateFakeAccountFiles(t, archiver.accountsBasePath, "ca.example.com", "EC256", "bar")
+	generateFakeAccountFiles(t, archiver.accountsBasePath, "ca.example.com", "foo")
+	generateFakeAccountFiles(t, archiver.accountsBasePath, "ca.example.com", "bar")
 
 	// archive
 
@@ -52,10 +52,10 @@ func TestArchiver_Accounts(t *testing.T) {
 	assert.Empty(t, entries)
 }
 
-func generateFakeAccountFiles(t *testing.T, accountsBasePath, server, keyType, accountID string) {
+func generateFakeAccountFiles(t *testing.T, accountsBasePath, server, accountID string) {
 	t.Helper()
 
-	filename := filepath.Join(accountsBasePath, server, accountID, keyType, "account.json")
+	filename := filepath.Join(accountsBasePath, server, accountID, "account.json")
 
 	err := os.MkdirAll(filepath.Dir(filename), 0o700)
 	require.NoError(t, err)

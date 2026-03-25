@@ -55,38 +55,36 @@ func Accounts(root string) error {
 			},
 		}
 
+		accountDir := filepath.Dir(srcAccountFilePath)
+
 		if account.ID == "" {
-			account.ID = filepath.Base(filepath.Dir(srcAccountFilePath))
+			account.ID = filepath.Base(accountDir)
 		}
 
-		accountsDir := filepath.Dir(srcAccountFilePath)
-
-		srcKeyPath := filepath.Join(accountsDir, "keys", account.GetID()+storage.ExtKey)
+		srcKeyPath := filepath.Join(accountDir, "keys", account.GetID()+storage.ExtKey)
 
 		account.KeyType, err = getKeyType(srcKeyPath)
 		if err != nil {
 			return fmt.Errorf("could not guess the account key type: %w", err)
 		}
 
-		newAccountDir := filepath.Join(accountsDir, string(account.GetKeyType()))
+		// Move the private key file.
 
-		err = os.MkdirAll(newAccountDir, 0o700)
-		if err != nil {
-			return fmt.Errorf("could not create the directory %q: %w", newAccountDir, err)
-		}
-
-		// Rename the private key file.
-
-		dstKeyPath := filepath.Join(newAccountDir, account.GetID()+storage.ExtKey)
+		dstKeyPath := filepath.Join(accountDir, account.GetID()+storage.ExtKey)
 
 		err = os.Rename(srcKeyPath, dstKeyPath)
 		if err != nil {
 			return fmt.Errorf("could not rename the private key file %q to %q: %w", srcKeyPath, dstKeyPath, err)
 		}
 
+		err = os.RemoveAll(filepath.Join(accountDir, "keys"))
+		if err != nil {
+			return fmt.Errorf("could not remove the old keys directory: %w", err)
+		}
+
 		// Create the new account file.
 
-		newAccountFile, err := os.Create(filepath.Join(newAccountDir, "account.json"))
+		newAccountFile, err := os.Create(filepath.Join(accountDir, "account.json"))
 		if err != nil {
 			return fmt.Errorf("could not create the new account file: %w", err)
 		}
@@ -98,27 +96,6 @@ func Accounts(root string) error {
 		if err != nil {
 			return fmt.Errorf("could not encode the new account file: %w", err)
 		}
-
-		// Clean up.
-
-		err = accountsCleanUp(srcAccountFilePath)
-		if err != nil {
-			return fmt.Errorf("could not clean up: %w", err)
-		}
-	}
-
-	return nil
-}
-
-func accountsCleanUp(srcAccountPath string) error {
-	err := os.Remove(srcAccountPath)
-	if err != nil {
-		return fmt.Errorf("could not remove the account file %q: %w", srcAccountPath, err)
-	}
-
-	err = os.Remove(filepath.Join(filepath.Dir(srcAccountPath), "keys"))
-	if err != nil {
-		return fmt.Errorf("could not remove the keys directory: %w", err)
 	}
 
 	return nil
@@ -132,7 +109,7 @@ func getKeyType(srcKeyPath string) (certcrypto.KeyType, error) {
 
 	kt, err := certcrypto.GetPrivateKeyType(pk)
 	if err != nil {
-		return "", fmt.Errorf("could not guess the private key type: %w", err)
+		return "", fmt.Errorf("could not get the private key type: %w", err)
 	}
 
 	return kt, nil

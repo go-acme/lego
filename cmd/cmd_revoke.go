@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
@@ -32,16 +33,21 @@ func revoke(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
-	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
+	account, err := accountsStorage.Get(keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
 
-	if account.Registration == nil {
-		return fmt.Errorf("the account %s is not registered", account.GetID())
+	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
+		return newClient(cmd, account)
+	})
+
+	err = handleRegistration(ctx, cmd, lazyClient, accountsStorage, account, false)
+	if err != nil {
+		return fmt.Errorf("registration: %w", err)
 	}
 
-	client, err := newClient(cmd, account)
+	client, err := lazyClient()
 	if err != nil {
 		return fmt.Errorf("new client: %w", err)
 	}

@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
@@ -39,30 +40,69 @@ func register(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
-	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
+	account, err := accountsStorage.Get(keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
 
-	if account.Registration == nil {
-		client, err := newClient(cmd, account)
+	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
+		return newClient(cmd, account)
+	})
+
+	err = handleRegistration(ctx, cmd, lazyClient, accountsStorage, account, true)
+	if err != nil {
+		return fmt.Errorf("registration: %w", err)
+	}
+
+	return nil
+}
+
+func handleRegistration(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, accountsStorage *storage.AccountsStorage, account *storage.Account, allowRegister bool) error {
+	if account.NeedsRecovery {
+		client, err := lazyClient()
 		if err != nil {
-			return fmt.Errorf("new client: %w", err)
+			return fmt.Errorf("set up client: %w", err)
 		}
 
-		reg, err := registerAccount(ctx, cmd, client)
+		reg, err := client.Registration.ResolveAccountByKey(ctx)
 		if err != nil {
-			return fmt.Errorf("could not complete registration: %w", err)
+			return fmt.Errorf("resolve account by key: %w", err)
 		}
 
 		account.Registration = reg
-		if err = accountsStorage.Save(keyType, account); err != nil {
+
+		err = accountsStorage.Save(account)
+		if err != nil {
 			return fmt.Errorf("could not save the account file: %w", err)
 		}
 
-		log.Warnf(log.LazySprintf(storage.RootPathWarningMessage, accountsStorage.GetRootPath()))
-	} else {
-		log.Info("Account already registered, skipping.")
+		return nil
+	}
+
+	if allowRegister {
+		if account.Registration == nil {
+			client, err := lazyClient()
+			if err != nil {
+				return fmt.Errorf("set up client: %w", err)
+			}
+
+			reg, err := registerAccount(ctx, cmd, client)
+			if err != nil {
+				return fmt.Errorf("could not complete registration: %w", err)
+			}
+
+			account.Registration = reg
+
+			if err = accountsStorage.Save(account); err != nil {
+				return fmt.Errorf("could not save the account file: %w", err)
+			}
+
+			log.Warnf(log.LazySprintf(storage.RootPathWarningMessage, accountsStorage.GetRootPath()))
+		} else {
+			log.Debug("Account already registered, skipping.", slog.String("account", account.GetID()))
+		}
+	} else if account.Registration == nil {
+		return fmt.Errorf("the account %s is not registered", account.GetID())
 	}
 
 	return nil

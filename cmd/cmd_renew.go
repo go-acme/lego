@@ -28,8 +28,6 @@ import (
 
 const noDays = -math.MaxInt
 
-type lzSetUp func() (*lego.Client, error)
-
 func createRenew() *cli.Command {
 	return &cli.Command{
 		Name:   "renew",
@@ -51,30 +49,31 @@ func renew(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
-	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
+	account, err := accountsStorage.Get(keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
 
-	if account.Registration == nil {
-		return fmt.Errorf("the account %s is not registered", account.GetID())
-	}
-
-	certsStorage := storage.NewCertificatesStorage(cmd.String(flags.FlgPath))
-
 	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
-		client, err := newClient(cmd, account)
-		if err != nil {
-			return nil, fmt.Errorf("new client: %w", err)
+		client, errC := newClient(cmd, account)
+		if errC != nil {
+			return nil, fmt.Errorf("new client: %w", errC)
 		}
 
-		err = setupChallenges(cmd, client)
-		if err != nil {
-			return nil, fmt.Errorf("setup challenges: %w", err)
+		errC = setupChallenges(cmd, client)
+		if errC != nil {
+			return nil, fmt.Errorf("setup challenges: %w", errC)
 		}
 
 		return client, nil
 	})
+
+	err = handleRegistration(ctx, cmd, lazyClient, accountsStorage, account, false)
+	if err != nil {
+		return fmt.Errorf("registration: %w", err)
+	}
+
+	certsStorage := storage.NewCertificatesStorage(cmd.String(flags.FlgPath))
 
 	hookManager := newHookManager(cmd, certsStorage, account)
 

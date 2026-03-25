@@ -10,16 +10,13 @@ import (
 
 // Account represents a users local saved credentials.
 type Account struct {
-	ID           string                `json:"id"`
-	Email        string                `json:"email"`
-	KeyType      certcrypto.KeyType    `json:"keyType"`
-	Registration *acme.ExtendedAccount `json:"registration"`
+	ID            string                `json:"id"`
+	Email         string                `json:"email"`
+	KeyType       certcrypto.KeyType    `json:"keyType"`
+	Registration  *acme.ExtendedAccount `json:"registration"`
+	NeedsRecovery bool                  `json:"-"`
 
 	key crypto.Signer
-}
-
-func NewAccount(email, id string, keyType certcrypto.KeyType, key crypto.Signer) *Account {
-	return &Account{Email: email, ID: id, KeyType: keyType, key: key}
 }
 
 /** Implementation of the registration.User interface **/

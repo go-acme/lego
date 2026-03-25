@@ -3,15 +3,14 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"sync"
 
-	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
 )
 
@@ -36,7 +35,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("accounts storage initialization: %w", err)
 	}
 
-	account, err := accountsStorage.Get(ctx, keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
+	account, err := accountsStorage.Get(keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
 	}
@@ -45,25 +44,18 @@ func run(ctx context.Context, cmd *cli.Command) error {
 
 	hookManager := newHookManager(cmd, certsStorage, account)
 
-	client, err := newClient(cmd, account)
+	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
+		return newClient(cmd, account)
+	})
+
+	err = handleRegistration(ctx, cmd, lazyClient, accountsStorage, account, true)
 	if err != nil {
-		return fmt.Errorf("new client: %w", err)
+		return fmt.Errorf("registration: %w", err)
 	}
 
-	if account.Registration == nil {
-		var reg *acme.ExtendedAccount
-
-		reg, err = registerAccount(ctx, cmd, client)
-		if err != nil {
-			return fmt.Errorf("could not complete registration: %w", err)
-		}
-
-		account.Registration = reg
-		if err = accountsStorage.Save(keyType, account); err != nil {
-			return fmt.Errorf("could not save the account file: %w", err)
-		}
-
-		log.Warnf(log.LazySprintf(storage.RootPathWarningMessage, accountsStorage.GetRootPath()))
+	client, err := lazyClient()
+	if err != nil {
+		return fmt.Errorf("new client: %w", err)
 	}
 
 	err = setupChallenges(cmd, client)

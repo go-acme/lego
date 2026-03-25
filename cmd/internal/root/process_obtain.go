@@ -8,14 +8,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/cmd/internal"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
 )
 
@@ -40,7 +38,7 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 			return err
 		}
 
-		account, err := accountsStorage.Get(ctx, keyType, accountConfig.Email, accountID)
+		account, err := accountsStorage.Get(keyType, accountConfig.Email, accountID)
 		if err != nil {
 			return err
 		}
@@ -58,26 +56,9 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 			return client, nil
 		})
 
-		if account.Registration == nil {
-			client, errC := lazyClient()
-			if errC != nil {
-				return fmt.Errorf("set up client: %w", errC)
-			}
-
-			var reg *acme.ExtendedAccount
-
-			reg, errC = registerAccount(ctx, client, accountConfig)
-			if errC != nil {
-				return fmt.Errorf("could not complete registration: %w", errC)
-			}
-
-			account.Registration = reg
-
-			if errC = accountsStorage.Save(keyType, account); errC != nil {
-				return fmt.Errorf("could not save the account file: %w", errC)
-			}
-
-			log.Warnf(log.LazySprintf(storage.RootPathWarningMessage, accountsStorage.GetRootPath()))
+		err = handleRegistration(ctx, lazyClient, accountConfig, accountsStorage, account)
+		if err != nil {
+			return fmt.Errorf("registration: %w", err)
 		}
 
 		certsStorage := storage.NewCertificatesStorage(cfg.Storage)

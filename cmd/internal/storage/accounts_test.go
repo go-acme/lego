@@ -66,7 +66,7 @@ func TestAccountsStorage_Save(t *testing.T) {
 	err = os.MkdirAll(filepath.Dir(accountFilePath), 0o755)
 	require.NoError(t, err)
 
-	err = storage.Save(keyType, account)
+	err = storage.Save(account)
 	require.NoError(t, err)
 
 	require.FileExists(t, accountFilePath)
@@ -90,7 +90,7 @@ func TestAccountsStorage_Get_newAccount(t *testing.T) {
 	email := "test@example.com"
 	keyType := certcrypto.RSA4096
 
-	account, err := storage.Get(t.Context(), keyType, email, "")
+	account, err := storage.Get(keyType, email, "")
 	require.NoError(t, err)
 
 	assert.Equal(t, "test@example.com", account.GetEmail())
@@ -110,7 +110,7 @@ func TestAccountsStorage_Get_existingAccount(t *testing.T) {
 
 	accountID := "test@example.com"
 
-	account, err := storage.Get(t.Context(), certcrypto.RSA4096, "", accountID)
+	account, err := storage.Get(certcrypto.RSA4096, "", accountID)
 	require.NoError(t, err)
 
 	assert.Equal(t, "account@example.com", account.GetEmail())

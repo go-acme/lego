@@ -52,11 +52,22 @@ func (m *Archiver) archiveAccounts(cfg *configuration.Configuration) error {
 	date := strconv.FormatInt(time.Now().Unix(), 10)
 
 	for _, filename := range matches {
+		log.Debug("Found an account file", slog.String("filepath", filename))
+
 		dirAcc, _ := filepath.Split(filename)
 		dirSrv, accID := filepath.Split(filepath.Dir(dirAcc))
 		_, srv := filepath.Split(filepath.Dir(dirSrv))
 
 		if _, ok := accountTree[srv]; !ok {
+			if !isManagedAccount(filename) {
+				log.Warn(
+					"The account has been created by the command line and not defined in the configuration file: skipping the archive.",
+					slog.String("filepath", filename),
+				)
+
+				continue
+			}
+
 			err = m.archiveAccount("server", dirSrv, srv, date)
 			if err != nil {
 				return fmt.Errorf("archive account (server) %q: %w", srv, err)
@@ -66,6 +77,15 @@ func (m *Archiver) archiveAccounts(cfg *configuration.Configuration) error {
 		}
 
 		if _, ok := accountTree[srv][accID]; !ok {
+			if !isManagedAccount(filename) {
+				log.Warn(
+					"The account has been created by the command line and not defined in the configuration file: skipping the archive.",
+					slog.String("filepath", filename),
+				)
+
+				continue
+			}
+
 			err = m.archiveAccount("accountID", dirAcc, srv, accID, date)
 			if err != nil {
 				return fmt.Errorf("archive account (accountID) %q: %w", accID, err)
@@ -136,4 +156,14 @@ func accountMapping(cfg *configuration.Configuration) (map[string]map[string]str
 	}
 
 	return accountTree, nil
+}
+
+func isManagedAccount(filename string) bool {
+	account, err := readAccountFile(filename)
+	if err != nil {
+		log.Error("Could not read the account file", slog.String("filepath", filename))
+		return false
+	}
+
+	return account.Origin == OriginConfiguration || account.Origin == OriginMigration
 }

@@ -31,7 +31,7 @@ func CreateCommands() []*cli.Command {
 	return []*cli.Command{
 		createRun(),
 		createRevoke(),
-		createRegister(),
+		createAccounts(),
 		createDNSHelp(),
 		createList(),
 		createMigrate(),

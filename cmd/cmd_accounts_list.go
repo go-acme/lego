@@ -21,7 +21,7 @@ type ListAccount struct {
 
 func createListAccounts() *cli.Command {
 	return &cli.Command{
-		Name:   "accounts",
+		Name:   "list",
 		Usage:  "Display information about accounts.",
 		Action: listAccounts,
 		Flags:  flags.CreateListFlags(),

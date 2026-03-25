@@ -11,8 +11,9 @@ const DefaultAccountID = "noemail@example.com"
 const defaultLegoDirectory = ".lego"
 
 const (
-	defaultHTTP01    = "http-01"
-	defaultTLSALPN01 = "tls-alpn-01"
+	defaultHTTP01       = "http-01"
+	defaultTLSALPN01    = "tls-alpn-01"
+	defaultDNSPersist01 = "dns-persist-01"
 )
 
 const (
@@ -88,8 +89,6 @@ func applyChallengesDefaults(cfg *Configuration) {
 func applyCertificatesDefaults(cfg *Configuration) {
 	defaultAccount := getDefaultAccountID(cfg)
 
-	var needDefaultHTTP01, needDefaultTLSALPN01 bool
-
 	for _, cert := range cfg.Certificates {
 		if cert.Account == "" {
 			cert.Account = defaultAccount
@@ -101,30 +100,30 @@ func applyCertificatesDefaults(cfg *Configuration) {
 
 		applyRenewDefaults(cert)
 
-		if cert.Challenge == defaultHTTP01 {
-			needDefaultHTTP01 = true
-			continue
-		}
+		switch cert.Challenge {
+		case defaultHTTP01:
+			setDefaultHTTP01(cfg)
 
-		if cert.Challenge == defaultTLSALPN01 {
-			needDefaultTLSALPN01 = true
 			continue
-		}
 
-		if cert.Challenge == "" && len(cfg.Challenges) == 1 {
-			// If there is only one challenge, use it by default.
-			for c := range cfg.Challenges {
-				cert.Challenge = c
+		case defaultTLSALPN01:
+			setDefaultTLSALPN01(cfg)
+
+			continue
+
+		case defaultDNSPersist01:
+			setDefaultDNSPersist01(cfg)
+
+			continue
+
+		default:
+			if cert.Challenge == "" && len(cfg.Challenges) == 1 {
+				// If there is only one challenge, use it by default.
+				for c := range cfg.Challenges {
+					cert.Challenge = c
+				}
 			}
 		}
-	}
-
-	if needDefaultHTTP01 {
-		setDefaultHTTP01(cfg)
-	}
-
-	if needDefaultTLSALPN01 {
-		setDefaultTLSALPN01(cfg)
 	}
 }
 
@@ -151,6 +150,12 @@ func setDefaultTLSALPN01(cfg *Configuration) {
 		cfg.Challenges[defaultTLSALPN01] = &Challenge{TLS: &TLSChallenge{
 			Address: defaultTLSAddress,
 		}}
+	}
+}
+
+func setDefaultDNSPersist01(cfg *Configuration) {
+	if _, ok := cfg.Challenges[defaultDNSPersist01]; !ok {
+		cfg.Challenges[defaultDNSPersist01] = &Challenge{DNSPersist: &DNSPersistChallenge{}}
 	}
 }
 

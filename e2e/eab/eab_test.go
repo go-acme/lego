@@ -2,11 +2,13 @@ package eab
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/rsa"
 	"os"
 	"testing"
 
+	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/challenge/http01"
 	"github.com/go-acme/lego/v5/e2e/internal"
@@ -67,7 +69,7 @@ func TestChallengeHTTP_Run_EAB(t *testing.T) {
 func TestChallengeHTTP_Client_Obtain_EAB(t *testing.T) {
 	t.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &internal.FakeUser{PrivateKey: privateKey}
@@ -95,6 +97,7 @@ func TestChallengeHTTP_Client_Obtain_EAB(t *testing.T) {
 
 	request := certificate.ObtainRequest{
 		Domains: []string{testDomain1},
+		KeyType: certcrypto.RSA2048,
 		Bundle:  true,
 	}
 

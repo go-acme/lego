@@ -56,7 +56,6 @@ func NewClient(config *Config) (*Client, error) {
 	prober := resolver.NewProber(solversManager)
 
 	options := certificate.CertifierOptions{
-		KeyType:             config.Certificate.KeyType,
 		Timeout:             config.Certificate.Timeout,
 		OverallRequestLimit: config.Certificate.OverallRequestLimit,
 	}

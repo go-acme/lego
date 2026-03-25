@@ -130,7 +130,7 @@ func getKeyType(srcKeyPath string) (certcrypto.KeyType, error) {
 		return "", fmt.Errorf("could not read the private key file %q: %w", srcKeyPath, err)
 	}
 
-	kt, err := guessPrivateKeyType(pk)
+	kt, err := certcrypto.GetPrivateKeyType(pk)
 	if err != nil {
 		return "", fmt.Errorf("could not guess the private key type: %w", err)
 	}

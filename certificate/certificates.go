@@ -47,6 +47,8 @@ type Resource struct {
 	ID      string   `json:"id"`
 	Domains []string `json:"domains"`
 
+	KeyType certcrypto.KeyType `json:"keyType"`
+
 	CertURL       string `json:"certUrl"`
 	CertStableURL string `json:"certStableUrl"`
 
@@ -71,9 +73,11 @@ type Resource struct {
 // See https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.2.
 type ObtainRequest struct {
 	Domains        []string
-	PrivateKey     crypto.Signer
 	MustStaple     bool
 	EmailAddresses []string
+
+	PrivateKey crypto.Signer
+	KeyType    certcrypto.KeyType
 
 	NotBefore        time.Time
 	NotAfter         time.Time
@@ -129,7 +133,6 @@ type resolver interface {
 }
 
 type CertifierOptions struct {
-	KeyType             certcrypto.KeyType
 	Timeout             time.Duration
 	OverallRequestLimit int
 }
@@ -216,6 +219,13 @@ func (c *Certifier) Obtain(ctx context.Context, request ObtainRequest) (*Resourc
 		c.deactivateAuthorizations(ctx, order, true)
 	}
 
+	if cert != nil {
+		cert.KeyType, err = getObtainRequestKeyType(request)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return cert, failures.Join()
 }
 
@@ -292,21 +302,20 @@ func (c *Certifier) ObtainForCSR(ctx context.Context, request ObtainForCSRReques
 	if cert != nil {
 		// Add the CSR to the certificate so that it can be used for renewals.
 		cert.CSR = certcrypto.PEMEncode(request.CSR)
+
+		cert.KeyType, err = getObtainForCSRRequestKeyType(request)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return cert, failures.Join()
 }
 
 func (c *Certifier) getForOrder(ctx context.Context, domains []string, order acme.ExtendedOrder, request ObtainRequest) (*Resource, error) {
-	privateKey := request.PrivateKey
-
-	if privateKey == nil {
-		var err error
-
-		privateKey, err = certcrypto.GeneratePrivateKey(c.options.KeyType)
-		if err != nil {
-			return nil, err
-		}
+	privateKey, err := getObtainRequestPrivateKey(request)
+	if err != nil {
+		return nil, err
 	}
 
 	commonName := ""
@@ -724,6 +733,34 @@ func checkOrderStatus(order acme.ExtendedOrder) (bool, error) {
 	default:
 		return false, nil
 	}
+}
+
+func getObtainRequestPrivateKey(request ObtainRequest) (crypto.Signer, error) {
+	if request.PrivateKey != nil {
+		return request.PrivateKey, nil
+	}
+
+	if request.KeyType == "" {
+		return nil, errors.New("the key type is missing")
+	}
+
+	return certcrypto.GeneratePrivateKey(request.KeyType)
+}
+
+func getObtainRequestKeyType(request ObtainRequest) (certcrypto.KeyType, error) {
+	if request.PrivateKey == nil {
+		return request.KeyType, nil
+	}
+
+	return certcrypto.GetPrivateKeyType(request.PrivateKey)
+}
+
+func getObtainForCSRRequestKeyType(request ObtainForCSRRequest) (certcrypto.KeyType, error) {
+	if request.PrivateKey == nil {
+		return certcrypto.GetCSRKeyType(request.CSR)
+	}
+
+	return certcrypto.GetPrivateKeyType(request.PrivateKey)
 }
 
 // https://www.rfc-editor.org/rfc/rfc8555.html#section-7.1.4

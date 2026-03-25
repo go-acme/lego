@@ -3,6 +3,7 @@
 	"domains": [
 		"example.com"
 	],
+	"keyType": "EC256",
 	"certUrl": "https://acme.example.org/cert/123",
 	"certStableUrl": "https://acme.example.org/cert/456"
 }

@@ -223,6 +223,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account: DefaultAccountID,
+						KeyType: string(certcrypto.EC256),
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{},
 						},
@@ -273,6 +274,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account: "",
+						KeyType: string(certcrypto.EC256),
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{},
 						},
@@ -291,6 +293,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account: "acc",
+						KeyType: string(certcrypto.EC256),
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{},
 						},
@@ -313,6 +316,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account: DefaultAccountID,
+						KeyType: string(certcrypto.EC256),
 						Renew: &RenewConfiguration{
 							ReuseKey: true,
 							ARI:      &ARIConfiguration{},
@@ -338,6 +342,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account: DefaultAccountID,
+						KeyType: string(certcrypto.EC256),
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{
 								Disable: true,
@@ -367,6 +372,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 					"a": {
 						Account:   DefaultAccountID,
 						Challenge: defaultHTTP01,
+						KeyType:   string(certcrypto.EC256),
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{},
 						},
@@ -394,6 +400,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 					"a": {
 						Account:   DefaultAccountID,
 						Challenge: defaultTLSALPN01,
+						KeyType:   string(certcrypto.EC256),
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{},
 						},
@@ -418,6 +425,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account:   DefaultAccountID,
+						KeyType:   string(certcrypto.EC256),
 						Challenge: "chlgA",
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{},

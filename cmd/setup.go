@@ -20,8 +20,8 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func newClient(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) (*lego.Client, error) {
-	client, err := lego.NewClient(newClientConfig(cmd, account, keyType))
+func newClient(cmd *cli.Command, account registration.User) (*lego.Client, error) {
+	client, err := lego.NewClient(newClientConfig(cmd, account))
 	if err != nil {
 		return nil, fmt.Errorf("new client: %w", err)
 	}
@@ -33,13 +33,12 @@ func newClient(cmd *cli.Command, account registration.User, keyType certcrypto.K
 	return client, nil
 }
 
-func newClientConfig(cmd *cli.Command, account registration.User, keyType certcrypto.KeyType) *lego.Config {
+func newClientConfig(cmd *cli.Command, account registration.User) *lego.Config {
 	config := lego.NewConfig(account)
 	config.CADirURL = cmd.String(flags.FlgServer)
 	config.UserAgent = getUserAgentFromFlag(cmd)
 
 	config.Certificate = lego.CertificateConfig{
-		KeyType:             keyType,
 		Timeout:             time.Duration(cmd.Int(flags.FlgCertTimeout)) * time.Second,
 		OverallRequestLimit: cmd.Int(flags.FlgOverallRequestLimit),
 	}
@@ -70,10 +69,16 @@ func getUserAgent(cmd *cli.Command, ua string) string {
 	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", ua, cmd.Version))
 }
 
-func newObtainRequest(cmd *cli.Command, domains []string) certificate.ObtainRequest {
+func newObtainRequest(cmd *cli.Command, domains []string) (certificate.ObtainRequest, error) {
+	keyType, err := certcrypto.ToKeyType(cmd.String(flags.FlgKeyType))
+	if err != nil {
+		return certificate.ObtainRequest{}, fmt.Errorf("get the key type (certificate): %w", err)
+	}
+
 	return certificate.ObtainRequest{
 		Domains:                        domains,
 		MustStaple:                     cmd.Bool(flags.FlgMustStaple),
+		KeyType:                        keyType,
 		NotBefore:                      cmd.Timestamp(flags.FlgNotBefore),
 		NotAfter:                       cmd.Timestamp(flags.FlgNotAfter),
 		Bundle:                         !cmd.Bool(flags.FlgNoBundle),
@@ -81,7 +86,7 @@ func newObtainRequest(cmd *cli.Command, domains []string) certificate.ObtainRequ
 		EnableCommonName:               cmd.Bool(flags.FlgEnableCommonName),
 		Profile:                        cmd.String(flags.FlgProfile),
 		AlwaysDeactivateAuthorizations: cmd.Bool(flags.FlgAlwaysDeactivateAuthorizations),
-	}
+	}, nil
 }
 
 func newObtainForCSRRequest(cmd *cli.Command, csr *x509.CertificateRequest) certificate.ObtainForCSRRequest {

@@ -60,6 +60,7 @@ certificates:
   foo: # when a section is removed, clean/archive the related files.
     challenge: one
     account: foo
+    keyType: RSA2048 # if not set, use the account keyType
     domains:
       - example.com
       - '*.example.com'

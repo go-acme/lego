@@ -24,7 +24,7 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 	for accountID, challengesInfo := range createCertificatesMapping(cfg) {
 		accountConfig := cfg.Accounts[accountID]
 
-		keyType, err := certcrypto.GetKeyType(accountConfig.KeyType)
+		keyType, err := certcrypto.ToKeyType(accountConfig.KeyType)
 		if err != nil {
 			return err
 		}
@@ -45,7 +45,7 @@ func obtain(ctx context.Context, cfg *configuration.Configuration) error {
 		}
 
 		lazyClient := sync.OnceValues(func() (*lego.Client, error) {
-			client, errC := lego.NewClient(newClientConfig(serverConfig, account, keyType, cfg.UserAgent))
+			client, errC := lego.NewClient(newClientConfig(serverConfig, account, cfg.UserAgent))
 			if errC != nil {
 				return nil, errC
 			}
@@ -151,12 +151,11 @@ func getNetworkStack(cfg *configuration.Configuration) challenge.NetworkStack {
 	}
 }
 
-func newClientConfig(serverConfig *configuration.Server, account registration.User, keyType certcrypto.KeyType, ua string) *lego.Config {
+func newClientConfig(serverConfig *configuration.Server, account registration.User, ua string) *lego.Config {
 	config := lego.NewConfig(account)
 	config.CADirURL = serverConfig.URL
 	config.UserAgent = ua
-
-	config.Certificate = lego.CertificateConfig{KeyType: keyType}
+	config.Certificate = lego.CertificateConfig{}
 
 	if serverConfig.OverallRequestLimit > 0 {
 		config.Certificate.OverallRequestLimit = serverConfig.OverallRequestLimit

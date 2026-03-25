@@ -194,6 +194,9 @@
         "csr": {
           "type": "string"
         },
+        "keyType": {
+          "type": "string"
+        },
         "preferredChain": {
           "type": "string"
         },

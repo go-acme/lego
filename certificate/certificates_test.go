@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/acme/api"
-	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
@@ -186,7 +185,7 @@ func Test_checkResponse(t *testing.T) {
 	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
-	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
+	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{})
 
 	order := acme.ExtendedOrder{
 		Order: acme.Order{
@@ -222,7 +221,7 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
-	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
+	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{})
 
 	order := acme.ExtendedOrder{
 		Order: acme.Order{
@@ -258,7 +257,7 @@ func Test_checkResponse_no_bundle(t *testing.T) {
 	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
-	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
+	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{})
 
 	order := acme.ExtendedOrder{
 		Order: acme.Order{
@@ -301,7 +300,7 @@ func Test_checkResponse_alternate(t *testing.T) {
 	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
-	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
+	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{})
 
 	order := acme.ExtendedOrder{
 		Order: acme.Order{
@@ -341,7 +340,7 @@ func Test_Get(t *testing.T) {
 	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", key)
 	require.NoError(t, err)
 
-	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
+	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{})
 
 	certRes, err := certifier.Get(t.Context(), server.URL+"/acme/cert/test-cert", true)
 	require.NoError(t, err)

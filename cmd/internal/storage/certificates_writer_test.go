@@ -26,6 +26,7 @@ func TestCertificatesStorage_Save(t *testing.T) {
 	resource := &certificate.Resource{
 		ID:                "example.com",
 		Domains:           []string{"example.com"},
+		KeyType:           "EC256",
 		CertURL:           "https://acme.example.org/cert/123",
 		CertStableURL:     "https://acme.example.org/cert/456",
 		PrivateKey:        []byte("PrivateKey"),
@@ -72,6 +73,7 @@ func TestCertificatesStorage_Save_pem(t *testing.T) {
 	resource := &certificate.Resource{
 		ID:                "example.com",
 		Domains:           []string{"example.com"},
+		KeyType:           "EC256",
 		CertURL:           "https://acme.example.org/cert/123",
 		CertStableURL:     "https://acme.example.org/cert/456",
 		PrivateKey:        []byte("PrivateKey"),

@@ -95,6 +95,10 @@ func applyCertificatesDefaults(cfg *Configuration) {
 			cert.Account = defaultAccount
 		}
 
+		if cert.KeyType == "" {
+			cert.KeyType = getDefaultCertificateKeyType(cfg, cert.Account)
+		}
+
 		applyRenewDefaults(cert)
 
 		if cert.Challenge == defaultHTTP01 {
@@ -161,4 +165,16 @@ func getDefaultAccountID(cfg *Configuration) string {
 	}
 
 	return ""
+}
+
+func getDefaultCertificateKeyType(cfg *Configuration, acc string) string {
+	if cfg.Accounts == nil {
+		return string(certcrypto.EC256)
+	}
+
+	if account, ok := cfg.Accounts[acc]; ok {
+		return account.KeyType
+	}
+
+	return string(certcrypto.EC256)
 }

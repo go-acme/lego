@@ -18,6 +18,7 @@ func TestCertificatesStorage_ReadResource(t *testing.T) {
 	expected := &certificate.Resource{
 		ID:            "example.com",
 		Domains:       []string{"example.com"},
+		KeyType:       "EC256",
 		CertURL:       "https://acme.example.org/cert/123",
 		CertStableURL: "https://acme.example.org/cert/456",
 	}

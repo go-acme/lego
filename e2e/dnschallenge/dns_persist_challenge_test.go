@@ -2,6 +2,8 @@ package dnschallenge
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
@@ -44,7 +46,7 @@ const (
 func TestChallengeDNSPersist_Client_Obtain(t *testing.T) {
 	t.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &internal.FakeUser{PrivateKey: privateKey}
@@ -74,6 +76,7 @@ func TestChallengeDNSPersist_Client_Obtain(t *testing.T) {
 
 	request := certificate.ObtainRequest{
 		Domains:    []string{testPersistDomain},
+		KeyType:    certcrypto.RSA2048,
 		Bundle:     true,
 		PrivateKey: privateKeyCSR,
 	}

@@ -37,7 +37,7 @@ func (k *KeyTypeCompat) UnmarshalText(text []byte) error {
 		// Compatibility with versions before lego/v5.
 		*k = RSA8192
 	default:
-		kt, err := certcrypto.GetKeyType(string(text))
+		kt, err := certcrypto.ToKeyType(string(text))
 		if err != nil {
 			return err
 		}

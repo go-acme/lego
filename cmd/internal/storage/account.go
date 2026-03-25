@@ -2,6 +2,7 @@ package storage
 
 import (
 	"crypto"
+	"fmt"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
@@ -19,6 +20,20 @@ type Account struct {
 	NeedsRecovery bool                  `json:"-"`
 
 	key crypto.Signer
+}
+
+func NewRawAccount(id, email string, key crypto.Signer) (*Account, error) {
+	keyType, err := certcrypto.GetKeyType(key)
+	if err != nil {
+		return nil, fmt.Errorf("get the key type: %w", err)
+	}
+
+	return &Account{
+		ID:      getEffectiveAccountID(email, id),
+		Email:   email,
+		KeyType: keyType,
+		key:     key,
+	}, nil
 }
 
 /** Implementation of the registration.User interface **/

@@ -1,12 +1,9 @@
 package cmd
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"log/slog"
-	"os"
-	"strings"
 	"sync"
 
 	"github.com/go-acme/lego/v5/acme"
@@ -143,26 +140,7 @@ func handleTOS(cmd *cli.Command, client *lego.Client) bool {
 		return true
 	}
 
-	reader := bufio.NewReader(os.Stdin)
+	log.Warn("Please review the TOS.", slog.String("url", urlTOS))
 
-	log.Warn("Please review the TOS", slog.String("url", urlTOS))
-
-	for {
-		fmt.Println("Do you accept the TOS? Y/n")
-
-		text, err := reader.ReadString('\n')
-		if err != nil {
-			log.Fatal("Could not read from the console", log.ErrorAttr(err))
-		}
-
-		text = strings.Trim(text, "\r\n")
-		switch text {
-		case "", "y", "Y":
-			return true
-		case "n", "N":
-			return false
-		default:
-			fmt.Println("Your input was invalid. Please answer with one of Y/y, n/N or by pressing enter.")
-		}
-	}
+	return confirm("Do you accept the TOS?")
 }

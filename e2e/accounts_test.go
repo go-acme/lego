@@ -5,7 +5,9 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
+	"io"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/go-acme/lego/v5/e2e/internal"
@@ -23,6 +25,49 @@ func TestAccount_Register(t *testing.T) {
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", caDirectory,
+	)
+	require.NoError(t, err)
+}
+
+func TestAccount_Recover(t *testing.T) {
+	loader.CleanLegoFiles(t.Context())
+
+	err := load.RunLego(t.Context(),
+		"accounts", "register",
+		"-m", testEmail1,
+		"--accept-tos",
+		"-s", caDirectory,
+	)
+	require.NoError(t, err)
+
+	file, err := os.ReadFile(filepath.FromSlash(".lego/accounts/localhost_14000/lego@example.com/lego@example.com.key"))
+	require.NoError(t, err)
+
+	privateKeyPath := filepath.Join(t.TempDir(), "foo.key")
+
+	err = os.WriteFile(privateKeyPath, file, 0o600)
+	require.NoError(t, err)
+
+	// Delete the account directory
+	err = os.RemoveAll(filepath.FromSlash(".lego/accounts/"))
+	require.NoError(t, err)
+
+	stdinReader, stdinWriter := io.Pipe()
+
+	defer func() { _ = stdinReader.Close() }()
+
+	go func() {
+		defer func() { _ = stdinWriter.Close() }()
+
+		_, err = io.WriteString(stdinWriter, "Y\n")
+	}()
+
+	err = load.RunLegoWithInput(t.Context(),
+		stdinReader,
+		"accounts", "recover",
+		"-m", testEmail1,
+		"-s", caDirectory,
+		"--private-key", privateKeyPath,
 	)
 	require.NoError(t, err)
 }

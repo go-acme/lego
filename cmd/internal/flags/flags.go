@@ -153,6 +153,23 @@ func CreateRegisterFlags() []cli.Flag {
 	return flags
 }
 
+func CreateRecoverFlags() []cli.Flag {
+	flags := []cli.Flag{
+		createPathFlag(true),
+		&cli.StringFlag{
+			Name:     FlgPrivateKey,
+			Sources:  cli.EnvVars(toEnvName(FlgPrivateKey)),
+			Usage:    "Path to a private key (PEM encoded) for the account.",
+			Required: true,
+		},
+	}
+
+	flags = append(flags, createACMEClientFlags()...)
+	flags = append(flags, createAccountFlags()...)
+
+	return flags
+}
+
 func CreateListFlags() []cli.Flag {
 	return []cli.Flag{
 		createPathFlag(false),

@@ -10,6 +10,7 @@ func createAccounts() *cli.Command {
 		Usage: "Accounts management.",
 		Commands: []*cli.Command{
 			createRegister(),
+			createRecover(),
 			createListAccounts(),
 		},
 	}

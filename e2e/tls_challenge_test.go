@@ -32,9 +32,7 @@ func TestChallengeTLS_Run_Domains(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 func TestChallengeTLS_Run_IP(t *testing.T) {
@@ -49,9 +47,7 @@ func TestChallengeTLS_Run_IP(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 func TestChallengeTLS_Run_CSR(t *testing.T) {
@@ -68,9 +64,7 @@ func TestChallengeTLS_Run_CSR(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
@@ -87,9 +81,7 @@ func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 func TestChallengeTLS_Run_Revoke(t *testing.T) {
@@ -105,9 +97,7 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	err = load.RunLego(t.Context(),
 		"revoke",
@@ -115,9 +105,7 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 		"-s", caDirectory,
 		"-c", testDomain2,
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
@@ -132,9 +120,7 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 		"--tls",
 		"--tls.port", ":5001",
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	err = load.RunLego(t.Context(),
 		"revoke",
@@ -142,9 +128,7 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 		"-s", caDirectory,
 		"-c", testDomain4,
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 func TestChallengeTLS_Client_Obtain(t *testing.T) {

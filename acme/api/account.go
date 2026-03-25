@@ -64,6 +64,8 @@ func (a *AccountService) Get(ctx context.Context, accountURL string) (acme.Accou
 }
 
 // Update Updates an account.
+// https://www.rfc-editor.org/rfc/rfc8555.html#section-7.3.2
+// https://www.rfc-editor.org/rfc/rfc8555.html#section-7.3.3
 func (a *AccountService) Update(ctx context.Context, accountURL string, req acme.Account) (acme.Account, error) {
 	if accountURL == "" {
 		return acme.Account{}, errors.New("account[update]: empty URL")
@@ -80,6 +82,7 @@ func (a *AccountService) Update(ctx context.Context, accountURL string, req acme
 }
 
 // Deactivate Deactivates an account.
+// https://www.rfc-editor.org/rfc/rfc8555.html#section-7.3.6
 func (a *AccountService) Deactivate(ctx context.Context, accountURL string) error {
 	if accountURL == "" {
 		return errors.New("account[deactivate]: empty URL")
@@ -92,6 +95,7 @@ func (a *AccountService) Deactivate(ctx context.Context, accountURL string) erro
 }
 
 // KeyChange Changes the account key.
+// https://www.rfc-editor.org/rfc/rfc8555.html#section-7.3.5
 func (a *AccountService) KeyChange(ctx context.Context, newKey crypto.Signer) error {
 	uri := a.core.GetDirectory().KeyChangeURL
 

@@ -77,7 +77,7 @@ type Meta struct {
 
 	// profiles (optional, object):
 	// A map of profile names to human-readable descriptions of those profiles.
-	// https://www.ietf.org/id/draft-ietf-acme-profiles-00.html#section-3
+	// https://www.ietf.org/archive/id/draft-ietf-acme-profiles-01.html#name-extensions-to-the-directory
 	Profiles map[string]string `json:"profiles"`
 }
 
@@ -157,7 +157,7 @@ type Order struct {
 	// profile (string, optional):
 	// A string uniquely identifying the profile
 	// which will be used to affect issuance of the certificate requested by this Order.
-	// https://www.ietf.org/id/draft-ietf-acme-profiles-00.html#section-4
+	// https://www.ietf.org/archive/id/draft-ietf-acme-profiles-01.html#name-extensions-to-the-order-res
 	Profile string `json:"profile,omitempty"`
 
 	// notBefore (optional, string):
@@ -350,12 +350,6 @@ type RawCertificate struct {
 	Issuer []byte
 }
 
-// Window is a window of time.
-type Window struct {
-	Start time.Time `json:"start"`
-	End   time.Time `json:"end"`
-}
-
 type ExtendedRenewalInfo struct {
 	RenewalInfo
 
@@ -377,6 +371,12 @@ type RenewalInfo struct {
 	//	or a page documenting which certificates are affected by a mass revocation event.
 	//	Callers SHOULD provide this URL to their operator, if present.
 	ExplanationURL string `json:"explanationURL"`
+}
+
+// Window is a window of time.
+type Window struct {
+	Start time.Time `json:"start"`
+	End   time.Time `json:"end"`
 }
 
 // KeyChange is the response to POST requests made the keyChange endpoint.

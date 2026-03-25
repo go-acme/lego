@@ -31,18 +31,15 @@ func runCertificate(ctx context.Context, lazySetup lzSetUp, certConfig *configur
 }
 
 func obtainCertificate(ctx context.Context, client *lego.Client, certConfig *configuration.Certificate) (*certificate.Resource, error) {
-	domains := certConfig.Domains
-
-	if len(domains) > 0 {
-		keyType, err := certcrypto.ToKeyType(certConfig.KeyType)
+	if certConfig.CSR != "" {
+		csr, err := storage.ReadCSRFile(certConfig.CSR)
 		if err != nil {
-			return nil, fmt.Errorf("get the key type: %w", err)
+			return nil, err
 		}
 
-		request := certificate.ObtainRequest{
-			Domains:                        domains,
-			KeyType:                        keyType,
-			MustStaple:                     certConfig.MustStaple,
+		// obtain a certificate for this CSR
+		request := certificate.ObtainForCSRRequest{
+			CSR:                            csr,
 			NotBefore:                      certConfig.NotBefore,
 			NotAfter:                       certConfig.NotAfter,
 			Bundle:                         !certConfig.NoBundle,
@@ -56,18 +53,18 @@ func obtainCertificate(ctx context.Context, client *lego.Client, certConfig *con
 		// I didn't find a use case for it when using the file configuration.
 		// Maybe this can be added in the future.
 
-		return client.Certificate.Obtain(ctx, request)
+		return client.Certificate.ObtainForCSR(ctx, request)
 	}
 
-	// read the CSR
-	csr, err := storage.ReadCSRFile(certConfig.CSR)
+	keyType, err := certcrypto.ToKeyType(certConfig.KeyType)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get the key type: %w", err)
 	}
 
-	// obtain a certificate for this CSR
-	request := certificate.ObtainForCSRRequest{
-		CSR:                            csr,
+	request := certificate.ObtainRequest{
+		Domains:                        certConfig.Domains,
+		KeyType:                        keyType,
+		MustStaple:                     certConfig.MustStaple,
 		NotBefore:                      certConfig.NotBefore,
 		NotAfter:                       certConfig.NotAfter,
 		Bundle:                         !certConfig.NoBundle,
@@ -81,5 +78,5 @@ func obtainCertificate(ctx context.Context, client *lego.Client, certConfig *con
 	// I didn't find a use case for it when using the file configuration.
 	// Maybe this can be added in the future.
 
-	return client.Certificate.ObtainForCSR(ctx, request)
+	return client.Certificate.Obtain(ctx, request)
 }

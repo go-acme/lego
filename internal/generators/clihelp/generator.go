@@ -55,7 +55,6 @@ func generate(ctx context.Context) error {
 	for _, args := range [][]string{
 		{"lego", "help"},
 		{"lego", "help", "run"},
-		{"lego", "help", "renew"},
 		{"lego", "help", "revoke"},
 		{"lego", "help", "list"},
 		{"lego", "dnshelp"},

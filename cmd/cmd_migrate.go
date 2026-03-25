@@ -73,7 +73,7 @@ func createConfigurationFile(cfg *configuration.Configuration) error {
 		return fmt.Errorf("could not encode the configuration file: %w", err)
 	}
 
-	log.Warn("Please review the configuration file to handle the FIXME.", slog.String("filepath", filename))
+	log.Warn("Please rename and review the configuration file to handle the FIXME.", slog.String("filepath", filename))
 
 	return nil
 }

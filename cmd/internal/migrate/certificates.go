@@ -18,6 +18,10 @@ import (
 	"github.com/mattn/go-zglob"
 )
 
+const (
+	baseCertificatesFolderName = "certificates"
+)
+
 type oldResource struct {
 	Domain        string `json:"domain"`
 	CertURL       string `json:"certUrl"`
@@ -25,7 +29,7 @@ type oldResource struct {
 }
 
 func Certificates(root string, cfg *configuration.Configuration) error {
-	matches, err := zglob.Glob(filepath.Join(root, "certificates", "**", "*.json"))
+	matches, err := zglob.Glob(filepath.Join(root, baseCertificatesFolderName, "**", "*.json"))
 	if err != nil {
 		return err
 	}

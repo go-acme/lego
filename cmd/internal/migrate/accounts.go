@@ -19,6 +19,11 @@ import (
 	"github.com/mattn/go-zglob"
 )
 
+const (
+	accountFileName   = "account.json"
+	oldKeysFolderName = "keys"
+)
+
 type OldAccount struct {
 	Email        string       `json:"email"`
 	Registration *OldResource `json:"registration"`
@@ -31,7 +36,7 @@ type OldResource struct {
 
 // Accounts migrates the old accounts directory structure to the new one.
 func Accounts(root string, cfg *configuration.Configuration) error {
-	matches, err := zglob.Glob(filepath.Join(root, "**", "account.json"))
+	matches, err := zglob.Glob(filepath.Join(root, "**", accountFileName))
 	if err != nil {
 		return err
 	}
@@ -70,7 +75,7 @@ func Accounts(root string, cfg *configuration.Configuration) error {
 			},
 		}
 
-		srcKeyPath := filepath.Join(accountDir, "keys", account.GetID()+storage.ExtKey)
+		srcKeyPath := filepath.Join(accountDir, oldKeysFolderName, account.GetID()+storage.ExtKey)
 
 		account.KeyType, err = getKeyType(srcKeyPath)
 		if err != nil {
@@ -102,13 +107,13 @@ func migrateAccountFiles(accountDir, srcKeyPath string, account storage.Account)
 		return fmt.Errorf("could not rename the private key file %q to %q: %w", srcKeyPath, dstKeyPath, err)
 	}
 
-	err = os.RemoveAll(filepath.Join(accountDir, "keys"))
+	err = os.RemoveAll(filepath.Join(accountDir, oldKeysFolderName))
 	if err != nil {
 		return fmt.Errorf("could not remove the old keys directory: %w", err)
 	}
 
 	// Create the new account file.
-	newAccountFile, err := os.Create(filepath.Join(accountDir, "account.json"))
+	newAccountFile, err := os.Create(filepath.Join(accountDir, accountFileName))
 	if err != nil {
 		return fmt.Errorf("could not create the new account file: %w", err)
 	}

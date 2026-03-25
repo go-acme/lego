@@ -8,29 +8,6 @@ import (
 )
 
 func RunFlagsValidation(ctx context.Context, cmd *cli.Command) (context.Context, error) {
-	// we require either domains or csr, but not both
-	hasDomains := len(cmd.StringSlice(FlgDomains)) > 0
-
-	hasCsr := cmd.String(FlgCSR) != ""
-	if hasDomains && hasCsr {
-		return ctx, fmt.Errorf("please specify either '--%s'/'-%s' or '--%s', but not both",
-			FlgDomains, flgAliasDomains, FlgCSR)
-	}
-
-	if !hasDomains && !hasCsr {
-		return ctx, fmt.Errorf("please specify '--%s'/'-%s' (or '--%s' if you already have a CSR)",
-			FlgDomains, flgAliasDomains, FlgCSR)
-	}
-
-	err := validateChallengeRequirements(cmd)
-	if err != nil {
-		return ctx, err
-	}
-
-	return ctx, validateNetworkStack(cmd)
-}
-
-func RenewFlagsValidation(ctx context.Context, cmd *cli.Command) (context.Context, error) {
 	hasDomains := len(cmd.StringSlice(FlgDomains)) > 0
 	hasCsr := cmd.String(FlgCSR) != ""
 	hasCertID := cmd.String(FlgCertName) != ""
@@ -41,7 +18,7 @@ func RenewFlagsValidation(ctx context.Context, cmd *cli.Command) (context.Contex
 	}
 
 	if !hasCertID && !hasDomains && !hasCsr {
-		return ctx, fmt.Errorf("please specify '--%s' or '--%s'/'-%s' (or '--%s' if you already have a CSR)",
+		return ctx, fmt.Errorf("please specify '--%s' and/or '--%s'/'-%s' (or '--%s' if you already have a CSR)",
 			FlgCertName, FlgDomains, flgAliasDomains, FlgCSR)
 	}
 

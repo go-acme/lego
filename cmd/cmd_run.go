@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
 	"sync"
 
 	"github.com/go-acme/lego/v5/certcrypto"
@@ -11,13 +13,14 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
 )
 
 func createRun() *cli.Command {
 	return &cli.Command{
 		Name:   "run",
-		Usage:  "Register an account, then create and install a certificate",
+		Usage:  "Get or renew a certificate",
 		Before: flags.RunFlagsValidation,
 		Action: run,
 		Flags:  flags.CreateRunFlags(),
@@ -37,109 +40,108 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("set up account: %w", err)
 	}
 
-	hookManager := newHookManager(cmd, store.Certificate, account)
-
 	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
-		return newClient(cmd, account)
+		client, errC := newClient(cmd, account)
+		if errC != nil {
+			return nil, fmt.Errorf("new client: %w", errC)
+		}
+
+		errC = setupChallenges(cmd, client)
+		if errC != nil {
+			return nil, fmt.Errorf("setup challenges: %w", errC)
+		}
+
+		return client, nil
 	})
 
-	err = handleRegistration(ctx, cmd, lazyClient, store.Account, account, true)
+	hookManager := newHookManager(cmd, store.Certificate, account)
+
+	certID, err := getCertID(cmd)
 	if err != nil {
-		return fmt.Errorf("registration: %w", err)
+		return err
 	}
 
+	resource, err := store.Certificate.ReadResource(certID)
+	if err != nil {
+		pe := new(fs.PathError)
+		if !errors.As(err, &pe) {
+			return fmt.Errorf("reading certificate resource file for %q: %w", certID, err)
+		}
+	}
+
+	err = handleRegistration(ctx, cmd, lazyClient, store.Account, account, resource == nil)
+	if err != nil {
+		return fmt.Errorf("renew: registration: %w", err)
+	}
+
+	if resource == nil {
+		// RUN
+		err = obtain(ctx, cmd, certID, lazyClient, store.Certificate, hookManager)
+		if err != nil {
+			return fmt.Errorf("obtain certificate: %w", err)
+		}
+
+		return nil
+	}
+
+	log.Info("Renewing certificate", log.CertNameAttr(certID))
+
+	// RENEW
+	err = renew(ctx, cmd, certID, resource, lazyClient, store.Certificate, hookManager)
+	if err != nil {
+		return fmt.Errorf("renew certificate: %w", err)
+	}
+
+	return nil
+}
+
+func obtain(ctx context.Context, cmd *cli.Command, certID string, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
 	client, err := lazyClient()
 	if err != nil {
-		return fmt.Errorf("new client: %w", err)
+		return fmt.Errorf("set up client: %w", err)
 	}
 
-	err = setupChallenges(cmd, client)
-	if err != nil {
-		return fmt.Errorf("setup challenges: %w", err)
+	if cmd.IsSet(flags.FlgCSR) {
+		return obtainForCSR(ctx, cmd, client, certID, certsStorage, hookManager)
 	}
 
-	certRes, err := obtainCertificate(ctx, cmd, client, hookManager)
-	if err != nil {
-		// Make sure to return a non-zero exit code if ObtainSANCertificate returned at least one error.
-		// Due to us not returning partial certificate we can just exit here instead of at the end.
-		return fmt.Errorf("obtain certificate: %w", err)
+	return obtainForDomains(ctx, cmd, client, certID, certsStorage, hookManager)
+}
+
+func renew(ctx context.Context, cmd *cli.Command, certID string, resource *certificate.Resource, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
+	if cmd.IsSet(flags.FlgCSR) {
+		return renewForCSR(ctx, cmd, lazyClient, certID, certsStorage, hookManager)
 	}
+
+	domains := cmd.StringSlice(flags.FlgDomains)
+	if len(domains) == 0 {
+		domains = resource.Domains
+	}
+
+	return renewForDomains(ctx, cmd, lazyClient, certID, domains, certsStorage, hookManager)
+}
+
+func getCertID(cmd *cli.Command) (string, error) {
+	domains := cmd.StringSlice(flags.FlgDomains)
 
 	certID := cmd.String(flags.FlgCertName)
-	if certID != "" {
-		certRes.ID = certID
-	}
 
-	options := newSaveOptions(cmd)
+	switch {
+	case certID != "":
+		return certID, nil
 
-	err = store.Certificate.Save(certRes, options)
-	if err != nil {
-		return fmt.Errorf("could not save the resource: %w", err)
-	}
-
-	return hookManager.Deploy(ctx, certRes, options)
-}
-
-func obtainCertificate(ctx context.Context, cmd *cli.Command, client *lego.Client, hookManager *hook.Manager) (*certificate.Resource, error) {
-	domains := cmd.StringSlice(flags.FlgDomains)
-
-	if len(domains) > 0 {
-		return obtainForDomains(ctx, cmd, client, hookManager)
-	}
-
-	return obtainForCSR(ctx, cmd, client, hookManager)
-}
-
-func obtainForDomains(ctx context.Context, cmd *cli.Command, client *lego.Client, hookManager *hook.Manager) (*certificate.Resource, error) {
-	domains := cmd.StringSlice(flags.FlgDomains)
-
-	err := hookManager.Pre(ctx, cmd.String(flags.FlgCertName), domains)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() { _ = hookManager.Post(ctx) }()
-
-	request, err := newObtainRequest(cmd, domains)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO(ldez): factorize?
-	if cmd.IsSet(flags.FlgPrivateKey) {
-		request.PrivateKey, err = storage.ReadPrivateKeyFile(cmd.String(flags.FlgPrivateKey))
+	case cmd.IsSet(flags.FlgCSR):
+		csr, err := storage.ReadCSRFile(cmd.String(flags.FlgCSR))
 		if err != nil {
-			return nil, fmt.Errorf("load private key: %w", err)
+			return "", fmt.Errorf("could not read CSR file %q: %w", cmd.String(flags.FlgCSR), err)
 		}
+
+		return certcrypto.GetCSRMainDomain(csr)
+
+	case len(domains) > 0:
+		return domains[0], nil
+
+	default:
+		return "", errors.New("no domains, CSR, or certificate ID/name provided")
 	}
-
-	return client.Certificate.Obtain(ctx, request)
-}
-
-func obtainForCSR(ctx context.Context, cmd *cli.Command, client *lego.Client, hookManager *hook.Manager) (*certificate.Resource, error) {
-	// read the CSR
-	csr, err := storage.ReadCSRFile(cmd.String(flags.FlgCSR))
-	if err != nil {
-		return nil, err
-	}
-
-	err = hookManager.Pre(ctx, cmd.String(flags.FlgCertName), certcrypto.ExtractDomainsCSR(csr))
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() { _ = hookManager.Post(ctx) }()
-
-	// obtain a certificate for this CSR
-	request := newObtainForCSRRequest(cmd, csr)
-
-	// TODO(ldez): factorize?
-	if cmd.IsSet(flags.FlgPrivateKey) {
-		request.PrivateKey, err = storage.ReadPrivateKeyFile(cmd.String(flags.FlgPrivateKey))
-		if err != nil {
-			return nil, fmt.Errorf("load private key: %w", err)
-		}
-	}
-
-	return client.Certificate.ObtainForCSR(ctx, request)
 }

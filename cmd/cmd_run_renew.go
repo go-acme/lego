@@ -12,7 +12,6 @@ import (
 	"slices"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme/api"
@@ -28,86 +27,7 @@ import (
 
 const noDays = -math.MaxInt
 
-func createRenew() *cli.Command {
-	return &cli.Command{
-		Name:   "renew",
-		Usage:  "Renew a certificate",
-		Action: renew,
-		Before: flags.RenewFlagsValidation,
-		Flags:  flags.CreateRenewFlags(),
-	}
-}
-
-func renew(ctx context.Context, cmd *cli.Command) error {
-	keyType, err := certcrypto.ToKeyType(cmd.String(flags.FlgKeyType))
-	if err != nil {
-		return err
-	}
-
-	store := storage.New(cmd.String(flags.FlgPath))
-
-	account, err := store.Account.Get(cmd.String(flags.FlgServer), keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
-	if err != nil {
-		return fmt.Errorf("set up account: %w", err)
-	}
-
-	lazyClient := sync.OnceValues(func() (*lego.Client, error) {
-		client, errC := newClient(cmd, account)
-		if errC != nil {
-			return nil, fmt.Errorf("new client: %w", errC)
-		}
-
-		errC = setupChallenges(cmd, client)
-		if errC != nil {
-			return nil, fmt.Errorf("setup challenges: %w", errC)
-		}
-
-		return client, nil
-	})
-
-	err = handleRegistration(ctx, cmd, lazyClient, store.Account, account, false)
-	if err != nil {
-		return fmt.Errorf("registration: %w", err)
-	}
-
-	hookManager := newHookManager(cmd, store.Certificate, account)
-
-	// CSR
-	if cmd.IsSet(flags.FlgCSR) {
-		return renewForCSR(ctx, cmd, lazyClient, store.Certificate, hookManager)
-	}
-
-	// Domains
-	return renewForDomains(ctx, cmd, lazyClient, store.Certificate, hookManager)
-}
-
-func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
-	domains := cmd.StringSlice(flags.FlgDomains)
-
-	certID := cmd.String(flags.FlgCertName)
-
-	switch {
-	case certID == "" && len(domains) > 0:
-		certID = domains[0]
-
-	case certID != "" && len(domains) == 0:
-		resource, err := certsStorage.ReadResource(certID)
-		if err != nil {
-			return fmt.Errorf("error while reading resource for %q: %w", certID, err)
-		}
-
-		domains = resource.Domains
-
-	case certID != "" && len(domains) > 0:
-		// Nothing to do, certID and domains are already consistent.
-
-	default:
-		return errors.New("no domains or certificate ID/name provided")
-	}
-
-	// load the cert resource from files.
-	// We store the certificate, private key and metadata in different files
-	// as web servers would not be able to work with a combined file.
+func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certID string, domains []string, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
 	certificates, err := certsStorage.ReadCertificate(certID)
 	if err != nil {
 		return fmt.Errorf("error while reading the certificate for %q: %w", certID, err)
@@ -189,23 +109,12 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 	return hookManager.Deploy(ctx, certRes, options)
 }
 
-func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
+func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certID string, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
 	csr, err := storage.ReadCSRFile(cmd.String(flags.FlgCSR))
 	if err != nil {
 		return fmt.Errorf("CSR: could not read file %q: %w", cmd.String(flags.FlgCSR), err)
 	}
 
-	certID := cmd.String(flags.FlgCertName)
-	if certID == "" {
-		certID, err = certcrypto.GetCSRMainDomain(csr)
-		if err != nil {
-			return fmt.Errorf("CSR: could not get the main domain: %w", err)
-		}
-	}
-
-	// load the cert resource from files.
-	// We store the certificate, private key and metadata in different files
-	// as web servers would not be able to work with a combined file.
 	certificates, err := certsStorage.ReadCertificate(certID)
 	if err != nil {
 		return fmt.Errorf("CSR: error while reading the certificate for domains %q: %w",
@@ -376,11 +285,11 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 
 	renewalTime := renewalInfo.ShouldRenewAt(now, willingToSleep)
 	if renewalTime == nil {
-		log.Info("RenewalInfo endpoint indicates that renewal is not needed.", log.CertNameAttr(certID))
+		log.Debug("RenewalInfo endpoint indicates that renewal is not needed.", log.CertNameAttr(certID))
 		return nil
 	}
 
-	log.Info("RenewalInfo endpoint indicates that renewal is needed.", log.CertNameAttr(certID))
+	log.Debug("RenewalInfo endpoint indicates that renewal is needed.", log.CertNameAttr(certID))
 
 	if renewalInfo.ExplanationURL != "" {
 		log.Info("RenewalInfo endpoint provided an explanation.",

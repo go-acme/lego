@@ -55,6 +55,10 @@ func Accounts(root string) error {
 			},
 		}
 
+		if account.ID == "" {
+			account.ID = filepath.Base(filepath.Dir(srcAccountFilePath))
+		}
+
 		accountsDir := filepath.Dir(srcAccountFilePath)
 
 		srcKeyPath := filepath.Join(accountsDir, "keys", account.GetID()+storage.ExtKey)

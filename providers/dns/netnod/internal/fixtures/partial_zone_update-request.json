@@ -1,0 +1,22 @@
+{
+  "rrsets": [
+    {
+      "name": "subdomain.example.com.",
+      "type": "A",
+      "ttl": 0,
+      "changetype": "DELETE"
+    },
+    {
+      "name": "newhost.example.com.",
+      "type": "A",
+      "ttl": 0,
+      "changetype": "REPLACE",
+      "records": [
+        {
+          "content": "1.2.3.5",
+          "disabled": false
+        }
+      ]
+    }
+  ]
+}

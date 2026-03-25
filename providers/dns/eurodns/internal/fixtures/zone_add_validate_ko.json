@@ -1,0 +1,139 @@
+{
+  "name": "example.com",
+  "domainConnect": true,
+  "records": [
+    {
+      "id": 1000,
+      "type": "A",
+      "host": "@",
+      "ttl": 600,
+      "rdata": "string",
+      "updated": true,
+      "locked": true,
+      "isDynDns": true,
+      "proxy": "ON"
+    },
+    {
+      "type": "TXT",
+      "host": "_acme-challenge",
+      "ttl": 600,
+      "rdata": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "updated": null,
+      "locked": null,
+      "isDynDns": null
+    }
+  ],
+  "urlForwards": [
+    {
+      "id": 2000,
+      "forwardType": "FRAME",
+      "host": "string",
+      "url": "string",
+      "title": "string",
+      "keywords": "string",
+      "description": "string",
+      "updated": true
+    }
+  ],
+  "mailForwards": [
+    {
+      "id": 3000,
+      "source": "string",
+      "destination": "string",
+      "updated": true
+    }
+  ],
+  "report": {
+    "isValid": false,
+    "recordErrors": [
+      {
+        "messages": [
+          "\"120\" is not a valid TTL"
+        ],
+        "record": {
+          "id": 1000,
+          "type": "A",
+          "host": "@",
+          "ttl": 600,
+          "rdata": "string",
+          "updated": true,
+          "locked": true,
+          "isDynDns": true,
+          "proxy": "ON"
+        },
+        "severity": "ERROR"
+      }
+    ],
+    "urlForwardErrors": [
+      {
+        "messages": [
+          "string"
+        ],
+        "urlForward": {
+          "id": 2000,
+          "forwardType": "FRAME",
+          "host": "string",
+          "url": "string",
+          "title": "string",
+          "keywords": "string",
+          "description": "string",
+          "updated": true
+        },
+        "severity": "ERROR"
+      }
+    ],
+    "mailForwardErrors": [
+      {
+        "messages": [
+          "string"
+        ],
+        "mailForward": {
+          "id": 3000,
+          "source": "string",
+          "destination": "string",
+          "updated": true
+        },
+        "severity": "ERROR"
+      }
+    ],
+    "zoneErrors": [
+      {
+        "message": "string",
+        "records": [
+          {
+            "id": 1000,
+            "type": "A",
+            "host": "@",
+            "ttl": 600,
+            "rdata": "string",
+            "updated": true,
+            "locked": true,
+            "isDynDns": true,
+            "proxy": "ON"
+          }
+        ],
+        "urlForwards": [
+          {
+            "id": 2000,
+            "forwardType": "FRAME",
+            "host": "string",
+            "url": "string",
+            "title": "string",
+            "keywords": "string",
+            "description": "string",
+            "updated": true
+          }
+        ],
+        "mailForwards": [
+          {
+            "id": 3000,
+            "source": "string",
+            "destination": "string",
+            "updated": true
+          }
+        ],
+        "severity": "ERROR"
+      }
+    ]
+  }
+}

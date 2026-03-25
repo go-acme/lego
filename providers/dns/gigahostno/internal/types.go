@@ -26,21 +26,11 @@ type APIResponse[T any] struct {
 }
 
 type Zone struct {
-	ID               string `json:"zone_id,omitempty"`
-	Name             string `json:"zone_name,omitempty"`
-	NameDisplay      string `json:"zone_name_display,omitempty"`
-	Type             string `json:"zone_type,omitempty"`
-	Active           string `json:"zone_active,omitempty"`
-	Protected        string `json:"zone_protected,omitempty"`
-	IsRegistered     string `json:"zone_is_registered,omitempty"`
-	Updated          bool   `json:"zone_updated,omitempty"`
-	CustomerID       string `json:"cust_id,omitempty"`
-	DomainRegistrar  string `json:"domain_registrar,omitempty"`
-	DomainStatus     string `json:"domain_status,omitempty"`
-	DomainExpiryDate string `json:"domain_expiry_date,omitempty"`
-	DomainAutoRenew  string `json:"domain_auto_renew,omitempty"`
-	ExternalDNS      string `json:"external_dns,omitempty"`
-	RecordCount      int    `json:"record_count,omitempty"`
+	ID          string `json:"zone_id,omitempty"`
+	Name        string `json:"zone_name,omitempty"`
+	NameDisplay string `json:"zone_name_display,omitempty"`
+	Type        string `json:"zone_type,omitempty"`
+	Active      string `json:"zone_active,omitempty"`
 }
 
 type Record struct {

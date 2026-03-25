@@ -1,0 +1,16 @@
+{
+  "rrsets": [
+    {
+      "name": "_acme-challenge.example.com.",
+      "type": "TXT",
+      "ttl": 120,
+      "changetype": "EXTEND",
+      "records": [
+        {
+          "content": "\"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY\"",
+          "disabled": false
+        }
+      ]
+    }
+  ]
+}

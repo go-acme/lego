@@ -1,0 +1,17 @@
+{
+  "data": [
+    {
+      "id": "example.com.",
+      "name": "example.com.",
+      "notified_serial": 2025110401
+    },
+    {
+      "id": "test.com.",
+      "name": "test.com.",
+      "notified_serial": 2025110402
+    }
+  ],
+  "offset": 0,
+  "limit": 50,
+  "total": 2
+}

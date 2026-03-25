@@ -1,0 +1,7 @@
+{
+  "code": 1000,
+  "desc": "Command completed successfully",
+  "parameters": {
+    "token": "session-token"
+  }
+}

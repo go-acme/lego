@@ -1,4 +1,4 @@
-// Package safedns implements a DNS provider for solving the DNS-01 challenge using UKFast SafeDNS.
+// Package safedns implements a DNS provider for solving the DNS-01 challenge using ANS SafeDNS.
 package safedns
 
 import (
@@ -75,7 +75,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for UKFast SafeDNS.
+// NewDNSProviderConfig return a DNSProvider instance configured for ANS SafeDNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("safedns: supplied configuration was nil")

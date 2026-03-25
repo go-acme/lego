@@ -68,6 +68,8 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/edgeone"
 	"github.com/go-acme/lego/v5/providers/dns/efficientip"
 	"github.com/go-acme/lego/v5/providers/dns/epik"
+	"github.com/go-acme/lego/v5/providers/dns/eurodns"
+	"github.com/go-acme/lego/v5/providers/dns/excedo"
 	"github.com/go-acme/lego/v5/providers/dns/exec"
 	"github.com/go-acme/lego/v5/providers/dns/exoscale"
 	"github.com/go-acme/lego/v5/providers/dns/f5xc"
@@ -133,6 +135,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/neodigit"
 	"github.com/go-acme/lego/v5/providers/dns/netcup"
 	"github.com/go-acme/lego/v5/providers/dns/netlify"
+	"github.com/go-acme/lego/v5/providers/dns/netnod"
 	"github.com/go-acme/lego/v5/providers/dns/nicmanager"
 	"github.com/go-acme/lego/v5/providers/dns/nicru"
 	"github.com/go-acme/lego/v5/providers/dns/nifcloud"
@@ -140,6 +143,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/nodion"
 	"github.com/go-acme/lego/v5/providers/dns/ns1"
 	"github.com/go-acme/lego/v5/providers/dns/octenium"
+	"github.com/go-acme/lego/v5/providers/dns/onecloudru"
 	"github.com/go-acme/lego/v5/providers/dns/oraclecloud"
 	"github.com/go-acme/lego/v5/providers/dns/otc"
 	"github.com/go-acme/lego/v5/providers/dns/ovh"
@@ -324,6 +328,10 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return efficientip.NewDNSProvider()
 	case "epik":
 		return epik.NewDNSProvider()
+	case "eurodns":
+		return eurodns.NewDNSProvider()
+	case "excedo":
+		return excedo.NewDNSProvider()
 	case "exec":
 		return exec.NewDNSProvider()
 	case "exoscale":
@@ -454,6 +462,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return netcup.NewDNSProvider()
 	case "netlify":
 		return netlify.NewDNSProvider()
+	case "netnod":
+		return netnod.NewDNSProvider()
 	case "nicmanager":
 		return nicmanager.NewDNSProvider()
 	case "nicru":
@@ -468,6 +478,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return ns1.NewDNSProvider()
 	case "octenium":
 		return octenium.NewDNSProvider()
+	case "onecloudru":
+		return onecloudru.NewDNSProvider()
 	case "oraclecloud":
 		return oraclecloud.NewDNSProvider()
 	case "otc":

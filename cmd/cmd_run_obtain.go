@@ -46,7 +46,13 @@ func obtainForDomains(ctx context.Context, cmd *cli.Command, client *lego.Client
 
 	options := newSaveOptions(cmd)
 
-	err = certsStorage.Save(certRes, options)
+	err = certsStorage.Save(
+		&storage.Certificate{
+			Resource: certRes,
+			Origin:   storage.OriginCommand,
+		},
+		options,
+	)
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
@@ -90,7 +96,13 @@ func obtainForCSR(ctx context.Context, cmd *cli.Command, client *lego.Client, ce
 
 	options := newSaveOptions(cmd)
 
-	err = certsStorage.Save(certRes, options)
+	err = certsStorage.Save(
+		&storage.Certificate{
+			Resource: certRes,
+			Origin:   storage.OriginCommand,
+		},
+		options,
+	)
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
 	}

@@ -30,7 +30,7 @@ func runCertificate(ctx context.Context, lazySetup lzSetUp, certConfig *configur
 	return nil
 }
 
-func obtainCertificate(ctx context.Context, client *lego.Client, certConfig *configuration.Certificate) (*certificate.Resource, error) {
+func obtainCertificate(ctx context.Context, client *lego.Client, certConfig *configuration.Certificate) (*storage.Certificate, error) {
 	if certConfig.CSR != "" {
 		csr, err := storage.ReadCSRFile(certConfig.CSR)
 		if err != nil {
@@ -53,7 +53,15 @@ func obtainCertificate(ctx context.Context, client *lego.Client, certConfig *con
 		// I didn't find a use case for it when using the file configuration.
 		// Maybe this can be added in the future.
 
-		return client.Certificate.ObtainForCSR(ctx, request)
+		certRes, err := client.Certificate.ObtainForCSR(ctx, request)
+		if err != nil {
+			return nil, err
+		}
+
+		return &storage.Certificate{
+			Resource: certRes,
+			Origin:   storage.OriginConfiguration,
+		}, nil
 	}
 
 	keyType, err := certcrypto.ToKeyType(certConfig.KeyType)
@@ -78,5 +86,13 @@ func obtainCertificate(ctx context.Context, client *lego.Client, certConfig *con
 	// I didn't find a use case for it when using the file configuration.
 	// Maybe this can be added in the future.
 
-	return client.Certificate.Obtain(ctx, request)
+	certRes, err := client.Certificate.Obtain(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	return &storage.Certificate{
+		Resource: certRes,
+		Origin:   storage.OriginConfiguration,
+	}, nil
 }

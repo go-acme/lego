@@ -23,16 +23,18 @@ func TestCertificatesStorage_Save(t *testing.T) {
 	require.NoFileExists(t, filepath.Join(basePath, baseCertificatesFolderName, "example.com.key"))
 	require.NoFileExists(t, filepath.Join(basePath, baseCertificatesFolderName, "example.com.json"))
 
-	resource := &certificate.Resource{
-		ID:                "example.com",
-		Domains:           []string{"example.com"},
-		KeyType:           "EC256",
-		CertURL:           "https://acme.example.org/cert/123",
-		CertStableURL:     "https://acme.example.org/cert/456",
-		PrivateKey:        []byte("PrivateKey"),
-		Certificate:       []byte("Certificate"),
-		IssuerCertificate: []byte("IssuerCertificate"),
-		CSR:               []byte("CSR"),
+	resource := &Certificate{
+		Resource: &certificate.Resource{
+			ID:                "example.com",
+			Domains:           []string{"example.com"},
+			KeyType:           "EC256",
+			CertURL:           "https://acme.example.org/cert/123",
+			CertStableURL:     "https://acme.example.org/cert/456",
+			PrivateKey:        []byte("PrivateKey"),
+			Certificate:       []byte("Certificate"),
+			IssuerCertificate: []byte("IssuerCertificate"),
+			CSR:               []byte("CSR"),
+		},
 	}
 
 	err = writer.Save(resource, nil)
@@ -70,16 +72,18 @@ func TestCertificatesStorage_Save_pem(t *testing.T) {
 	require.NoFileExists(t, filepath.Join(basePath, baseCertificatesFolderName, "example.com.json"))
 	require.NoFileExists(t, filepath.Join(basePath, baseCertificatesFolderName, "example.com.pem"))
 
-	resource := &certificate.Resource{
-		ID:                "example.com",
-		Domains:           []string{"example.com"},
-		KeyType:           "EC256",
-		CertURL:           "https://acme.example.org/cert/123",
-		CertStableURL:     "https://acme.example.org/cert/456",
-		PrivateKey:        []byte("PrivateKey"),
-		Certificate:       []byte("Certificate"),
-		IssuerCertificate: []byte("IssuerCertificate"),
-		CSR:               []byte("CSR"),
+	resource := &Certificate{
+		Resource: &certificate.Resource{
+			ID:                "example.com",
+			Domains:           []string{"example.com"},
+			KeyType:           "EC256",
+			CertURL:           "https://acme.example.org/cert/123",
+			CertStableURL:     "https://acme.example.org/cert/456",
+			PrivateKey:        []byte("PrivateKey"),
+			Certificate:       []byte("Certificate"),
+			IssuerCertificate: []byte("IssuerCertificate"),
+			CSR:               []byte("CSR"),
+		},
 	}
 
 	err = writer.Save(resource, &SaveOptions{

@@ -18,6 +18,10 @@ import (
 	"github.com/mattn/go-zglob"
 )
 
+const (
+	baseCertificatesFolderName = "certificates"
+)
+
 type oldResource struct {
 	Domain        string `json:"domain"`
 	CertURL       string `json:"certUrl"`
@@ -25,7 +29,7 @@ type oldResource struct {
 }
 
 func Certificates(root string, cfg *configuration.Configuration) error {
-	matches, err := zglob.Glob(filepath.Join(root, "certificates", "**", "*.json"))
+	matches, err := zglob.Glob(filepath.Join(root, baseCertificatesFolderName, "**", "*.json"))
 	if err != nil {
 		return err
 	}
@@ -51,9 +55,12 @@ func Certificates(root string, cfg *configuration.Configuration) error {
 
 		log.Debug("Migrating a certificate.", slog.String("filepath", certResourceFilePath))
 
-		certRes := certificate.Resource{
-			CertURL:       oldCertRes.CertURL,
-			CertStableURL: oldCertRes.CertStableURL,
+		certRes := &storage.Certificate{
+			Resource: &certificate.Resource{
+				CertURL:       oldCertRes.CertURL,
+				CertStableURL: oldCertRes.CertStableURL,
+			},
+			Origin: storage.OriginMigration,
 		}
 
 		baseName := strings.TrimSuffix(certResourceFilePath, filepath.Ext(certResourceFilePath))
@@ -105,8 +112,11 @@ func Certificates(root string, cfg *configuration.Configuration) error {
 	return nil
 }
 
-func migrateCertificate(certResourceFilePath string, certRes certificate.Resource) error {
-	log.Debug("Saving the certificate file.", slog.String("filepath", certResourceFilePath), slog.String("keyType", string(certRes.KeyType)))
+func migrateCertificate(certResourceFilePath string, certRes *storage.Certificate) error {
+	log.Debug("Saving the certificate file.",
+		slog.String("filepath", certResourceFilePath),
+		slog.String("keyType", string(certRes.KeyType)),
+	)
 
 	f, err := os.Create(certResourceFilePath)
 	if err != nil {

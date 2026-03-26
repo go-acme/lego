@@ -141,3 +141,7 @@ func parseArchiveDate(filename string) (time.Time, error) {
 
 	return time.Unix(unixRaw, 0), nil
 }
+
+func isManaged(origin string) bool {
+	return origin == OriginConfiguration || origin == OriginMigration
+}

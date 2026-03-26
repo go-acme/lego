@@ -15,12 +15,14 @@ func TestCertificatesStorage_ReadResource(t *testing.T) {
 	resource, err := reader.ReadResource("example.com")
 	require.NoError(t, err)
 
-	expected := &certificate.Resource{
-		ID:            "example.com",
-		Domains:       []string{"example.com"},
-		KeyType:       "EC256",
-		CertURL:       "https://acme.example.org/cert/123",
-		CertStableURL: "https://acme.example.org/cert/456",
+	expected := &Certificate{
+		Resource: &certificate.Resource{
+			ID:            "example.com",
+			Domains:       []string{"example.com"},
+			KeyType:       "EC256",
+			CertURL:       "https://acme.example.org/cert/123",
+			CertStableURL: "https://acme.example.org/cert/456",
+		},
 	}
 
 	assert.Equal(t, expected, resource)

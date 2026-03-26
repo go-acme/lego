@@ -119,6 +119,7 @@ func generateFakeAccountFiles(t *testing.T, accountsBasePath, server, accountID 
 		ID:      accountID,
 		KeyType: certcrypto.EC256,
 		Server:  "https://ca.example.com/dir",
+		Origin:  OriginConfiguration,
 	}
 
 	err = json.NewEncoder(file).Encode(r)

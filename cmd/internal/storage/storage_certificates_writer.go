@@ -11,7 +11,6 @@ import (
 	"os"
 
 	"github.com/go-acme/lego/v5/certcrypto"
-	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/log"
 	"software.sslmate.com/src/go-pkcs12"
 )
@@ -50,7 +49,7 @@ func (o *SaveOptions) Validate() error {
 // - the issuer certificate file (if any)
 // - the PFX file (if needed)
 // - the PEM file (if needed).
-func (s *CertificatesStorage) Save(certRes *certificate.Resource, opts *SaveOptions) error {
+func (s *CertificatesStorage) Save(certRes *Certificate, opts *SaveOptions) error {
 	err := opts.Validate()
 	if err != nil {
 		return err
@@ -87,7 +86,7 @@ func (s *CertificatesStorage) Save(certRes *certificate.Resource, opts *SaveOpti
 	return s.saveResource(certRes)
 }
 
-func (s *CertificatesStorage) saveResource(certRes *certificate.Resource) error {
+func (s *CertificatesStorage) saveResource(certRes *Certificate) error {
 	jsonBytes, err := json.MarshalIndent(certRes, "", "\t")
 	if err != nil {
 		return fmt.Errorf("unable to marshal the resource for %q: %w", certRes.ID, err)
@@ -101,7 +100,7 @@ func (s *CertificatesStorage) saveResource(certRes *certificate.Resource) error 
 	return nil
 }
 
-func (s *CertificatesStorage) writeCertificateFiles(certRes *certificate.Resource, opts *SaveOptions) error {
+func (s *CertificatesStorage) writeCertificateFiles(certRes *Certificate, opts *SaveOptions) error {
 	err := s.writeFile(certRes.ID, ExtKey, certRes.PrivateKey)
 	if err != nil {
 		return fmt.Errorf("unable to save the key file: %w", err)
@@ -128,7 +127,7 @@ func (s *CertificatesStorage) writeCertificateFiles(certRes *certificate.Resourc
 	return nil
 }
 
-func (s *CertificatesStorage) writePFXFile(certRes *certificate.Resource, password, format string) error {
+func (s *CertificatesStorage) writePFXFile(certRes *Certificate, password, format string) error {
 	certPemBlock, _ := pem.Decode(certRes.Certificate)
 	if certPemBlock == nil {
 		return fmt.Errorf("unable to parse certificate %q", certRes.ID)
@@ -171,7 +170,7 @@ func (s *CertificatesStorage) writeFile(domain, extension string, data []byte) e
 	return os.WriteFile(filePath, data, filePerm)
 }
 
-func getCertificateChain(certRes *certificate.Resource) ([]*x509.Certificate, error) {
+func getCertificateChain(certRes *Certificate) ([]*x509.Certificate, error) {
 	chainCertPemBlock, rest := pem.Decode(certRes.IssuerCertificate)
 	if chainCertPemBlock == nil {
 		return nil, errors.New("unable to parse Issuer Certificate")

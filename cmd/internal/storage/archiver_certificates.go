@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/mattn/go-zglob"
@@ -33,7 +32,7 @@ func (m *Archiver) Certificates(certificates map[string]*configuration.Certifica
 func (m *Archiver) Certificate(certID string) error {
 	return m.archiveCertificates(func(resourceID string) bool {
 		return certID != resourceID
-	})
+	}, false)
 }
 
 func (m *Archiver) ListArchivedCertificates() ([]string, error) {
@@ -46,10 +45,10 @@ func (m *Archiver) archiveRemovedCertificates(certificates map[string]*configura
 		_, ok := certificates[resourceID]
 
 		return ok
-	})
+	}, true)
 }
 
-func (m *Archiver) archiveCertificates(skip func(resourceID string) bool) error {
+func (m *Archiver) archiveCertificates(skip func(resourceID string) bool, managedOnly bool) error {
 	_, err := os.Stat(m.certificatesBasePath)
 	if os.IsNotExist(err) {
 		return nil
@@ -68,7 +67,7 @@ func (m *Archiver) archiveCertificates(skip func(resourceID string) bool) error 
 			return fmt.Errorf("reading certificate file %q: %w", filename, err)
 		}
 
-		resource := new(certificate.Resource)
+		resource := new(Certificate)
 
 		err = json.Unmarshal(file, resource)
 		if err != nil {
@@ -76,6 +75,11 @@ func (m *Archiver) archiveCertificates(skip func(resourceID string) bool) error 
 		}
 
 		if skip(resource.ID) {
+			continue
+		}
+
+		// If managedOnly is true, only archive managed certificates (aka created from the configuration file or migrated).
+		if managedOnly && !isManaged(resource.Origin) {
 			continue
 		}
 
@@ -88,7 +92,7 @@ func (m *Archiver) archiveCertificates(skip func(resourceID string) bool) error 
 	return nil
 }
 
-func (m *Archiver) archiveOneCertificate(filename, date string, resource *certificate.Resource) error {
+func (m *Archiver) archiveOneCertificate(filename, date string, resource *Certificate) error {
 	dest := filepath.Join(m.certificatesArchivePath, strings.TrimSuffix(filepath.Base(filename), filepath.Ext(filename))+"_"+date+".zip")
 
 	log.Info("Archiving certificate", log.CertNameAttr(resource.ID), slog.String("archive", dest))

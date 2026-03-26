@@ -189,16 +189,9 @@ func (s *AccountsStorage) createAccount(server *url.URL, keyType certcrypto.KeyT
 func (s *AccountsStorage) getAccount(server *url.URL, keyType certcrypto.KeyType, effectiveAccountID string) (*Account, error) {
 	accountFilePath := s.getAccountFilePath(server, effectiveAccountID)
 
-	fileBytes, err := os.ReadFile(accountFilePath)
+	account, err := readAccountFile(accountFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("could not read the account file %q: %w", accountFilePath, err)
-	}
-
-	account := new(Account)
-
-	err = json.Unmarshal(fileBytes, account)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse the account file %s: %w", accountFilePath, err)
 	}
 
 	if fixIntegrity(account, server.String(), keyType) {

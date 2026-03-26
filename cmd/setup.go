@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -162,5 +163,29 @@ func confirm(message string) bool {
 		default:
 			log.Warn("Your input was invalid. Please answer with one of Y/y, N/n or by pressing enter.")
 		}
+	}
+}
+
+func choose(message string, options []string) string {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Println(message + " " + strings.Join(options, ", "))
+
+		text, err := reader.ReadString('\n')
+		if err != nil {
+			log.Fatal("Could not read from the console", log.ErrorAttr(err))
+		}
+
+		text = strings.ToUpper(strings.Trim(text, "\r\n"))
+
+		if slices.Contains(options, text) {
+			return text
+		}
+
+		log.Warnf(log.LazySprintf(
+			"Your input was invalid. Please answer with one of %s or by pressing enter.",
+			strings.Join(options, ", "),
+		))
 	}
 }

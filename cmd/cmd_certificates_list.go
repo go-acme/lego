@@ -28,7 +28,7 @@ type ListCertificate struct {
 
 func createListCertificates() *cli.Command {
 	return &cli.Command{
-		Name:   "certificates",
+		Name:   "list",
 		Usage:  "Display information about certificates.",
 		Action: listCertificates,
 		Flags:  flags.CreateListFlags(),

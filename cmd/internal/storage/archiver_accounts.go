@@ -165,5 +165,5 @@ func isManagedAccount(filename string) bool {
 		return false
 	}
 
-	return account.Origin == OriginConfiguration || account.Origin == OriginMigration
+	return isManaged(account.Origin)
 }

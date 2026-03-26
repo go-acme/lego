@@ -79,7 +79,7 @@ func (m *Archiver) archiveCertificates(skip func(resourceID string) bool, manage
 		}
 
 		// If managedOnly is true, only archive managed certificates (aka created from the configuration file or migrated).
-		if managedOnly && resource.Origin != OriginConfiguration && resource.Origin != OriginMigration {
+		if managedOnly && !isManaged(resource.Origin) {
 			continue
 		}
 

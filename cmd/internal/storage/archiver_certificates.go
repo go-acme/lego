@@ -32,7 +32,7 @@ func (m *Archiver) Certificates(certificates map[string]*configuration.Certifica
 func (m *Archiver) Certificate(certID string) error {
 	return m.archiveCertificates(func(resourceID string) bool {
 		return certID != resourceID
-	})
+	}, false)
 }
 
 func (m *Archiver) ListArchivedCertificates() ([]string, error) {
@@ -45,10 +45,10 @@ func (m *Archiver) archiveRemovedCertificates(certificates map[string]*configura
 		_, ok := certificates[resourceID]
 
 		return ok
-	})
+	}, true)
 }
 
-func (m *Archiver) archiveCertificates(skip func(resourceID string) bool) error {
+func (m *Archiver) archiveCertificates(skip func(resourceID string) bool, managedOnly bool) error {
 	_, err := os.Stat(m.certificatesBasePath)
 	if os.IsNotExist(err) {
 		return nil
@@ -75,6 +75,11 @@ func (m *Archiver) archiveCertificates(skip func(resourceID string) bool) error 
 		}
 
 		if skip(resource.ID) {
+			continue
+		}
+
+		// If managedOnly is true, only archive managed certificates (aka created from the configuration file or migrated).
+		if managedOnly && resource.Origin != OriginConfiguration && resource.Origin != OriginMigration {
 			continue
 		}
 

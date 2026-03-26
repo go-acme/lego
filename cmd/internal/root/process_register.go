@@ -19,6 +19,11 @@ import (
 )
 
 func handleRegistration(ctx context.Context, lazyClient lzSetUp, accountConfig *configuration.Account, accountsStorage *storage.AccountsStorage, account *storage.Account) error {
+	err := updateAccountOrigin(accountsStorage, account)
+	if err != nil {
+		return err
+	}
+
 	if account.NeedsRecovery {
 		client, err := lazyClient()
 		if err != nil {
@@ -118,4 +123,17 @@ func handleTOS(client *lego.Client, accountConfig *configuration.Account) bool {
 			fmt.Println("Your input was invalid. Please answer with one of Y/y, n/N or by pressing enter.")
 		}
 	}
+}
+
+func updateAccountOrigin(accountsStorage *storage.AccountsStorage, account *storage.Account) error {
+	if account.Origin != storage.OriginConfiguration {
+		account.Origin = storage.OriginConfiguration
+
+		err := accountsStorage.Save(account)
+		if err != nil {
+			return fmt.Errorf("could not save the account file: %w", err)
+		}
+	}
+
+	return nil
 }

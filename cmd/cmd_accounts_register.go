@@ -52,6 +52,11 @@ func register(ctx context.Context, cmd *cli.Command) error {
 }
 
 func handleRegistration(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, accountsStorage *storage.AccountsStorage, account *storage.Account, allowRegister bool) error {
+	err := updateAccountOrigin(accountsStorage, account)
+	if err != nil {
+		return err
+	}
+
 	if account.NeedsRecovery {
 		client, err := lazyClient()
 		if err != nil {
@@ -143,4 +148,17 @@ func handleTOS(cmd *cli.Command, client *lego.Client) bool {
 	log.Warn("Please review the TOS.", slog.String("url", urlTOS))
 
 	return confirm("Do you accept the TOS?")
+}
+
+func updateAccountOrigin(accountsStorage *storage.AccountsStorage, account *storage.Account) error {
+	if account.Origin == "" || account.Origin == storage.OriginMigration {
+		account.Origin = storage.OriginCommand
+
+		err := accountsStorage.Save(account)
+		if err != nil {
+			return fmt.Errorf("could not save the account file: %w", err)
+		}
+	}
+
+	return nil
 }

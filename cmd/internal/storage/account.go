@@ -11,12 +11,20 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 )
 
+const (
+	OriginConfiguration = "configuration"
+	OriginCommand       = "command"
+	OriginMigration     = "migration"
+)
+
 // Account represents a users local saved credentials.
 type Account struct {
 	ID      string             `json:"id"`
 	Email   string             `json:"email"`
 	KeyType certcrypto.KeyType `json:"keyType"`
 	Server  string             `json:"server"`
+
+	Origin string `json:"origin,omitempty"`
 
 	Registration  *acme.ExtendedAccount `json:"registration"`
 	NeedsRecovery bool                  `json:"-"`

@@ -58,7 +58,10 @@ func obtainCertificate(ctx context.Context, client *lego.Client, certConfig *con
 			return nil, err
 		}
 
-		return &storage.Certificate{Resource: certRes}, nil
+		return &storage.Certificate{
+			Resource: certRes,
+			Origin:   storage.OriginConfiguration,
+		}, nil
 	}
 
 	keyType, err := certcrypto.ToKeyType(certConfig.KeyType)
@@ -88,5 +91,8 @@ func obtainCertificate(ctx context.Context, client *lego.Client, certConfig *con
 		return nil, err
 	}
 
-	return &storage.Certificate{Resource: certRes}, nil
+	return &storage.Certificate{
+		Resource: certRes,
+		Origin:   storage.OriginConfiguration,
+	}, nil
 }

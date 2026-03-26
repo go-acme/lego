@@ -32,6 +32,7 @@ func CreateCommands() []*cli.Command {
 		createRun(),
 		createRevoke(),
 		createAccounts(),
+		createArchives(),
 		createDNSHelp(),
 		createList(),
 		createMigrate(),

@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"archive/zip"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -46,6 +48,40 @@ func NewArchiver(basePath string) *Archiver {
 	}
 }
 
+func (m *Archiver) Restore(archivePath string) error {
+	err := m.restore(archivePath)
+	if err != nil {
+		return err
+	}
+
+	err = os.RemoveAll(archivePath)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Archiver) restore(archivePath string) error {
+	reader, err := zip.OpenReader(archivePath)
+	if err != nil {
+		return fmt.Errorf("could not open archive %q: %w", archivePath, err)
+	}
+
+	defer func() { _ = reader.Close() }()
+
+	baseDir := filepath.Join(m.basePath, reader.Comment)
+
+	for _, file := range reader.File {
+		err = extractZipFile(baseDir, file)
+		if err != nil {
+			return fmt.Errorf("extract file %q: %w", file.Name, err)
+		}
+	}
+
+	return nil
+}
+
 func (m *Archiver) cleanArchives(pattern string) error {
 	matches, err := zglob.Glob(pattern)
 	if err != nil {
@@ -53,16 +89,17 @@ func (m *Archiver) cleanArchives(pattern string) error {
 	}
 
 	for _, filename := range matches {
-		li := strings.LastIndex(filename, "_")
-
-		v := strings.TrimSuffix(filename[li+1:], ".zip")
-
-		s, err := strconv.ParseInt(v, 10, 64)
+		date, err := parseArchiveDate(filename)
 		if err != nil {
-			return err
+			log.Error("The date of the archive cannot be parsed: the file is ignored.",
+				slog.String("filename", filename),
+				log.ErrorAttr(err),
+			)
+
+			continue
 		}
 
-		if time.Unix(s, 0).Add(m.maxTimeBeforeCleaning).After(time.Now()) {
+		if date.Add(m.maxTimeBeforeCleaning).After(time.Now()) {
 			log.Debug("The archive is not old enough to be cleaned.", slog.String("filename", filename))
 			continue
 		}
@@ -74,4 +111,33 @@ func (m *Archiver) cleanArchives(pattern string) error {
 	}
 
 	return nil
+}
+
+func listArchives(archivePath string) ([]string, error) {
+	_, err := os.Stat(archivePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	matches, err := zglob.Glob(filepath.Join(archivePath, "**", "*.zip"))
+	if err != nil {
+		return nil, err
+	}
+
+	return matches, nil
+}
+
+func parseArchiveDate(filename string) (time.Time, error) {
+	lastIndex := strings.LastIndex(filename, "_")
+
+	unixRaw, err := strconv.ParseInt(strings.TrimSuffix(filename[lastIndex+1:], ".zip"), 10, 64)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return time.Unix(unixRaw, 0), nil
 }

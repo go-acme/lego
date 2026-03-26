@@ -39,21 +39,68 @@ func TestArchiver_Certificates(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, root, len(domainFiles))
 
-	archive, err := os.ReadDir(archiver.certificatesArchivePath)
+	archives, err := archiver.ListArchivedCertificates()
 	require.NoError(t, err)
 
-	require.Len(t, archive, 1)
-	assert.Regexp(t, regexp.QuoteMeta(archiveDomain)+`_\d+\.zip`, archive[0].Name())
+	require.Len(t, archives, 1)
+	assert.Regexp(t, regexp.QuoteMeta(archiveDomain)+`_\d+\.zip`, archives[0])
 
 	// clean
 
 	err = archiver.Certificates(cfg.Certificates)
 	require.NoError(t, err)
 
-	archive, err = os.ReadDir(archiver.certificatesArchivePath)
+	archives, err = archiver.ListArchivedCertificates()
 	require.NoError(t, err)
 
-	require.Empty(t, archive)
+	require.Empty(t, archives)
+}
+
+func TestArchiver_Restore_certificates(t *testing.T) {
+	domain := "example.com"
+	archiveDomain := "example.org"
+
+	cfg := &configuration.Configuration{
+		Storage: t.TempDir(),
+		Certificates: map[string]*configuration.Certificate{
+			domain: {},
+		},
+	}
+
+	archiver := NewArchiver(cfg.Storage)
+	archiver.maxTimeBeforeCleaning = 0
+
+	domainFiles := generateFakeCertificateFiles(t, archiver.certificatesBasePath, domain)
+	_ = generateFakeCertificateFiles(t, archiver.certificatesBasePath, archiveDomain)
+
+	// archive
+
+	err := archiver.Certificates(cfg.Certificates)
+	require.NoError(t, err)
+
+	root, err := os.ReadDir(archiver.certificatesBasePath)
+	require.NoError(t, err)
+	assert.Len(t, root, len(domainFiles))
+
+	archives, err := archiver.ListArchivedCertificates()
+	require.NoError(t, err)
+
+	require.Len(t, archives, 1)
+	assert.Regexp(t, regexp.QuoteMeta(archiveDomain)+`_\d+\.zip`, archives[0])
+
+	// restore
+
+	err = archiver.Restore(archives[0])
+	require.NoError(t, err)
+
+	root, err = os.ReadDir(archiver.certificatesBasePath)
+	require.NoError(t, err)
+	assert.Len(t, root, len(domainFiles)*2)
+
+	archives, err = archiver.ListArchivedCertificates()
+	require.NoError(t, err)
+
+	require.Empty(t, archives)
 }
 
 func TestArchiver_Certificate(t *testing.T) {

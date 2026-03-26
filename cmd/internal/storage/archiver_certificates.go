@@ -36,6 +36,10 @@ func (m *Archiver) Certificate(certID string) error {
 	})
 }
 
+func (m *Archiver) ListArchivedCertificates() ([]string, error) {
+	return listArchives(m.certificatesArchivePath)
+}
+
 func (m *Archiver) archiveRemovedCertificates(certificates map[string]*configuration.Certificate) error {
 	// Only archive the certificates that are not in the configuration.
 	return m.archiveCertificates(func(resourceID string) bool {

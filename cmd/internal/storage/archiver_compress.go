@@ -81,3 +81,37 @@ func addFileToZip(f io.Writer, file string) error {
 
 	return nil
 }
+
+func extractZipFile(dst string, file *zip.File) error {
+	outputPath := filepath.Join(dst, file.Name)
+
+	if file.FileInfo().IsDir() {
+		return os.MkdirAll(outputPath, 0o700)
+	}
+
+	err := os.MkdirAll(filepath.Dir(outputPath), 0o700)
+	if err != nil {
+		return err
+	}
+
+	data, err := file.Open()
+	if err != nil {
+		return err
+	}
+
+	defer func() { _ = data.Close() }()
+
+	output, err := os.Create(outputPath)
+	if err != nil {
+		return err
+	}
+
+	defer func() { _ = output.Close() }()
+
+	_, err = io.Copy(output, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

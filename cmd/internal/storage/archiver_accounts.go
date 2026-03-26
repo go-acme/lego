@@ -29,6 +29,10 @@ func (m *Archiver) Accounts(cfg *configuration.Configuration) error {
 	return nil
 }
 
+func (m *Archiver) ListArchivedAccounts() ([]string, error) {
+	return listArchives(m.accountsArchivePath)
+}
+
 func (m *Archiver) archiveAccounts(cfg *configuration.Configuration) error {
 	_, err := os.Stat(m.accountsBasePath)
 	if os.IsNotExist(err) {

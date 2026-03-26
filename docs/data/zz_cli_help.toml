@@ -14,6 +14,7 @@ COMMANDS:
    run       Get or renew a certificate
    revoke    Revoke a certificate
    accounts  Accounts management.
+   archives  Archives management.
    dnshelp   Shows additional help for the '--dns' global option
    list      Display information about certificates.
    migrate   Migrate certificates and accounts.

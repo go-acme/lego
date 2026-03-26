@@ -49,6 +49,20 @@ func NewArchiver(basePath string) *Archiver {
 }
 
 func (m *Archiver) Restore(archivePath string) error {
+	err := m.restore(archivePath)
+	if err != nil {
+		return err
+	}
+
+	err = os.RemoveAll(archivePath)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Archiver) restore(archivePath string) error {
 	reader, err := zip.OpenReader(archivePath)
 	if err != nil {
 		return fmt.Errorf("could not open archive %q: %w", archivePath, err)
@@ -63,11 +77,6 @@ func (m *Archiver) Restore(archivePath string) error {
 		if err != nil {
 			return fmt.Errorf("extract file %q: %w", file.Name, err)
 		}
-	}
-
-	err = os.RemoveAll(archivePath)
-	if err != nil {
-		return err
 	}
 
 	return nil

@@ -60,6 +60,7 @@ func Certificates(root string, cfg *configuration.Configuration) error {
 				CertURL:       oldCertRes.CertURL,
 				CertStableURL: oldCertRes.CertStableURL,
 			},
+			Origin: storage.OriginMigration,
 		}
 
 		baseName := strings.TrimSuffix(certResourceFilePath, filepath.Ext(certResourceFilePath))

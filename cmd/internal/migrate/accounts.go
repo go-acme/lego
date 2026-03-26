@@ -65,10 +65,11 @@ func Accounts(root string, cfg *configuration.Configuration) error {
 
 		serverDir := filepath.Dir(accountDir)
 
-		account := storage.Account{
+		account := &storage.Account{
 			ID:     accountID,
 			Email:  oldAccount.Email,
 			Server: guessServer(serverDir),
+			Origin: storage.OriginMigration,
 			Registration: &acme.ExtendedAccount{
 				Account:  oldAccount.Registration.Body,
 				Location: oldAccount.Registration.URI,
@@ -98,7 +99,7 @@ func Accounts(root string, cfg *configuration.Configuration) error {
 	return nil
 }
 
-func migrateAccountFiles(accountDir, srcKeyPath string, account storage.Account) error {
+func migrateAccountFiles(accountDir, srcKeyPath string, account *storage.Account) error {
 	dstKeyPath := filepath.Join(accountDir, account.GetID()+storage.ExtKey)
 
 	// Move the private key file.

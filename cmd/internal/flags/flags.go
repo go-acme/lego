@@ -115,7 +115,7 @@ func CreateRenewFlags() []cli.Flag {
 
 func CreateRevokeFlags() []cli.Flag {
 	flags := []cli.Flag{
-		createPathFlag(false),
+		CreatePathFlag(false),
 		createCertNamesFlag(),
 		&cli.BoolFlag{
 			Name:    FlgKeep,
@@ -143,7 +143,7 @@ func CreateRevokeFlags() []cli.Flag {
 
 func CreateRegisterFlags() []cli.Flag {
 	flags := []cli.Flag{
-		createPathFlag(true),
+		CreatePathFlag(true),
 		createAcceptFlag(),
 	}
 
@@ -155,7 +155,7 @@ func CreateRegisterFlags() []cli.Flag {
 
 func CreateRecoverFlags() []cli.Flag {
 	flags := []cli.Flag{
-		createPathFlag(true),
+		CreatePathFlag(true),
 		&cli.StringFlag{
 			Name:     FlgPrivateKey,
 			Sources:  cli.EnvVars(toEnvName(FlgPrivateKey)),
@@ -172,7 +172,7 @@ func CreateRecoverFlags() []cli.Flag {
 
 func CreateListFlags() []cli.Flag {
 	return []cli.Flag{
-		createPathFlag(false),
+		CreatePathFlag(false),
 		&cli.BoolFlag{
 			Name:  FlgFormatJSON,
 			Usage: "Format the output as JSON.",
@@ -182,7 +182,7 @@ func CreateListFlags() []cli.Flag {
 
 func CreateMigrateFlags() []cli.Flag {
 	return []cli.Flag{
-		createPathFlag(false),
+		CreatePathFlag(false),
 		&cli.BoolFlag{
 			Name:    FlgAccountOnly,
 			Sources: cli.EnvVars(toEnvName(FlgAccountOnly)),
@@ -487,7 +487,7 @@ func createDNSPersistChallengeFlags() []cli.Flag {
 
 func createStorageFlags() []cli.Flag {
 	return []cli.Flag{
-		createPathFlag(true),
+		CreatePathFlag(true),
 		&cli.BoolFlag{
 			Category: categoryStorage,
 			Name:     FlgPEM,
@@ -704,7 +704,7 @@ func createCertNamesFlag() cli.Flag {
 	}
 }
 
-func createPathFlag(forceCreation bool) cli.Flag {
+func CreatePathFlag(forceCreation bool) cli.Flag {
 	return &cli.StringFlag{
 		Category: categoryStorage,
 		Name:     FlgPath,

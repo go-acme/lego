@@ -6,4 +6,4 @@ dist/
 builds/
 /.lego.yaml
 /.lego.yml
-/.lego.migration.yml
+/.lego.migration.*.yml

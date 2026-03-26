@@ -6,6 +6,8 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
@@ -14,6 +16,16 @@ import (
 	"github.com/urfave/cli/v3"
 	"gopkg.in/yaml.v3"
 )
+
+const callToAction = `#######
+#
+# lego is an independent, free, and open-source project, if you value it, consider supporting it! ❤️
+#
+# https://donate.ldez.dev
+#
+#######
+
+`
 
 func createMigrate() *cli.Command {
 	return &cli.Command{
@@ -54,7 +66,9 @@ func createMigrate() *cli.Command {
 }
 
 func createConfigurationFile(cfg *configuration.Configuration) error {
-	file, err := os.Create(".lego.migration.yml")
+	date := strconv.FormatInt(time.Now().Unix(), 10)
+
+	file, err := os.Create(fmt.Sprintf(".lego.migration.%s.yml", date))
 	if err != nil {
 		return err
 	}
@@ -68,12 +82,17 @@ func createConfigurationFile(cfg *configuration.Configuration) error {
 
 	log.Debug("Creating the configuration file.", slog.String("filepath", filename))
 
+	_, err = file.WriteString(callToAction)
+	if err != nil {
+		return err
+	}
+
 	err = yaml.NewEncoder(file).Encode(cfg)
 	if err != nil {
 		return fmt.Errorf("could not encode the configuration file: %w", err)
 	}
 
-	log.Warn("Please rename and review the configuration file to handle the FIXME.", slog.String("filepath", filename))
+	log.Warn("If you want to use the configuration file, please rename and review the file to handle the FIXME.", slog.String("filepath", filename))
 
 	return nil
 }

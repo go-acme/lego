@@ -2,7 +2,9 @@ package storage
 
 import (
 	"crypto"
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
@@ -73,4 +75,20 @@ func getEffectiveAccountID(email, id string) string {
 	}
 
 	return configuration.DefaultAccountID
+}
+
+func readAccountFile(filename string) (*Account, error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	account := new(Account)
+
+	err = json.Unmarshal(data, account)
+	if err != nil {
+		return nil, err
+	}
+
+	return account, nil
 }

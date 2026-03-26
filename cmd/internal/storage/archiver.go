@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"archive/zip"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -46,6 +48,31 @@ func NewArchiver(basePath string) *Archiver {
 	}
 }
 
+func (m *Archiver) Restore(archivePath string) error {
+	reader, err := zip.OpenReader(archivePath)
+	if err != nil {
+		return fmt.Errorf("could not open archive %q: %w", archivePath, err)
+	}
+
+	defer func() { _ = reader.Close() }()
+
+	baseDir := filepath.Join(m.basePath, reader.Comment)
+
+	for _, file := range reader.File {
+		err = extractZipFile(baseDir, file)
+		if err != nil {
+			return fmt.Errorf("extract file %q: %w", file.Name, err)
+		}
+	}
+
+	err = os.RemoveAll(archivePath)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Archiver) cleanArchives(pattern string) error {
 	matches, err := zglob.Glob(pattern)
 	if err != nil {
@@ -75,6 +102,24 @@ func (m *Archiver) cleanArchives(pattern string) error {
 	}
 
 	return nil
+}
+
+func listArchives(archivePath string) ([]string, error) {
+	_, err := os.Stat(archivePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	matches, err := zglob.Glob(filepath.Join(archivePath, "**", "*.zip"))
+	if err != nil {
+		return nil, err
+	}
+
+	return matches, nil
 }
 
 func parseArchiveDate(filename string) (time.Time, error) {

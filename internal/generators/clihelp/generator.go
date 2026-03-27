@@ -56,7 +56,6 @@ func generate(ctx context.Context) error {
 		{"lego", "help"},
 		{"lego", "help", "run"},
 		{"lego", "help", "revoke"},
-		{"lego", "help", "list"},
 		{"lego", "dnshelp"},
 	} {
 		content, err := run(ctx, app, args)

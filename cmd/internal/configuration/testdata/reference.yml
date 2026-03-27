@@ -80,6 +80,9 @@ certificates:
       ari:
         disable: false
         waitToRenewDuration: 1m
+    pfx:
+      password: xxx
+      format: pkcs12
 
 log:
   level: debug

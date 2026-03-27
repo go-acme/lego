@@ -40,12 +40,14 @@ func obtainForDomains(ctx context.Context, client *lego.Client, certID string, c
 		certRes.ID = certID
 	}
 
+	options := newSaveOptions(certConfig)
+
 	err = certsStorage.Save(
 		&storage.Certificate{
 			Resource: certRes,
 			Origin:   storage.OriginConfiguration,
 		},
-		&storage.SaveOptions{PEM: true},
+		options,
 	)
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
@@ -76,12 +78,14 @@ func obtainForCSR(ctx context.Context, client *lego.Client, certID string, certC
 		certRes.ID = certID
 	}
 
+	options := newSaveOptions(certConfig)
+
 	err = certsStorage.Save(
 		&storage.Certificate{
 			Resource: certRes,
 			Origin:   storage.OriginConfiguration,
 		},
-		&storage.SaveOptions{PEM: true},
+		options,
 	)
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
@@ -116,4 +120,18 @@ func newObtainForCSRRequest(certConfig *configuration.Certificate, csr *x509.Cer
 		Profile:                        certConfig.Profile,
 		AlwaysDeactivateAuthorizations: certConfig.AlwaysDeactivateAuthorizations,
 	}
+}
+
+func newSaveOptions(certConfig *configuration.Certificate) *storage.SaveOptions {
+	opt := &storage.SaveOptions{
+		PEM: true,
+	}
+
+	if certConfig.PFX != nil {
+		opt.PFX = true
+		opt.PFXFormat = certConfig.PFX.Format
+		opt.PFXPassword = certConfig.PFX.Password
+	}
+
+	return opt
 }

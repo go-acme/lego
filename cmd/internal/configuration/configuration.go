@@ -102,6 +102,8 @@ type Certificate struct {
 	AlwaysDeactivateAuthorizations bool `yaml:"alwaysDeactivateAuthorizations,omitempty"`
 
 	Renew *RenewConfiguration `yaml:"renew,omitempty"`
+
+	PFX *PFX `json:"pfx,omitempty"`
 }
 
 type RenewConfiguration struct {
@@ -119,6 +121,11 @@ type RenewConfiguration struct {
 type ARIConfiguration struct {
 	Disable             bool          `yaml:"disable,omitempty"`
 	WaitToRenewDuration time.Duration `yaml:"waitToRenewDuration,omitempty"`
+}
+
+type PFX struct {
+	Password string `json:"password,omitempty"`
+	Format   string `json:"format,omitempty"`
 }
 
 type Log struct {

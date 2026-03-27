@@ -247,6 +247,18 @@
               }
             }
           }
+        },
+        "pfx": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "format": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            }
+          }
         }
       }
     },

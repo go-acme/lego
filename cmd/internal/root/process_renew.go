@@ -94,12 +94,14 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 
 	certRes.ID = certID
 
+	options := newSaveOptions(certConfig)
+
 	err = certsStorage.Save(
 		&storage.Certificate{
 			Resource: certRes,
 			Origin:   storage.OriginConfiguration,
 		},
-		&storage.SaveOptions{PEM: true},
+		options,
 	)
 	if err != nil {
 		return fmt.Errorf("could not save the resource: %w", err)
@@ -163,12 +165,14 @@ func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certCon
 
 	certRes.ID = certID
 
+	options := newSaveOptions(certConfig)
+
 	err = certsStorage.Save(
 		&storage.Certificate{
 			Resource: certRes,
 			Origin:   storage.OriginConfiguration,
 		},
-		&storage.SaveOptions{PEM: true},
+		options,
 	)
 	if err != nil {
 		return fmt.Errorf("CSR: could not save the resource: %w", err)

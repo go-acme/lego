@@ -25,13 +25,11 @@ import (
 
 type lzSetUp func() (*lego.Client, error)
 
-func renewCertificate(ctx context.Context, lazyClient lzSetUp, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
-	// CSR
+func renew(ctx context.Context, lazyClient lzSetUp, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
 	if certConfig.CSR != "" {
 		return renewForCSR(ctx, lazyClient, certID, certConfig, certsStorage)
 	}
 
-	// Domains
 	return renewForDomains(ctx, lazyClient, certID, certConfig, certsStorage)
 }
 

@@ -67,3 +67,8 @@ _acme-challenge.example.com. 120 IN TXT "hX0dPkG6Gfs9hUvBAchQclkyyoEKbShbpvJ9mY5
 As mentioned, you can now remove the TXT record again.
 
 '''
+
+[Configuration]
+  [Configuration.Additional]
+    MANUAL_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    MANUAL_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"

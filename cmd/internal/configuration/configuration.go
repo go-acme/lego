@@ -1,6 +1,10 @@
 package configuration
 
-import "time"
+import (
+	"time"
+
+	"github.com/go-acme/lego/v5/certcrypto"
+)
 
 type Configuration struct {
 	Storage      string                  `yaml:"storage,omitempty"`
@@ -24,7 +28,7 @@ type Server struct {
 type Account struct {
 	Server                 string                  `yaml:"server,omitempty"`
 	Email                  string                  `yaml:"email,omitempty"`
-	KeyType                string                  `yaml:"keyType,omitempty"`
+	KeyType                certcrypto.KeyType      `yaml:"keyType,omitempty"`
 	AcceptsTermsOfService  bool                    `yaml:"acceptsTermsOfService,omitempty"`
 	ExternalAccountBinding *ExternalAccountBinding `yaml:"eab,omitempty"`
 }
@@ -80,7 +84,7 @@ type Certificate struct {
 	Domains []string `yaml:"domains,omitempty"`
 	CSR     string   `yaml:"csr,omitempty"`
 
-	KeyType string `yaml:"keyType,omitempty"`
+	KeyType certcrypto.KeyType `yaml:"keyType,omitempty"`
 
 	Challenge string `yaml:"challenge,omitempty"`
 	Account   string `yaml:"account,omitempty"`

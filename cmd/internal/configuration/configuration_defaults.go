@@ -50,7 +50,7 @@ func ApplyDefaults(cfg *Configuration) {
 	// Must be last, because the certificate definition needs to know if there is an explicit account.
 	cfg.Accounts[DefaultAccountID] = &Account{
 		Server:  lego.DirectoryURLLetsEncrypt,
-		KeyType: string(certcrypto.EC256),
+		KeyType: certcrypto.EC256,
 	}
 }
 
@@ -65,7 +65,7 @@ func applyServersDefaults(cfg *Configuration) {
 func applyAccountsDefaults(cfg *Configuration) {
 	for _, account := range cfg.Accounts {
 		if account.KeyType == "" {
-			account.KeyType = string(certcrypto.EC256)
+			account.KeyType = certcrypto.EC256
 		}
 
 		if account.Server == "" {
@@ -172,14 +172,14 @@ func getDefaultAccountID(cfg *Configuration) string {
 	return ""
 }
 
-func getDefaultCertificateKeyType(cfg *Configuration, acc string) string {
+func getDefaultCertificateKeyType(cfg *Configuration, acc string) certcrypto.KeyType {
 	if cfg.Accounts == nil {
-		return string(certcrypto.EC256)
+		return certcrypto.EC256
 	}
 
 	if account, ok := cfg.Accounts[acc]; ok {
 		return account.KeyType
 	}
 
-	return string(certcrypto.EC256)
+	return certcrypto.EC256
 }

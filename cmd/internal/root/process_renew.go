@@ -75,14 +75,9 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 
 	randomSleep()
 
-	keyType, err := certcrypto.ToKeyType(certConfig.KeyType)
-	if err != nil {
-		return err
-	}
-
 	request := certificate.ObtainRequest{
 		Domains:                        renewalDomains,
-		KeyType:                        keyType,
+		KeyType:                        certConfig.KeyType,
 		MustStaple:                     certConfig.MustStaple,
 		NotBefore:                      certConfig.NotBefore,
 		NotAfter:                       certConfig.NotAfter,

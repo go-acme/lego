@@ -94,7 +94,7 @@ func Certificates(root string, cfg *configuration.Configuration) error {
 
 		cfg.Certificates[certRes.ID] = &configuration.Certificate{
 			Domains:          certRes.Domains,
-			KeyType:          string(certRes.KeyType),
+			KeyType:          certRes.KeyType,
 			Challenge:        "FIXME: Please define the challenge.",
 			Account:          cmp.Or(accountID, "FIXME: Please define the account ID"),
 			EnableCommonName: true, // For compatibility.

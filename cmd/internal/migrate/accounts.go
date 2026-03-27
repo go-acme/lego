@@ -84,7 +84,7 @@ func Accounts(root string, cfg *configuration.Configuration) error {
 		cfg.Accounts[account.ID] = &configuration.Account{
 			Server:                cmp.Or(account.Server, "FIXME: Please define the server URL ("+serverDir+")"),
 			Email:                 account.Email,
-			KeyType:               string(account.KeyType),
+			KeyType:               account.KeyType,
 			AcceptsTermsOfService: true,
 		}
 	}

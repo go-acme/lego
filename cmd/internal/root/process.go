@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/cmd/internal"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
@@ -43,14 +42,9 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 	for accountID, challengesInfo := range createCertificatesMapping(cfg) {
 		accountConfig := cfg.Accounts[accountID]
 
-		keyType, err := certcrypto.ToKeyType(accountConfig.KeyType)
-		if err != nil {
-			return err
-		}
-
 		serverConfig := configuration.GetServerConfig(cfg, accountID)
 
-		account, err := store.Account.Get(serverConfig.URL, keyType, accountConfig.Email, accountID)
+		account, err := store.Account.Get(serverConfig.URL, accountConfig.KeyType, accountConfig.Email, accountID)
 		if err != nil {
 			return err
 		}

@@ -8,6 +8,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"math/big"
+	"slices"
 	"strings"
 )
 
@@ -42,6 +43,17 @@ func ToKeyType(keyType string) (KeyType, error) {
 	}
 
 	return "", fmt.Errorf("unsupported key type: %s", keyType)
+}
+
+// IsSupported checks if the key type is supported.
+func IsSupported(keyType KeyType) bool {
+	return slices.Contains(
+		[]KeyType{
+			EC256, EC384,
+			RSA2048, RSA3072, RSA4096, RSA8192,
+		},
+		keyType,
+	)
 }
 
 // GetPrivateKeyType gets the key type based on the public key from crypto.Signer.

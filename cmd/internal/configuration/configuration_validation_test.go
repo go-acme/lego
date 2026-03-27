@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/stretchr/testify/require"
 )
 
@@ -214,6 +215,7 @@ func Test_validateCertificates(t *testing.T) {
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account:   "acc",
+						KeyType:   certcrypto.RSA2048,
 						Challenge: "chlg",
 						Domains:   []string{"example.com"},
 					},
@@ -231,11 +233,32 @@ func Test_validateCertificates(t *testing.T) {
 					"a": {
 						Account:   "acc",
 						Challenge: "chlg",
+						KeyType:   certcrypto.RSA2048,
 						Domains:   []string{"example.com"},
 					},
 				},
 			},
 			expected: "a: challenge: 'chlg' not found",
+		},
+		{
+			desc: "unsupported key type",
+			cfg: &Configuration{
+				Accounts: map[string]*Account{
+					"acc": {},
+				},
+				Challenges: map[string]*Challenge{
+					"yo": {},
+				},
+				Certificates: map[string]*Certificate{
+					"a": {
+						Account:   "acc",
+						Challenge: "yo",
+						Domains:   []string{"example.com"},
+						KeyType:   certcrypto.KeyType("foo"),
+					},
+				},
+			},
+			expected: "a: unsupported key type: foo",
 		},
 	}
 
@@ -279,10 +302,22 @@ func Test_validateAccounts(t *testing.T) {
 			expected: "account '': the account name cannot be empty",
 		},
 		{
+			desc: "unsupported key type",
+			cfg: &Configuration{
+				Accounts: map[string]*Account{
+					"a": {
+						KeyType: certcrypto.KeyType("foo"),
+					},
+				},
+			},
+			expected: "account 'a': unsupported key type: foo",
+		},
+		{
 			desc: "missing KID and HMAC key",
 			cfg: &Configuration{
 				Accounts: map[string]*Account{
 					"a": {
+						KeyType:                certcrypto.EC256,
 						ExternalAccountBinding: &ExternalAccountBinding{},
 					},
 				},

@@ -75,6 +75,8 @@ certificates:
     alwaysDeactivateAuthorizations: false
     renew:
       reuseKey: true
+      days: 1
+      disableRandomSleep: true
       ari:
         disable: false
         waitToRenewDuration: 1m

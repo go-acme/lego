@@ -225,6 +225,12 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "disableRandomSleep": {
+              "type": "boolean"
+            },
+            "days": {
+              "type": "integer"
+            },
             "reuseKey": {
               "type": "boolean"
             },

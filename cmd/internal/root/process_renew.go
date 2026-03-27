@@ -72,7 +72,7 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 		return fmt.Errorf("set up client: %w", err)
 	}
 
-	randomSleep()
+	randomSleep(certConfig)
 
 	request := newObtainRequest(certConfig, renewalDomains)
 
@@ -291,7 +291,11 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 	return renewalTime
 }
 
-func randomSleep() {
+func randomSleep(certConfig *configuration.Certificate) {
+	if certConfig.Renew != nil && certConfig.Renew.DisableRandomSleep {
+		return
+	}
+
 	// https://github.com/go-acme/lego/issues/1656
 	// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L435-L440
 	if !isatty.IsTerminal(os.Stdout.Fd()) {

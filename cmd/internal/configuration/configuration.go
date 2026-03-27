@@ -110,6 +110,8 @@ type RenewConfiguration struct {
 	Days int `yaml:"days,omitempty"`
 
 	ReuseKey bool `yaml:"reuseKey,omitempty"`
+
+	DisableRandomSleep bool `yaml:"disableRandomSleep,omitempty"`
 }
 
 // ARIConfiguration is the configuration for the Automatic Renewal Integration.

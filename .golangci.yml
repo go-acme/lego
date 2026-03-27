@@ -254,8 +254,8 @@ linters:
         text: cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high
         linters:
           - gocyclo
-      - path: cmd/internal/root/process_obtain.go
-        text: (cognitive|cyclomatic) complexity \d+ of func `obtain` is high
+      - path: cmd/internal/root/process.go
+        text: (cognitive|cyclomatic) complexity \d+ of func `process` is high
         linters:
           - gocognit
           - gocyclo

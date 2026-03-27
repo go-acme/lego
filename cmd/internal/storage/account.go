@@ -85,18 +85,18 @@ func getEffectiveAccountID(email, id string) string {
 	return configuration.DefaultAccountID
 }
 
-func readAccountFile(filename string) (*Account, error) {
+func ReadJSONFile[T any](filename string) (*T, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	account := new(Account)
+	result := new(T)
 
-	err = json.Unmarshal(data, account)
+	err = json.Unmarshal(data, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return account, nil
+	return result, nil
 }

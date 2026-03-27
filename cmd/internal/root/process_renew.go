@@ -15,7 +15,6 @@ import (
 
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/certcrypto"
-	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
@@ -25,13 +24,11 @@ import (
 
 type lzSetUp func() (*lego.Client, error)
 
-func renewCertificate(ctx context.Context, lazyClient lzSetUp, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
-	// CSR
+func renew(ctx context.Context, lazyClient lzSetUp, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
 	if certConfig.CSR != "" {
 		return renewForCSR(ctx, lazyClient, certID, certConfig, certsStorage)
 	}
 
-	// Domains
 	return renewForDomains(ctx, lazyClient, certID, certConfig, certsStorage)
 }
 
@@ -75,25 +72,9 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 		return fmt.Errorf("set up client: %w", err)
 	}
 
-	randomSleep()
+	randomSleep(certConfig)
 
-	keyType, err := certcrypto.ToKeyType(certConfig.KeyType)
-	if err != nil {
-		return err
-	}
-
-	request := certificate.ObtainRequest{
-		Domains:                        renewalDomains,
-		KeyType:                        keyType,
-		MustStaple:                     certConfig.MustStaple,
-		NotBefore:                      certConfig.NotBefore,
-		NotAfter:                       certConfig.NotAfter,
-		Bundle:                         !certConfig.NoBundle,
-		PreferredChain:                 certConfig.PreferredChain,
-		EnableCommonName:               certConfig.EnableCommonName,
-		Profile:                        certConfig.Profile,
-		AlwaysDeactivateAuthorizations: certConfig.AlwaysDeactivateAuthorizations,
-	}
+	request := newObtainRequest(certConfig, renewalDomains)
 
 	if certConfig.Renew != nil && certConfig.Renew.ReuseKey {
 		request.PrivateKey, err = certsStorage.ReadPrivateKey(certID)
@@ -169,16 +150,7 @@ func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certCon
 		return fmt.Errorf("CSR: set up client: %w", err)
 	}
 
-	request := certificate.ObtainForCSRRequest{
-		CSR:                            csr,
-		NotBefore:                      certConfig.NotBefore,
-		NotAfter:                       certConfig.NotAfter,
-		Bundle:                         !certConfig.NoBundle,
-		PreferredChain:                 certConfig.PreferredChain,
-		EnableCommonName:               certConfig.EnableCommonName,
-		Profile:                        certConfig.Profile,
-		AlwaysDeactivateAuthorizations: certConfig.AlwaysDeactivateAuthorizations,
-	}
+	request := newObtainForCSRRequest(certConfig, csr)
 
 	if replacesCertID != "" {
 		request.ReplacesCertID = replacesCertID
@@ -319,7 +291,11 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 	return renewalTime
 }
 
-func randomSleep() {
+func randomSleep(certConfig *configuration.Certificate) {
+	if certConfig.Renew != nil && certConfig.Renew.DisableRandomSleep {
+		return
+	}
+
 	// https://github.com/go-acme/lego/issues/1656
 	// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L435-L440
 	if !isatty.IsTerminal(os.Stdout.Fd()) {

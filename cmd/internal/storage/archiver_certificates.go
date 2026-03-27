@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
@@ -62,16 +61,9 @@ func (m *Archiver) archiveCertificates(skip func(resourceID string) bool, manage
 	date := strconv.FormatInt(time.Now().Unix(), 10)
 
 	for _, filename := range matches {
-		file, err := os.ReadFile(filename)
+		resource, err := ReadJSONFile[Certificate](filename)
 		if err != nil {
 			return fmt.Errorf("reading certificate file %q: %w", filename, err)
-		}
-
-		resource := new(Certificate)
-
-		err = json.Unmarshal(file, resource)
-		if err != nil {
-			return fmt.Errorf("unmarshalling certificate file %q: %w", filename, err)
 		}
 
 		if skip(resource.ID) {

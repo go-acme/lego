@@ -159,7 +159,7 @@ func accountMapping(cfg *configuration.Configuration) (map[string]map[string]str
 }
 
 func isManagedAccount(filename string) bool {
-	account, err := readAccountFile(filename)
+	account, err := ReadJSONFile[Account](filename)
 	if err != nil {
 		log.Error("Could not read the account file", slog.String("filepath", filename))
 		return false

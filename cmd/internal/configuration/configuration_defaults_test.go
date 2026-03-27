@@ -20,7 +20,7 @@ func TestApplyDefaults(t *testing.T) {
 		Accounts: map[string]*Account{
 			DefaultAccountID: {
 				Server:  lego.DirectoryURLLetsEncrypt,
-				KeyType: string(certcrypto.EC256),
+				KeyType: certcrypto.EC256,
 			},
 		},
 		Challenges:   map[string]*Challenge{},
@@ -100,7 +100,7 @@ func Test_applyAccountsDefaults(t *testing.T) {
 			},
 			expected: &Configuration{
 				Accounts: map[string]*Account{
-					"a": {Server: lego.DirectoryURLLetsEncrypt, KeyType: string(certcrypto.EC256)},
+					"a": {Server: lego.DirectoryURLLetsEncrypt, KeyType: certcrypto.EC256},
 				},
 			},
 		},
@@ -108,12 +108,12 @@ func Test_applyAccountsDefaults(t *testing.T) {
 			desc: "no server",
 			cfg: &Configuration{
 				Accounts: map[string]*Account{
-					"a": {KeyType: string(certcrypto.RSA2048)},
+					"a": {KeyType: certcrypto.RSA2048},
 				},
 			},
 			expected: &Configuration{
 				Accounts: map[string]*Account{
-					"a": {Server: lego.DirectoryURLLetsEncrypt, KeyType: string(certcrypto.RSA2048)},
+					"a": {Server: lego.DirectoryURLLetsEncrypt, KeyType: certcrypto.RSA2048},
 				},
 			},
 		},
@@ -126,7 +126,7 @@ func Test_applyAccountsDefaults(t *testing.T) {
 			},
 			expected: &Configuration{
 				Accounts: map[string]*Account{
-					"c": {Server: "https://localhost:14000/dir", KeyType: string(certcrypto.EC256)},
+					"c": {Server: "https://localhost:14000/dir", KeyType: certcrypto.EC256},
 				},
 			},
 		},
@@ -223,7 +223,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account: DefaultAccountID,
-						KeyType: string(certcrypto.EC256),
+						KeyType: certcrypto.EC256,
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{},
 						},
@@ -274,7 +274,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account: "",
-						KeyType: string(certcrypto.EC256),
+						KeyType: certcrypto.EC256,
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{},
 						},
@@ -293,7 +293,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account: "acc",
-						KeyType: string(certcrypto.EC256),
+						KeyType: certcrypto.EC256,
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{},
 						},
@@ -316,7 +316,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account: DefaultAccountID,
-						KeyType: string(certcrypto.EC256),
+						KeyType: certcrypto.EC256,
 						Renew: &RenewConfiguration{
 							ReuseKey: true,
 							ARI:      &ARIConfiguration{},
@@ -342,7 +342,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account: DefaultAccountID,
-						KeyType: string(certcrypto.EC256),
+						KeyType: certcrypto.EC256,
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{
 								Disable: true,
@@ -372,7 +372,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 					"a": {
 						Account:   DefaultAccountID,
 						Challenge: defaultHTTP01,
-						KeyType:   string(certcrypto.EC256),
+						KeyType:   certcrypto.EC256,
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{},
 						},
@@ -400,7 +400,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 					"a": {
 						Account:   DefaultAccountID,
 						Challenge: defaultTLSALPN01,
-						KeyType:   string(certcrypto.EC256),
+						KeyType:   certcrypto.EC256,
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{},
 						},
@@ -425,7 +425,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account:   DefaultAccountID,
-						KeyType:   string(certcrypto.EC256),
+						KeyType:   certcrypto.EC256,
 						Challenge: "chlgA",
 						Renew: &RenewConfiguration{
 							ARI: &ARIConfiguration{},

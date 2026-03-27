@@ -35,16 +35,9 @@ func Certificates(root string, cfg *configuration.Configuration) error {
 	}
 
 	for _, certResourceFilePath := range matches {
-		data, err := os.ReadFile(certResourceFilePath)
+		oldCertRes, err := storage.ReadJSONFile[oldResource](certResourceFilePath)
 		if err != nil {
 			return fmt.Errorf("could not read the certificate file %q: %w", certResourceFilePath, err)
-		}
-
-		var oldCertRes oldResource
-
-		err = json.Unmarshal(data, &oldCertRes)
-		if err != nil {
-			return fmt.Errorf("could not parse the certificate file %q: %w", certResourceFilePath, err)
 		}
 
 		if oldCertRes.Domain == "" {
@@ -101,7 +94,7 @@ func Certificates(root string, cfg *configuration.Configuration) error {
 
 		cfg.Certificates[certRes.ID] = &configuration.Certificate{
 			Domains:          certRes.Domains,
-			KeyType:          string(certRes.KeyType),
+			KeyType:          certRes.KeyType,
 			Challenge:        "FIXME: Please define the challenge.",
 			Account:          cmp.Or(accountID, "FIXME: Please define the account ID"),
 			EnableCommonName: true, // For compatibility.

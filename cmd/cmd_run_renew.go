@@ -27,6 +27,19 @@ import (
 
 const noDays = -math.MaxInt
 
+func renew(ctx context.Context, cmd *cli.Command, certID string, resource *storage.Certificate, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
+	if cmd.IsSet(flags.FlgCSR) {
+		return renewForCSR(ctx, cmd, lazyClient, certID, certsStorage, hookManager)
+	}
+
+	domains := cmd.StringSlice(flags.FlgDomains)
+	if len(domains) == 0 {
+		domains = resource.Domains
+	}
+
+	return renewForDomains(ctx, cmd, lazyClient, certID, domains, certsStorage, hookManager)
+}
+
 func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, certID string, domains []string, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
 	certificates, err := certsStorage.ReadCertificate(certID)
 	if err != nil {

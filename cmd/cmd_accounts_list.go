@@ -14,7 +14,7 @@ import (
 )
 
 type ListAccount struct {
-	storage.Account
+	*storage.Account
 
 	Path string `json:"path,omitempty"`
 }
@@ -81,14 +81,7 @@ func readAccounts(cmd *cli.Command) ([]ListAccount, error) {
 	var accounts []ListAccount
 
 	for _, filename := range matches {
-		data, err := os.ReadFile(filename)
-		if err != nil {
-			return nil, err
-		}
-
-		var account storage.Account
-
-		err = json.Unmarshal(data, &account)
+		account, err := storage.ReadJSONFile[storage.Account](filename)
 		if err != nil {
 			return nil, err
 		}

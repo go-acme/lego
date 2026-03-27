@@ -44,16 +44,9 @@ func Accounts(root string, cfg *configuration.Configuration) error {
 	for _, srcAccountFilePath := range matches {
 		log.Debug("Migrating an account file.", slog.String("filepath", srcAccountFilePath))
 
-		data, err := os.ReadFile(srcAccountFilePath)
+		oldAccount, err := storage.ReadJSONFile[OldAccount](srcAccountFilePath)
 		if err != nil {
 			return fmt.Errorf("could not read the account file %q: %w", srcAccountFilePath, err)
-		}
-
-		var oldAccount OldAccount
-
-		err = json.Unmarshal(data, &oldAccount)
-		if err != nil {
-			return fmt.Errorf("could not parse the account file %q: %w", srcAccountFilePath, err)
 		}
 
 		accountDir := filepath.Dir(srcAccountFilePath)
@@ -91,7 +84,7 @@ func Accounts(root string, cfg *configuration.Configuration) error {
 		cfg.Accounts[account.ID] = &configuration.Account{
 			Server:                cmp.Or(account.Server, "FIXME: Please define the server URL ("+serverDir+")"),
 			Email:                 account.Email,
-			KeyType:               string(account.KeyType),
+			KeyType:               account.KeyType,
 			AcceptsTermsOfService: true,
 		}
 	}

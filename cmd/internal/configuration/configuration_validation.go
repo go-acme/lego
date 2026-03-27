@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/log"
 )
 
@@ -81,6 +82,10 @@ func validateCertificate(cert *Certificate) error {
 		return errors.New("a challenge is required")
 	}
 
+	if !certcrypto.IsSupported(cert.KeyType) {
+		return fmt.Errorf("unsupported key type: %s", cert.KeyType)
+	}
+
 	return nil
 }
 
@@ -152,6 +157,10 @@ func validateAccounts(cfg *Configuration) error {
 func validateAccount(name string, account *Account) error {
 	if strings.TrimSpace(name) == "" {
 		return errors.New("the account name cannot be empty")
+	}
+
+	if !certcrypto.IsSupported(account.KeyType) {
+		return fmt.Errorf("unsupported key type: %s", account.KeyType)
 	}
 
 	if account.ExternalAccountBinding != nil {

@@ -11,14 +11,14 @@ USAGE:
    lego [global options] [command [command options]]
 
 COMMANDS:
-   run       Get or renew a certificate
-   revoke    Revoke a certificate
-   accounts  Accounts management.
-   archives  Archives management.
-   dnshelp   Shows additional help for the '--dns' global option
-   list      Display information about certificates.
-   migrate   Migrate certificates and accounts.
-   help, h   Shows a list of commands or help for one command
+   run           Get or renew a certificate
+   revoke        Revoke a certificate
+   certificates  Certificates management.
+   accounts      Accounts management.
+   archives      Archives management.
+   dnshelp       Shows additional help for the '--dns' global option
+   migrate       Migrate certificates and accounts.
+   help, h       Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --config string, --config string  Path to the configuration file. [$LEGO_CONFIG]
@@ -186,22 +186,6 @@ OPTIONS:
 
    --account-id string  Account identifier (The email is used if there is account ID is undefined). [$LEGO_ACCOUNT_ID]
    --path string        Directory to use for storing the data. [$LEGO_PATH]
-"""
-
-[[command]]
-title   = "lego help list"
-content = """
-NAME:
-   lego list - Display information about certificates.
-
-USAGE:
-   lego list [command [command options]]
-
-COMMANDS:
-   certificates  Display information about certificates.
-
-OPTIONS:
-   --help, -h  show help
 """
 
 [[command]]

@@ -4,10 +4,10 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func createList() *cli.Command {
+func createCertificates() *cli.Command {
 	return &cli.Command{
-		Name:  "list",
-		Usage: "Display information about certificates.",
+		Name:  "certificates",
+		Usage: "Certificates management.",
 		Commands: []*cli.Command{
 			createListCertificates(),
 		},

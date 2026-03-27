@@ -12,6 +12,19 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+func obtain(ctx context.Context, cmd *cli.Command, certID string, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
+	client, err := lazyClient()
+	if err != nil {
+		return fmt.Errorf("set up client: %w", err)
+	}
+
+	if cmd.IsSet(flags.FlgCSR) {
+		return obtainForCSR(ctx, cmd, client, certID, certsStorage, hookManager)
+	}
+
+	return obtainForDomains(ctx, cmd, client, certID, certsStorage, hookManager)
+}
+
 func obtainForDomains(ctx context.Context, cmd *cli.Command, client *lego.Client, certID string, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
 	domains := cmd.StringSlice(flags.FlgDomains)
 

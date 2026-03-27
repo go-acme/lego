@@ -9,7 +9,6 @@ import (
 
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
-	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
@@ -92,32 +91,6 @@ func run(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	return nil
-}
-
-func obtain(ctx context.Context, cmd *cli.Command, certID string, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
-	client, err := lazyClient()
-	if err != nil {
-		return fmt.Errorf("set up client: %w", err)
-	}
-
-	if cmd.IsSet(flags.FlgCSR) {
-		return obtainForCSR(ctx, cmd, client, certID, certsStorage, hookManager)
-	}
-
-	return obtainForDomains(ctx, cmd, client, certID, certsStorage, hookManager)
-}
-
-func renew(ctx context.Context, cmd *cli.Command, certID string, resource *storage.Certificate, lazyClient lzSetUp, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
-	if cmd.IsSet(flags.FlgCSR) {
-		return renewForCSR(ctx, cmd, lazyClient, certID, certsStorage, hookManager)
-	}
-
-	domains := cmd.StringSlice(flags.FlgDomains)
-	if len(domains) == 0 {
-		domains = resource.Domains
-	}
-
-	return renewForDomains(ctx, cmd, lazyClient, certID, domains, certsStorage, hookManager)
 }
 
 func getCertID(cmd *cli.Command) (string, error) {

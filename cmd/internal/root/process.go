@@ -91,7 +91,7 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 
 				// Renew
 				if store.Certificate.ExistsFile(certID, storage.ExtResource) {
-					err = renew(ctx, lazyClient, certID, certConfig, store.Certificate)
+					err = renew(ctx, lazySetup, certID, certConfig, store.Certificate)
 					if err != nil {
 						return err
 					}

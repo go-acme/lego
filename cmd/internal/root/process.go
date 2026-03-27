@@ -106,7 +106,7 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 				}
 
 				// Run
-				err := obtain(ctx, lazySetup, certConfig, store.Certificate)
+				err := obtain(ctx, lazySetup, certID, certConfig, store.Certificate)
 				if err != nil {
 					return err
 				}

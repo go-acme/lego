@@ -11,20 +11,20 @@ import (
 	"github.com/go-acme/lego/v5/lego"
 )
 
-func obtain(ctx context.Context, lazySetup lzSetUp, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
+func obtain(ctx context.Context, lazySetup lzSetUp, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
 	client, err := lazySetup()
 	if err != nil {
 		return fmt.Errorf("set up client: %w", err)
 	}
 
 	if certConfig.CSR != "" {
-		return obtainForCSR(ctx, client, certConfig, certsStorage)
+		return obtainForCSR(ctx, client, certID, certConfig, certsStorage)
 	}
 
-	return obtainForDomains(ctx, client, certConfig, certsStorage)
+	return obtainForDomains(ctx, client, certID, certConfig, certsStorage)
 }
 
-func obtainForDomains(ctx context.Context, client *lego.Client, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
+func obtainForDomains(ctx context.Context, client *lego.Client, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
 	keyType, err := certcrypto.ToKeyType(certConfig.KeyType)
 	if err != nil {
 		return fmt.Errorf("get the key type: %w", err)
@@ -52,6 +52,10 @@ func obtainForDomains(ctx context.Context, client *lego.Client, certConfig *conf
 		return err
 	}
 
+	if certID != "" {
+		certRes.ID = certID
+	}
+
 	err = certsStorage.Save(
 		&storage.Certificate{
 			Resource: certRes,
@@ -66,7 +70,7 @@ func obtainForDomains(ctx context.Context, client *lego.Client, certConfig *conf
 	return nil
 }
 
-func obtainForCSR(ctx context.Context, client *lego.Client, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
+func obtainForCSR(ctx context.Context, client *lego.Client, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
 	csr, err := storage.ReadCSRFile(certConfig.CSR)
 	if err != nil {
 		return err
@@ -91,6 +95,10 @@ func obtainForCSR(ctx context.Context, client *lego.Client, certConfig *configur
 	certRes, err := client.Certificate.ObtainForCSR(ctx, request)
 	if err != nil {
 		return err
+	}
+
+	if certID != "" {
+		certRes.ID = certID
 	}
 
 	err = certsStorage.Save(

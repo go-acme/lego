@@ -157,12 +157,7 @@ func (s *AccountsStorage) Get(server string, keyType certcrypto.KeyType, email, 
 		return account, nil
 	}
 
-	account, err := s.getAccount(serverURL, keyType, effectiveAccountID)
-	if err != nil {
-		return nil, err
-	}
-
-	return account, nil
+	return s.getAccount(serverURL, keyType, effectiveAccountID)
 }
 
 // createAccount creates a new account.
@@ -189,7 +184,7 @@ func (s *AccountsStorage) createAccount(server *url.URL, keyType certcrypto.KeyT
 func (s *AccountsStorage) getAccount(server *url.URL, keyType certcrypto.KeyType, effectiveAccountID string) (*Account, error) {
 	accountFilePath := s.getAccountFilePath(server, effectiveAccountID)
 
-	account, err := readAccountFile(accountFilePath)
+	account, err := ReadJSONFile[Account](accountFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("could not read the account file %q: %w", accountFilePath, err)
 	}

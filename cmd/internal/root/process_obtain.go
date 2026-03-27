@@ -2,6 +2,7 @@ package root
 
 import (
 	"context"
+	"crypto/x509"
 	"fmt"
 
 	"github.com/go-acme/lego/v5/certificate"
@@ -24,18 +25,7 @@ func obtain(ctx context.Context, lazySetup lzSetUp, certID string, certConfig *c
 }
 
 func obtainForDomains(ctx context.Context, client *lego.Client, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
-	request := certificate.ObtainRequest{
-		Domains:                        certConfig.Domains,
-		KeyType:                        certConfig.KeyType,
-		MustStaple:                     certConfig.MustStaple,
-		NotBefore:                      certConfig.NotBefore,
-		NotAfter:                       certConfig.NotAfter,
-		Bundle:                         !certConfig.NoBundle,
-		PreferredChain:                 certConfig.PreferredChain,
-		EnableCommonName:               certConfig.EnableCommonName,
-		Profile:                        certConfig.Profile,
-		AlwaysDeactivateAuthorizations: certConfig.AlwaysDeactivateAuthorizations,
-	}
+	request := newObtainRequest(certConfig, certConfig.Domains)
 
 	// NOTE(ldez): I didn't add an option to set a private key as the file.
 	// I didn't find a use case for it when using the file configuration.
@@ -71,16 +61,7 @@ func obtainForCSR(ctx context.Context, client *lego.Client, certID string, certC
 	}
 
 	// obtain a certificate for this CSR
-	request := certificate.ObtainForCSRRequest{
-		CSR:                            csr,
-		NotBefore:                      certConfig.NotBefore,
-		NotAfter:                       certConfig.NotAfter,
-		Bundle:                         !certConfig.NoBundle,
-		PreferredChain:                 certConfig.PreferredChain,
-		EnableCommonName:               certConfig.EnableCommonName,
-		Profile:                        certConfig.Profile,
-		AlwaysDeactivateAuthorizations: certConfig.AlwaysDeactivateAuthorizations,
-	}
+	request := newObtainForCSRRequest(certConfig, csr)
 
 	// NOTE(ldez): I didn't add an option to set a private key as the file.
 	// I didn't find a use case for it when using the file configuration.
@@ -107,4 +88,32 @@ func obtainForCSR(ctx context.Context, client *lego.Client, certID string, certC
 	}
 
 	return nil
+}
+
+func newObtainRequest(certConfig *configuration.Certificate, domains []string) certificate.ObtainRequest {
+	return certificate.ObtainRequest{
+		Domains:                        domains,
+		KeyType:                        certConfig.KeyType,
+		MustStaple:                     certConfig.MustStaple,
+		NotBefore:                      certConfig.NotBefore,
+		NotAfter:                       certConfig.NotAfter,
+		Bundle:                         !certConfig.NoBundle,
+		PreferredChain:                 certConfig.PreferredChain,
+		EnableCommonName:               certConfig.EnableCommonName,
+		Profile:                        certConfig.Profile,
+		AlwaysDeactivateAuthorizations: certConfig.AlwaysDeactivateAuthorizations,
+	}
+}
+
+func newObtainForCSRRequest(certConfig *configuration.Certificate, csr *x509.CertificateRequest) certificate.ObtainForCSRRequest {
+	return certificate.ObtainForCSRRequest{
+		CSR:                            csr,
+		NotBefore:                      certConfig.NotBefore,
+		NotAfter:                       certConfig.NotAfter,
+		Bundle:                         !certConfig.NoBundle,
+		PreferredChain:                 certConfig.PreferredChain,
+		EnableCommonName:               certConfig.EnableCommonName,
+		Profile:                        certConfig.Profile,
+		AlwaysDeactivateAuthorizations: certConfig.AlwaysDeactivateAuthorizations,
+	}
 }

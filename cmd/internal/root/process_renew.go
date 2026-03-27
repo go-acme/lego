@@ -15,7 +15,6 @@ import (
 
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/certcrypto"
-	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
@@ -75,18 +74,7 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 
 	randomSleep()
 
-	request := certificate.ObtainRequest{
-		Domains:                        renewalDomains,
-		KeyType:                        certConfig.KeyType,
-		MustStaple:                     certConfig.MustStaple,
-		NotBefore:                      certConfig.NotBefore,
-		NotAfter:                       certConfig.NotAfter,
-		Bundle:                         !certConfig.NoBundle,
-		PreferredChain:                 certConfig.PreferredChain,
-		EnableCommonName:               certConfig.EnableCommonName,
-		Profile:                        certConfig.Profile,
-		AlwaysDeactivateAuthorizations: certConfig.AlwaysDeactivateAuthorizations,
-	}
+	request := newObtainRequest(certConfig, renewalDomains)
 
 	if certConfig.Renew != nil && certConfig.Renew.ReuseKey {
 		request.PrivateKey, err = certsStorage.ReadPrivateKey(certID)
@@ -162,16 +150,7 @@ func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certCon
 		return fmt.Errorf("CSR: set up client: %w", err)
 	}
 
-	request := certificate.ObtainForCSRRequest{
-		CSR:                            csr,
-		NotBefore:                      certConfig.NotBefore,
-		NotAfter:                       certConfig.NotAfter,
-		Bundle:                         !certConfig.NoBundle,
-		PreferredChain:                 certConfig.PreferredChain,
-		EnableCommonName:               certConfig.EnableCommonName,
-		Profile:                        certConfig.Profile,
-		AlwaysDeactivateAuthorizations: certConfig.AlwaysDeactivateAuthorizations,
-	}
+	request := newObtainForCSRRequest(certConfig, csr)
 
 	if replacesCertID != "" {
 		request.ReplacesCertID = replacesCertID

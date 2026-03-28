@@ -75,20 +75,6 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		slog.Any("time-remaining", log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
 	)
 
-	err = hookManager.Pre(ctx, certID, renewalDomains)
-	if err != nil {
-		return fmt.Errorf("pre-renew hook: %w", err)
-	}
-
-	defer func() { _ = hookManager.Post(ctx) }()
-
-	client, err := lazyClient()
-	if err != nil {
-		return fmt.Errorf("set up client: %w", err)
-	}
-
-	randomSleep(cmd)
-
 	request, err := newObtainRequest(cmd, renewalDomains)
 	if err != nil {
 		return err
@@ -104,6 +90,20 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 	if replacesCertID != "" {
 		request.ReplacesCertID = replacesCertID
 	}
+
+	err = hookManager.PreForDomains(ctx, certID, request)
+	if err != nil {
+		return fmt.Errorf("pre-renew hook: %w", err)
+	}
+
+	defer func() { _ = hookManager.Post(ctx) }()
+
+	client, err := lazyClient()
+	if err != nil {
+		return fmt.Errorf("set up client: %w", err)
+	}
+
+	randomSleep(cmd)
 
 	certRes, err := client.Certificate.Obtain(ctx, request)
 	if err != nil {
@@ -162,7 +162,13 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 		slog.Any("time-remaining", log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC()))),
 	)
 
-	err = hookManager.Pre(ctx, certID, certcrypto.ExtractDomainsCSR(csr))
+	request := newObtainForCSRRequest(cmd, csr)
+
+	if replacesCertID != "" {
+		request.ReplacesCertID = replacesCertID
+	}
+
+	err = hookManager.PreForCSR(ctx, certID, request)
 	if err != nil {
 		return fmt.Errorf("CSR: pre-renew hook: %w", err)
 	}
@@ -172,12 +178,6 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 	client, err := lazyClient()
 	if err != nil {
 		return fmt.Errorf("CSR: set up client: %w", err)
-	}
-
-	request := newObtainForCSRRequest(cmd, csr)
-
-	if replacesCertID != "" {
-		request.ReplacesCertID = replacesCertID
 	}
 
 	certRes, err := client.Certificate.ObtainForCSR(ctx, request)

@@ -101,6 +101,14 @@ type ObtainRequest struct {
 	ReplacesCertID string
 }
 
+func (r ObtainRequest) EffectiveKeyType() (certcrypto.KeyType, error) {
+	if r.PrivateKey == nil {
+		return r.KeyType, nil
+	}
+
+	return certcrypto.GetPrivateKeyType(r.PrivateKey)
+}
+
 // ObtainForCSRRequest The request to obtain a certificate matching the CSR passed into it.
 //
 // If `Bundle` is true, the `[]byte` contains both the issuer certificate and your issued certificate as a bundle.
@@ -129,6 +137,14 @@ type ObtainForCSRRequest struct {
 	// order is intended to replace.
 	// - https://www.rfc-editor.org/rfc/rfc9773.html#section-5
 	ReplacesCertID string
+}
+
+func (r ObtainForCSRRequest) EffectiveKeyType() (certcrypto.KeyType, error) {
+	if r.PrivateKey == nil {
+		return certcrypto.GetCSRKeyType(r.CSR)
+	}
+
+	return certcrypto.GetPrivateKeyType(r.PrivateKey)
 }
 
 type resolver interface {
@@ -223,7 +239,7 @@ func (c *Certifier) Obtain(ctx context.Context, request ObtainRequest) (*Resourc
 	}
 
 	if cert != nil {
-		cert.KeyType, err = getObtainRequestKeyType(request)
+		cert.KeyType, err = request.EffectiveKeyType()
 		if err != nil {
 			return nil, err
 		}
@@ -313,7 +329,7 @@ func (c *Certifier) ObtainForCSR(ctx context.Context, request ObtainForCSRReques
 		// Add the CSR to the certificate so that it can be used for renewals.
 		cert.CSR = certcrypto.PEMEncode(request.CSR)
 
-		cert.KeyType, err = getObtainForCSRRequestKeyType(request)
+		cert.KeyType, err = request.EffectiveKeyType()
 		if err != nil {
 			return nil, err
 		}
@@ -770,22 +786,6 @@ func getObtainRequestPrivateKey(request ObtainRequest) (crypto.Signer, error) {
 	}
 
 	return certcrypto.GeneratePrivateKey(request.KeyType)
-}
-
-func getObtainRequestKeyType(request ObtainRequest) (certcrypto.KeyType, error) {
-	if request.PrivateKey == nil {
-		return request.KeyType, nil
-	}
-
-	return certcrypto.GetPrivateKeyType(request.PrivateKey)
-}
-
-func getObtainForCSRRequestKeyType(request ObtainForCSRRequest) (certcrypto.KeyType, error) {
-	if request.PrivateKey == nil {
-		return certcrypto.GetCSRKeyType(request.CSR)
-	}
-
-	return certcrypto.GetPrivateKeyType(request.PrivateKey)
 }
 
 // https://www.rfc-editor.org/rfc/rfc8555.html#section-7.1.4

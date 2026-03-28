@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/stretchr/testify/require"
@@ -62,7 +63,12 @@ func Test_Manager(t *testing.T) {
 
 			manager := NewManager(certificatesStorage, test.options...)
 
-			err := manager.Pre(t.Context(), "a", []string{"example.com", "example.org"})
+			request := certificate.ObtainRequest{
+				Domains: []string{"example.com", "example.org"},
+				KeyType: certcrypto.EC256,
+			}
+
+			err := manager.PreForDomains(t.Context(), "a", request)
 			require.NoError(t, err)
 
 			t.Log(manager.metadata)
@@ -131,7 +137,12 @@ func Test_Manager_errors(t *testing.T) {
 
 			manager := NewManager(certificatesStorage, test.options...)
 
-			err := manager.Pre(t.Context(), "a", []string{"example.com", "example.org"})
+			request := certificate.ObtainRequest{
+				Domains: []string{"example.com", "example.org"},
+				KeyType: certcrypto.EC256,
+			}
+
+			err := manager.PreForDomains(t.Context(), "a", request)
 			test.requirePre(t, err)
 
 			err = manager.Deploy(t.Context(), &certificate.Resource{ID: "example.org"}, &storage.SaveOptions{})

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
@@ -28,13 +27,6 @@ func obtain(ctx context.Context, cmd *cli.Command, certID string, lazyClient lzS
 func obtainForDomains(ctx context.Context, cmd *cli.Command, client *lego.Client, certID string, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
 	domains := cmd.StringSlice(flags.FlgDomains)
 
-	err := hookManager.Pre(ctx, certID, domains)
-	if err != nil {
-		return err
-	}
-
-	defer func() { _ = hookManager.Post(ctx) }()
-
 	request, err := newObtainRequest(cmd, domains)
 	if err != nil {
 		return err
@@ -47,6 +39,13 @@ func obtainForDomains(ctx context.Context, cmd *cli.Command, client *lego.Client
 			return fmt.Errorf("load private key: %w", err)
 		}
 	}
+
+	err = hookManager.PreForDomains(ctx, certID, request)
+	if err != nil {
+		return err
+	}
+
+	defer func() { _ = hookManager.Post(ctx) }()
 
 	certRes, err := client.Certificate.Obtain(ctx, request)
 	if err != nil {
@@ -80,13 +79,6 @@ func obtainForCSR(ctx context.Context, cmd *cli.Command, client *lego.Client, ce
 		return err
 	}
 
-	err = hookManager.Pre(ctx, cmd.String(flags.FlgCertName), certcrypto.ExtractDomainsCSR(csr))
-	if err != nil {
-		return err
-	}
-
-	defer func() { _ = hookManager.Post(ctx) }()
-
 	// obtain a certificate for this CSR
 	request := newObtainForCSRRequest(cmd, csr)
 
@@ -97,6 +89,13 @@ func obtainForCSR(ctx context.Context, cmd *cli.Command, client *lego.Client, ce
 			return fmt.Errorf("load private key: %w", err)
 		}
 	}
+
+	err = hookManager.PreForCSR(ctx, certID, request)
+	if err != nil {
+		return err
+	}
+
+	defer func() { _ = hookManager.Post(ctx) }()
 
 	certRes, err := client.Certificate.ObtainForCSR(ctx, request)
 	if err != nil {

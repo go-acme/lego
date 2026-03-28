@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bodgit/tsig"
+	"github.com/bodgit/tsig/gss"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -24,6 +26,10 @@ const (
 	EnvTSIGKey       = envNamespace + "TSIG_KEY"
 	EnvTSIGSecret    = envNamespace + "TSIG_SECRET"
 	EnvTSIGAlgorithm = envNamespace + "TSIG_ALGORITHM"
+
+	EnvTSIGGSSRealm    = envNamespace + "TSIG_GSS_REALM"
+	EnvTSIGGSSUsername = envNamespace + "TSIG_GSS_USERNAME"
+	EnvTSIGGSSPassword = envNamespace + "TSIG_GSS_PASSWORD"
 
 	EnvNameserver = envNamespace + "NAMESERVER"
 	EnvDNSTimeout = envNamespace + "DNS_TIMEOUT"
@@ -45,6 +51,10 @@ type Config struct {
 	TSIGAlgorithm string
 	TSIGKey       string
 	TSIGSecret    string
+
+	TSIGGSSRealm    string
+	TSIGGSSUsername string
+	TSIGGSSPassword string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -93,6 +103,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.TSIGKey = env.GetOrFile(EnvTSIGKey)
 	config.TSIGSecret = env.GetOrFile(EnvTSIGSecret)
 
+	config.TSIGGSSRealm = env.GetOrFile(EnvTSIGGSSRealm)
+	config.TSIGGSSUsername = env.GetOrFile(EnvTSIGGSSUsername)
+	config.TSIGGSSPassword = env.GetOrFile(EnvTSIGGSSPassword)
+
 	return NewDNSProviderConfig(config)
 }
 
@@ -106,17 +120,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("rfc2136: nameserver missing")
 	}
 
-	if config.TSIGFile != "" {
-		key, err := internal.ReadTSIGFile(config.TSIGFile)
-		if err != nil {
-			return nil, fmt.Errorf("rfc2136: read TSIG file %s: %w", config.TSIGFile, err)
-		}
-
-		config.TSIGAlgorithm = key.Algorithm
-		config.TSIGKey = key.Name
-		config.TSIGSecret = key.Secret
-	}
-
 	// Append the default DNS port if none is specified.
 	if _, _, err := net.SplitHostPort(config.Nameserver); err != nil {
 		if strings.Contains(err.Error(), "missing port") {
@@ -126,26 +129,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		}
 	}
 
-	if config.TSIGKey == "" || config.TSIGSecret == "" {
-		config.TSIGKey = ""
-		config.TSIGSecret = ""
-	} else {
-		// zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2)
-		config.TSIGKey = dns.CanonicalName(config.TSIGKey)
-	}
-
-	if config.TSIGAlgorithm == "" {
-		config.TSIGAlgorithm = dns.HmacSHA1
-	} else {
-		// To be compatible with https://github.com/miekg/dns/blob/master/tsig.go
-		config.TSIGAlgorithm = dns.Fqdn(config.TSIGAlgorithm)
-	}
-
-	switch config.TSIGAlgorithm {
-	case dns.HmacSHA1, dns.HmacSHA224, dns.HmacSHA256, dns.HmacSHA384, dns.HmacSHA512:
-		// valid algorithm
-	default:
-		return nil, fmt.Errorf("rfc2136: unsupported TSIG algorithm: %s", config.TSIGAlgorithm)
+	err := setupTSIG(config)
+	if err != nil {
+		return nil, fmt.Errorf("rfc2136: %w", err)
 	}
 
 	return &DNSProvider{config: config}, nil
@@ -218,7 +204,34 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	c := &dns.Client{Timeout: d.config.DNSTimeout}
 
 	// TSIG authentication / msg signing
-	if d.config.TSIGKey != "" && d.config.TSIGSecret != "" {
+	if d.config.TSIGAlgorithm == tsig.GSS {
+		var gssClient *gss.Client
+
+		gssClient, err = gss.NewClient(c)
+		if err != nil {
+			return fmt.Errorf("create GSS client: %w", err)
+		}
+
+		defer func() { _ = gssClient.Close() }()
+
+		var keyName string
+
+		keyName, _, err = gssClient.NegotiateContextWithCredentials(
+			d.config.Nameserver,
+			d.config.TSIGGSSRealm,
+			d.config.TSIGGSSUsername,
+			d.config.TSIGGSSPassword,
+		)
+		if err != nil {
+			return fmt.Errorf("negotiate GSS context: %w", err)
+		}
+
+		defer func() { _ = gssClient.DeleteContext(keyName) }()
+
+		c.TsigProvider = gssClient
+
+		m.SetTsig(keyName, tsig.GSS, 300, time.Now().Unix())
+	} else if d.config.TSIGKey != "" && d.config.TSIGSecret != "" {
 		m.SetTsig(d.config.TSIGKey, d.config.TSIGAlgorithm, 300, time.Now().Unix())
 
 		// Secret(s) for TSIG map[<zonename>]<base64 secret>.
@@ -233,6 +246,75 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 	if reply != nil && reply.Rcode != dns.RcodeSuccess {
 		return fmt.Errorf("DNS update failed: server replied: %s", dns.RcodeToString[reply.Rcode])
+	}
+
+	return nil
+}
+
+func setupTSIG(config *Config) error {
+	if dns.Fqdn(config.TSIGAlgorithm) == tsig.GSS {
+		err := validateTSIGGSS(config)
+		if err != nil {
+			return fmt.Errorf("TSIG GSS: %w", err)
+		}
+	} else {
+		err := prepareTSIG(config)
+		if err != nil {
+			return err
+		}
+	}
+
+	if config.TSIGAlgorithm == "" {
+		config.TSIGAlgorithm = dns.HmacSHA1
+	} else {
+		// To be compatible with https://github.com/miekg/dns/blob/master/tsig.go
+		config.TSIGAlgorithm = dns.Fqdn(config.TSIGAlgorithm)
+	}
+
+	switch config.TSIGAlgorithm {
+	case dns.HmacSHA1, dns.HmacSHA224, dns.HmacSHA256, dns.HmacSHA384, dns.HmacSHA512, tsig.GSS:
+		// valid algorithm
+	default:
+		return fmt.Errorf("unsupported TSIG algorithm: %s", config.TSIGAlgorithm)
+	}
+
+	return nil
+}
+
+func validateTSIGGSS(config *Config) error {
+	if config.TSIGGSSRealm == "" || config.TSIGGSSUsername == "" || config.TSIGGSSPassword == "" {
+		return errors.New("realm, username and password are required")
+	}
+
+	if config.TSIGFile != "" {
+		return errors.New("the TSIG file is not supported")
+	}
+
+	if config.TSIGKey != "" || config.TSIGSecret != "" {
+		return errors.New("SIG key and secret are not supported")
+	}
+
+	return nil
+}
+
+func prepareTSIG(config *Config) error {
+	if config.TSIGFile != "" {
+		key, err := internal.ReadTSIGFile(config.TSIGFile)
+		if err != nil {
+			return fmt.Errorf("read TSIG file %s: %w", config.TSIGFile, err)
+		}
+
+		config.TSIGAlgorithm = key.Algorithm
+		config.TSIGKey = key.Name
+		config.TSIGSecret = key.Secret
+	}
+
+	if config.TSIGKey == "" || config.TSIGSecret == "" {
+		config.TSIGKey = ""
+		config.TSIGSecret = ""
+	} else {
+		// zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2)
+		config.TSIGKey = dns.CanonicalName(config.TSIGKey)
 	}
 
 	return nil

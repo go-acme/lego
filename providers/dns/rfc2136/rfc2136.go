@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bodgit/tsig"
+	"github.com/bodgit/tsig/gss"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -25,6 +27,11 @@ const (
 	EnvTSIGSecret    = envNamespace + "TSIG_SECRET"
 	EnvTSIGAlgorithm = envNamespace + "TSIG_ALGORITHM"
 
+	EnvGSS         = envNamespace + "GSS"
+	EnvGSSRealm    = envNamespace + "GSS_REALM"
+	EnvGSSUsername = envNamespace + "GSS_USERNAME"
+	EnvGSSPassword = envNamespace + "GSS_PASSWORD"
+
 	EnvNameserver = envNamespace + "NAMESERVER"
 	EnvDNSTimeout = envNamespace + "DNS_TIMEOUT"
 
@@ -39,6 +46,11 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Nameserver string
+
+	GSS         bool
+	GSSRealm    string
+	GSSUsername string
+	GSSPassword string
 
 	TSIGFile string
 
@@ -88,6 +100,11 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Nameserver = values[EnvNameserver]
 
+	config.GSS = env.GetOrDefaultBool(EnvGSS, false)
+	config.GSSRealm = env.GetOrFile(EnvGSSRealm)
+	config.GSSUsername = env.GetOrFile(EnvGSSUsername)
+	config.GSSPassword = env.GetOrFile(EnvGSSPassword)
+
 	config.TSIGFile = env.GetOrDefaultString(EnvTSIGFile, "")
 
 	config.TSIGKey = env.GetOrFile(EnvTSIGKey)
@@ -125,6 +142,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 			return nil, fmt.Errorf("rfc2136: %w", err)
 		}
 	}
+
+	// TODO(ldez) add GSS validation
 
 	if config.TSIGKey == "" || config.TSIGSecret == "" {
 		config.TSIGKey = ""
@@ -218,7 +237,24 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	c := &dns.Client{Timeout: d.config.DNSTimeout}
 
 	// TSIG authentication / msg signing
-	if d.config.TSIGKey != "" && d.config.TSIGSecret != "" {
+
+	if d.config.GSS {
+		gssClient, err := gss.NewClient(c)
+		if err != nil {
+			return err
+		}
+
+		defer func() { _ = gssClient.Close() }()
+
+		keyName, _, err := gssClient.NegotiateContextWithCredentials(d.config.Nameserver, d.config.GSSRealm, d.config.GSSUsername, d.config.GSSPassword)
+		if err != nil {
+			return err
+		}
+
+		c.TsigProvider = gssClient
+
+		m.SetTsig(keyName, tsig.GSS, 300, time.Now().Unix())
+	} else if d.config.TSIGKey != "" && d.config.TSIGSecret != "" {
 		m.SetTsig(d.config.TSIGKey, d.config.TSIGAlgorithm, 300, time.Now().Unix())
 
 		// Secret(s) for TSIG map[<zonename>]<base64 secret>.

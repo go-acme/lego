@@ -46,15 +46,15 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 type Config struct {
 	Nameserver string
 
-	TSIGGSSRealm    string
-	TSIGGSSUsername string
-	TSIGGSSPassword string
-
 	TSIGFile string
 
 	TSIGAlgorithm string
 	TSIGKey       string
 	TSIGSecret    string
+
+	TSIGGSSRealm    string
+	TSIGGSSUsername string
+	TSIGGSSPassword string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -98,14 +98,14 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Nameserver = values[EnvNameserver]
 
-	config.TSIGGSSRealm = env.GetOrFile(EnvTSIGGSSRealm)
-	config.TSIGGSSUsername = env.GetOrFile(EnvTSIGGSSUsername)
-	config.TSIGGSSPassword = env.GetOrFile(EnvTSIGGSSPassword)
-
 	config.TSIGFile = env.GetOrDefaultString(EnvTSIGFile, "")
 
 	config.TSIGKey = env.GetOrFile(EnvTSIGKey)
 	config.TSIGSecret = env.GetOrFile(EnvTSIGSecret)
+
+	config.TSIGGSSRealm = env.GetOrFile(EnvTSIGGSSRealm)
+	config.TSIGGSSUsername = env.GetOrFile(EnvTSIGGSSUsername)
+	config.TSIGGSSPassword = env.GetOrFile(EnvTSIGGSSPassword)
 
 	return NewDNSProviderConfig(config)
 }
@@ -226,6 +226,8 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 			return err
 		}
 
+		defer func() { _ = gssClient.DeleteContext(keyName) }()
+
 		c.TsigProvider = gssClient
 
 		m.SetTsig(keyName, tsig.GSS, 300, time.Now().Unix())
@@ -250,30 +252,16 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 }
 
 func setupTSIG(config *Config) error {
-	if config.TSIGFile != "" {
-		key, err := internal.ReadTSIGFile(config.TSIGFile)
+	if dns.Fqdn(config.TSIGAlgorithm) == tsig.GSS {
+		err := validateTSIGGSS(config)
 		if err != nil {
-			return fmt.Errorf("read TSIG file %s: %w", config.TSIGFile, err)
+			return fmt.Errorf("TSIG GSS: %w", err)
 		}
-
-		config.TSIGAlgorithm = key.Algorithm
-		config.TSIGKey = key.Name
-		config.TSIGSecret = key.Secret
-	}
-
-	switch {
-	case config.TSIGAlgorithm == tsig.GSS:
-		if config.TSIGGSSRealm == "" || config.TSIGGSSUsername == "" || config.TSIGGSSPassword == "" {
-			return errors.New("GSS authentication requires realm, username and password")
+	} else {
+		err := prepareTSIG(config)
+		if err != nil {
+			return err
 		}
-
-	case config.TSIGKey == "" || config.TSIGSecret == "":
-		config.TSIGKey = ""
-		config.TSIGSecret = ""
-
-	default:
-		// zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2)
-		config.TSIGKey = dns.CanonicalName(config.TSIGKey)
 	}
 
 	if config.TSIGAlgorithm == "" {
@@ -288,6 +276,45 @@ func setupTSIG(config *Config) error {
 		// valid algorithm
 	default:
 		return fmt.Errorf("unsupported TSIG algorithm: %s", config.TSIGAlgorithm)
+	}
+
+	return nil
+}
+
+func validateTSIGGSS(config *Config) error {
+	if config.TSIGGSSRealm == "" || config.TSIGGSSUsername == "" || config.TSIGGSSPassword == "" {
+		return errors.New("realm, username and password are required")
+	}
+
+	if config.TSIGFile != "" {
+		return errors.New("the TSIG file is not supported")
+	}
+
+	if config.TSIGKey != "" || config.TSIGSecret != "" {
+		return errors.New("SIG key and secret are not supported")
+	}
+
+	return nil
+}
+
+func prepareTSIG(config *Config) error {
+	if config.TSIGFile != "" {
+		key, err := internal.ReadTSIGFile(config.TSIGFile)
+		if err != nil {
+			return fmt.Errorf("read TSIG file %s: %w", config.TSIGFile, err)
+		}
+
+		config.TSIGAlgorithm = key.Algorithm
+		config.TSIGKey = key.Name
+		config.TSIGSecret = key.Secret
+	}
+
+	if config.TSIGKey == "" || config.TSIGSecret == "" {
+		config.TSIGKey = ""
+		config.TSIGSecret = ""
+	} else {
+		// zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2)
+		config.TSIGKey = dns.CanonicalName(config.TSIGKey)
 	}
 
 	return nil

@@ -209,7 +209,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 		gssClient, err = gss.NewClient(c)
 		if err != nil {
-			return err
+			return fmt.Errorf("create GSS client: %w", err)
 		}
 
 		defer func() { _ = gssClient.Close() }()
@@ -223,7 +223,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 			d.config.TSIGGSSPassword,
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("negotiate GSS context: %w", err)
 		}
 
 		defer func() { _ = gssClient.DeleteContext(keyName) }()

@@ -40,7 +40,7 @@ RFC2136_NAMESERVER=127.0.0.1 \
 RFC2136_TSIG_FILE="$keyfile" \
 lego --dns rfc2136 -d '*.example.com' -d example.com run
 
-## --- GSS-TSIG
+## --- GSS-TSIG (Kerberos)
 
 RFC2136_NAMESERVER=127.0.0.1 \
 RFC2136_TSIG_ALGORITHM=gss-tsig. \

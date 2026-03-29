@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
+	"github.com/go-acme/lego/v5/internal"
 	"github.com/mattn/go-zglob"
 	"github.com/urfave/cli/v3"
 )
@@ -118,7 +119,7 @@ func readCertificates(cmd *cli.Command) ([]ListCertificate, error) {
 		certificates = append(certificates, ListCertificate{
 			Name:           name,
 			Domains:        pCert.DNSNames,
-			IPs:            toStringSlice(pCert.IPAddresses),
+			IPs:            internal.ToStringSlice(pCert.IPAddresses),
 			ExpirationDate: pCert.NotAfter.String(),
 			Expired:        pCert.NotAfter.Before(time.Now()),
 			Issuer:         pCert.Issuer.String(),
@@ -127,14 +128,4 @@ func readCertificates(cmd *cli.Command) ([]ListCertificate, error) {
 	}
 
 	return certificates, nil
-}
-
-func toStringSlice[T fmt.Stringer](values []T) []string {
-	var s []string
-
-	for _, value := range values {
-		s = append(s, value.String())
-	}
-
-	return s
 }

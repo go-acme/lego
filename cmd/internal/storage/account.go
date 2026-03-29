@@ -39,7 +39,7 @@ func NewRawAccount(id, email string, key crypto.Signer) (*Account, error) {
 	}
 
 	return &Account{
-		ID:      getEffectiveAccountID(email, id),
+		ID:      GetEffectiveAccountID(email, id),
 		Email:   email,
 		KeyType: keyType,
 		key:     key,
@@ -50,7 +50,7 @@ func NewRawAccount(id, email string, key crypto.Signer) (*Account, error) {
 
 // GetID returns the effective account ID.
 func (a *Account) GetID() string {
-	return getEffectiveAccountID(a.Email, a.ID)
+	return GetEffectiveAccountID(a.Email, a.ID)
 }
 
 // GetEmail returns the email address for the account.
@@ -68,12 +68,18 @@ func (a *Account) GetPrivateKey() crypto.Signer {
 	return a.key
 }
 
+// SetPrivateKey sets the private account key.
+func (a *Account) SetPrivateKey(key crypto.Signer) {
+	a.key = key
+}
+
 // GetRegistration returns the server registration.
 func (a *Account) GetRegistration() *acme.ExtendedAccount {
 	return a.Registration
 }
 
-func getEffectiveAccountID(email, id string) string {
+// GetEffectiveAccountID returns the effective account ID.
+func GetEffectiveAccountID(email, id string) string {
 	if id != "" {
 		return id
 	}

@@ -139,7 +139,7 @@ func (s *AccountsStorage) Get(server string, keyType certcrypto.KeyType, email, 
 		return nil, fmt.Errorf("invalid server URL %q: %w", server, err)
 	}
 
-	effectiveAccountID := getEffectiveAccountID(email, accountID)
+	effectiveAccountID := GetEffectiveAccountID(email, accountID)
 
 	if !s.existsAccountFile(serverURL, effectiveAccountID) {
 		var account *Account
@@ -162,7 +162,7 @@ func (s *AccountsStorage) Get(server string, keyType certcrypto.KeyType, email, 
 
 // createAccount creates a new account.
 func (s *AccountsStorage) createAccount(server *url.URL, keyType certcrypto.KeyType, email, accountID string) (*Account, error) {
-	effectiveAccountID := getEffectiveAccountID(email, accountID)
+	effectiveAccountID := GetEffectiveAccountID(email, accountID)
 
 	privateKey, err := s.createPrivateKey(server, keyType, effectiveAccountID)
 	if err != nil {

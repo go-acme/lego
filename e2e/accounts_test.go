@@ -72,6 +72,37 @@ func TestAccount_Recover(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestAccount_KeyRollover(t *testing.T) {
+	loader.CleanLegoFiles(t.Context())
+
+	err := load.RunLego(t.Context(),
+		"accounts", "register",
+		"-m", testEmail1,
+		"--accept-tos",
+		"-s", caDirectory,
+	)
+	require.NoError(t, err)
+
+	stdinReader, stdinWriter := io.Pipe()
+
+	defer func() { _ = stdinReader.Close() }()
+
+	go func() {
+		defer func() { _ = stdinWriter.Close() }()
+
+		_, err = io.WriteString(stdinWriter, "Y\n")
+	}()
+
+	err = load.RunLegoWithInput(t.Context(),
+		stdinReader,
+		"accounts", "keyrollover",
+		"-m", testEmail1,
+		"-s", caDirectory,
+		"--key-type", "rsa2048",
+	)
+	require.NoError(t, err)
+}
+
 func TestRegistrar_UpdateAccount(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)

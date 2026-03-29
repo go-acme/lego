@@ -11,6 +11,7 @@ func createAccounts() *cli.Command {
 		Commands: []*cli.Command{
 			createRegister(),
 			createRecover(),
+			createKeyRollover(),
 			createListAccounts(),
 		},
 	}

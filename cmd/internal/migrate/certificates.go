@@ -14,6 +14,7 @@ import (
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
+	"github.com/go-acme/lego/v5/internal"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/mattn/go-zglob"
 )
@@ -72,7 +73,7 @@ func Certificates(root string, cfg *configuration.Configuration) error {
 			return fmt.Errorf("could not get the certificate main domain: %w", err)
 		}
 
-		certRes.Domains = slices.Concat(cert.DNSNames, toStringSlice(cert.IPAddresses))
+		certRes.Domains = slices.Concat(cert.DNSNames, internal.ToStringSlice(cert.IPAddresses))
 
 		certRes.KeyType, err = certcrypto.GetCertificateKeyType(cert)
 		if err != nil {
@@ -127,15 +128,4 @@ func migrateCertificate(certResourceFilePath string, certRes *storage.Certificat
 	}
 
 	return nil
-}
-
-// TODO(ldez) factorize with storage?
-func toStringSlice[T fmt.Stringer](values []T) []string {
-	var s []string
-
-	for _, value := range values {
-		s = append(s, value.String())
-	}
-
-	return s
 }

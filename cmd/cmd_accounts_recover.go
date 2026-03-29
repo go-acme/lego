@@ -21,6 +21,17 @@ func createRecover() *cli.Command {
 }
 
 func accountRecover(ctx context.Context, cmd *cli.Command) error {
+	log.Info("Recovering account.",
+		slog.String("account", storage.GetEffectiveAccountID(cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))),
+		slog.String("email", cmd.String(flags.FlgEmail)),
+		slog.String("server", cmd.String(flags.FlgServer)),
+	)
+
+	if !confirm("Do you want to proceed?") {
+		log.Info("Aborting.")
+		return nil
+	}
+
 	accountsStorage := storage.NewAccountsStorage(cmd.String(flags.FlgPath))
 
 	privateKey, err := storage.ReadPrivateKeyFile(cmd.String(flags.FlgPrivateKey))
@@ -35,17 +46,6 @@ func accountRecover(ctx context.Context, cmd *cli.Command) error {
 
 	account.Server = cmd.String(flags.FlgServer)
 	account.NeedsRecovery = true
-
-	log.Info("Recovering account.",
-		slog.String("account", account.GetID()),
-		slog.String("email", account.GetEmail()),
-		slog.String("server", account.Server),
-	)
-
-	if !confirm("Do you want to proceed?") {
-		log.Info("Aborting.")
-		return nil
-	}
 
 	client, err := newClient(cmd, account)
 	if err != nil {

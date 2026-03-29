@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/cmd/internal"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
+	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/registration"
@@ -67,7 +68,17 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 			return fmt.Errorf("registration: %w", err)
 		}
 
+		hm := hook.NewManager(
+			store.Certificate,
+			withHooks(cfg.Hooks),
+			hook.WithAccountMetadata(account),
+		)
+
 		for challengeID, certIDs := range challengesInfo {
+			// Clone the hook manager for each certificate because:
+			// each certificate is different, so the metadata is different, except for the account information.
+			hookManager := hm.Clone()
+
 			chlgConfig := cfg.Challenges[challengeID]
 
 			lazySetup := sync.OnceValues(func() (*lego.Client, error) {
@@ -91,7 +102,7 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 
 				// Renew
 				if store.Certificate.ExistsFile(certID, storage.ExtResource) {
-					err = renew(ctx, lazySetup, certID, certConfig, store.Certificate)
+					err = renew(ctx, lazySetup, certID, certConfig, store.Certificate, hookManager)
 					if err != nil {
 						return err
 					}
@@ -100,7 +111,7 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 				}
 
 				// Run
-				err := obtain(ctx, lazySetup, certID, certConfig, store.Certificate)
+				err := obtain(ctx, lazySetup, certID, certConfig, store.Certificate, hookManager)
 				if err != nil {
 					return err
 				}
@@ -185,4 +196,24 @@ func parseAddress(address string) (string, string, error) {
 	}
 
 	return host, port, nil
+}
+
+func withHooks(hooks *configuration.Hooks) hook.Option {
+	if hooks == nil {
+		return hook.Noop
+	}
+
+	return func(m *hook.Manager) {
+		addHook(hooks.Pre, hook.WithPre)(m)
+		addHook(hooks.Deploy, hook.WithDeploy)(m)
+		addHook(hooks.Post, hook.WithPost)(m)
+	}
+}
+
+func addHook(h *configuration.Hook, optFn func(cmd string, timeout time.Duration) hook.Option) hook.Option {
+	if h == nil {
+		return hook.Noop
+	}
+
+	return optFn(h.Cmd, h.Timeout)
 }

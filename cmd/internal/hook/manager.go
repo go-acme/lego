@@ -3,6 +3,7 @@ package hook
 import (
 	"context"
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/go-acme/lego/v5/certcrypto"
@@ -40,6 +41,18 @@ func NewManager(certsStorage *storage.CertificatesStorage, options ...Option) *M
 	}
 
 	return m
+}
+
+// Clone creates a new hook Manager.
+// The metadata is cloned too.
+func (h *Manager) Clone() *Manager {
+	return &Manager{
+		certsStorage: h.certsStorage,
+		metadata:     maps.Clone(h.metadata),
+		pre:          h.pre,
+		deploy:       h.deploy,
+		post:         h.post,
+	}
 }
 
 // PreForDomains runs the pre-hook if defined.

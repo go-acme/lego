@@ -84,6 +84,17 @@ certificates:
       password: xxx
       format: pkcs12
 
+hooks:
+  pre:
+    command: "./my-pre-hook.sh"
+    timeout: 3s
+  deploy:
+    command: "./my-deploy-hook.sh"
+    timeout: 3s
+  post:
+    command: "./my-post-hook.sh"
+    timeout: 3s
+
 log:
   level: debug
   format: text

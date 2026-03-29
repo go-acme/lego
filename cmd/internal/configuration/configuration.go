@@ -14,6 +14,7 @@ type Configuration struct {
 	Accounts     map[string]*Account     `yaml:"accounts,omitempty"`
 	Challenges   map[string]*Challenge   `yaml:"challenges,omitempty"`
 	Certificates map[string]*Certificate `yaml:"certificates,omitempty"`
+	Hooks        *Hooks                  `yaml:"hooks,omitempty"`
 	Log          *Log                    `yaml:"log,omitempty"`
 }
 
@@ -126,6 +127,17 @@ type ARIConfiguration struct {
 type PFX struct {
 	Password string `json:"password,omitempty"`
 	Format   string `json:"format,omitempty"`
+}
+
+type Hooks struct {
+	Pre    *Hook `yaml:"pre,omitempty"`
+	Deploy *Hook `yaml:"deploy,omitempty"`
+	Post   *Hook `yaml:"post,omitempty"`
+}
+
+type Hook struct {
+	Cmd     string        `json:"command,omitempty"`
+	Timeout time.Duration `json:"timeout,omitempty"`
 }
 
 type Log struct {

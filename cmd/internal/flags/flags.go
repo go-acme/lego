@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
@@ -511,8 +512,17 @@ func createStorageFlags() []cli.Flag {
 			Category: categoryStorage,
 			Name:     FlgPFXFormat,
 			Sources:  cli.EnvVars(toEnvName(FlgPFXFormat)),
-			Usage:    "The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256.",
-			Value:    "RC2",
+			Usage: fmt.Sprintf("The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: %s.",
+				strings.Join(certcrypto.AllPKCS12Formats(), ", "),
+			),
+			Value: certcrypto.PKCS12LegacyRC2,
+			Validator: func(s string) error {
+				if !certcrypto.IsPKCS12Supported(s) {
+					return fmt.Errorf("invalid PFX format: %s", s)
+				}
+
+				return nil
+			},
 		},
 	}
 }

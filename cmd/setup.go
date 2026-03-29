@@ -110,10 +110,11 @@ func newObtainForCSRRequest(cmd *cli.Command, csr *x509.CertificateRequest) cert
 
 func newSaveOptions(cmd *cli.Command) *storage.SaveOptions {
 	return &storage.SaveOptions{
-		PEM:         cmd.Bool(flags.FlgPEM),
+		PEM: cmd.Bool(flags.FlgPEM),
+
 		PFX:         cmd.Bool(flags.FlgPFX),
-		PFXFormat:   cmd.String(flags.FlgPFXPass),
-		PFXPassword: cmd.String(flags.FlgPFXFormat),
+		PFXPassword: cmd.String(flags.FlgPFXPass),
+		PFXFormat:   cmd.String(flags.FlgPFXFormat),
 	}
 }
 

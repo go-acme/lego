@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/log"
-	"software.sslmate.com/src/go-pkcs12"
 )
 
 const filePerm os.FileMode = 0o600
@@ -25,23 +24,6 @@ type SaveOptions struct {
 	PFXPassword string
 }
 
-// Validate validates the options.
-func (o *SaveOptions) Validate() error {
-	if o == nil {
-		return nil
-	}
-
-	if o.PFX {
-		switch o.PFXFormat {
-		case "DES", "RC2", "SHA256":
-		default:
-			return fmt.Errorf("invalid PFX format: %s", o.PFXFormat)
-		}
-	}
-
-	return nil
-}
-
 // Save saves the certificate and related files.
 // - the resource file (JSON)
 // - the certificate file
@@ -50,12 +32,7 @@ func (o *SaveOptions) Validate() error {
 // - the PFX file (if needed)
 // - the PEM file (if needed).
 func (s *CertificatesStorage) Save(certRes *Certificate, opts *SaveOptions) error {
-	err := opts.Validate()
-	if err != nil {
-		return err
-	}
-
-	err = CreateNonExistingFolder(s.rootPath)
+	err := CreateNonExistingFolder(s.rootPath)
 	if err != nil {
 		return fmt.Errorf("root folder creation: %w", err)
 	}
@@ -148,7 +125,7 @@ func (s *CertificatesStorage) writePFXFile(certRes *Certificate, password, forma
 		return fmt.Errorf("unable to parse private ky %q: %w", certRes.ID, err)
 	}
 
-	encoder, err := getPFXEncoder(format)
+	encoder, err := certcrypto.GetPKCS12Encoder(format)
 	if err != nil {
 		return fmt.Errorf("PFX encoder: %w", err)
 	}
@@ -189,21 +166,4 @@ func getCertificateChain(certRes *Certificate) ([]*x509.Certificate, error) {
 	}
 
 	return certChain, nil
-}
-
-func getPFXEncoder(pfxFormat string) (*pkcs12.Encoder, error) {
-	var encoder *pkcs12.Encoder
-
-	switch pfxFormat {
-	case "SHA256":
-		encoder = pkcs12.Modern2023
-	case "DES":
-		encoder = pkcs12.LegacyDES
-	case "RC2":
-		encoder = pkcs12.LegacyRC2
-	default:
-		return nil, fmt.Errorf("invalid PFX format: %s", pfxFormat)
-	}
-
-	return encoder, nil
 }

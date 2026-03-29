@@ -60,7 +60,7 @@ const (
 	FlgPath      = "path"
 	FlgPEM       = "pem"
 	FlgPFX       = "pfx"
-	FlgPFXPass   = "pfx.pass"
+	FlgPFXPass   = "pfx.password"
 	FlgPFXFormat = "pfx.format"
 )
 

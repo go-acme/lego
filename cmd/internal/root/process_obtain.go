@@ -7,29 +7,37 @@ import (
 
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
+	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 )
 
-func obtain(ctx context.Context, lazySetup lzSetUp, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
+func obtain(ctx context.Context, lazySetup lzSetUp, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
 	client, err := lazySetup()
 	if err != nil {
 		return fmt.Errorf("set up client: %w", err)
 	}
 
 	if certConfig.CSR != "" {
-		return obtainForCSR(ctx, client, certID, certConfig, certsStorage)
+		return obtainForCSR(ctx, client, certID, certConfig, certsStorage, hookManager)
 	}
 
-	return obtainForDomains(ctx, client, certID, certConfig, certsStorage)
+	return obtainForDomains(ctx, client, certID, certConfig, certsStorage, hookManager)
 }
 
-func obtainForDomains(ctx context.Context, client *lego.Client, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
+func obtainForDomains(ctx context.Context, client *lego.Client, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
 	request := newObtainRequest(certConfig, certConfig.Domains)
 
 	// NOTE(ldez): I didn't add an option to set a private key as the file.
 	// I didn't find a use case for it when using the file configuration.
 	// Maybe this can be added in the future.
+
+	err := hookManager.PreForDomains(ctx, certID, request)
+	if err != nil {
+		return err
+	}
+
+	defer func() { _ = hookManager.Post(ctx) }()
 
 	certRes, err := client.Certificate.Obtain(ctx, request)
 	if err != nil {
@@ -53,10 +61,10 @@ func obtainForDomains(ctx context.Context, client *lego.Client, certID string, c
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
 
-	return nil
+	return hookManager.Deploy(ctx, certRes, options)
 }
 
-func obtainForCSR(ctx context.Context, client *lego.Client, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage) error {
+func obtainForCSR(ctx context.Context, client *lego.Client, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
 	csr, err := storage.ReadCSRFile(certConfig.CSR)
 	if err != nil {
 		return err
@@ -68,6 +76,13 @@ func obtainForCSR(ctx context.Context, client *lego.Client, certID string, certC
 	// NOTE(ldez): I didn't add an option to set a private key as the file.
 	// I didn't find a use case for it when using the file configuration.
 	// Maybe this can be added in the future.
+
+	err = hookManager.PreForCSR(ctx, certID, request)
+	if err != nil {
+		return err
+	}
+
+	defer func() { _ = hookManager.Post(ctx) }()
 
 	certRes, err := client.Certificate.ObtainForCSR(ctx, request)
 	if err != nil {
@@ -91,7 +106,7 @@ func obtainForCSR(ctx context.Context, client *lego.Client, certID string, certC
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
 
-	return nil
+	return hookManager.Deploy(ctx, certRes, options)
 }
 
 func newObtainRequest(certConfig *configuration.Certificate, domains []string) certificate.ObtainRequest {

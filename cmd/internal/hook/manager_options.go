@@ -8,6 +8,9 @@ import (
 
 type Option func(m *Manager)
 
+// Noop is a no-op option.
+func Noop(m *Manager) {}
+
 // WithPre sets the pre-hook.
 func WithPre(cmd string, timeout time.Duration) Option {
 	return func(m *Manager) {

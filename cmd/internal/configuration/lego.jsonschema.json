@@ -262,6 +262,33 @@
         }
       }
     },
+    "hooksSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pre": {
+          "$ref": "#/definitions/hookSettings"
+        },
+        "deploy": {
+          "$ref": "#/definitions/hookSettings"
+        },
+        "post": {
+          "$ref": "#/definitions/hookSettings"
+        }
+      }
+    },
+    "hookSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "string"
+        }
+      }
+    },
     "logSettings": {
       "type": "object",
       "additionalProperties": false,
@@ -325,6 +352,9 @@
           "$ref": "#/definitions/certificatesSettings"
         }
       }
+    },
+    "hooks": {
+      "$ref": "#/definitions/hooksSettings"
     },
     "log": {
       "$ref": "#/definitions/logSettings"

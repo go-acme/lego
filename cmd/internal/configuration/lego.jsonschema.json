@@ -240,16 +240,19 @@
           "type": "boolean"
         },
         "ari": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "disable": {
-              "type": "boolean"
-            },
-            "waitToRenewDuration": {
-              "type": "string"
-            }
-          }
+          "$ref": "#/definitions/ariSettings"
+        }
+      }
+    },
+    "ariSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "disable": {
+          "type": "boolean"
+        },
+        "waitToRenewDuration": {
+          "type": "string"
         }
       }
     },

@@ -60,6 +60,10 @@ func validateCertificates(cfg *Configuration) error {
 		if err != nil {
 			return fmt.Errorf("%s: challenge: %w", name, err)
 		}
+
+		if cert.PFX != nil && !certcrypto.IsPKCS12Supported(cert.PFX.Format) {
+			return fmt.Errorf("%s: invalid PFX format: %s", name, cert.PFX.Format)
+		}
 	}
 
 	return nil

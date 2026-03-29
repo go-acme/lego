@@ -4,6 +4,9 @@
   "additionalProperties": false,
   "required": ["certificates"],
   "definitions": {
+    "keyType": {
+      "enum": ["EC256", "EC384", "RSA2048", "RSA4096", "RSA8192"]
+    },
     "serversSettings": {
       "type": "object",
       "additionalProperties": false,
@@ -37,23 +40,26 @@
           "type": "string"
         },
         "keyType": {
-          "type": "string"
+          "$ref": "#/definitions/keyType"
         },
         "acceptsTermsOfService": {
           "type": "boolean"
         },
         "eab": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["kid", "hmacKey"],
-          "properties": {
-            "kid": {
-              "type": "string"
-            },
-            "hmacKey": {
-              "type": "string"
-            }
-          }
+          "$ref": "#/definitions/eabSettings"
+        }
+      }
+    },
+    "eabSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kid", "hmacKey"],
+      "properties": {
+        "kid": {
+          "type": "string"
+        },
+        "hmacKey": {
+          "type": "string"
         }
       }
     },
@@ -132,19 +138,7 @@
           }
         },
         "propagation": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "disableAuthoritativeNameservers": {
-              "type": "boolean"
-            },
-            "disableRecursiveNameservers": {
-              "type": "boolean"
-            },
-            "wait": {
-              "type": "string"
-            }
-          }
+          "$ref": "#/definitions/propagationSettings"
         }
       }
     },
@@ -159,19 +153,22 @@
           "type": "string"
         },
         "propagation": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "disableAuthoritativeNameservers": {
-              "type": "boolean"
-            },
-            "disableRecursiveNameservers": {
-              "type": "boolean"
-            },
-            "wait": {
-              "type": "string"
-            }
-          }
+          "$ref": "#/definitions/propagationSettings"
+        }
+      }
+    },
+    "propagationSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "disableAuthoritativeNameservers": {
+          "type": "boolean"
+        },
+        "disableRecursiveNameservers": {
+          "type": "boolean"
+        },
+        "wait": {
+          "type": "string"
         }
       }
     },
@@ -195,7 +192,7 @@
           "type": "string"
         },
         "keyType": {
-          "type": "string"
+          "$ref": "#/definitions/keyType"
         },
         "preferredChain": {
           "type": "string"
@@ -222,43 +219,49 @@
           "type": "boolean"
         },
         "renew": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "disableRandomSleep": {
-              "type": "boolean"
-            },
-            "days": {
-              "type": "integer"
-            },
-            "reuseKey": {
-              "type": "boolean"
-            },
-            "ari": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "disable": {
-                  "type": "boolean"
-                },
-                "waitToRenewDuration": {
-                  "type": "string"
-                }
-              }
-            }
-          }
+          "$ref": "#/definitions/renewSettings"
         },
         "pfx": {
+          "$ref": "#/definitions/pfxSettings"
+        }
+      }
+    },
+    "renewSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "disableRandomSleep": {
+          "type": "boolean"
+        },
+        "days": {
+          "type": "integer"
+        },
+        "reuseKey": {
+          "type": "boolean"
+        },
+        "ari": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "format": {
-              "type": "string"
+            "disable": {
+              "type": "boolean"
             },
-            "password": {
+            "waitToRenewDuration": {
               "type": "string"
             }
           }
+        }
+      }
+    },
+    "pfxSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "enum": ["DES", "RC2", "SHA256"]
+        },
+        "password": {
+          "type": "string"
         }
       }
     },

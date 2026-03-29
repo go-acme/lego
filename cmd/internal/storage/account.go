@@ -68,6 +68,11 @@ func (a *Account) GetPrivateKey() crypto.Signer {
 	return a.key
 }
 
+// SetPrivateKey sets the private account key.
+func (a *Account) SetPrivateKey(key crypto.Signer) {
+	a.key = key
+}
+
 // GetRegistration returns the server registration.
 func (a *Account) GetRegistration() *acme.ExtendedAccount {
 	return a.Registration

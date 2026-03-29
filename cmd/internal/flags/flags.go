@@ -14,6 +14,7 @@ import (
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
+	"github.com/go-acme/lego/v5/internal"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
@@ -163,6 +164,23 @@ func CreateRecoverFlags() []cli.Flag {
 			Usage:    "Path to a private key (PEM encoded) for the account.",
 			Required: true,
 		},
+	}
+
+	flags = append(flags, createACMEClientFlags()...)
+	flags = append(flags, createAccountFlags()...)
+
+	return flags
+}
+
+func CreateKeyRolloverFlags() []cli.Flag {
+	flags := []cli.Flag{
+		CreatePathFlag(true),
+		&cli.StringFlag{
+			Name:    FlgPrivateKey,
+			Sources: cli.EnvVars(toEnvName(FlgPrivateKey)),
+			Usage:   "Path to the new private key (PEM encoded) for the account. If not specified, the private key will be generated.",
+		},
+		createKeyTypeFlag("Key type to use for the new private key of the account."),
 	}
 
 	flags = append(flags, createACMEClientFlags()...)

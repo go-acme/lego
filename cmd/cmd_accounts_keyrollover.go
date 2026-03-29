@@ -71,7 +71,7 @@ func accountKeyRollover(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("could not save the private key file: %w", err)
 	}
 
-	if account.GetKeyType() != keyType {
+	if keyType != "" && account.GetKeyType() != keyType {
 		account.KeyType = keyType
 
 		err = accountsStorage.Save(account)
@@ -105,5 +105,5 @@ func getPrivateKey(cmd *cli.Command, keyType certcrypto.KeyType) (crypto.Signer,
 		return nil, "", fmt.Errorf("generate a new private key: %w", err)
 	}
 
-	return privateKey, keyType, nil
+	return privateKey, "", nil
 }

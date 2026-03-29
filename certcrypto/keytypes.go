@@ -25,6 +25,10 @@ const (
 // KeyType represents the key algo as well as the key size or curve to use.
 type KeyType string
 
+func (k KeyType) String() string {
+	return string(k)
+}
+
 // ToKeyType gets a key type from a string.
 func ToKeyType(keyType string) (KeyType, error) {
 	switch strings.ToUpper(keyType) {
@@ -45,15 +49,16 @@ func ToKeyType(keyType string) (KeyType, error) {
 	return "", fmt.Errorf("unsupported key type: %s", keyType)
 }
 
+func AllKeyTypes() []KeyType {
+	return []KeyType{
+		EC256, EC384,
+		RSA2048, RSA3072, RSA4096, RSA8192,
+	}
+}
+
 // IsSupported checks if the key type is supported.
 func IsSupported(keyType KeyType) bool {
-	return slices.Contains(
-		[]KeyType{
-			EC256, EC384,
-			RSA2048, RSA3072, RSA4096, RSA8192,
-		},
-		keyType,
-	)
+	return slices.Contains(AllKeyTypes(), keyType)
 }
 
 // GetPrivateKeyType gets the key type based on the public key from crypto.Signer.

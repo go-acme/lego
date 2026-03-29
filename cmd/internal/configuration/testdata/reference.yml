@@ -2,7 +2,7 @@
 # This must be moved/used as a reference inside the documentation.
 
 storage: /tmp/lego
-networkStack: ipv6
+networkStack: ipv6only
 userAgent: foo
 
 servers:
@@ -82,7 +82,7 @@ certificates:
         waitToRenewDuration: 1m
     pfx:
       password: xxx
-      format: pkcs12
+      format: SHA256
 
 hooks:
   pre:

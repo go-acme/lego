@@ -44,7 +44,7 @@ OPTIONS:
    --domains string, -d string [ --domains string, -d string ]  Add a domain. For multiple domains either repeat the option or provide a comma-separated list. [$LEGO_DOMAINS]
    --email string, -m string                                    Email used for registration and recovery contact. [$LEGO_EMAIL]
    --help, -h                                                   show help
-   --key-type string, -k string                                 Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384. (default: "ec256") [$LEGO_KEY_TYPE]
+   --key-type string, -k string                                 Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
    --server string, -s string                                   CA (ACME server). It can be either a URL or a shortcode.
                                                                 (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
 
@@ -158,7 +158,7 @@ OPTIONS:
    --email string, -m string                                        Email used for registration and recovery contact. [$LEGO_EMAIL]
    --help, -h                                                       show help
    --keep                                                           Keep the certificates after the revocation instead of archiving them. [$LEGO_KEEP]
-   --key-type string, -k string                                     Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384. (default: "ec256") [$LEGO_KEY_TYPE]
+   --key-type string, -k string                                     Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
    --reason uint                                                    Identifies the reason for the certificate revocation. See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1.
                                                                     Valid values are: 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged), 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL), 9 (privilegeWithdrawn), or 10 (aACompromise). (default: 0) [$LEGO_REASON]
    --server string, -s string                                       CA (ACME server). It can be either a URL or a shortcode.

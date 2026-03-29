@@ -220,13 +220,7 @@ func createACMEClientFlags() []cli.Flag {
 			Sources:  cli.EnvVars(toEnvName(FlgEnableCommonName)),
 			Usage:    "Enable the use of the common name. (Not recommended)",
 		},
-		&cli.StringFlag{
-			Name:    FlgKeyType,
-			Aliases: []string{flgAliasKeyType},
-			Sources: cli.EnvVars(toEnvName(FlgKeyType)),
-			Value:   "ec256",
-			Usage:   "Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384.",
-		},
+		createKeyTypeFlag("Key type to use for private keys."),
 		&cli.IntFlag{
 			Category: categoryACMEClient,
 			Name:     FlgHTTPTimeout,
@@ -711,6 +705,16 @@ func createCertNamesFlag() cli.Flag {
 		Aliases: []string{flgAliasCertName},
 		Sources: cli.EnvVars(toEnvName(FlgCertName)),
 		Usage:   "The certificate IDs/Names, used to retrieve the certificates.",
+	}
+}
+
+func createKeyTypeFlag(desc string) *cli.StringFlag {
+	return &cli.StringFlag{
+		Name:    FlgKeyType,
+		Aliases: []string{flgAliasKeyType},
+		Sources: cli.EnvVars(toEnvName(FlgKeyType)),
+		Value:   string(certcrypto.EC256),
+		Usage:   fmt.Sprintf("%s Supported: %s.", desc, internal.Join(certcrypto.AllKeyTypes(), ", ")),
 	}
 }
 

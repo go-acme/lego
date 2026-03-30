@@ -35,7 +35,7 @@ var envTest = tester.NewEnvTest(
 	EnvTSIGGSSRealm,
 	EnvTSIGGSSUsername,
 	EnvTSIGGSSPassword,
-	EnvTSIGGSSKeytabPath,
+	EnvTSIGGSSKeytabFile,
 	EnvNameserver,
 	EnvDNSTimeout,
 ).WithDomain(envDomain)
@@ -92,7 +92,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvTSIGGSSRealm:      "example.org",
 				EnvTSIGGSSUsername:   "user",
 				EnvTSIGGSSPassword:   "secret",
-				EnvTSIGGSSKeytabPath: "/path/to/my.keytab",
+				EnvTSIGGSSKeytabFile: "/path/to/my.keytab",
 			},
 			expected: "rfc2136: TSIG GSS: only one of the password and keytab paths can be set",
 		},
@@ -113,7 +113,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvTSIGAlgorithm:     "gss-tsig.",
 				EnvTSIGGSSRealm:      "example.org",
 				EnvTSIGGSSUsername:   "user",
-				EnvTSIGGSSKeytabPath: "/path/to/my.keytab",
+				EnvTSIGGSSKeytabFile: "/path/to/my.keytab",
 			},
 		},
 	}
@@ -221,7 +221,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config.TSIGGSSRealm = test.tsigGSSRealm
 			config.TSIGGSSUsername = test.tsigGSSUsername
 			config.TSIGGSSPassword = test.tsigGSSPassword
-			config.TSIGGSSKeytabPath = test.tsigGSSKeytabPath
+			config.TSIGGSSKeytabFile = test.tsigGSSKeytabPath
 
 			p, err := NewDNSProviderConfig(config)
 

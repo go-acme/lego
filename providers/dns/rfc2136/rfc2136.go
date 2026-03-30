@@ -37,7 +37,7 @@ const (
 	EnvTSIGGSSRealm      = envNamespace + "TSIG_GSS_REALM"
 	EnvTSIGGSSUsername   = envNamespace + "TSIG_GSS_USERNAME"
 	EnvTSIGGSSPassword   = envNamespace + "TSIG_GSS_PASSWORD"
-	EnvTSIGGSSKeytabPath = envNamespace + "TSIG_GSS_KEYTAB_PATH"
+	EnvTSIGGSSKeytabFile = envNamespace + "TSIG_GSS_KEYTAB_FILE"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -63,7 +63,7 @@ type Config struct {
 	TSIGGSSRealm      string
 	TSIGGSSUsername   string
 	TSIGGSSPassword   string
-	TSIGGSSKeytabPath string
+	TSIGGSSKeytabFile string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -116,7 +116,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.TSIGGSSRealm = env.GetOrFile(EnvTSIGGSSRealm)
 	config.TSIGGSSUsername = env.GetOrFile(EnvTSIGGSSUsername)
 	config.TSIGGSSPassword = env.GetOrFile(EnvTSIGGSSPassword)
-	config.TSIGGSSKeytabPath = env.GetOrDefaultString(EnvTSIGGSSKeytabPath, "")
+	config.TSIGGSSKeytabFile = env.GetOrDefaultString(EnvTSIGGSSKeytabFile, "")
 
 	return NewDNSProviderConfig(config)
 }
@@ -264,12 +264,12 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 }
 
 func (d *DNSProvider) negotiate(client *gss.Client) (string, error) {
-	if d.config.TSIGGSSKeytabPath != "" {
+	if d.config.TSIGGSSKeytabFile != "" {
 		keyName, _, err := client.NegotiateContextWithKeytab(
 			d.config.Nameserver,
 			d.config.TSIGGSSRealm,
 			d.config.TSIGGSSUsername,
-			d.config.TSIGGSSKeytabPath,
+			d.config.TSIGGSSKeytabFile,
 		)
 		if err != nil {
 			return "", fmt.Errorf("negotiate GSS context with keytab: %w", err)
@@ -326,11 +326,11 @@ func validateTSIGGSS(config *Config) error {
 		return errors.New("realm, username path are required")
 	}
 
-	if config.TSIGGSSPassword == "" && config.TSIGGSSKeytabPath == "" {
+	if config.TSIGGSSPassword == "" && config.TSIGGSSKeytabFile == "" {
 		return errors.New("password or keytab path is required")
 	}
 
-	if config.TSIGGSSPassword != "" && config.TSIGGSSKeytabPath != "" {
+	if config.TSIGGSSPassword != "" && config.TSIGGSSKeytabFile != "" {
 		return errors.New("only one of the password and keytab paths can be set")
 	}
 

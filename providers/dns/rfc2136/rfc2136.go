@@ -2,12 +2,16 @@
 package rfc2136
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"net"
+	"slices"
 	"strings"
 	"time"
 
+	"github.com/bodgit/tsig"
+	"github.com/bodgit/tsig/gss"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -19,14 +23,10 @@ import (
 const (
 	envNamespace = "RFC2136_"
 
-	EnvTSIGFile = envNamespace + "TSIG_FILE"
-
-	EnvTSIGKey       = envNamespace + "TSIG_KEY"
-	EnvTSIGSecret    = envNamespace + "TSIG_SECRET"
-	EnvTSIGAlgorithm = envNamespace + "TSIG_ALGORITHM"
-
 	EnvNameserver = envNamespace + "NAMESERVER"
 	EnvDNSTimeout = envNamespace + "DNS_TIMEOUT"
+
+	EnvZones = envNamespace + "ZONES"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -34,11 +34,40 @@ const (
 	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
 )
 
+// Environment variables names related to TSIG.
+const (
+	envTSIG = envNamespace + "TSIG_"
+
+	EnvTSIGFile = envTSIG + "FILE"
+
+	EnvTSIGKey       = envTSIG + "KEY"
+	EnvTSIGSecret    = envTSIG + "SECRET"
+	EnvTSIGAlgorithm = envTSIG + "ALGORITHM"
+)
+
+// Environment variables names related to GSS-TSIG.
+const (
+	envTSIGGSS = envTSIG + "GSS_"
+
+	EnvTSIGGSSRealm      = envTSIGGSS + "REALM"
+	EnvTSIGGSSUsername   = envTSIGGSS + "USERNAME"
+	EnvTSIGGSSPassword   = envTSIGGSS + "PASSWORD"
+	EnvTSIGGSSKeytabFile = envTSIGGSS + "KEYTAB_FILE"
+)
+
+const (
+	actionRemove = "REMOVE"
+	actionInsert = "INSERT"
+)
+
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Nameserver string
+	DNSTimeout time.Duration
+
+	Zones []string
 
 	TSIGFile string
 
@@ -46,22 +75,26 @@ type Config struct {
 	TSIGKey       string
 	TSIGSecret    string
 
+	TSIGGSSRealm      string
+	TSIGGSSUsername   string
+	TSIGGSSPassword   string
+	TSIGGSSKeytabFile string
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
 	SequenceInterval   time.Duration
-	DNSTimeout         time.Duration
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TSIGAlgorithm:      env.GetOrDefaultString(EnvTSIGAlgorithm, dns.HmacSHA1),
+		DNSTimeout:         env.GetOrDefaultSecond(EnvDNSTimeout, 10*time.Second),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, env.GetOrDefaultSecond("RFC2136_TIMEOUT", dns01.DefaultPropagationTimeout)),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
-		DNSTimeout:         env.GetOrDefaultSecond(EnvDNSTimeout, 10*time.Second),
 	}
 }
 
@@ -88,10 +121,17 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Nameserver = values[EnvNameserver]
 
+	config.Zones = strings.Split(env.GetOrFile(EnvZones), ",")
+
 	config.TSIGFile = env.GetOrDefaultString(EnvTSIGFile, "")
 
 	config.TSIGKey = env.GetOrFile(EnvTSIGKey)
 	config.TSIGSecret = env.GetOrFile(EnvTSIGSecret)
+
+	config.TSIGGSSRealm = env.GetOrFile(EnvTSIGGSSRealm)
+	config.TSIGGSSUsername = env.GetOrFile(EnvTSIGGSSUsername)
+	config.TSIGGSSPassword = env.GetOrFile(EnvTSIGGSSPassword)
+	config.TSIGGSSKeytabFile = env.GetOrDefaultString(EnvTSIGGSSKeytabFile, "")
 
 	return NewDNSProviderConfig(config)
 }
@@ -106,17 +146,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("rfc2136: nameserver missing")
 	}
 
-	if config.TSIGFile != "" {
-		key, err := internal.ReadTSIGFile(config.TSIGFile)
-		if err != nil {
-			return nil, fmt.Errorf("rfc2136: read TSIG file %s: %w", config.TSIGFile, err)
-		}
-
-		config.TSIGAlgorithm = key.Algorithm
-		config.TSIGKey = key.Name
-		config.TSIGSecret = key.Secret
-	}
-
 	// Append the default DNS port if none is specified.
 	if _, _, err := net.SplitHostPort(config.Nameserver); err != nil {
 		if strings.Contains(err.Error(), "missing port") {
@@ -126,27 +155,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		}
 	}
 
-	if config.TSIGKey == "" || config.TSIGSecret == "" {
-		config.TSIGKey = ""
-		config.TSIGSecret = ""
-	} else {
-		// zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2)
-		config.TSIGKey = dns.CanonicalName(config.TSIGKey)
+	err := setupTSIG(config)
+	if err != nil {
+		return nil, fmt.Errorf("rfc2136: %w", err)
 	}
 
-	if config.TSIGAlgorithm == "" {
-		config.TSIGAlgorithm = dns.HmacSHA1
-	} else {
-		// To be compatible with https://github.com/miekg/dns/blob/master/tsig.go
-		config.TSIGAlgorithm = dns.Fqdn(config.TSIGAlgorithm)
-	}
-
-	switch config.TSIGAlgorithm {
-	case dns.HmacSHA1, dns.HmacSHA224, dns.HmacSHA256, dns.HmacSHA384, dns.HmacSHA512:
-		// valid algorithm
-	default:
-		return nil, fmt.Errorf("rfc2136: unsupported TSIG algorithm: %s", config.TSIGAlgorithm)
-	}
+	slices.SortFunc(config.Zones, func(a, b string) int {
+		return cmp.Compare(len(dns.Split(b)), len(dns.Split(a)))
+	})
 
 	return &DNSProvider{config: config}, nil
 }
@@ -167,7 +183,7 @@ func (d *DNSProvider) Sequential() time.Duration {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.changeRecord("INSERT", info.EffectiveFQDN, info.Value, d.config.TTL)
+	err := d.changeRecord(actionInsert, info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("rfc2136: failed to insert: %w", err)
 	}
@@ -179,7 +195,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.changeRecord("REMOVE", info.EffectiveFQDN, info.Value, d.config.TTL)
+	err := d.changeRecord(actionRemove, info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("rfc2136: failed to remove: %w", err)
 	}
@@ -189,7 +205,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	// Find the zone for the given fqdn
-	zone, err := dns01.FindZoneByFqdnCustom(fqdn, []string{d.config.Nameserver})
+	zone, err := d.findZone(fqdn)
 	if err != nil {
 		return err
 	}
@@ -204,11 +220,11 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	m := new(dns.Msg).SetUpdate(zone)
 
 	switch action {
-	case "INSERT":
+	case actionInsert:
 		// Always remove old challenge left over from who knows what.
 		m.RemoveRRset(rrs)
 		m.Insert(rrs)
-	case "REMOVE":
+	case actionRemove:
 		m.Remove(rrs)
 	default:
 		return fmt.Errorf("unexpected action: %s", action)
@@ -218,7 +234,31 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	c := &dns.Client{Timeout: d.config.DNSTimeout}
 
 	// TSIG authentication / msg signing
-	if d.config.TSIGKey != "" && d.config.TSIGSecret != "" {
+	if d.config.TSIGAlgorithm == tsig.GSS {
+		c.Net = "tcp"
+
+		var gssClient *gss.Client
+
+		gssClient, err = gss.NewClient(c)
+		if err != nil {
+			return fmt.Errorf("create GSS client: %w", err)
+		}
+
+		defer func() { _ = gssClient.Close() }()
+
+		var keyName string
+
+		keyName, err = d.negotiate(gssClient)
+		if err != nil {
+			return err
+		}
+
+		defer func() { _ = gssClient.DeleteContext(keyName) }()
+
+		c.TsigProvider = gssClient
+
+		m.SetTsig(keyName, tsig.GSS, 300, time.Now().Unix())
+	} else if d.config.TSIGKey != "" && d.config.TSIGSecret != "" {
 		m.SetTsig(d.config.TSIGKey, d.config.TSIGAlgorithm, 300, time.Now().Unix())
 
 		// Secret(s) for TSIG map[<zonename>]<base64 secret>.
@@ -233,6 +273,129 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 	if reply != nil && reply.Rcode != dns.RcodeSuccess {
 		return fmt.Errorf("DNS update failed: server replied: %s", dns.RcodeToString[reply.Rcode])
+	}
+
+	return nil
+}
+
+func (d *DNSProvider) negotiate(client *gss.Client) (string, error) {
+	if d.config.TSIGGSSKeytabFile != "" {
+		keyName, _, err := client.NegotiateContextWithKeytab(
+			d.config.Nameserver,
+			d.config.TSIGGSSRealm,
+			d.config.TSIGGSSUsername,
+			d.config.TSIGGSSKeytabFile,
+		)
+		if err != nil {
+			return "", fmt.Errorf("negotiate GSS context with keytab: %w", err)
+		}
+
+		return keyName, nil
+	}
+
+	keyName, _, err := client.NegotiateContextWithCredentials(
+		d.config.Nameserver,
+		d.config.TSIGGSSRealm,
+		d.config.TSIGGSSUsername,
+		d.config.TSIGGSSPassword,
+	)
+	if err != nil {
+		return "", fmt.Errorf("negotiate GSS context with credentials: %w", err)
+	}
+
+	return keyName, nil
+}
+
+func (d *DNSProvider) findZone(fqdn string) (string, error) {
+	if len(d.config.Zones) == 0 {
+		return dns01.FindZoneByFqdnCustom(fqdn, []string{d.config.Nameserver})
+	}
+
+	for potentialZone := range dns01.DomainsSeq(fqdn) {
+		for _, zone := range d.config.Zones {
+			z := dns.Fqdn(zone)
+
+			if strings.HasSuffix(potentialZone, z) {
+				return z, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("zone for %s not found", fqdn)
+}
+
+func setupTSIG(config *Config) error {
+	if dns.Fqdn(config.TSIGAlgorithm) == tsig.GSS {
+		err := validateTSIGGSS(config)
+		if err != nil {
+			return fmt.Errorf("TSIG GSS: %w", err)
+		}
+	} else {
+		err := prepareTSIG(config)
+		if err != nil {
+			return err
+		}
+	}
+
+	if config.TSIGAlgorithm == "" {
+		config.TSIGAlgorithm = dns.HmacSHA1
+	} else {
+		// To be compatible with https://github.com/miekg/dns/blob/master/tsig.go
+		config.TSIGAlgorithm = dns.Fqdn(config.TSIGAlgorithm)
+	}
+
+	switch config.TSIGAlgorithm {
+	case dns.HmacSHA1, dns.HmacSHA224, dns.HmacSHA256, dns.HmacSHA384, dns.HmacSHA512, tsig.GSS:
+		// valid algorithm
+	default:
+		return fmt.Errorf("unsupported TSIG algorithm: %s", config.TSIGAlgorithm)
+	}
+
+	return nil
+}
+
+func validateTSIGGSS(config *Config) error {
+	if config.TSIGGSSUsername == "" {
+		return errors.New("username is required")
+	}
+
+	if config.TSIGGSSPassword == "" && config.TSIGGSSKeytabFile == "" {
+		return errors.New("password or keytab path is required")
+	}
+
+	if config.TSIGGSSPassword != "" && config.TSIGGSSKeytabFile != "" {
+		return errors.New("only one of the password and keytab paths can be set")
+	}
+
+	if config.TSIGFile != "" {
+		return errors.New("the TSIG file is not supported")
+	}
+
+	if config.TSIGKey != "" || config.TSIGSecret != "" {
+		return errors.New("SIG key and secret are not supported")
+	}
+
+	return nil
+}
+
+func prepareTSIG(config *Config) error {
+	if config.TSIGFile != "" {
+		key, err := internal.ReadTSIGFile(config.TSIGFile)
+		if err != nil {
+			return fmt.Errorf("read TSIG file %s: %w", config.TSIGFile, err)
+		}
+
+		config.TSIGAlgorithm = key.Algorithm
+		config.TSIGKey = key.Name
+		config.TSIGSecret = key.Secret
+	}
+
+	if config.TSIGKey == "" || config.TSIGSecret == "" {
+		config.TSIGKey = ""
+		config.TSIGSecret = ""
+	} else {
+		// zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2)
+		config.TSIGKey = dns.CanonicalName(config.TSIGKey)
 	}
 
 	return nil

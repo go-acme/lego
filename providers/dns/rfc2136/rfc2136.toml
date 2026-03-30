@@ -27,6 +27,15 @@ RFC2136_TSIG_GSS_REALM=realm.example
 RFC2136_TSIG_GSS_USERNAME='xxx'
 RFC2136_TSIG_GSS_PASSWORD='yyy'
 lego --dns rfc2136 -d '*.example.com' -d example.com run
+
+## --- GSS-TSIG (Kerberos) keytab
+
+RFC2136_NAMESERVER="127.0.0.1" \
+RFC2136_REALM=realm.example \
+RFC2136_USERNAME='xxx' \
+RFC2136_KEYTAB_FILE="/path/to/my.keytab" \
+lego --dns rfc2136 -d '*.example.com' -d example.com run
+
 '''
 
 [Configuration]
@@ -40,6 +49,7 @@ lego --dns rfc2136 -d '*.example.com' -d example.com run
     RFC2136_TSIG_GSS_REALM = "GSS realm. The TSIG algorithm must be `gss-tsig.`."
     RFC2136_TSIG_GSS_USERNAME = "GSS username. The TSIG algorithm must be `gss-tsig.`."
     RFC2136_TSIG_GSS_PASSWORD = "GSS password. The TSIG algorithm must be `gss-tsig.`."
+    RFC2136_TSIG_GSS_KEYTAB_PATH = "Path to Kerberos keytab file. The TSIG algorithm must be `gss-tsig.`."
     RFC2136_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     RFC2136_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
     RFC2136_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"

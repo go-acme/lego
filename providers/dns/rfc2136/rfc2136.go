@@ -27,9 +27,10 @@ const (
 	EnvTSIGSecret    = envNamespace + "TSIG_SECRET"
 	EnvTSIGAlgorithm = envNamespace + "TSIG_ALGORITHM"
 
-	EnvTSIGGSSRealm    = envNamespace + "TSIG_GSS_REALM"
-	EnvTSIGGSSUsername = envNamespace + "TSIG_GSS_USERNAME"
-	EnvTSIGGSSPassword = envNamespace + "TSIG_GSS_PASSWORD"
+	EnvTSIGGSSRealm      = envNamespace + "TSIG_GSS_REALM"
+	EnvTSIGGSSUsername   = envNamespace + "TSIG_GSS_USERNAME"
+	EnvTSIGGSSPassword   = envNamespace + "TSIG_GSS_PASSWORD"
+	EnvTSIGGSSKeytabPath = envNamespace + "TSIG_GSS_KEYTAB_PATH"
 
 	EnvNameserver = envNamespace + "NAMESERVER"
 	EnvDNSTimeout = envNamespace + "DNS_TIMEOUT"
@@ -52,9 +53,10 @@ type Config struct {
 	TSIGKey       string
 	TSIGSecret    string
 
-	TSIGGSSRealm    string
-	TSIGGSSUsername string
-	TSIGGSSPassword string
+	TSIGGSSRealm      string
+	TSIGGSSUsername   string
+	TSIGGSSPassword   string
+	TSIGGSSKeytabPath string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -106,6 +108,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.TSIGGSSRealm = env.GetOrFile(EnvTSIGGSSRealm)
 	config.TSIGGSSUsername = env.GetOrFile(EnvTSIGGSSUsername)
 	config.TSIGGSSPassword = env.GetOrFile(EnvTSIGGSSPassword)
+	config.TSIGGSSKeytabPath = env.GetOrFile(EnvTSIGGSSKeytabPath)
 
 	return NewDNSProviderConfig(config)
 }
@@ -205,6 +208,8 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 	// TSIG authentication / msg signing
 	if d.config.TSIGAlgorithm == tsig.GSS {
+		c.Net = "tcp"
+
 		var gssClient *gss.Client
 
 		gssClient, err = gss.NewClient(c)
@@ -216,14 +221,9 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 		var keyName string
 
-		keyName, _, err = gssClient.NegotiateContextWithCredentials(
-			d.config.Nameserver,
-			d.config.TSIGGSSRealm,
-			d.config.TSIGGSSUsername,
-			d.config.TSIGGSSPassword,
-		)
+		keyName, err = d.negotiate(gssClient)
 		if err != nil {
-			return fmt.Errorf("negotiate GSS context: %w", err)
+			return err
 		}
 
 		defer func() { _ = gssClient.DeleteContext(keyName) }()
@@ -249,6 +249,34 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	}
 
 	return nil
+}
+
+func (d *DNSProvider) negotiate(client *gss.Client) (string, error) {
+	if d.config.TSIGGSSKeytabPath != "" {
+		keyName, _, err := client.NegotiateContextWithKeytab(
+			d.config.Nameserver,
+			d.config.TSIGGSSRealm,
+			d.config.TSIGGSSUsername,
+			d.config.TSIGGSSKeytabPath,
+		)
+		if err != nil {
+			return "", fmt.Errorf("negotiate GSS context with keytab: %w", err)
+		}
+
+		return keyName, nil
+	}
+
+	keyName, _, err := client.NegotiateContextWithCredentials(
+		d.config.Nameserver,
+		d.config.TSIGGSSRealm,
+		d.config.TSIGGSSUsername,
+		d.config.TSIGGSSPassword,
+	)
+	if err != nil {
+		return "", fmt.Errorf("negotiate GSS context with credentials: %w", err)
+	}
+
+	return keyName, nil
 }
 
 func setupTSIG(config *Config) error {
@@ -282,8 +310,16 @@ func setupTSIG(config *Config) error {
 }
 
 func validateTSIGGSS(config *Config) error {
-	if config.TSIGGSSRealm == "" || config.TSIGGSSUsername == "" || config.TSIGGSSPassword == "" {
-		return errors.New("realm, username and password are required")
+	if config.TSIGGSSRealm == "" || config.TSIGGSSUsername == "" {
+		return errors.New("realm, username path are required")
+	}
+
+	if config.TSIGGSSPassword == "" && config.TSIGGSSKeytabPath == "" {
+		return errors.New("password or keytab path is required")
+	}
+
+	if config.TSIGGSSPassword != "" && config.TSIGGSSKeytabPath != "" {
+		return errors.New("only one of the password and keytab paths can be set")
 	}
 
 	if config.TSIGFile != "" {

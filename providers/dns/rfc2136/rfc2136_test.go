@@ -31,6 +31,10 @@ var envTest = tester.NewEnvTest(
 	EnvTSIGKey,
 	EnvTSIGSecret,
 	EnvTSIGAlgorithm,
+	EnvTSIGGSSRealm,
+	EnvTSIGGSSUsername,
+	EnvTSIGGSSPassword,
+	EnvTSIGGSSKeytabPath,
 	EnvNameserver,
 	EnvDNSTimeout,
 ).WithDomain(envDomain)
@@ -79,6 +83,38 @@ func TestNewDNSProvider(t *testing.T) {
 			},
 			expected: "rfc2136: read TSIG file ./internal/fixtures/invalid_key.conf: invalid key line: key {",
 		},
+		{
+			desc: "TSIG GSS: password and keytab are mutually exclusive",
+			envVars: map[string]string{
+				EnvNameserver:        "example.com",
+				EnvTSIGAlgorithm:     "gss-tsig.",
+				EnvTSIGGSSRealm:      "example.org",
+				EnvTSIGGSSUsername:   "user",
+				EnvTSIGGSSPassword:   "secret",
+				EnvTSIGGSSKeytabPath: "/path/to/my.keytab",
+			},
+			expected: "rfc2136: TSIG GSS: only one of the password and keytab paths can be set",
+		},
+		{
+			desc: "TSIG GSS: success with password",
+			envVars: map[string]string{
+				EnvNameserver:      "example.com",
+				EnvTSIGAlgorithm:   "gss-tsig.",
+				EnvTSIGGSSRealm:    "example.org",
+				EnvTSIGGSSUsername: "user",
+				EnvTSIGGSSPassword: "secret",
+			},
+		},
+		{
+			desc: "TSIG GSS: success with keytab",
+			envVars: map[string]string{
+				EnvNameserver:        "example.com",
+				EnvTSIGAlgorithm:     "gss-tsig.",
+				EnvTSIGGSSRealm:      "example.org",
+				EnvTSIGGSSUsername:   "user",
+				EnvTSIGGSSKeytabPath: "/path/to/my.keytab",
+			},
+		},
 	}
 
 	for _, test := range testCases {
@@ -104,13 +140,19 @@ func TestNewDNSProvider(t *testing.T) {
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc          string
-		expected      string
-		nameserver    string
+		desc       string
+		expected   string
+		nameserver string
+
 		tsigFile      string
 		tsigAlgorithm string
 		tsigKey       string
 		tsigSecret    string
+
+		tsigGSSRealm      string
+		tsigGSSUsername   string
+		tsigGSSPassword   string
+		tsigGSSKeytabPath string
 	}{
 		{
 			desc:       "success",
@@ -137,16 +179,48 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			tsigFile:   "./internal/fixtures/invalid_key.conf",
 			expected:   "rfc2136: read TSIG file ./internal/fixtures/invalid_key.conf: invalid key line: key {",
 		},
+		{
+			desc:              "TSIG GSS: password and keytab are mutually exclusive",
+			nameserver:        "example.com",
+			tsigAlgorithm:     "gss-tsig.",
+			tsigGSSRealm:      "example.org",
+			tsigGSSUsername:   "user",
+			tsigGSSPassword:   "secret",
+			tsigGSSKeytabPath: "/path/to/my.keytab",
+			expected:          "rfc2136: TSIG GSS: only one of the password and keytab paths can be set",
+		},
+		{
+			desc:            "TSIG GSS: success with password",
+			nameserver:      "example.com",
+			tsigAlgorithm:   "gss-tsig.",
+			tsigGSSRealm:    "example.org",
+			tsigGSSUsername: "user",
+			tsigGSSPassword: "secret",
+		},
+		{
+			desc:              "TSIG GSS: success with keytab",
+			nameserver:        "example.com",
+			tsigAlgorithm:     "gss-tsig.",
+			tsigGSSRealm:      "example.org",
+			tsigGSSUsername:   "user",
+			tsigGSSKeytabPath: "/path/to/my.keytab",
+		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
 			config.Nameserver = test.nameserver
+
 			config.TSIGFile = test.tsigFile
 			config.TSIGAlgorithm = test.tsigAlgorithm
 			config.TSIGKey = test.tsigKey
 			config.TSIGSecret = test.tsigSecret
+
+			config.TSIGGSSRealm = test.tsigGSSRealm
+			config.TSIGGSSUsername = test.tsigGSSUsername
+			config.TSIGGSSPassword = test.tsigGSSPassword
+			config.TSIGGSSKeytabPath = test.tsigGSSKeytabPath
 
 			p, err := NewDNSProviderConfig(config)
 
@@ -163,6 +237,10 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 func TestDNSProvider_Present_success(t *testing.T) {
 	dns01.ClearFqdnCache()
+
+	defer envTest.RestoreEnv()
+
+	envTest.ClearEnv()
 
 	addr := dnsmock.NewServer().
 		Query(fakeZone+" SOA", dnsmock.SOA("")).
@@ -181,6 +259,10 @@ func TestDNSProvider_Present_success(t *testing.T) {
 
 func TestDNSProvider_Present_success_updatePacket(t *testing.T) {
 	dns01.ClearFqdnCache()
+
+	defer envTest.RestoreEnv()
+
+	envTest.ClearEnv()
 
 	reqChan := make(chan *dns.Msg, 1)
 
@@ -239,6 +321,10 @@ func TestDNSProvider_Present_success_updatePacket(t *testing.T) {
 func TestDNSProvider_Present_error(t *testing.T) {
 	dns01.ClearFqdnCache()
 
+	defer envTest.RestoreEnv()
+
+	envTest.ClearEnv()
+
 	addr := dnsmock.NewServer().
 		Query(fakeZone+" SOA", dnsmock.Error(dns.RcodeNotZone)).
 		Build(t)
@@ -259,6 +345,10 @@ func TestDNSProvider_Present_error(t *testing.T) {
 
 func TestDNSProvider_Present_tsig_success(t *testing.T) {
 	dns01.ClearFqdnCache()
+
+	defer envTest.RestoreEnv()
+
+	envTest.ClearEnv()
 
 	addr := dnsmock.NewServer().
 		Query(fakeZone+" SOA", dnsmock.SOA("")).
@@ -283,6 +373,10 @@ func TestDNSProvider_Present_tsig_success(t *testing.T) {
 
 func TestDNSProvider_Present_tsig_error(t *testing.T) {
 	dns01.ClearFqdnCache()
+
+	defer envTest.RestoreEnv()
+
+	envTest.ClearEnv()
 
 	addr := dnsmock.NewServer().
 		Query(fakeZone+" SOA", dnsmock.SOA("")).

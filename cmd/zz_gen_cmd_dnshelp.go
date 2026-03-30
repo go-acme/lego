@@ -3429,6 +3429,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "RFC2136_TSIG_GSS_REALM":	GSS realm. The TSIG algorithm must be 'gss-tsig.'.`)
 		ew.writeln(`	- "RFC2136_TSIG_GSS_USERNAME":	GSS username. The TSIG algorithm must be 'gss-tsig.'.`)
 		ew.writeln(`	- "RFC2136_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+		ew.writeln(`	- "RFC2136_ZONES":	List of potential zones (separated by commas)`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rfc2136`)

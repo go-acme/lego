@@ -89,6 +89,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | `RFC2136_TSIG_GSS_REALM` | GSS realm. The TSIG algorithm must be `gss-tsig.`. |
 | `RFC2136_TSIG_GSS_USERNAME` | GSS username. The TSIG algorithm must be `gss-tsig.`. |
 | `RFC2136_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
+| `RFC2136_ZONES` | List of potential zones (separated by commas) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

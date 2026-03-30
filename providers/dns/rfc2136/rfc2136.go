@@ -385,8 +385,10 @@ func (d *DNSProvider) findZone(fqdn string) (string, error) {
 
 	for potentialZone := range dns01.DomainsSeq(fqdn) {
 		for _, zone := range d.config.Zones {
-			if strings.HasSuffix(potentialZone, dns.Fqdn(zone)) {
-				return dns.Fqdn(zone), nil
+			z := dns.Fqdn(zone)
+
+			if strings.HasSuffix(potentialZone, z) {
+				return z, nil
 			}
 		}
 	}

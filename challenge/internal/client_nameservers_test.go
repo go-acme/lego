@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/challenge"
-	dnsmock2 "github.com/go-acme/lego/v5/internal/tester/dnsmock"
+	"github.com/go-acme/lego/v5/internal/tester/dnsmock"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -14,17 +14,17 @@ import (
 func TestClient_LookupAuthoritativeNameservers_OK(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		fakeDNSServer *dnsmock2.Builder
+		fakeDNSServer *dnsmock.Builder
 		fqdn          string
 		expected      []string
 	}{
 		{
 			fqdn: "en.wikipedia.org.localhost.",
-			fakeDNSServer: dnsmock2.NewServer().
-				Query("en.wikipedia.org.localhost SOA", dnsmock2.CNAME("dyna.wikimedia.org.localhost")).
-				Query("wikipedia.org.localhost SOA", dnsmock2.SOA("")).
+			fakeDNSServer: dnsmock.NewServer().
+				Query("en.wikipedia.org.localhost SOA", dnsmock.CNAME("dyna.wikimedia.org.localhost")).
+				Query("wikipedia.org.localhost SOA", dnsmock.SOA("")).
 				Query("wikipedia.org.localhost NS",
-					dnsmock2.Answer(
+					dnsmock.Answer(
 						fakeNS("wikipedia.org.localhost.", "ns0.wikimedia.org.localhost."),
 						fakeNS("wikipedia.org.localhost.", "ns1.wikimedia.org.localhost."),
 						fakeNS("wikipedia.org.localhost.", "ns2.wikimedia.org.localhost."),
@@ -34,11 +34,11 @@ func TestClient_LookupAuthoritativeNameservers_OK(t *testing.T) {
 		},
 		{
 			fqdn: "www.google.com.localhost.",
-			fakeDNSServer: dnsmock2.NewServer().
-				Query("www.google.com.localhost. SOA", dnsmock2.Noop).
-				Query("google.com.localhost. SOA", dnsmock2.SOA("")).
+			fakeDNSServer: dnsmock.NewServer().
+				Query("www.google.com.localhost. SOA", dnsmock.Noop).
+				Query("google.com.localhost. SOA", dnsmock.SOA("")).
 				Query("google.com.localhost. NS",
-					dnsmock2.Answer(
+					dnsmock.Answer(
 						fakeNS("google.com.localhost.", "ns1.google.com.localhost."),
 						fakeNS("google.com.localhost.", "ns2.google.com.localhost."),
 						fakeNS("google.com.localhost.", "ns3.google.com.localhost."),
@@ -49,11 +49,11 @@ func TestClient_LookupAuthoritativeNameservers_OK(t *testing.T) {
 		},
 		{
 			fqdn: "mail.proton.me.localhost.",
-			fakeDNSServer: dnsmock2.NewServer().
-				Query("mail.proton.me.localhost. SOA", dnsmock2.Noop).
-				Query("proton.me.localhost. SOA", dnsmock2.SOA("")).
+			fakeDNSServer: dnsmock.NewServer().
+				Query("mail.proton.me.localhost. SOA", dnsmock.Noop).
+				Query("proton.me.localhost. SOA", dnsmock.SOA("")).
 				Query("proton.me.localhost. NS",
-					dnsmock2.Answer(
+					dnsmock.Answer(
 						fakeNS("proton.me.localhost.", "ns1.proton.me.localhost."),
 						fakeNS("proton.me.localhost.", "ns2.proton.me.localhost."),
 						fakeNS("proton.me.localhost.", "ns3.proton.me.localhost."),
@@ -82,30 +82,30 @@ func TestClient_LookupAuthoritativeNameservers_error(t *testing.T) {
 	testCases := []struct {
 		desc          string
 		fqdn          string
-		fakeDNSServer *dnsmock2.Builder
+		fakeDNSServer *dnsmock.Builder
 		error         string
 	}{
 		{
 			desc: "NXDOMAIN",
 			fqdn: "example.invalid.",
-			fakeDNSServer: dnsmock2.NewServer().
-				Query(". SOA", dnsmock2.Error(dns.RcodeNameError)),
+			fakeDNSServer: dnsmock.NewServer().
+				Query(". SOA", dnsmock.Error(dns.RcodeNameError)),
 			error: "could not find zone: [fqdn=example.invalid.] could not find the start of authority for 'example.invalid.' [question='invalid. IN  SOA', code=NXDOMAIN]",
 		},
 		{
 			desc: "NS error",
 			fqdn: "example.com.",
-			fakeDNSServer: dnsmock2.NewServer().
-				Query("example.com. SOA", dnsmock2.SOA("")).
-				Query("example.com. NS", dnsmock2.Error(dns.RcodeServerFailure)),
+			fakeDNSServer: dnsmock.NewServer().
+				Query("example.com. SOA", dnsmock.SOA("")).
+				Query("example.com. NS", dnsmock.Error(dns.RcodeServerFailure)),
 			error: "[zone=example.com.] could not determine authoritative nameservers",
 		},
 		{
 			desc: "empty NS",
 			fqdn: "example.com.",
-			fakeDNSServer: dnsmock2.NewServer().
-				Query("example.com. SOA", dnsmock2.SOA("")).
-				Query("example.me NS", dnsmock2.Noop),
+			fakeDNSServer: dnsmock.NewServer().
+				Query("example.com. SOA", dnsmock.SOA("")).
+				Query("example.me NS", dnsmock.Noop),
 			error: "[zone=example.com.] could not determine authoritative nameservers",
 		},
 	}

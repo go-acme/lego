@@ -3,7 +3,7 @@ package dns01
 import (
 	"testing"
 
-	dnsmock2 "github.com/go-acme/lego/v5/internal/tester/dnsmock"
+	"github.com/go-acme/lego/v5/internal/tester/dnsmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -12,7 +12,7 @@ func TestClient_checkNameserversPropagationCustom_authoritativeNss(t *testing.T)
 	testCases := []struct {
 		desc          string
 		fqdn, value   string
-		fakeDNSServer *dnsmock2.Builder
+		fakeDNSServer *dnsmock.Builder
 		expectedError string
 	}{
 		{
@@ -20,9 +20,9 @@ func TestClient_checkNameserversPropagationCustom_authoritativeNss(t *testing.T)
 			// NS: asnums.routeviews.org.
 			fqdn:  "8.8.8.8.asn.routeviews.org.",
 			value: "151698.8.8.024",
-			fakeDNSServer: dnsmock2.NewServer().
+			fakeDNSServer: dnsmock.NewServer().
 				Query("8.8.8.8.asn.routeviews.org. TXT",
-					dnsmock2.Answer(
+					dnsmock.Answer(
 						fakeTXT("8.8.8.8.asn.routeviews.org.", "151698.8.8.024"),
 					),
 				),
@@ -32,9 +32,9 @@ func TestClient_checkNameserversPropagationCustom_authoritativeNss(t *testing.T)
 			// NS: asnums.routeviews.org.
 			fqdn:  "8.8.8.8.asn.routeviews.org.",
 			value: "fe01=",
-			fakeDNSServer: dnsmock2.NewServer().
+			fakeDNSServer: dnsmock.NewServer().
 				Query("8.8.8.8.asn.routeviews.org. TXT",
-					dnsmock2.Answer(
+					dnsmock.Answer(
 						fakeTXT("8.8.8.8.asn.routeviews.org.", "15169"),
 						fakeTXT("8.8.8.8.asn.routeviews.org.", "8.8.8.0"),
 						fakeTXT("8.8.8.8.asn.routeviews.org.", "24"),
@@ -47,8 +47,8 @@ func TestClient_checkNameserversPropagationCustom_authoritativeNss(t *testing.T)
 			// NS: ns2.google.com.
 			fqdn:  "ns1.google.com.",
 			value: "fe01=",
-			fakeDNSServer: dnsmock2.NewServer().
-				Query("ns1.google.com.", dnsmock2.Noop),
+			fakeDNSServer: dnsmock.NewServer().
+				Query("ns1.google.com.", dnsmock.Noop),
 			expectedError: "did not return the expected TXT record [fqdn: ns1.google.com., value: fe01=]: ",
 		},
 	}

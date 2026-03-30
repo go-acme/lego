@@ -55,6 +55,11 @@ const (
 	EnvTSIGGSSKeytabFile = envTSIGGSS + "KEYTAB_FILE"
 )
 
+const (
+	actionRemove = "REMOVE"
+	actionInsert = "INSERT"
+)
+
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
@@ -178,7 +183,7 @@ func (d *DNSProvider) Sequential() time.Duration {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.changeRecord("INSERT", info.EffectiveFQDN, info.Value, d.config.TTL)
+	err := d.changeRecord(actionInsert, info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("rfc2136: failed to insert: %w", err)
 	}
@@ -190,7 +195,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.changeRecord("REMOVE", info.EffectiveFQDN, info.Value, d.config.TTL)
+	err := d.changeRecord(actionRemove, info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("rfc2136: failed to remove: %w", err)
 	}
@@ -215,11 +220,11 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	m := new(dns.Msg).SetUpdate(zone)
 
 	switch action {
-	case "INSERT":
+	case actionInsert:
 		// Always remove old challenge left over from who knows what.
 		m.RemoveRRset(rrs)
 		m.Insert(rrs)
-	case "REMOVE":
+	case actionRemove:
 		m.Remove(rrs)
 	default:
 		return fmt.Errorf("unexpected action: %s", action)
@@ -301,6 +306,24 @@ func (d *DNSProvider) negotiate(client *gss.Client) (string, error) {
 	return keyName, nil
 }
 
+func (d *DNSProvider) findZone(fqdn string) (string, error) {
+	if len(d.config.Zones) == 0 {
+		return dns01.FindZoneByFqdnCustom(fqdn, []string{d.config.Nameserver})
+	}
+
+	for potentialZone := range dns01.DomainsSeq(fqdn) {
+		for _, zone := range d.config.Zones {
+			z := dns.Fqdn(zone)
+
+			if strings.HasSuffix(potentialZone, z) {
+				return z, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("zone for %s not found", fqdn)
+}
+
 func setupTSIG(config *Config) error {
 	if dns.Fqdn(config.TSIGAlgorithm) == tsig.GSS {
 		err := validateTSIGGSS(config)
@@ -376,22 +399,4 @@ func prepareTSIG(config *Config) error {
 	}
 
 	return nil
-}
-
-func (d *DNSProvider) findZone(fqdn string) (string, error) {
-	if len(d.config.Zones) == 0 {
-		return dns01.FindZoneByFqdnCustom(fqdn, []string{d.config.Nameserver})
-	}
-
-	for potentialZone := range dns01.DomainsSeq(fqdn) {
-		for _, zone := range d.config.Zones {
-			z := dns.Fqdn(zone)
-
-			if strings.HasSuffix(potentialZone, z) {
-				return z, nil
-			}
-		}
-	}
-
-	return "", fmt.Errorf("zone for %s not found", fqdn)
 }

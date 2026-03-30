@@ -52,9 +52,10 @@ lego --dns rfc2136 -d '*.example.com' -d example.com run
 ## --- GSS-TSIG (Kerberos) keytab
 
 RFC2136_NAMESERVER="127.0.0.1" \
-RFC2136_REALM=realm.example \
-RFC2136_USERNAME='xxx' \
-RFC2136_KEYTAB_FILE="/path/to/my.keytab" \
+RFC2136_TSIG_ALGORITHM=gss-tsig. \
+RFC2136_TSIG_GSS_REALM=realm.example \
+RFC2136_TSIG_GSS_USERNAME='xxx' \
+RFC2136_TSIG_GSS_KEYTAB_FILE="/path/to/my.keytab" \
 lego --dns rfc2136 -d '*.example.com' -d example.com run
 
 ```

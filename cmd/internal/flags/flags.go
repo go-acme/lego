@@ -315,8 +315,8 @@ func createHTTPChallengeFlags() []cli.Flag {
 		},
 		&cli.StringFlag{
 			Category: categoryHTTP01Challenge,
-			Name:     FlgHTTPPort,
-			Sources:  cli.EnvVars(toEnvName(FlgHTTPPort)),
+			Name:     FlgHTTPAddress,
+			Sources:  cli.EnvVars(toEnvName(FlgHTTPAddress)),
 			Usage:    "Set the port and interface to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port.",
 			Value:    ":80",
 		},
@@ -366,8 +366,8 @@ func createTLSChallengeFlags() []cli.Flag {
 		},
 		&cli.StringFlag{
 			Category: categoryTLSALPN01Challenge,
-			Name:     FlgTLSPort,
-			Sources:  cli.EnvVars(toEnvName(FlgTLSPort)),
+			Name:     FlgTLSAddress,
+			Sources:  cli.EnvVars(toEnvName(FlgTLSAddress)),
 			Usage:    "Set the port and interface to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port.",
 			Value:    ":443",
 		},

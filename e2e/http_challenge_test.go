@@ -29,7 +29,7 @@ func TestChallengeHTTP_Run(t *testing.T) {
 		"-s", caDirectory,
 		"-d", testDomain1,
 		"--http",
-		"--http.port", ":5002",
+		"--http.address", ":5002",
 	)
 	require.NoError(t, err)
 }

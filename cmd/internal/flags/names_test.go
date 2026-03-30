@@ -24,8 +24,8 @@ func Test_toEnvName(t *testing.T) {
 		},
 		{
 			desc:     "hyphen",
-			flag:     FlgHTTPPort,
-			expected: "LEGO_HTTP_PORT",
+			flag:     FlgHTTPAddress,
+			expected: "LEGO_HTTP_ADDRESS",
 		},
 		{
 			desc:     "dot, hyphen",

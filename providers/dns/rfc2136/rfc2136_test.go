@@ -10,6 +10,7 @@ import (
 	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/go-acme/lego/v4/platform/tester/dnsmock"
 	"github.com/miekg/dns"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -421,4 +422,47 @@ func handleTSIG(w dns.ResponseWriter, req *dns.Msg) {
 		SetReply(req).
 		SetTsig(tsig.Hdr.Name, tsig.Algorithm, tsig.Fudge, time.Now().Unix()),
 	)
+}
+
+func TestProvider_findZone(t *testing.T) {
+	p, err := NewDNSProviderConfig(&Config{
+		Nameserver: "example.com",
+		Zones: []string{
+			"example.com", "example.org", "foo.example.com",
+		},
+	})
+	require.NoError(t, err)
+
+	testCases := []struct {
+		desc     string
+		fqdn     string
+		expected string
+	}{
+		{
+			desc:     "exact match",
+			fqdn:     "example.com",
+			expected: "example.com",
+		},
+		{
+			desc:     "subdomain match",
+			fqdn:     "bar.example.com",
+			expected: "example.com",
+		},
+		{
+			desc:     "subdomain of subdomain match",
+			fqdn:     "bar.foo.example.com",
+			expected: "foo.example.com",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			zone, err := p.findZone(test.fqdn)
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expected, zone)
+		})
+	}
 }

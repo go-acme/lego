@@ -2,9 +2,11 @@
 package rfc2136
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"net"
+	"slices"
 	"strings"
 	"time"
 
@@ -21,6 +23,11 @@ import (
 const (
 	envNamespace = "RFC2136_"
 
+	EnvNameserver = envNamespace + "NAMESERVER"
+	EnvDNSTimeout = envNamespace + "DNS_TIMEOUT"
+
+	EnvZones = envNamespace + "ZONES"
+
 	EnvTSIGFile = envNamespace + "TSIG_FILE"
 
 	EnvTSIGKey       = envNamespace + "TSIG_KEY"
@@ -31,9 +38,6 @@ const (
 	EnvTSIGGSSUsername   = envNamespace + "TSIG_GSS_USERNAME"
 	EnvTSIGGSSPassword   = envNamespace + "TSIG_GSS_PASSWORD"
 	EnvTSIGGSSKeytabPath = envNamespace + "TSIG_GSS_KEYTAB_PATH"
-
-	EnvNameserver = envNamespace + "NAMESERVER"
-	EnvDNSTimeout = envNamespace + "DNS_TIMEOUT"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -46,6 +50,9 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Nameserver string
+	DNSTimeout time.Duration
+
+	Zones []string
 
 	TSIGFile string
 
@@ -62,18 +69,17 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	SequenceInterval   time.Duration
-	DNSTimeout         time.Duration
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TSIGAlgorithm:      env.GetOrDefaultString(EnvTSIGAlgorithm, dns.HmacSHA1),
+		DNSTimeout:         env.GetOrDefaultSecond(EnvDNSTimeout, 10*time.Second),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, env.GetOrDefaultSecond("RFC2136_TIMEOUT", dns01.DefaultPropagationTimeout)),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
-		DNSTimeout:         env.GetOrDefaultSecond(EnvDNSTimeout, 10*time.Second),
 	}
 }
 
@@ -100,6 +106,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Nameserver = values[EnvNameserver]
 
+	config.Zones = strings.Split(env.GetOrFile(EnvZones), ",")
+
 	config.TSIGFile = env.GetOrDefaultString(EnvTSIGFile, "")
 
 	config.TSIGKey = env.GetOrFile(EnvTSIGKey)
@@ -108,7 +116,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.TSIGGSSRealm = env.GetOrFile(EnvTSIGGSSRealm)
 	config.TSIGGSSUsername = env.GetOrFile(EnvTSIGGSSUsername)
 	config.TSIGGSSPassword = env.GetOrFile(EnvTSIGGSSPassword)
-	config.TSIGGSSKeytabPath = env.GetOrFile(EnvTSIGGSSKeytabPath)
+	config.TSIGGSSKeytabPath = env.GetOrDefaultString(EnvTSIGGSSKeytabPath, "")
 
 	return NewDNSProviderConfig(config)
 }
@@ -136,6 +144,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("rfc2136: %w", err)
 	}
+
+	slices.SortFunc(config.Zones, func(a, b string) int {
+		return cmp.Compare(len(dns.Split(b)), len(dns.Split(a)))
+	})
 
 	return &DNSProvider{config: config}, nil
 }
@@ -178,7 +190,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	// Find the zone for the given fqdn
-	zone, err := dns01.FindZoneByFqdnCustom(fqdn, []string{d.config.Nameserver})
+	zone, err := d.findZone(fqdn)
 	if err != nil {
 		return err
 	}
@@ -354,4 +366,20 @@ func prepareTSIG(config *Config) error {
 	}
 
 	return nil
+}
+
+func (d *DNSProvider) findZone(fqdn string) (string, error) {
+	if len(d.config.Zones) > 0 {
+		for potentialZone := range dns01.UnFqdnDomainsSeq(fqdn) {
+			for _, zone := range d.config.Zones {
+				if strings.HasSuffix(potentialZone, zone) {
+					return zone, nil
+				}
+			}
+		}
+
+		return "", fmt.Errorf("zone for %s not found", fqdn)
+	}
+
+	return dns01.FindZoneByFqdnCustom(fqdn, []string{d.config.Nameserver})
 }

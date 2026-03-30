@@ -28,21 +28,31 @@ const (
 
 	EnvZones = envNamespace + "ZONES"
 
-	EnvTSIGFile = envNamespace + "TSIG_FILE"
-
-	EnvTSIGKey       = envNamespace + "TSIG_KEY"
-	EnvTSIGSecret    = envNamespace + "TSIG_SECRET"
-	EnvTSIGAlgorithm = envNamespace + "TSIG_ALGORITHM"
-
-	EnvTSIGGSSRealm      = envNamespace + "TSIG_GSS_REALM"
-	EnvTSIGGSSUsername   = envNamespace + "TSIG_GSS_USERNAME"
-	EnvTSIGGSSPassword   = envNamespace + "TSIG_GSS_PASSWORD"
-	EnvTSIGGSSKeytabFile = envNamespace + "TSIG_GSS_KEYTAB_FILE"
-
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
+)
+
+// Environment variables names related to TSIG.
+const (
+	envTSIG = envNamespace + "TSIG_"
+
+	EnvTSIGFile = envTSIG + "FILE"
+
+	EnvTSIGKey       = envTSIG + "KEY"
+	EnvTSIGSecret    = envTSIG + "SECRET"
+	EnvTSIGAlgorithm = envTSIG + "ALGORITHM"
+)
+
+// Environment variables names related to GSS-TSIG.
+const (
+	envTSIGGSS = envTSIG + "GSS_"
+
+	EnvTSIGGSSRealm      = envTSIGGSS + "REALM"
+	EnvTSIGGSSUsername   = envTSIGGSS + "USERNAME"
+	EnvTSIGGSSPassword   = envTSIGGSS + "PASSWORD"
+	EnvTSIGGSSKeytabFile = envTSIGGSS + "KEYTAB_FILE"
 )
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
@@ -322,8 +332,8 @@ func setupTSIG(config *Config) error {
 }
 
 func validateTSIGGSS(config *Config) error {
-	if config.TSIGGSSRealm == "" || config.TSIGGSSUsername == "" {
-		return errors.New("realm, username path are required")
+	if config.TSIGGSSUsername == "" {
+		return errors.New("username is required")
 	}
 
 	if config.TSIGGSSPassword == "" && config.TSIGGSSKeytabFile == "" {

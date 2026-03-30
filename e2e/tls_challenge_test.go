@@ -30,7 +30,7 @@ func TestChallengeTLS_Run_Domains(t *testing.T) {
 		"-s", caDirectory,
 		"-d", testDomain1,
 		"--tls",
-		"--tls.port", ":5001",
+		"--tls.address", ":5001",
 	)
 	require.NoError(t, err)
 }
@@ -45,7 +45,7 @@ func TestChallengeTLS_Run_IP(t *testing.T) {
 		"-s", caDirectory,
 		"-d", "127.0.0.1",
 		"--tls",
-		"--tls.port", ":5001",
+		"--tls.address", ":5001",
 	)
 	require.NoError(t, err)
 }
@@ -62,7 +62,7 @@ func TestChallengeTLS_Run_CSR(t *testing.T) {
 		"-s", caDirectory,
 		"--csr", csrPath,
 		"--tls",
-		"--tls.port", ":5001",
+		"--tls.address", ":5001",
 	)
 	require.NoError(t, err)
 }
@@ -79,7 +79,7 @@ func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
 		"-s", caDirectory,
 		"--csr", csrPath,
 		"--tls",
-		"--tls.port", ":5001",
+		"--tls.address", ":5001",
 	)
 	require.NoError(t, err)
 }
@@ -95,7 +95,7 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 		"-d", testDomain2,
 		"-d", testDomain3,
 		"--tls",
-		"--tls.port", ":5001",
+		"--tls.address", ":5001",
 	)
 	require.NoError(t, err)
 
@@ -118,7 +118,7 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 		"-s", caDirectory,
 		"-d", testDomain4,
 		"--tls",
-		"--tls.port", ":5001",
+		"--tls.address", ":5001",
 	)
 	require.NoError(t, err)
 

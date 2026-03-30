@@ -56,7 +56,7 @@ func TestChallengeHTTP_Run_EAB(t *testing.T) {
 		"-s", caDirectory,
 		"-d", testDomain1,
 		"--http",
-		"--http.port", ":5006",
+		"--http.address", ":5006",
 		"--eab",
 		"--eab.kid", "kid-3",
 		"--eab.hmac", "HjudV5qnbreN-n9WyFSH-t4HXuEx_XFen45zuxY-G1h6fr74V3cUM_dVlwQZBWmc",

@@ -89,7 +89,7 @@ const (
 // Flag names related to HTTP-01 challenge.
 const (
 	FlgHTTP              = "http"
-	FlgHTTPPort          = "http.port"
+	FlgHTTPAddress       = "http.address"
 	FlgHTTPDelay         = "http.delay"
 	FlgHTTPProxyHeader   = "http.proxy-header"
 	FlgHTTPWebroot       = "http.webroot"
@@ -99,9 +99,9 @@ const (
 
 // Flag names related to TLS-ALPN-01 challenge.
 const (
-	FlgTLS      = "tls"
-	FlgTLSPort  = "tls.port"
-	FlgTLSDelay = "tls.delay"
+	FlgTLS        = "tls"
+	FlgTLSAddress = "tls.address"
+	FlgTLSDelay   = "tls.delay"
 )
 
 // Flag names related to DNS-01 challenge.

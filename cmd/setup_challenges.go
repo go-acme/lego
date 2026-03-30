@@ -87,8 +87,8 @@ func createHTTPProvider(cmd *cli.Command) (challenge.Provider, error) {
 
 		return ps, nil
 
-	case cmd.IsSet(flags.FlgHTTPPort):
-		host, port, err := parseAddress(cmd, flags.FlgHTTPPort)
+	case cmd.IsSet(flags.FlgHTTPAddress):
+		host, port, err := parseAddress(cmd, flags.FlgHTTPAddress)
 		if err != nil {
 			return nil, err
 		}
@@ -123,8 +123,8 @@ func setupTLSProvider(cmd *cli.Command, client *lego.Client) error {
 		Network: getNetworkStack(cmd).Network("tcp"),
 	}
 
-	if cmd.IsSet(flags.FlgTLSPort) {
-		host, port, err := parseAddress(cmd, flags.FlgTLSPort)
+	if cmd.IsSet(flags.FlgTLSAddress) {
+		host, port, err := parseAddress(cmd, flags.FlgTLSAddress)
 		if err != nil {
 			return err
 		}

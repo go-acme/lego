@@ -440,18 +440,18 @@ func TestProvider_findZone(t *testing.T) {
 	}{
 		{
 			desc:     "exact match",
-			fqdn:     "example.com",
-			expected: "example.com",
+			fqdn:     "example.com.",
+			expected: "example.com.",
 		},
 		{
 			desc:     "subdomain match",
-			fqdn:     "bar.example.com",
-			expected: "example.com",
+			fqdn:     "bar.example.com.",
+			expected: "example.com.",
 		},
 		{
 			desc:     "subdomain of subdomain match",
-			fqdn:     "bar.foo.example.com",
-			expected: "foo.example.com",
+			fqdn:     "bar.foo.example.com.",
+			expected: "foo.example.com.",
 		},
 	}
 

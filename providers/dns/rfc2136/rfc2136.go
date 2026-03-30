@@ -383,10 +383,10 @@ func (d *DNSProvider) findZone(fqdn string) (string, error) {
 		return dns01.FindZoneByFqdnCustom(fqdn, []string{d.config.Nameserver})
 	}
 
-	for potentialZone := range dns01.UnFqdnDomainsSeq(fqdn) {
+	for potentialZone := range dns01.DomainsSeq(fqdn) {
 		for _, zone := range d.config.Zones {
-			if strings.HasSuffix(potentialZone, zone) {
-				return zone, nil
+			if strings.HasSuffix(potentialZone, dns.Fqdn(zone)) {
+				return dns.Fqdn(zone), nil
 			}
 		}
 	}

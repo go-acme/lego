@@ -369,17 +369,17 @@ func prepareTSIG(config *Config) error {
 }
 
 func (d *DNSProvider) findZone(fqdn string) (string, error) {
-	if len(d.config.Zones) > 0 {
-		for potentialZone := range dns01.UnFqdnDomainsSeq(fqdn) {
-			for _, zone := range d.config.Zones {
-				if strings.HasSuffix(potentialZone, zone) {
-					return zone, nil
-				}
-			}
-		}
-
-		return "", fmt.Errorf("zone for %s not found", fqdn)
+	if len(d.config.Zones) == 0 {
+		return dns01.FindZoneByFqdnCustom(fqdn, []string{d.config.Nameserver})
 	}
 
-	return dns01.FindZoneByFqdnCustom(fqdn, []string{d.config.Nameserver})
+	for potentialZone := range dns01.UnFqdnDomainsSeq(fqdn) {
+		for _, zone := range d.config.Zones {
+			if strings.HasSuffix(potentialZone, zone) {
+				return zone, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("zone for %s not found", fqdn)
 }

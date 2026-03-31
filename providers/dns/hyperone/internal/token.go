@@ -76,10 +76,19 @@ func (payload *Payload) buildToken(signer *jose.Signer) (string, error) {
 func parseRSAKey(pemString string) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode([]byte(pemString))
 
-	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if key, err := x509.ParsePKCS1PrivateKey(block.Bytes); err == nil {
+		return key, nil
+	}
+
+	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse private key: %w", err)
 	}
 
-	return key, nil
+	switch key := key.(type) {
+	case *rsa.PrivateKey:
+		return key, nil
+	default:
+		return nil, fmt.Errorf("found non-RSA private key type: %T", key)
+	}
 }

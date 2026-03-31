@@ -175,11 +175,9 @@ func PEMBlock(data any) *pem.Block {
 	var pemBlock *pem.Block
 
 	switch key := data.(type) {
-	case *ecdsa.PrivateKey:
-		keyBytes, _ := x509.MarshalECPrivateKey(key)
-		pemBlock = &pem.Block{Type: "EC PRIVATE KEY", Bytes: keyBytes}
-	case *rsa.PrivateKey:
-		pemBlock = &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)}
+	case *ecdsa.PrivateKey, *rsa.PrivateKey:
+		keyBytes, _ := x509.MarshalPKCS8PrivateKey(key)
+		pemBlock = &pem.Block{Type: "PRIVATE KEY", Bytes: keyBytes}
 	case *x509.CertificateRequest:
 		pemBlock = &pem.Block{Type: "CERTIFICATE REQUEST", Bytes: key.Raw}
 	case DERCertificateBytes:

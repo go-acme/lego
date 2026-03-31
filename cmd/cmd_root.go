@@ -40,14 +40,23 @@ func CreateCommands() []*cli.Command {
 }
 
 func rootRun(ctx context.Context, cmd *cli.Command) error {
-	filename, err := getConfigurationPath(cmd)
+	cfg, err := loadConfiguration(cmd)
 	if err != nil {
 		return err
 	}
 
+	return root.Process(ctx, cfg)
+}
+
+func loadConfiguration(cmd *cli.Command) (*configuration.Configuration, error) {
+	filename, err := getConfigurationPath(cmd)
+	if err != nil {
+		return nil, err
+	}
+
 	cfg, err := configuration.ReadConfiguration(filename)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	setUpLogger(cmd, cfg.Log)
@@ -56,13 +65,13 @@ func rootRun(ctx context.Context, cmd *cli.Command) error {
 
 	err = configuration.Validate(cfg)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Set effective User Agent.
 	cfg.UserAgent = getUserAgent(cmd, cfg.UserAgent)
 
-	return root.Process(ctx, cfg)
+	return cfg, nil
 }
 
 func getConfigurationPath(cmd *cli.Command) (string, error) {

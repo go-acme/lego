@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1234,
+    "name": "_acme-challenge",
+    "type": "TXT",
+    "ttl": 120,
+    "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+  }
+]

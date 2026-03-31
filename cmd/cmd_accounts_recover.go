@@ -44,6 +44,8 @@ func accountRecover(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("new recoverable account: %w", err)
 	}
 
+	updateAccountOrigin(account)
+
 	client, err := newClient(cmd, account)
 	if err != nil {
 		return fmt.Errorf("set up client: %w", err)

@@ -73,7 +73,6 @@ func obtainForDomains(ctx context.Context, cmd *cli.Command, client *lego.Client
 }
 
 func obtainForCSR(ctx context.Context, cmd *cli.Command, client *lego.Client, certID string, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
-	// read the CSR
 	csr, err := storage.ReadCSRFile(cmd.String(flags.FlgCSR))
 	if err != nil {
 		return err

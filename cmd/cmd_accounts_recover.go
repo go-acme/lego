@@ -34,18 +34,15 @@ func accountRecover(ctx context.Context, cmd *cli.Command) error {
 
 	accountsStorage := storage.NewAccountsStorage(cmd.String(flags.FlgPath))
 
-	privateKey, err := storage.ReadPrivateKeyFile(cmd.String(flags.FlgPrivateKey))
+	account, err := storage.NewRecoverableAccount(
+		cmd.String(flags.FlgServer),
+		cmd.String(flags.FlgEmail),
+		cmd.String(flags.FlgAccountID),
+		cmd.String(flags.FlgPrivateKey),
+	)
 	if err != nil {
-		return fmt.Errorf("load private key: %w", err)
+		return fmt.Errorf("new recoverable account: %w", err)
 	}
-
-	account, err := storage.NewRawAccount(cmd.String(flags.FlgAccountID), cmd.String(flags.FlgEmail), privateKey)
-	if err != nil {
-		return fmt.Errorf("raw account: %w", err)
-	}
-
-	account.Server = cmd.String(flags.FlgServer)
-	account.NeedsRecovery = true
 
 	client, err := newClient(cmd, account)
 	if err != nil {
@@ -59,6 +56,7 @@ func accountRecover(ctx context.Context, cmd *cli.Command) error {
 
 	account.Registration = reg
 
+	// As the user provides the private key, we need to save it.
 	err = accountsStorage.SavePrivateKey(account)
 	if err != nil {
 		return fmt.Errorf("could not save the private key file: %w", err)

@@ -32,17 +32,24 @@ type Account struct {
 	key crypto.Signer
 }
 
-func NewRawAccount(id, email string, key crypto.Signer) (*Account, error) {
-	keyType, err := certcrypto.GetKeyType(key)
+func NewRecoverableAccount(server, email, id, keyPath string) (*Account, error) {
+	privateKey, err := ReadPrivateKeyFile(keyPath)
+	if err != nil {
+		return nil, err
+	}
+
+	keyType, err := certcrypto.GetKeyType(privateKey)
 	if err != nil {
 		return nil, fmt.Errorf("get the key type: %w", err)
 	}
 
 	return &Account{
-		ID:      GetEffectiveAccountID(email, id),
-		Email:   email,
-		KeyType: keyType,
-		key:     key,
+		ID:            GetEffectiveAccountID(email, id),
+		Email:         email,
+		KeyType:       keyType,
+		Server:        server,
+		NeedsRecovery: true,
+		key:           privateKey,
 	}, nil
 }
 

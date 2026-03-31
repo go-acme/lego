@@ -502,7 +502,7 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return regfish.NewDNSProvider()
 	case "regru":
 		return regru.NewDNSProvider()
-	case "rfc2136":
+	case "rfc2136", "dnsupdate":
 		return rfc2136.NewDNSProvider()
 	case "rimuhosting":
 		return rimuhosting.NewDNSProvider()

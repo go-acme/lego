@@ -1,4 +1,4 @@
-// Package rfc2136 implements a DNS provider for solving the DNS-01 challenge using the rfc2136 dynamic update.
+// Package rfc2136 implements a DNS provider for solving the DNS-01 challenge using the RFC2136 dynamic update.
 package rfc2136
 
 import (
@@ -21,10 +21,14 @@ import (
 
 // Environment variables names.
 const (
-	envNamespace = "RFC2136_"
+	envNamespace = "DNSUPDATE_"
 
 	EnvNameserver = envNamespace + "NAMESERVER"
 	EnvDNSTimeout = envNamespace + "DNS_TIMEOUT"
+
+	// Old environment variable name from lego v0.
+	// TODO(ldez): remove in the future.
+	envTimeout = envNamespace + "TIMEOUT"
 
 	EnvZones = envNamespace + "ZONES"
 
@@ -47,7 +51,9 @@ const (
 
 // Environment variables names related to GSS-TSIG.
 const (
-	envTSIGGSS = envTSIG + "GSS_"
+	envSubTSIGGSS = "TSIG_GSS_"
+
+	envTSIGGSS = envNamespace + envSubTSIGGSS
 
 	EnvTSIGGSSRealm      = envTSIGGSS + "REALM"
 	EnvTSIGGSSUsername   = envTSIGGSS + "USERNAME"
@@ -89,12 +95,17 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TSIGAlgorithm:      env.GetOrDefaultString(EnvTSIGAlgorithm, dns.HmacSHA1),
-		DNSTimeout:         env.GetOrDefaultSecond(EnvDNSTimeout, 10*time.Second),
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, env.GetOrDefaultSecond("RFC2136_TIMEOUT", dns01.DefaultPropagationTimeout)),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
+		TSIGAlgorithm: getOrDefaultString(EnvTSIGAlgorithm, dns.HmacSHA1),
+		DNSTimeout:    getOrDefaultSecond(EnvDNSTimeout, 10*time.Second),
+		TTL:           getOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOneWithFallback(
+			EnvPropagationTimeout,
+			dns01.DefaultPropagationTimeout,
+			env.ParseSecond,
+			slices.Concat(altEnvNames(EnvPropagationTimeout), []string{envTimeout})...,
+		),
+		PollingInterval:  getOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		SequenceInterval: getOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 	}
 }
 
@@ -103,35 +114,37 @@ type DNSProvider struct {
 	config *Config
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for rfc2136
+// NewDNSProvider returns a DNSProvider instance configured for dnsupdate (RFC2136)
 // dynamic update. Configured with environment variables:
-// RFC2136_NAMESERVER: Network address in the form "host" or "host:port".
-// RFC2136_TSIG_ALGORITHM: Defaults to hmac-md5.sig-alg.reg.int. (HMAC-MD5).
+// DNSUPDATE_NAMESERVER: Network address in the form "host" or "host:port".
+// DNSUPDATE_TSIG_ALGORITHM: Defaults to hmac-md5.sig-alg.reg.int. (HMAC-MD5).
 // See https://github.com/miekg/dns/blob/master/tsig.go for supported values.
-// RFC2136_TSIG_KEY: Name of the secret key as defined in DNS server configuration.
-// RFC2136_TSIG_SECRET: Secret key payload.
-// RFC2136_PROPAGATION_TIMEOUT: DNS propagation timeout in time.ParseDuration format. (60s)
-// To disable TSIG authentication, leave the RFC2136_TSIG* variables unset.
+// DNSUPDATE_TSIG_KEY: Name of the secret key as defined in DNS server configuration.
+// DNSUPDATE_TSIG_SECRET: Secret key payload.
+// DNSUPDATE_PROPAGATION_TIMEOUT: DNS propagation timeout in time.ParseDuration format. (60s)
+// To disable TSIG authentication, leave the DNSUPDATE_TSIG* variables unset.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvNameserver)
+	values, err := env.GetWithFallback(
+		slices.Concat([]string{EnvNameserver}, altEnvNames(EnvNameserver)),
+	)
 	if err != nil {
-		return nil, fmt.Errorf("rfc2136: %w", err)
+		return nil, fmt.Errorf("dnsupdate: %w", err)
 	}
 
 	config := NewDefaultConfig()
 	config.Nameserver = values[EnvNameserver]
 
-	config.Zones = strings.Split(env.GetOrFile(EnvZones), ",")
+	config.Zones = getEnvStringSlice(EnvZones)
 
-	config.TSIGFile = env.GetOrDefaultString(EnvTSIGFile, "")
+	config.TSIGFile = getEnvString(EnvTSIGFile)
 
-	config.TSIGKey = env.GetOrFile(EnvTSIGKey)
-	config.TSIGSecret = env.GetOrFile(EnvTSIGSecret)
+	config.TSIGKey = getEnvString(EnvTSIGKey)
+	config.TSIGSecret = getEnvString(EnvTSIGSecret)
 
-	config.TSIGGSSRealm = env.GetOrFile(EnvTSIGGSSRealm)
-	config.TSIGGSSUsername = env.GetOrFile(EnvTSIGGSSUsername)
-	config.TSIGGSSPassword = env.GetOrFile(EnvTSIGGSSPassword)
-	config.TSIGGSSKeytabFile = env.GetOrDefaultString(EnvTSIGGSSKeytabFile, "")
+	config.TSIGGSSRealm = getEnvString(EnvTSIGGSSRealm)
+	config.TSIGGSSUsername = getEnvString(EnvTSIGGSSUsername)
+	config.TSIGGSSPassword = getEnvString(EnvTSIGGSSPassword)
+	config.TSIGGSSKeytabFile = getEnvString(EnvTSIGGSSKeytabFile)
 
 	return NewDNSProviderConfig(config)
 }
@@ -139,11 +152,11 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for rfc2136.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("rfc2136: the configuration of the DNS provider is nil")
+		return nil, errors.New("dnsupdate: the configuration of the DNS provider is nil")
 	}
 
 	if config.Nameserver == "" {
-		return nil, errors.New("rfc2136: nameserver missing")
+		return nil, errors.New("dnsupdate: nameserver missing")
 	}
 
 	// Append the default DNS port if none is specified.
@@ -151,13 +164,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		if strings.Contains(err.Error(), "missing port") {
 			config.Nameserver = net.JoinHostPort(config.Nameserver, "53")
 		} else {
-			return nil, fmt.Errorf("rfc2136: %w", err)
+			return nil, fmt.Errorf("dnsupdate: %w", err)
 		}
 	}
 
 	err := setupTSIG(config)
 	if err != nil {
-		return nil, fmt.Errorf("rfc2136: %w", err)
+		return nil, fmt.Errorf("dnsupdate: %w", err)
 	}
 
 	slices.SortFunc(config.Zones, func(a, b string) int {
@@ -185,7 +198,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err := d.changeRecord(actionInsert, info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("rfc2136: failed to insert: %w", err)
+		return fmt.Errorf("dnsupdate: failed to insert: %w", err)
 	}
 
 	return nil
@@ -197,7 +210,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err := d.changeRecord(actionRemove, info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("rfc2136: failed to remove: %w", err)
+		return fmt.Errorf("dnsupdate: failed to remove: %w", err)
 	}
 
 	return nil

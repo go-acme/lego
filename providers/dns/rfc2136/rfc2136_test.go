@@ -57,7 +57,7 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvNameserver: "",
 			},
-			expected: "rfc2136: some credentials information are missing: RFC2136_NAMESERVER",
+			expected: "dnsupdate: some credentials information are missing: DNSUPDATE_NAMESERVER",
 		},
 		{
 			desc: "invalid algorithm",
@@ -67,7 +67,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvTSIGSecret:    "",
 				EnvTSIGAlgorithm: "foo",
 			},
-			expected: "rfc2136: unsupported TSIG algorithm: foo.",
+			expected: "dnsupdate: unsupported TSIG algorithm: foo.",
 		},
 		{
 			desc: "valid TSIG file",
@@ -82,7 +82,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvNameserver: "example.com",
 				EnvTSIGFile:   "./internal/fixtures/invalid_key.conf",
 			},
-			expected: "rfc2136: read TSIG file ./internal/fixtures/invalid_key.conf: invalid key line: key {",
+			expected: "dnsupdate: read TSIG file ./internal/fixtures/invalid_key.conf: invalid key line: key {",
 		},
 		{
 			desc: "TSIG GSS: password and keytab are mutually exclusive",
@@ -94,7 +94,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvTSIGGSSPassword:   "secret",
 				EnvTSIGGSSKeytabFile: "/path/to/my.keytab",
 			},
-			expected: "rfc2136: TSIG GSS: only one of the password and keytab paths can be set",
+			expected: "dnsupdate: TSIG GSS: only one of the password and keytab paths can be set",
 		},
 		{
 			desc: "TSIG GSS: success with password",
@@ -161,13 +161,13 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing nameserver",
-			expected: "rfc2136: nameserver missing",
+			expected: "dnsupdate: nameserver missing",
 		},
 		{
 			desc:          "invalid algorithm",
 			nameserver:    "example.com",
 			tsigAlgorithm: "foo",
-			expected:      "rfc2136: unsupported TSIG algorithm: foo.",
+			expected:      "dnsupdate: unsupported TSIG algorithm: foo.",
 		},
 		{
 			desc:       "valid TSIG file",
@@ -178,7 +178,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:       "invalid TSIG file",
 			nameserver: "example.com",
 			tsigFile:   "./internal/fixtures/invalid_key.conf",
-			expected:   "rfc2136: read TSIG file ./internal/fixtures/invalid_key.conf: invalid key line: key {",
+			expected:   "dnsupdate: read TSIG file ./internal/fixtures/invalid_key.conf: invalid key line: key {",
 		},
 		{
 			desc:              "TSIG GSS: password and keytab are mutually exclusive",
@@ -188,7 +188,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			tsigGSSUsername:   "user",
 			tsigGSSPassword:   "secret",
 			tsigGSSKeytabPath: "/path/to/my.keytab",
-			expected:          "rfc2136: TSIG GSS: only one of the password and keytab paths can be set",
+			expected:          "dnsupdate: TSIG GSS: only one of the password and keytab paths can be set",
 		},
 		{
 			desc:            "TSIG GSS: success with password",
@@ -398,7 +398,7 @@ func TestDNSProvider_Present_tsig_error(t *testing.T) {
 
 	err = provider.Present(fakeDomain, "", fakeKeyAuth)
 	require.Error(t, err)
-	require.EqualError(t, err, "rfc2136: failed to insert: DNS update failed: server replied: NOTZONE")
+	require.EqualError(t, err, "dnsupdate: failed to insert: DNS update failed: server replied: NOTZONE")
 }
 
 func handleTSIG(w dns.ResponseWriter, req *dns.Msg) {

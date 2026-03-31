@@ -260,24 +260,13 @@ func (s *AccountsStorage) savePrivateKey(server *url.URL, effectiveAccountID str
 		return fmt.Errorf("could not check/create the directory %q for the account (accountID: %s): %w", keysPath, effectiveAccountID, err)
 	}
 
-	certOut, err := os.Create(accKeyPath)
+	err = savePrivateKey(accKeyPath, privateKey)
 	if err != nil {
-		return fmt.Errorf("private key file creation: (accountID: %s): %w", effectiveAccountID, err)
+		return fmt.Errorf("save the private key (accountID: %s): %w", effectiveAccountID, err)
 	}
 
-	defer func() {
-		_ = certOut.Close()
-
-		// TODO(ldez): debug level?
-		log.Info("Private key saved.", slog.String("filepath", accKeyPath))
-	}()
-
-	pemKey := certcrypto.PEMBlock(privateKey)
-
-	err = pem.Encode(certOut, pemKey)
-	if err != nil {
-		return fmt.Errorf("private key PEM encoding: (accountID: %s): %w", effectiveAccountID, err)
-	}
+	// TODO(ldez): debug level?
+	log.Info("Private key saved.", slog.String("filepath", accKeyPath))
 
 	return nil
 }
@@ -329,6 +318,22 @@ func (s *AccountsStorage) getAccountFilePath(server *url.URL, effectiveAccountID
 // getRootUserPath returns the path to the root folder for an account.
 func (s *AccountsStorage) getRootUserPath(server *url.URL, effectiveAccountID string) string {
 	return filepath.Join(s.rootPath, sanitizeHost(server), effectiveAccountID)
+}
+
+func savePrivateKey(filename string, privateKey crypto.Signer) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("file creation: %w", err)
+	}
+
+	defer func() { _ = file.Close() }()
+
+	err = pem.Encode(file, certcrypto.PEMBlock(privateKey))
+	if err != nil {
+		return fmt.Errorf("PEM encoding: %w", err)
+	}
+
+	return nil
 }
 
 func sanitizeHost(uri *url.URL) string {

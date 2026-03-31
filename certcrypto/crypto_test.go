@@ -138,7 +138,7 @@ func TestPEMEncode(t *testing.T) {
 
 	p, rest := pem.Decode(data)
 
-	assert.Equal(t, "RSA PRIVATE KEY", p.Type)
+	assert.Equal(t, "PRIVATE KEY", p.Type)
 	assert.Empty(t, rest)
 	assert.Empty(t, p.Headers)
 }

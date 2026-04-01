@@ -665,9 +665,9 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "BLUECATV2_CONFIG_NAME":	Configuration name`)
 		ew.writeln(`	- "BLUECATV2_PASSWORD":	API password`)
+		ew.writeln(`	- "BLUECATV2_SERVER_URL":	The server URL: it should have a scheme, hostname, and port (if required) of the authoritative Bluecat BAM serve`)
 		ew.writeln(`	- "BLUECATV2_USERNAME":	API username`)
 		ew.writeln(`	- "BLUECATV2_VIEW_NAME":	DNS View Name`)
-		ew.writeln(`	- "BLUECAT_SERVER_URL":	The server URL: it should have a scheme, hostname, and port (if required) of the authoritative Bluecat BAM serve`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

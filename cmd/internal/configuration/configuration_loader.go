@@ -1,7 +1,6 @@
 package configuration
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -12,6 +11,12 @@ import (
 	"github.com/go-acme/lego/v5/log"
 	"gopkg.in/yaml.v3"
 )
+
+type FileNotFoundError struct{}
+
+func (f *FileNotFoundError) Error() string {
+	return "no configuration file found"
+}
 
 // ReadConfiguration reads the configuration file and returns a Configuration struct.
 func ReadConfiguration(filename string) (*Configuration, error) {
@@ -56,7 +61,7 @@ func FindDefaultConfigurationFile() (string, error) {
 		return filepath.Join(dir, filename), nil
 	}
 
-	return "", errors.New("no configuration file found")
+	return "", &FileNotFoundError{}
 }
 
 func exists(path string) (bool, error) {

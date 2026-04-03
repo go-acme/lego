@@ -129,6 +129,7 @@ func CreateRevokeFlags() []cli.Flag {
 				" 9 (privilegeWithdrawn), or 10 (aACompromise).",
 			Value: acme.CRLReasonUnspecified,
 		},
+		createConfigFlag(),
 	}
 
 	flags = append(flags, createAccountFlags()...)

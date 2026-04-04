@@ -26,6 +26,9 @@ const (
 	EnvCompartmentOCID = envNamespace + "COMPARTMENT_OCID"
 	EnvRegion          = envNamespace + "REGION"
 
+	EnvProfile    = envNamespace + "PROFILE"
+	EnvConfigFile = envNamespace + "CONFIG_FILE"
+
 	envPrivKey           = envNamespace + "PRIVKEY"
 	EnvPrivKeyFile       = envPrivKey + "_FILE"
 	EnvPrivKeyPass       = envPrivKey + "_PASS"
@@ -108,6 +111,16 @@ func NewDNSProvider() (*DNSProvider, error) {
 		}
 
 		config.OCIConfigProvider = configurationProvider
+
+	case string(common.UserPrincipal):
+		values, err := env.Get(EnvProfile)
+		if err != nil {
+			return nil, fmt.Errorf("oraclecloud: %w", err)
+		}
+
+		configFile := env.GetOrDefaultString(EnvConfigFile, "")
+
+		config.OCIConfigProvider = common.CustomProfileSessionTokenConfigProvider(configFile, values[EnvProfile])
 
 	default:
 		values, err := env.Get(EnvCompartmentOCID)

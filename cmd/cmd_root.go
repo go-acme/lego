@@ -6,6 +6,7 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/root"
+	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/urfave/cli/v3"
 )
 
@@ -45,7 +46,14 @@ func rootRun(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	return root.Process(ctx, cfg)
+	err = root.Process(ctx, cfg)
+	if err != nil {
+		return err
+	}
+
+	store := storage.NewConfigurationStorage(cfg.Storage)
+
+	return store.Backup(cfg)
 }
 
 func loadConfiguration(cmd *cli.Command) (*configuration.Configuration, error) {

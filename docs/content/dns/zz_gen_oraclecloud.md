@@ -27,6 +27,7 @@ Here is an example bash command using the Oracle Cloud provider:
 
 ```bash
 # Using API Key authentication:
+
 OCI_PRIVATE_KEY_PATH="~/.oci/oci_api_key.pem" \
 OCI_PRIVATE_KEY_PASSWORD="secret" \
 OCI_TENANCY_OCID="ocid1.tenancy.oc1..secret" \
@@ -38,8 +39,15 @@ lego --dns oraclecloud -d '*.example.com' -d example.com run
 
 # Using Instance Principal authentication (when running on OCI compute instances):
 # https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
+
 OCI_AUTH_TYPE="instance_principal" \
 OCI_COMPARTMENT_OCID="ocid1.tenancy.oc1..secret" \
+lego --dns oraclecloud -d '*.example.com' -d example.com run
+
+# Using profile session token:
+
+OCI_AUTH_TYPE="user_principal" \
+OCI_PROFILE="xxx" \
 lego --dns oraclecloud -d '*.example.com' -d example.com run
 ```
 
@@ -51,12 +59,12 @@ lego --dns oraclecloud -d '*.example.com' -d example.com run
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `OCI_COMPARTMENT_OCID` | Compartment OCID |
-| `OCI_FINGERPRINT` | Public key fingerprint (ignored if `OCI_AUTH_TYPE=instance_principal`) |
-| `OCI_PRIVATE_KEY_PASSWORD` | Private key password (ignored if `OCI_AUTH_TYPE=instance_principal`) |
-| `OCI_PRIVATE_KEY_PATH` | Private key file (ignored if `OCI_AUTH_TYPE=instance_principal`) |
-| `OCI_REGION` | Region (it can be empty if `OCI_AUTH_TYPE=instance_principal`). |
-| `OCI_TENANCY_OCID` | Tenancy OCID (ignored if `OCI_AUTH_TYPE=instance_principal`) |
-| `OCI_USER_OCID` | User OCID (ignored if `OCI_AUTH_TYPE=instance_principal`) |
+| `OCI_FINGERPRINT` | Public key fingerprint (ignored if `OCI_AUTH_TYPE` is not empty) |
+| `OCI_PRIVATE_KEY_PASSWORD` | Private key password (ignored if `OCI_AUTH_TYPE` is not empty) |
+| `OCI_PRIVATE_KEY_PATH` | Private key file (ignored if `OCI_AUTH_TYPE` is not empty) |
+| `OCI_REGION` | Region (it can be empty if `OCI_AUTH_TYPE` is not empty). |
+| `OCI_TENANCY_OCID` | Tenancy OCID (ignored if `OCI_AUTH_TYPE` is not empty) |
+| `OCI_USER_OCID` | User OCID (ignored if `OCI_AUTH_TYPE` is not empty) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
@@ -66,9 +74,11 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `OCI_AUTH_TYPE` | Authorization type. Possible values: 'instance_principal', ''  (Default: '') |
+| `OCI_AUTH_TYPE` | Authorization type. Possible values: 'instance_principal', 'user_principal', ''. (Default: '') |
+| `OCI_CONFIG_FILE` | Path to the configuration file. (only for `OCI_AUTH_TYPE=user_principal`) |
 | `OCI_HTTP_TIMEOUT` | API request timeout in seconds (Default: 60) |
 | `OCI_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `OCI_PROFILE` | Profile name. (only for `OCI_AUTH_TYPE=user_principal`) |
 | `OCI_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
 | `OCI_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
 | `TF_VAR_fingerprint` | Alias on `OCI_FINGERPRINT` |

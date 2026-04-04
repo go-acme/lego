@@ -1,0 +1,23 @@
+Name = "Online.net"
+Description = ''''''
+URL = "https://online.net/"
+Code = "onlinenet"
+Since = "v4.34.0"
+
+Example = '''
+ONLINENET_API_TOKEN="xxx" \
+lego --dns onlinenet -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    ONLINENET_API_TOKEN = "API token"
+  [Configuration.Additional]
+    ONLINENET_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    ONLINENET_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    ONLINENET_SEQUENCE_INTERVAL = "Time between sequential requests in seconds (Default: 60)"
+    ONLINENET_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    ONLINENET_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://console.online.net/en/api/"

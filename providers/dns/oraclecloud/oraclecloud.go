@@ -118,6 +118,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 			return nil, fmt.Errorf("oraclecloud: %w", err)
 		}
 
+		config.CompartmentID = values[EnvCompartmentOCID]
+
 		configFile := env.GetOrDefaultString(EnvConfigFile, "")
 
 		config.OCIConfigProvider = common.CustomProfileSessionTokenConfigProvider(configFile, values[EnvProfile])

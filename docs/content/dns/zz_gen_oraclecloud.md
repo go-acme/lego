@@ -48,6 +48,7 @@ lego --dns oraclecloud -d '*.example.com' -d example.com run
 
 OCI_AUTH_TYPE="user_principal" \
 OCI_PROFILE="xxx" \
+OCI_COMPARTMENT_OCID="ocid1.tenancy.oc1..secret" \
 lego --dns oraclecloud -d '*.example.com' -d example.com run
 ```
 

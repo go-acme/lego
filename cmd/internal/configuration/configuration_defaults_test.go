@@ -15,14 +15,9 @@ func TestApplyDefaults(t *testing.T) {
 	ApplyDefaults(cfg)
 
 	expected := &Configuration{
-		Storage: defaultLegoDirectory,
-		Servers: map[string]*Server{},
-		Accounts: map[string]*Account{
-			DefaultAccountID: {
-				Server:  lego.DirectoryURLLetsEncrypt,
-				KeyType: certcrypto.EC256,
-			},
-		},
+		Storage:      defaultLegoDirectory,
+		Servers:      map[string]*Server{},
+		Accounts:     map[string]*Account{},
 		Challenges:   map[string]*Challenge{},
 		Certificates: map[string]*Certificate{},
 	}
@@ -215,11 +210,18 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 		{
 			desc: "empty certificate",
 			cfg: &Configuration{
+				Accounts: map[string]*Account{},
 				Certificates: map[string]*Certificate{
 					"a": {},
 				},
 			},
 			expected: &Configuration{
+				Accounts: map[string]*Account{
+					DefaultAccountID: {
+						Server:  lego.DirectoryURLLetsEncrypt,
+						KeyType: certcrypto.EC256,
+					},
+				},
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account: DefaultAccountID,
@@ -304,6 +306,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 		{
 			desc: "explicit renew",
 			cfg: &Configuration{
+				Accounts: map[string]*Account{},
 				Certificates: map[string]*Certificate{
 					"a": {
 						Renew: &RenewConfiguration{
@@ -313,6 +316,12 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				},
 			},
 			expected: &Configuration{
+				Accounts: map[string]*Account{
+					DefaultAccountID: {
+						Server:  lego.DirectoryURLLetsEncrypt,
+						KeyType: certcrypto.EC256,
+					},
+				},
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account: DefaultAccountID,
@@ -328,6 +337,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 		{
 			desc: "explicit ari",
 			cfg: &Configuration{
+				Accounts: map[string]*Account{},
 				Certificates: map[string]*Certificate{
 					"a": {
 						Renew: &RenewConfiguration{
@@ -339,6 +349,12 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				},
 			},
 			expected: &Configuration{
+				Accounts: map[string]*Account{
+					DefaultAccountID: {
+						Server:  lego.DirectoryURLLetsEncrypt,
+						KeyType: certcrypto.EC256,
+					},
+				},
 				Certificates: map[string]*Certificate{
 					"a": {
 						Account: DefaultAccountID,
@@ -355,6 +371,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 		{
 			desc: "default HTTP challenge",
 			cfg: &Configuration{
+				Accounts:   map[string]*Account{},
 				Challenges: map[string]*Challenge{},
 				Certificates: map[string]*Certificate{
 					"a": {
@@ -363,6 +380,12 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				},
 			},
 			expected: &Configuration{
+				Accounts: map[string]*Account{
+					DefaultAccountID: {
+						Server:  lego.DirectoryURLLetsEncrypt,
+						KeyType: certcrypto.EC256,
+					},
+				},
 				Challenges: map[string]*Challenge{
 					defaultHTTP01: {HTTP: &HTTPChallenge{
 						Address: defaultHTTPAddress,
@@ -383,6 +406,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 		{
 			desc: "default TLS challenge",
 			cfg: &Configuration{
+				Accounts:   map[string]*Account{},
 				Challenges: map[string]*Challenge{},
 				Certificates: map[string]*Certificate{
 					"a": {
@@ -391,6 +415,12 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				},
 			},
 			expected: &Configuration{
+				Accounts: map[string]*Account{
+					DefaultAccountID: {
+						Server:  lego.DirectoryURLLetsEncrypt,
+						KeyType: certcrypto.EC256,
+					},
+				},
 				Challenges: map[string]*Challenge{
 					defaultTLSALPN01: {TLS: &TLSChallenge{
 						Address: defaultTLSAddress,
@@ -411,6 +441,7 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 		{
 			desc: "default if only one challenge",
 			cfg: &Configuration{
+				Accounts: map[string]*Account{},
 				Challenges: map[string]*Challenge{
 					"chlgA": {DNS: &DNSChallenge{Provider: "foo"}},
 				},
@@ -419,6 +450,12 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 				},
 			},
 			expected: &Configuration{
+				Accounts: map[string]*Account{
+					DefaultAccountID: {
+						Server:  lego.DirectoryURLLetsEncrypt,
+						KeyType: certcrypto.EC256,
+					},
+				},
 				Challenges: map[string]*Challenge{
 					"chlgA": {DNS: &DNSChallenge{Provider: "foo"}},
 				},

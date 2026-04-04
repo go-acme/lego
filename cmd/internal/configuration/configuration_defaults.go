@@ -46,12 +46,6 @@ func ApplyDefaults(cfg *Configuration) {
 	applyAccountsDefaults(cfg)
 	applyChallengesDefaults(cfg)
 	applyCertificatesDefaults(cfg)
-
-	// Must be last, because the certificate definition needs to know if there is an explicit account.
-	cfg.Accounts[DefaultAccountID] = &Account{
-		Server:  lego.DirectoryURLLetsEncrypt,
-		KeyType: certcrypto.EC256,
-	}
 }
 
 func applyServersDefaults(cfg *Configuration) {
@@ -92,6 +86,10 @@ func applyCertificatesDefaults(cfg *Configuration) {
 	for _, cert := range cfg.Certificates {
 		if cert.Account == "" {
 			cert.Account = defaultAccount
+		}
+
+		if cert.Account == DefaultAccountID {
+			setDefaultAccount(cfg)
 		}
 
 		if cert.KeyType == "" {
@@ -163,6 +161,17 @@ func setDefaultDNSPersist01(cfg *Configuration) {
 	}
 
 	cfg.Challenges[defaultDNSPersist01] = &Challenge{DNSPersist: &DNSPersistChallenge{}}
+}
+
+func setDefaultAccount(cfg *Configuration) {
+	if _, ok := cfg.Accounts[DefaultAccountID]; ok {
+		return
+	}
+
+	cfg.Accounts[DefaultAccountID] = &Account{
+		Server:  lego.DirectoryURLLetsEncrypt,
+		KeyType: certcrypto.EC256,
+	}
 }
 
 func getDefaultAccountID(cfg *Configuration) string {

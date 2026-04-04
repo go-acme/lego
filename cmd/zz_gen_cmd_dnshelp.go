@@ -150,6 +150,7 @@ func allDNSCodes() string {
 		"ns1",
 		"octenium",
 		"onecloudru",
+		"onlinenet",
 		"oraclecloud",
 		"otc",
 		"ovh",
@@ -3149,6 +3150,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/onecloudru`)
+
+	case "onlinenet":
+		// generated from: providers/dns/onlinenet/onlinenet.toml
+		ew.writeln(`Configuration for Online.net.`)
+		ew.writeln(`Code:	'onlinenet'`)
+		ew.writeln(`Since:	'v4.34.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ONLINENET_API_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ONLINENET_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "ONLINENET_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "ONLINENET_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "ONLINENET_SEQUENCE_INTERVAL":	Time between sequential requests in seconds (Default: 60)`)
+		ew.writeln(`	- "ONLINENET_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/onlinenet`)
 
 	case "oraclecloud":
 		// generated from: providers/dns/oraclecloud/oraclecloud.toml

@@ -104,7 +104,7 @@ type Certificate struct {
 
 	Renew *RenewConfiguration `yaml:"renew,omitempty"`
 
-	PFX *PFX `json:"pfx,omitempty"`
+	PFX *PFX `yaml:"pfx,omitempty"`
 }
 
 type RenewConfiguration struct {
@@ -125,8 +125,8 @@ type ARIConfiguration struct {
 }
 
 type PFX struct {
-	Password string `json:"password,omitempty"`
-	Format   string `json:"format,omitempty"`
+	Password string `yaml:"password,omitempty"`
+	Format   string `yaml:"format,omitempty"`
 }
 
 type Hooks struct {
@@ -136,8 +136,8 @@ type Hooks struct {
 }
 
 type Hook struct {
-	Cmd     string        `json:"command,omitempty"`
-	Timeout time.Duration `json:"timeout,omitempty"`
+	Cmd     string        `yaml:"command,omitempty"`
+	Timeout time.Duration `yaml:"timeout,omitempty"`
 }
 
 type Log struct {

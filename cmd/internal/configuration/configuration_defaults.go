@@ -138,25 +138,31 @@ func applyRenewDefaults(cert *Certificate) {
 }
 
 func setDefaultHTTP01(cfg *Configuration) {
-	if _, ok := cfg.Challenges[defaultHTTP01]; !ok {
-		cfg.Challenges[defaultHTTP01] = &Challenge{HTTP: &HTTPChallenge{
-			Address: defaultHTTPAddress,
-		}}
+	if _, ok := cfg.Challenges[defaultHTTP01]; ok {
+		return
 	}
+
+	cfg.Challenges[defaultHTTP01] = &Challenge{HTTP: &HTTPChallenge{
+		Address: defaultHTTPAddress,
+	}}
 }
 
 func setDefaultTLSALPN01(cfg *Configuration) {
-	if _, ok := cfg.Challenges[defaultTLSALPN01]; !ok {
-		cfg.Challenges[defaultTLSALPN01] = &Challenge{TLS: &TLSChallenge{
-			Address: defaultTLSAddress,
-		}}
+	if _, ok := cfg.Challenges[defaultTLSALPN01]; ok {
+		return
 	}
+
+	cfg.Challenges[defaultTLSALPN01] = &Challenge{TLS: &TLSChallenge{
+		Address: defaultTLSAddress,
+	}}
 }
 
 func setDefaultDNSPersist01(cfg *Configuration) {
-	if _, ok := cfg.Challenges[defaultDNSPersist01]; !ok {
-		cfg.Challenges[defaultDNSPersist01] = &Challenge{DNSPersist: &DNSPersistChallenge{}}
+	if _, ok := cfg.Challenges[defaultDNSPersist01]; ok {
+		return
 	}
+
+	cfg.Challenges[defaultDNSPersist01] = &Challenge{DNSPersist: &DNSPersistChallenge{}}
 }
 
 func getDefaultAccountID(cfg *Configuration) string {

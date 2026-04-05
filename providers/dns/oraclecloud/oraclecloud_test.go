@@ -37,7 +37,10 @@ var envTest = tester.NewEnvTest(
 	EnvUserOCID,
 	EnvPubKeyFingerprint,
 	EnvRegion,
-	EnvCompartmentOCID).
+	EnvCompartmentOCID,
+	EnvProfile,
+	EnvConfigFile,
+).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -263,6 +266,78 @@ func TestNewDNSProvider_instance_principal(t *testing.T) {
 			maps.Copy(envVars, test.envVars)
 
 			envTest.Apply(envVars)
+
+			p, err := NewDNSProvider()
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProvider_user_principal(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				EnvAuthType:        "user_principal",
+				EnvCompartmentOCID: "123",
+				EnvProfile:         "a",
+				EnvConfigFile:      "./fixtures/config.ini",
+			},
+		},
+		{
+			desc: "missing CompartmentID",
+			envVars: map[string]string{
+				EnvAuthType:        "user_principal",
+				EnvCompartmentOCID: "",
+				EnvProfile:         "a",
+				EnvConfigFile:      "./fixtures/config.ini",
+			},
+			expected: "oraclecloud: some credentials information are missing: OCI_COMPARTMENT_OCID",
+		},
+		{
+			desc: "missing profile",
+			envVars: map[string]string{
+				EnvAuthType:        "user_principal",
+				EnvCompartmentOCID: "123",
+				EnvProfile:         "",
+				EnvConfigFile:      "./fixtures/config.ini",
+			},
+			expected: "oraclecloud: some credentials information are missing: OCI_PROFILE",
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				EnvAuthType:        "user_principal",
+				EnvCompartmentOCID: "",
+				EnvProfile:         "",
+				EnvConfigFile:      "./fixtures/config.ini",
+			},
+			expected: "oraclecloud: some credentials information are missing: OCI_COMPARTMENT_OCID,OCI_PROFILE",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer func() {
+				envTest.RestoreEnv()
+			}()
+
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 

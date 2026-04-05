@@ -48,21 +48,21 @@ func validateCertificates(cfg *Configuration) error {
 
 		err := validateCertificate(cert)
 		if err != nil {
-			return fmt.Errorf("%s: %w", name, err)
+			return fmt.Errorf("certificate '%s': %w", name, err)
 		}
 
 		err = existInMap(cfg.Accounts, cert.Account)
 		if err != nil {
-			return fmt.Errorf("%s: account: %w", name, err)
+			return fmt.Errorf("certificate '%s': account: %w", name, err)
 		}
 
 		err = existInMap(cfg.Challenges, cert.Challenge)
 		if err != nil {
-			return fmt.Errorf("%s: challenge: %w", name, err)
+			return fmt.Errorf("certificate '%s': challenge: %w", name, err)
 		}
 
 		if cert.PFX != nil && !certcrypto.IsPKCS12Supported(cert.PFX.Format) {
-			return fmt.Errorf("%s: invalid PFX format: %s", name, cert.PFX.Format)
+			return fmt.Errorf("certificate '%s': invalid PFX format: %s", name, cert.PFX.Format)
 		}
 	}
 
@@ -105,7 +105,7 @@ func validateChallenges(cfg *Configuration) error {
 
 		err := validateChallenge(challenge)
 		if err != nil {
-			return fmt.Errorf("%s: %w", name, err)
+			return fmt.Errorf("challenge '%s': %w", name, err)
 		}
 	}
 

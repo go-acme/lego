@@ -55,7 +55,7 @@ func Test_validateChallenges(t *testing.T) {
 					"a": {},
 				},
 			},
-			expected: "a: at least one challenge type must be defined",
+			expected: "challenge 'a': at least one challenge type must be defined",
 		},
 		{
 			desc: "DNS challenge without a provider",
@@ -66,7 +66,7 @@ func Test_validateChallenges(t *testing.T) {
 					},
 				},
 			},
-			expected: "a: a provider is required",
+			expected: "challenge 'a': a provider is required",
 		},
 		{
 			desc: "DNS challenge propagation: wait and DisableAuthoritativeNameservers",
@@ -83,7 +83,7 @@ func Test_validateChallenges(t *testing.T) {
 					},
 				},
 			},
-			expected: "a: 'wait' and 'disableAuthoritativeNameservers' are mutually exclusive",
+			expected: "challenge 'a': 'wait' and 'disableAuthoritativeNameservers' are mutually exclusive",
 		},
 		{
 			desc: "DNS challenge propagation: wait and DisableRecursiveNameservers",
@@ -100,7 +100,7 @@ func Test_validateChallenges(t *testing.T) {
 					},
 				},
 			},
-			expected: "a: 'wait' and 'disableRecursiveNameservers' are mutually exclusive",
+			expected: "challenge 'a': 'wait' and 'disableRecursiveNameservers' are mutually exclusive",
 		},
 		{
 			desc: "DNS persist challenge propagation: wait and DisableAuthoritativeNameservers",
@@ -116,7 +116,7 @@ func Test_validateChallenges(t *testing.T) {
 					},
 				},
 			},
-			expected: "a: 'wait' and 'disableAuthoritativeNameservers' are mutually exclusive",
+			expected: "challenge 'a': 'wait' and 'disableAuthoritativeNameservers' are mutually exclusive",
 		},
 		{
 			desc: "DNS persist challenge propagation: wait and DisableRecursiveNameservers",
@@ -132,7 +132,7 @@ func Test_validateChallenges(t *testing.T) {
 					},
 				},
 			},
-			expected: "a: 'wait' and 'disableRecursiveNameservers' are mutually exclusive",
+			expected: "challenge 'a': 'wait' and 'disableRecursiveNameservers' are mutually exclusive",
 		},
 	}
 
@@ -174,7 +174,7 @@ func Test_validateCertificates(t *testing.T) {
 					"a": {},
 				},
 			},
-			expected: "a: at least one domain or CSR must be provided",
+			expected: "certificate 'a': at least one domain or CSR must be provided",
 		},
 		{
 			desc: "domain and CSR",
@@ -186,7 +186,7 @@ func Test_validateCertificates(t *testing.T) {
 					},
 				},
 			},
-			expected: "a: domains and CSR are mutually exclusive",
+			expected: "certificate 'a': domains and CSR are mutually exclusive",
 		},
 		{
 			desc: "missing account",
@@ -195,7 +195,7 @@ func Test_validateCertificates(t *testing.T) {
 					"a": {Domains: []string{"example.com"}},
 				},
 			},
-			expected: "a: an account is required",
+			expected: "certificate 'a': an account is required",
 		},
 		{
 			desc: "missing challenge",
@@ -207,7 +207,7 @@ func Test_validateCertificates(t *testing.T) {
 					},
 				},
 			},
-			expected: "a: a challenge is required",
+			expected: "certificate 'a': a challenge is required",
 		},
 		{
 			desc: "not existing account",
@@ -221,7 +221,7 @@ func Test_validateCertificates(t *testing.T) {
 					},
 				},
 			},
-			expected: "a: account: 'acc' not found",
+			expected: "certificate 'a': account: 'acc' not found",
 		},
 		{
 			desc: "not existing challenge",
@@ -238,7 +238,7 @@ func Test_validateCertificates(t *testing.T) {
 					},
 				},
 			},
-			expected: "a: challenge: 'chlg' not found",
+			expected: "certificate 'a': challenge: 'chlg' not found",
 		},
 		{
 			desc: "unsupported key type",
@@ -258,7 +258,7 @@ func Test_validateCertificates(t *testing.T) {
 					},
 				},
 			},
-			expected: "a: unsupported key type: foo",
+			expected: "certificate 'a': unsupported key type: foo",
 		},
 	}
 

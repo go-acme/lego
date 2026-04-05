@@ -37,7 +37,7 @@ func TestReadTSIGFile(t *testing.T) {
 		},
 		{
 			desc:     "ignore missing algorithm",
-			filename: "mising_algo.conf",
+			filename: "missing_algo.conf",
 			expected: &Key{Name: "example.com", Secret: "TCG5A6/lOHUGbW0e/9RYYbzWDFMlj1pIxCvybLBayBg="},
 		},
 		{

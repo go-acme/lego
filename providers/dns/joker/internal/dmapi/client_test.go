@@ -199,7 +199,7 @@ func Test_RemoveTxtEntryFromZone(t *testing.T) {
 			modified: false,
 		},
 		{
-			desc:     "zone with only clenup entry",
+			desc:     "zone with only cleanup entry",
 			input:    "_acme-challenge TXT 0  \"old \" 120",
 			expected: "",
 			modified: true,

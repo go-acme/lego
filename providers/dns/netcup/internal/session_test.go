@@ -37,17 +37,17 @@ func TestClient_Login_errors(t *testing.T) {
 		{
 			desc:     "HTTP error",
 			handler:  servermock.Noop().WithStatusCode(http.StatusInternalServerError),
-			expected: `loging error: unexpected status code: [status code: 500] body: `,
+			expected: `logging error: unexpected status code: [status code: 500] body: `,
 		},
 		{
 			desc:     "API error",
 			handler:  servermock.ResponseFromFixture("login_error.json"),
-			expected: `loging error: an error occurred during the action login: [Status=error, StatusCode=4013, ShortMessage=Validation Error., LongMessage=Message is empty.]`,
+			expected: `logging error: an error occurred during the action login: [Status=error, StatusCode=4013, ShortMessage=Validation Error., LongMessage=Message is empty.]`,
 		},
 		{
 			desc:     "responsedata marshaling error",
 			handler:  servermock.ResponseFromFixture("login_error_unmarshal.json"),
-			expected: `loging error: unable to unmarshal response: [status code: 200] body: "" error: json: cannot unmarshal string into Go value of type internal.LoginResponse`,
+			expected: `logging error: unable to unmarshal response: [status code: 200] body: "" error: json: cannot unmarshal string into Go value of type internal.LoginResponse`,
 		},
 	}
 

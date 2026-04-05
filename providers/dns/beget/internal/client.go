@@ -81,7 +81,7 @@ func (c *Client) doRequest(ctx context.Context, data any, fragments ...string) (
 
 	inputData, err := json.Marshal(data)
 	if err != nil {
-		return nil, fmt.Errorf("failed to mashall input data: %w", err)
+		return nil, fmt.Errorf("failed to marshall input data: %w", err)
 	}
 
 	query := endpoint.Query()

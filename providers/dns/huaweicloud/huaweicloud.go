@@ -103,7 +103,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		WithSk(config.SecretAccessKey).
 		SafeBuild()
 	if err != nil {
-		return nil, fmt.Errorf("huaweicloud: crendential build: %w", err)
+		return nil, fmt.Errorf("huaweicloud: credential build: %w", err)
 	}
 
 	region, err := hwregion.SafeValueOf(config.Region)

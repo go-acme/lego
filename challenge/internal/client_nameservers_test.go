@@ -136,19 +136,19 @@ func Test_getNameservers(t *testing.T) {
 		},
 		{
 			desc:     "with nonexistent resolv.conf",
-			path:     "fixtures/resolv.conf.nonexistant",
+			path:     "fixtures/resolv.conf.nonexistent",
 			stack:    challenge.DualStack,
 			expected: []string{"1.0.0.1:53", "1.1.1.1:53", "[2606:4700:4700::1001]:53", "[2606:4700:4700::1111]:53"},
 		},
 		{
 			desc:     "default with IPv4Only",
-			path:     "resolv.conf.nonexistant",
+			path:     "resolv.conf.nonexistent",
 			stack:    challenge.IPv4Only,
 			expected: []string{"1.0.0.1:53", "1.1.1.1:53"},
 		},
 		{
 			desc:     "default with IPv6Only",
-			path:     "resolv.conf.nonexistant",
+			path:     "resolv.conf.nonexistent",
 			stack:    challenge.IPv6Only,
 			expected: []string{"[2606:4700:4700::1001]:53", "[2606:4700:4700::1111]:53"},
 		},

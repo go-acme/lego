@@ -132,7 +132,7 @@ func (c *Client) doRequest(ctx context.Context, payload, result any) error {
 }
 
 // GetDNSRecordIdx searches a given array of DNSRecords for a given DNSRecord
-// equivalence is determined by Destination and RecortType attributes
+// equivalence is determined by Destination and RecordType attributes
 // returns index of given DNSRecord in given array of DNSRecords.
 func GetDNSRecordIdx(records []DNSRecord, record DNSRecord) (int, error) {
 	for index, element := range records {

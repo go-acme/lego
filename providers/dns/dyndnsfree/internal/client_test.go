@@ -37,9 +37,9 @@ func TestAddTXTRecord(t *testing.T) {
 
 func TestAddTXTRecord_error(t *testing.T) {
 	client := servermock.NewBuilder[*Client](setupClient).
-		Route("GET /", servermock.RawStringResponse("error: authentification failed")).
+		Route("GET /", servermock.RawStringResponse("error: authentication failed")).
 		Build(t)
 
 	err := client.AddTXTRecord(t.Context(), "example.com", "sub.example.com", "value")
-	require.EqualError(t, err, "error: authentification failed")
+	require.EqualError(t, err, "error: authentication failed")
 }

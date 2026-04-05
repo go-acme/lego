@@ -58,7 +58,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | `BLUECATV2_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
 | `BLUECATV2_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
 | `BLUECATV2_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
-| `BLUECATV2_SKIP_DEPLOY` | Skip quick deployements |
+| `BLUECATV2_SKIP_DEPLOY` | Skip quick deployments |
 | `BLUECATV2_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

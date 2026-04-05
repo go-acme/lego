@@ -332,7 +332,7 @@ This release contains the same things as v4.23.0.
 
 ### Fixed
 
-- **[dnsprovider]** acme-dns: use new registred account
+- **[dnsprovider]** acme-dns: use new registered account
 
 ## v4.22.1
 
@@ -903,7 +903,7 @@ Fix Docker image builds.
 ### Changed
 
 - **[dnsprovider]** allinkl: removed deprecated sha1 hashing
-- **[dnsprovider]** auroradns: update authentification
+- **[dnsprovider]** auroradns: update authentication
 - **[dnsprovider]** dnspod: deprecated. Use Tencent Cloud instead.
 - **[dnsprovider]** exoscale: migrate to API v2 endpoints
 - **[dnsprovider]** gcloud: update golang.org/x/oauth2
@@ -1820,7 +1820,7 @@ Migrate from xenolf/lego to go-acme/lego.
 - lib: The `DeleteRegistration` function on `acme.Client`. This deletes the registration as currently configured in the client.
 - lib: The `ObtainCertificateForCSR` function on `acme.Client`. The function allows to request a certificate for an already existing CSR.
 - CLI: The `--csr` switch. Allows to use already existing CSRs for certificate requests on the command line.
-- CLI: The `--pem` flag. This will change the certificate output, so it outputs a .pem file concatanating the .key and .crt files together.
+- CLI: The `--pem` flag. This will change the certificate output, so it outputs a .pem file concatenating the .key and .crt files together.
 - CLI: The `--dns-resolvers` flag. Allows for users to override the default DNS servers used for recursive lookup.
 - lib: Added a memcached provider for the HTTP challenge.
 - CLI: The `--memcached-host` flag. This allows to use memcached for challenge storage.
@@ -1851,7 +1851,7 @@ Migrate from xenolf/lego to go-acme/lego.
 - lib: Fix a problem with the Route53 provider where it was possible the verification was published to a private zone.
 - lib: Loading an account from file should fail if an integral part is nil
 - lib: Fix a potential issue where the Dyn provider could resolve to an incorrect zone.
-- lib: If a registration encounteres a conflict, the old registration is now recovered.
+- lib: If a registration encounters a conflict, the old registration is now recovered.
 - CLI: The account.json file no longer has the executable flag set.
 - lib: Made the client registration more robust in case of a 403 HTTP response.
 - lib: Fixed an issue with zone lookups when they have a CNAME in another zone.

@@ -26,7 +26,7 @@ lego --dns bluecat -d '*.example.com' -d example.com run
     BLUECAT_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
     BLUECAT_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
     BLUECAT_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
-    BLUECAT_SKIP_DEPLOY = "Skip deployements"
+    BLUECAT_SKIP_DEPLOY = "Skip deployments"
 
 [Links]
   API = "https://docs.bluecatnetworks.com/r/Address-Manager-API-Guide/REST-API/9.1.0"

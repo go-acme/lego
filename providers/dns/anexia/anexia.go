@@ -144,7 +144,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		TTL:   d.config.TTL,
 	}
 
-	// Ignores returned zone, because of UUID unstability.
+	// Ignores returned zone, because of UUID instability.
 	// https://github.com/go-acme/lego/pull/2675#issuecomment-3418678194
 	_, err = d.client.CreateRecord(ctx, zoneName, recordReq)
 	if err != nil {

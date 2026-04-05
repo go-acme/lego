@@ -171,7 +171,7 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 			err:      "authentication error",
 		},
 		{
-			desc:     "uknown error",
+			desc:     "unknown error",
 			password: "goodpassword",
 			domain:   "badexample.com",
 			request:  removeRecordNonValidDomain,

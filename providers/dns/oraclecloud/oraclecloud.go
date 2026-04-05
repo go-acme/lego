@@ -113,7 +113,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 		config.OCIConfigProvider = configurationProvider
 
 	case string(common.UserPrincipal):
-		values, err := env.Get(EnvProfile)
+		values, err := env.Get(EnvCompartmentOCID, EnvProfile)
 		if err != nil {
 			return nil, fmt.Errorf("oraclecloud: %w", err)
 		}

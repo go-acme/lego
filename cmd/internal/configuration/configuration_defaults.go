@@ -46,12 +46,6 @@ func ApplyDefaults(cfg *Configuration) {
 	applyAccountsDefaults(cfg)
 	applyChallengesDefaults(cfg)
 	applyCertificatesDefaults(cfg)
-
-	// Must be last, because the certificate definition needs to know if there is an explicit account.
-	cfg.Accounts[DefaultAccountID] = &Account{
-		Server:  lego.DirectoryURLLetsEncrypt,
-		KeyType: certcrypto.EC256,
-	}
 }
 
 func applyServersDefaults(cfg *Configuration) {
@@ -92,6 +86,10 @@ func applyCertificatesDefaults(cfg *Configuration) {
 	for _, cert := range cfg.Certificates {
 		if cert.Account == "" {
 			cert.Account = defaultAccount
+		}
+
+		if cert.Account == DefaultAccountID {
+			setDefaultAccount(cfg)
 		}
 
 		if cert.KeyType == "" {
@@ -138,24 +136,41 @@ func applyRenewDefaults(cert *Certificate) {
 }
 
 func setDefaultHTTP01(cfg *Configuration) {
-	if _, ok := cfg.Challenges[defaultHTTP01]; !ok {
-		cfg.Challenges[defaultHTTP01] = &Challenge{HTTP: &HTTPChallenge{
-			Address: defaultHTTPAddress,
-		}}
+	if _, ok := cfg.Challenges[defaultHTTP01]; ok {
+		return
 	}
+
+	cfg.Challenges[defaultHTTP01] = &Challenge{HTTP: &HTTPChallenge{
+		Address: defaultHTTPAddress,
+	}}
 }
 
 func setDefaultTLSALPN01(cfg *Configuration) {
-	if _, ok := cfg.Challenges[defaultTLSALPN01]; !ok {
-		cfg.Challenges[defaultTLSALPN01] = &Challenge{TLS: &TLSChallenge{
-			Address: defaultTLSAddress,
-		}}
+	if _, ok := cfg.Challenges[defaultTLSALPN01]; ok {
+		return
 	}
+
+	cfg.Challenges[defaultTLSALPN01] = &Challenge{TLS: &TLSChallenge{
+		Address: defaultTLSAddress,
+	}}
 }
 
 func setDefaultDNSPersist01(cfg *Configuration) {
-	if _, ok := cfg.Challenges[defaultDNSPersist01]; !ok {
-		cfg.Challenges[defaultDNSPersist01] = &Challenge{DNSPersist: &DNSPersistChallenge{}}
+	if _, ok := cfg.Challenges[defaultDNSPersist01]; ok {
+		return
+	}
+
+	cfg.Challenges[defaultDNSPersist01] = &Challenge{DNSPersist: &DNSPersistChallenge{}}
+}
+
+func setDefaultAccount(cfg *Configuration) {
+	if _, ok := cfg.Accounts[DefaultAccountID]; ok {
+		return
+	}
+
+	cfg.Accounts[DefaultAccountID] = &Account{
+		Server:  lego.DirectoryURLLetsEncrypt,
+		KeyType: certcrypto.EC256,
 	}
 }
 

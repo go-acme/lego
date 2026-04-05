@@ -105,7 +105,7 @@ func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
 			return solvr
 		}
 
-		log.Error("acme: Could not find the solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
+		log.Info("acme: Could not find the solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
 	}
 
 	return nil

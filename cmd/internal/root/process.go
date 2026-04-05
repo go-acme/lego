@@ -63,7 +63,7 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 			return client, nil
 		})
 
-		err = handleRegistration(ctx, lazyClient, accountConfig, store.Account, account)
+		err = handleRegistration(ctx, lazyClient, accountConfig, store.Account, account, true)
 		if err != nil {
 			return fmt.Errorf("registration: %w", err)
 		}

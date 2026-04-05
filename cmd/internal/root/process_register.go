@@ -16,7 +16,7 @@ import (
 	"github.com/go-acme/lego/v5/registration/zerossl"
 )
 
-func handleRegistration(ctx context.Context, lazyClient lzSetUp, accountConfig *configuration.Account, accountsStorage *storage.AccountsStorage, account *storage.Account) error {
+func handleRegistration(ctx context.Context, lazyClient lzSetUp, accountConfig *configuration.Account, accountsStorage *storage.AccountsStorage, account *storage.Account, allowRegister bool) error {
 	err := updateAccountOrigin(accountsStorage, account)
 	if err != nil {
 		return err
@@ -43,26 +43,30 @@ func handleRegistration(ctx context.Context, lazyClient lzSetUp, accountConfig *
 		return nil
 	}
 
-	if account.Registration == nil {
-		client, err := lazyClient()
-		if err != nil {
-			return fmt.Errorf("set up client: %w", err)
+	if allowRegister {
+		if account.Registration == nil {
+			client, err := lazyClient()
+			if err != nil {
+				return fmt.Errorf("set up client: %w", err)
+			}
+
+			reg, err := registerAccount(ctx, client, accountConfig)
+			if err != nil {
+				return fmt.Errorf("could not complete registration: %w", err)
+			}
+
+			account.Registration = reg
+
+			if err = accountsStorage.Save(account); err != nil {
+				return fmt.Errorf("could not save the account file: %w", err)
+			}
+
+			log.Warnf(log.LazySprintf(storage.RootPathWarningMessage, accountsStorage.GetRootPath()))
+		} else {
+			log.Debug("Account already registered, skipping.", slog.String("account", account.GetID()))
 		}
-
-		reg, err := registerAccount(ctx, client, accountConfig)
-		if err != nil {
-			return fmt.Errorf("could not complete registration: %w", err)
-		}
-
-		account.Registration = reg
-
-		if err = accountsStorage.Save(account); err != nil {
-			return fmt.Errorf("could not save the account file: %w", err)
-		}
-
-		log.Warnf(log.LazySprintf(storage.RootPathWarningMessage, accountsStorage.GetRootPath()))
-	} else {
-		log.Debug("Account already registered, skipping.", slog.String("account", account.GetID()))
+	} else if account.Registration == nil {
+		return fmt.Errorf("the account %s is not registered", account.GetID())
 	}
 
 	return nil

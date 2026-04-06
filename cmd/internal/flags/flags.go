@@ -551,7 +551,7 @@ func createAccountFlags() []cli.Flag {
 			Category: categoryStorage,
 			Name:     FlgAccountID,
 			Sources:  cli.EnvVars(toEnvName(FlgAccountID)),
-			Usage:    "Account identifier (The email is used if there is account ID is undefined).",
+			Usage:    "Account identifier (The email is used if the account ID is undefined).",
 		},
 		&cli.BoolFlag{
 			Category: categoryEAB,

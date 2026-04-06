@@ -19,7 +19,7 @@ type ListAccount struct {
 	Path string `json:"path,omitempty"`
 }
 
-func createListAccounts() *cli.Command {
+func createAccountsList() *cli.Command {
 	return &cli.Command{
 		Name:   "list",
 		Usage:  "Display information about accounts.",

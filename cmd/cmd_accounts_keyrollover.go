@@ -13,7 +13,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func createKeyRollover() *cli.Command {
+func createAccountKeyRollover() *cli.Command {
 	return &cli.Command{
 		Name:   "keyrollover",
 		Usage:  "Update the account private key.",
@@ -47,16 +47,16 @@ func accountKeyRollover(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("get account: %w", err)
 	}
 
+	client, err := newClient(cmd, account)
+	if err != nil {
+		return fmt.Errorf("set up client: %w", err)
+	}
+
 	var privateKey crypto.Signer
 
 	privateKey, keyType, err = getPrivateKey(cmd, keyType)
 	if err != nil {
 		return fmt.Errorf("get private key: %w", err)
-	}
-
-	client, err := newClient(cmd, account)
-	if err != nil {
-		return fmt.Errorf("set up client: %w", err)
 	}
 
 	err = client.Registration.KeyRollover(ctx, privateKey)

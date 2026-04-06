@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
+	"github.com/go-acme/lego/v5/cmd/internal/prompt"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
@@ -59,7 +60,7 @@ func restoreArchive(_ context.Context, cmd *cli.Command) error {
 
 	fmt.Println()
 
-	choice := choose("Choose the archive to restore:", options)
+	choice := prompt.Choose("Choose the archive to restore:", options)
 
 	index, err := strconv.Atoi(choice)
 	if err != nil {

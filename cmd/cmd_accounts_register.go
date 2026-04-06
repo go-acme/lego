@@ -9,6 +9,7 @@ import (
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
+	"github.com/go-acme/lego/v5/cmd/internal/prompt"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
@@ -144,7 +145,7 @@ func handleTOS(cmd *cli.Command, client *lego.Client) bool {
 
 	log.Warn("Please review the TOS.", slog.String("url", urlTOS))
 
-	return confirm("Do you accept the TOS?")
+	return prompt.Confirm("Do you accept the TOS?")
 }
 
 func updateAccountOrigin(account *storage.Account) {

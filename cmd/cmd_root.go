@@ -31,7 +31,6 @@ func CreateRootCommand() *cli.Command {
 func CreateCommands() []*cli.Command {
 	return []*cli.Command{
 		createRun(),
-		createRevoke(),
 		createCertificates(),
 		createAccounts(),
 		createArchives(),

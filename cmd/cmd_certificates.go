@@ -9,6 +9,7 @@ func createCertificates() *cli.Command {
 		Name:  "certificates",
 		Usage: "Certificates management.",
 		Commands: []*cli.Command{
+			createRevoke(),
 			createListCertificates(),
 		},
 	}

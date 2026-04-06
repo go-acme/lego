@@ -27,6 +27,8 @@ type Server struct {
 }
 
 type Account struct {
+	ID string `yaml:"-"`
+
 	Server                 string                  `yaml:"server,omitempty"`
 	Email                  string                  `yaml:"email,omitempty"`
 	KeyType                certcrypto.KeyType      `yaml:"keyType,omitempty"`
@@ -40,6 +42,8 @@ type ExternalAccountBinding struct {
 }
 
 type Challenge struct {
+	ID string `yaml:"-"`
+
 	HTTP       *HTTPChallenge       `yaml:"http,omitempty"`
 	TLS        *TLSChallenge        `yaml:"tls,omitempty"`
 	DNS        *DNSChallenge        `yaml:"dns,omitempty"`
@@ -82,6 +86,8 @@ type Propagation struct {
 }
 
 type Certificate struct {
+	ID string `yaml:"-"`
+
 	Domains []string `yaml:"domains,omitempty"`
 	CSR     string   `yaml:"csr,omitempty"`
 

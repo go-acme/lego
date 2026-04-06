@@ -135,7 +135,7 @@ OPTIONS:
 
    Flags related to the storage:
 
-   --account-id string            Account identifier (The email is used if there is account ID is undefined). [$LEGO_ACCOUNT_ID]
+   --account-id string            Account identifier (The email is used if the account ID is undefined). [$LEGO_ACCOUNT_ID]
    --cert.name string, -c string  The certificate ID/Name, used to store and retrieve a certificate. By default, it uses the first domain name. [$LEGO_CERT_NAME]
    --path string                  Directory to use for storing the data. [$LEGO_PATH]
    --pem                          Generate an additional .pem (base64) file by concatenating the .key and .crt files together. [$LEGO_PEM]
@@ -184,7 +184,7 @@ OPTIONS:
 
    Flags related to the storage:
 
-   --account-id string  Account identifier (The email is used if there is account ID is undefined). [$LEGO_ACCOUNT_ID]
+   --account-id string  Account identifier (The email is used if the account ID is undefined). [$LEGO_ACCOUNT_ID]
    --path string        Directory to use for storing the data. [$LEGO_PATH]
 """
 

@@ -40,30 +40,26 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 
 	store := storage.New(cfg.Storage)
 
-	for accountID, challengesInfo := range createCertificatesMapping(cfg) {
-		accountConfig := cfg.Accounts[accountID]
-
-		serverConfig := configuration.GetServerConfig(cfg, accountID)
-
-		account, err := store.Account.Get(serverConfig.URL, accountConfig.KeyType, accountConfig.Email, accountID)
+	for _, accountNode := range configuration.LookupChallenges(cfg, nil) {
+		account, err := store.Account.Get(accountNode.ServerConfig.URL, accountNode.KeyType, accountNode.Email, accountNode.ID)
 		if err != nil {
 			return err
 		}
 
 		lazyClient := sync.OnceValues(func() (*lego.Client, error) {
-			client, errC := lego.NewClient(newClientConfig(serverConfig, account, cfg.UserAgent))
+			client, errC := lego.NewClient(newClientConfig(accountNode.ServerConfig, account, cfg.UserAgent))
 			if errC != nil {
 				return nil, errC
 			}
 
-			if client.GetServerMetadata().ExternalAccountRequired && accountConfig.ExternalAccountBinding == nil {
+			if client.GetServerMetadata().ExternalAccountRequired && accountNode.ExternalAccountBinding == nil {
 				return nil, errors.New("server requires External Account Binding (EAB)")
 			}
 
 			return client, nil
 		})
 
-		err = handleRegistration(ctx, lazyClient, accountConfig, store.Account, account, true)
+		err = handleRegistration(ctx, lazyClient, accountNode.Account, store.Account, account, true)
 		if err != nil {
 			return fmt.Errorf("registration: %w", err)
 		}
@@ -74,12 +70,10 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 			hook.WithAccountMetadata(account),
 		)
 
-		for challengeID, certIDs := range challengesInfo {
+		for _, chlgNode := range accountNode.Children {
 			// Clone the hook manager for each certificate because:
 			// each certificate is different, so the metadata is different, except for the account information.
 			hookManager := hm.Clone()
-
-			chlgConfig := cfg.Challenges[challengeID]
 
 			lazySetup := sync.OnceValues(func() (*lego.Client, error) {
 				client, errC := lazyClient()
@@ -89,7 +83,7 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 
 				client.Challenge.RemoveAll()
 
-				errC = setupChallenges(client, chlgConfig, networkStack)
+				errC = setupChallenges(client, chlgNode.Challenge, networkStack)
 				if errC != nil {
 					return nil, fmt.Errorf("setup challenges: %w", errC)
 				}
@@ -97,12 +91,10 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 				return client, nil
 			})
 
-			for _, certID := range certIDs {
-				certConfig := cfg.Certificates[certID]
-
+			for _, cert := range chlgNode.Certificates {
 				// Renew
-				if store.Certificate.ExistsFile(certID, storage.ExtResource) {
-					err = renew(ctx, lazySetup, certID, certConfig, store.Certificate, hookManager)
+				if store.Certificate.ExistsFile(cert.ID, storage.ExtResource) {
+					err = renew(ctx, lazySetup, cert.ID, cert, store.Certificate, hookManager)
 					if err != nil {
 						return err
 					}
@@ -111,7 +103,7 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 				}
 
 				// Run
-				err := obtain(ctx, lazySetup, certID, certConfig, store.Certificate, hookManager)
+				err := obtain(ctx, lazySetup, cert.ID, cert, store.Certificate, hookManager)
 				if err != nil {
 					return err
 				}
@@ -120,22 +112,6 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 	}
 
 	return nil
-}
-
-// createCertificatesMapping creates a mapping of account -> challenge -> certificate IDs.
-func createCertificatesMapping(cfg *configuration.Configuration) map[string]map[string][]string {
-	// Accounts -> Challenges -> Certificates
-	certsMappings := make(map[string]map[string][]string)
-
-	for certID, certDesc := range cfg.Certificates {
-		if _, ok := certsMappings[certDesc.Account]; !ok {
-			certsMappings[certDesc.Account] = make(map[string][]string)
-		}
-
-		certsMappings[certDesc.Account][certDesc.Challenge] = append(certsMappings[certDesc.Account][certDesc.Challenge], certID)
-	}
-
-	return certsMappings
 }
 
 func getNetworkStack(cfg *configuration.Configuration) challenge.NetworkStack {

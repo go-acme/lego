@@ -11,7 +11,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func createRecover() *cli.Command {
+func createAccountRecover() *cli.Command {
 	return &cli.Command{
 		Name:   "recover",
 		Usage:  "Recover/import an account from the private key.",

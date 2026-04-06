@@ -17,7 +17,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func createRegister() *cli.Command {
+func createAccountRegister() *cli.Command {
 	return &cli.Command{
 		Name:   "register",
 		Usage:  "Register an account.",

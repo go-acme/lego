@@ -41,6 +41,25 @@ func NewClient(apiToken string) (*Client, error) {
 	}, nil
 }
 
+// GetZoneVersion returns a specific zone version.
+func (c *Client) GetZoneVersion(ctx context.Context, zone, versionID string) (*ZoneVersion, error) {
+	endpoint := c.BaseURL.JoinPath("domain", zone, "version", versionID)
+
+	req, err := newFormRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := new(ZoneVersion)
+
+	err = c.do(req, result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // CreateZoneVersion creates a new empty version.
 func (c *Client) CreateZoneVersion(ctx context.Context, zone, name string) (*ZoneVersion, error) {
 	endpoint := c.BaseURL.JoinPath("domain", zone, "version")
@@ -75,6 +94,25 @@ func (c *Client) DeleteZoneVersion(ctx context.Context, zone, versionID string) 
 	return c.do(req, nil)
 }
 
+// GetActiveZone returns the currently active zone.
+func (c *Client) GetActiveZone(ctx context.Context, zone string) ([]ResourceRecord, error) {
+	endpoint := c.BaseURL.JoinPath("domain", zone, "zone")
+
+	req, err := newFormRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []ResourceRecord
+
+	err = c.do(req, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // EnableZoneVersion this will push the version configuration to the DNS server and start propagating the zone.
 func (c *Client) EnableZoneVersion(ctx context.Context, zone, versionID string) error {
 	endpoint := c.BaseURL.JoinPath("domain", zone, "version", versionID, "enable")
@@ -88,7 +126,7 @@ func (c *Client) EnableZoneVersion(ctx context.Context, zone, versionID string) 
 }
 
 // CreateResourceRecord creates a resource record and associates it with a zone.
-func (c *Client) CreateResourceRecord(ctx context.Context, zone, versionID string, record Record) (*Record, error) {
+func (c *Client) CreateResourceRecord(ctx context.Context, zone, versionID string, record RecordRequest) (*ResourceRecord, error) {
 	endpoint := c.BaseURL.JoinPath("domain", zone, "version", versionID, "zone")
 
 	values, err := querystring.Values(record)
@@ -101,7 +139,7 @@ func (c *Client) CreateResourceRecord(ctx context.Context, zone, versionID strin
 		return nil, err
 	}
 
-	result := new(Record)
+	result := new(ResourceRecord)
 
 	err = c.do(req, result)
 	if err != nil {

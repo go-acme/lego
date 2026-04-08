@@ -6,8 +6,8 @@
   "ttl": 120,
   "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
   "domain": {
-    "id": 0,
-    "name": "string",
+    "id": 2,
+    "name": "example.com",
     "dnssec": true,
     "external": true,
     "versions": {

@@ -1,0 +1,43 @@
+[
+  {
+    "id": 465,
+    "name": "@",
+    "type": "A",
+    "aux": 0,
+    "ttl": 300,
+    "data": "192.168.0.1",
+    "domain": {
+      "id": 2,
+      "name": "example.com",
+      "dnssec": true,
+      "external": true,
+      "versions": {
+        "$ref": "string"
+      },
+      "zone": {
+        "$ref": "string"
+      }
+    }
+  },
+  {
+    "id": 123,
+    "name": "_acme-challenge",
+    "type": "TXT",
+    "aux": 0,
+    "ttl": 120,
+    "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "domain": {
+      "id": 2,
+      "name": "example.com",
+      "dnssec": true,
+      "external": true,
+      "versions": {
+        "$ref": "string"
+      },
+      "zone": {
+        "$ref": "string"
+      }
+    }
+  }
+
+]

@@ -29,6 +29,28 @@ func mockBuilder() *servermock.Builder[*Client] {
 	)
 }
 
+func TestClient_GetZoneVersion(t *testing.T) {
+	client := mockBuilder().
+		Route("GET /domain/example.com/version/active",
+			servermock.ResponseFromFixture("get_zone_version.json"),
+		).
+		Build(t)
+
+	zoneVersion, err := client.GetZoneVersion(t.Context(), "example.com", "active")
+	require.NoError(t, err)
+
+	expected := &ZoneVersion{
+		UUIDRef:      "6200f3ee-5648-4d69-a846-03ac88121660",
+		Name:         "example.com",
+		CreationDate: "2026-04-04",
+		Active:       false,
+		Zone:         &Reference{Ref: "c3d5c0bb-5094-4974-b54b-16175207ac91"},
+		Domain:       &Reference{Ref: "a7362c44-867a-4dea-89ad-1a1d5efc8e7a"},
+	}
+
+	assert.Equal(t, expected, zoneVersion)
+}
+
 func TestClient_CreateZoneVersion(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domain/example.com/version",
@@ -78,6 +100,54 @@ func TestClient_EnableZoneVersion(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestClient_GetActiveZone(t *testing.T) {
+	client := mockBuilder().
+		Route("GET /domain/example.com/zone",
+			servermock.ResponseFromFixture("get_active_zone.json"),
+		).
+		Build(t)
+
+	result, err := client.GetActiveZone(t.Context(), "example.com")
+	require.NoError(t, err)
+
+	expected := []ResourceRecord{
+		{
+			ID:   465,
+			Name: "@",
+			Type: "A",
+			Aux:  0,
+			TTL:  300,
+			Data: "192.168.0.1",
+			Domain: &Domain{
+				ID:       2,
+				Name:     "example.com",
+				DNSSec:   true,
+				External: true,
+				Versions: &Reference{Ref: "string"},
+				Zone:     &Reference{Ref: "string"},
+			},
+		},
+		{
+			ID:   123,
+			Name: "_acme-challenge",
+			Type: "TXT",
+			Aux:  0,
+			TTL:  120,
+			Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+			Domain: &Domain{
+				ID:       2,
+				Name:     "example.com",
+				DNSSec:   true,
+				External: true,
+				Versions: &Reference{Ref: "string"},
+				Zone:     &Reference{Ref: "string"},
+			},
+		},
+	}
+
+	assert.Equal(t, expected, result)
+}
+
 func TestClient_CreateResourceRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domain/example.com/version/9335be4a-063c-43d6-a393-8bd5d7c78f07/zone",
@@ -92,7 +162,7 @@ func TestClient_CreateResourceRecord(t *testing.T) {
 		).
 		Build(t)
 
-	record := Record{
+	record := RecordRequest{
 		Name: "_acme-challenge",
 		Type: "TXT",
 		TTL:  120,
@@ -102,12 +172,20 @@ func TestClient_CreateResourceRecord(t *testing.T) {
 	result, err := client.CreateResourceRecord(t.Context(), "example.com", "9335be4a-063c-43d6-a393-8bd5d7c78f07", record)
 	require.NoError(t, err)
 
-	expected := &Record{
+	expected := &ResourceRecord{
 		ID:   123,
 		Name: "_acme-challenge",
 		Type: "TXT",
 		TTL:  120,
 		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		Domain: &Domain{
+			ID:       2,
+			Name:     "example.com",
+			DNSSec:   true,
+			External: true,
+			Versions: &Reference{Ref: "string"},
+			Zone:     &Reference{Ref: "string"},
+		},
 	}
 
 	assert.Equal(t, expected, result)

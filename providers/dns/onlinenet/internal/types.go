@@ -24,11 +24,29 @@ type Reference struct {
 	Ref string `json:"$ref"`
 }
 
-type Record struct {
-	ID       int    `json:"id" url:"-" `
-	Name     string `json:"name" url:"name"`
-	Type     string `json:"type" url:"type"`
-	Priority int    `json:"priority" url:"priority"`
-	TTL      int    `json:"ttl" url:"ttl"`
-	Data     string `json:"data" url:"data"`
+type RecordRequest struct {
+	Name     string `url:"name"`
+	Type     string `url:"type"`
+	Priority int    `url:"priority"`
+	TTL      int    `url:"ttl"`
+	Data     string `url:"data"`
+}
+
+type ResourceRecord struct {
+	ID     int     `json:"id"`
+	Name   string  `json:"name"`
+	Type   string  `json:"type"`
+	Aux    int     `json:"aux"`
+	TTL    int     `json:"ttl"`
+	Data   string  `json:"data"`
+	Domain *Domain `json:"domain"`
+}
+
+type Domain struct {
+	ID       int        `json:"id"`
+	Name     string     `json:"name"`
+	DNSSec   bool       `json:"dnssec"`
+	External bool       `json:"external"`
+	Versions *Reference `json:"versions"`
+	Zone     *Reference `json:"zone"`
 }

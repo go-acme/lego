@@ -142,25 +142,10 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
-		Route("POST /domain/example.com/version",
-			servermock.ResponseFromInternal("create_zone_version.json").
-				WithStatusCode(http.StatusCreated),
-			servermock.CheckForm().Strict().
-				With("name", "lego"),
-		).
-		Route("POST /domain/example.com/version/9335be4a-063c-43d6-a393-8bd5d7c78f07/zone",
-			servermock.ResponseFromInternal("create_resource_record.json").
-				WithStatusCode(http.StatusCreated),
-			servermock.CheckForm().Strict().
-				With("name", "_acme-challenge").
-				With("type", "TXT").
-				With("ttl", "120").
-				With("data", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
-				With("priority", "0"),
-		).
-		Route("PATCH /domain/example.com/version/9335be4a-063c-43d6-a393-8bd5d7c78f07/enable",
+		Route("PATCH /domain/example.com/version/active",
 			servermock.Noop().
-				WithStatusCode(http.StatusNoContent),
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromInternal("edit_active_zone-request_add.json"),
 		).
 		Build(t)
 
@@ -170,13 +155,12 @@ func TestDNSProvider_Present(t *testing.T) {
 
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
-		Route("DELETE /domain/example.com/version/9335be4a-063c-43d6-a393-8bd5d7c78f07",
+		Route("PATCH /domain/example.com/version/active",
 			servermock.Noop().
-				WithStatusCode(http.StatusNoContent),
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromInternal("edit_active_zone-request_delete.json"),
 		).
 		Build(t)
-
-	provider.versionUUIDs["abc"] = "9335be4a-063c-43d6-a393-8bd5d7c78f07"
 
 	err := provider.CleanUp("example.com", "abc", "123d==")
 	require.NoError(t, err)

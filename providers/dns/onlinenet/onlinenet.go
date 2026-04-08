@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -59,10 +58,6 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config *Config
 	client *internal.Client
-
-	previousVersionUUIDs map[string]string
-	versionUUIDs         map[string]string
-	versionUUIDMu        sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Online.net.
@@ -96,9 +91,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{
-		config:       config,
-		client:       client,
-		versionUUIDs: make(map[string]string),
+		config: config,
+		client: client,
 	}, nil
 }
 
@@ -118,56 +112,22 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("onlinenet: %w", err)
 	}
 
-	currentVersion, err := d.client.GetZoneVersion(ctx, dns01.UnFqdn(authZone), "active")
+	operation := internal.ResourceRecordOperation{
+		Name:       subDomain,
+		Type:       "TXT",
+		ChangeType: internal.ChangeTypeAdd,
+		Records: []internal.Record{{
+			Name: subDomain,
+			Type: "TXT",
+			TTL:  d.config.TTL,
+			Data: info.Value,
+		}},
+	}
+
+	err = d.client.EditActiveZoneVersion(ctx, dns01.UnFqdn(authZone), operation)
 	if err != nil {
-		return fmt.Errorf("onlinenet: get zone version: %w", err)
+		return fmt.Errorf("onlinenet: edit active zone version: %w", err)
 	}
-
-	currentZone, err := d.client.GetActiveZone(ctx, dns01.UnFqdn(authZone))
-	if err != nil {
-		return fmt.Errorf("onlinenet: get active zone: %w", err)
-	}
-
-	zoneVersion, err := d.client.CreateZoneVersion(ctx, dns01.UnFqdn(authZone), "lego")
-	if err != nil {
-		return fmt.Errorf("onlinenet: create zone version: %w", err)
-	}
-
-	record := internal.RecordRequest{
-		Name: subDomain,
-		Type: "TXT",
-		TTL:  d.config.TTL,
-		Data: info.Value,
-	}
-
-	_, err = d.client.CreateResourceRecord(ctx, dns01.UnFqdn(authZone), zoneVersion.UUIDRef, record)
-	if err != nil {
-		return fmt.Errorf("onlinenet: create resource record: %w", err)
-	}
-
-	for _, resourceRecord := range currentZone {
-		request := internal.RecordRequest{
-			Name: resourceRecord.Name,
-			Type: resourceRecord.Type,
-			TTL:  resourceRecord.TTL,
-			Data: resourceRecord.Data,
-		}
-
-		_, err = d.client.CreateResourceRecord(ctx, dns01.UnFqdn(authZone), zoneVersion.UUIDRef, request)
-		if err != nil {
-			return fmt.Errorf("onlinenet: create resource record: %w", err)
-		}
-	}
-
-	err = d.client.EnableZoneVersion(ctx, dns01.UnFqdn(authZone), zoneVersion.UUIDRef)
-	if err != nil {
-		return fmt.Errorf("onlinenet: enable zone version: %w", err)
-	}
-
-	d.versionUUIDMu.Lock()
-	d.previousVersionUUIDs[token] = currentVersion.UUIDRef
-	d.versionUUIDs[token] = zoneVersion.UUIDRef
-	d.versionUUIDMu.Unlock()
 
 	return nil
 }
@@ -183,30 +143,27 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("onlinenet: could not find zone for domain %q: %w", domain, err)
 	}
 
-	d.versionUUIDMu.Lock()
-	previousVersionUUID, prevOK := d.previousVersionUUIDs[token]
-	d.versionUUIDMu.Unlock()
-
-	if !prevOK {
-		return fmt.Errorf("onlinenet: unknown previous zone version UUID for '%s' '%s'", info.EffectiveFQDN, token)
-	}
-
-	err = d.client.EnableZoneVersion(ctx, dns01.UnFqdn(authZone), previousVersionUUID)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
-		return fmt.Errorf("onlinenet: enable previous zone version: %w", err)
+		return fmt.Errorf("onlinenet: %w", err)
 	}
 
-	d.versionUUIDMu.Lock()
-	versionUUID, ok := d.versionUUIDs[token]
-	d.versionUUIDMu.Unlock()
-
-	if !ok {
-		return fmt.Errorf("onlinenet: unknown zone version UUID for '%s' '%s'", info.EffectiveFQDN, token)
+	operation := internal.ResourceRecordOperation{
+		Name:       subDomain,
+		Type:       "TXT",
+		ChangeType: internal.ChangeTypeDelete,
+		Data:       info.Value,
+		Records: []internal.Record{{
+			Name: subDomain,
+			Type: "TXT",
+			TTL:  d.config.TTL,
+			Data: info.Value,
+		}},
 	}
 
-	err = d.client.DeleteZoneVersion(ctx, dns01.UnFqdn(authZone), versionUUID)
+	err = d.client.EditActiveZoneVersion(ctx, dns01.UnFqdn(authZone), operation)
 	if err != nil {
-		return fmt.Errorf("onlinenet: delete zone version: %w", err)
+		return fmt.Errorf("onlinenet: edit active zone version: %w", err)
 	}
 
 	return nil

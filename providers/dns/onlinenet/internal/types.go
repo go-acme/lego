@@ -2,6 +2,14 @@ package internal
 
 import "fmt"
 
+type ChangeType string
+
+const (
+	ChangeTypeAdd     ChangeType = "ADD"
+	ChangeTypeReplace ChangeType = "REPLACE"
+	ChangeTypeDelete  ChangeType = "DELETE"
+)
+
 type APIError struct {
 	Code    int    `json:"code"`
 	Message string `json:"error"`
@@ -49,4 +57,20 @@ type Domain struct {
 	External bool       `json:"external"`
 	Versions *Reference `json:"versions"`
 	Zone     *Reference `json:"zone"`
+}
+
+type ResourceRecordOperation struct {
+	Name       string     `json:"name"`
+	Type       string     `json:"type"`
+	ChangeType ChangeType `json:"changeType"`
+	Data       string     `json:"data,omitempty"`
+	Records    []Record   `json:"records"`
+}
+
+type Record struct {
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	Priority int    `json:"priority,omitempty"`
+	TTL      int    `json:"ttl"`
+	Data     string `json:"data"`
 }

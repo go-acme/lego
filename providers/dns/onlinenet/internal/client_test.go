@@ -88,6 +88,31 @@ func TestClient_DeleteZoneVersion(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestClient_EditActiveZoneVersion(t *testing.T) {
+	client := mockBuilder().
+		Route("PATCH /domain/example.com/version/active",
+			servermock.Noop().
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromFixture("edit_active_zone-request_add.json"),
+		).
+		Build(t)
+
+	operation := ResourceRecordOperation{
+		Name:       "_acme-challenge",
+		Type:       "TXT",
+		ChangeType: ChangeTypeAdd,
+		Records: []Record{{
+			Name: "_acme-challenge",
+			Type: "TXT",
+			TTL:  120,
+			Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		}},
+	}
+
+	err := client.EditActiveZoneVersion(t.Context(), "example.com", operation)
+	require.NoError(t, err)
+}
+
 func TestClient_EnableZoneVersion(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /domain/example.com/version/9335be4a-063c-43d6-a393-8bd5d7c78f07/enable",

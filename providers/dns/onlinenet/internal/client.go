@@ -94,6 +94,30 @@ func (c *Client) DeleteZoneVersion(ctx context.Context, zone, versionID string) 
 	return c.do(req, nil)
 }
 
+// EditActiveZoneVersion edits the currently active zone version.
+func (c *Client) EditActiveZoneVersion(ctx context.Context, zone string, operation ResourceRecordOperation) error {
+	endpoint := c.BaseURL.JoinPath("domain", zone, "version", "active")
+
+	req, err := newJSONRequest(ctx, http.MethodPatch, endpoint, operation)
+	if err != nil {
+		return err
+	}
+
+	return c.do(req, nil)
+}
+
+// EnableZoneVersion this will push the version configuration to the DNS server and start propagating the zone.
+func (c *Client) EnableZoneVersion(ctx context.Context, zone, versionID string) error {
+	endpoint := c.BaseURL.JoinPath("domain", zone, "version", versionID, "enable")
+
+	req, err := newFormRequest(ctx, http.MethodPatch, endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	return c.do(req, nil)
+}
+
 // GetActiveZone returns the currently active zone.
 func (c *Client) GetActiveZone(ctx context.Context, zone string) ([]ResourceRecord, error) {
 	endpoint := c.BaseURL.JoinPath("domain", zone, "zone")
@@ -111,18 +135,6 @@ func (c *Client) GetActiveZone(ctx context.Context, zone string) ([]ResourceReco
 	}
 
 	return result, nil
-}
-
-// EnableZoneVersion this will push the version configuration to the DNS server and start propagating the zone.
-func (c *Client) EnableZoneVersion(ctx context.Context, zone, versionID string) error {
-	endpoint := c.BaseURL.JoinPath("domain", zone, "version", versionID, "enable")
-
-	req, err := newFormRequest(ctx, http.MethodPatch, endpoint, nil)
-	if err != nil {
-		return err
-	}
-
-	return c.do(req, nil)
 }
 
 // CreateResourceRecord creates a resource record and associates it with a zone.
@@ -210,6 +222,30 @@ func newFormRequest(ctx context.Context, method string, endpoint *url.URL, form 
 
 	if method == http.MethodPost {
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
+
+	return req, nil
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
 	}
 
 	return req, nil

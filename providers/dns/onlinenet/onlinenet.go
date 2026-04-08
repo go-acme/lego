@@ -60,8 +60,9 @@ type DNSProvider struct {
 	config *Config
 	client *internal.Client
 
-	versionUUIDs  map[string]string
-	versionUUIDMu sync.Mutex
+	previousVersionUUIDs map[string]string
+	versionUUIDs         map[string]string
+	versionUUIDMu        sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Online.net.
@@ -117,12 +118,22 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("onlinenet: %w", err)
 	}
 
+	currentVersion, err := d.client.GetZoneVersion(ctx, dns01.UnFqdn(authZone), "active")
+	if err != nil {
+		return fmt.Errorf("onlinenet: get zone version: %w", err)
+	}
+
+	currentZone, err := d.client.GetActiveZone(ctx, dns01.UnFqdn(authZone))
+	if err != nil {
+		return fmt.Errorf("onlinenet: get active zone: %w", err)
+	}
+
 	zoneVersion, err := d.client.CreateZoneVersion(ctx, dns01.UnFqdn(authZone), "lego")
 	if err != nil {
 		return fmt.Errorf("onlinenet: create zone version: %w", err)
 	}
 
-	record := internal.Record{
+	record := internal.RecordRequest{
 		Name: subDomain,
 		Type: "TXT",
 		TTL:  d.config.TTL,
@@ -134,12 +145,27 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("onlinenet: create resource record: %w", err)
 	}
 
+	for _, resourceRecord := range currentZone {
+		request := internal.RecordRequest{
+			Name: resourceRecord.Name,
+			Type: resourceRecord.Type,
+			TTL:  resourceRecord.TTL,
+			Data: resourceRecord.Data,
+		}
+
+		_, err = d.client.CreateResourceRecord(ctx, dns01.UnFqdn(authZone), zoneVersion.UUIDRef, request)
+		if err != nil {
+			return fmt.Errorf("onlinenet: create resource record: %w", err)
+		}
+	}
+
 	err = d.client.EnableZoneVersion(ctx, dns01.UnFqdn(authZone), zoneVersion.UUIDRef)
 	if err != nil {
 		return fmt.Errorf("onlinenet: enable zone version: %w", err)
 	}
 
 	d.versionUUIDMu.Lock()
+	d.previousVersionUUIDs[token] = currentVersion.UUIDRef
 	d.versionUUIDs[token] = zoneVersion.UUIDRef
 	d.versionUUIDMu.Unlock()
 
@@ -152,17 +178,30 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("onlinenet: could not find zone for domain %q: %w", domain, err)
+	}
+
+	d.versionUUIDMu.Lock()
+	previousVersionUUID, prevOK := d.previousVersionUUIDs[token]
+	d.versionUUIDMu.Unlock()
+
+	if !prevOK {
+		return fmt.Errorf("onlinenet: unknown previous zone version UUID for '%s' '%s'", info.EffectiveFQDN, token)
+	}
+
+	err = d.client.EnableZoneVersion(ctx, dns01.UnFqdn(authZone), previousVersionUUID)
+	if err != nil {
+		return fmt.Errorf("onlinenet: enable previous zone version: %w", err)
+	}
+
 	d.versionUUIDMu.Lock()
 	versionUUID, ok := d.versionUUIDs[token]
 	d.versionUUIDMu.Unlock()
 
 	if !ok {
 		return fmt.Errorf("onlinenet: unknown zone version UUID for '%s' '%s'", info.EffectiveFQDN, token)
-	}
-
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("onlinenet: could not find zone for domain %q: %w", domain, err)
 	}
 
 	err = d.client.DeleteZoneVersion(ctx, dns01.UnFqdn(authZone), versionUUID)

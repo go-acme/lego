@@ -3164,9 +3164,8 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "ONLINENET_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
-		ew.writeln(`	- "ONLINENET_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
-		ew.writeln(`	- "ONLINENET_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
-		ew.writeln(`	- "ONLINENET_SEQUENCE_INTERVAL":	Time between sequential requests in seconds (Default: 60)`)
+		ew.writeln(`	- "ONLINENET_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 15)`)
+		ew.writeln(`	- "ONLINENET_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 240)`)
 		ew.writeln(`	- "ONLINENET_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
 
 		ew.writeln()

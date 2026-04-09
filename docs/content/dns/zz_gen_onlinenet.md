@@ -48,9 +48,8 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `ONLINENET_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
-| `ONLINENET_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
-| `ONLINENET_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
-| `ONLINENET_SEQUENCE_INTERVAL` | Time between sequential requests in seconds (Default: 60) |
+| `ONLINENET_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 15) |
+| `ONLINENET_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 240) |
 | `ONLINENET_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

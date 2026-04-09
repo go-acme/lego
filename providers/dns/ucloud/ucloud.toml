@@ -1,0 +1,27 @@
+Name = "UCloud"
+Description = ''''''
+URL = "https://www.ucloud.cn/"
+Code = "ucloud"
+Since = "v4.34.0"
+
+Example = '''
+UCLOUD_PUBLIC_KEY="xxx" \
+UCLOUD_PRIVATE_KEY="yyy" \
+lego --dns ucloud -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    UCLOUD_PUBLIC_KEY = "Public key"
+    UCLOUD_PRIVATE_KEY = "Private key"
+  [Configuration.Additional]
+    UCLOUD_REGION = "Region"
+    UCLOUD_PROJECT_ID = "Project ID"
+    UCLOUD_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    UCLOUD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    UCLOUD_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    UCLOUD_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://docs.ucloud.cn/api/udnr-api/README"
+  GoClient = "https://github.com/ucloud/ucloud-sdk-go"

@@ -75,39 +75,48 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 			// each certificate is different, so the metadata is different, except for the account information.
 			hookManager := hm.Clone()
 
-			lazySetup := sync.OnceValues(func() (*lego.Client, error) {
-				client, errC := lazyClient()
-				if errC != nil {
-					return nil, fmt.Errorf("set up client: %w", errC)
-				}
-
-				client.Challenge.RemoveAll()
-
-				errC = setupChallenges(client, chlgNode.Challenge, networkStack)
-				if errC != nil {
-					return nil, fmt.Errorf("setup challenges: %w", errC)
-				}
-
-				return client, nil
-			})
-
-			for _, cert := range chlgNode.Certificates {
-				// Renew
-				if store.Certificate.ExistsFile(cert.ID, storage.ExtResource) {
-					err = renew(ctx, lazySetup, cert.ID, cert, store.Certificate, hookManager)
-					if err != nil {
-						return err
-					}
-
-					continue
-				}
-
-				// Run
-				err := obtain(ctx, lazySetup, cert.ID, cert, store.Certificate, hookManager)
-				if err != nil {
-					return err
-				}
+			err := processChallenges(ctx, lazyClient, chlgNode, store, hookManager, networkStack)
+			if err != nil {
+				return err
 			}
+		}
+	}
+
+	return nil
+}
+
+func processChallenges(ctx context.Context, lazyClient lzSetUp, chlgNode *configuration.ChallengeNode, store *storage.Storage, hookManager *hook.Manager, networkStack challenge.NetworkStack) error {
+	lazySetup := sync.OnceValues(func() (*lego.Client, error) {
+		client, errC := lazyClient()
+		if errC != nil {
+			return nil, fmt.Errorf("set up client: %w", errC)
+		}
+
+		client.Challenge.RemoveAll()
+
+		errC = setupChallenges(client, chlgNode.Challenge, networkStack)
+		if errC != nil {
+			return nil, fmt.Errorf("setup challenges: %w", errC)
+		}
+
+		return client, nil
+	})
+
+	for _, cert := range chlgNode.Certificates {
+		// Renew
+		if store.Certificate.ExistsFile(cert.ID, storage.ExtResource) {
+			err := renew(ctx, lazySetup, cert.ID, cert, store.Certificate, hookManager)
+			if err != nil {
+				return err
+			}
+
+			continue
+		}
+
+		// Run
+		err := obtain(ctx, lazySetup, cert.ID, cert, store.Certificate, hookManager)
+		if err != nil {
+			return err
 		}
 	}
 

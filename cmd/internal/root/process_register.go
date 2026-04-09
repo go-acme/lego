@@ -1,16 +1,14 @@
 package root
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
 	"log/slog"
-	"os"
-	"strings"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
+	"github.com/go-acme/lego/v5/cmd/internal/prompt"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
@@ -18,7 +16,7 @@ import (
 	"github.com/go-acme/lego/v5/registration/zerossl"
 )
 
-func handleRegistration(ctx context.Context, lazyClient lzSetUp, accountConfig *configuration.Account, accountsStorage *storage.AccountsStorage, account *storage.Account) error {
+func handleRegistration(ctx context.Context, lazyClient lzSetUp, accountConfig *configuration.Account, accountsStorage *storage.AccountsStorage, account *storage.Account, allowRegister bool) error {
 	err := updateAccountOrigin(accountsStorage, account)
 	if err != nil {
 		return err
@@ -45,26 +43,30 @@ func handleRegistration(ctx context.Context, lazyClient lzSetUp, accountConfig *
 		return nil
 	}
 
-	if account.Registration == nil {
-		client, err := lazyClient()
-		if err != nil {
-			return fmt.Errorf("set up client: %w", err)
+	if allowRegister {
+		if account.Registration == nil {
+			client, err := lazyClient()
+			if err != nil {
+				return fmt.Errorf("set up client: %w", err)
+			}
+
+			reg, err := registerAccount(ctx, client, accountConfig)
+			if err != nil {
+				return fmt.Errorf("could not complete registration: %w", err)
+			}
+
+			account.Registration = reg
+
+			if err = accountsStorage.Save(account); err != nil {
+				return fmt.Errorf("could not save the account file: %w", err)
+			}
+
+			log.Warnf(log.LazySprintf(storage.RootPathWarningMessage, accountsStorage.GetRootPath()))
+		} else {
+			log.Debug("Account already registered, skipping.", slog.String("account", account.GetID()))
 		}
-
-		reg, err := registerAccount(ctx, client, accountConfig)
-		if err != nil {
-			return fmt.Errorf("could not complete registration: %w", err)
-		}
-
-		account.Registration = reg
-
-		if err = accountsStorage.Save(account); err != nil {
-			return fmt.Errorf("could not save the account file: %w", err)
-		}
-
-		log.Warnf(log.LazySprintf(storage.RootPathWarningMessage, accountsStorage.GetRootPath()))
-	} else {
-		log.Debug("Account already registered, skipping.", slog.String("account", account.GetID()))
+	} else if account.Registration == nil {
+		return fmt.Errorf("the account %s is not registered", account.GetID())
 	}
 
 	return nil
@@ -101,28 +103,9 @@ func handleTOS(client *lego.Client, accountConfig *configuration.Account) bool {
 		return true
 	}
 
-	reader := bufio.NewReader(os.Stdin)
-
 	log.Warn("Please review the TOS", slog.String("url", urlTOS))
 
-	for {
-		fmt.Println("Do you accept the TOS? Y/n")
-
-		text, err := reader.ReadString('\n')
-		if err != nil {
-			log.Fatal("Could not read from the console", log.ErrorAttr(err))
-		}
-
-		text = strings.Trim(text, "\r\n")
-		switch text {
-		case "", "y", "Y":
-			return true
-		case "n", "N":
-			return false
-		default:
-			fmt.Println("Your input was invalid. Please answer with one of Y/y, n/N or by pressing enter.")
-		}
-	}
+	return prompt.Confirm("Do you accept the TOS?")
 }
 
 func updateAccountOrigin(accountsStorage *storage.AccountsStorage, account *storage.Account) error {

@@ -57,7 +57,9 @@ func applyServersDefaults(cfg *Configuration) {
 }
 
 func applyAccountsDefaults(cfg *Configuration) {
-	for _, account := range cfg.Accounts {
+	for id, account := range cfg.Accounts {
+		account.ID = id
+
 		if account.KeyType == "" {
 			account.KeyType = certcrypto.EC256
 		}
@@ -69,7 +71,9 @@ func applyAccountsDefaults(cfg *Configuration) {
 }
 
 func applyChallengesDefaults(cfg *Configuration) {
-	for _, challenge := range cfg.Challenges {
+	for id, challenge := range cfg.Challenges {
+		challenge.ID = id
+
 		if challenge.TLS != nil && challenge.TLS.Address == "" {
 			challenge.TLS.Address = defaultTLSAddress
 		}
@@ -83,7 +87,9 @@ func applyChallengesDefaults(cfg *Configuration) {
 func applyCertificatesDefaults(cfg *Configuration) {
 	defaultAccount := getDefaultAccountID(cfg)
 
-	for _, cert := range cfg.Certificates {
+	for id, cert := range cfg.Certificates {
+		cert.ID = id
+
 		if cert.Account == "" {
 			cert.Account = defaultAccount
 		}

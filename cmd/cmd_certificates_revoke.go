@@ -2,11 +2,15 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 
 	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
+	"github.com/go-acme/lego/v5/cmd/internal/prompt"
+	"github.com/go-acme/lego/v5/cmd/internal/root"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
@@ -17,9 +21,31 @@ func createRevoke() *cli.Command {
 	return &cli.Command{
 		Name:   "revoke",
 		Usage:  "Revoke a certificate",
-		Action: revoke,
+		Action: revokeFromConfig,
 		Flags:  flags.CreateRevokeFlags(),
 	}
+}
+
+func revokeFromConfig(ctx context.Context, cmd *cli.Command) error {
+	cfg, err := loadConfiguration(cmd)
+	if err == nil {
+		if len(cmd.StringSlice(flags.FlgCertName)) == 0 && !prompt.Confirm("Are you sure you want to revoke all certificates defined in the configuration file?") {
+			return nil
+		}
+
+		return root.Revoke(ctx, cmd, cfg)
+	}
+
+	nfErr := &configuration.FileNotFoundError{}
+	if !errors.As(err, &nfErr) {
+		return err
+	}
+
+	if len(cmd.StringSlice(flags.FlgCertName)) == 0 {
+		return errors.New("no certificate names/IDs specified")
+	}
+
+	return revoke(ctx, cmd)
 }
 
 func revoke(ctx context.Context, cmd *cli.Command) error {

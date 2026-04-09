@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
+	"github.com/go-acme/lego/v5/cmd/internal/prompt"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
@@ -27,7 +28,7 @@ func accountRecover(ctx context.Context, cmd *cli.Command) error {
 		slog.String("server", cmd.String(flags.FlgServer)),
 	)
 
-	if !confirm("Do you want to proceed?") {
+	if !prompt.Confirm("Do you want to proceed?") {
 		log.Info("Aborting.")
 		return nil
 	}

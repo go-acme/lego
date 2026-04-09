@@ -23,13 +23,7 @@ import (
 
 func CreateRootFlags() []cli.Flag {
 	flags := []cli.Flag{
-		&cli.StringFlag{
-			Name:    FlgConfig,
-			Aliases: []string{FlgConfig},
-			Sources: cli.EnvVars(toEnvName(FlgConfig)),
-			Usage:   "Path to the configuration file.",
-			Local:   true,
-		},
+		createConfigFlag(),
 	}
 
 	flags = append(flags, createLogFlags()...)
@@ -135,6 +129,7 @@ func CreateRevokeFlags() []cli.Flag {
 				" 9 (privilegeWithdrawn), or 10 (aACompromise).",
 			Value: acme.CRLReasonUnspecified,
 		},
+		createConfigFlag(),
 	}
 
 	flags = append(flags, createAccountFlags()...)
@@ -686,6 +681,16 @@ func createPostHookFlags() []cli.Flag {
 			Usage:    "Define the timeout for the post-hook execution.",
 			Value:    2 * time.Minute,
 		},
+	}
+}
+
+func createConfigFlag() cli.Flag {
+	return &cli.StringFlag{
+		Category: categoryConfiguration,
+		Name:     FlgConfig,
+		Sources:  cli.EnvVars(toEnvName(FlgConfig)),
+		Usage:    "Path to the configuration file.",
+		Local:    true,
 	}
 }
 

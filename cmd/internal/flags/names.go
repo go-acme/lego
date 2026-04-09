@@ -17,6 +17,7 @@ const (
 	categoryAdvanced              = "Flags related to advanced options:"
 	categoryRenew                 = "Flags related to certificate renewal:"
 	categoryLogs                  = "Flags related to logs:"
+	categoryConfiguration         = "Flags related to the configuration file:"
 )
 
 // Flag aliases (short-codes).

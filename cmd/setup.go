@@ -1,14 +1,11 @@
 package cmd
 
 import (
-	"bufio"
 	"crypto/x509"
 	"errors"
 	"fmt"
 	"net"
 	"net/http"
-	"os"
-	"slices"
 	"strings"
 	"time"
 
@@ -19,7 +16,6 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/lego"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/registration"
 	"github.com/urfave/cli/v3"
 )
@@ -142,51 +138,4 @@ func parseAddress(cmd *cli.Command, flgName string) (string, string, error) {
 	}
 
 	return host, port, nil
-}
-
-func confirm(message string) bool {
-	reader := bufio.NewReader(os.Stdin)
-
-	for {
-		fmt.Println(message + " Y/n")
-
-		text, err := reader.ReadString('\n')
-		if err != nil {
-			log.Fatal("Could not read from the console", log.ErrorAttr(err))
-		}
-
-		text = strings.Trim(text, "\r\n")
-		switch strings.ToUpper(text) {
-		case "", "Y":
-			return true
-		case "N":
-			return false
-		default:
-			log.Warn("Your input was invalid. Please answer with one of Y/y, N/n or by pressing enter.")
-		}
-	}
-}
-
-func choose(message string, options []string) string {
-	reader := bufio.NewReader(os.Stdin)
-
-	for {
-		fmt.Println(message + " " + strings.Join(options, ", "))
-
-		text, err := reader.ReadString('\n')
-		if err != nil {
-			log.Fatal("Could not read from the console", log.ErrorAttr(err))
-		}
-
-		text = strings.ToUpper(strings.Trim(text, "\r\n"))
-
-		if slices.Contains(options, text) {
-			return text
-		}
-
-		log.Warnf(log.LazySprintf(
-			"Your input was invalid. Please answer with one of %s or by pressing enter.",
-			strings.Join(options, ", "),
-		))
-	}
 }

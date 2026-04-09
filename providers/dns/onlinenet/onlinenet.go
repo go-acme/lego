@@ -124,7 +124,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}},
 	}
 
-	err = d.client.EditActiveZoneVersion(ctx, dns01.UnFqdn(authZone), operation)
+	err = d.client.EditActiveZoneVersion(ctx, dns01.UnFqdn(authZone), []internal.ResourceRecordOperation{operation})
 	if err != nil {
 		return fmt.Errorf("onlinenet: edit active zone version: %w", err)
 	}
@@ -161,7 +161,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}},
 	}
 
-	err = d.client.EditActiveZoneVersion(ctx, dns01.UnFqdn(authZone), operation)
+	err = d.client.EditActiveZoneVersion(ctx, dns01.UnFqdn(authZone), []internal.ResourceRecordOperation{operation})
 	if err != nil {
 		return fmt.Errorf("onlinenet: edit active zone version: %w", err)
 	}

@@ -95,10 +95,10 @@ func (c *Client) DeleteZoneVersion(ctx context.Context, zone, versionID string) 
 }
 
 // EditActiveZoneVersion edits the currently active zone version.
-func (c *Client) EditActiveZoneVersion(ctx context.Context, zone string, operation ResourceRecordOperation) error {
+func (c *Client) EditActiveZoneVersion(ctx context.Context, zone string, operations []ResourceRecordOperation) error {
 	endpoint := c.BaseURL.JoinPath("domain", zone, "version", "active")
 
-	req, err := newJSONRequest(ctx, http.MethodPatch, endpoint, operation)
+	req, err := newJSONRequest(ctx, http.MethodPatch, endpoint, operations)
 	if err != nil {
 		return err
 	}

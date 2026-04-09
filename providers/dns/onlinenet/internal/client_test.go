@@ -109,7 +109,7 @@ func TestClient_EditActiveZoneVersion(t *testing.T) {
 		}},
 	}
 
-	err := client.EditActiveZoneVersion(t.Context(), "example.com", operation)
+	err := client.EditActiveZoneVersion(t.Context(), "example.com", []ResourceRecordOperation{operation})
 	require.NoError(t, err)
 }
 

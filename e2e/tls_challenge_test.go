@@ -100,7 +100,7 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 	require.NoError(t, err)
 
 	err = load.RunLego(t.Context(),
-		"revoke",
+		"certificates", "revoke",
 		"-m", testEmail1,
 		"-s", caDirectory,
 		"-c", testDomain2,
@@ -123,7 +123,7 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 	require.NoError(t, err)
 
 	err = load.RunLego(t.Context(),
-		"revoke",
+		"certificates", "revoke",
 		"-m", testEmail1,
 		"-s", caDirectory,
 		"-c", testDomain4,

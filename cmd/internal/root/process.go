@@ -15,6 +15,7 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
+	"github.com/go-acme/lego/v5/internal/dotenv"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/registration"
 )
@@ -86,6 +87,16 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 }
 
 func processChallenges(ctx context.Context, lazyClient lzSetUp, chlgNode *configuration.ChallengeNode, store *storage.Storage, hookManager *hook.Manager, networkStack challenge.NetworkStack) error {
+	if chlgNode.DNS != nil {
+		cleanUp, err := dotenv.Load(dotenv.BaseFilePrefix, dotenv.BaseFilePrefix+"."+chlgNode.ID)
+
+		defer cleanUp()
+
+		if err != nil {
+			return fmt.Errorf("load environment variables: %w", err)
+		}
+	}
+
 	lazySetup := sync.OnceValues(func() (*lego.Client, error) {
 		client, errC := lazyClient()
 		if errC != nil {

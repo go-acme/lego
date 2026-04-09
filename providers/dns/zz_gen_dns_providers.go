@@ -144,6 +144,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/ns1"
 	"github.com/go-acme/lego/v4/providers/dns/octenium"
 	"github.com/go-acme/lego/v4/providers/dns/onecloudru"
+	"github.com/go-acme/lego/v4/providers/dns/onlinenet"
 	"github.com/go-acme/lego/v4/providers/dns/oraclecloud"
 	"github.com/go-acme/lego/v4/providers/dns/otc"
 	"github.com/go-acme/lego/v4/providers/dns/ovh"
@@ -480,6 +481,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return octenium.NewDNSProvider()
 	case "onecloudru":
 		return onecloudru.NewDNSProvider()
+	case "onlinenet":
+		return onlinenet.NewDNSProvider()
 	case "oraclecloud":
 		return oraclecloud.NewDNSProvider()
 	case "otc":

@@ -10,6 +10,7 @@ import (
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
+	"github.com/go-acme/lego/v5/internal/dotenv"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
@@ -36,6 +37,11 @@ func run(ctx context.Context, cmd *cli.Command) error {
 	account, err := store.Account.Get(cmd.String(flags.FlgServer), keyType, cmd.String(flags.FlgEmail), cmd.String(flags.FlgAccountID))
 	if err != nil {
 		return fmt.Errorf("set up account: %w", err)
+	}
+
+	_, err = dotenv.Load(dotenv.BaseFilePrefix)
+	if err != nil {
+		return fmt.Errorf("set up environment: %w", err)
 	}
 
 	lazyClient := sync.OnceValues(func() (*lego.Client, error) {

@@ -10,10 +10,20 @@ body:
       options:
         - label: Yes, I've searched for similar issues on GitHub and didn't find any.
           required: true
-        - label: Yes, the DNS provider exposes a public API.
+        - label: Yes, the DNS provider has a documented API.
           required: true
         - label: Yes, I know that the lego maintainers don't have an account in all DNS providers in the world.
           required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        #### Do you want your request to be released in a specific timeframe?
+
+        If it is possible to implement it, your request should be released (after implementation, review, and merge):
+
+        - In 1 week (7 days) maximum. Requires [High priority tier](https://github.com/sponsors/ldez/sponsorships?tier_id=605810).
+        - In 2 days maximum. Requires [Critical priority tier](https://github.com/sponsors/ldez/sponsorships?tier_id=605811).
 
   - type: checkboxes
     id: pr
@@ -24,38 +34,6 @@ body:
           required: false
         - label: Yes, I can test an implementation with the help of the maintainers if someone creates a pull request.
           required: false
-
-  - type: dropdown
-    id: type
-    attributes:
-      label: How do you use lego?
-      options:
-        - I don't know
-        - Library
-        - Binary
-        - Docker image
-        - Through Traefik
-        - Through Caddy
-        - Through Terraform ACME provider
-        - Through Bitnami
-        - Through 1Panel
-        - Through Zoraxy
-        - Through Certimate
-        - go install
-        - Other
-    validations:
-      required: true
-
-  - type: dropdown
-    id: profile
-    attributes:
-      label: Who are you?
-      options:
-        - A customer of this DNS provider
-        - An employee of this DNS provider
-        - Other (please explain)
-    validations:
-      required: true
 
   - type: input
     id: provider-link
@@ -80,3 +58,83 @@ body:
       placeholder: Your notes.
     validations:
       required: false
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: How do you use lego?
+      # This is required because of a bug in Issue Forms:
+      # The first option is always selected unless you are using the "multiple" attribute.
+      multiple: true
+      options:
+        - Library
+        - Binary
+        - Docker image
+        - go install
+        - Through 1Panel
+        - Through Bitnami
+        - Through Caddy
+        - Through Certimate
+        - Through Dokku plugin
+        - Through Home Assistant plugin
+        - Through Terraform ACME provider
+        - Through Traefik
+        - Through Zoraxy
+        - Other (please explain)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: profile
+    attributes:
+      label: Who are you?
+      options:
+        - I don't know
+        - A customer of this DNS provider
+        - An employee of this DNS provider
+        - An employee of an ACME CA
+        - Other (please explain)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: usage
+    attributes:
+      label: In which context are you using lego?
+      # This is required because of a bug in Issue Forms:
+      # The first option is always selected unless you are using the "multiple" attribute.
+      multiple: true
+      options:
+        - Personal use
+        - Professional use
+        - Personal and professional use
+        - Other (please explain)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: value-affirmation
+    attributes:
+      label: 🌱 Supporting the Maintainer
+      options:
+        - label: "Yes, I find this project useful, and it has saved me time in my workflow/business."
+          required: false
+        - label: "Yes, I have [starred](https://github.com/go-acme/lego) this repository to help others find it."
+          required: false
+        - label: "Yes, I have [sponsored](https://donate.ldez.dev) this project to keep the project stable and maintained."
+          required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        Your support ensures this tool remains a reliable part of your toolkit for years to come.
+
+        [Support Project Longevity →](https://donate.ldez.dev)
+
+  - type: checkboxes
+    id: validation
+    attributes:
+      label: Validation
+      options:
+        - label: Yes, I've included all the information above (version, usage, etc.).
+          required: true

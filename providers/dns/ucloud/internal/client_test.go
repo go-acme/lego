@@ -91,7 +91,7 @@ func TestClient_DomainDNSQuery(t *testing.T) {
 		Name:     "_acme-challenge.example.com",
 		Content:  "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 		Priority: "",
-		TTL:      "120",
+		TTL:      "600",
 	}}
 
 	assert.Equal(t, expected, domains.Data)

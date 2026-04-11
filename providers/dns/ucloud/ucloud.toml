@@ -19,7 +19,7 @@ lego --dns ucloud -d '*.example.com' -d example.com run
     UCLOUD_PROJECT_ID = "Project ID"
     UCLOUD_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     UCLOUD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
-    UCLOUD_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    UCLOUD_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)"
     UCLOUD_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]

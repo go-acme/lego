@@ -2,7 +2,7 @@
 
 
 [[command]]
-title   = "lego help"
+title   = "lego -h"
 content = """
 NAME:
    lego - ACME client written in Go
@@ -33,13 +33,13 @@ GLOBAL OPTIONS:
 """
 
 [[command]]
-title   = "lego help run"
+title   = "lego run -h"
 content = """
 NAME:
    lego run - Get or renew a certificate
 
 USAGE:
-   lego run
+   lego run [options]
 
 OPTIONS:
    --accept-tos, -a                                             By setting this flag to true you indicate that you accept the current CA terms of service. [$LEGO_ACCEPT_TOS]
@@ -144,6 +144,316 @@ OPTIONS:
    --pfx                          Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together. [$LEGO_PFX]
    --pfx.format string            The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: DES, RC2, SHA256, PBMAC1. (default: "RC2") [$LEGO_PFX_FORMAT]
    --pfx.password string          The password used to encrypt the .pfx (PCKS#12) file. (default: "changeit") [$LEGO_PFX_PASSWORD]
+
+
+GLOBAL OPTIONS:
+   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
+   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+"""
+
+[[command]]
+title   = "lego accounts register -h"
+content = """
+NAME:
+   lego accounts register - Register an account.
+
+USAGE:
+   lego accounts register [options]
+
+OPTIONS:
+   --accept-tos, -a              By setting this flag to true you indicate that you accept the current CA terms of service. [$LEGO_ACCEPT_TOS]
+   --email string, -m string     Email used for registration and recovery contact. [$LEGO_EMAIL]
+   --help, -h                    show help
+   --key-type string, -k string  Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
+   --server string, -s string    CA (ACME server). It can be either a URL or a shortcode.
+                                 (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
+
+   Flags related to External Account Binding:
+
+   --eab              Use External Account Binding for account registration. Requires eab.kid and eab.hmac. [$LEGO_EAB]
+   --eab.hmac string  MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format. [$LEGO_EAB_HMAC]
+   --eab.kid string   Key identifier for External Account Binding. [$LEGO_EAB_KID]
+
+   Flags related to advanced options:
+
+   --cert.timeout int  Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30) [$LEGO_CERT_TIMEOUT]
+   --enable-cn         Enable the use of the common name. (Not recommended) [$LEGO_ENABLE_CN]
+
+   Flags related to the ACME client:
+
+   --http-timeout int           Set the HTTP timeout value to a specific value in seconds. (default: 0) [$LEGO_HTTP_TIMEOUT]
+   --overall-request-limit int  ACME overall requests limit. (default: 18) [$LEGO_OVERALL_REQUEST_LIMIT]
+   --tls-skip-verify            Skip the TLS verification of the ACME server. [$LEGO_TLS_SKIP_VERIFY]
+   --user-agent string          Add to the user-agent sent to the CA to identify an application embedding lego-cli [$LEGO_USER_AGENT]
+
+   Flags related to the storage:
+
+   --account-id string  Account identifier (The email is used if the account ID is undefined). [$LEGO_ACCOUNT_ID]
+   --path string        Directory to use for storing the data. [$LEGO_PATH]
+
+
+GLOBAL OPTIONS:
+   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
+   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+"""
+
+[[command]]
+title   = "lego accounts recover -h"
+content = """
+NAME:
+   lego accounts recover - Recover/import an account from the private key.
+
+USAGE:
+   lego accounts recover [options]
+
+OPTIONS:
+   --email string, -m string     Email used for registration and recovery contact. [$LEGO_EMAIL]
+   --help, -h                    show help
+   --key-type string, -k string  Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
+   --private-key string          Path to a private key (PEM encoded) for the account. [$LEGO_PRIVATE_KEY]
+   --server string, -s string    CA (ACME server). It can be either a URL or a shortcode.
+                                 (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
+
+   Flags related to External Account Binding:
+
+   --eab              Use External Account Binding for account registration. Requires eab.kid and eab.hmac. [$LEGO_EAB]
+   --eab.hmac string  MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format. [$LEGO_EAB_HMAC]
+   --eab.kid string   Key identifier for External Account Binding. [$LEGO_EAB_KID]
+
+   Flags related to advanced options:
+
+   --cert.timeout int  Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30) [$LEGO_CERT_TIMEOUT]
+   --enable-cn         Enable the use of the common name. (Not recommended) [$LEGO_ENABLE_CN]
+
+   Flags related to the ACME client:
+
+   --http-timeout int           Set the HTTP timeout value to a specific value in seconds. (default: 0) [$LEGO_HTTP_TIMEOUT]
+   --overall-request-limit int  ACME overall requests limit. (default: 18) [$LEGO_OVERALL_REQUEST_LIMIT]
+   --tls-skip-verify            Skip the TLS verification of the ACME server. [$LEGO_TLS_SKIP_VERIFY]
+   --user-agent string          Add to the user-agent sent to the CA to identify an application embedding lego-cli [$LEGO_USER_AGENT]
+
+   Flags related to the storage:
+
+   --account-id string  Account identifier (The email is used if the account ID is undefined). [$LEGO_ACCOUNT_ID]
+   --path string        Directory to use for storing the data. [$LEGO_PATH]
+
+
+GLOBAL OPTIONS:
+   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
+   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+"""
+
+[[command]]
+title   = "lego accounts keyrollover -h"
+content = """
+NAME:
+   lego accounts keyrollover - Update the account private key.
+
+USAGE:
+   lego accounts keyrollover [options]
+
+OPTIONS:
+   --email string, -m string     Email used for registration and recovery contact. [$LEGO_EMAIL]
+   --help, -h                    show help
+   --key-type string, -k string  Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
+   --key-type string, -k string  Key type to use for the new private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
+   --private-key string          Path to the new private key (PEM encoded) for the account. If not specified, the private key will be generated. [$LEGO_PRIVATE_KEY]
+   --server string, -s string    CA (ACME server). It can be either a URL or a shortcode.
+                                 (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
+
+   Flags related to External Account Binding:
+
+   --eab              Use External Account Binding for account registration. Requires eab.kid and eab.hmac. [$LEGO_EAB]
+   --eab.hmac string  MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format. [$LEGO_EAB_HMAC]
+   --eab.kid string   Key identifier for External Account Binding. [$LEGO_EAB_KID]
+
+   Flags related to advanced options:
+
+   --cert.timeout int  Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30) [$LEGO_CERT_TIMEOUT]
+   --enable-cn         Enable the use of the common name. (Not recommended) [$LEGO_ENABLE_CN]
+
+   Flags related to the ACME client:
+
+   --http-timeout int           Set the HTTP timeout value to a specific value in seconds. (default: 0) [$LEGO_HTTP_TIMEOUT]
+   --overall-request-limit int  ACME overall requests limit. (default: 18) [$LEGO_OVERALL_REQUEST_LIMIT]
+   --tls-skip-verify            Skip the TLS verification of the ACME server. [$LEGO_TLS_SKIP_VERIFY]
+   --user-agent string          Add to the user-agent sent to the CA to identify an application embedding lego-cli [$LEGO_USER_AGENT]
+
+   Flags related to the storage:
+
+   --account-id string  Account identifier (The email is used if the account ID is undefined). [$LEGO_ACCOUNT_ID]
+   --path string        Directory to use for storing the data. [$LEGO_PATH]
+
+
+GLOBAL OPTIONS:
+   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
+   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+"""
+
+[[command]]
+title   = "lego accounts list -h"
+content = """
+NAME:
+   lego accounts list - Display information about accounts.
+
+USAGE:
+   lego accounts list [options]
+
+OPTIONS:
+   --help, -h  show help
+   --json      Format the output as JSON.
+
+   Flags related to the storage:
+
+   --path string  Directory to use for storing the data. [$LEGO_PATH]
+
+
+GLOBAL OPTIONS:
+   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
+   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+"""
+
+[[command]]
+title   = "lego certificates revoke -h"
+content = """
+NAME:
+   lego certificates revoke - Revoke a certificate
+
+USAGE:
+   lego certificates revoke [options]
+
+OPTIONS:
+   --cert.name string, -c string [ --cert.name string, -c string ]  The certificate IDs/Names, used to retrieve the certificates. [$LEGO_CERT_NAME]
+   --email string, -m string                                        Email used for registration and recovery contact. [$LEGO_EMAIL]
+   --help, -h                                                       show help
+   --keep                                                           Keep the certificates after the revocation instead of archiving them. [$LEGO_KEEP]
+   --key-type string, -k string                                     Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
+   --reason uint                                                    Identifies the reason for the certificate revocation. See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1.
+                                                                    Valid values are: 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged), 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL), 9 (privilegeWithdrawn), or 10 (aACompromise). (default: 0) [$LEGO_REASON]
+   --server string, -s string                                       CA (ACME server). It can be either a URL or a shortcode.
+                                                                    (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
+
+   Flags related to External Account Binding:
+
+   --eab              Use External Account Binding for account registration. Requires eab.kid and eab.hmac. [$LEGO_EAB]
+   --eab.hmac string  MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format. [$LEGO_EAB_HMAC]
+   --eab.kid string   Key identifier for External Account Binding. [$LEGO_EAB_KID]
+
+   Flags related to advanced options:
+
+   --cert.timeout int  Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30) [$LEGO_CERT_TIMEOUT]
+   --enable-cn         Enable the use of the common name. (Not recommended) [$LEGO_ENABLE_CN]
+
+   Flags related to the ACME client:
+
+   --http-timeout int           Set the HTTP timeout value to a specific value in seconds. (default: 0) [$LEGO_HTTP_TIMEOUT]
+   --overall-request-limit int  ACME overall requests limit. (default: 18) [$LEGO_OVERALL_REQUEST_LIMIT]
+   --tls-skip-verify            Skip the TLS verification of the ACME server. [$LEGO_TLS_SKIP_VERIFY]
+   --user-agent string          Add to the user-agent sent to the CA to identify an application embedding lego-cli [$LEGO_USER_AGENT]
+
+   Flags related to the configuration file:
+
+   --config string  Path to the configuration file. [$LEGO_CONFIG]
+
+   Flags related to the storage:
+
+   --account-id string  Account identifier (The email is used if the account ID is undefined). [$LEGO_ACCOUNT_ID]
+   --path string        Directory to use for storing the data. [$LEGO_PATH]
+
+
+GLOBAL OPTIONS:
+   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
+   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+"""
+
+[[command]]
+title   = "lego certificates list -h"
+content = """
+NAME:
+   lego certificates list - Display information about certificates.
+
+USAGE:
+   lego certificates list [options]
+
+OPTIONS:
+   --help, -h  show help
+   --json      Format the output as JSON.
+
+   Flags related to the storage:
+
+   --path string  Directory to use for storing the data. [$LEGO_PATH]
+
+
+GLOBAL OPTIONS:
+   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
+   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+"""
+
+[[command]]
+title   = "lego archives restore -h"
+content = """
+NAME:
+   lego archives restore - Restore an archive.
+
+USAGE:
+   lego archives restore [options]
+
+OPTIONS:
+   --help, -h  show help
+
+   Flags related to the storage:
+
+   --path string  Directory to use for storing the data. [$LEGO_PATH]
+
+
+GLOBAL OPTIONS:
+   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
+   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+"""
+
+[[command]]
+title   = "lego archives list -h"
+content = """
+NAME:
+   lego archives list - List all archives.
+
+USAGE:
+   lego archives list [options]
+
+OPTIONS:
+   --help, -h  show help
+
+   Flags related to the storage:
+
+   --path string  Directory to use for storing the data. [$LEGO_PATH]
+
+
+GLOBAL OPTIONS:
+   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
+   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+"""
+
+[[command]]
+title   = "lego migrate -h"
+content = """
+NAME:
+   lego migrate - Migrate certificates and accounts.
+
+USAGE:
+   lego migrate [options]
+
+OPTIONS:
+   --account-only  Only migrate accounts. [$LEGO_ACCOUNT_ONLY]
+   --help, -h      show help
+
+   Flags related to the storage:
+
+   --path string  Directory to use for storing the data. [$LEGO_PATH]
+
+
+GLOBAL OPTIONS:
+   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
+   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
 """
 
 [[command]]

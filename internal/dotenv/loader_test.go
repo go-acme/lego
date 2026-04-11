@@ -38,8 +38,6 @@ func TestLoad(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
 			cleanUp, err := Load(test.filenames...)
 
 			t.Cleanup(cleanUp)

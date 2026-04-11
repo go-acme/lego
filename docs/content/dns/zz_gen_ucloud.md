@@ -54,7 +54,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | `UCLOUD_PROJECT_ID` | Project ID |
 | `UCLOUD_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
 | `UCLOUD_REGION` | Region |
-| `UCLOUD_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
+| `UCLOUD_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 600) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

@@ -1,0 +1,20 @@
+{
+  "id": 123,
+  "name": "_acme-challenge",
+  "type": "TXT",
+  "aux": 0,
+  "ttl": 120,
+  "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+  "domain": {
+    "id": 2,
+    "name": "example.com",
+    "dnssec": true,
+    "external": true,
+    "versions": {
+      "$ref": "string"
+    },
+    "zone": {
+      "$ref": "string"
+    }
+  }
+}

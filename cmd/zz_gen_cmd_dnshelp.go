@@ -150,6 +150,7 @@ func allDNSCodes() string {
 		"ns1",
 		"octenium",
 		"onecloudru",
+		"onlinenet",
 		"oraclecloud",
 		"otc",
 		"ovh",
@@ -182,6 +183,7 @@ func allDNSCodes() string {
 		"timewebcloud",
 		"todaynic",
 		"transip",
+		"ucloud",
 		"ultradns",
 		"uniteddomains",
 		"variomedia",
@@ -665,9 +667,9 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "BLUECATV2_CONFIG_NAME":	Configuration name`)
 		ew.writeln(`	- "BLUECATV2_PASSWORD":	API password`)
+		ew.writeln(`	- "BLUECATV2_SERVER_URL":	The server URL: it should have a scheme, hostname, and port (if required) of the authoritative Bluecat BAM serve`)
 		ew.writeln(`	- "BLUECATV2_USERNAME":	API username`)
 		ew.writeln(`	- "BLUECATV2_VIEW_NAME":	DNS View Name`)
-		ew.writeln(`	- "BLUECAT_SERVER_URL":	The server URL: it should have a scheme, hostname, and port (if required) of the authoritative Bluecat BAM serve`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
@@ -3154,6 +3156,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/onecloudru`)
 
+	case "onlinenet":
+		// generated from: providers/dns/onlinenet/onlinenet.toml
+		ew.writeln(`Configuration for Online.net.`)
+		ew.writeln(`Code:	'onlinenet'`)
+		ew.writeln(`Since:	'v4.34.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ONLINENET_API_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ONLINENET_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "ONLINENET_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 15)`)
+		ew.writeln(`	- "ONLINENET_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 240)`)
+		ew.writeln(`	- "ONLINENET_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/onlinenet`)
+
 	case "oraclecloud":
 		// generated from: providers/dns/oraclecloud/oraclecloud.toml
 		ew.writeln(`Configuration for Oracle Cloud.`)
@@ -3163,18 +3185,20 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "OCI_COMPARTMENT_OCID":	Compartment OCID`)
-		ew.writeln(`	- "OCI_FINGERPRINT":	Public key fingerprint (ignored if 'OCI_AUTH_TYPE=instance_principal')`)
-		ew.writeln(`	- "OCI_PRIVATE_KEY_PASSWORD":	Private key password (ignored if 'OCI_AUTH_TYPE=instance_principal')`)
-		ew.writeln(`	- "OCI_PRIVATE_KEY_PATH":	Private key file (ignored if 'OCI_AUTH_TYPE=instance_principal')`)
-		ew.writeln(`	- "OCI_REGION":	Region (it can be empty if 'OCI_AUTH_TYPE=instance_principal').`)
-		ew.writeln(`	- "OCI_TENANCY_OCID":	Tenancy OCID (ignored if 'OCI_AUTH_TYPE=instance_principal')`)
-		ew.writeln(`	- "OCI_USER_OCID":	User OCID (ignored if 'OCI_AUTH_TYPE=instance_principal')`)
+		ew.writeln(`	- "OCI_FINGERPRINT":	Public key fingerprint (ignored if 'OCI_AUTH_TYPE' is not empty)`)
+		ew.writeln(`	- "OCI_PRIVATE_KEY_PASSWORD":	Private key password (ignored if 'OCI_AUTH_TYPE' is not empty)`)
+		ew.writeln(`	- "OCI_PRIVATE_KEY_PATH":	Private key file (ignored if 'OCI_AUTH_TYPE' is not empty)`)
+		ew.writeln(`	- "OCI_REGION":	Region (it can be empty if 'OCI_AUTH_TYPE' is not empty).`)
+		ew.writeln(`	- "OCI_TENANCY_OCID":	Tenancy OCID (ignored if 'OCI_AUTH_TYPE' is not empty)`)
+		ew.writeln(`	- "OCI_USER_OCID":	User OCID (ignored if 'OCI_AUTH_TYPE' is not empty)`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "OCI_AUTH_TYPE":	Authorization type. Possible values: 'instance_principal', ''  (Default: '')`)
+		ew.writeln(`	- "OCI_AUTH_TYPE":	Authorization type. Possible values: 'instance_principal', 'user_principal', ''. (Default: '')`)
+		ew.writeln(`	- "OCI_CONFIG_FILE":	Path to the configuration file. (only for 'OCI_AUTH_TYPE=user_principal')`)
 		ew.writeln(`	- "OCI_HTTP_TIMEOUT":	API request timeout in seconds (Default: 60)`)
 		ew.writeln(`	- "OCI_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "OCI_PROFILE":	Profile name. (only for 'OCI_AUTH_TYPE=user_principal')`)
 		ew.writeln(`	- "OCI_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
 		ew.writeln(`	- "OCI_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
 		ew.writeln(`	- "TF_VAR_fingerprint":	Alias on 'OCI_FINGERPRINT'`)
@@ -3410,30 +3434,30 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "rfc2136":
 		// generated from: providers/dns/rfc2136/rfc2136.toml
-		ew.writeln(`Configuration for RFC2136.`)
+		ew.writeln(`Configuration for DNS Update (RFC2136).`)
 		ew.writeln(`Code:	'rfc2136'`)
 		ew.writeln(`Since:	'v0.3.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "RFC2136_NAMESERVER":	Network address in the form "host" or "host:port"`)
+		ew.writeln(`	- "DNSUPDATE_NAMESERVER":	Network address in the form "host" or "host:port"`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "RFC2136_DNS_TIMEOUT":	API request timeout in seconds (Default: 10)`)
-		ew.writeln(`	- "RFC2136_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
-		ew.writeln(`	- "RFC2136_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
-		ew.writeln(`	- "RFC2136_SEQUENCE_INTERVAL":	Time between sequential requests in seconds (Default: 60)`)
-		ew.writeln(`	- "RFC2136_TSIG_ALGORITHM":	TSIG algorithm. See [miekg/dns#tsig.go](https://github.com/miekg/dns/blob/master/tsig.go) for supported values. To disable TSIG authentication, leave the 'RFC2136_TSIG_KEY' or 'RFC2136_TSIG_SECRET' variables unset.`)
-		ew.writeln(`	- "RFC2136_TSIG_FILE":	Path to a key file generated by tsig-keygen`)
-		ew.writeln(`	- "RFC2136_TSIG_GSS_KEYTAB_FILE":	Path to Kerberos keytab file. The TSIG algorithm must be 'gss-tsig.'.`)
-		ew.writeln(`	- "RFC2136_TSIG_GSS_PASSWORD":	Kerberos password. The TSIG algorithm must be 'gss-tsig.'.`)
-		ew.writeln(`	- "RFC2136_TSIG_GSS_REALM":	Kerberos realm. The TSIG algorithm must be 'gss-tsig.'.`)
-		ew.writeln(`	- "RFC2136_TSIG_GSS_USERNAME":	Kerberos username. The TSIG algorithm must be 'gss-tsig.'.`)
-		ew.writeln(`	- "RFC2136_TSIG_KEY":	Name of the secret key as defined in DNS server configuration. To disable TSIG authentication, leave the 'RFC2136_TSIG_KEY' variable unset.`)
-		ew.writeln(`	- "RFC2136_TSIG_SECRET":	Secret key payload. To disable TSIG authentication, leave the 'RFC2136_TSIG_SECRET' variable unset.`)
-		ew.writeln(`	- "RFC2136_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
-		ew.writeln(`	- "RFC2136_ZONES":	List of potential zones (separated by commas)`)
+		ew.writeln(`	- "DNSUPDATE_DNS_TIMEOUT":	API request timeout in seconds (Default: 10)`)
+		ew.writeln(`	- "DNSUPDATE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "DNSUPDATE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "DNSUPDATE_SEQUENCE_INTERVAL":	Time between sequential requests in seconds (Default: 60)`)
+		ew.writeln(`	- "DNSUPDATE_TSIG_ALGORITHM":	TSIG algorithm. See [miekg/dns#tsig.go](https://github.com/miekg/dns/blob/master/tsig.go) for supported values. To disable TSIG authentication, leave the 'DNSUPDATE_TSIG_KEY' or 'DNSUPDATE_TSIG_SECRET' variables unset.`)
+		ew.writeln(`	- "DNSUPDATE_TSIG_FILE":	Path to a key file generated by tsig-keygen`)
+		ew.writeln(`	- "DNSUPDATE_TSIG_GSS_KEYTAB_FILE":	Path to Kerberos keytab file. The TSIG algorithm must be 'gss-tsig.'.`)
+		ew.writeln(`	- "DNSUPDATE_TSIG_GSS_PASSWORD":	Kerberos password. The TSIG algorithm must be 'gss-tsig.'.`)
+		ew.writeln(`	- "DNSUPDATE_TSIG_GSS_REALM":	Kerberos realm. The TSIG algorithm must be 'gss-tsig.'.`)
+		ew.writeln(`	- "DNSUPDATE_TSIG_GSS_USERNAME":	Kerberos username. The TSIG algorithm must be 'gss-tsig.'.`)
+		ew.writeln(`	- "DNSUPDATE_TSIG_KEY":	Name of the secret key as defined in DNS server configuration. To disable TSIG authentication, leave the 'DNSUPDATE_TSIG_KEY' variable unset.`)
+		ew.writeln(`	- "DNSUPDATE_TSIG_SECRET":	Secret key payload. To disable TSIG authentication, leave the 'DNSUPDATE_TSIG_SECRET' variable unset.`)
+		ew.writeln(`	- "DNSUPDATE_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+		ew.writeln(`	- "DNSUPDATE_ZONES":	List of potential zones (separated by commas)`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rfc2136`)
@@ -3871,6 +3895,29 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/transip`)
+
+	case "ucloud":
+		// generated from: providers/dns/ucloud/ucloud.toml
+		ew.writeln(`Configuration for UCloud.`)
+		ew.writeln(`Code:	'ucloud'`)
+		ew.writeln(`Since:	'v4.34.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "UCLOUD_PRIVATE_KEY":	Private key`)
+		ew.writeln(`	- "UCLOUD_PUBLIC_KEY":	Public key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "UCLOUD_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "UCLOUD_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "UCLOUD_PROJECT_ID":	Project ID`)
+		ew.writeln(`	- "UCLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "UCLOUD_REGION":	Region`)
+		ew.writeln(`	- "UCLOUD_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/ucloud`)
 
 	case "ultradns":
 		// generated from: providers/dns/ultradns/ultradns.toml

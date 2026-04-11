@@ -144,6 +144,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/ns1"
 	"github.com/go-acme/lego/v5/providers/dns/octenium"
 	"github.com/go-acme/lego/v5/providers/dns/onecloudru"
+	"github.com/go-acme/lego/v5/providers/dns/onlinenet"
 	"github.com/go-acme/lego/v5/providers/dns/oraclecloud"
 	"github.com/go-acme/lego/v5/providers/dns/otc"
 	"github.com/go-acme/lego/v5/providers/dns/ovh"
@@ -176,6 +177,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/timewebcloud"
 	"github.com/go-acme/lego/v5/providers/dns/todaynic"
 	"github.com/go-acme/lego/v5/providers/dns/transip"
+	"github.com/go-acme/lego/v5/providers/dns/ucloud"
 	"github.com/go-acme/lego/v5/providers/dns/ultradns"
 	"github.com/go-acme/lego/v5/providers/dns/uniteddomains"
 	"github.com/go-acme/lego/v5/providers/dns/variomedia"
@@ -480,6 +482,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return octenium.NewDNSProvider()
 	case "onecloudru":
 		return onecloudru.NewDNSProvider()
+	case "onlinenet":
+		return onlinenet.NewDNSProvider()
 	case "oraclecloud":
 		return oraclecloud.NewDNSProvider()
 	case "otc":
@@ -502,7 +506,7 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return regfish.NewDNSProvider()
 	case "regru":
 		return regru.NewDNSProvider()
-	case "rfc2136":
+	case "rfc2136", "dnsupdate":
 		return rfc2136.NewDNSProvider()
 	case "rimuhosting":
 		return rimuhosting.NewDNSProvider()
@@ -544,6 +548,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return todaynic.NewDNSProvider()
 	case "transip":
 		return transip.NewDNSProvider()
+	case "ucloud":
+		return ucloud.NewDNSProvider()
 	case "ultradns":
 		return ultradns.NewDNSProvider()
 	case "uniteddomains":

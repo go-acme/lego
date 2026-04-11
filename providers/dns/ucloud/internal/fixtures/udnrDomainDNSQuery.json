@@ -1,0 +1,13 @@
+{
+  "Action": "UdnrDomainDNSQueryResponse",
+  "Data": [
+    {
+      "DnsType": "TXT",
+      "RecordName": "_acme-challenge.example.com",
+      "Content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "TTL": "600"
+    }
+  ],
+  "Message": "YWMskZFN",
+  "RetCode": 0
+}

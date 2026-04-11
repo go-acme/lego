@@ -43,9 +43,9 @@ lego --dns bluecatv2 -d '*.example.com' -d example.com run
 |-----------------------|-------------|
 | `BLUECATV2_CONFIG_NAME` | Configuration name |
 | `BLUECATV2_PASSWORD` | API password |
+| `BLUECATV2_SERVER_URL` | The server URL: it should have a scheme, hostname, and port (if required) of the authoritative Bluecat BAM serve |
 | `BLUECATV2_USERNAME` | API username |
 | `BLUECATV2_VIEW_NAME` | DNS View Name |
-| `BLUECAT_SERVER_URL` | The server URL: it should have a scheme, hostname, and port (if required) of the authoritative Bluecat BAM serve |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

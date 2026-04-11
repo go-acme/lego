@@ -1,0 +1,12 @@
+{
+  "uuid_ref": "9335be4a-063c-43d6-a393-8bd5d7c78f07",
+  "name": "example.com",
+  "creation_date": "2026-04-04",
+  "active": false,
+  "zone": {
+    "$ref": "c3d5c0bb-5094-4974-b54b-16175207ac91"
+  },
+  "domain": {
+    "$ref": "a7362c44-867a-4dea-89ad-1a1d5efc8e7a"
+  }
+}

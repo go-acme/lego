@@ -5,7 +5,7 @@ draft: false
 chapter: false
 ---
 
-Let's Encrypt client and ACME library written in Go.
+ACME client and ACME library written in Go.
 
 {{% notice important %}}
 lego is an independent, free, and open-source project, if you value it, consider [supporting it](https://donate.ldez.dev)! ❤️

@@ -188,10 +188,10 @@ func TestDNSProvider_Present(t *testing.T) {
 						With("Action", "UdnrDomainDNSAdd"),
 					servermock.CheckForm().Strict().
 						WithRegexp("Action", "UdnrDomainDNSAdd").
-						With("Domain", "example.com").
+						With("Dn", "example.com").
 						With("RecordName", "_acme-challenge.example.com").
 						With("TTL", "600").
-						With("Type", "TXT").
+						With("DnsType", "TXT").
 						With("Content", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
 						With("PublicKey", "pubkey").
 						WithRegexp("Signature", ".+"),
@@ -213,7 +213,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 						With("Action", "UdnrDomainDNSQuery"),
 					servermock.CheckForm().Strict().
 						WithRegexp("Action", "UdnrDomainDNSQuery").
-						With("Domain", "example.com").
+						With("Dn", "example.com").
 						With("PublicKey", "pubkey").
 						WithRegexp("Signature", ".+"),
 				).
@@ -223,9 +223,9 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 						With("Action", "UdnrDeleteDnsRecord"),
 					servermock.CheckForm().Strict().
 						WithRegexp("Action", "UdnrDeleteDnsRecord").
-						With("Domain", "example.com").
+						With("Dn", "example.com").
 						With("RecordName", "_acme-challenge.example.com").
-						With("Type", "TXT").
+						With("DnsType", "TXT").
 						With("Content", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
 						With("PublicKey", "pubkey").
 						WithRegexp("Signature", ".+"),

@@ -8,12 +8,12 @@ import (
 type DomainDNSAddRequest struct {
 	request.CommonBase
 
-	Domain     *string `json:"Dn,omitempty"`
-	RecordName *string `json:"RecordName,omitempty"`
-	Type       *string `json:"DnsType,omitempty"`
-	Content    *string `json:"Content,omitempty"`
-	TTL        *string `json:"TTL,omitempty"`
-	Priority   *string `json:"Prio,omitempty"`
+	Dn         *string
+	RecordName *string
+	DnsType    *string //nolint:revive // Because the struct names are used directly.
+	Content    *string
+	TTL        *string
+	Prio       *string
 }
 
 type DomainDNSAddResponse struct {
@@ -23,7 +23,7 @@ type DomainDNSAddResponse struct {
 type DomainDNSQueryRequest struct {
 	request.CommonBase
 
-	Domain *string `json:"Dn,omitempty"`
+	Dn *string
 }
 
 type DomainDNSQueryResponse struct {
@@ -43,10 +43,10 @@ type DomainDNSRecord struct {
 type DeleteDNSRecordRequest struct {
 	request.CommonBase
 
-	Domain     *string `json:"Dn,omitempty"`
-	RecordName *string `json:"RecordName,omitempty"`
-	Type       *string `json:"DnsType,omitempty"`
-	Content    *string `json:"Content,omitempty"`
+	Dn         *string
+	RecordName *string
+	DnsType    *string //nolint:revive // Because the struct names are used directly.
+	Content    *string
 }
 
 type DeleteDNSRecordResponse struct {

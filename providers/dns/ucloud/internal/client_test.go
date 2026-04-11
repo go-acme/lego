@@ -28,6 +28,9 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
+		servermock.CheckHeader().
+			WithRegexp("U-Timestamp-Ms", `\d+`).
+			WithContentTypeFromURLEncoded(),
 	)
 }
 
@@ -35,16 +38,13 @@ func TestClient_DomainDNSAdd(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
 			servermock.ResponseFromFixture("udnrDomainDNSAdd.json"),
-			servermock.CheckHeader().
-				WithRegexp("U-Timestamp-Ms", `\d+`).
-				WithContentTypeFromURLEncoded(),
 			servermock.CheckQueryParameter().Strict().
 				With("Action", "UdnrDomainDNSAdd"),
 			servermock.CheckForm().Strict().
 				WithRegexp("Action", "UdnrDomainDNSAdd").
 				With("Domain", "example.com").
 				With("RecordName", "_acme-challenge.example.com").
-				With("TTL", "120").
+				With("TTL", "600").
 				With("Type", "TXT").
 				With("Content", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
 				With("PublicKey", "pubkey").
@@ -57,7 +57,7 @@ func TestClient_DomainDNSAdd(t *testing.T) {
 	request.RecordName = ucloud.String("_acme-challenge.example.com")
 	request.Type = ucloud.String("TXT")
 	request.Content = ucloud.String("ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")
-	request.TTL = ucloud.String("120")
+	request.TTL = ucloud.String("600")
 
 	_, err := client.DomainDNSAdd(request)
 	require.NoError(t, err)
@@ -67,9 +67,6 @@ func TestClient_DomainDNSQuery(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
 			servermock.ResponseFromFixture("udnrDomainDNSQuery.json"),
-			servermock.CheckHeader().
-				WithRegexp("U-Timestamp-Ms", `\d+`).
-				WithContentTypeFromURLEncoded(),
 			servermock.CheckQueryParameter().Strict().
 				With("Action", "UdnrDomainDNSQuery"),
 			servermock.CheckForm().Strict().
@@ -101,9 +98,6 @@ func TestClient_DeleteDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
 			servermock.ResponseFromFixture("udnrDeleteDNSRecord.json"),
-			servermock.CheckHeader().
-				WithRegexp("U-Timestamp-Ms", `\d+`).
-				WithContentTypeFromURLEncoded(),
 			servermock.CheckQueryParameter().Strict().
 				With("Action", "UdnrDeleteDnsRecord"),
 			servermock.CheckForm().Strict().

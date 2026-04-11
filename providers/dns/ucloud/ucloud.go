@@ -42,6 +42,9 @@ type Config struct {
 	PublicKey  string
 	PrivateKey string
 
+	// only for test
+	baseURL string
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -98,6 +101,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	cfg := ucloud.NewConfig()
 	cfg.UserAgent = useragent.Get()
+
+	if config.baseURL != "" {
+		cfg.BaseUrl = config.baseURL
+	}
 
 	if config.Region != "" {
 		cfg.Region = config.Region

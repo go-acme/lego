@@ -49,6 +49,7 @@ require (
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.187
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/infobloxopen/infoblox-go-client/v2 v2.10.0
+	github.com/joho/godotenv v1.5.1
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/ldez/grignotin v0.10.1
 	github.com/linode/linodego v1.65.0

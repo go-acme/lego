@@ -124,7 +124,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	addRequest := d.client.NewDomainDNSAddRequest()
 	addRequest.Domain = ucloud.String(dns01.UnFqdn(authZone))
-	addRequest.RecordName = ucloud.String(info.EffectiveFQDN)
+	addRequest.RecordName = ucloud.String(dns01.UnFqdn(info.EffectiveFQDN))
 	addRequest.Type = ucloud.String("TXT")
 	addRequest.Content = ucloud.String(info.Value)
 	addRequest.TTL = ucloud.String(strconv.Itoa(d.config.TTL))
@@ -163,7 +163,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 		deleteRequest := d.client.NewDeleteDNSRecordRequest()
 		deleteRequest.Domain = ucloud.String(dns01.UnFqdn(authZone))
-		deleteRequest.RecordName = ucloud.String(record.Name)
+		deleteRequest.RecordName = ucloud.String(dns01.UnFqdn(info.EffectiveFQDN))
 		deleteRequest.Type = ucloud.String(record.Type)
 		deleteRequest.Content = ucloud.String(record.Content)
 		deleteRequest.WithTimeout(d.config.HTTPTimeout)

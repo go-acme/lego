@@ -1,0 +1,11 @@
+{{- $name := .Get "name" | default "lego help" -}}
+
+{{- $commands := index $.Site.Data.zz_cli_help "command" -}}
+
+```
+{{- range $commands -}}
+{{- if eq .title $name }}
+{{ .content | safeHTML }}
+{{ end -}}
+{{- end -}}
+```

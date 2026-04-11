@@ -19,8 +19,8 @@ body:
 
         If it is possible to implement it, your request should be released (after implementation, review, and merge):
 
-        - In 1 week (7 days) maximum. Requires [High priority tier](https://github.com/sponsors/ldez/sponsorships?tier_id=605810).
-        - In 2 days maximum. Requires [Critical priority tier](https://github.com/sponsors/ldez/sponsorships?tier_id=605811).
+        - In 1 week (7 days) maximum. Requires [High priority tier](https://github.com/sponsors/go-acme/sponsorships?tier_id=606068).
+        - In 2 days maximum. Requires [Critical priority tier](https://github.com/sponsors/go-acme/sponsorships?tier_id=606069).
 
   - type: dropdown
     id: type

@@ -14,7 +14,7 @@ lego looks for configuration files in the following paths from the current worki
 - `.lego.yml`
 - `.lego.yaml`
 
-The configuration file can be validated with the JSON Schema: FIXME
+The configuration file can be validated with the JSON Schema: [lego.jsonschema.json]({{% ref "/" %}}lego.jsonschema.json)
 
 ## Global configuration
 

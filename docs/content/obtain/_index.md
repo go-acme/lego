@@ -120,23 +120,46 @@ For wildcard certificates (`*.example.com`), the filenames will look like `_.exa
 The `.crt` and `.key` files are PEM-encoded x509 certificates and private keys.
 If you're looking for a `cert.pem` and `privkey.pem`, you can just use `example.com.crt` and `example.com.key`.
 
-## Challenge Types
-
-{{% children type="card" description="true" %}}
-
----
-
-FIXME
-
-
 ## Using a custom certificate signing request (CSR)
 
 The first step in the process of obtaining certificates involves creating a signing request.
 This CSR bundles various information, including the domain name(s) and a public key.
 By default, lego will hide this step from you, but if you already have a CSR, you can easily reuse it:
 
+{{< tabs groupid="usage-examples" >}}
+{{% tab title="Classic Way" %}}
+
+Execute the following command:
+
 ```bash
 lego run --http --csr="/path/to/csr.pem"
 ```
 
-lego will infer the domains to be validated based on the contents of the CSR, so make sure the CSR's Common Name and optional SubjectAltNames are set correctly.
+{{% /tab %}}
+{{% tab title="With a Configuration File" %}}
+
+Create a `.lego.yml` file with the following content:
+
+```yaml
+certificates:
+  foo:
+    csr: /path/to/csr.pem
+    challenge: http-01
+    domains:
+      - example.com
+```
+
+And execute:
+
+```bash
+lego
+```
+
+{{% /tab %}}
+{{< /tabs >}}
+
+lego will infer the domains to be validated based on the contents of the CSR, so make sure the CSR's Common Name and SubjectAltNames are set correctly.
+
+## Challenge Types
+
+{{% children type="card" description="true" %}}

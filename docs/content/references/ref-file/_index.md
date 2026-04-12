@@ -203,20 +203,29 @@ challenges:
       # Default: ":80"
       address: ":80"
       
-      # FIXME
-      delay: 0s
+      # Delay between the starts of the HTTP server (use for HTTP-01 based challenges) and the validation of the challenge.
+      #
+      # Default: 0s
+      delay: 6s
       
-      # FIXME
+      # Validate against this HTTP header when solving HTTP-01 based challenges behind a reverse proxy.
+      #
+      # Optional.
       proxyHeader: Host
 
-      # FIXME
+      # The webroot folder to use for HTTP-01 based challenges to write directly to the .well-known/acme-challenge file.
+      # This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge".
+      #
+      # Optional.
       webroot: /tmp/webroot
 
-      # FIXME
+      # The memcached host(s) to use for HTTP-01 based challenges. Challenges will be written to all specified hosts.
+      #
+      # Optional.
       memcachedHosts:
         - memcached:11211
       
-      # FIXME
+      # Tthe S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.
       s3Bucket: 's3-bucket'
 
   # The ID/Name of the challenge.
@@ -232,8 +241,10 @@ challenges:
       # Default: ":443"
       address: ":443"
 
-      # FIXME
-      delay: 0s
+      # Delay between the start of the TLS listener (use for TLSALPN-01 based challenges) and the validation of the challenge.
+      #
+      # Default: 0s
+      delay: 6s
 
   # The ID/Name of the challenge.
   #
@@ -252,19 +263,38 @@ challenges:
       #
       # Optional.
       propagation:
-        # FIXME
+        # By setting this option to true,
+        # disables the need to await propagation of the TXT record to all authoritative name servers.
+        #
+        # Default: false
         disableAuthoritativeNameservers: true
 
-        # FIXME
+        # By setting this option to true,
+        # disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).
+        #
+        # Default: false
         disableRecursiveNameservers: true
 
-        # FIXME
-        wait: 0s
+        # Disables all the propagation checks of the TXT record and uses a wait duration instead.
+        #
+        # This option is strongly discouraged.
+        #
+        # Default: 0
+        wait: 5s
 
-      # FIXME
-      dnsTimeout: 10
+      # Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries.
+      #
+      # Default: 10
+      dnsTimeout: 30
 
-      # FIXME
+      # Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination.
+      #
+      # For DNS-01 challenge verification, the authoritative DNS server is queried directly.
+      #
+      # Supported syntax: host:port.
+      #
+      # Optional.
+      # The default is to use the system resolvers, or Google's DNS resolvers if the system ones cannot be determined.
       resolvers:
         - 1.1.1.1:53
 
@@ -276,24 +306,39 @@ challenges:
     #
     # Optional.
     dnsPersist:
-      # FIXME
+      # Override the issuer-domain-name to use for DNS-PERSIST-01 when multiple are offered.
+      # Must be offered by the challenge.
+      #
+      # Optional.
       issuerDomainName: example.com
 
-      # FIXME
+      # Set the optional `persistUntil` for DNS-PERSIST-01 records as an RFC3339 timestamp.
+      #
+      # Optional.
       persistUntil: 2020-01-01T00:00:00Z
 
       # The configuration related to propagation check.
       #
       # Optional.
       propagation:
-        # FIXME
+        # By setting this option to true,
+        # disables the need to await propagation of the TXT record to all authoritative name servers.
+        #
+        # Default: false
         disableAuthoritativeNameservers: true
 
-        # FIXME
+        # By setting this option to true,
+        # disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).
+        #
+        # Default: false
         disableRecursiveNameservers: true
 
-        # FIXME
-        wait: 0s
+        # Disables all the propagation checks of the TXT record and uses a wait duration instead.
+        #
+        # This option is strongly discouraged.
+        #
+        # Default: 0
+        wait: 5s
 ```
 
 ## Accounts

@@ -10,6 +10,7 @@ aliases:
 ## Binaries
 
 To get the binary, download the latest release for your OS/Arch from [the release page](https://github.com/go-acme/lego/releases) and put the binary somewhere convenient.
+
 lego does not assume anything about the location you run it from.
 
 ## From Docker
@@ -20,64 +21,87 @@ docker run goacme/lego -h
 
 ## From package managers
 
-- [ArchLinux](https://archlinux.org/packages/extra/x86_64/lego/) (official):
+{{< tabs >}}
+{{% tab title="Arch" %}}
 
-  ```bash
-  pacman -S lego
-  ```
+```bash
+pacman -S lego
+```
 
-- [ArchLinux (AUR)](https://aur.archlinux.org/packages/lego-bin) (official):
+[Link](https://archlinux.org/packages/extra/x86_64/lego/)
 
-  ```bash
-  yay -S lego-bin
-  ```
+{{% /tab %}}
+{{% tab title="AUR" %}}
 
-- [Snap](https://snapcraft.io/lego) (official):
+```bash
+yay -S lego-bin
+```
 
-  ```bash
-  sudo snap install lego
-  ```
-  Note: The snap can only write to the `/var/snap/lego/common/.lego` directory.
+[Link](https://aur.archlinux.org/packages/lego-bin)
 
-- [FreeBSD (Ports)](https://www.freshports.org/security/lego) (unofficial):
+{{% /tab %}}
+{{% tab title="Snap" %}}
 
-  ```bash
-  pkg install lego
-  ```
+```bash
+sudo snap install lego
+```
+Note: The snap can only write to the `/var/snap/lego/common/.lego` directory.
 
-- [Gentoo](https://gitweb.gentoo.org/repo/proj/guru.git/tree/app-crypt/lego) (unofficial):
+[Link](https://snapcraft.io/lego)
 
-  You can [enable GURU](https://wiki.gentoo.org/wiki/Project:GURU/Information_for_End_Users) repository and then:
+{{% /tab %}}
+{{% tab title="FreeBSD (Ports)" %}}
 
-  ```bash
-  emerge app-crypt/lego
-  ```
+```bash
+pkg install lego
+```
 
-- [Homebrew](https://formulae.brew.sh/formula/lego) (unofficial):
+[Link](https://www.freshports.org/security/lego)
 
-  ```bash
-  brew install lego
-  ```
+{{% /tab %}}
+{{% tab title="Gentoo" %}}
 
-  or
+You can [enable GURU](https://wiki.gentoo.org/wiki/Project:GURU/Information_for_End_Users) repository and then:
 
-  ```bash
-  pkg install lego
-  ```
+```bash
+emerge app-crypt/lego
+```
 
-- [OpenBSD (Ports)](https://openports.pl/path/security/lego) (unofficial):
+[Link](https://gitweb.gentoo.org/repo/proj/guru.git/tree/app-crypt/lego)
 
-  ```bash
-  pkg_add lego
-  ```
+{{% /tab %}}
+{{% tab title="Homebrew" %}}
+
+```bash
+brew install lego
+```
+
+or
+
+```bash
+pkg install lego
+```
+
+[Link](https://formulae.brew.sh/formula/lego)
+
+{{% /tab %}}
+{{% tab title="OpenBSD (Ports)" %}}
+
+```bash
+pkg_add lego
+```
+
+[Link](https://openports.pl/path/security/lego)
+
+{{% /tab %}}
+{{< /tabs >}}
 
 
 ## From sources
 
 Requirements:
 
-- go1.22+.
-- environment variable: `GO111MODULE=on`
+- go1.25+.
 
 To install the latest version from sources, just run:
 

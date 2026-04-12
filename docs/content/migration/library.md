@@ -9,6 +9,8 @@ This guide describes the changes between the v4 and v5 versions of the library.
 
 <!--more-->
 
+## Context
+
 Most of the functions and methods are now using a context.
 
 Example:
@@ -23,33 +25,11 @@ client.Certificate.Obtain(request)
 client.Certificate.Obtain(context.TODO(), request)
 ```
 
----
+## Logger
 
 The logger is now `slog` and can be set using the `log.SetDefault(logger)` function.
 
----
-
-The support of the common name is disabled by default.
-
-The option `DisableCommonName` is replaced by `EnableCommonName`.
-
-```go
-// Before
-lego.CertificateConfig{
-    // ...
-    DisableCommonName: true,
-}
-```
-
-```go
-// After
-lego.CertificateConfig{
-    // ...
-    EnableCommonName: false,
-}
-```
-
----
+## Method and function changes
 
 | v4                             | v5                             |
 |--------------------------------|--------------------------------|
@@ -60,7 +40,50 @@ lego.CertificateConfig{
 | `acmedns.NewDNSProviderClient` | `acmedns.NewDNSProviderConfig` |
 | `scaleway.Config.Token`        | `scaleway.Config.SecretKey`    |
 
----
+The functions and methods related to the private key are now using the `crypto.Signer` interface instead of the `crypto.PrivateKey` type.
+
+The following methods now return an `*acme.ExtendedAccount` instead of an `*registration.Ressouce`.
+
+- `registration.Registrar.Register`
+- `registration.Registrar.RegisterWithExternalAccountBinding`
+- `registration.Registrar.QueryRegistration`
+- `registration.Registrar.UpdateRegistration`
+- `registration.Registrar.ResolveAccountByKey`
+
+The structure `registration.Ressouce` has been removed.
+
+## Fields changes
+
+The field `RetryAfter` of `acme.RateLimitedError` and `acme.ExtendedChallenge` is now a `time.Duration` instead of a `string`.
+
+## CertifierOptions
+
+### CommonName
+
+The support of the common name is disabled by default.
+
+The field `DisableCommonName` of `certificate.CertifierOptions` has been removed.
+
+The option is now determined by the `EnableCommonName` field of the `certificate.ObtainRequest` and `certificate.ObtainForCSRRequest`.
+
+### KeyType
+
+The field `KeyType` of `certificate.CertifierOptions` has been removed.
+
+The key type is now determined by the `KeyType` field of the `certificate.ObtainRequest`.
+
+## certcrypto.KeyType
+
+The string values of the `certcrypto.KeyType` enum have been changed:
+
+- `P256` -> `EC256`
+- `P384` -> `EC384`
+- `2048` -> `RSA2048`
+- `3072` -> `RSA3072`
+- `4096` -> `RSA4096`
+- `8192` -> `RSA8192`
+
+## Removed elements
 
 The following elements have been removed without replacements:
 
@@ -75,43 +98,6 @@ The following elements have been removed without replacements:
 - `netcup.EnvTTL`
 - `vultr.Config.HTTPTimeout`
 
----
-
-The string values of the `certcrypto.KeyType` enum have been changed:
-
-- `P256` -> `EC256`
-- `P384` -> `EC384`
-- `2048` -> `RSA2048`
-- `3072` -> `RSA3072`
-- `4096` -> `RSA4096`
-- `8192` -> `RSA8192`
-
----
+## PEM encoding
 
 It uses `PKCS#8` instead of `PKCS#1` for PEM encoding.
-
----
-
-The functions and methods related to the private key are now using the `crypto.Signer` interface instead of the `crypto.PrivateKey` type.
-
----
-
-The following methods now return an `*acme.ExtendedAccount` instead of an `*registration.Ressouce`.
-
-- `registration.Registrar.Register`
-- `registration.Registrar.RegisterWithExternalAccountBinding`
-- `registration.Registrar.QueryRegistration`
-- `registration.Registrar.UpdateRegistration`
-- `registration.Registrar.ResolveAccountByKey`
-
-The structure `registration.Ressouce` has been removed.
-
----
-
-The field `RetryAfter` of `acme.RateLimitedError` and `acme.ExtendedChallenge` is now a `time.Duration` instead of a `string`.
-
----
-
-The field `KeyType` of `certificate.CertifierOptions` has been removed.
-
-The key type is now determined by the `KeyType` field of the `certificate.ObtainRequest`.

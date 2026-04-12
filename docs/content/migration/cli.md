@@ -139,3 +139,11 @@ The following environment variables related to the hook have been renamed:
 | `LEGO_CERT_KEY_PATH` | `LEGO_HOOK_CERT_KEY_PATH` |
 | `LEGO_CERT_PEM_PATH` | `LEGO_HOOK_CERT_PEM_PATH` |
 | `LEGO_CERT_PFX_PATH` | `LEGO_HOOK_CERT_PFX_PATH` |
+
+## PEM encoding
+
+Lego uses `PKCS#8` instead of `PKCS#1` for PEM encoding.
+
+## CommonName
+
+The support of the common name is disabled by default.

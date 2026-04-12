@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
@@ -18,6 +19,10 @@ func CreateRootCommand() *cli.Command {
 		EnableShellCompletion: true,
 		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
 			setUpLogger(cmd, nil)
+
+			if cmd.NArg() > 0 && cmd.Command(cmd.Args().First()) == nil {
+				return ctx, errors.New("unknown command")
+			}
 
 			return ctx, nil
 		},

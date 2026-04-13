@@ -14,7 +14,7 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
 	github.com/Azure/go-autorest/autorest/to v0.4.1
 	github.com/BurntSushi/toml v1.6.0
-	github.com/akamai/AkamaiOPEN-edgegrid-golang/v11 v11.1.0
+	github.com/akamai/AkamaiOPEN-edgegrid-golang/v13 v13.1.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.16
 	github.com/alibabacloud-go/tea v1.4.0
 	github.com/aliyun/credentials-go v1.4.7

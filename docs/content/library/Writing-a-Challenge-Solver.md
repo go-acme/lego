@@ -19,8 +19,8 @@ You can write something called a `challenge.Provider` that implements [this inte
 
 ```go
 type Provider interface {
-	Present(domain, token, keyAuth string) error
-	CleanUp(domain, token, keyAuth string) error
+	Present(ctx context.Context, domain, token, keyAuth string) error
+	CleanUp(ctx context.Context, domain, token, keyAuth string) error
 }
 ```
 
@@ -42,7 +42,7 @@ type DNSProviderBestDNS struct {
 }
 ```
 
-We should provide a constructor that returns a *pointer* to the `struct`.
+We should provide a constructor that returns a pointer to the `struct`.
 This is important in case we need to maintain state in the `struct`.
 
 ```go
@@ -58,9 +58,11 @@ How your provider uses `token` and `keyAuth`, or if you even use them at all, de
 For DNS-01, we'll just use `domain` and `keyAuth`.
 
 ```go
-func (d *DNSProviderBestDNS) Present(domain, token, keyAuth string) error {
-    info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProviderBestDNS) Present(ctx context.Context, domain, token, keyAuth string) error {
+    info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+   
     // make API request to set a TXT record on fqdn with value and TTL
+   
     return nil
 }
 ```
@@ -77,7 +79,7 @@ The ACME server will then verify that you did what it required you to do, and on
 In our case, we want to remove the TXT record we just created.
 
 ```go
-func (d *DNSProviderBestDNS) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProviderBestDNS) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
     // clean up any state you created in Present, like removing the TXT record
 }
 ```

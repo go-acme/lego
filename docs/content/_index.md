@@ -5,37 +5,53 @@ draft: false
 chapter: false
 ---
 
-Let's Encrypt client and ACME library written in Go.
+ACME client and ACME library written in Go.
 
 {{% notice important %}}
 lego is an independent, free, and open-source project, if you value it, consider [supporting it](https://donate.ldez.dev)! ❤️
-
-This project is not owned by a company. I'm not an employee of a company.
-
-I don't have gifted domains/accounts from DNS companies.
-
-I've been maintaining it for about 10 years.
 {{% /notice %}}
 
 ## Features
 
-- ACME v2 [RFC 8555](https://www.rfc-editor.org/rfc/rfc8555.html)
-  - Support [RFC 8737](https://www.rfc-editor.org/rfc/rfc8737.html): TLS Application‑Layer Protocol Negotiation (ALPN) Challenge Extension
-  - Support [RFC 8738](https://www.rfc-editor.org/rfc/rfc8738.html): issues certificates for IP addresses
-  - Support [RFC 9773](https://www.rfc-editor.org/rfc/rfc9773.html): Renewal Information (ARI) Extension
-  - Support [draft-ietf-acme-profiles-00](https://datatracker.ietf.org/doc/draft-ietf-acme-profiles/): Profiles Extension
-  - Support [draft-ietf-acme-dns-persist-00](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/): Challenge for Persistent DNS TXT Record Validation
-- Comes with about [180 DNS providers]({{% ref "dns" %}})
-- Register with CA
-- Obtain certificates, both from scratch or with an existing CSR
-- Renew certificates
-- Revoke certificates
-- Robust implementation of ACME challenges:
-  - HTTP (http-01)
-  - DNS (dns-01)
-  - TLS (tls-alpn-01)
-- SAN certificate support
-- [CNAME support](https://letsencrypt.org/2019/10/09/onboarding-your-customers-with-lets-encrypt-and-acme.html) by default
-- [Custom challenge solvers]({{% ref "usage/library/Writing-a-Challenge-Solver" %}})
-- Certificate bundling
-- OCSP helper function
+{{< cards >}}
+
+{{% card title="Challenges" href="obtain" %}}
+- DNS-01
+- HTTP-01
+- TLS-ALPN-01
+- DNS-PERSIST-01
+{{% /card %}}
+
+{{% card title="ACME servers" href="advanced/caservers" %}}
+Multiple ACME servers support (Let's Encrypt, ZeroSSL, etc.)
+{{% /card %}}
+
+{{% card title="Certificate Management" href="obtain" %}}
+Obtain, renew, revoke.
+
+SAN certificate support.
+{{% /card %}}
+
+{{% card title="DNS providers" href="dns" %}}
+Comes with about 190 DNS providers
+{{% /card %}}
+
+{{% card title="CNAME" href="advanced/options/#lego_disable_cname_support" %}}
+Supported by default.
+
+[Blog post](https://letsencrypt.org/2019/10/09/onboarding-your-customers-with-lets-encrypt-and-acme.html)
+
+{{% /card %}}
+
+{{< /cards >}}
+
+## Supported RFCs
+
+| RFC                                                                                             | Description                                                               |
+|-------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| [RFC 8555](https://www.rfc-editor.org/rfc/rfc8555.html)                                         | Automatic Certificate Management Environment (ACME).                      |
+| [RFC 8737](https://www.rfc-editor.org/rfc/rfc8737.html)                                         | TLS Application‑Layer Protocol Negotiation (ALPN) Challenge Extension.    |
+| [RFC 8738](https://www.rfc-editor.org/rfc/rfc8738.html)                                         | IP Identifier Validation Extension. Issues certificates for IP addresses. |
+| [RFC 9773](https://www.rfc-editor.org/rfc/rfc9773.html)                                         | Renewal Information (ARI) Extension.                                      |
+| [draft-ietf-acme-profiles-01](https://datatracker.ietf.org/doc/draft-ietf-acme-profiles/)       | Profiles Extension.                                                       |
+| [draft-ietf-acme-dns-persist-01](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/) | Challenge for Persistent DNS TXT Record Validation.                       |

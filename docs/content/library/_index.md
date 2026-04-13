@@ -2,6 +2,7 @@
 title: "Library"
 date: 2019-03-03T16:39:46+01:00
 draft: false
+weight: 6
 ---
 
 Lego can be used as a Go Library.
@@ -20,6 +21,7 @@ A valid, but bare-bones example use of the acme package:
 package main
 
 import (
+	"context"
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -27,6 +29,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/challenge/http01"
@@ -36,40 +39,39 @@ import (
 )
 
 // You'll need a user or account type that implements acme.User
-type MyUser struct {
+type Account struct {
 	Email        string
-	Registration *registration.Resource
-	key          crypto.PrivateKey
+	Registration *acme.ExtendedAccount
+	key          crypto.Signer
 }
 
-func (u *MyUser) GetEmail() string {
+func (u *Account) GetEmail() string {
 	return u.Email
 }
-func (u MyUser) GetRegistration() *registration.Resource {
+
+func (u *Account) GetRegistration() *acme.ExtendedAccount {
 	return u.Registration
 }
-func (u *MyUser) GetPrivateKey() crypto.PrivateKey {
+
+func (u *Account) GetPrivateKey() crypto.Signer {
 	return u.key
 }
 
 func main() {
-
 	// Create a user. New accounts need an email and private key to start.
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	myUser := MyUser{
-		Email: "you@yours.com",
-		key:   privateKey,
+	account := &Account{
+		key: privateKey,
 	}
 
-	config := lego.NewConfig(&myUser)
+	config := lego.NewConfig(account)
 
 	// This CA URL is configured for a local dev instance of Boulder running in Docker in a VM.
 	config.CADirURL = "http://192.168.99.100:4000/directory"
-	config.Certificate.KeyType = certcrypto.RSA2048
 
 	// A client facilitates communication with the CA server.
 	client, err := lego.NewClient(config)
@@ -90,18 +92,22 @@ func main() {
 		log.Fatal(err)
 	}
 
+	ctx := context.Background()
+
 	// New users will need to register
-	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	reg, err := client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})
 	if err != nil {
 		log.Fatal(err)
 	}
-	myUser.Registration = reg
+	account.Registration = reg
 
 	request := certificate.ObtainRequest{
 		Domains: []string{"mydomain.com"},
+		KeyType: certcrypto.RSA2048,
 		Bundle:  true,
 	}
-	certificates, err := client.Certificate.Obtain(request)
+
+	certificates, err := client.Certificate.Obtain(ctx, request)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -53,8 +53,17 @@ func generate(ctx context.Context) error {
 	var help []commandHelp
 
 	for _, args := range [][]string{
-		{"lego", "help"},
-		{"lego", "help", "run"},
+		{"lego", "-h"},
+		{"lego", "run", "-h"},
+		{"lego", "accounts", "register", "-h"},
+		{"lego", "accounts", "recover", "-h"},
+		{"lego", "accounts", "keyrollover", "-h"},
+		{"lego", "accounts", "list", "-h"},
+		{"lego", "certificates", "revoke", "-h"},
+		{"lego", "certificates", "list", "-h"},
+		{"lego", "archives", "restore", "-h"},
+		{"lego", "archives", "list", "-h"},
+		{"lego", "migrate", "-h"},
 		{"lego", "dnshelp"},
 	} {
 		content, err := run(ctx, app, args)

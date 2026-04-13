@@ -42,12 +42,12 @@ So if you think that lego is worth it, please consider [donating](https://donate
 
 ## Installation
 
-How to [install](https://go-acme.github.io/lego/installation/).
+How to [install](https://go-acme.github.io/lego/install/).
 
 ## Usage
 
-- as a [CLI](https://go-acme.github.io/lego/usage/cli)
-- as a [library](https://go-acme.github.io/lego/usage/library)
+- as a [CLI](https://go-acme.github.io/lego/obtain)
+- as a [library](https://go-acme.github.io/lego/library)
 
 ## Documentation
 

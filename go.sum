@@ -943,8 +943,8 @@ github.com/tjfoc/gmsm v1.3.2/go.mod h1:HaUcFuY0auTiaHB9MHFGCPx5IaLhTUd2atbCFBQXn
 github.com/tjfoc/gmsm v1.4.1 h1:aMe1GlZb+0bLjn+cKTPEvvn9oUEBlJitaZiiBwsbgho=
 github.com/tjfoc/gmsm v1.4.1/go.mod h1:j4INPkHWMrhJb38G+J6W4Tw0AbuN8Thu3PbdVYhVcTE=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
-github.com/transip/gotransip/v6 v6.26.1 h1:MeqIjkTBBsZwWAK6giZyMkqLmKMclVHEuTNmoBdx4MA=
-github.com/transip/gotransip/v6 v6.26.1/go.mod h1:x0/RWGRK/zob817O3tfO2xhFoP1vu8YOHORx6Jpk80s=
+github.com/transip/gotransip/v6 v6.26.2 h1:pnbDXrkFevOngpi6ertLw6e57lOW+Rk3djJ9AewmJ94=
+github.com/transip/gotransip/v6 v6.26.2/go.mod h1:x0/RWGRK/zob817O3tfO2xhFoP1vu8YOHORx6Jpk80s=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
 github.com/ucloud/ucloud-sdk-go v0.22.61 h1:wFMLEvuUQJTqf3serKG8coIt80O2oY85M/MK2/dEG0o=
 github.com/ucloud/ucloud-sdk-go v0.22.61/go.mod h1:dyLmFHmUfgb4RZKYQP9IArlvQ2pxzFthfhwxRzOEPIw=

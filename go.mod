@@ -24,7 +24,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/lightsail v1.53.0
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.62.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.99.0
-	github.com/aws/aws-sdk-go-v2/service/sts v1.41.6
+	github.com/aws/aws-sdk-go-v2/service/sts v1.41.10
 	github.com/aziontech/azionapi-go-sdk v0.144.0
 	github.com/baidubce/bce-sdk-go v0.9.260
 	github.com/bodgit/tsig v1.2.2

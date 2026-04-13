@@ -30,7 +30,7 @@ require (
 	github.com/bodgit/tsig v1.2.2
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/dnsimple/dnsimple-go/v4 v4.0.0
-	github.com/exoscale/egoscale/v3 v3.1.33
+	github.com/exoscale/egoscale/v3 v3.1.34
 	github.com/go-acme/alidns-20150109/v4 v4.7.0
 	github.com/go-acme/esa-20240910/v2 v2.48.0
 	github.com/go-acme/jdcloud-sdk-go v1.64.0

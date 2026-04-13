@@ -93,8 +93,8 @@ require (
 	github.com/yandex-cloud/go-genproto v0.54.0
 	github.com/yandex-cloud/go-sdk/services/dns v0.0.36
 	github.com/yandex-cloud/go-sdk/v2 v2.56.0
-	golang.org/x/crypto v0.49.0
-	golang.org/x/net v0.52.0
+	golang.org/x/crypto v0.50.0
+	golang.org/x/net v0.53.0
 	golang.org/x/oauth2 v0.35.0
 	golang.org/x/text v0.36.0
 	golang.org/x/time v0.14.0
@@ -228,7 +228,7 @@ require (
 	golang.org/x/exp v0.0.0-20241210194714-1829a127f884 // indirect
 	golang.org/x/mod v0.34.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/tools v0.43.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260128011058-8636f8732409 // indirect

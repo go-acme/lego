@@ -10,13 +10,14 @@ import (
 	"strings"
 	"time"
 
-	edgegriddns "github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/dns"
-	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/edgegrid"
-	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v11/pkg/session"
+	edgegriddns "github.com/akamai/AkamaiOPEN-edgegrid-golang/v13/pkg/dns"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v13/pkg/edgegrid"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v13/pkg/session"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
 )
 
 // Environment variables names.
@@ -172,7 +173,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			Record: &edgegriddns.RecordBody{
 				Name:       record.Name,
 				RecordType: record.RecordType,
-				TTL:        record.TTL,
+				TTL:        ptr.Pointer(record.TTL),
 				Active:     record.Active,
 				Target:     record.Target,
 			},
@@ -189,7 +190,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Record: &edgegriddns.RecordBody{
 			Name:       info.EffectiveFQDN,
 			RecordType: "TXT",
-			TTL:        d.config.TTL,
+			TTL:        ptr.Pointer(d.config.TTL),
 			Target:     []string{`"` + info.Value + `"`},
 		},
 		Zone:    zone,
@@ -254,7 +255,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			Record: &edgegriddns.RecordBody{
 				Name:       existingRec.Name,
 				RecordType: existingRec.RecordType,
-				TTL:        existingRec.TTL,
+				TTL:        ptr.Pointer(existingRec.TTL),
 				Active:     existingRec.Active,
 				Target:     existingRec.Target,
 			},

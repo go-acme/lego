@@ -91,7 +91,7 @@ func CreateRenewFlags() []cli.Flag {
 			Category: categoryRenew,
 			Name:     FlgReuseKey,
 			Sources:  cli.EnvVars(toEnvName(FlgReuseKey)),
-			Usage:    "Used to indicate you want to reuse your current private key for the new certificate.",
+			Usage:    "Used to indicate you want to reuse the current certificate private key for the new certificate.",
 		},
 		&cli.BoolFlag{
 			Category: categoryRenew,
@@ -156,7 +156,7 @@ func CreateRecoverFlags() []cli.Flag {
 		&cli.StringFlag{
 			Name:     FlgPrivateKey,
 			Sources:  cli.EnvVars(toEnvName(FlgPrivateKey)),
-			Usage:    "Path to a private key (PEM encoded) for the account.",
+			Usage:    "Path to the account private key (PEM encoded).",
 			Required: true,
 		},
 	}
@@ -173,7 +173,7 @@ func CreateKeyRolloverFlags() []cli.Flag {
 		&cli.StringFlag{
 			Name:    FlgPrivateKey,
 			Sources: cli.EnvVars(toEnvName(FlgPrivateKey)),
-			Usage:   "Path to the new private key (PEM encoded) for the account. If not specified, the private key will be generated.",
+			Usage:   "Path to the new account private key (PEM encoded). If not specified, the private key will be generated.",
 		},
 		createKeyTypeFlag("Key type to use for the new private key of the account."),
 	}
@@ -312,7 +312,7 @@ func createHTTPChallengeFlags() []cli.Flag {
 			Category: categoryHTTP01Challenge,
 			Name:     FlgHTTPAddress,
 			Sources:  cli.EnvVars(toEnvName(FlgHTTPAddress)),
-			Usage:    "Set the port and interface to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port.",
+			Usage:    "Set the address to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port.",
 			Value:    ":80",
 		},
 		&cli.DurationFlag{
@@ -363,7 +363,7 @@ func createTLSChallengeFlags() []cli.Flag {
 			Category: categoryTLSALPN01Challenge,
 			Name:     FlgTLSAddress,
 			Sources:  cli.EnvVars(toEnvName(FlgTLSAddress)),
-			Usage:    "Set the port and interface to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port.",
+			Usage:    "Set the address to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port.",
 			Value:    ":443",
 		},
 		&cli.DurationFlag{
@@ -377,46 +377,21 @@ func createTLSChallengeFlags() []cli.Flag {
 }
 
 func createDNSChallengeFlags() []cli.Flag {
-	return []cli.Flag{
+	flags := []cli.Flag{
 		&cli.StringFlag{
 			Category: categoryDNS01Challenge,
 			Name:     FlgDNS,
 			Sources:  cli.EnvVars(toEnvName(FlgDNS)),
 			Usage:    "Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage.",
 		},
-		&cli.BoolFlag{
-			Category: categoryDNS01Challenge,
-			Name:     FlgDNSPropagationDisableANS,
-			Sources:  cli.EnvVars(toEnvName(FlgDNSPropagationDisableANS)),
-			Usage:    "By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.",
-		},
-		&cli.BoolFlag{
-			Category: categoryDNS01Challenge,
-			Name:     FlgDNSPropagationDisableRNS,
-			Sources:  cli.EnvVars(toEnvName(FlgDNSPropagationDisableRNS)),
-			Usage:    "By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).",
-		},
-		&cli.DurationFlag{
-			Category: categoryDNS01Challenge,
-			Name:     FlgDNSPropagationWait,
-			Sources:  cli.EnvVars(toEnvName(FlgDNSPropagationWait)),
-			Usage:    "By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead.",
-			Validator: func(d time.Duration) error {
-				if d < 0 {
-					return errors.New("it cannot be negative")
-				}
-
-				return nil
-			},
-		},
 		&cli.StringSliceFlag{
 			Category: categoryDNS01Challenge,
 			Name:     FlgDNSResolvers,
 			Sources:  cli.EnvVars(toEnvName(FlgDNSResolvers)),
-			Usage: "Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination." +
+			Usage: "Set the nameservers to use for performing (recursive) CNAME resolving and apex domain determination." +
 				" For DNS-01 challenge verification, the authoritative DNS server is queried directly." +
 				" Supported: host:port." +
-				" The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.",
+				" The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined.",
 		},
 		&cli.IntFlag{
 			Category: categoryDNS01Challenge,
@@ -426,10 +401,21 @@ func createDNSChallengeFlags() []cli.Flag {
 			Value:    10,
 		},
 	}
+
+	flags = append(flags,
+		createDNSPropagationFlags(
+			categoryDNS01Challenge,
+			FlgDNSPropagationWait,
+			FlgDNSPropagationDisableANS,
+			FlgDNSPropagationDisableRNS,
+		)...,
+	)
+
+	return flags
 }
 
 func createDNSPersistChallengeFlags() []cli.Flag {
-	return []cli.Flag{
+	flags := []cli.Flag{
 		&cli.BoolFlag{
 			Category: categoryDNSPersist01Challenge,
 			Name:     FlgDNSPersist,
@@ -445,16 +431,58 @@ func createDNSPersistChallengeFlags() []cli.Flag {
 		&cli.TimestampFlag{
 			Name:     FlgDNSPersistPersistUntil,
 			Category: categoryDNSPersist01Challenge,
-			Usage:    "Set the optional persistUntil for DNS-PERSIST-01 records as an RFC3339 timestamp (for example 2026-03-01T00:00:00Z).",
+			Usage:    "Set the optional persistUntil for DNS-PERSIST-01 records as an RFC3339 timestamp (for example, 2026-03-01T00:00:00Z).",
 			Sources:  cli.EnvVars(toEnvName(FlgDNSPersistPersistUntil)),
 			Config: cli.TimestampConfig{
 				Layouts: []string{time.RFC3339},
 			},
 		},
-		&cli.DurationFlag{
+		&cli.StringSliceFlag{
 			Category: categoryDNSPersist01Challenge,
-			Name:     FlgDNSPersistPropagationWait,
-			Sources:  cli.EnvVars(toEnvName(FlgDNSPersistPropagationWait)),
+			Name:     FlgDNSPersistResolvers,
+			Sources:  cli.EnvVars(toEnvName(FlgDNSPersistResolvers)),
+			Usage: "Set the resolvers to use for DNS-PERSIST-01 TXT lookups." +
+				" Supported: host:port." +
+				" The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined.",
+		},
+		&cli.IntFlag{
+			Category: categoryDNSPersist01Challenge,
+			Name:     FlgDNSPersistTimeout,
+			Sources:  cli.EnvVars(toEnvName(FlgDNSPersistTimeout)),
+			Usage:    "Set the DNS timeout value to a specific value in seconds. Used for DNS-PERSIST-01 lookups.",
+		},
+	}
+
+	flags = append(flags,
+		createDNSPropagationFlags(
+			categoryDNSPersist01Challenge,
+			FlgDNSPersistPropagationWait,
+			FlgDNSPersistPropagationDisableANS,
+			FlgDNSPersistPropagationDisableRNS,
+		)...,
+	)
+
+	return flags
+}
+
+func createDNSPropagationFlags(category, flgWait, flgANS, flgRNS string) []cli.Flag {
+	return []cli.Flag{
+		&cli.BoolFlag{
+			Category: category,
+			Name:     flgANS,
+			Sources:  cli.EnvVars(toEnvName(flgANS)),
+			Usage:    "By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.",
+		},
+		&cli.BoolFlag{
+			Category: category,
+			Name:     flgRNS,
+			Sources:  cli.EnvVars(toEnvName(flgRNS)),
+			Usage:    "By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).",
+		},
+		&cli.DurationFlag{
+			Category: category,
+			Name:     flgWait,
+			Sources:  cli.EnvVars(toEnvName(flgWait)),
 			Usage:    "By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead.",
 			Validator: func(d time.Duration) error {
 				if d < 0 {
@@ -463,32 +491,6 @@ func createDNSPersistChallengeFlags() []cli.Flag {
 
 				return nil
 			},
-		},
-		&cli.BoolFlag{
-			Category: categoryDNSPersist01Challenge,
-			Name:     FlgDNSPersistPropagationDisableANS,
-			Sources:  cli.EnvVars(toEnvName(FlgDNSPersistPropagationDisableANS)),
-			Usage:    "By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.",
-		},
-		&cli.BoolFlag{
-			Category: categoryDNSPersist01Challenge,
-			Name:     FlgDNSPersistPropagationDisableRNS,
-			Sources:  cli.EnvVars(toEnvName(FlgDNSPersistPropagationDisableRNS)),
-			Usage:    "By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).",
-		},
-		&cli.StringSliceFlag{
-			Category: categoryDNSPersist01Challenge,
-			Name:     FlgDNSPersistResolvers,
-			Sources:  cli.EnvVars(toEnvName(FlgDNSPersistResolvers)),
-			Usage: "Set the resolvers to use for DNS-PERSIST-01 TXT lookups." +
-				" Supported: host:port." +
-				" The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.",
-		},
-		&cli.IntFlag{
-			Category: categoryDNSPersist01Challenge,
-			Name:     FlgDNSPersistTimeout,
-			Sources:  cli.EnvVars(toEnvName(FlgDNSPersistTimeout)),
-			Usage:    "Set the DNS timeout value to a specific value in seconds. Used for DNS-PERSIST-01 lookups.",
 		},
 	}
 }
@@ -660,7 +662,7 @@ func createDeployHookFlags() []cli.Flag {
 			Category: categoryHooks,
 			Name:     FlgDeployHookTimeout,
 			Sources:  cli.EnvVars(toEnvName(FlgDeployHookTimeout)),
-			Usage:    "Define the timeout for the hook execution.",
+			Usage:    "Define the timeout for the deploy-hook execution.",
 			Value:    2 * time.Minute,
 		},
 	}
@@ -699,7 +701,7 @@ func createAcceptFlag() cli.Flag {
 		Name:    FlgAcceptTOS,
 		Aliases: []string{flgAliasAcceptTOS},
 		Sources: cli.EnvVars(toEnvName(FlgAcceptTOS)),
-		Usage:   "By setting this flag to true you indicate that you accept the current CA terms of service.",
+		Usage:   "By setting this flag to true, you indicate that you accept the current CA terms of service.",
 	}
 }
 

@@ -57,7 +57,7 @@ func validateChallengeRequirements(cmd *cli.Command) error {
 	}
 
 	if isSetBool(cmd, FlgDNSPersist) {
-		err := validatePropagationExclusiveOptions(cmd, FlgDNSPersistPropagationWait, FlgDNSPersistPropagationDisableANS, FlgDNSPersistIssuerDomainName)
+		err := validatePropagationExclusiveOptions(cmd, FlgDNSPersistPropagationWait, FlgDNSPersistPropagationDisableANS, FlgDNSPersistPropagationDisableRNS)
 		if err != nil {
 			return err
 		}
@@ -66,7 +66,7 @@ func validateChallengeRequirements(cmd *cli.Command) error {
 	return nil
 }
 
-func validatePropagationExclusiveOptions(cmd *cli.Command, flgWait, flgANS, flgDNS string) error {
+func validatePropagationExclusiveOptions(cmd *cli.Command, flgWait, flgANS, flgRNS string) error {
 	if !cmd.IsSet(flgWait) {
 		return nil
 	}
@@ -75,8 +75,8 @@ func validatePropagationExclusiveOptions(cmd *cli.Command, flgWait, flgANS, flgD
 		return fmt.Errorf("'--%s' and '--%s' are mutually exclusive", flgWait, flgANS)
 	}
 
-	if isSetBool(cmd, flgDNS) {
-		return fmt.Errorf("'--%s' and '--%s' are mutually exclusive", flgWait, flgDNS)
+	if isSetBool(cmd, flgRNS) {
+		return fmt.Errorf("'--%s' and '--%s' are mutually exclusive", flgWait, flgRNS)
 	}
 
 	return nil

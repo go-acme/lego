@@ -42,7 +42,7 @@ USAGE:
    lego run [options]
 
 OPTIONS:
-   --accept-tos, -a                                             By setting this flag to true you indicate that you accept the current CA terms of service. [$LEGO_ACCEPT_TOS]
+   --accept-tos, -a                                             By setting this flag to true, you indicate that you accept the current CA terms of service. [$LEGO_ACCEPT_TOS]
    --domains string, -d string [ --domains string, -d string ]  Add a domain. For multiple domains either repeat the option or provide a comma-separated list. [$LEGO_DOMAINS]
    --email string, -m string                                    Email used for registration and recovery contact. [$LEGO_EMAIL]
    --help, -h                                                   show help
@@ -81,12 +81,12 @@ OPTIONS:
    --renew-days int                       The number of days left on a certificate to renew it.
                                           By default, compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates). (default: 0) [$LEGO_RENEW_DAYS]
    --renew-force                          Force the renewal of the certificate even if it is not due for renewal yet. [$LEGO_RENEW_FORCE]
-   --reuse-key                            Used to indicate you want to reuse your current private key for the new certificate. [$LEGO_REUSE_KEY]
+   --reuse-key                            Used to indicate you want to reuse the current certificate private key for the new certificate. [$LEGO_REUSE_KEY]
 
    Flags related to hooks:
 
    --deploy-hook string            Define a hook. The hook runs, after the creation or the renewal, in cases where a certificate is successfully created/renewed. [$LEGO_DEPLOY_HOOK]
-   --deploy-hook-timeout duration  Define the timeout for the hook execution. (default: 2m0s) [$LEGO_DEPLOY_HOOK_TIMEOUT]
+   --deploy-hook-timeout duration  Define the timeout for the deploy-hook execution. (default: 2m0s) [$LEGO_DEPLOY_HOOK_TIMEOUT]
    --post-hook string              Define a post-hook. This hook runs, after the creation or the renewal, in cases where a certificate is created/renewed, regardless of whether any errors occurred. [$LEGO_POST_HOOK]
    --post-hook-timeout duration    Define the timeout for the post-hook execution. (default: 2m0s) [$LEGO_POST_HOOK_TIMEOUT]
    --pre-hook string               Define a pre-hook. This hook runs, before the creation or the renewal, in cases where a certificate will be effectively created/renewed. [$LEGO_PRE_HOOK]
@@ -105,24 +105,24 @@ OPTIONS:
    --dns.propagation.disable-ans                      By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers. [$LEGO_DNS_PROPAGATION_DISABLE_ANS]
    --dns.propagation.disable-rns                      By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers). [$LEGO_DNS_PROPAGATION_DISABLE_RNS]
    --dns.propagation.wait duration                    By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. (default: 0s) [$LEGO_DNS_PROPAGATION_WAIT]
-   --dns.resolvers string [ --dns.resolvers string ]  Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination. For DNS-01 challenge verification, the authoritative DNS server is queried directly. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined. [$LEGO_DNS_RESOLVERS]
+   --dns.resolvers string [ --dns.resolvers string ]  Set the nameservers to use for performing (recursive) CNAME resolving and apex domain determination. For DNS-01 challenge verification, the authoritative DNS server is queried directly. Supported: host:port. The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined. [$LEGO_DNS_RESOLVERS]
    --dns.timeout int                                  Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries. (default: 10) [$LEGO_DNS_TIMEOUT]
 
    Flags related to the DNS-PERSIST-01 challenge:
 
    --dns-persist                                                      Use the DNS-PERSIST-01 challenge to solve challenges. Manual verification only. Can be mixed with other types of challenges. [$LEGO_DNS_PERSIST]
    --dns-persist.issuer-domain-name string                            Override the issuer-domain-name to use for DNS-PERSIST-01 when multiple are offered. Must be offered by the challenge. [$LEGO_DNS_PERSIST_ISSUER_DOMAIN_NAME]
-   --dns-persist.persist-until time                                   Set the optional persistUntil for DNS-PERSIST-01 records as an RFC3339 timestamp (for example 2026-03-01T00:00:00Z). [$LEGO_DNS_PERSIST_PERSIST_UNTIL]
+   --dns-persist.persist-until time                                   Set the optional persistUntil for DNS-PERSIST-01 records as an RFC3339 timestamp (for example, 2026-03-01T00:00:00Z). [$LEGO_DNS_PERSIST_PERSIST_UNTIL]
    --dns-persist.propagation.disable-ans                              By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers. [$LEGO_DNS_PERSIST_PROPAGATION_DISABLE_ANS]
    --dns-persist.propagation.disable-rns                              By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers). [$LEGO_DNS_PERSIST_PROPAGATION_DISABLE_RNS]
    --dns-persist.propagation.wait duration                            By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. (default: 0s) [$LEGO_DNS_PERSIST_PROPAGATION_WAIT]
-   --dns-persist.resolvers string [ --dns-persist.resolvers string ]  Set the resolvers to use for DNS-PERSIST-01 TXT lookups. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined. [$LEGO_DNS_PERSIST_RESOLVERS]
+   --dns-persist.resolvers string [ --dns-persist.resolvers string ]  Set the resolvers to use for DNS-PERSIST-01 TXT lookups. Supported: host:port. The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined. [$LEGO_DNS_PERSIST_RESOLVERS]
    --dns-persist.timeout int                                          Set the DNS timeout value to a specific value in seconds. Used for DNS-PERSIST-01 lookups. (default: 0) [$LEGO_DNS_PERSIST_TIMEOUT]
 
    Flags related to the HTTP-01 challenge:
 
    --http                                                         Use the HTTP-01 challenge to solve challenges. Can be mixed with other types of challenges. [$LEGO_HTTP]
-   --http.address string                                          Set the port and interface to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port. (default: ":80") [$LEGO_HTTP_ADDRESS]
+   --http.address string                                          Set the address to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port. (default: ":80") [$LEGO_HTTP_ADDRESS]
    --http.delay duration                                          Delay between the starts of the HTTP server (use for HTTP-01 based challenges) and the validation of the challenge. (default: 0s) [$LEGO_HTTP_DELAY]
    --http.memcached-host string [ --http.memcached-host string ]  Set the memcached host(s) to use for HTTP-01 based challenges. Challenges will be written to all specified hosts. [$LEGO_HTTP_MEMCACHED_HOST]
    --http.proxy-header string                                     Validate against this HTTP header when solving HTTP-01 based challenges behind a reverse proxy. (default: "Host") [$LEGO_HTTP_PROXY_HEADER]
@@ -132,7 +132,7 @@ OPTIONS:
    Flags related to the TLS-ALPN-01 challenge:
 
    --tls                 Use the TLS-ALPN-01 challenge to solve challenges. Can be mixed with other types of challenges. [$LEGO_TLS]
-   --tls.address string  Set the port and interface to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port. (default: ":443") [$LEGO_TLS_ADDRESS]
+   --tls.address string  Set the address to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port. (default: ":443") [$LEGO_TLS_ADDRESS]
    --tls.delay duration  Delay between the start of the TLS listener (use for TLSALPN-01 based challenges) and the validation of the challenge. (default: 0s) [$LEGO_TLS_DELAY]
 
    Flags related to the storage:
@@ -161,7 +161,7 @@ USAGE:
    lego accounts register [options]
 
 OPTIONS:
-   --accept-tos, -a              By setting this flag to true you indicate that you accept the current CA terms of service. [$LEGO_ACCEPT_TOS]
+   --accept-tos, -a              By setting this flag to true, you indicate that you accept the current CA terms of service. [$LEGO_ACCEPT_TOS]
    --email string, -m string     Email used for registration and recovery contact. [$LEGO_EMAIL]
    --help, -h                    show help
    --key-type string, -k string  Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
@@ -210,7 +210,7 @@ OPTIONS:
    --email string, -m string     Email used for registration and recovery contact. [$LEGO_EMAIL]
    --help, -h                    show help
    --key-type string, -k string  Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
-   --private-key string          Path to a private key (PEM encoded) for the account. [$LEGO_PRIVATE_KEY]
+   --private-key string          Path to the account private key (PEM encoded). [$LEGO_PRIVATE_KEY]
    --server string, -s string    CA (ACME server). It can be either a URL or a shortcode.
                                  (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
 
@@ -257,7 +257,7 @@ OPTIONS:
    --help, -h                    show help
    --key-type string, -k string  Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
    --key-type string, -k string  Key type to use for the new private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
-   --private-key string          Path to the new private key (PEM encoded) for the account. If not specified, the private key will be generated. [$LEGO_PRIVATE_KEY]
+   --private-key string          Path to the new account private key (PEM encoded). If not specified, the private key will be generated. [$LEGO_PRIVATE_KEY]
    --server string, -s string    CA (ACME server). It can be either a URL or a shortcode.
                                  (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
 

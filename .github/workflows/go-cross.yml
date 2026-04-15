@@ -7,6 +7,8 @@ on:
       - main
   pull_request:
 
+permissions: {}
+
 jobs:
 
   cross:
@@ -22,6 +24,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version }}

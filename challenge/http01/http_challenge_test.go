@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/textproto"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -438,5 +439,43 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 		require.Error(t, err)
 	} else {
 		require.NoError(t, err)
+	}
+}
+
+func TestChallengePath(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		token    string
+		expected string
+	}{
+		{
+			desc:     "simple",
+			token:    "foo",
+			expected: "/.well-known/acme-challenge/foo",
+		},
+		{
+			desc:     "path",
+			token:    "../../../../../../tmp/data",
+			expected: "/.well-known/acme-challenge/invalid",
+		},
+		{
+			desc:     "path starting with slash",
+			token:    "/../../../../../../tmp/data",
+			expected: "/.well-known/acme-challenge/invalid",
+		},
+		{
+			desc:     "long path",
+			token:    "/foo/foo/foo/foo/foo/foo/foo/../../../../../../tmp/data",
+			expected: "/.well-known/acme-challenge/invalid",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, test.expected, ChallengePath(test.token))
+			assert.Equal(t, test.expected, path.Clean(ChallengePath(test.token)))
+		})
 	}
 }

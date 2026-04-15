@@ -7,6 +7,8 @@ on:
       - main
   pull_request:
 
+permissions: {}
+
 jobs:
 
   main:
@@ -14,17 +16,17 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GO_VERSION: stable
-      GOLANGCI_LINT_VERSION: v2.10
+      GOLANGCI_LINT_VERSION: v2.11
       HUGO_VERSION: 0.157.0
       CGO_ENABLED: 0
       LEGO_E2E_TESTS: CI
       MEMCACHED_HOSTS: localhost:11211
 
     steps:
-
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/setup-go@v6
         with:

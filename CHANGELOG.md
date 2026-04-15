@@ -6,6 +6,28 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v4.34.0
+
+- Release date: 2026-04-15
+- Tag: [v4.34.0](https://github.com/go-acme/lego/releases/tag/v4.34.0)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for UCloud
+- **[dnsprovider]** Add DNS provider for online.net
+- **[dnsprovider]** Add DNS provider for 1cloud.ru
+- **[dnsprovider]** Add DNS provider for Netnod
+- **[dnsprovider]** oraclecloud: support profile session token
+- **[dnsprovider]** rfc2136: add RFC3645 (TSIG-GSS) support
+
+### Changed
+
+- **[dnsprovider]** rfc2136: add dnsupdate as alias
+
+### Fixed
+
+- **[httpprovider]** Check base64url token
+
 ## v4.33.0
 
 - Release date: 2026-03-19

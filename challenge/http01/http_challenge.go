@@ -109,6 +109,7 @@ func isBase64url(s string) bool {
 		isLower := c >= 'a' && c <= 'z'
 		isDigit := c >= '0' && c <= '9'
 		isSpecial := c == '-' || c == '_'
+
 		if !isUpper && !isLower && !isDigit && !isSpecial {
 			return false
 		}

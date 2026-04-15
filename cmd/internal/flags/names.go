@@ -59,6 +59,7 @@ const (
 // Flag names related to the storage.
 const (
 	FlgPath      = "path"
+	FlgEnvFile   = "env-file"
 	FlgPEM       = "pem"
 	FlgPFX       = "pfx"
 	FlgPFXPass   = "pfx.password"

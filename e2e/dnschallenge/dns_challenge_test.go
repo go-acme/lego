@@ -34,6 +34,7 @@ func TestChallengeDNS_Run(t *testing.T) {
 		"--dns", "exec",
 		"--dns.resolvers", ":8553",
 		"--dns.propagation.wait", "0",
+		"--env-file", "./fixtures/.env",
 		"-s", caDirectory,
 		"-d", testDomain2,
 		"-d", testDomain1,

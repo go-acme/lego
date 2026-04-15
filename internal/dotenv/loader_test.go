@@ -26,12 +26,12 @@ func TestLoad(t *testing.T) {
 		},
 		{
 			desc:      "simple",
-			filenames: []string{filepath.Join("testdata", BaseFilePrefix)},
+			filenames: []string{filepath.Join("testdata", BaseFilePrefix+".bar")},
 			expected:  []string{"LEGO_TEST_ENV_A=aGlobal", "LEGO_TEST_ENV_B=bGlobal"},
 		},
 		{
 			desc:      "multiple files",
-			filenames: []string{filepath.Join("testdata", BaseFilePrefix), filepath.Join("testdata", BaseFilePrefix+".foo")},
+			filenames: []string{filepath.Join("testdata", BaseFilePrefix+".bar"), filepath.Join("testdata", BaseFilePrefix+".foo")},
 			expected:  []string{"LEGO_TEST_ENV_A=aLocal", "LEGO_TEST_ENV_B=bGlobal"},
 		},
 	}

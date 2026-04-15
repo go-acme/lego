@@ -20,10 +20,6 @@ jobs:
       CGO_ENABLED: 0
 
     steps:
-      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
-        with:
-          config: ${{ vars.PERMISSIONS_CONFIG }}
-
       # temporary workaround for an error in free disk space action
       # https://github.com/jlumbroso/free-disk-space/issues/14
       - name: Update Package List and Remove Dotnet

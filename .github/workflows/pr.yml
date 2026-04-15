@@ -6,6 +6,8 @@ on:
       - master
   pull_request:
 
+permissions: {}
+
 jobs:
 
   main:
@@ -20,11 +22,6 @@ jobs:
       MEMCACHED_HOSTS: localhost:11211
 
     steps:
-      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
-        with:
-          config: ${{ vars.PERMISSIONS_CONFIG }}
-
-
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0

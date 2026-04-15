@@ -6,6 +6,8 @@ on:
       - master
   pull_request:
 
+permissions: {}
+
 jobs:
 
   cross:
@@ -20,11 +22,6 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
-        if: runner.os == 'Linux'
-        with:
-          config: ${{ vars.PERMISSIONS_CONFIG }}
-
       - uses: actions/checkout@v6
         with:
           persist-credentials: false

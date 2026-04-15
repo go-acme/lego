@@ -1,7 +1,8 @@
 # This is not a valid configuration file.
-# This must be moved/used as a reference inside the documentation.
+# Don't use it.
 
-storage: /tmp/lego
+storage: /tmp/lego/
+envFilesDirectory: /tmp/secrets/
 networkStack: ipv6only
 userAgent: foo
 

@@ -7,15 +7,16 @@ import (
 )
 
 type Configuration struct {
-	Storage      string                  `yaml:"storage,omitempty"`
-	NetworkStack string                  `yaml:"networkStack,omitempty"`
-	UserAgent    string                  `yaml:"userAgent,omitempty"`
-	Servers      map[string]*Server      `yaml:"servers,omitempty"`
-	Accounts     map[string]*Account     `yaml:"accounts,omitempty"`
-	Challenges   map[string]*Challenge   `yaml:"challenges,omitempty"`
-	Certificates map[string]*Certificate `yaml:"certificates,omitempty"`
-	Hooks        *Hooks                  `yaml:"hooks,omitempty"`
-	Log          *Log                    `yaml:"log,omitempty"`
+	Storage           string                  `yaml:"storage,omitempty"`
+	EnvFilesDirectory string                  `yaml:"envFilesDirectory,omitempty"`
+	NetworkStack      string                  `yaml:"networkStack,omitempty"`
+	UserAgent         string                  `yaml:"userAgent,omitempty"`
+	Servers           map[string]*Server      `yaml:"servers,omitempty"`
+	Accounts          map[string]*Account     `yaml:"accounts,omitempty"`
+	Challenges        map[string]*Challenge   `yaml:"challenges,omitempty"`
+	Certificates      map[string]*Certificate `yaml:"certificates,omitempty"`
+	Hooks             *Hooks                  `yaml:"hooks,omitempty"`
+	Log               *Log                    `yaml:"log,omitempty"`
 }
 
 type Server struct {

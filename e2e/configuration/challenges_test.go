@@ -19,7 +19,6 @@ var load = loader.EnvLoader{
 	},
 	LegoOptions: []string{
 		"LEGO_CA_CERTIFICATES=../fixtures/certs/pebble.minica.pem",
-		"12b79c45_2153_4e99_9518_67b3350d878b=./fixtures",
 		"LEGO_DEBUG_ACME_HTTP_CLIENT=1",
 	},
 	ChallSrv: &loader.CmdOption{

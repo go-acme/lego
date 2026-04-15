@@ -318,6 +318,10 @@
       "type": "string",
       "default": ".lego"
     },
+    "envFilesDirectory": {
+      "type": "string",
+      "default": ""
+    },
     "networkStack": {
       "type": "string",
       "enum": ["ipv6only", "ipv4only", ""],

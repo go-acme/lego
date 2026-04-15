@@ -22,7 +22,12 @@ The configuration file can be validated with the JSON Schema: [lego.jsonschema.j
 # Path to the directory to use for storing the data.
 #
 # Default: ./lego
-storage: /tmp/lego
+storage: /tmp/lego/
+
+# Path to the directory to use for storing the dotenv files.
+#
+# Default: the location where lego is run (the current working directory). 
+envFilesDirectory: /tmp/secrets/
 
 # The network stack to use.
 # It can be:

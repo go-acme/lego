@@ -10,7 +10,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const BaseFilePrefix = ".env"
+const BaseFilePrefix = ".env.lego"
 
 func Load(filenames ...string) (func(), error) {
 	if len(filenames) == 0 {

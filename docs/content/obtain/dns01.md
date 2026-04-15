@@ -72,13 +72,11 @@ CLOUDFLARE_API_KEY='yourprivatecloudflareapikey' \
 
 You can also use a dotenv file.
 
-When using `lego run`, the file `.env` is automatically loaded.
+When using `lego run`, you can pass the path to the dotenv file with the `--env-file` flag.
 
-When using `lego`, the environment variables are loaded from the `.env` file, and from the file `.env.<challenge_name>` where `<challenge_name>` is the name defined in the configuration file as the challenge name (not the provider name).
+When using `lego`, the environment variables are loaded from the file `.env.lego.<challenge_name>` where `<challenge_name>` is the name defined in the configuration file as the challenge name (not the provider name).
 
-The environment variables defined in the file `.env.<challenge_name>` overrides the environment variables defined in file `.env` ("merge").
-
-For example, in the previous example with the file configuration, you can create a file `.env.cf` to define the credentials for the Cloudflare provider insead of defining them in the environment variables.
+For example, in the previous example with the file configuration, you can create a file `.env.lego.cf` to define the credentials for the Cloudflare provider insead of defining them in the environment variables.
 
 ```ini
 CLOUDFLARE_EMAIL=you@example.com

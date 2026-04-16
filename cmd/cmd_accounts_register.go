@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -109,6 +110,10 @@ func registerAccount(ctx context.Context, cmd *cli.Command, client *lego.Client)
 	accepted := handleTOS(cmd, client)
 	if !accepted {
 		log.Fatal("You did not accept the TOS. Unable to proceed.")
+	}
+
+	if client.GetServerMetadata().ExternalAccountRequired && !cmd.IsSet(flags.FlgEAB) {
+		return nil, errors.New("server requires External Account Binding (EAB)")
 	}
 
 	if cmd.Bool(flags.FlgEAB) {

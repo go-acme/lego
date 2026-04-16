@@ -2,7 +2,6 @@ package root
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 
@@ -29,16 +28,7 @@ func Revoke(ctx context.Context, cmd *cli.Command, cfg *configuration.Configurat
 		}
 
 		lazyClient := sync.OnceValues(func() (*lego.Client, error) {
-			client, errC := lego.NewClient(newClientConfig(accountNode.ServerConfig, account, cfg.UserAgent))
-			if errC != nil {
-				return nil, errC
-			}
-
-			if client.GetServerMetadata().ExternalAccountRequired && accountNode.ExternalAccountBinding == nil {
-				return nil, errors.New("server requires External Account Binding (EAB)")
-			}
-
-			return client, nil
+			return lego.NewClient(newClientConfig(accountNode.ServerConfig, account, cfg.UserAgent))
 		})
 
 		err = handleRegistration(ctx, lazyClient, accountNode.Account, store.Account, account, false)

@@ -142,6 +142,10 @@
         },
         "propagation": {
           "$ref": "#/definitions/propagationSettings"
+        },
+        "envFile": {
+          "type": "string",
+          "default": ""
         }
       }
     },
@@ -317,10 +321,6 @@
     "storage": {
       "type": "string",
       "default": ".lego"
-    },
-    "envFilesDirectory": {
-      "type": "string",
-      "default": ""
     },
     "networkStack": {
       "type": "string",

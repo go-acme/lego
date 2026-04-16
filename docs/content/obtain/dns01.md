@@ -74,14 +74,35 @@ You can also use a dotenv file.
 
 When using `lego run`, you can pass the path to the dotenv file with the `--env-file` flag.
 
-When using `lego`, the environment variables are loaded from the file `.env.lego.<challenge_name>` where `<challenge_name>` is the name defined in the configuration file as the challenge name (not the provider name).
+When using `lego`, the environment variables are loaded from the file defined by `envFile` in the configuration file for the DNS provider.
 
-For example, in the previous example with the file configuration, you can create a file `.env.lego.cf` to define the credentials for the Cloudflare provider insead of defining them in the environment variables.
+{{< tabs >}}
+{{% tab title=".lego.yml" %}}
 
-```ini
+```yaml
+challenges:
+  cf:
+    dns:
+      provider: cloudflare
+      envFile: .env.cf
+
+certificates:
+  foo:
+    domains:
+      - example.com
+      - '*.example.com'
+```
+
+{{% /tab %}}
+{{% tab title=".env.cf" %}}
+
+```dotenv
 CLOUDFLARE_EMAIL=you@example.com
 CLOUDFLARE_API_KEY=yourprivatecloudflareapikey
 ```
+
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Tips
 

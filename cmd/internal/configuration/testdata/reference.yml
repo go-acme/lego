@@ -2,7 +2,6 @@
 # Don't use it.
 
 storage: /tmp/lego/
-envFilesDirectory: /tmp/secrets/
 networkStack: ipv6only
 userAgent: foo
 
@@ -41,6 +40,7 @@ challenges:
   three:
     dns:
       provider: cloudflare
+      envFile: /tmp/secrets/.env.cf
       propagation:
         disableAuthoritativeNameservers: true
         disableRecursiveNameservers: true

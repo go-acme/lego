@@ -24,11 +24,6 @@ The configuration file can be validated with the JSON Schema: [lego.jsonschema.j
 # Default: ./lego
 storage: /tmp/lego/
 
-# Path to the directory to use for storing the dotenv files.
-#
-# Default: the location where lego is run (the current working directory). 
-envFilesDirectory: /tmp/secrets/
-
 # The network stack to use.
 # It can be:
 # - ipv6only
@@ -263,6 +258,11 @@ challenges:
       #
       # Required.
       provider: cloudflare
+      
+      # The path to the dotenv file containing the credentials.
+      #
+      # Optional.
+      envFile: /tmp/secrets/.env
       
       # The configuration related to propagation check.
       #

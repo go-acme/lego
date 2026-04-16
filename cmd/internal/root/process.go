@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -67,7 +66,7 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 			// each certificate is different, so the metadata is different, except for the account information.
 			hookManager := hm.Clone()
 
-			err := processChallenges(ctx, lazyClient, chlgNode, store, hookManager, networkStack, cfg.EnvFilesDirectory)
+			err := processChallenges(ctx, lazyClient, chlgNode, store, hookManager, networkStack)
 			if err != nil {
 				return err
 			}
@@ -77,9 +76,9 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 	return nil
 }
 
-func processChallenges(ctx context.Context, lazyClient lzSetUp, chlgNode *configuration.ChallengeNode, store *storage.Storage, hookManager *hook.Manager, networkStack challenge.NetworkStack, envFilesDirectory string) error {
+func processChallenges(ctx context.Context, lazyClient lzSetUp, chlgNode *configuration.ChallengeNode, store *storage.Storage, hookManager *hook.Manager, networkStack challenge.NetworkStack) error {
 	if chlgNode.DNS != nil {
-		cleanUp, err := dotenv.Load(filepath.Join(envFilesDirectory, dotenv.BaseFilePrefix+"."+chlgNode.ID))
+		cleanUp, err := dotenv.Load(chlgNode.DNS.EnvFile)
 
 		defer cleanUp()
 

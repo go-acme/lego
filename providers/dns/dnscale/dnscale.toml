@@ -1,0 +1,22 @@
+Name = "DNScale"
+Description = ''''''
+URL = "https://dnscale.eu/"
+Code = "dnscale"
+Since = "v5.0.0"
+
+Example = '''
+DNSCALE_API_TOKEN="xxx" \
+lego --dns dnscale -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    DNSCALE_API_TOKEN = "API token"
+  [Configuration.Additional]
+    DNSCALE_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    DNSCALE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    DNSCALE_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    DNSCALE_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://dnscale.eu/api"

@@ -47,12 +47,7 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 		}
 
 		lazyClient := sync.OnceValues(func() (*lego.Client, error) {
-			client, errC := lego.NewClient(newClientConfig(accountNode.ServerConfig, account, cfg.UserAgent))
-			if errC != nil {
-				return nil, errC
-			}
-
-			return client, nil
+			return lego.NewClient(newClientConfig(accountNode.ServerConfig, account, cfg.UserAgent))
 		})
 
 		err = handleRegistration(ctx, lazyClient, accountNode.Account, store.Account, account, true)

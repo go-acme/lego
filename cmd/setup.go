@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"crypto/x509"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -26,10 +25,6 @@ func newClient(cmd *cli.Command, account registration.User) (*lego.Client, error
 	client, err := lego.NewClient(newClientConfig(cmd, account))
 	if err != nil {
 		return nil, fmt.Errorf("new client: %w", err)
-	}
-
-	if client.GetServerMetadata().ExternalAccountRequired && !cmd.IsSet(flags.FlgEAB) {
-		return nil, errors.New("server requires External Account Binding (EAB)")
 	}
 
 	return client, nil

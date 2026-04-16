@@ -2,7 +2,6 @@ package root
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 
@@ -32,10 +31,6 @@ func Revoke(ctx context.Context, cmd *cli.Command, cfg *configuration.Configurat
 			client, errC := lego.NewClient(newClientConfig(accountNode.ServerConfig, account, cfg.UserAgent))
 			if errC != nil {
 				return nil, errC
-			}
-
-			if client.GetServerMetadata().ExternalAccountRequired && accountNode.ExternalAccountBinding == nil {
-				return nil, errors.New("server requires External Account Binding (EAB)")
 			}
 
 			return client, nil

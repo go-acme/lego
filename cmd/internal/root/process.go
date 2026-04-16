@@ -2,7 +2,6 @@ package root
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -51,10 +50,6 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 			client, errC := lego.NewClient(newClientConfig(accountNode.ServerConfig, account, cfg.UserAgent))
 			if errC != nil {
 				return nil, errC
-			}
-
-			if client.GetServerMetadata().ExternalAccountRequired && accountNode.ExternalAccountBinding == nil {
-				return nil, errors.New("server requires External Account Binding (EAB)")
 			}
 
 			return client, nil

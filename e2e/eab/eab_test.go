@@ -5,7 +5,9 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"io"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/go-acme/lego/v5/certcrypto"
@@ -60,6 +62,103 @@ func TestChallengeHTTP_Run_EAB(t *testing.T) {
 		"--eab",
 		"--eab.kid", "kid-3",
 		"--eab.hmac", "HjudV5qnbreN-n9WyFSH-t4HXuEx_XFen45zuxY-G1h6fr74V3cUM_dVlwQZBWmc",
+	)
+	require.NoError(t, err)
+}
+
+func TestAccount_Register(t *testing.T) {
+	loader.CleanLegoFiles(t.Context())
+
+	err := load.RunLego(t.Context(),
+		"accounts", "register",
+		"-m", testEmail1,
+		"--accept-tos",
+		"-s", caDirectory,
+		"--eab",
+		"--eab.kid", "kid-3",
+		"--eab.hmac", "HjudV5qnbreN-n9WyFSH-t4HXuEx_XFen45zuxY-G1h6fr74V3cUM_dVlwQZBWmc",
+	)
+	require.NoError(t, err)
+}
+
+func TestAccount_Recover(t *testing.T) {
+	loader.CleanLegoFiles(t.Context())
+
+	err := load.RunLego(t.Context(),
+		"accounts", "register",
+		"-m", testEmail1,
+		"--accept-tos",
+		"-s", caDirectory,
+		"--eab",
+		"--eab.kid", "kid-3",
+		"--eab.hmac", "HjudV5qnbreN-n9WyFSH-t4HXuEx_XFen45zuxY-G1h6fr74V3cUM_dVlwQZBWmc",
+	)
+	require.NoError(t, err)
+
+	file, err := os.ReadFile(filepath.FromSlash(".lego/accounts/localhost_16000/lego@example.com/lego@example.com.key"))
+	require.NoError(t, err)
+
+	privateKeyPath := filepath.Join(t.TempDir(), "foo.key")
+
+	err = os.WriteFile(privateKeyPath, file, 0o600)
+	require.NoError(t, err)
+
+	// Delete the account directory
+	err = os.RemoveAll(filepath.FromSlash(".lego/accounts/"))
+	require.NoError(t, err)
+
+	stdinReader, stdinWriter := io.Pipe()
+
+	defer func() { _ = stdinReader.Close() }()
+
+	go func() {
+		defer func() { _ = stdinWriter.Close() }()
+
+		_, err = io.WriteString(stdinWriter, "Y\n")
+	}()
+
+	// NOTE: the EAB is not required when the account already exists in the CA server.
+	err = load.RunLegoWithInput(t.Context(),
+		stdinReader,
+		"accounts", "recover",
+		"-m", testEmail1,
+		"-s", caDirectory,
+		"--private-key", privateKeyPath,
+	)
+	require.NoError(t, err)
+}
+
+func TestAccount_KeyRollover(t *testing.T) {
+	loader.CleanLegoFiles(t.Context())
+
+	err := load.RunLego(t.Context(),
+		"accounts", "register",
+		"-m", testEmail1,
+		"--accept-tos",
+		"-s", caDirectory,
+		"--eab",
+		"--eab.kid", "kid-3",
+		"--eab.hmac", "HjudV5qnbreN-n9WyFSH-t4HXuEx_XFen45zuxY-G1h6fr74V3cUM_dVlwQZBWmc",
+	)
+	require.NoError(t, err)
+
+	stdinReader, stdinWriter := io.Pipe()
+
+	defer func() { _ = stdinReader.Close() }()
+
+	go func() {
+		defer func() { _ = stdinWriter.Close() }()
+
+		_, err = io.WriteString(stdinWriter, "Y\n")
+	}()
+
+	// NOTE: the EAB is not required when the account already exists in the CA server.
+	err = load.RunLegoWithInput(t.Context(),
+		stdinReader,
+		"accounts", "keyrollover",
+		"-m", testEmail1,
+		"-s", caDirectory,
+		"--key-type", "rsa2048",
 	)
 	require.NoError(t, err)
 }

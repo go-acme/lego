@@ -31,6 +31,31 @@ noemail@example.com
 
 ```
 
+## Register
+
+You can register a new account by using the following command:
+
+{{< tabs >}}
+{{% tab title="Simple Registration" %}}
+
+```bash
+lego accounts register --account-id='myaccount'
+```
+
+{{% /tab %}}
+{{% tab title="With External Account Binding" %}}
+
+```bash
+lego accounts register --account-id='myaccount' \
+    --server https://example.com/ca \
+    --eab \
+    --eab.kid xxx \
+    --eab.hmac yyy
+```
+
+{{% /tab %}}
+{{< /tabs >}}
+
 ## Key Rollover
 
 You can change the account private key (a key rollover) by using the following command:

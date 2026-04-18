@@ -6,6 +6,8 @@ on:
       - v*
 
 permissions:
+  contents: write
+  packages: write
   # Allow the workflow to write attestations.
   id-token: write
   attestations: write
@@ -75,15 +77,15 @@ jobs:
           version: v2.15.3
           args: release -p 1 --clean --timeout=90m
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_REPO }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
           AUR_KEY: ${{ secrets.AUR_KEY }}
 
-      - uses: actions/attest-build-provenance@v3
+      - uses: actions/attest@v4
         with:
           subject-checksums: ./dist/lego_${{ fromJSON(steps.goreleaser.outputs.metadata).version }}_checksums.txt
-          github-token: ${{ secrets.GH_TOKEN_REPO }}
-      - uses: actions/attest-build-provenance@v3
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/attest@v4
         with:
           subject-checksums: ./dist/digests.txt
-          github-token: ${{ secrets.GH_TOKEN_REPO }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

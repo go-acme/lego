@@ -4,25 +4,15 @@ import (
 	"log/slog"
 	"maps"
 	"os"
-	"path/filepath"
+	"strings"
 
 	"github.com/go-acme/lego/v5/log"
 	"github.com/joho/godotenv"
 )
 
-const BaseFilePrefix = ".env"
-
 func Load(filenames ...string) (func(), error) {
-	// ONLY FOR TESTING PURPOSE: DON'T USE IT!!
-	prefix, ok := os.LookupEnv("12b79c45_2153_4e99_9518_67b3350d878b")
-	if ok {
-		var prefixed []string
-
-		for _, filename := range filenames {
-			prefixed = append(prefixed, filepath.Join(prefix, filename))
-		}
-
-		filenames = prefixed
+	if len(filenames) == 0 {
+		return noopCleanUp, nil
 	}
 
 	envs, err := read(filenames)
@@ -65,10 +55,14 @@ func read(filenames []string) (map[string]string, error) {
 	envMap := make(map[string]string)
 
 	for _, filename := range filenames {
+		if strings.TrimSpace(filename) == "" {
+			continue
+		}
+
 		_, err := os.Stat(filename)
 		if err != nil {
 			if os.IsNotExist(err) {
-				log.Debug("Environment file not found", slog.String("filename", filename))
+				log.Info("Environment file not found", slog.String("filename", filename))
 
 				continue
 			}

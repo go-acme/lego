@@ -139,6 +139,7 @@ OPTIONS:
 
    --account-id string            Account identifier (The email is used if the account ID is undefined). [$LEGO_ACCOUNT_ID]
    --cert.name string, -c string  The certificate ID/Name, used to store and retrieve a certificate. By default, it uses the first domain name. [$LEGO_CERT_NAME]
+   --env-file string              The path to the dotenv file. [$LEGO_ENV_FILE]
    --path string                  Directory to use for storing the data. [$LEGO_PATH]
    --pem                          Generate an additional .pem (base64) file by concatenating the .key and .crt files together. [$LEGO_PEM]
    --pfx                          Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together. [$LEGO_PFX]

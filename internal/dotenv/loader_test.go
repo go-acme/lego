@@ -22,16 +22,16 @@ func TestLoad(t *testing.T) {
 		},
 		{
 			desc:      "non-existing file",
-			filenames: []string{filepath.Join("testdata", BaseFilePrefix+".non-existing")},
+			filenames: []string{filepath.Join("testdata", ".env.lego.non-existing")},
 		},
 		{
 			desc:      "simple",
-			filenames: []string{filepath.Join("testdata", BaseFilePrefix)},
+			filenames: []string{filepath.Join("testdata", ".env.lego.bar")},
 			expected:  []string{"LEGO_TEST_ENV_A=aGlobal", "LEGO_TEST_ENV_B=bGlobal"},
 		},
 		{
 			desc:      "multiple files",
-			filenames: []string{filepath.Join("testdata", BaseFilePrefix), filepath.Join("testdata", BaseFilePrefix+".foo")},
+			filenames: []string{filepath.Join("testdata", ".env.lego.bar"), filepath.Join("testdata", ".env.lego.foo")},
 			expected:  []string{"LEGO_TEST_ENV_A=aLocal", "LEGO_TEST_ENV_B=bGlobal"},
 		},
 	}

@@ -78,7 +78,7 @@ func process(ctx context.Context, cfg *configuration.Configuration) error {
 
 func processChallenges(ctx context.Context, lazyClient lzSetUp, chlgNode *configuration.ChallengeNode, store *storage.Storage, hookManager *hook.Manager, networkStack challenge.NetworkStack) error {
 	if chlgNode.DNS != nil {
-		cleanUp, err := dotenv.Load(dotenv.BaseFilePrefix, dotenv.BaseFilePrefix+"."+chlgNode.ID)
+		cleanUp, err := dotenv.Load(chlgNode.DNS.EnvFile)
 
 		defer cleanUp()
 

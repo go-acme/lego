@@ -142,6 +142,10 @@
         },
         "propagation": {
           "$ref": "#/definitions/propagationSettings"
+        },
+        "envFile": {
+          "type": "string",
+          "default": ""
         }
       }
     },

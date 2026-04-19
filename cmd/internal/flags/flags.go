@@ -270,7 +270,9 @@ func createACMEClientFlags() []cli.Flag {
 }
 
 func createChallengesFlags() []cli.Flag {
-	var flags []cli.Flag
+	flags := []cli.Flag{
+		CreateEnvFileFlag(),
+	}
 
 	flags = append(flags, createHTTPChallengeFlags()...)
 	flags = append(flags, createTLSChallengeFlags()...)
@@ -762,6 +764,15 @@ func CreatePathFlag(forceCreation bool) cli.Flag {
 			return nil
 		},
 		Required: true,
+	}
+}
+
+func CreateEnvFileFlag() cli.Flag {
+	return &cli.StringFlag{
+		Category: categoryStorage,
+		Name:     FlgEnvFile,
+		Sources:  cli.EnvVars(toEnvName(FlgEnvFile)),
+		Usage:    "The path to the dotenv file.",
 	}
 }
 

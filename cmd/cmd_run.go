@@ -39,7 +39,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("set up account: %w", err)
 	}
 
-	_, err = dotenv.Load(dotenv.BaseFilePrefix)
+	_, err = dotenv.Load(cmd.String(flags.FlgEnvFile))
 	if err != nil {
 		return fmt.Errorf("set up environment: %w", err)
 	}

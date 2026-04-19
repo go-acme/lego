@@ -69,6 +69,7 @@ type DNSChallenge struct {
 	Propagation *Propagation `yaml:"propagation,omitempty"`
 	DNSTimeout  int          `yaml:"dnsTimeout,omitempty"`
 	Resolvers   []string     `yaml:"resolvers,omitempty"`
+	EnvFile     string       `yaml:"envFile,omitempty"`
 }
 
 type DNSPersistChallenge struct {

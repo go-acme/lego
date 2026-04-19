@@ -6,6 +6,7 @@ challenges:
         wait: 500ms
       resolvers:
         - :8853
+      envFile: ./fixtures/.env.lego.mychallenge
 
 certificates:
   'dns.localhost':

@@ -69,6 +69,10 @@ release:
     
     For key updates, see the [changelog](https://github.com/go-acme/lego/blob/HEAD/CHANGELOG.md#v{{ .Major }}{{ .Minor }}{{ .Patch }}).
 
+sboms:
+  - id: archive
+    artifacts: archive
+
 archives:
   - id: lego
     name_template: '{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}'

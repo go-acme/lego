@@ -90,10 +90,6 @@ func (a *Core) setKid(kid string) {
 	}
 }
 
-func (a *Core) GetKid() string {
-	return a.kid
-}
-
 func (a *Core) setPrivateKey(privateKey crypto.Signer) {
 	a.privateKey = privateKey
 }

@@ -67,14 +67,13 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		return err
 	}
 
+	if chlng.AccountURI == "" {
+		return errors.New("dnspersist01: missing accounturi in challenge object")
+	}
+
 	err = validateIssuerDomainNames(chlng)
 	if err != nil {
 		return fmt.Errorf("dnspersist01: %w", err)
-	}
-
-	accountURI := chlng.AccountURI
-	if accountURI == "" {
-		return errors.New("dnspersist01: missing accounturi in challenge object")
 	}
 
 	fqdn := getValidationDomainName(domain)
@@ -84,19 +83,19 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		return fmt.Errorf("dnspersist01: %w", err)
 	}
 
-	issuerDomainName, err := c.selectIssuerDomainName(chlng.IssuerDomainNames, result.Records, accountURI, authz.Wildcard)
+	issuerDomainName, err := c.selectIssuerDomainName(chlng.IssuerDomainNames, result.Records, chlng.AccountURI, authz.Wildcard)
 	if err != nil {
 		return fmt.Errorf("dnspersist01: %w", err)
 	}
 
 	matcher := func(records []TXTRecord) bool {
-		return c.hasMatchingRecord(records, issuerDomainName, accountURI, authz.Wildcard)
+		return c.hasMatchingRecord(records, issuerDomainName, chlng.AccountURI, authz.Wildcard)
 	}
 
 	if !matcher(result.Records) {
 		var info ChallengeInfo
 
-		info, err = GetChallengeInfo(authz, issuerDomainName, accountURI, c.persistUntil)
+		info, err = GetChallengeInfo(authz, issuerDomainName, chlng.AccountURI, c.persistUntil)
 		if err != nil {
 			return err
 		}

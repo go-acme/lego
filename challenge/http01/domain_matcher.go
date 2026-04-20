@@ -2,9 +2,12 @@ package http01
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"net/netip"
 	"strings"
+
+	"github.com/miekg/dns"
 )
 
 // A domainMatcher tries to match a domain (the one we're requesting a certificate for)
@@ -66,7 +69,9 @@ func (m arbitraryMatcher) name() string {
 }
 
 func (m arbitraryMatcher) matches(r *http.Request, domain string) bool {
-	return matchDomain(r.Header.Get(m.name()), domain)
+	first, _, _ := strings.Cut(r.Header.Get(m.name()), ",")
+
+	return matchDomain(first, domain)
 }
 
 // forwardedMatcher checks whether the Forwarded header contains a "host" element starting with a domain name.
@@ -200,5 +205,28 @@ func matchDomain(src, domain string) bool {
 		domain = "[" + domain + "]"
 	}
 
-	return strings.HasPrefix(src, domain)
+	if len(src) < len(domain) {
+		return false
+	}
+
+	// Case-insensitive prefix (domain) match.
+	if !strings.EqualFold(dns.Fqdn(src[:len(domain)]), dns.Fqdn(domain)) {
+		return false
+	}
+
+	if strings.EqualFold(dns.Fqdn(src), dns.Fqdn(domain)) {
+		return true
+	}
+
+	host, _, err := net.SplitHostPort(src)
+	if err != nil {
+		return false
+	}
+
+	addr, err = netip.ParseAddr(host)
+	if err == nil && addr.Is6() {
+		host = "[" + host + "]"
+	}
+
+	return strings.EqualFold(dns.Fqdn(host), dns.Fqdn(domain))
 }

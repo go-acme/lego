@@ -102,6 +102,42 @@ func Test_hostMatcher_matches(t *testing.T) {
 			expected: assert.True,
 		},
 		{
+			desc:     "case-insensitive",
+			domain:   "Example.com",
+			req:      httptest.NewRequest(http.MethodGet, "http://exAmple.com", nil),
+			expected: assert.True,
+		},
+		{
+			desc:     "subdomain",
+			domain:   "example.com",
+			req:      httptest.NewRequest(http.MethodGet, "http://foo.example.com", nil),
+			expected: assert.False,
+		},
+		{
+			desc:     "fqdn",
+			domain:   "example.com",
+			req:      httptest.NewRequest(http.MethodGet, "http://example.com.", nil),
+			expected: assert.True,
+		},
+		{
+			desc:     "fqdn with a port",
+			domain:   "example.com",
+			req:      httptest.NewRequest(http.MethodGet, "http://example.com.:8080", nil),
+			expected: assert.True,
+		},
+		{
+			desc:     "with a port",
+			domain:   "example.com",
+			req:      httptest.NewRequest(http.MethodGet, "http://example.com:8080", nil),
+			expected: assert.True,
+		},
+		{
+			desc:     "wrong",
+			domain:   "example.com",
+			req:      httptest.NewRequest(http.MethodGet, "http://example.com.foo", nil),
+			expected: assert.False,
+		},
+		{
 			desc:     "request with path",
 			domain:   "example.com",
 			req:      httptest.NewRequest(http.MethodGet, "http://example.com/foo/bar", nil),
@@ -114,9 +150,21 @@ func Test_hostMatcher_matches(t *testing.T) {
 			expected: assert.True,
 		},
 		{
+			desc:     "ipv4 with port",
+			domain:   "127.0.0.1",
+			req:      httptest.NewRequest(http.MethodGet, "http://127.0.0.1:8080", nil),
+			expected: assert.True,
+		},
+		{
 			desc:     "ipv6",
 			domain:   "2001:db8::1",
 			req:      httptest.NewRequest(http.MethodGet, "http://[2001:db8::1]", nil),
+			expected: assert.True,
+		},
+		{
+			desc:     "ipv6 with port",
+			domain:   "2001:db8::1",
+			req:      httptest.NewRequest(http.MethodGet, "http://[2001:db8::1]:8080", nil),
 			expected: assert.True,
 		},
 		{
@@ -130,6 +178,7 @@ func Test_hostMatcher_matches(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
+
 			hm.matches(test.req, test.domain)
 
 			test.expected(t, hm.matches(test.req, test.domain))

@@ -223,6 +223,10 @@ type testProxyHeader struct {
 	values []string
 }
 
+func newTestProxyHeader(name string, values ...string) *testProxyHeader {
+	return &testProxyHeader{name: textproto.CanonicalMIMEHeaderKey(name), values: values}
+}
+
 func (h *testProxyHeader) update(r *http.Request) {
 	if h == nil || len(h.values) == 0 {
 		return
@@ -236,11 +240,6 @@ func (h *testProxyHeader) update(r *http.Request) {
 }
 
 func TestChallengeWithProxy(t *testing.T) {
-	h := func(name string, values ...string) *testProxyHeader {
-		name = textproto.CanonicalMIMEHeaderKey(name)
-		return &testProxyHeader{name, values}
-	}
-
 	const (
 		ok   = "localhost:23457"
 		nook = "example.com"
@@ -258,109 +257,109 @@ func TestChallengeWithProxy(t *testing.T) {
 		},
 		{
 			name:   "empty string",
-			header: h(""),
+			header: newTestProxyHeader(""),
 		},
 		{
 			name:   "empty Host",
-			header: h("host"),
+			header: newTestProxyHeader("host"),
 		},
 		{
 			name:   "matching Host",
-			header: h("host", ok),
+			header: newTestProxyHeader("host", ok),
 		},
 		{
 			name:   "Host mismatch",
-			header: h("host", nook),
+			header: newTestProxyHeader("host", nook),
 			isErr:  true,
 		},
 		{
 			name:   "Host mismatch (ignoring forwarding header)",
-			header: h("host", nook),
-			extra:  h("X-Forwarded-Host", ok),
+			header: newTestProxyHeader("host", nook),
+			extra:  newTestProxyHeader("X-Forwarded-Host", ok),
 			isErr:  true,
 		},
 		// test for arbitraryMatcher
 		{
 			name:   "matching X-Forwarded-Host",
-			header: h("X-Forwarded-Host", ok),
+			header: newTestProxyHeader("X-Forwarded-Host", ok),
 		},
 		{
 			name:   "matching X-Forwarded-Host (multiple fields)",
-			header: h("X-Forwarded-Host", ok, nook),
+			header: newTestProxyHeader("X-Forwarded-Host", ok, nook),
 		},
 		{
 			name:   "matching X-Forwarded-Host (chain value)",
-			header: h("X-Forwarded-Host", ok+", "+nook),
+			header: newTestProxyHeader("X-Forwarded-Host", ok+", "+nook),
 		},
 		{
 			name:   "X-Forwarded-Host mismatch",
-			header: h("X-Forwarded-Host", nook),
-			extra:  h("host", ok),
+			header: newTestProxyHeader("X-Forwarded-Host", nook),
+			extra:  newTestProxyHeader("host", ok),
 			isErr:  true,
 		},
 		{
 			name:   "X-Forwarded-Host mismatch (multiple fields)",
-			header: h("X-Forwarded-Host", nook, ok),
+			header: newTestProxyHeader("X-Forwarded-Host", nook, ok),
 			isErr:  true,
 		},
 		{
 			name:   "matching X-Something-Else",
-			header: h("X-Something-Else", ok),
+			header: newTestProxyHeader("X-Something-Else", ok),
 		},
 		{
 			name:   "matching X-Something-Else (multiple fields)",
-			header: h("X-Something-Else", ok, nook),
+			header: newTestProxyHeader("X-Something-Else", ok, nook),
 		},
 		{
 			name:   "matching X-Something-Else (chain value)",
-			header: h("X-Something-Else", ok+", "+nook),
+			header: newTestProxyHeader("X-Something-Else", ok+", "+nook),
 		},
 		{
 			name:   "X-Something-Else mismatch",
-			header: h("X-Something-Else", nook),
+			header: newTestProxyHeader("X-Something-Else", nook),
 			isErr:  true,
 		},
 		{
 			name:   "X-Something-Else mismatch (multiple fields)",
-			header: h("X-Something-Else", nook, ok),
+			header: newTestProxyHeader("X-Something-Else", nook, ok),
 			isErr:  true,
 		},
 		{
 			name:   "X-Something-Else mismatch (chain value)",
-			header: h("X-Something-Else", nook+", "+ok),
+			header: newTestProxyHeader("X-Something-Else", nook+", "+ok),
 			isErr:  true,
 		},
 		// tests for forwardedHeader
 		{
 			name:   "matching Forwarded",
-			header: h("Forwarded", fmt.Sprintf("host=%q;foo=bar", ok)),
+			header: newTestProxyHeader("Forwarded", fmt.Sprintf("host=%q;foo=bar", ok)),
 		},
 		{
 			name:   "matching Forwarded (multiple fields)",
-			header: h("Forwarded", fmt.Sprintf("host=%q", ok), "host="+nook),
+			header: newTestProxyHeader("Forwarded", fmt.Sprintf("host=%q", ok), "host="+nook),
 		},
 		{
 			name:   "matching Forwarded (chain value)",
-			header: h("Forwarded", fmt.Sprintf("host=%q, host=%s", ok, nook)),
+			header: newTestProxyHeader("Forwarded", fmt.Sprintf("host=%q, host=%s", ok, nook)),
 		},
 		{
 			name:   "Forwarded mismatch",
-			header: h("Forwarded", "host="+nook),
+			header: newTestProxyHeader("Forwarded", "host="+nook),
 			isErr:  true,
 		},
 		{
 			name:   "Forwarded mismatch (missing information)",
-			header: h("Forwarded", "for=127.0.0.1"),
+			header: newTestProxyHeader("Forwarded", "for=127.0.0.1"),
 			isErr:  true,
 		},
 		{
 			name:   "Forwarded mismatch (multiple fields)",
-			header: h("Forwarded", "host="+nook, fmt.Sprintf("host=%q", ok)),
+			header: newTestProxyHeader("Forwarded", "host="+nook, fmt.Sprintf("host=%q", ok)),
 			isErr:  true,
 		},
 		{
 			name:   "Forwarded mismatch (chain value)",
-			header: h("Forwarded", fmt.Sprintf("host=%s, host=%q", nook, ok)),
+			header: newTestProxyHeader("Forwarded", fmt.Sprintf("host=%s, host=%q", nook, ok)),
 			isErr:  true,
 		},
 	}

@@ -110,17 +110,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	responsibleDomain, err := d.client.Domains.GetResponsible(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("desec: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("desec: get responsible domain: %w", err)
 	}
 
-	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, responsibleDomain.Name)
 	if err != nil {
 		return fmt.Errorf("desec: %w", err)
 	}
 
-	domainName := dns01.UnFqdn(authZone)
+	domainName := dns01.UnFqdn(responsibleDomain.Name)
 
 	quotedValue := fmt.Sprintf(`%q`, info.Value)
 
@@ -162,17 +162,17 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	responsibleDomain, err := d.client.Domains.GetResponsible(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("desec: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("desec: get responsible domain: %w", err)
 	}
 
-	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, responsibleDomain.Name)
 	if err != nil {
 		return fmt.Errorf("desec: %w", err)
 	}
 
-	domainName := dns01.UnFqdn(authZone)
+	domainName := dns01.UnFqdn(responsibleDomain.Name)
 
 	rrSet, err := d.client.Records.Get(ctx, domainName, recordName, "TXT")
 	if err != nil {

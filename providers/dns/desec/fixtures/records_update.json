@@ -1,0 +1,12 @@
+{
+  "created": "2020-05-06T11:46:07.641885Z",
+  "domain": "example.com",
+  "subname": "_acme-challenge",
+  "name": "_acme-challenge.example.com.",
+  "records": [
+    "\"updated\""
+  ],
+  "ttl": 300,
+  "type": "TXT",
+  "touched": "2020-05-06T11:46:07.641885Z"
+}

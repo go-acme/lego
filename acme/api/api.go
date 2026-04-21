@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
@@ -32,6 +33,7 @@ type Core struct {
 
 	privateKey crypto.Signer
 	kid        string
+	mu         sync.RWMutex
 
 	common         service // Reuse a single struct instead of allocating one for each service on the heap.
 	Accounts       *AccountService
@@ -80,18 +82,27 @@ func newCore(httpClient *http.Client, doer *sender.Doer, dir acme.Directory, kid
 }
 
 func (a *Core) signer() *secure.Signer {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+
 	return secure.NewSigner(a.privateKey, a.kid)
 }
 
 // setKid Sets the key identifier (account URI).
 func (a *Core) setKid(kid string) {
-	if kid != "" {
-		a.kid = kid
+	if kid == "" {
+		return
 	}
+
+	a.mu.Lock()
+	a.kid = kid
+	a.mu.Unlock()
 }
 
 func (a *Core) setPrivateKey(privateKey crypto.Signer) {
+	a.mu.Lock()
 	a.privateKey = privateKey
+	a.mu.Unlock()
 }
 
 // post performs an HTTP POST request and parses the response body as JSON,

@@ -1,4 +1,4 @@
-package rfc2136
+package dnsupdate
 
 import (
 	"testing"

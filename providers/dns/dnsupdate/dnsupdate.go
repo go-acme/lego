@@ -1,5 +1,5 @@
-// Package rfc2136 implements a DNS provider for solving the DNS-01 challenge using the RFC2136 dynamic update.
-package rfc2136
+// Package dnsupdate implements a DNS provider for solving the DNS-01 challenge using the RFC2136 dynamic update.
+package dnsupdate
 
 import (
 	"cmp"
@@ -16,7 +16,7 @@ import (
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/internal/env"
-	"github.com/go-acme/lego/v5/providers/dns/rfc2136/internal"
+	"github.com/go-acme/lego/v5/providers/dns/dnsupdate/internal"
 	"github.com/miekg/dns"
 )
 

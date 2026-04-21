@@ -149,7 +149,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/rcodezero"
 	"github.com/go-acme/lego/v5/providers/dns/regfish"
 	"github.com/go-acme/lego/v5/providers/dns/regru"
-	"github.com/go-acme/lego/v5/providers/dns/rfc2136"
+	"github.com/go-acme/lego/v5/providers/dns/dnsupdate"
 	"github.com/go-acme/lego/v5/providers/dns/rimuhosting"
 	"github.com/go-acme/lego/v5/providers/dns/route53"
 	"github.com/go-acme/lego/v5/providers/dns/safedns"
@@ -486,7 +486,7 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 	case "regru":
 		return regru.NewDNSProvider()
 	case "rfc2136", "dnsupdate":
-		return rfc2136.NewDNSProvider()
+		return dnsupdate.NewDNSProvider()
 	case "rimuhosting":
 		return rimuhosting.NewDNSProvider()
 	case "route53":

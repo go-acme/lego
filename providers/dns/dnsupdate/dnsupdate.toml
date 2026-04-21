@@ -1,8 +1,8 @@
 Name = "DNS Update (RFC2136)"
 Description = ''''''
 URL = "https://www.rfc-editor.org/rfc/rfc2136.html"
-Code = "rfc2136"
-Aliases = ["dnsupdate"]
+Code = "dnsupdate"
+Aliases = ["rfc2136"]
 Since = "v0.3.0"
 
 Example = '''

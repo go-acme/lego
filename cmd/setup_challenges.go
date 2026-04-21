@@ -94,25 +94,19 @@ func createHTTPProvider(cmd *cli.Command) (challenge.Provider, error) {
 		}
 
 		ps := http01.NewProviderServerWithOptions(http01.Options{
-			Network: getNetworkStack(cmd).Network("tcp"),
-			Address: net.JoinHostPort(host, port),
+			Network:         getNetworkStack(cmd).Network("tcp"),
+			Address:         net.JoinHostPort(host, port),
+			ProxyHeaderName: cmd.String(flags.FlgHTTPProxyHeader),
 		})
-
-		if header := cmd.String(flags.FlgHTTPProxyHeader); header != "" {
-			ps.SetProxyHeader(header)
-		}
 
 		return ps, nil
 
 	default:
 		ps := http01.NewProviderServerWithOptions(http01.Options{
-			Network: getNetworkStack(cmd).Network("tcp"),
-			Address: net.JoinHostPort("", ":80"),
+			Network:         getNetworkStack(cmd).Network("tcp"),
+			Address:         net.JoinHostPort("", ":80"),
+			ProxyHeaderName: cmd.String(flags.FlgHTTPProxyHeader),
 		})
-
-		if header := cmd.String(flags.FlgHTTPProxyHeader); header != "" {
-			ps.SetProxyHeader(header)
-		}
 
 		return ps, nil
 	}

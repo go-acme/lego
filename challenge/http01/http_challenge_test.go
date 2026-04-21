@@ -376,10 +376,13 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 
 	server := tester.MockACMEServer().BuildHTTPS(t)
 
-	providerServer := NewProviderServer("localhost", "23457")
+	options := Options{Address: "localhost:23457"}
+
 	if header != nil {
-		providerServer.SetProxyHeader(header.name)
+		options.ProxyHeaderName = header.name
 	}
+
+	providerServer := NewProviderServerWithOptions(options)
 
 	validate := func(ctx context.Context, _ *api.Core, _ string, chlng acme.Challenge) error {
 		uri := "http://" + providerServer.GetAddress() + ChallengePath(chlng.Token)

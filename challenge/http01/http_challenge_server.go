@@ -18,10 +18,11 @@ import (
 var _ challenge.Provider = (*ProviderServer)(nil)
 
 type Options struct {
-	Network      string
-	NetworkStack challenge.NetworkStack
-	Address      string
-	SocketMode   fs.FileMode
+	Network         string
+	NetworkStack    challenge.NetworkStack
+	Address         string
+	SocketMode      fs.FileMode
+	ProxyHeaderName string
 }
 
 // ProviderServer implements ChallengeProvider for `http-01` challenge.
@@ -48,7 +49,7 @@ func NewProviderServerWithOptions(opts Options) *ProviderServer {
 		network:    opts.NetworkStack.Network(opts.Network),
 		address:    opts.Address,
 		socketMode: opts.SocketMode,
-		matcher:    &hostMatcher{},
+		matcher:    getMatcher(opts.ProxyHeaderName),
 	}
 }
 
@@ -115,26 +116,26 @@ func (s *ProviderServer) GetAddress() string {
 	return s.address
 }
 
-// SetProxyHeader changes the validation of incoming requests.
-// By default, s matches the "Host" header value to the domain name.
+// getMatcher gets the matcher for incoming requests.
+// By default, it matches the "Host" header value to the domain name.
 //
 // When the server runs behind a proxy server, this is not the correct place to look at;
 // Apache and NGINX have traditionally moved the original Host header into a new header named "X-Forwarded-Host".
 // Other webservers might use different names;
 // and RFC7239 has standardized a new header named "Forwarded" (with slightly different semantics).
 //
-// The exact behavior depends on the value of headerName:
+// The exact behavior depends on the value of proxyHeaderName:
 // - "" (the empty string) and "Host" will restore the default and only check the Host header
 // - "Forwarded" will look for a Forwarded header, and inspect it according to https://www.rfc-editor.org/rfc/rfc7239.html
 // - any other value will check the header value with the same name.
-func (s *ProviderServer) SetProxyHeader(headerName string) {
-	switch h := textproto.CanonicalMIMEHeaderKey(headerName); h {
+func getMatcher(proxyHeaderName string) domainMatcher {
+	switch h := textproto.CanonicalMIMEHeaderKey(proxyHeaderName); h {
 	case "", "Host":
-		s.matcher = &hostMatcher{}
+		return &hostMatcher{}
 	case "Forwarded":
-		s.matcher = &forwardedMatcher{}
+		return &forwardedMatcher{}
 	default:
-		s.matcher = arbitraryMatcher(h)
+		return arbitraryMatcher(h)
 	}
 }
 

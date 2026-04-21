@@ -1,8 +1,0 @@
-{
-  "RequestId": "123456",
-  "ZoneList": [
-    "example.com",
-    "sub.example.com",
-    "example.org"
-  ]
-}

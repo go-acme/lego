@@ -3,7 +3,6 @@ package dnsmadeeasy
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
@@ -48,22 +47,12 @@ type Config struct {
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
-	tr := &http.Transport{}
-
-	defaultTransport, ok := http.DefaultTransport.(*http.Transport)
-	if ok {
-		tr = defaultTransport.Clone()
-	}
-
-	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout:   env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
-			Transport: tr,
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 		},
 	}
 }

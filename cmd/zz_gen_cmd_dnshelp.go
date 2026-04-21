@@ -25,7 +25,6 @@ func allDNSCodes() string {
 		"autodns",
 		"axelname",
 		"azion",
-		"azure",
 		"azuredns",
 		"baiducloud",
 		"beget",
@@ -34,7 +33,6 @@ func allDNSCodes() string {
 		"bluecat",
 		"bluecatv2",
 		"bookmyname",
-		"brandit",
 		"bunny",
 		"checkdomain",
 		"civo",
@@ -42,7 +40,6 @@ func allDNSCodes() string {
 		"cloudflare",
 		"cloudns",
 		"cloudru",
-		"cloudxns",
 		"com35",
 		"conoha",
 		"conohav3",
@@ -60,7 +57,6 @@ func allDNSCodes() string {
 		"dnshomede",
 		"dnsimple",
 		"dnsmadeeasy",
-		"dnspod",
 		"dode",
 		"domeneshop",
 		"dreamhost",
@@ -87,7 +83,6 @@ func allDNSCodes() string {
 		"gigahostno",
 		"glesys",
 		"godaddy",
-		"googledomains",
 		"gravity",
 		"hetzner",
 		"hostingde",
@@ -100,7 +95,6 @@ func allDNSCodes() string {
 		"hurricane",
 		"hyperone",
 		"ibmcloud",
-		"iij",
 		"iijdpf",
 		"infoblox",
 		"infomaniak",
@@ -111,7 +105,6 @@ func allDNSCodes() string {
 		"ipv64",
 		"ispconfig",
 		"ispconfigddns",
-		"iwantmyname",
 		"jdcloud",
 		"joker",
 		"keyhelp",
@@ -494,34 +487,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/azion`)
 
-	case "azure":
-		// generated from: providers/dns/azure/azure.toml
-		ew.writeln(`Configuration for Azure (deprecated).`)
-		ew.writeln(`Code:	'azure'`)
-		ew.writeln(`Since:	'v0.4.0'`)
-		ew.writeln()
-
-		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "AZURE_CLIENT_ID":	Client ID`)
-		ew.writeln(`	- "AZURE_CLIENT_SECRET":	Client secret`)
-		ew.writeln(`	- "AZURE_ENVIRONMENT":	Azure environment, one of: public, usgovernment, german, and china`)
-		ew.writeln(`	- "AZURE_RESOURCE_GROUP":	Resource group`)
-		ew.writeln(`	- "AZURE_SUBSCRIPTION_ID":	Subscription ID`)
-		ew.writeln(`	- "AZURE_TENANT_ID":	Tenant ID`)
-		ew.writeln(`	- "instance metadata service":	If the credentials are **not** set via the environment, then it will attempt to get a bearer token via the [instance metadata service](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service).`)
-		ew.writeln()
-
-		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "AZURE_METADATA_ENDPOINT":	Metadata Service endpoint URL`)
-		ew.writeln(`	- "AZURE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
-		ew.writeln(`	- "AZURE_PRIVATE_ZONE":	Set to true to use Azure Private DNS Zones and not public`)
-		ew.writeln(`	- "AZURE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
-		ew.writeln(`	- "AZURE_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)`)
-		ew.writeln(`	- "AZURE_ZONE_NAME":	Zone name to use inside Azure DNS service to add the TXT record in`)
-
-		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/azure`)
-
 	case "azuredns":
 		// generated from: providers/dns/azuredns/azuredns.toml
 		ew.writeln(`Configuration for Azure DNS.`)
@@ -703,27 +668,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/bookmyname`)
 
-	case "brandit":
-		// generated from: providers/dns/brandit/brandit.toml
-		ew.writeln(`Configuration for Brandit (deprecated).`)
-		ew.writeln(`Code:	'brandit'`)
-		ew.writeln(`Since:	'v4.11.0'`)
-		ew.writeln()
-
-		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "BRANDIT_API_KEY":	The API key`)
-		ew.writeln(`	- "BRANDIT_API_USERNAME":	The API username`)
-		ew.writeln()
-
-		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "BRANDIT_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
-		ew.writeln(`	- "BRANDIT_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
-		ew.writeln(`	- "BRANDIT_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 600)`)
-		ew.writeln(`	- "BRANDIT_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)`)
-
-		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/brandit`)
-
 	case "bunny":
 		// generated from: providers/dns/bunny/bunny.toml
 		ew.writeln(`Configuration for Bunny.`)
@@ -878,27 +822,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/cloudru`)
-
-	case "cloudxns":
-		// generated from: providers/dns/cloudxns/cloudxns.toml
-		ew.writeln(`Configuration for CloudXNS (Deprecated).`)
-		ew.writeln(`Code:	'cloudxns'`)
-		ew.writeln(`Since:	'v0.5.0'`)
-		ew.writeln()
-
-		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "CLOUDXNS_API_KEY":	The API key`)
-		ew.writeln(`	- "CLOUDXNS_SECRET_KEY":	The API secret key`)
-		ew.writeln()
-
-		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "CLOUDXNS_HTTP_TIMEOUT":	API request timeout in seconds (Default: )`)
-		ew.writeln(`	- "CLOUDXNS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: )`)
-		ew.writeln(`	- "CLOUDXNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: )`)
-		ew.writeln(`	- "CLOUDXNS_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: )`)
-
-		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/cloudxns`)
 
 	case "com35":
 		// generated from: providers/dns/com35/com35.toml
@@ -1270,26 +1193,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dnsmadeeasy`)
-
-	case "dnspod":
-		// generated from: providers/dns/dnspod/dnspod.toml
-		ew.writeln(`Configuration for DNSPod (deprecated).`)
-		ew.writeln(`Code:	'dnspod'`)
-		ew.writeln(`Since:	'v0.4.0'`)
-		ew.writeln()
-
-		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "DNSPOD_API_KEY":	The user token`)
-		ew.writeln()
-
-		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "DNSPOD_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
-		ew.writeln(`	- "DNSPOD_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
-		ew.writeln(`	- "DNSPOD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
-		ew.writeln(`	- "DNSPOD_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)`)
-
-		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dnspod`)
 
 	case "dode":
 		// generated from: providers/dns/dode/dode.toml
@@ -1836,25 +1739,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/godaddy`)
 
-	case "googledomains":
-		// generated from: providers/dns/googledomains/googledomains.toml
-		ew.writeln(`Configuration for Google Domains.`)
-		ew.writeln(`Code:	'googledomains'`)
-		ew.writeln(`Since:	'v4.11.0'`)
-		ew.writeln()
-
-		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "GOOGLE_DOMAINS_ACCESS_TOKEN":	Access token`)
-		ew.writeln()
-
-		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "GOOGLE_DOMAINS_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
-		ew.writeln(`	- "GOOGLE_DOMAINS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
-		ew.writeln(`	- "GOOGLE_DOMAINS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
-
-		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/googledomains`)
-
 	case "gravity":
 		// generated from: providers/dns/gravity/gravity.toml
 		ew.writeln(`Configuration for Gravity.`)
@@ -2104,27 +1988,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/ibmcloud`)
 
-	case "iij":
-		// generated from: providers/dns/iij/iij.toml
-		ew.writeln(`Configuration for Internet Initiative Japan.`)
-		ew.writeln(`Code:	'iij'`)
-		ew.writeln(`Since:	'v1.1.0'`)
-		ew.writeln()
-
-		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "IIJ_API_ACCESS_KEY":	API access key`)
-		ew.writeln(`	- "IIJ_API_SECRET_KEY":	API secret key`)
-		ew.writeln(`	- "IIJ_DO_SERVICE_CODE":	DO service code`)
-		ew.writeln()
-
-		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "IIJ_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 4)`)
-		ew.writeln(`	- "IIJ_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 240)`)
-		ew.writeln(`	- "IIJ_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)`)
-
-		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/iij`)
-
 	case "iijdpf":
 		// generated from: providers/dns/iijdpf/iijdpf.toml
 		ew.writeln(`Configuration for IIJ DNS Platform Service.`)
@@ -2339,27 +2202,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/ispconfigddns`)
-
-	case "iwantmyname":
-		// generated from: providers/dns/iwantmyname/iwantmyname.toml
-		ew.writeln(`Configuration for iwantmyname (Deprecated).`)
-		ew.writeln(`Code:	'iwantmyname'`)
-		ew.writeln(`Since:	'v4.7.0'`)
-		ew.writeln()
-
-		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "IWANTMYNAME_PASSWORD":	API password`)
-		ew.writeln(`	- "IWANTMYNAME_USERNAME":	API username`)
-		ew.writeln()
-
-		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "IWANTMYNAME_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
-		ew.writeln(`	- "IWANTMYNAME_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
-		ew.writeln(`	- "IWANTMYNAME_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
-		ew.writeln(`	- "IWANTMYNAME_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
-
-		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/iwantmyname`)
 
 	case "jdcloud":
 		// generated from: providers/dns/jdcloud/jdcloud.toml

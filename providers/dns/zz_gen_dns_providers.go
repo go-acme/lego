@@ -19,7 +19,6 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/autodns"
 	"github.com/go-acme/lego/v5/providers/dns/axelname"
 	"github.com/go-acme/lego/v5/providers/dns/azion"
-	"github.com/go-acme/lego/v5/providers/dns/azure"
 	"github.com/go-acme/lego/v5/providers/dns/azuredns"
 	"github.com/go-acme/lego/v5/providers/dns/baiducloud"
 	"github.com/go-acme/lego/v5/providers/dns/beget"
@@ -28,7 +27,6 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/bluecat"
 	"github.com/go-acme/lego/v5/providers/dns/bluecatv2"
 	"github.com/go-acme/lego/v5/providers/dns/bookmyname"
-	"github.com/go-acme/lego/v5/providers/dns/brandit"
 	"github.com/go-acme/lego/v5/providers/dns/bunny"
 	"github.com/go-acme/lego/v5/providers/dns/checkdomain"
 	"github.com/go-acme/lego/v5/providers/dns/civo"
@@ -36,7 +34,6 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/cloudflare"
 	"github.com/go-acme/lego/v5/providers/dns/cloudns"
 	"github.com/go-acme/lego/v5/providers/dns/cloudru"
-	"github.com/go-acme/lego/v5/providers/dns/cloudxns"
 	"github.com/go-acme/lego/v5/providers/dns/com35"
 	"github.com/go-acme/lego/v5/providers/dns/conoha"
 	"github.com/go-acme/lego/v5/providers/dns/conohav3"
@@ -54,7 +51,6 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/dnshomede"
 	"github.com/go-acme/lego/v5/providers/dns/dnsimple"
 	"github.com/go-acme/lego/v5/providers/dns/dnsmadeeasy"
-	"github.com/go-acme/lego/v5/providers/dns/dnspod"
 	"github.com/go-acme/lego/v5/providers/dns/dode"
 	"github.com/go-acme/lego/v5/providers/dns/domeneshop"
 	"github.com/go-acme/lego/v5/providers/dns/dreamhost"
@@ -81,7 +77,6 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/gigahostno"
 	"github.com/go-acme/lego/v5/providers/dns/glesys"
 	"github.com/go-acme/lego/v5/providers/dns/godaddy"
-	"github.com/go-acme/lego/v5/providers/dns/googledomains"
 	"github.com/go-acme/lego/v5/providers/dns/gravity"
 	"github.com/go-acme/lego/v5/providers/dns/hetzner"
 	"github.com/go-acme/lego/v5/providers/dns/hostingde"
@@ -94,7 +89,6 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/hurricane"
 	"github.com/go-acme/lego/v5/providers/dns/hyperone"
 	"github.com/go-acme/lego/v5/providers/dns/ibmcloud"
-	"github.com/go-acme/lego/v5/providers/dns/iij"
 	"github.com/go-acme/lego/v5/providers/dns/iijdpf"
 	"github.com/go-acme/lego/v5/providers/dns/infoblox"
 	"github.com/go-acme/lego/v5/providers/dns/infomaniak"
@@ -105,7 +99,6 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/ipv64"
 	"github.com/go-acme/lego/v5/providers/dns/ispconfig"
 	"github.com/go-acme/lego/v5/providers/dns/ispconfigddns"
-	"github.com/go-acme/lego/v5/providers/dns/iwantmyname"
 	"github.com/go-acme/lego/v5/providers/dns/jdcloud"
 	"github.com/go-acme/lego/v5/providers/dns/joker"
 	"github.com/go-acme/lego/v5/providers/dns/keyhelp"
@@ -232,8 +225,6 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return axelname.NewDNSProvider()
 	case "azion":
 		return azion.NewDNSProvider()
-	case "azure":
-		return azure.NewDNSProvider()
 	case "azuredns":
 		return azuredns.NewDNSProvider()
 	case "baiducloud":
@@ -250,8 +241,6 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return bluecatv2.NewDNSProvider()
 	case "bookmyname":
 		return bookmyname.NewDNSProvider()
-	case "brandit":
-		return brandit.NewDNSProvider()
 	case "bunny":
 		return bunny.NewDNSProvider()
 	case "checkdomain":
@@ -266,8 +255,6 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return cloudns.NewDNSProvider()
 	case "cloudru":
 		return cloudru.NewDNSProvider()
-	case "cloudxns":
-		return cloudxns.NewDNSProvider()
 	case "com35":
 		return com35.NewDNSProvider()
 	case "conoha":
@@ -302,8 +289,6 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return dnsimple.NewDNSProvider()
 	case "dnsmadeeasy":
 		return dnsmadeeasy.NewDNSProvider()
-	case "dnspod":
-		return dnspod.NewDNSProvider()
 	case "dode":
 		return dode.NewDNSProvider()
 	case "domeneshop", "domainnameshop":
@@ -356,8 +341,6 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return glesys.NewDNSProvider()
 	case "godaddy":
 		return godaddy.NewDNSProvider()
-	case "googledomains":
-		return googledomains.NewDNSProvider()
 	case "gravity":
 		return gravity.NewDNSProvider()
 	case "hetzner":
@@ -382,8 +365,6 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return hyperone.NewDNSProvider()
 	case "ibmcloud":
 		return ibmcloud.NewDNSProvider()
-	case "iij":
-		return iij.NewDNSProvider()
 	case "iijdpf":
 		return iijdpf.NewDNSProvider()
 	case "infoblox":
@@ -404,8 +385,6 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return ispconfig.NewDNSProvider()
 	case "ispconfigddns":
 		return ispconfigddns.NewDNSProvider()
-	case "iwantmyname":
-		return iwantmyname.NewDNSProvider()
 	case "jdcloud":
 		return jdcloud.NewDNSProvider()
 	case "joker":

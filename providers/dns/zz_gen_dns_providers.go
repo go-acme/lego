@@ -51,6 +51,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/dnshomede"
 	"github.com/go-acme/lego/v5/providers/dns/dnsimple"
 	"github.com/go-acme/lego/v5/providers/dns/dnsmadeeasy"
+	"github.com/go-acme/lego/v5/providers/dns/dnsupdate"
 	"github.com/go-acme/lego/v5/providers/dns/dode"
 	"github.com/go-acme/lego/v5/providers/dns/domeneshop"
 	"github.com/go-acme/lego/v5/providers/dns/dreamhost"
@@ -149,7 +150,6 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/rcodezero"
 	"github.com/go-acme/lego/v5/providers/dns/regfish"
 	"github.com/go-acme/lego/v5/providers/dns/regru"
-	"github.com/go-acme/lego/v5/providers/dns/dnsupdate"
 	"github.com/go-acme/lego/v5/providers/dns/rimuhosting"
 	"github.com/go-acme/lego/v5/providers/dns/route53"
 	"github.com/go-acme/lego/v5/providers/dns/safedns"
@@ -289,6 +289,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return dnsimple.NewDNSProvider()
 	case "dnsmadeeasy":
 		return dnsmadeeasy.NewDNSProvider()
+	case "dnsupdate", "rfc2136":
+		return dnsupdate.NewDNSProvider()
 	case "dode":
 		return dode.NewDNSProvider()
 	case "domeneshop", "domainnameshop":
@@ -485,8 +487,6 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return regfish.NewDNSProvider()
 	case "regru":
 		return regru.NewDNSProvider()
-	case "rfc2136", "dnsupdate":
-		return dnsupdate.NewDNSProvider()
 	case "rimuhosting":
 		return rimuhosting.NewDNSProvider()
 	case "route53":

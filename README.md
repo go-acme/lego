@@ -119,7 +119,7 @@ If your DNS provider is not supported, please open an [issue](https://github.com
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/directadmin/">DirectAdmin</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/dnsmadeeasy/">DNS Made Easy</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/rfc2136/">DNS Update (RFC2136)</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/dnsupdate/">DNS Update (RFC2136)</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/dnsexit/">DNSExit</a></td>
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/dnshomede/">dnsHome.de</a></td>

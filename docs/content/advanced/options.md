@@ -53,7 +53,7 @@ By default, lego follows CNAME, the environment variable `LEGO_DISABLE_CNAME_SUP
 Example:
 
 ```bash
-LEGO_DISABLE_CNAME_SUPPORT=false
+LEGO_DISABLE_CNAME_SUPPORT=true
 ```
 
 ## LEGO_DEBUG_CLIENT_VERBOSE_ERROR

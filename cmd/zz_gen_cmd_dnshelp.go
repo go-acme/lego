@@ -56,6 +56,7 @@ func allDNSCodes() string {
 		"designate",
 		"digitalocean",
 		"directadmin",
+		"dnscale",
 		"dnsexit",
 		"dnshomede",
 		"dnsimple",
@@ -1177,6 +1178,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/directadmin`)
+
+	case "dnscale":
+		// generated from: providers/dns/dnscale/dnscale.toml
+		ew.writeln(`Configuration for DNScale.`)
+		ew.writeln(`Code:	'dnscale'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DNSCALE_API_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DNSCALE_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "DNSCALE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "DNSCALE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "DNSCALE_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dnscale`)
 
 	case "dnsexit":
 		// generated from: providers/dns/dnsexit/dnsexit.toml

@@ -54,6 +54,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/dnsexit"
 	"github.com/go-acme/lego/v5/providers/dns/dnshomede"
 	"github.com/go-acme/lego/v5/providers/dns/dnsimple"
+	"github.com/go-acme/lego/v5/providers/dns/dnsla"
 	"github.com/go-acme/lego/v5/providers/dns/dnsmadeeasy"
 	"github.com/go-acme/lego/v5/providers/dns/dnsupdate"
 	"github.com/go-acme/lego/v5/providers/dns/dode"
@@ -304,6 +305,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return dnshomede.NewDNSProvider()
 	case "dnsimple":
 		return dnsimple.NewDNSProvider()
+	case "dnsla":
+		return dnsla.NewDNSProvider()
 	case "dnsmadeeasy":
 		return dnsmadeeasy.NewDNSProvider()
 	case "dnsupdate", "rfc2136":

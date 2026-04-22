@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -54,7 +53,7 @@ func TestUpdateZone(t *testing.T) {
 		},
 	}
 
-	zone, err := client.UpdateZone(context.Background(), domain, patch)
+	zone, err := client.UpdateZone(t.Context(), domain, patch)
 	require.NoError(t, err)
 
 	expected := &APIResponse[*Zone]{
@@ -133,7 +132,7 @@ func TestUpdateZone_error(t *testing.T) {
 		},
 	}
 
-	_, err := client.UpdateZone(context.Background(), domain, patch)
+	_, err := client.UpdateZone(t.Context(), domain, patch)
 	require.EqualError(t, err, "could not update zone example.com: api error: status=401, message=Authentication Error")
 }
 
@@ -143,7 +142,7 @@ func TestGetZones(t *testing.T) {
 			servermock.ResponseFromFixture("zones.json")).
 		Build(t)
 
-	zones, err := client.GetZones(context.Background(), nil)
+	zones, err := client.GetZones(t.Context(), nil)
 	require.NoError(t, err)
 
 	expected := &APIResponse[[]Zone]{
@@ -181,7 +180,7 @@ func TestGetZones_error(t *testing.T) {
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
-	_, err := client.GetZones(context.Background(), nil)
+	_, err := client.GetZones(t.Context(), nil)
 	require.EqualError(t, err, "could not get zones: api error: status=401, message=Authentication Error")
 }
 
@@ -191,7 +190,7 @@ func TestGetZone(t *testing.T) {
 			servermock.ResponseFromFixture("zone.json")).
 		Build(t)
 
-	zones, err := client.GetZone(context.Background(), "example.com")
+	zones, err := client.GetZone(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := &APIResponse[*Zone]{
@@ -250,6 +249,6 @@ func TestGetZone_error(t *testing.T) {
 				WithStatusCode(http.StatusUnauthorized)).
 		Build(t)
 
-	_, err := client.GetZone(context.Background(), "example.com")
+	_, err := client.GetZone(t.Context(), "example.com")
 	require.EqualError(t, err, "could not get zone example.com: api error: status=401, message=Authentication Error")
 }

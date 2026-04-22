@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/providers/dns/abion"
 	"github.com/go-acme/lego/v5/providers/dns/acmedns"
 	"github.com/go-acme/lego/v5/providers/dns/active24"
 	"github.com/go-acme/lego/v5/providers/dns/alidns"
@@ -199,6 +200,8 @@ import (
 // NewDNSChallengeProviderByName Factory for DNS providers.
 func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 	switch name {
+	case "abion":
+		return abion.NewDNSProvider()
 	case "acmedns", "acme-dns":
 		return acmedns.NewDNSProvider()
 	case "active24":

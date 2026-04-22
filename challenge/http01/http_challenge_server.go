@@ -10,6 +10,7 @@ import (
 	"net/textproto"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/log"
@@ -174,7 +175,13 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 		}
 	})
 
-	httpServer := &http.Server{Handler: mux}
+	httpServer := &http.Server{
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
 
 	// Once httpServer is shut down
 	// we don't want any lingering connections, so disable KeepAlives.

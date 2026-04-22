@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/log"
@@ -90,9 +91,17 @@ func (s *ProviderServer) Present(ctx context.Context, domain, token, keyAuth str
 		return fmt.Errorf("could not start HTTPS server for challenge: %w", err)
 	}
 
+	srv := &http.Server{
+		Handler:           http.NewServeMux(),
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+
 	// Shut the server down when we're finished.
 	go func() {
-		err := http.Serve(s.listener, nil)
+		err := srv.Serve(s.listener)
 		if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
 			log.Warn("tlsalpn01: HTTP server serve.", log.ErrorAttr(err))
 		}

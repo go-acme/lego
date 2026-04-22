@@ -99,12 +99,12 @@ func (d *Doer) do(req *http.Request, response any) (*http.Response, error) {
 	}
 
 	if response != nil {
+		defer func() { _ = resp.Body.Close() }()
+
 		raw, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return resp, errutils.NewReadResponseError(req, resp.StatusCode, err)
 		}
-
-		defer resp.Body.Close()
 
 		err = json.Unmarshal(raw, response)
 		if err != nil {
@@ -124,6 +124,8 @@ func checkError(req *http.Request, resp *http.Response) error {
 	if resp.StatusCode < http.StatusBadRequest {
 		return nil
 	}
+
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

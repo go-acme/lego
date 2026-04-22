@@ -321,14 +321,7 @@ func (s *AccountsStorage) getRootUserPath(server *url.URL, effectiveAccountID st
 }
 
 func savePrivateKey(filename string, privateKey crypto.Signer) error {
-	file, err := os.Create(filename)
-	if err != nil {
-		return fmt.Errorf("file creation: %w", err)
-	}
-
-	defer func() { _ = file.Close() }()
-
-	err = pem.Encode(file, certcrypto.PEMBlock(privateKey))
+	err := os.WriteFile(filename, pem.EncodeToMemory(certcrypto.PEMBlock(privateKey)), filePerm)
 	if err != nil {
 		return fmt.Errorf("PEM encoding: %w", err)
 	}

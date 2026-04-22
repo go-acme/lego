@@ -86,6 +86,7 @@ func allDNSCodes() string {
 		"gandiv5",
 		"gcloud",
 		"gcore",
+		"gehirn",
 		"gigahostno",
 		"glesys",
 		"godaddy",
@@ -1813,6 +1814,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/gcore`)
+
+	case "gehirn":
+		// generated from: providers/dns/gehirn/gehirn.toml
+		ew.writeln(`Configuration for Gehirn.`)
+		ew.writeln(`Code:	'gehirn'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "GEHIRN_TOKEN_ID":	Token ID`)
+		ew.writeln(`	- "GEHIRN_TOKEN_SECRET":	Token secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "GEHIRN_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "GEHIRN_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "GEHIRN_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "GEHIRN_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/gehirn`)
 
 	case "gigahostno":
 		// generated from: providers/dns/gigahostno/gigahostno.toml

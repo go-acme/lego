@@ -52,6 +52,8 @@ The following methods now return an `*acme.ExtendedAccount` instead of an `*regi
 
 The structure `registration.Ressouce` has been removed.
 
+The method `http01.ProviderServer.SetProxyHeader` is removed and replaced by an option `http01.Options.ProxyHeaderName`.
+
 ## Fields changes
 
 The field `RetryAfter` of `acme.RateLimitedError` and `acme.ExtendedChallenge` is now a `time.Duration` instead of a `string`.

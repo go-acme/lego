@@ -164,6 +164,7 @@ func allDNSCodes() string {
 		"ovh",
 		"pdns",
 		"plesk",
+		"pointdns",
 		"porkbun",
 		"rackspace",
 		"rainyun",
@@ -3481,6 +3482,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/plesk`)
+
+	case "pointdns":
+		// generated from: providers/dns/pointdns/pointdns.toml
+		ew.writeln(`Configuration for PointDNS/PointHQ.`)
+		ew.writeln(`Code:	'pointdns'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "POINTDNS_PASSWORD":	Password`)
+		ew.writeln(`	- "POINTDNS_USERNAME":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "POINTDNS_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "POINTDNS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "POINTDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "POINTDNS_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/pointdns`)
 
 	case "porkbun":
 		// generated from: providers/dns/porkbun/porkbun.toml

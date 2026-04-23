@@ -138,6 +138,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/namesilo"
 	"github.com/go-acme/lego/v5/providers/dns/namesurfer"
 	"github.com/go-acme/lego/v5/providers/dns/nearlyfreespeech"
+	"github.com/go-acme/lego/v5/providers/dns/nederhost"
 	"github.com/go-acme/lego/v5/providers/dns/neodigit"
 	"github.com/go-acme/lego/v5/providers/dns/netcup"
 	"github.com/go-acme/lego/v5/providers/dns/netlify"
@@ -477,6 +478,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return namesurfer.NewDNSProvider()
 	case "nearlyfreespeech":
 		return nearlyfreespeech.NewDNSProvider()
+	case "nederhost":
+		return nederhost.NewDNSProvider()
 	case "neodigit":
 		return neodigit.NewDNSProvider()
 	case "netcup":

@@ -144,6 +144,7 @@ func allDNSCodes() string {
 		"namesilo",
 		"namesurfer",
 		"nearlyfreespeech",
+		"nederhost",
 		"neodigit",
 		"netcup",
 		"netlify",
@@ -3038,6 +3039,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nearlyfreespeech`)
+
+	case "nederhost":
+		// generated from: providers/dns/nederhost/nederhost.toml
+		ew.writeln(`Configuration for NederHost.`)
+		ew.writeln(`Code:	'nederhost'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NEDERHOST_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NEDERHOST_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "NEDERHOST_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "NEDERHOST_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "NEDERHOST_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nederhost`)
 
 	case "neodigit":
 		// generated from: providers/dns/neodigit/neodigit.toml

@@ -167,6 +167,7 @@ func allDNSCodes() string {
 		"pointdns",
 		"porkbun",
 		"rackspace",
+		"rage4",
 		"rainyun",
 		"rcodezero",
 		"regfish",
@@ -3545,6 +3546,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rackspace`)
+
+	case "rage4":
+		// generated from: providers/dns/rage4/rage4.toml
+		ew.writeln(`Configuration for Rage4.`)
+		ew.writeln(`Code:	'rage4'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "RAGE4_PASSWORD":	Password`)
+		ew.writeln(`	- "RAGE4_USERNAME":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "RAGE4_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "RAGE4_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "RAGE4_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "RAGE4_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rage4`)
 
 	case "rainyun":
 		// generated from: providers/dns/rainyun/rainyun.toml

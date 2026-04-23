@@ -64,6 +64,7 @@ func allDNSCodes() string {
 		"dnsimple",
 		"dnsla",
 		"dnsmadeeasy",
+		"dnsservices",
 		"dnsupdate",
 		"dode",
 		"domeneshop",
@@ -198,6 +199,7 @@ func allDNSCodes() string {
 		"ultradns",
 		"uniteddomains",
 		"variomedia",
+		"veesp",
 		"vegadns",
 		"vercel",
 		"versio",
@@ -1357,6 +1359,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dnsmadeeasy`)
+
+	case "dnsservices":
+		// generated from: providers/dns/dnsservices/dnsservices.toml
+		ew.writeln(`Configuration for DNS.services.`)
+		ew.writeln(`Code:	'dnsservices'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DNSSERVICES_PASSWORD":	Password`)
+		ew.writeln(`	- "DNSSERVICES_USERNAME":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DNSSERVICES_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "DNSSERVICES_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "DNSSERVICES_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "DNSSERVICES_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dnsservices`)
 
 	case "dnsupdate":
 		// generated from: providers/dns/dnsupdate/dnsupdate.toml
@@ -4213,6 +4236,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/variomedia`)
+
+	case "veesp":
+		// generated from: providers/dns/veesp/veesp.toml
+		ew.writeln(`Configuration for Veesp.`)
+		ew.writeln(`Code:	'veesp'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "VEESP_PASSWORD":	Password`)
+		ew.writeln(`	- "VEESP_USERNAME":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "VEESP_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "VEESP_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "VEESP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "VEESP_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/veesp`)
 
 	case "vegadns":
 		// generated from: providers/dns/vegadns/vegadns.toml

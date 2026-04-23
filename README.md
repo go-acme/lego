@@ -128,203 +128,203 @@ If your DNS provider is not supported, please open an [issue](https://github.com
   <td><a href="https://go-acme.github.io/lego/dns/dnsupdate/">DNS Update (RFC2136)</a></td>
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/dnsla/">dns.la</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/dnsservices/">DNS.services</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/dnscale/">DNScale</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/dnsexit/">DNSExit</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/dnshomede/">dnsHome.de</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/dnshomede/">dnsHome.de</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/dnsimple/">DNSimple</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/dode/">Domain Offensive (do.de)</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/domeneshop/">Domeneshop</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/dreamhost/">DreamHost</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/dreamhost/">DreamHost</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/duckdns/">Duck DNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/dyn/">Dyn</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/dyndnsfree/">DynDnsFree.de</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/dynu/">Dynu</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/dynu/">Dynu</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/easydns/">EasyDNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/edgecenter/">EdgeCenter</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/efficientip/">Efficient IP</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/epik/">Epik</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/epik/">Epik</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/eurodns/">EuroDNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/euserv/">EUserv</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/excedo/">Excedo</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/exoscale/">Exoscale</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/exoscale/">Exoscale</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/exec/">External program</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/f5xc/">F5 XC</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/fornex/">Fornex</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/freemyip/">freemyip.com</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/freemyip/">freemyip.com</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/namesurfer/">FusionLayer NameSurfer</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/gcore/">G-Core</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/gandi/">Gandi</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/gandiv5/">Gandi Live DNS (v5)</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/gandiv5/">Gandi Live DNS (v5)</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/gehirn/">Gehirn</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/gigahostno/">Gigahost.no</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/glesys/">Glesys</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/gname/">Gname</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/gname/">Gname</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/godaddy/">Go Daddy</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/gcloud/">Google Cloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/gravity/">Gravity</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/hetzner/">Hetzner</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/hetzner/">Hetzner</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/hostingde/">Hosting.de</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/hostingnl/">Hosting.nl</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/hostinger/">Hostinger</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/hosttech/">Hosttech</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/hosttech/">Hosttech</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/httpreq/">HTTP request</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/httpnet/">http.net</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/huaweicloud/">Huawei Cloud</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/hurricane/">Hurricane Electric DNS</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/hurricane/">Hurricane Electric DNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/hyperone/">HyperOne</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/ibmcloud/">IBM Cloud (SoftLayer)</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/iijdpf/">IIJ DNS Platform Service</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/infoblox/">Infoblox</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/infoblox/">Infoblox</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/infomaniak/">Infomaniak</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/internetbs/">Internet.bs</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/inwx/">INWX</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/ionos/">Ionos</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/ionos/">Ionos</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/ionoscloud/">Ionos Cloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/ipv64/">IPv64</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/ispconfig/">ISPConfig 3</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/ispconfigddns/">ISPConfig 3 - Dynamic DNS (DDNS) Module</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/ispconfigddns/">ISPConfig 3 - Dynamic DNS (DDNS) Module</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/jdcloud/">JD Cloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/joker/">Joker</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/acmedns/">Joohoi&#39;s ACME-DNS</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/katapult/">Katapult</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/katapult/">Katapult</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/keyhelp/">KeyHelp</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/leaseweb/">Leaseweb</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/liara/">Liara</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/limacity/">Lima-City</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/limacity/">Lima-City</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/linode/">Linode (v4)</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/liquidweb/">Liquid Web</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/loopia/">Loopia</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/luadns/">LuaDNS</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/luadns/">LuaDNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/mailinabox/">Mail-in-a-Box</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/manageengine/">ManageEngine CloudDNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/manual/">Manual</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/metaname/">Metaname</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/metaname/">Metaname</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/metaregistrar/">Metaregistrar</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/mijnhost/">mijn.host</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/mittwald/">Mittwald</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/myaddr/">myaddr.{tools,dev,io}</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/myaddr/">myaddr.{tools,dev,io}</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/mydnsjp/">MyDNS.jp</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/mythicbeasts/">MythicBeasts</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/namedotcom/">Name.com</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/namecheap/">Namecheap</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/namecheap/">Namecheap</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/namesilo/">Namesilo</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/nearlyfreespeech/">NearlyFreeSpeech.NET</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/nederhost/">NederHost</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/neodigit/">Neodigit</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/neodigit/">Neodigit</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/netcup/">Netcup</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/netlify/">Netlify</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/netnod/">Netnod</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/nicmanager/">Nicmanager</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/nicmanager/">Nicmanager</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/nifcloud/">NIFCloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/njalla/">Njalla</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/nodion/">Nodion</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/ns1/">NS1</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/ns1/">NS1</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/octenium/">Octenium</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/omglol/">omg.lol</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/onlinenet/">Online.net</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/otc/">Open Telekom Cloud</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/otc/">Open Telekom Cloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/oraclecloud/">Oracle Cloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/ovh/">OVH</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/plesk/">plesk.com</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/pointdns/">PointDNS/PointHQ</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/pointdns/">PointDNS/PointHQ</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/porkbun/">Porkbun</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/pdns/">PowerDNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/rackspace/">Rackspace</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/rage4/">Rage4</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/rage4/">Rage4</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/rainyun/">Rain Yun/雨云</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/rcodezero/">RcodeZero</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/regru/">reg.ru</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/regfish/">Regfish</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/regfish/">Regfish</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/rimuhosting/">RimuHosting</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/nicru/">RU CENTER</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/sakuracloud/">Sakura Cloud</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/scaleway/">Scaleway</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/scaleway/">Scaleway</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/scannet/">ScanNet</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/selectel/">Selectel</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/selectelv2/">Selectel v2</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/selfhostde/">SelfHost.(de|eu)</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/selfhostde/">SelfHost.(de|eu)</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/servercow/">Servercow</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/shellrent/">Shellrent</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/simply/">Simply.com</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/sonic/">Sonic</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/sonic/">Sonic</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/spaceship/">Spaceship</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/stackpath/">Stackpath</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/syse/">Syse</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/technitium/">Technitium</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/technitium/">Technitium</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/tele3/">Tele3</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/tencentcloud/">Tencent Cloud DNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/edgeone/">Tencent EdgeOne</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/timewebcloud/">Timeweb Cloud</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/timewebcloud/">Timeweb Cloud</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/todaynic/">TodayNIC/时代互联</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/transip/">TransIP</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/ucloud/">UCloud</a></td>
-  <td><a href="https://go-acme.github.io/lego/dns/ultradns/">Ultradns</a></td>
 </tr><tr>
+  <td><a href="https://go-acme.github.io/lego/dns/ultradns/">Ultradns</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/uniteddomains/">United-Domains</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/variomedia/">Variomedia</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/veesp/">Veesp</a></td>
+</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/vegadns/">VegaDNS</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/vercel/">Vercel</a></td>
-</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/versio/">Versio.[nl|eu|uk]</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/vinyldns/">VinylDNS</a></td>
+</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/virtualname/">Virtualname</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/vkcloud/">VK Cloud</a></td>
-</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/volcengine/">Volcano Engine/火山引擎</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/vscale/">Vscale</a></td>
+</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/vultr/">Vultr</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/wannafind/">Wannafind</a></td>
-</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/webnamesca/">webnames.ca</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/webnamesru/">webnames.ru</a></td>
+</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/websupport/">Websupport</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/wedos/">WEDOS</a></td>
-</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/westcn/">West.cn/西部数码</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/xinnet/">Xinnet</a></td>
+</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/yandex360/">Yandex 360</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/yandexcloud/">Yandex Cloud</a></td>
-</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/yandex/">Yandex PDD</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/zilore/">Zilore</a></td>
+</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/zoneee/">Zone.ee</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/zoneedit/">ZoneEdit</a></td>
-</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/zonomi/">Zonomi</a></td>
-  <td></td>
-  <td></td>
   <td></td>
 </tr></table>
 

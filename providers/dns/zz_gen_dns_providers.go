@@ -58,6 +58,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/dnsimple"
 	"github.com/go-acme/lego/v5/providers/dns/dnsla"
 	"github.com/go-acme/lego/v5/providers/dns/dnsmadeeasy"
+	"github.com/go-acme/lego/v5/providers/dns/dnsservices"
 	"github.com/go-acme/lego/v5/providers/dns/dnsupdate"
 	"github.com/go-acme/lego/v5/providers/dns/dode"
 	"github.com/go-acme/lego/v5/providers/dns/domeneshop"
@@ -192,6 +193,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/ultradns"
 	"github.com/go-acme/lego/v5/providers/dns/uniteddomains"
 	"github.com/go-acme/lego/v5/providers/dns/variomedia"
+	"github.com/go-acme/lego/v5/providers/dns/veesp"
 	"github.com/go-acme/lego/v5/providers/dns/vegadns"
 	"github.com/go-acme/lego/v5/providers/dns/vercel"
 	"github.com/go-acme/lego/v5/providers/dns/versio"
@@ -324,6 +326,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return dnsla.NewDNSProvider()
 	case "dnsmadeeasy":
 		return dnsmadeeasy.NewDNSProvider()
+	case "dnsservices":
+		return dnsservices.NewDNSProvider()
 	case "dnsupdate", "rfc2136":
 		return dnsupdate.NewDNSProvider()
 	case "dode":
@@ -592,6 +596,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return uniteddomains.NewDNSProvider()
 	case "variomedia":
 		return variomedia.NewDNSProvider()
+	case "veesp":
+		return veesp.NewDNSProvider()
 	case "vegadns":
 		return vegadns.NewDNSProvider()
 	case "vercel":

@@ -25,7 +25,7 @@ So if you think that lego is worth it, please consider [donating](https://donate
   - Support [RFC 9773](https://www.rfc-editor.org/rfc/rfc9773.html): Renewal Information (ARI) Extension
   - Support [draft-ietf-acme-profiles-00](https://datatracker.ietf.org/doc/draft-ietf-acme-profiles/): Profiles Extension
   - Support [draft-ietf-acme-dns-persist-01](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/): Challenge for Persistent DNS TXT Record Validation
-- Comes with about [180 DNS providers](https://go-acme.github.io/lego/dns)
+- Comes with more than [200 DNS providers](https://go-acme.github.io/lego/dns)
 - Register with CA
 - Obtain certificates, both from scratch or with an existing CSR
 - Renew certificates

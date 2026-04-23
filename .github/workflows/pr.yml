@@ -38,7 +38,7 @@ jobs:
 
       - name: Generate and Check generated elements
         run: |
-          make generate-dns
+          make generate
           git diff --exit-code
 
       - uses: golangci/golangci-lint-action@v9

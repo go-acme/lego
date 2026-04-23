@@ -33,7 +33,7 @@ SAN certificate support.
 {{% /card %}}
 
 {{% card title="DNS providers" href="dns" %}}
-Comes with about 190 DNS providers
+Comes with more than 200 DNS providers
 {{% /card %}}
 
 {{% card title="CNAME" href="advanced/options/#lego_disable_cname_support" %}}

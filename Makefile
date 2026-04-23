@@ -12,7 +12,7 @@ TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse HEAD)
 VERSION := $(if $(TAG_NAME),$(TAG_NAME),$(SHA))
 
-default: clean generate-dns checks test build
+default: clean generate checks test build
 
 clean:
 	@echo BIN_OUTPUT: ${BIN_OUTPUT}
@@ -53,28 +53,28 @@ detach:
 # Docs
 .PHONY: docs-build docs-serve docs-themes
 
-docs-build: generate-dns
+docs-build: generate
 	@make -C ./docs build
 
-docs-serve: generate-dns
+docs-serve: generate
 	@make -C ./docs serve
 
 docs-themes:
 	@make -C ./docs hugo-themes
 
 # DNS Documentation
-.PHONY: generate-dns validate-doc
+.PHONY: generate validate-doc
 
-generate-dns:
+generate:
 	go generate ./...
 
-validate-doc: generate-dns
+validate-doc: generate
 validate-doc: DOC_DIRECTORIES := ./docs/ ./zz_gen_version.go
 validate-doc:
 	@if git diff --exit-code --quiet $(DOC_DIRECTORIES) 2>/dev/null; then \
 		echo 'All documentation changes are done the right way.'; \
 	else \
-		echo 'The documentation must be regenerated, please use `make generate-dns`.'; \
+		echo 'The documentation must be regenerated, please use `make generate`.'; \
 		git status --porcelain -- $(DOC_DIRECTORIES) 2>/dev/null; \
 		exit 2; \
 	fi

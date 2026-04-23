@@ -29,7 +29,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Generate DNS docs
-        run: make generate-dns
+        run: make generate
 
       - name: Install Hugo
         run: |

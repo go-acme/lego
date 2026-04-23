@@ -51,6 +51,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/digitalocean"
 	"github.com/go-acme/lego/v5/providers/dns/dinahosting"
 	"github.com/go-acme/lego/v5/providers/dns/directadmin"
+	"github.com/go-acme/lego/v5/providers/dns/dns51"
 	"github.com/go-acme/lego/v5/providers/dns/dnscale"
 	"github.com/go-acme/lego/v5/providers/dns/dnsexit"
 	"github.com/go-acme/lego/v5/providers/dns/dnshomede"
@@ -300,6 +301,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return dinahosting.NewDNSProvider()
 	case "directadmin":
 		return directadmin.NewDNSProvider()
+	case "dns51":
+		return dns51.NewDNSProvider()
 	case "dnscale":
 		return dnscale.NewDNSProvider()
 	case "dnsexit":

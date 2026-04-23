@@ -57,6 +57,7 @@ func allDNSCodes() string {
 		"digitalocean",
 		"dinahosting",
 		"directadmin",
+		"dns51",
 		"dnscale",
 		"dnsexit",
 		"dnshomede",
@@ -1203,6 +1204,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/directadmin`)
+
+	case "dns51":
+		// generated from: providers/dns/dns51/dns51.toml
+		ew.writeln(`Configuration for 51DNS.`)
+		ew.writeln(`Code:	'dns51'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DNS51_API_KEY":	API key`)
+		ew.writeln(`	- "DNS51_API_SECRET":	API secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DNS51_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "DNS51_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "DNS51_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "DNS51_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dns51`)
 
 	case "dnscale":
 		// generated from: providers/dns/dnscale/dnscale.toml

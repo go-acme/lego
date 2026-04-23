@@ -93,6 +93,7 @@ func allDNSCodes() string {
 		"gehirn",
 		"gigahostno",
 		"glesys",
+		"gname",
 		"godaddy",
 		"gravity",
 		"hetzner",
@@ -1965,6 +1966,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/glesys`)
+
+	case "gname":
+		// generated from: providers/dns/gname/gname.toml
+		ew.writeln(`Configuration for Gname.`)
+		ew.writeln(`Code:	'gname'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "GNAME_APP_ID":	App ID`)
+		ew.writeln(`	- "GNAME_APP_KEY":	App key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "GNAME_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "GNAME_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "GNAME_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "GNAME_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/gname`)
 
 	case "godaddy":
 		// generated from: providers/dns/godaddy/godaddy.toml

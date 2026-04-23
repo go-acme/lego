@@ -211,6 +211,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/yandex"
 	"github.com/go-acme/lego/v5/providers/dns/yandex360"
 	"github.com/go-acme/lego/v5/providers/dns/yandexcloud"
+	"github.com/go-acme/lego/v5/providers/dns/zilore"
 	"github.com/go-acme/lego/v5/providers/dns/zoneedit"
 	"github.com/go-acme/lego/v5/providers/dns/zoneee"
 	"github.com/go-acme/lego/v5/providers/dns/zonomi"
@@ -629,6 +630,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return yandex360.NewDNSProvider()
 	case "yandexcloud":
 		return yandexcloud.NewDNSProvider()
+	case "zilore":
+		return zilore.NewDNSProvider()
 	case "zoneedit":
 		return zoneedit.NewDNSProvider()
 	case "zoneee":

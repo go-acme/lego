@@ -318,9 +318,14 @@ If your DNS provider is not supported, please open an [issue](https://github.com
   <td><a href="https://go-acme.github.io/lego/dns/yandexcloud/">Yandex Cloud</a></td>
 </tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/yandex/">Yandex PDD</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/zilore/">Zilore</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/zoneee/">Zone.ee</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/zoneedit/">ZoneEdit</a></td>
+</tr><tr>
   <td><a href="https://go-acme.github.io/lego/dns/zonomi/">Zonomi</a></td>
+  <td></td>
+  <td></td>
+  <td></td>
 </tr></table>
 
 <!-- END DNS PROVIDERS LIST -->

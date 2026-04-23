@@ -213,6 +213,7 @@ func allDNSCodes() string {
 		"websupport",
 		"wedos",
 		"westcn",
+		"xinnet",
 		"yandex",
 		"yandex360",
 		"yandexcloud",
@@ -4531,6 +4532,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/westcn`)
+
+	case "xinnet":
+		// generated from: providers/dns/xinnet/xinnet.toml
+		ew.writeln(`Configuration for Xinnet.`)
+		ew.writeln(`Code:	'xinnet'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "XINNET_AGENT_ID":	Agent ID`)
+		ew.writeln(`	- "XINNET_SECRET":	Application secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "XINNET_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "XINNET_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "XINNET_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "XINNET_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/xinnet`)
 
 	case "yandex":
 		// generated from: providers/dns/yandex/yandex.toml

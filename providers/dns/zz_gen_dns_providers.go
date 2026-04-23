@@ -207,6 +207,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/websupport"
 	"github.com/go-acme/lego/v5/providers/dns/wedos"
 	"github.com/go-acme/lego/v5/providers/dns/westcn"
+	"github.com/go-acme/lego/v5/providers/dns/xinnet"
 	"github.com/go-acme/lego/v5/providers/dns/yandex"
 	"github.com/go-acme/lego/v5/providers/dns/yandex360"
 	"github.com/go-acme/lego/v5/providers/dns/yandexcloud"
@@ -620,6 +621,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return wedos.NewDNSProvider()
 	case "westcn":
 		return westcn.NewDNSProvider()
+	case "xinnet":
+		return xinnet.NewDNSProvider()
 	case "yandex":
 		return yandex.NewDNSProvider()
 	case "yandex360":

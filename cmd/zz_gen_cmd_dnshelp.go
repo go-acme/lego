@@ -119,6 +119,7 @@ func allDNSCodes() string {
 		"ispconfigddns",
 		"jdcloud",
 		"joker",
+		"katapult",
 		"keyhelp",
 		"leaseweb",
 		"liara",
@@ -2518,6 +2519,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/joker`)
+
+	case "katapult":
+		// generated from: providers/dns/katapult/katapult.toml
+		ew.writeln(`Configuration for Katapult.`)
+		ew.writeln(`Code:	'katapult'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "KATAPULT_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "KATAPULT_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "KATAPULT_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "KATAPULT_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "KATAPULT_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/katapult`)
 
 	case "keyhelp":
 		// generated from: providers/dns/keyhelp/keyhelp.toml

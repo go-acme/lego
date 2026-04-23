@@ -113,6 +113,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/ispconfigddns"
 	"github.com/go-acme/lego/v5/providers/dns/jdcloud"
 	"github.com/go-acme/lego/v5/providers/dns/joker"
+	"github.com/go-acme/lego/v5/providers/dns/katapult"
 	"github.com/go-acme/lego/v5/providers/dns/keyhelp"
 	"github.com/go-acme/lego/v5/providers/dns/leaseweb"
 	"github.com/go-acme/lego/v5/providers/dns/liara"
@@ -426,6 +427,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return jdcloud.NewDNSProvider()
 	case "joker":
 		return joker.NewDNSProvider()
+	case "katapult":
+		return katapult.NewDNSProvider()
 	case "keyhelp":
 		return keyhelp.NewDNSProvider()
 	case "leaseweb":

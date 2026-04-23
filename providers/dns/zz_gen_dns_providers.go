@@ -183,6 +183,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/stackpath"
 	"github.com/go-acme/lego/v5/providers/dns/syse"
 	"github.com/go-acme/lego/v5/providers/dns/technitium"
+	"github.com/go-acme/lego/v5/providers/dns/tele3"
 	"github.com/go-acme/lego/v5/providers/dns/tencentcloud"
 	"github.com/go-acme/lego/v5/providers/dns/timewebcloud"
 	"github.com/go-acme/lego/v5/providers/dns/todaynic"
@@ -571,6 +572,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return syse.NewDNSProvider()
 	case "technitium":
 		return technitium.NewDNSProvider()
+	case "tele3":
+		return tele3.NewDNSProvider()
 	case "tencentcloud":
 		return tencentcloud.NewDNSProvider()
 	case "timewebcloud":

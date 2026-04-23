@@ -189,6 +189,7 @@ func allDNSCodes() string {
 		"stackpath",
 		"syse",
 		"technitium",
+		"tele3",
 		"tencentcloud",
 		"timewebcloud",
 		"todaynic",
@@ -4020,6 +4021,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/technitium`)
+
+	case "tele3":
+		// generated from: providers/dns/tele3/tele3.toml
+		ew.writeln(`Configuration for Tele3.`)
+		ew.writeln(`Code:	'tele3'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "TELE3_KEY":	Key`)
+		ew.writeln(`	- "TELE3_SECRET":	Secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "TELE3_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "TELE3_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "TELE3_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "TELE3_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/tele3`)
 
 	case "tencentcloud":
 		// generated from: providers/dns/tencentcloud/tencentcloud.toml

@@ -6,6 +6,16 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v4.35.2
+
+- Release date: 2026-04-24
+- Tag: [v4.35.2](https://github.com/go-acme/lego/releases/tag/v4.35.2)
+
+### Fixed
+
+- **[dnsprovider]** oraclecloud(oci): update dependency licenses
+- **[dnsprovider]** rfc2136: fix zones env var parsing
+
 ## v4.35.1
 
 - Release date: 2026-04-21

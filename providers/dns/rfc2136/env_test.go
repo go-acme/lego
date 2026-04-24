@@ -44,3 +44,44 @@ func Test_altEnvNames(t *testing.T) {
 		})
 	}
 }
+
+func Test_getEnvStringSlice(t *testing.T) {
+	t.Setenv("LEGO_TEST_EMPTY", "")
+	t.Setenv("LEGO_TEST_SIMPLE", "bar")
+	t.Setenv("LEGO_TEST_MULTIPLE", "foo,bar")
+
+	testCases := []struct {
+		desc     string
+		name     string
+		expected []string
+	}{
+		{
+			desc: "non-existent env var",
+			name: "LEGO_TEST_FOO",
+		},
+		{
+			desc: "empty env var",
+			name: "LEGO_TEST_EMPTY",
+		},
+		{
+			desc:     "single value",
+			name:     "LEGO_TEST_SIMPLE",
+			expected: []string{"bar"},
+		},
+		{
+			desc:     "multiple values",
+			name:     "LEGO_TEST_MULTIPLE",
+			expected: []string{"foo", "bar"},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			v := getEnvStringSlice(test.name)
+
+			assert.Equal(t, test.expected, v)
+		})
+	}
+}

@@ -37,7 +37,12 @@ func getEnvString(name string) string {
 }
 
 func getEnvStringSlice(name string) []string {
-	return strings.Split(getEnvString(name), ",")
+	v := getEnvString(name)
+	if v == "" {
+		return nil
+	}
+
+	return strings.Split(v, ",")
 }
 
 func getOrDefaultString(name, defaultValue string) string {

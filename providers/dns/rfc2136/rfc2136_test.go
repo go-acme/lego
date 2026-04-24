@@ -398,7 +398,10 @@ func TestDNSProvider_Present_tsig_error(t *testing.T) {
 
 	err = provider.Present(fakeDomain, "", fakeKeyAuth)
 	require.Error(t, err)
-	require.EqualError(t, err, "dnsupdate: failed to insert: DNS update failed: server replied: NOTZONE")
+
+	require.EqualError(t, err,
+		"dnsupdate: failed to insert: DNS update failed: "+
+			"server "+addr.String()+" replied NOTZONE for INSERT _acme-challenge.123456789.www.example.com.")
 }
 
 func handleTSIG(w dns.ResponseWriter, req *dns.Msg) {

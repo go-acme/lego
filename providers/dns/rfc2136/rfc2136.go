@@ -285,7 +285,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	}
 
 	if reply != nil && reply.Rcode != dns.RcodeSuccess {
-		return fmt.Errorf("DNS update failed: server replied: %s", dns.RcodeToString[reply.Rcode])
+		return fmt.Errorf("DNS update failed: server %s replied %s for %s %s", d.config.Nameserver, dns.RcodeToString[reply.Rcode], action, zone)
 	}
 
 	return nil

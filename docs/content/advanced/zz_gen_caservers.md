@@ -47,3 +47,11 @@ To ease the usage of the CA server in most of cases, we provide a short-code for
 | Sectigo OV (Organization Validation)   | `sectigoov`  | https://acme.sectigo.com/v2/OV  |
 | ZeroSSL  | `zerossl`  | https://acme.zerossl.com/v2/DV90  |
 
+
+## ZeroSSL
+
+lego supports three different ways to authenticate with ZeroSSL.
+
+1. Access key: if the environment variable `ZERO_SSL_ACCESS_KEY` is set.
+2. Email: if the email address is set and the environment variable `ZERO_SSL_ACCESS_KEY` is not set.
+3. External Account Binding (EAB): if none of the above elements are defined.

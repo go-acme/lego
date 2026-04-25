@@ -78,12 +78,14 @@ The key type is now determined by the `KeyType` field of the `certificate.Obtain
 
 The string values of the `certcrypto.KeyType` enum have been changed:
 
-- `P256` -> `EC256`
-- `P384` -> `EC384`
-- `2048` -> `RSA2048`
-- `3072` -> `RSA3072`
-- `4096` -> `RSA4096`
-- `8192` -> `RSA8192`
+| v4       | v5        |
+|----------|-----------|
+| `P256`   | `EC256`   |
+| `P384`   | `EC384`   |
+| `2048`   | `RSA2048` |
+| `3072`   | `RSA3072` |
+| `4096`   | `RSA4096` |
+| `8192`   | `RSA8192` |
 
 ## Removed elements
 

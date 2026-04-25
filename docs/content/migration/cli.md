@@ -49,23 +49,23 @@ The command `revoke` has been removed and replaced by `certificates revoke`.
 
 Some flags have been changed, renamed or removed:
 
-| v4                              | Change Type          | v5                                |
-|---------------------------------|----------------------|-----------------------------------|
-| `--disable-cn`                  | removed and replaced | `--enable-cn`                     |
-| `--dns.disable-cp`              | removed and replaced | `--dns.propagation.wait`          |
-| `--dns.propagation-wait`        | renamed              | `--dns.propagation.wait`          |
-| `--dns.propagation-disable-ans` | renamed              | `--dns.propagation.disable-ans`   |
-| `--dns.propagation-rns`         | removed and replaced | `--dns.propagation.disable-rns`   |
-| `--dns-timeout`                 | renamed              | `--dns.timeout`                   |
-| `--kid`                         | renamed              | `--eab-kid`                       |
-| `--hmac`                        | renamed              | `--eab-hmac`                      |
-| `--days`                        | renamed              | `--renew-days`[^1]                |
-| `--dynamic`                     | removed              | This is the default behavior now. |
-| `--run-hook`                    | renamed              | `--deploy-hook`                   |
-| `--renew-hook`                  | renamed              | `--deploy-hook`                   |
-| `--tls.port`                    | renamed              | `--tls.address`                   |
-| `--http.port`                   | renamed              | `--http.address`                  |
-| `--pfx.pass`                    | renamed              | `--pfx.password`                  |
+| v4                              | Change Type                                                                       | v5                                |
+|---------------------------------|-----------------------------------------------------------------------------------|-----------------------------------|
+| `--disable-cn`                  | {{% icon icon="arrow-down-up-across-line" color="orange" %}} removed and replaced | `--enable-cn`                     |
+| `--dns.disable-cp`              | {{% icon icon="arrow-down-up-across-line" color="orange" %}} removed and replaced | `--dns.propagation.wait`          |
+| `--dns.propagation-wait`        | {{% icon icon="right-left" color="green" %}} renamed                              | `--dns.propagation.wait`          |
+| `--dns.propagation-disable-ans` | {{% icon icon="right-left" color="green" %}} renamed                              | `--dns.propagation.disable-ans`   |
+| `--dns.propagation-rns`         | {{% icon icon="arrow-down-up-across-line" color="orange" %}} removed and replaced | `--dns.propagation.disable-rns`   |
+| `--dns-timeout`                 | {{% icon icon="right-left" color="green" %}} renamed                              | `--dns.timeout`                   |
+| `--kid`                         | {{% icon icon="right-left" color="green" %}} renamed                              | `--eab-kid`                       |
+| `--hmac`                        | {{% icon icon="right-left" color="green" %}} renamed                              | `--eab-hmac`                      |
+| `--days`                        | {{% icon icon="right-left" color="green" %}} renamed                              | `--renew-days`[^1]                |
+| `--dynamic`                     | {{% icon icon="xmark" color="red" %}} removed                                     | This is the default behavior now. |
+| `--run-hook`                    | {{% icon icon="right-left" color="green" %}} renamed                              | `--deploy-hook`                   |
+| `--renew-hook`                  | {{% icon icon="right-left" color="green" %}} renamed                              | `--deploy-hook`                   |
+| `--tls.port`                    | {{% icon icon="right-left" color="green" %}} renamed                              | `--tls.address`                   |
+| `--http.port`                   | {{% icon icon="right-left" color="green" %}} renamed                              | `--http.address`                  |
+| `--pfx.pass`                    | {{% icon icon="right-left" color="green" %}} renamed                              | `--pfx.password`                  |
 
 [^1]: By default, the renewal time is dynamically computed (the behavior of the previous `--dynamic` flag). 
 

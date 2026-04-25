@@ -7,9 +7,8 @@ chapter: false
 
 ACME client and ACME library written in Go.
 
-{{% notice important %}}
-lego is an independent, free, and open-source project, if you value it, consider [supporting it](https://donate.ldez.dev)! ❤️
-{{% /notice %}}
+> [!INFO] Important
+> lego is an independent, free, and open-source project, if you value it, consider [supporting it](https://donate.ldez.dev)! ❤️
 
 ## Features
 
@@ -29,11 +28,11 @@ Multiple ACME servers support (Let's Encrypt, ZeroSSL, etc.)
 {{% card title="Certificate Management" href="obtain" %}}
 Obtain, renew, revoke.
 
-SAN certificate support.
+Wildcard and SAN certificate support.
 {{% /card %}}
 
 {{% card title="DNS providers" href="dns" %}}
-Comes with more than 200 DNS providers
+Comes with the support of more than 200 DNS providers
 {{% /card %}}
 
 {{% card title="CNAME" href="advanced/options/#lego_disable_cname_support" %}}
@@ -60,3 +59,11 @@ Special thanks to the organizations sponsoring lego's development.
 - [![FairSSL](./images/fairssl.svg?height=20px&classes=inline&lightbox=false)](https://www.fairssl.dk/)
 
 - [![Canonical](./images/canonical.svg?height=30px&classes=inline&lightbox=false)](https://www.fairssl.dk/)
+
+---
+
+> [!IMPORTANT] Info
+> You are an organization and want to support lego?
+> We have a dedicated [sponsorship page](https://github.com/sponsors/go-acme) for you.
+
+---

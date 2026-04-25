@@ -9,15 +9,19 @@ aliases:
 
 ## Binaries
 
-To get the binary, download the latest release for your OS/Arch from {{% button href=https://github.com/go-acme/lego/releases" icon="download" style="primary" %}}the release page{{% /button %}} and put the binary somewhere convenient.
+To get the binary, download the latest release for your OS/Arch from {{% button href=https://github.com/go-acme/lego/releases" icon="download" %}}the release page{{% /button %}} and put the binary somewhere convenient.
 
 lego does not assume anything about the location you run it from.
+
+{{% button href=https://github.com/go-acme/lego/releases" icon="download" style="primary" %}}Download{{% /button %}}
 
 ## From Docker
 
 ```bash
 docker run goacme/lego -h
 ```
+
+{{% button href="https://hub.docker.com/r/goacme/lego" icon="arrow-up-right-from-square" %}}Link to the Docker Hub{{% /button %}}
 
 ## From package managers
 

@@ -15,7 +15,7 @@ title = "Lego"
   disableLandingPageButton = true
   hideAuthorEmail = true
   hideAuthorName = true
-  externalLinkTarget = '_blank'
+#  externalLinkTarget = '_blank'
 
   # Author of the site, will be used in meta information
   [params.author]

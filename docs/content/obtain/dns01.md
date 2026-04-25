@@ -56,53 +56,9 @@ lego
 {{% /tab %}}
 {{< /tabs >}}
 
-## Credentials
+## Configuration and Credentials
 
-The credentials for the DNS provider are passed as environment variables.
-
-### Environment Variables
-
-```bash
-CLOUDFLARE_EMAIL='you@example.com' \
-CLOUDFLARE_API_KEY='yourprivatecloudflareapikey' \
-...
-```
-
-### Dotenv File
-
-You can also use a dotenv file.
-
-When using `lego run`, you can pass the path to the dotenv file with the `--env-file` flag.
-
-When using `lego`, the environment variables are loaded from the file defined by `envFile` in the configuration file for the DNS provider.
-
-{{< tabs >}}
-{{% tab title=".lego.yml" %}}
-
-```yaml
-challenges:
-  cf:
-    dns:
-      provider: cloudflare
-      envFile: .env.cf
-
-certificates:
-  foo:
-    domains:
-      - example.com
-      - '*.example.com'
-```
-
-{{% /tab %}}
-{{% tab title=".env.cf" %}}
-
-```dotenv
-CLOUDFLARE_EMAIL=you@example.com
-CLOUDFLARE_API_KEY=yourprivatecloudflareapikey
-```
-
-{{% /tab %}}
-{{< /tabs >}}
+More information [here]({{% ref "dns#configuration-and-credentials" %}})
 
 ## Tips
 

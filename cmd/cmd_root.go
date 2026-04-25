@@ -28,12 +28,12 @@ func CreateRootCommand() *cli.Command {
 		},
 		Action:   rootRun,
 		Flags:    flags.CreateRootFlags(),
-		Commands: CreateCommands(),
+		Commands: createCommands(),
 	}
 }
 
-// CreateCommands Creates all CLI commands.
-func CreateCommands() []*cli.Command {
+// createCommands Creates all CLI commands.
+func createCommands() []*cli.Command {
 	return []*cli.Command{
 		createRun(),
 		createCertificates(),

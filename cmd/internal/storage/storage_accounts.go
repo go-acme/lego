@@ -330,7 +330,7 @@ func savePrivateKey(filename string, privateKey crypto.Signer) error {
 }
 
 func sanitizeHost(uri *url.URL) string {
-	return strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(uri.Host)
+	return strings.NewReplacer(":", "_", "/", "_", `\`, "_").Replace(uri.Host)
 }
 
 // To "autofix" account from previous versions.

@@ -52,3 +52,11 @@ Supported by default.
 | [RFC 9773](https://www.rfc-editor.org/rfc/rfc9773.html)                                         | Renewal Information (ARI) Extension.                                      |
 | [draft-ietf-acme-profiles-01](https://datatracker.ietf.org/doc/draft-ietf-acme-profiles/)       | Profiles Extension.                                                       |
 | [draft-ietf-acme-dns-persist-01](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/) | Challenge for Persistent DNS TXT Record Validation.                       |
+
+## Supporting lego
+
+Special thanks to the organizations sponsoring lego's development.
+
+- [![FairSSL](./images/fairssl.svg?height=20px&classes=inline&lightbox=false)](https://www.fairssl.dk/)
+
+- [![Canonical](./images/canonical.svg?height=30px&classes=inline&lightbox=false)](https://www.fairssl.dk/)

@@ -5,11 +5,11 @@ draft: false
 weight: 1
 ---
 
-This guide explains various ways to get and renew a certificate with the DNS-01 challenge.
+This guide explains how to get and renew a certificate with the DNS-01 challenge.
 
 <!--more-->
 
-lego comes with [support for many]({{% ref "dns#dns-providers" %}}) providers,
+lego comes with support for [many providers]({{% ref "dns#dns-providers" %}}),
 and you need to pick the one where your domain's DNS settings are set up.
 Typically, this is the registrar where you bought the domain, but in some cases this can be another third-party provider.
 

@@ -5,12 +5,12 @@ draft: false
 weight: 1
 ---
 
-This guide explains various ways to get and renew a certificate with the HTTP-01 challenge.
+This guide explains how to get and renew a certificate with the HTTP-01 challenge.
 
 <!--more-->
 
 {{% notice note %}}
-The examples require that the `lego` binary has permission to bind to ports 80.
+The examples require that the `lego` binary has permission to bind to ports 80.  
 If your environment does not allow you to bind to these ports, please read [Running without root privileges]({{% ref "advanced/tips#running-without-root-privileges" %}}) and [Port Usage]({{% ref "advanced/tips/#port-usage" %}}).
 {{% /notice %}}
 

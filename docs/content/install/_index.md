@@ -9,7 +9,7 @@ aliases:
 
 ## Binaries
 
-To get the binary, download the latest release for your OS/Arch from [the release page](https://github.com/go-acme/lego/releases) and put the binary somewhere convenient.
+To get the binary, download the latest release for your OS/Arch from {{% button href=https://github.com/go-acme/lego/releases" icon="download" style="primary" %}}the release page{{% /button %}} and put the binary somewhere convenient.
 
 lego does not assume anything about the location you run it from.
 
@@ -28,7 +28,7 @@ docker run goacme/lego -h
 pacman -S lego
 ```
 
-[Link](https://archlinux.org/packages/extra/x86_64/lego/)
+{{% button href="https://archlinux.org/packages/extra/x86_64/lego/" icon="arrow-up-right-from-square" %}}Link to the package{{% /button %}}
 
 {{% /tab %}}
 {{% tab title="AUR" %}}
@@ -37,7 +37,7 @@ pacman -S lego
 yay -S lego-bin
 ```
 
-[Link](https://aur.archlinux.org/packages/lego-bin)
+{{% button href="https://aur.archlinux.org/packages/lego-bin" icon="arrow-up-right-from-square" %}}Link to the package{{% /button %}}
 
 {{% /tab %}}
 {{% tab title="Snap" %}}
@@ -47,7 +47,7 @@ sudo snap install lego
 ```
 Note: The snap can only write to the `/var/snap/lego/common/.lego` directory.
 
-[Link](https://snapcraft.io/lego)
+{{% button href="https://snapcraft.io/lego" icon="arrow-up-right-from-square" %}}Link to the package{{% /button %}}
 
 {{% /tab %}}
 {{% tab title="FreeBSD (Ports)" %}}
@@ -56,7 +56,7 @@ Note: The snap can only write to the `/var/snap/lego/common/.lego` directory.
 pkg install lego
 ```
 
-[Link](https://www.freshports.org/security/lego)
+{{% button href="https://www.freshports.org/security/lego" icon="arrow-up-right-from-square" %}}Link to the package{{% /button %}}
 
 {{% /tab %}}
 {{% tab title="Gentoo" %}}
@@ -67,7 +67,7 @@ You can [enable GURU](https://wiki.gentoo.org/wiki/Project:GURU/Information_for_
 emerge app-crypt/lego
 ```
 
-[Link](https://gitweb.gentoo.org/repo/proj/guru.git/tree/app-crypt/lego)
+{{% button href="https://gitweb.gentoo.org/repo/proj/guru.git/tree/app-crypt/lego" icon="arrow-up-right-from-square" %}}Link to the package{{% /button %}}
 
 {{% /tab %}}
 {{% tab title="Homebrew" %}}
@@ -82,7 +82,7 @@ or
 pkg install lego
 ```
 
-[Link](https://formulae.brew.sh/formula/lego)
+{{% button href="https://formulae.brew.sh/formula/lego" icon="arrow-up-right-from-square" %}}Link to the package{{% /button %}}
 
 {{% /tab %}}
 {{% tab title="OpenBSD (Ports)" %}}
@@ -91,11 +91,12 @@ pkg install lego
 pkg_add lego
 ```
 
-[Link](https://openports.pl/path/security/lego)
+{{% button href="https://openports.pl/path/security/lego" icon="arrow-up-right-from-square" %}}Link to the package{{% /button %}}
 
 {{% /tab %}}
 {{< /tabs >}}
 
+The lego maintainers are only maintaining the AUR and Snap packages, the other packages are community maintained.
 
 ## From sources
 

@@ -38,9 +38,6 @@ Comes with more than 200 DNS providers
 
 {{% card title="CNAME" href="advanced/options/#lego_disable_cname_support" %}}
 Supported by default.
-
-[Blog post](https://letsencrypt.org/2019/10/09/onboarding-your-customers-with-lets-encrypt-and-acme.html)
-
 {{% /card %}}
 
 {{< /cards >}}

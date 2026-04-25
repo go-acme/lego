@@ -5,7 +5,7 @@ draft: false
 weight: 4
 ---
 
-This guide explains various ways to get and renew a certificate with the DNS-PERSIST-01 challenge.
+This guide explains how to get and renew a certificate with the DNS-PERSIST-01 challenge.
 
 <!--more-->
 

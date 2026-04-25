@@ -31,12 +31,12 @@ Example:
 
 ```bash
 # Before
-lego --dns foo -d '*.example.com' -d example.com -s https://acme-staging-v02.api.letsencrypt.org/directory run
+lego --dns foo -d '*.example.com' -d example.com run
 ```
 
 ```bash
 # After
-lego run --dns foo -d '*.example.com' -d example.com -s https://acme-staging-v02.api.letsencrypt.org/directory
+lego run --dns foo -d '*.example.com' -d example.com
 ```
 
 The command `renew` has been removed because the command `run` is able to renew certificates.
@@ -49,19 +49,25 @@ The command `revoke` has been removed and replaced by `certificates revoke`.
 
 Some flags have been changed, renamed or removed:
 
-- `--disable-cn` is removed and replaced by `--enable-cn`.
-- `--dns.disable-cp` is removed and replaced by  `--dns.propagation.wait`.
-- `--dns.propagation-wait` is renamed to `--dns.propagation.wait`.
-- `--dns.propagation-disable-ans` is renamed to `--dns.propagation.disable-ans`.
-- `--dns.propagation-rns` is removed and replaced by `--dns.propagation.disable-rns`.
-- `--dns-timeout` is renamed to `--dns.timeout`.
-- `--kid` is renamed to `--eab-kid`.
-- `--hmac` is renamed to `--eab-hmac`.
-- `--days` is renamed to `--renew-days`. By default, the renewal time is dynamically computed (the behavior of the previous `--dynamic` flag).
-- `--dynamic` is removed (because this is the default behavior now).
-- `--run-hook` and `--renew-hook` are replaced by `--deploy-hook`.
-- `--tls.port` and `--http.port` are renamed to `--tls.address` and `--http.address`.
-- `--pfx.pass` is renamed to `pfx.password`.
+| v4                              | Change Type          | v5                                |
+|---------------------------------|----------------------|-----------------------------------|
+| `--disable-cn`                  | removed and replaced | `--enable-cn`                     |
+| `--dns.disable-cp`              | removed and replaced | `--dns.propagation.wait`          |
+| `--dns.propagation-wait`        | renamed              | `--dns.propagation.wait`          |
+| `--dns.propagation-disable-ans` | renamed              | `--dns.propagation.disable-ans`   |
+| `--dns.propagation-rns`         | removed and replaced | `--dns.propagation.disable-rns`   |
+| `--dns-timeout`                 | renamed              | `--dns.timeout`                   |
+| `--kid`                         | renamed              | `--eab-kid`                       |
+| `--hmac`                        | renamed              | `--eab-hmac`                      |
+| `--days`                        | renamed              | `--renew-days`[^1]                |
+| `--dynamic`                     | removed              | This is the default behavior now. |
+| `--run-hook`                    | renamed              | `--deploy-hook`                   |
+| `--renew-hook`                  | renamed              | `--deploy-hook`                   |
+| `--tls.port`                    | renamed              | `--tls.address`                   |
+| `--http.port`                   | renamed              | `--http.address`                  |
+| `--pfx.pass`                    | renamed              | `--pfx.password`                  |
+
+[^1]: By default, the renewal time is dynamically computed (the behavior of the previous `--dynamic` flag). 
 
 ## Directory structure
 
@@ -140,10 +146,10 @@ The following environment variables related to the hook have been renamed:
 | `LEGO_CERT_PEM_PATH` | `LEGO_HOOK_CERT_PEM_PATH` |
 | `LEGO_CERT_PFX_PATH` | `LEGO_HOOK_CERT_PFX_PATH` |
 
-## PEM encoding
-
-Lego uses `PKCS#8` instead of `PKCS#1` for PEM encoding.
-
 ## CommonName
 
 The support of the common name is disabled by default.
+
+## PEM encoding
+
+Lego uses `PKCS#8` instead of `PKCS#1` for PEM encoding.

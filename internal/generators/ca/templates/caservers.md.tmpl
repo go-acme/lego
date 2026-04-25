@@ -32,3 +32,11 @@ To ease the usage of the CA server in most of cases, we provide a short-code for
 |---|---|---|
 {{ range . }}| {{ .Name }}  | `{{ ToLower .Code }}`  | {{ .DirectoryURL }}  |
 {{ end }}
+
+## ZeroSSL
+
+lego supports three different ways to authenticate with ZeroSSL.
+
+1. Access key: if the environment variable `ZERO_SSL_ACCESS_KEY` is set.
+2. Email: if the email address is set and the environment variable `ZERO_SSL_ACCESS_KEY` is not set.
+3. External Account Binding (EAB): if none of the above elements are defined.

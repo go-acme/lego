@@ -56,6 +56,8 @@ Example:
 LEGO_DISABLE_CNAME_SUPPORT=true
 ```
 
+There is a Let's Encrypt [blog post](https://letsencrypt.org/2019/10/09/onboarding-your-customers-with-lets-encrypt-and-acme.html) about the behavior of CNAMEs.
+
 ## LEGO_DEBUG_CLIENT_VERBOSE_ERROR
 
 The environment variable `LEGO_DEBUG_CLIENT_VERBOSE_ERROR` allows to enrich error messages from some of the DNS clients.

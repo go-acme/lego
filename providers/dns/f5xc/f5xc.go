@@ -11,8 +11,8 @@ import (
 	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/internal/wait"
+	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/f5xc/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )

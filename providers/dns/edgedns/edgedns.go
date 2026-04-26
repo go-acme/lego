@@ -15,8 +15,8 @@ import (
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v13/pkg/session"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/internal/ptr"
+	"github.com/go-acme/lego/v5/platform/env"
 )
 
 // Environment variables names.

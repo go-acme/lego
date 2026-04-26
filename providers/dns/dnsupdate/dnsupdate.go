@@ -15,7 +15,7 @@ import (
 	"github.com/bodgit/tsig/gss"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/internal/env"
+	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/dnsupdate/internal"
 	"github.com/miekg/dns"
 )

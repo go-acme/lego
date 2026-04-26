@@ -9,8 +9,8 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/internal/env"
 	"github.com/go-acme/lego/v5/log"
+	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/hetzner/internal/hetznerv1"
 	"github.com/go-acme/lego/v5/providers/dns/hetzner/internal/legacy"
 )

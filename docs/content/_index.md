@@ -58,7 +58,7 @@ Special thanks to the organizations sponsoring lego's development.
 
 - [![FairSSL](./images/fairssl.svg?height=20px&classes=inline&lightbox=false)](https://www.fairssl.dk/)
 
-- [![Canonical](./images/canonical.svg?height=30px&classes=inline&lightbox=false)](https://www.fairssl.dk/)
+- [![Canonical](./images/canonical.svg?height=30px&classes=inline&lightbox=false)](https://canonical.com/)
 
 ---
 

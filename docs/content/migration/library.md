@@ -29,6 +29,28 @@ client.Certificate.Obtain(context.TODO(), request)
 
 The logger is now `slog` and can be set using the `log.SetDefault(logger)` function.
 
+## DNS core client
+
+The function `dns01.ParseNameservers()` is removed.
+
+The function `dns01.RecursiveNSsPropagationRequirement()` is removed and replaced by `dns01.DisableAuthoritativeNssPropagationRequirement()`.
+
+The function `dns01.AddRecursiveNameservers()` is removed and replaced by an option `dns01.Options.RecursiveNameservers`.
+
+```go
+opts := &dns01.Options{RecursiveNameservers: []string{"8.8.8.8"}}
+
+dns01.SetDefaultClient(dns01.NewClient(opts))
+```
+
+The function `dns01.AddDNSTimeout()` is removed and replaced by an option `dns01.Options.DNSTimeout`.
+
+```go
+opts := &dns01.Options{Timeout: 2*time.Second}
+
+dns01.SetDefaultClient(dns01.NewClient(opts))
+```
+
 ## Method and function changes
 
 | v4                             | v5                             |
@@ -52,7 +74,9 @@ The following methods now return an `*acme.ExtendedAccount` instead of an `*regi
 
 The structure `registration.Ressouce` has been removed.
 
-The method `http01.ProviderServer.SetProxyHeader` is removed and replaced by an option `http01.Options.ProxyHeaderName`.
+The method `http01.ProviderServer.SetProxyHeader()` is removed and replaced by an option `http01.Options.ProxyHeaderName`.
+
+The function `dns01.RecursiveNSsPropagationRequirement()` is removed and replaced by `dns01.DisableAuthoritativeNssPropagationRequirement()`.
 
 ## Fields changes
 

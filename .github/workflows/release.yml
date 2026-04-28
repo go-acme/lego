@@ -54,11 +54,11 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache: false
 
-      - name: Docker Login
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
+      - name: Login do docker.io
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Install snapcraft
         run: sudo snap install snapcraft --classic
@@ -75,7 +75,7 @@ jobs:
       # https://goreleaser.com/ci/actions/
       - name: Run GoReleaser
         id: goreleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
           version: v2.15.3
           args: release -p 1 --clean --timeout=90m

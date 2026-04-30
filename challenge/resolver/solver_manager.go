@@ -87,8 +87,8 @@ func (c *SolverManager) Remove(chlgType challenge.Type) {
 	delete(c.solvers, chlgType)
 }
 
-// RemoveAll removes all challenge types from the available solvers.
-func (c *SolverManager) RemoveAll() {
+// ResetSolvers removes all solvers.
+func (c *SolverManager) ResetSolvers() {
 	clear(c.solvers)
 }
 

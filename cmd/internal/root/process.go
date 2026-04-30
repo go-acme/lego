@@ -93,7 +93,7 @@ func processChallenges(ctx context.Context, lazyClient lzSetUp, chlgNode *config
 			return nil, fmt.Errorf("set up client: %w", errC)
 		}
 
-		client.Challenge.RemoveAll()
+		client.Challenge.ResetSolvers()
 
 		errC = setupChallenges(client, chlgNode.Challenge, networkStack)
 		if errC != nil {

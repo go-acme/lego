@@ -30,6 +30,12 @@ docker run goacme/lego -h
   yay -S lego-bin
   ```
 
+- [Fedora](https://packages.fedoraproject.org/pkgs/golang-github-acme-lego/golang-github-acme-lego/) (official):
+
+  ```bash
+  sudo dnf install golang-github-acme-lego
+  ```
+
 - [Snap](https://snapcraft.io/lego) (official):
 
   ```bash

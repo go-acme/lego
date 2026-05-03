@@ -1,0 +1,35 @@
+#!/bin/sh -e
+
+git fetch --multiple upstream origin
+git reset --hard upstream/main
+
+MIN_GO=$(go mod edit -json | jq -r .Go)
+LOG_FILE="modupwiz_bump.log"
+
+rm "$LOG_FILE"
+
+# Check if the min Go version changed after go mod tidy.
+# If unchanged, commit with the given message.
+# If changed, skip the commit, discard the changes, and log the entry to LOG_FILE.
+commit() {
+  msg="$1"
+  CURRENT_GO=$(go mod edit -json | jq -r .Go)
+  if [ "$CURRENT_GO" != "$MIN_GO" ]; then
+    git checkout HEAD .
+    echo "$msg: min Go version changed: $MIN_GO -> $CURRENT_GO" | tee -a "$LOG_FILE"
+  else
+    git add .; git commit -m "$msg"
+  fi
+}
+{{range $scc := .SCCS}}
+{{- range $mod := $scc}}
+# {{ getCompareLink $mod }}
+{{- end}}
+echo "Update {{ range $mod := $scc}}{{ $mod.Path }}@{{ $mod.NewVersion }} {{end}}"
+go get{{ range $mod := $scc}} {{ $mod.Path }}@{{ $mod.NewVersion }}{{end}}
+go mod tidy
+commit
+{{- $length := len $scc }}{{ if gt $length 1 }} "Dependency group"{{end}}{{ range $mod := $scc}} "{{ $mod.Path }}@{{ $mod.NewVersion }}"{{end}}
+{{end}}
+
+make

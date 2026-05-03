@@ -1,9 +1,19 @@
 .lego
-.gitcookies
-.idea
-.vscode/
 dist/
 builds/
+
+.gitcookies
+
+# IDE
+.idea
+.vscode/
+
+# Configuration
 /.lego.yaml
 /.lego.yml
 /.lego.migration.*.yml
+
+# modupwiz
+/modupwiz_bump.log
+/bump.md
+/bump.sh

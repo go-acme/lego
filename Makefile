@@ -78,3 +78,11 @@ validate-doc:
 		git status --porcelain -- $(DOC_DIRECTORIES) 2>/dev/null; \
 		exit 2; \
 	fi
+
+# Dependencies management
+# https://github.com/ldez/modupwiz/
+.PHONY: modupwiz-prepare
+
+modupwiz-prepare:
+	modupwiz -path=bump.sh template -template='.github/modupwiz/bump.sh.tmpl'
+	modupwiz -path=bump.md template -template='.github/modupwiz/bump.md.tmpl'

@@ -1,0 +1,9 @@
+{
+  "zoneId": "01DXF6DT00ZZZHQPP3JFJS8VEE",
+  "name": "_acme-challenge",
+  "type": "TXT",
+  "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+  "ttl": 120,
+  "priority": 0,
+  "disabled": false
+}

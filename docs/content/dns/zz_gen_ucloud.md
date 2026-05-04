@@ -28,7 +28,7 @@ Here is an example bash command using the UCloud provider:
 ```bash
 UCLOUD_PUBLIC_KEY="xxx" \
 UCLOUD_PRIVATE_KEY="yyy" \
-lego --dns ucloud -d '*.example.com' -d example.com run
+lego run --dns ucloud -d '*.example.com' -d example.com
 ```
 
 

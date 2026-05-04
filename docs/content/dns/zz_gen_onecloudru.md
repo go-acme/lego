@@ -27,7 +27,7 @@ Here is an example bash command using the 1cloud.ru provider:
 
 ```bash
 ONECLOUDRU_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns onecloudru -d '*.example.com' -d example.com run
+lego run --dns onecloudru -d '*.example.com' -d example.com
 ```
 
 

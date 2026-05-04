@@ -28,7 +28,7 @@ Here is an example bash command using the Excedo provider:
 ```bash
 EXCEDO_API_KEY=your-api-key \
 EXCEDO_API_URL=your-base-url \
-lego --dns excedo -d '*.example.com' -d example.com run
+lego run --dns excedo -d '*.example.com' -d example.com
 ```
 
 

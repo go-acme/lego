@@ -26,7 +26,7 @@ Here is an example bash command using the External program provider:
 
 ```bash
 EXEC_PATH=/the/path/to/myscript.sh \
-lego --dns exec -d '*.example.com' -d example.com run
+lego run --dns exec -d '*.example.com' -d example.com
 ```
 
 

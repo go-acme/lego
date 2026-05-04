@@ -28,13 +28,13 @@ Here is an example bash command using the AlibabaCloud ESA provider:
 ```bash
 # Setup using instance RAM role
 ALIESA_RAM_ROLE=lego \
-lego --dns aliesa -d '*.example.com' -d example.com run
+lego run --dns aliesa -d '*.example.com' -d example.com
 
 # Or, using credentials
 ALIESA_ACCESS_KEY=abcdefghijklmnopqrstuvwx \
 ALIESA_SECRET_KEY=your-secret-key \
 ALIESA_SECURITY_TOKEN=your-sts-token \
-lego --dns aliesa - -d '*.example.com' -d example.com run
+lego run --dns aliesa - -d '*.example.com' -d example.com
 ```
 
 

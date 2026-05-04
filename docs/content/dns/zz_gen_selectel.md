@@ -27,7 +27,7 @@ Here is an example bash command using the Selectel provider:
 
 ```bash
 SELECTEL_API_TOKEN=xxxxx \
-lego --dns selectel -d '*.example.com' -d example.com run
+lego run --dns selectel -d '*.example.com' -d example.com
 ```
 
 

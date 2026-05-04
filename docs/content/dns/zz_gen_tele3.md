@@ -28,7 +28,7 @@ Here is an example bash command using the Tele3 provider:
 ```bash
 TELE3_KEY="xxx" \
 TELE3_SECRET="yyy" \
-lego --dns tele3 -d '*.example.com' -d example.com run
+lego run --dns tele3 -d '*.example.com' -d example.com
 ```
 
 

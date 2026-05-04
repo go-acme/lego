@@ -27,7 +27,7 @@ Here is an example bash command using the Hosttech provider:
 
 ```bash
 HOSTTECH_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --dns hosttech -d '*.example.com' -d example.com run
+lego run --dns hosttech -d '*.example.com' -d example.com
 ```
 
 

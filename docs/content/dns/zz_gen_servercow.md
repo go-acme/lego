@@ -28,7 +28,7 @@ Here is an example bash command using the Servercow provider:
 ```bash
 SERVERCOW_USERNAME=xxxxxxxx \
 SERVERCOW_PASSWORD=xxxxxxxx \
-lego --dns servercow -d '*.example.com' -d example.com run
+lego run --dns servercow -d '*.example.com' -d example.com
 ```
 
 

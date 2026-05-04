@@ -28,7 +28,7 @@ Here is an example bash command using the Sakura Cloud provider:
 ```bash
 SAKURACLOUD_ACCESS_TOKEN=xxxxx \
 SAKURACLOUD_ACCESS_TOKEN_SECRET=yyyyy \
-lego --dns sakuracloud -d '*.example.com' -d example.com run
+lego run --dns sakuracloud -d '*.example.com' -d example.com
 ```
 
 

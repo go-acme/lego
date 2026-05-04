@@ -27,7 +27,7 @@ Here is an example bash command using the Czechia provider:
 
 ```bash
 CZECHIA_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns czechia -d '*.example.com' -d example.com run
+lego run --dns czechia -d '*.example.com' -d example.com
 ```
 
 

@@ -29,7 +29,7 @@ Here is an example bash command using the FusionLayer NameSurfer provider:
 NAMESURFER_BASE_URL=https://foo.example.com:8443/API/NSService_10 \
 NAMESURFER_API_KEY=xxx \
 NAMESURFER_API_SECRET=yyy \
-lego --dns namesurfer -d '*.example.com' -d example.com run
+lego run --dns namesurfer -d '*.example.com' -d example.com
 ```
 
 

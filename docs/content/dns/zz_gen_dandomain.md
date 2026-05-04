@@ -27,7 +27,7 @@ Here is an example bash command using the DanDomain provider:
 
 ```bash
 DANDOMAIN_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns dandomain -d '*.example.com' -d example.com run
+lego run --dns dandomain -d '*.example.com' -d example.com
 ```
 
 

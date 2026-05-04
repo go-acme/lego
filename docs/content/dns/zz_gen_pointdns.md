@@ -28,7 +28,7 @@ Here is an example bash command using the PointDNS/PointHQ provider:
 ```bash
 POINTDNS_USERNAME="xxx" \
 POINTDNS_PASSWORD="yyy" \
-lego --dns pointdns -d '*.example.com' -d example.com run
+lego run --dns pointdns -d '*.example.com' -d example.com
 ```
 
 

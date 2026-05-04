@@ -27,7 +27,7 @@ Here is an example bash command using the ScanNet provider:
 
 ```bash
 SCANNET_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns scannet -d '*.example.com' -d example.com run
+lego run --dns scannet -d '*.example.com' -d example.com
 ```
 
 

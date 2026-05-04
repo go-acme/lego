@@ -27,7 +27,7 @@ Here is an example bash command using the Abion provider:
 
 ```bash
 ABION_API_KEY="xxxxxxxxxxxx" \
-lego --dns abion -d '*.example.com' -d example.com run
+lego run --dns abion -d '*.example.com' -d example.com
 ```
 
 

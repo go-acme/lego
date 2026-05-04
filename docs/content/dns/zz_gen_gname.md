@@ -28,7 +28,7 @@ Here is an example bash command using the Gname provider:
 ```bash
 GNAME_APP_ID="xxx" \
 GNAME_APP_KEY="yyy" \
-lego --dns gname -d '*.example.com' -d example.com run
+lego run --dns gname -d '*.example.com' -d example.com
 ```
 
 

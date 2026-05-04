@@ -28,7 +28,7 @@ Here is an example bash command using the Xinnet provider:
 ```bash
 XINNET_SECRET="xxx" \
 XINNET_AGENT_ID="agent12345" \
-lego --dns xinnet -d '*.example.com' -d example.com run
+lego run --dns xinnet -d '*.example.com' -d example.com
 ```
 
 

@@ -28,7 +28,7 @@ Here is an example bash command using the Glesys provider:
 ```bash
 GLESYS_API_USER=xxxxx \
 GLESYS_API_KEY=yyyyy \
-lego --dns glesys -d '*.example.com' -d example.com run
+lego run --dns glesys -d '*.example.com' -d example.com
 ```
 
 

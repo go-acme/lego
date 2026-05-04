@@ -27,7 +27,7 @@ Here is an example bash command using the DDnss (DynDNS Service) provider:
 
 ```bash
 DDNSS_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns ddnss -d '*.example.com' -d example.com run
+lego run --dns ddnss -d '*.example.com' -d example.com
 ```
 
 

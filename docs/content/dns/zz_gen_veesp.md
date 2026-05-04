@@ -28,7 +28,7 @@ Here is an example bash command using the Veesp provider:
 ```bash
 VEESP_USERNAME="xxxxxxxxxxxxxxxxxxxxx" \
 VEESP_PASSWORD="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns vessp -d '*.example.com' -d example.com run
+lego run --dns vessp -d '*.example.com' -d example.com
 ```
 
 

@@ -28,7 +28,7 @@ Here is an example bash command using the dns.la provider:
 ```bash
 DNSLA_API_SECRET="xxx" \
 DNSLA_API_SECRET="yyy" \
-lego --dns dnsla -d '*.example.com' -d example.com run
+lego run --dns dnsla -d '*.example.com' -d example.com
 ```
 
 

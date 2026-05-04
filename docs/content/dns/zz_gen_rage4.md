@@ -28,7 +28,7 @@ Here is an example bash command using the Rage4 provider:
 ```bash
 RAGE4_USERNAME="xxx" \
 RAGE4_PASSWORD="yyy" \
-lego --dns rage4 -d '*.example.com' -d example.com run
+lego run --dns rage4 -d '*.example.com' -d example.com
 ```
 
 

@@ -28,13 +28,13 @@ Here is an example bash command using the Joohoi's ACME-DNS provider:
 ```bash
 ACME_DNS_API_BASE=http://10.0.0.8:4443 \
 ACME_DNS_STORAGE_PATH=/root/.lego-acme-dns-accounts.json \
-lego --dns "acme-dns" -d '*.example.com' -d example.com run
+lego run  --dns "acme-dns" -d '*.example.com' -d example.com
 
 # or
 
 ACME_DNS_API_BASE=http://10.0.0.8:4443 \
 ACME_DNS_STORAGE_BASE_URL=http://10.10.10.10:80 \
-lego --dns "acme-dns" -d '*.example.com' -d example.com run
+lego run --dns "acme-dns" -d '*.example.com' -d example.com
 ```
 
 

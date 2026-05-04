@@ -25,7 +25,7 @@ Solving the DNS-01 challenge using CLI prompt.
 Here is an example bash command using the Manual provider:
 
 ```bash
-lego --dns manual -d '*.example.com' -d example.com run
+lego run --dns manual -d '*.example.com' -d example.com
 ```
 
 
@@ -48,7 +48,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 To start using the CLI prompt "provider", start lego with `--dns manual`:
 
 ```console
-$ lego --dns manual -d example.com run
+$ lego run --dns manual -d example.com
 ```
 
 What follows are a few log print-outs, interspersed with some prompts, asking for you to do perform some actions:

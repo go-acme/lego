@@ -27,7 +27,7 @@ Here is an example bash command using the Wannafind provider:
 
 ```bash
 WANNAFIND_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns wannafind -d '*.example.com' -d example.com run
+lego run --dns wannafind -d '*.example.com' -d example.com
 ```
 
 

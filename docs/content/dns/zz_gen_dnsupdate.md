@@ -30,7 +30,7 @@ DNSUPDATE_NAMESERVER=127.0.0.1 \
 DNSUPDATE_TSIG_KEY=example.com \
 DNSUPDATE_TSIG_ALGORITHM=hmac-sha256. \
 DNSUPDATE_TSIG_SECRET=YWJjZGVmZGdoaWprbG1ub3BxcnN0dXZ3eHl6MTIzNDU= \
-lego --dns dnsupdate -d '*.example.com' -d example.com run
+lego run --dns dnsupdate -d '*.example.com' -d example.com
 
 ## ---
 
@@ -38,7 +38,7 @@ keyname=example.com; keyfile=example.com.key; tsig-keygen $keyname > $keyfile
 
 DNSUPDATE_NAMESERVER=127.0.0.1 \
 DNSUPDATE_TSIG_FILE="$keyfile" \
-lego --dns dnsupdate -d '*.example.com' -d example.com run
+lego run --dns dnsupdate -d '*.example.com' -d example.com
 
 ## --- TSIG-GSS / RFC3645 / Kerberos
 
@@ -47,7 +47,7 @@ DNSUPDATE_TSIG_ALGORITHM=gss-tsig. \
 DNSUPDATE_TSIG_GSS_REALM=realm.example
 DNSUPDATE_TSIG_GSS_USERNAME='xxx'
 DNSUPDATE_TSIG_GSS_PASSWORD='yyy'
-lego --dns dnsupdate -d '*.example.com' -d example.com run
+lego run --dns dnsupdate -d '*.example.com' -d example.com
 
 ## --- TSIG-GSS / RFC3645 / Kerberos (keytab)
 
@@ -56,7 +56,7 @@ DNSUPDATE_TSIG_ALGORITHM=gss-tsig. \
 DNSUPDATE_TSIG_GSS_REALM=realm.example \
 DNSUPDATE_TSIG_GSS_USERNAME='xxx' \
 DNSUPDATE_TSIG_GSS_KEYTAB_FILE="/path/to/my.keytab" \
-lego --dns dnsupdate -d '*.example.com' -d example.com run
+lego run --dns dnsupdate -d '*.example.com' -d example.com
 ```
 
 
@@ -113,7 +113,7 @@ DNSUPDATE_TSIG_ALGORITHM=gss-tsig. \
 DNSUPDATE_RFC3645_REALM=realm.example
 DNSUPDATE_RFC3645_USERNAME='xxx'
 DNSUPDATE_RFC3645_PASSWORD='yyy'
-lego --dns dnsupdate -d '*.example.com' -d example.com run
+lego run --dns dnsupdate -d '*.example.com' -d example.com
 ```
 
 ```bash
@@ -124,7 +124,7 @@ DNSUPDATE_TSIG_ALGORITHM=gss-tsig. \
 DNSUPDATE_RFC3645_REALM=realm.example \
 DNSUPDATE_RFC3645_USERNAME='xxx' \
 DNSUPDATE_RFC3645_KEYTAB_FILE="/path/to/my.keytab" \
-lego --dns dnsupdate -d '*.example.com' -d example.com run
+lego run --dns dnsupdate -d '*.example.com' -d example.com
 ```
 
 

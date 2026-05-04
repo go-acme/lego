@@ -27,7 +27,7 @@ Here is an example bash command using the Yandex PDD provider:
 
 ```bash
 YANDEX_PDD_TOKEN=<your PDD Token> \
-lego --dns yandex -d '*.example.com' -d example.com run
+lego run --dns yandex -d '*.example.com' -d example.com
 ```
 
 

@@ -28,7 +28,7 @@ Here is an example bash command using the Gehirn provider:
 ```bash
 GEHIRN_TOKEN_ID="xxx" \
 GEHIRN_TOKEN_SECRET="xxx" \
-lego --dns gehirn -d '*.example.com' -d example.com run
+lego run --dns gehirn -d '*.example.com' -d example.com
 ```
 
 

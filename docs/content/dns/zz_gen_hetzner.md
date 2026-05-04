@@ -27,7 +27,7 @@ Here is an example bash command using the Hetzner provider:
 
 ```bash
 HETZNER_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns hetzner -d '*.example.com' -d example.com run
+lego run --dns hetzner -d '*.example.com' -d example.com
 ```
 
 

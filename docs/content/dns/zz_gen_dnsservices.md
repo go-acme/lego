@@ -28,7 +28,7 @@ Here is an example bash command using the DNS.services provider:
 ```bash
 DNSSERVICES_USERNAME="xxxxxxxxxxxxxxxxxxxxx" \
 DNSSERVICES_PASSWORD="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns dnsservices -d '*.example.com' -d example.com run
+lego run --dns dnsservices -d '*.example.com' -d example.com
 ```
 
 

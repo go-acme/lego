@@ -29,7 +29,7 @@ Here is an example bash command using the EUserv provider:
 EUSERV_EMAIL="user@example.com" \
 EUSERV_PASSWORD="xxx" \
 EUSERV_ORDER_ID="yyy" \
-lego --email you@example.com --dns euserv -d '*.example.com' -d example.com run
+lego run --email you@example.com --dns euserv -d '*.example.com' -d example.com
 ```
 
 

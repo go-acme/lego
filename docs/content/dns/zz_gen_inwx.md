@@ -28,13 +28,13 @@ Here is an example bash command using the INWX provider:
 ```bash
 INWX_USERNAME=xxxxxxxxxx \
 INWX_PASSWORD=yyyyyyyyyy \
-lego --dns inwx -d '*.example.com' -d example.com run
+lego run --dns inwx -d '*.example.com' -d example.com
 
 # 2FA
 INWX_USERNAME=xxxxxxxxxx \
 INWX_PASSWORD=yyyyyyyyyy \
 INWX_SHARED_SECRET=zzzzzzzzzz \
-lego --dns inwx -d '*.example.com' -d example.com run
+lego run --dns inwx -d '*.example.com' -d example.com
 ```
 
 

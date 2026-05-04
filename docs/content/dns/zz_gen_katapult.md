@@ -27,7 +27,7 @@ Here is an example bash command using the Katapult provider:
 
 ```bash
 KATAPULT_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns katapult -d '*.example.com' -d example.com run
+lego run --dns katapult -d '*.example.com' -d example.com
 ```
 
 

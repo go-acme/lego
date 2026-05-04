@@ -32,7 +32,7 @@ BLUECAT_USER_NAME=myusername \
 BLUECAT_CONFIG_NAME=myconfig \
 BLUECAT_SERVER_URL=https://bam.example.com \
 BLUECAT_TTL=30 \
-lego --dns bluecat -d '*.example.com' -d example.com run
+lego run --dns bluecat -d '*.example.com' -d example.com
 ```
 
 

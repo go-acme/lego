@@ -28,7 +28,7 @@ Here is an example bash command using the EasyDNS provider:
 ```bash
 EASYDNS_TOKEN=xxx \
 EASYDNS_KEY=yyy \
-lego --dns easydns -d '*.example.com' -d example.com run
+lego run --dns easydns -d '*.example.com' -d example.com
 ```
 
 

@@ -27,7 +27,7 @@ Here is an example bash command using the Fornex provider:
 
 ```bash
 FORNEX_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns fornex -d '*.example.com' -d example.com run
+lego run --dns fornex -d '*.example.com' -d example.com
 ```
 
 

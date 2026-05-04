@@ -31,7 +31,7 @@ BLUECATV2_USERNAME="xxx" \
 BLUECATV2_PASSWORD="yyy" \
 BLUECATV2_CONFIG_NAME="myConfiguration" \
 BLUECATV2_VIEW_NAME="myView" \
-lego --dns bluecatv2 -d '*.example.com' -d example.com run
+lego run --dns bluecatv2 -d '*.example.com' -d example.com
 ```
 
 

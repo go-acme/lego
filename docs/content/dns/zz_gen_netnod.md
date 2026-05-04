@@ -27,7 +27,7 @@ Here is an example bash command using the Netnod provider:
 
 ```bash
 NETNOD_TOKEN="xxx" \
-lego --dns netnod -d '*.example.com' -d example.com run
+lego run --dns netnod -d '*.example.com' -d example.com
 ```
 
 

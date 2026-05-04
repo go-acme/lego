@@ -28,7 +28,7 @@ Here is an example bash command using the Websupport provider:
 ```bash
 WEBSUPPORT_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
 WEBSUPPORT_SECRET="yyyyyyyyyyyyyyyyyyyyy" \
-lego --dns websupport -d '*.example.com' -d example.com run
+lego run --dns websupport -d '*.example.com' -d example.com
 ```
 
 

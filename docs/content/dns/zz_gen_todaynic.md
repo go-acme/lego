@@ -28,7 +28,7 @@ Here is an example bash command using the TodayNIC/时代互联 provider:
 ```bash
 TODAYNIC_AUTH_USER_ID="xxx" \
 TODAYNIC_API_KEY="yyy" \
-lego --dns todaynic -d '*.example.com' -d example.com run
+lego run --dns todaynic -d '*.example.com' -d example.com
 ```
 
 

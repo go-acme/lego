@@ -27,7 +27,7 @@ Here is an example bash command using the Timeweb Cloud provider:
 
 ```bash
 TIMEWEBCLOUD_AUTH_TOKEN=xxxxxx \
-lego --dns timewebcloud -d '*.example.com' -d example.com run
+lego run --dns timewebcloud -d '*.example.com' -d example.com
 ```
 
 

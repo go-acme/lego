@@ -28,7 +28,7 @@ Here is an example bash command using the Yandex 360 provider:
 ```bash
 YANDEX360_OAUTH_TOKEN=<your OAuth Token> \
 YANDEX360_ORG_ID=<your organization ID> \
-lego --dns yandex360 -d '*.example.com' -d example.com run
+lego run --dns yandex360 -d '*.example.com' -d example.com
 ```
 
 

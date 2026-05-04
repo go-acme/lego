@@ -27,7 +27,7 @@ Here is an example bash command using the Gandi Live DNS (v5) provider:
 
 ```bash
 GANDIV5_PERSONAL_ACCESS_TOKEN=abcdefghijklmnopqrstuvwx \
-lego --dns gandiv5 -d '*.example.com' -d example.com run
+lego run --dns gandiv5 -d '*.example.com' -d example.com
 ```
 
 

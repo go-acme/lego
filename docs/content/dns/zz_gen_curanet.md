@@ -27,7 +27,7 @@ Here is an example bash command using the Curanet provider:
 
 ```bash
 CURANET_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns curanet -d '*.example.com' -d example.com run
+lego run --dns curanet -d '*.example.com' -d example.com
 ```
 
 

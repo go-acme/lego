@@ -28,7 +28,7 @@ Here is an example bash command using the EuroDNS provider:
 ```bash
 EURODNS_APP_ID="xxx" \
 EURODNS_API_KEY="yyy" \
-lego --dns eurodns -d '*.example.com' -d example.com run
+lego run --dns eurodns -d '*.example.com' -d example.com
 ```
 
 

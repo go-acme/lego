@@ -28,7 +28,7 @@ Here is an example bash command using the 51DNS provider:
 ```bash
 DNS51_API_KEY="xxx" \
 DNS51_API_SECRET="yyy" \
-lego --dns dns51 -d '*.example.com' -d example.com run
+lego run --dns dns51 -d '*.example.com' -d example.com
 ```
 
 

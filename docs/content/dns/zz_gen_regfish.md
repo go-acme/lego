@@ -27,7 +27,7 @@ Here is an example bash command using the Regfish provider:
 
 ```bash
 REGFISH_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns regfish -d '*.example.com' -d example.com run
+lego run --dns regfish -d '*.example.com' -d example.com
 ```
 
 

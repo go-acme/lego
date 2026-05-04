@@ -27,7 +27,7 @@ Here is an example bash command using the DNScale provider:
 
 ```bash
 DNSCALE_API_TOKEN="xxx" \
-lego --dns dnscale -d '*.example.com' -d example.com run
+lego run --dns dnscale -d '*.example.com' -d example.com
 ```
 
 

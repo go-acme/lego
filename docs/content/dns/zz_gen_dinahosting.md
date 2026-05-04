@@ -28,7 +28,7 @@ Here is an example bash command using the Dinahosting provider:
 ```bash
 DINAHOSTING_USERNAME="xxx" \
 DINAHOSTING_PASSWORD="yyy" \
-lego --dns dinahosting -d '*.example.com' -d example.com run
+lego run --dns dinahosting -d '*.example.com' -d example.com
 ```
 
 

@@ -27,7 +27,7 @@ Here is an example bash command using the Vultr provider:
 
 ```bash
 VULTR_API_KEY=xxxxx \
-lego --dns vultr -d '*.example.com' -d example.com run
+lego run --dns vultr -d '*.example.com' -d example.com
 ```
 
 

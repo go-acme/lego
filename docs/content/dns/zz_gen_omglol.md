@@ -27,7 +27,7 @@ Here is an example bash command using the omg.lol provider:
 
 ```bash
 OMGLOL_API_KEY="xx" \
-lego --dns omglol -d '*.example.com' -d example.com run
+lego run --dns omglol -d '*.example.com' -d example.com
 ```
 
 

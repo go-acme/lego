@@ -27,7 +27,7 @@ Here is an example bash command using the NederHost provider:
 
 ```bash
 NEDERHOST_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns nederhost -d '*.example.com' -d example.com run
+lego run --dns nederhost -d '*.example.com' -d example.com
 ```
 
 

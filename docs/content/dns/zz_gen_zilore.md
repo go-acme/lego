@@ -27,7 +27,7 @@ Here is an example bash command using the Zilore provider:
 
 ```bash
 ZILORE_ACCESS_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns zilore -d '*.example.com' -d example.com run
+lego run --dns zilore -d '*.example.com' -d example.com
 ```
 
 

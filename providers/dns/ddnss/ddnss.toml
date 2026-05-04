@@ -6,7 +6,7 @@ Since = "v4.32.0"
 
 Example = '''
 DDNSS_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns ddnss -d '*.example.com' -d example.com run
+lego run --dns ddnss -d '*.example.com' -d example.com
 '''
 
 [Configuration]

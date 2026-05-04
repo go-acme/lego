@@ -6,7 +6,7 @@ Since = "v4.34.0"
 
 Example = '''
 ONLINENET_API_TOKEN="xxx" \
-lego --dns onlinenet -d '*.example.com' -d example.com run
+lego run --dns onlinenet -d '*.example.com' -d example.com
 '''
 
 [Configuration]

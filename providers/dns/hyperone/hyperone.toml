@@ -5,7 +5,7 @@ Code = "hyperone"
 Since = "v3.9.0"
 
 Example = '''
-lego --dns hyperone -d '*.example.com' -d example.com run
+lego run --dns hyperone -d '*.example.com' -d example.com
 '''
 
 Additional = '''

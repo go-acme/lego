@@ -6,7 +6,7 @@ Since = "v1.2.0"
 
 Example = '''
 SELECTEL_API_TOKEN=xxxxx \
-lego --dns selectel -d '*.example.com' -d example.com run
+lego run --dns selectel -d '*.example.com' -d example.com
 '''
 
 [Configuration]

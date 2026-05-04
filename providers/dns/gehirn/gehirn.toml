@@ -7,7 +7,7 @@ Since = "v5.0.0"
 Example = '''
 GEHIRN_TOKEN_ID="xxx" \
 GEHIRN_TOKEN_SECRET="xxx" \
-lego --dns gehirn -d '*.example.com' -d example.com run
+lego run --dns gehirn -d '*.example.com' -d example.com
 '''
 
 [Configuration]

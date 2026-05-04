@@ -6,7 +6,7 @@ Since = "v4.27.0"
 
 Example = '''
 OCTENIUM_API_KEY="xxx" \
-lego --dns octenium -d '*.example.com' -d example.com run
+lego run --dns octenium -d '*.example.com' -d example.com
 '''
 
 [Configuration]

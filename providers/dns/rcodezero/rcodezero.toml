@@ -6,7 +6,7 @@ Since = "v4.13"
 
 Example = '''
 RCODEZERO_API_TOKEN=<mytoken> \
-lego --dns rcodezero -d '*.example.com' -d example.com run
+lego run --dns rcodezero -d '*.example.com' -d example.com
 '''
 
 Additional = '''

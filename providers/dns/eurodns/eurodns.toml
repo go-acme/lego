@@ -7,7 +7,7 @@ Since = "v4.33.0"
 Example = '''
 EURODNS_APP_ID="xxx" \
 EURODNS_API_KEY="yyy" \
-lego --dns eurodns -d '*.example.com' -d example.com run
+lego run --dns eurodns -d '*.example.com' -d example.com
 '''
 
 [Configuration]

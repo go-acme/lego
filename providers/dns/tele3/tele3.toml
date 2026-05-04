@@ -7,7 +7,7 @@ Since = "v5.0.0"
 Example = '''
 TELE3_KEY="xxx" \
 TELE3_SECRET="yyy" \
-lego --dns tele3 -d '*.example.com' -d example.com run
+lego run --dns tele3 -d '*.example.com' -d example.com
 '''
 
 [Configuration]

@@ -7,7 +7,7 @@ Since = "v4.27.0"
 Example = '''
 BEGET_USERNAME=xxxxxx \
 BEGET_PASSWORD=yyyyyy \
-lego --dns beget -d '*.example.com' -d example.com run
+lego run --dns beget -d '*.example.com' -d example.com
 '''
 
 [Configuration]

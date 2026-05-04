@@ -7,7 +7,7 @@ Since = "v5.0.0"
 Example = '''
 RAGE4_USERNAME="xxx" \
 RAGE4_PASSWORD="yyy" \
-lego --dns rage4 -d '*.example.com' -d example.com run
+lego run --dns rage4 -d '*.example.com' -d example.com
 '''
 
 [Configuration]

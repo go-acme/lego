@@ -7,7 +7,7 @@ Since = "v5.0.0"
 Example = '''
 POINTDNS_USERNAME="xxx" \
 POINTDNS_PASSWORD="yyy" \
-lego --dns pointdns -d '*.example.com' -d example.com run
+lego run --dns pointdns -d '*.example.com' -d example.com
 '''
 
 [Configuration]

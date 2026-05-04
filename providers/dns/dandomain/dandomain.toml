@@ -6,7 +6,7 @@ Since = "v5.0.0"
 
 Example = '''
 DANDOMAIN_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns dandomain -d '*.example.com' -d example.com run
+lego run --dns dandomain -d '*.example.com' -d example.com
 '''
 
 [Configuration]

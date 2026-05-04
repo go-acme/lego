@@ -7,7 +7,7 @@ Since = "v4.5.0"
 Example = '''
 SOFTLAYER_USERNAME=xxxxx \
 SOFTLAYER_API_KEY=yyyyy \
-lego --dns ibmcloud -d '*.example.com' -d example.com run
+lego run --dns ibmcloud -d '*.example.com' -d example.com
 '''
 
 [Configuration]

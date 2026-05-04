@@ -6,7 +6,7 @@ Since = "v5.0.0"
 
 Example = '''
 ZILORE_ACCESS_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns zilore -d '*.example.com' -d example.com run
+lego run --dns zilore -d '*.example.com' -d example.com
 '''
 
 [Configuration]

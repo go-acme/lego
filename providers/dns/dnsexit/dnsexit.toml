@@ -6,7 +6,7 @@ Since = "v4.32.0"
 
 Example = '''
 DNSEXIT_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns dnsexit -d '*.example.com' -d example.com run
+lego run --dns dnsexit -d '*.example.com' -d example.com
 '''
 
 [Configuration]

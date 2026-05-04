@@ -6,7 +6,7 @@ Since = "v5.0.0"
 
 Example = '''
 ABION_API_KEY="xxxxxxxxxxxx" \
-lego --dns abion -d '*.example.com' -d example.com run
+lego run --dns abion -d '*.example.com' -d example.com
 '''
 
 [Configuration]

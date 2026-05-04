@@ -6,7 +6,7 @@ Since = "v3.7.0"
 
 Example = '''
 HETZNER_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns hetzner -d '*.example.com' -d example.com run
+lego run --dns hetzner -d '*.example.com' -d example.com
 '''
 
 [Configuration]

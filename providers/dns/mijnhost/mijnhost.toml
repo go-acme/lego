@@ -6,7 +6,7 @@ Since = "v4.18.0"
 
 Example = '''
 MIJNHOST_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns mijnhost -d '*.example.com' -d example.com run
+lego run --dns mijnhost -d '*.example.com' -d example.com
 '''
 
 [Configuration]

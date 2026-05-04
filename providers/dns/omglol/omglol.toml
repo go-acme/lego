@@ -6,7 +6,7 @@ Since = "v5.0.0"
 
 Example = '''
 OMGLOL_API_KEY="xx" \
-lego --dns omglol -d '*.example.com' -d example.com run
+lego run --dns omglol -d '*.example.com' -d example.com
 '''
 
 [Configuration]

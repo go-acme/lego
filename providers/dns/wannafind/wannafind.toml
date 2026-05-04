@@ -6,7 +6,7 @@ Since = "v5.0.0"
 
 Example = '''
 WANNAFIND_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns wannafind -d '*.example.com' -d example.com run
+lego run --dns wannafind -d '*.example.com' -d example.com
 '''
 
 [Configuration]

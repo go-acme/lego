@@ -6,7 +6,7 @@ Since = "v4.20.0"
 
 Example = '''
 REGFISH_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns regfish -d '*.example.com' -d example.com run
+lego run --dns regfish -d '*.example.com' -d example.com
 '''
 
 [Configuration]

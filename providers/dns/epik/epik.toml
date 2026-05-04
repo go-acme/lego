@@ -6,7 +6,7 @@ Since = "v4.5.0"
 
 Example = '''
 EPIK_SIGNATURE=xxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --dns epik -d '*.example.com' -d example.com run
+lego run --dns epik -d '*.example.com' -d example.com
 '''
 
 [Configuration]

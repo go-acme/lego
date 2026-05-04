@@ -6,7 +6,7 @@ Since = "v5.0.0"
 
 Example = '''
 SCANNET_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns scannet -d '*.example.com' -d example.com run
+lego run --dns scannet -d '*.example.com' -d example.com
 '''
 
 [Configuration]

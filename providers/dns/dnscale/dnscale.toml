@@ -6,7 +6,7 @@ Since = "v5.0.0"
 
 Example = '''
 DNSCALE_API_TOKEN="xxx" \
-lego --dns dnscale -d '*.example.com' -d example.com run
+lego run --dns dnscale -d '*.example.com' -d example.com
 '''
 
 [Configuration]

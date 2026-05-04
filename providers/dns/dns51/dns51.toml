@@ -7,7 +7,7 @@ Since = "v5.0.0"
 Example = '''
 DNS51_API_KEY="xxx" \
 DNS51_API_SECRET="yyy" \
-lego --dns dns51 -d '*.example.com' -d example.com run
+lego run --dns dns51 -d '*.example.com' -d example.com
 '''
 
 [Configuration]

@@ -7,7 +7,7 @@ Since = "v5.0.0"
 Example = '''
 DNSSERVICES_USERNAME="xxxxxxxxxxxxxxxxxxxxx" \
 DNSSERVICES_PASSWORD="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns dnsservices -d '*.example.com' -d example.com run
+lego run --dns dnsservices -d '*.example.com' -d example.com
 '''
 
 [Configuration]

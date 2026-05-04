@@ -6,7 +6,7 @@ Since = "v4.34.0"
 
 Example = '''
 ONECLOUDRU_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns onecloudru -d '*.example.com' -d example.com run
+lego run --dns onecloudru -d '*.example.com' -d example.com
 '''
 
 [Configuration]

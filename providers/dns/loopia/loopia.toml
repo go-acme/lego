@@ -7,7 +7,7 @@ Since = "v4.2.0"
 Example = '''
 LOOPIA_API_USER=xxxxxxxx \
 LOOPIA_API_PASSWORD=yyyyyyyy \
-lego --dns loopia -d '*.example.com' -d example.com run
+lego run --dns loopia -d '*.example.com' -d example.com
 '''
 
 Additional = '''

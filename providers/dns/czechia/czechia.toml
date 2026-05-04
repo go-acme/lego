@@ -6,7 +6,7 @@ Since = "v4.33.0"
 
 Example = '''
 CZECHIA_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns czechia -d '*.example.com' -d example.com run
+lego run --dns czechia -d '*.example.com' -d example.com
 '''
 
 [Configuration]

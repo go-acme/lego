@@ -6,7 +6,7 @@ Since = "v5.0.0"
 
 Example = '''
 KATAPULT_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns katapult -d '*.example.com' -d example.com run
+lego run --dns katapult -d '*.example.com' -d example.com
 '''
 
 [Configuration]

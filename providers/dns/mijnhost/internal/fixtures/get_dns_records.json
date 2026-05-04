@@ -27,6 +27,12 @@
         "name": "example.com.",
         "value": "v=spf1 include:spf.mijn.host ~all",
         "ttl": 900
+      },
+      {
+        "type": "TXT",
+        "name": "_acme-challenge",
+        "value": "foo",
+        "ttl": 120
       }
     ]
   }

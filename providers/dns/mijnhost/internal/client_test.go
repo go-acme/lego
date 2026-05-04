@@ -16,7 +16,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(apiKey)
-			client.baseURL, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 			client.HTTPClient = server.Client()
 
 			return client, nil
@@ -28,7 +28,9 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 func TestClient_ListDomains(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /domains", servermock.ResponseFromFixture("list-domains.json")).
+		Route("GET /domains",
+			servermock.ResponseFromFixture("list_domains.json"),
+		).
 		Build(t)
 
 	domains, err := client.ListDomains(t.Context())
@@ -48,7 +50,9 @@ func TestClient_ListDomains(t *testing.T) {
 
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /domains/example.com/dns", servermock.ResponseFromFixture("get-dns-records.json")).
+		Route("GET /domains/example.com/dns",
+			servermock.ResponseFromFixture("get_dns_records.json"),
+		).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "example.com")
@@ -79,6 +83,12 @@ func TestClient_GetRecords(t *testing.T) {
 			Value: "v=spf1 include:spf.mijn.host ~all",
 			TTL:   900,
 		},
+		{
+			Type:  "TXT",
+			Name:  "_acme-challenge",
+			Value: "foo",
+			TTL:   120,
+		},
 	}
 
 	assert.Equal(t, expected, records)
@@ -87,16 +97,43 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_UpdateRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("PUT /domains/example.com/dns",
-			servermock.ResponseFromFixture("update-dns-records.json"),
-			servermock.CheckRequestJSONBody(`{"records":[{"type":"TXT","name":"foo","value":"value1","ttl":120}]}`)).
+			servermock.ResponseFromFixture("update_dns_records.json"),
+			servermock.CheckRequestJSONBodyFromFixture("update_dns_records-request_add.json"),
+		).
 		Build(t)
 
-	records := []Record{{
-		Type:  "TXT",
-		Name:  "foo",
-		Value: "value1",
-		TTL:   120,
-	}}
+	records := []Record{
+		{
+			Type:  "A",
+			Name:  "example.com.",
+			Value: "135.226.123.12",
+			TTL:   900,
+		},
+		{
+			Type:  "AAAA",
+			Name:  "example.com.",
+			Value: "2009:21d0:322:6100::5:c92b",
+			TTL:   900,
+		},
+		{
+			Type:  "MX",
+			Name:  "example.com.",
+			Value: "10 mail.example.com.",
+			TTL:   900,
+		},
+		{
+			Type:  "TXT",
+			Name:  "example.com.",
+			Value: "v=spf1 include:spf.mijn.host ~all",
+			TTL:   900,
+		},
+		{
+			Type:  "TXT",
+			Name:  "_acme-challenge",
+			Value: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+			TTL:   120,
+		},
+	}
 
 	err := client.UpdateRecords(t.Context(), "example.com", records)
 	require.NoError(t, err)

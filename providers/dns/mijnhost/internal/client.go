@@ -21,7 +21,7 @@ const authorizationHeader = "API-Key"
 type Client struct {
 	apiKey string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -31,7 +31,7 @@ func NewClient(apiKey string) *Client {
 
 	return &Client{
 		apiKey:     apiKey,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
@@ -39,7 +39,7 @@ func NewClient(apiKey string) *Client {
 // ListDomains Retrieve all domains from an account.
 // https://mijn.host/api/doc/api-3563872
 func (c *Client) ListDomains(ctx context.Context) ([]Domain, error) {
-	endpoint := c.baseURL.JoinPath("domains")
+	endpoint := c.BaseURL.JoinPath("domains")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -59,7 +59,7 @@ func (c *Client) ListDomains(ctx context.Context) ([]Domain, error) {
 // GetRecords Retrieve DNS records of specific domain.
 // https://mijn.host/api/doc/api-3563906
 func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error) {
-	endpoint := c.baseURL.JoinPath("domains", domain, "dns")
+	endpoint := c.BaseURL.JoinPath("domains", domain, "dns")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -79,7 +79,7 @@ func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error
 // UpdateRecords Update DNS records of specific domain.
 // https://mijn.host/api/doc/api-3563907
 func (c *Client) UpdateRecords(ctx context.Context, domain string, records []Record) error {
-	endpoint := c.baseURL.JoinPath("domains", domain, "dns")
+	endpoint := c.BaseURL.JoinPath("domains", domain, "dns")
 
 	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, RecordData{Records: records})
 	if err != nil {

@@ -1,0 +1,25 @@
+{
+  "status": {
+    "code": 400,
+    "title": "Bad Request",
+    "message": "Transferred data are incorrect.",
+    "id": "01DXF6DT009CJANMTD1S57HQWQ",
+    "titleOriginal": "Bad Request",
+    "messageOriginal": "Transferred data are incorrect.",
+    "logId": "01KQW9AVCV3K0M23ERMC84RG9N",
+    "path": "/ns/zone/list",
+    "time": 1777992035,
+    "version": "4.6.0"
+  },
+  "field": [
+    {
+      "authorization": "'Authorization' must be set."
+    },
+    {
+      "projectId": "Field must be set."
+    },
+    {
+      "projectId": "Field cannot be empty."
+    }
+  ]
+}

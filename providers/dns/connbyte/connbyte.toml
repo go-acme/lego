@@ -1,0 +1,22 @@
+Name = "Connbyte"
+Description = ''''''
+URL = "https://connbyte.com/"
+Code = "connbyte"
+Since = "v5.1.0"
+
+Example = '''
+CONNBYTE_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
+lego run --dns connbyte -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    CONNBYTE_TOKEN = "Token"
+  [Configuration.Additional]
+    CONNBYTE_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    CONNBYTE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    CONNBYTE_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    CONNBYTE_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://api.connbyte.com/"

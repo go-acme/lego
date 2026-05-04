@@ -18,6 +18,7 @@ linters:
   default: all
   disable:
     - wsl # Deprecated
+    - gomodguard # Deprecated
     - bodyclose
     - canonicalheader
     - contextcheck
@@ -68,6 +69,7 @@ linters:
     goconst:
       min-len: 3
       min-occurrences: 3
+      ignore-tests: true
     gocritic:
       disabled-checks:
         - paramTypeCombine # already handle by gofumpt.extra-rules
@@ -180,12 +182,21 @@ linters:
         text: Error return value of `fmt.Fprintln` is not checked
         linters:
           - errcheck
-      - text: "var-naming: avoid meaningless package names"
+      - text: "string `TXT` has \\d+ occurrences, make it a constant"
         linters:
-          - revive
-      - text: "var-naming: avoid package names that conflict with Go standard library package names"
+          - goconst
+      - path: internal/clihelp/generator.go
+        text: "string `(help|lego)` has \\d+ occurrences, make it a constant"
         linters:
-          - revive
+          - goconst
+      - path: certcrypto/crypto.go
+        text: "string `CERTIFICATE` has \\d+ occurrences, make it a constant"
+        linters:
+          - goconst
+      - path: cmd/(certs_storage|flags).go
+        text: "string `RC2` has \\d+ occurrences, make it a constant"
+        linters:
+          - goconst
       - path: certcrypto/crypto.go
         text: (tlsFeatureExtensionOID|ocspMustStapleFeature) is a global variable
         linters:

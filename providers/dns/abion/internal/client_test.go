@@ -16,7 +16,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("secret")
 			client.HTTPClient = server.Client()
-			client.baseURL, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
@@ -32,7 +32,8 @@ func TestUpdateZone(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /v1/zones/"+domain,
 			servermock.ResponseFromFixture("update.json"),
-			servermock.CheckRequestJSONBodyFromFixture("update-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("update-request.json"),
+		).
 		Build(t)
 
 	patch := ZoneRequest{
@@ -111,7 +112,8 @@ func TestUpdateZone_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /v1/zones/"+domain,
 			servermock.ResponseFromFixture("error.json").
-				WithStatusCode(http.StatusUnauthorized)).
+				WithStatusCode(http.StatusUnauthorized),
+		).
 		Build(t)
 
 	patch := ZoneRequest{
@@ -139,7 +141,8 @@ func TestUpdateZone_error(t *testing.T) {
 func TestGetZones(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/zones/",
-			servermock.ResponseFromFixture("zones.json")).
+			servermock.ResponseFromFixture("zones.json"),
+		).
 		Build(t)
 
 	zones, err := client.GetZones(t.Context(), nil)
@@ -177,7 +180,8 @@ func TestGetZones_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/zones/",
 			servermock.ResponseFromFixture("error.json").
-				WithStatusCode(http.StatusUnauthorized)).
+				WithStatusCode(http.StatusUnauthorized),
+		).
 		Build(t)
 
 	_, err := client.GetZones(t.Context(), nil)
@@ -187,7 +191,8 @@ func TestGetZones_error(t *testing.T) {
 func TestGetZone(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/zones/example.com",
-			servermock.ResponseFromFixture("zone.json")).
+			servermock.ResponseFromFixture("zone.json"),
+		).
 		Build(t)
 
 	zones, err := client.GetZone(t.Context(), "example.com")
@@ -246,7 +251,8 @@ func TestGetZone_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/zones/example.com",
 			servermock.ResponseFromFixture("error.json").
-				WithStatusCode(http.StatusUnauthorized)).
+				WithStatusCode(http.StatusUnauthorized),
+		).
 		Build(t)
 
 	_, err := client.GetZone(t.Context(), "example.com")

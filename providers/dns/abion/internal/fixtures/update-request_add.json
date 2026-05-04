@@ -1,0 +1,19 @@
+{
+  "data": {
+    "type": "zone",
+    "id": "example.com",
+    "attributes": {
+      "records": {
+        "_acme-challenge": {
+          "TXT": [
+            {
+              "comments": "lego",
+              "rdata": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+              "ttl": 120
+            }
+          ]
+        }
+      }
+    }
+  }
+}

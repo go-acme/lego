@@ -22,8 +22,9 @@ const apiKeyHeader = "X-API-KEY"
 
 // Client the Abion API client.
 type Client struct {
-	apiKey     string
-	baseURL    *url.URL
+	apiKey string
+
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -33,14 +34,14 @@ func NewClient(apiKey string) *Client {
 
 	return &Client{
 		apiKey:     apiKey,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
 
 // GetZones Lists all the zones your session can access.
 func (c *Client) GetZones(ctx context.Context, page *Pagination) (*APIResponse[[]Zone], error) {
-	endpoint := c.baseURL.JoinPath("v1", "zones")
+	endpoint := c.BaseURL.JoinPath("v1", "zones")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, http.NoBody)
 	if err != nil {
@@ -67,7 +68,7 @@ func (c *Client) GetZones(ctx context.Context, page *Pagination) (*APIResponse[[
 
 // GetZone Returns the full information on a single zone.
 func (c *Client) GetZone(ctx context.Context, name string) (*APIResponse[*Zone], error) {
-	endpoint := c.baseURL.JoinPath("v1", "zones", name)
+	endpoint := c.BaseURL.JoinPath("v1", "zones", name)
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, http.NoBody)
 	if err != nil {
@@ -85,7 +86,7 @@ func (c *Client) GetZone(ctx context.Context, name string) (*APIResponse[*Zone],
 
 // UpdateZone Updates a zone by patching it according to JSON Merge Patch format (RFC 7396).
 func (c *Client) UpdateZone(ctx context.Context, name string, patch ZoneRequest) (*APIResponse[*Zone], error) {
-	endpoint := c.baseURL.JoinPath("v1", "zones", name)
+	endpoint := c.BaseURL.JoinPath("v1", "zones", name)
 
 	req, err := newJSONRequest(ctx, http.MethodPatch, endpoint, patch)
 	if err != nil {

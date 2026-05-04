@@ -1,0 +1,14 @@
+{
+  "records": [
+    {
+      "name": "www",
+      "type": "A",
+      "data": "198.51.100.1"
+    },
+    {
+      "name": "mail",
+      "type": "MX",
+      "data": "10 mail.example.com."
+    }
+  ]
+}

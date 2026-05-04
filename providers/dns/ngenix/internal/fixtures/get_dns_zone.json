@@ -1,0 +1,20 @@
+{
+  "modelName": "DnsZone",
+  "id": 1,
+  "name": "example.com",
+  "records": [
+    {
+      "name": "www",
+      "type": "A",
+      "data": "198.51.100.1"
+    },
+    {
+      "name": "mail",
+      "type": "MX",
+      "data": "10 mail.example.com."
+    }
+  ],
+  "links": {
+    "self": "https://api.ngenix.net/api/v3/dns-zone/1"
+  }
+}

@@ -150,6 +150,7 @@ func allDNSCodes() string {
 		"netcup",
 		"netlify",
 		"netnod",
+		"ngenix",
 		"nicmanager",
 		"nicru",
 		"nifcloud",
@@ -3169,6 +3170,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/netnod`)
+
+	case "ngenix":
+		// generated from: providers/dns/ngenix/ngenix.toml
+		ew.writeln(`Configuration for Ngenix.`)
+		ew.writeln(`Code:	'ngenix'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NGENIX_CUSTOMER_ID":	Customer ID`)
+		ew.writeln(`	- "NGENIX_PASSWORD":	User password`)
+		ew.writeln(`	- "NGENIX_USERNAME":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NGENIX_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "NGENIX_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "NGENIX_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/ngenix`)
 
 	case "nicmanager":
 		// generated from: providers/dns/nicmanager/nicmanager.toml

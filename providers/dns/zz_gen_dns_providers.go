@@ -144,6 +144,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/netcup"
 	"github.com/go-acme/lego/v5/providers/dns/netlify"
 	"github.com/go-acme/lego/v5/providers/dns/netnod"
+	"github.com/go-acme/lego/v5/providers/dns/ngenix"
 	"github.com/go-acme/lego/v5/providers/dns/nicmanager"
 	"github.com/go-acme/lego/v5/providers/dns/nicru"
 	"github.com/go-acme/lego/v5/providers/dns/nifcloud"
@@ -498,6 +499,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return netlify.NewDNSProvider()
 	case "netnod":
 		return netnod.NewDNSProvider()
+	case "ngenix":
+		return ngenix.NewDNSProvider()
 	case "nicmanager":
 		return nicmanager.NewDNSProvider()
 	case "nicru":

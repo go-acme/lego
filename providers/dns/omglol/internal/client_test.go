@@ -20,7 +20,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 				return nil, err
 			}
 
-			client.baseURL, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
@@ -33,7 +33,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_RetrieveRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /address/foobar/dns",
-			servermock.ResponseFromFixture("retrieve-records.json")).
+			servermock.ResponseFromFixture("retrieve-records.json"),
+		).
 		Build(t)
 
 	records, err := client.RetrieveRecords(t.Context(), "foobar")
@@ -69,7 +70,8 @@ func TestClient_RetrieveRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /address/foobar/dns",
 			servermock.ResponseFromFixture("error.json").
-				WithStatusCode(http.StatusUnauthorized)).
+				WithStatusCode(http.StatusUnauthorized),
+		).
 		Build(t)
 
 	_, err := client.RetrieveRecords(t.Context(), "foobar")
@@ -82,13 +84,14 @@ func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /address/foobar/dns",
 			servermock.ResponseFromFixture("create-record.json"),
-			servermock.CheckRequestJSONBodyFromFixture("create-record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create-record-request.json"),
+		).
 		Build(t)
 
 	record := Record{
-		Name:    "foobar",
-		Content: "txt",
-		TTL:     60,
+		Name:    "_acme-challenge",
+		Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		TTL:     120,
 		Type:    "TXT",
 	}
 
@@ -113,7 +116,8 @@ func TestClient_CreateRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /address/foobar/dns",
 			servermock.ResponseFromFixture("error.json").
-				WithStatusCode(http.StatusUnauthorized)).
+				WithStatusCode(http.StatusUnauthorized),
+		).
 		Build(t)
 
 	record := Record{
@@ -132,7 +136,8 @@ func TestClient_CreateRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /address/foobar/dns/123",
-			servermock.ResponseFromFixture("delete-record.json")).
+			servermock.ResponseFromFixture("delete-record.json"),
+		).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "foobar", "123")
@@ -143,7 +148,8 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /address/foobar/dns/123",
 			servermock.ResponseFromFixture("error.json").
-				WithStatusCode(http.StatusUnauthorized)).
+				WithStatusCode(http.StatusUnauthorized),
+		).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "foobar", "123")

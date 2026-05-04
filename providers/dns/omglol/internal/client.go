@@ -19,7 +19,7 @@ const defaultBaseURL = "https://api.omg.lol"
 
 // Client the omg.lol API client.
 type Client struct {
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	httpClient *http.Client
 }
 
@@ -32,13 +32,13 @@ func NewClient(hc *http.Client) (*Client, error) {
 	}
 
 	return &Client{
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		httpClient: hc,
 	}, nil
 }
 
 func (c *Client) RetrieveRecords(ctx context.Context, address string) ([]Record, error) {
-	endpoint := c.baseURL.JoinPath("address", address, "dns")
+	endpoint := c.BaseURL.JoinPath("address", address, "dns")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -56,7 +56,7 @@ func (c *Client) RetrieveRecords(ctx context.Context, address string) ([]Record,
 }
 
 func (c *Client) CreateRecord(ctx context.Context, address string, record Record) (*Record, error) {
-	endpoint := c.baseURL.JoinPath("address", address, "dns")
+	endpoint := c.BaseURL.JoinPath("address", address, "dns")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
@@ -74,7 +74,7 @@ func (c *Client) CreateRecord(ctx context.Context, address string, record Record
 }
 
 func (c *Client) DeleteRecord(ctx context.Context, address, recordID string) error {
-	endpoint := c.baseURL.JoinPath("address", address, "dns", recordID)
+	endpoint := c.BaseURL.JoinPath("address", address, "dns", recordID)
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

@@ -17,8 +17,8 @@ lego run --dns ngenix -d '*.example.com' -d example.com
     NGENIX_TOKEN = "API token"
     NGENIX_CUSTOMER_ID = "Customer ID"
   [Configuration.Additional]
-    NGENIX_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
-    NGENIX_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    NGENIX_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 20)"
+    NGENIX_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 600)"
     NGENIX_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]

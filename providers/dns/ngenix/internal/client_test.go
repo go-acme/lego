@@ -63,8 +63,14 @@ func TestClient_GetDNSZone(t *testing.T) {
 		ID:   1,
 		Name: "example.com",
 		Records: []DNSRecord{
-			{Name: "www", Type: "A", Data: "198.51.100.1"},
-			{Name: "mail", Type: "MX", Data: "10 mail.example.com."},
+			{Name: "www", Type: "A", Data: "195.230.64.13"},
+			{Name: "mail", Type: "MX", Data: "10 mail.client.ru."},
+			{Name: "cdn", Type: "A", ConfigRef: &Identifier{ID: 12}},
+		},
+		Comment: "Комментарий, указанный при последнем редактировании зоны.",
+		DNSSec: &DNSSec{
+			Enabled:      true,
+			DNSSecKeyRef: &Identifier{ID: 1234},
 		},
 	}
 
@@ -80,8 +86,9 @@ func TestClient_UpdateDNSZone(t *testing.T) {
 		Build(t)
 
 	records := []DNSRecord{
-		{Name: "www", Type: "A", Data: "198.51.100.1"},
-		{Name: "mail", Type: "MX", Data: "10 mail.example.com."},
+		{Name: "www", Type: "A", Data: "195.230.64.13"},
+		{Name: "mail", Type: "MX", Data: "10 mail.client.ru."},
+		{Name: "cdn", Type: "A", ConfigRef: &Identifier{ID: 12}},
 		{
 			Name: "_acme-challenge.example.com",
 			Type: "TXT",
@@ -92,5 +99,12 @@ func TestClient_UpdateDNSZone(t *testing.T) {
 	updated, err := client.UpdateDNSZone(t.Context(), 1, DNSZoneUpdate{Records: records})
 	require.NoError(t, err)
 
-	assert.Equal(t, records, updated.Records)
+	expected := []DNSRecord{
+		{Name: "www", Type: "A", Data: "195.230.64.13"},
+		{Name: "mail", Type: "MX", Data: "10 mail.client.ru."},
+		{Name: "cdn", Type: "A", Data: "", ConfigRef: &Identifier{ID: 12}},
+		{Name: "_acme-challenge.example.com", Type: "TXT", Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"},
+	}
+
+	assert.Equal(t, expected, updated.Records)
 }

@@ -6,12 +6,20 @@
     {
       "name": "www",
       "type": "A",
-      "data": "198.51.100.1"
+      "data": "195.230.64.13"
     },
     {
       "name": "mail",
       "type": "MX",
-      "data": "10 mail.example.com."
+      "data": "10 mail.client.ru."
+    },
+    {
+      "name": "cdn",
+      "type": "A",
+      "configRef": {
+        "id": 12,
+        "link": "https://api.ngenix.net/api/v3/config/12"
+      }
     },
     {
       "name": "_acme-challenge.example.com",

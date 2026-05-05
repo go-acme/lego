@@ -178,5 +178,9 @@ func parseError(req *http.Request, resp *http.Response) error {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
+	if errAPI.Code == 0 {
+		errAPI.Code = resp.StatusCode
+	}
+
 	return errAPI
 }

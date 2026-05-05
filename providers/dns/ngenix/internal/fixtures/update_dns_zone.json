@@ -22,7 +22,7 @@
       }
     },
     {
-      "name": "_acme-challenge.example.com",
+      "name": "_acme-challenge",
       "type": "TXT",
       "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
     }

@@ -91,7 +91,7 @@ func TestClient_UpdateDNSZone(t *testing.T) {
 			{Name: "mail", Type: "MX", Data: "10 mail.client.ru."},
 			{Name: "cdn", Type: "A", ConfigRef: &Identifier{ID: 12}},
 			{
-				Name: "_acme-challenge.example.com",
+				Name: "_acme-challenge",
 				Type: "TXT",
 				Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 			},
@@ -113,7 +113,7 @@ func TestClient_UpdateDNSZone(t *testing.T) {
 			{Name: "www", Type: "A", Data: "195.230.64.13"},
 			{Name: "mail", Type: "MX", Data: "10 mail.client.ru."},
 			{Name: "cdn", Type: "A", Data: "", ConfigRef: &Identifier{ID: 12}},
-			{Name: "_acme-challenge.example.com", Type: "TXT", Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"},
+			{Name: "_acme-challenge", Type: "TXT", Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"},
 		},
 	}
 

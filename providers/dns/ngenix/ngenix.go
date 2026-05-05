@@ -116,7 +116,13 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		Data: info.Value,
 	})
 
-	_, err = d.client.UpdateDNSZone(ctx, zone.ID, internal.DNSZoneUpdate{Records: records})
+	zoneUpdate := internal.DNSZoneUpdate{
+		Records: records,
+		Comment: zone.Comment,
+		DNSSec:  zone.DNSSec,
+	}
+
+	_, err = d.client.UpdateDNSZone(ctx, zone.ID, zoneUpdate)
 	if err != nil {
 		return fmt.Errorf("ngenix: update DNS zone (add): %w", err)
 	}
@@ -148,7 +154,13 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		records = append(records, record)
 	}
 
-	_, err = d.client.UpdateDNSZone(ctx, zone.ID, internal.DNSZoneUpdate{Records: records})
+	zoneUpdate := internal.DNSZoneUpdate{
+		Records: records,
+		Comment: zone.Comment,
+		DNSSec:  zone.DNSSec,
+	}
+
+	_, err = d.client.UpdateDNSZone(ctx, zone.ID, zoneUpdate)
 	if err != nil {
 		return fmt.Errorf("ngenix: update DNS zone (remove): %w", err)
 	}

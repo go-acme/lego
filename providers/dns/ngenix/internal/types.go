@@ -45,6 +45,7 @@ type Identifier struct {
 type DNSZoneUpdate struct {
 	Records []DNSRecord `json:"records"`
 	Comment string      `json:"comment,omitempty"`
+	DNSSec  *DNSSec     `json:"dnssec,omitempty"`
 }
 
 // DNSRecord represents a DNS record.

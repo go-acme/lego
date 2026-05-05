@@ -3,6 +3,7 @@ package log
 import (
 	"log/slog"
 	"strings"
+	"time"
 )
 
 func ErrorAttr(err error) slog.Attr {
@@ -19,4 +20,8 @@ func DomainsAttr(v []string) slog.Attr {
 
 func CertNameAttr(v string) slog.Attr {
 	return slog.String("cert-name", v)
+}
+
+func DurationAttr(key string, v time.Duration) slog.Attr {
+	return slog.Any(key, FormattableDuration(v))
 }

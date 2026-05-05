@@ -163,7 +163,9 @@ func validate(ctx context.Context, core *api.Core, domain string, chlg acme.Chal
 
 	return wait.Retry(ctx, operation,
 		backoff.WithBackOff(bo),
-		backoff.WithMaxElapsedTime(100*retryAfter))
+		backoff.WithMaxElapsedTime(100*retryAfter),
+		backoff.WithNotify(wait.SimpleNotify("Validation retrying.")),
+	)
 }
 
 func checkChallengeStatus(chlng acme.ExtendedChallenge) (bool, error) {

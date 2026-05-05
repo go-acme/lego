@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
+	"github.com/go-acme/lego/v5/log"
 )
 
 // For polls the given function 'f', once every 'interval', up to 'timeout'.
@@ -32,6 +33,8 @@ func For(timeout, interval time.Duration, f func() (bool, error)) error {
 		}
 
 		if err != nil {
+			log.Debug("Waiting for condition failed.", log.ErrorAttr(err))
+
 			lastErr = err
 		}
 
@@ -47,4 +50,10 @@ func Retry(ctx context.Context, operation func() error, opts ...backoff.RetryOpt
 	}, opts...)
 
 	return err
+}
+
+func SimpleNotify(message string) backoff.Notify {
+	return func(err error, duration time.Duration) {
+		log.Debug(message, log.ErrorAttr(err), log.DurationAttr("duration", duration))
+	}
 }

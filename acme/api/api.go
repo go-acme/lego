@@ -16,7 +16,7 @@ import (
 	"github.com/go-acme/lego/v5/acme/api/internal/nonces"
 	"github.com/go-acme/lego/v5/acme/api/internal/secure"
 	"github.com/go-acme/lego/v5/acme/api/internal/sender"
-	"github.com/go-acme/lego/v5/log"
+	"github.com/go-acme/lego/v5/internal/wait"
 )
 
 type service struct {
@@ -143,14 +143,10 @@ func (a *Core) retrievablePost(ctx context.Context, uri string, content []byte, 
 		return resp, nil
 	}
 
-	notify := func(err error, duration time.Duration) {
-		log.Debug("Retry.", log.ErrorAttr(err))
-	}
-
 	return backoff.Retry(ctx, operation,
 		backoff.WithBackOff(bo),
 		backoff.WithMaxElapsedTime(20*time.Second),
-		backoff.WithNotify(notify))
+		backoff.WithNotify(wait.SimpleNotify("Retry.")))
 }
 
 func (a *Core) signedPost(ctx context.Context, uri string, content []byte, response any) (*http.Response, error) {

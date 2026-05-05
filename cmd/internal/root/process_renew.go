@@ -62,10 +62,7 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 	// This is just meant to be informal for the user.
 	log.Info("Trying renewal.",
 		log.CertNameAttr(certID),
-		slog.Any(
-			"time-remaining",
-			log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC())),
-		),
+		log.DurationAttr("time-remaining", cert.NotAfter.Sub(time.Now().UTC())),
 	)
 
 	request := newObtainRequest(certConfig, renewalDomains)
@@ -149,10 +146,7 @@ func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certCon
 	// This is just meant to be informal for the user.
 	log.Info("Trying renewal.",
 		log.CertNameAttr(certID),
-		slog.Any(
-			"time-remaining",
-			log.FormattableDuration(cert.NotAfter.Sub(time.Now().UTC())),
-		),
+		log.DurationAttr("time-remaining", cert.NotAfter.Sub(time.Now().UTC())),
 	)
 
 	request := newObtainForCSRRequest(certConfig, csr)

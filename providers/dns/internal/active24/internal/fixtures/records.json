@@ -23,6 +23,13 @@
       "priority": 1,
       "port": 443,
       "weight": 50
+    },
+    {
+      "id": 14,
+      "type": "TXT",
+      "name": "_acme-challenge.example.com",
+      "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "ttl": 120
     }
   ]
 }

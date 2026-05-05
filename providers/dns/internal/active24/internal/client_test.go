@@ -21,11 +21,12 @@ func mockBuilder() *servermock.Builder[*Client] {
 			}
 
 			client.HTTPClient = server.Client()
-			client.baseURL, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().
+			WithJSONHeaders().
 			WithRegexp("Authorization", `Basic .+`).
 			WithRegexp("Date", `\d+-\d+-\d+T\d{2}:\d{2}:\d{2}.*`).
 			With("Accept-Language", "en_us"))
@@ -34,7 +35,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_GetServices(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/user/self/service",
-			servermock.ResponseFromFixture("services.json")).
+			servermock.ResponseFromFixture("services.json"),
+		).
 		Build(t)
 
 	services, err := client.GetServices(t.Context())
@@ -59,6 +61,15 @@ func TestClient_GetServices(t *testing.T) {
 			ExpireTime:  1431702371,
 			Price:       55.2,
 		},
+		{
+			ID:          3333,
+			ServiceName: "domain",
+			Status:      "active",
+			Name:        "example.com",
+			CreateTime:  1374357600,
+			ExpireTime:  1405914526,
+			Price:       12.3,
+		},
 	}
 
 	assert.Equal(t, expected, services)
@@ -68,7 +79,8 @@ func TestClient_GetServices_errors(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/user/self/service",
 			servermock.ResponseFromFixture("error_v1.json").
-				WithStatusCode(http.StatusUnauthorized)).
+				WithStatusCode(http.StatusUnauthorized),
+		).
 		Build(t)
 
 	_, err := client.GetServices(t.Context())
@@ -78,7 +90,8 @@ func TestClient_GetServices_errors(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v2/service/aaa/dns/record",
-			servermock.ResponseFromFixture("records.json")).
+			servermock.ResponseFromFixture("records.json"),
+		).
 		Build(t)
 
 	filter := RecordFilter{
@@ -90,15 +103,16 @@ func TestClient_GetRecords(t *testing.T) {
 	records, err := client.GetRecords(t.Context(), "aaa", filter)
 	require.NoError(t, err)
 
-	expected := []Record{{
-		ID:       13,
-		Name:     "string",
-		Content:  "string",
-		TTL:      120,
-		Priority: 1,
-		Port:     443,
-		Weight:   50,
-	}}
+	expected := []Record{
+		{ID: 13, Name: "string", Content: "string", TTL: 120, Priority: 1, Port: 443, Weight: 50},
+		{
+			ID:      14,
+			Type:    "TXT",
+			Name:    "_acme-challenge.example.com",
+			Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+			TTL:     120,
+		},
+	}
 
 	assert.Equal(t, expected, records)
 }
@@ -107,7 +121,8 @@ func TestClient_GetRecords_errors(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v2/service/aaa/dns/record",
 			servermock.ResponseFromFixture("error_403.json").
-				WithStatusCode(http.StatusForbidden)).
+				WithStatusCode(http.StatusForbidden),
+		).
 		Build(t)
 
 	filter := RecordFilter{
@@ -124,7 +139,8 @@ func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /v2/service/aaa/dns/record",
 			servermock.Noop().
-				WithStatusCode(http.StatusNoContent)).
+				WithStatusCode(http.StatusNoContent),
+		).
 		Build(t)
 
 	err := client.CreateRecord(t.Context(), "aaa", Record{})
@@ -135,7 +151,8 @@ func TestClient_CreateRecord_errors(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /v2/service/aaa/dns/record",
 			servermock.ResponseFromFixture("error_403.json").
-				WithStatusCode(http.StatusForbidden)).
+				WithStatusCode(http.StatusForbidden),
+		).
 		Build(t)
 
 	err := client.CreateRecord(t.Context(), "aaa", Record{})
@@ -146,7 +163,8 @@ func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v2/service/aaa/dns/record/123",
 			servermock.Noop().
-				WithStatusCode(http.StatusNoContent)).
+				WithStatusCode(http.StatusNoContent),
+		).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "aaa", "123")
@@ -157,7 +175,8 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v2/service/aaa/dns/record/123",
 			servermock.ResponseFromFixture("error_403.json").
-				WithStatusCode(http.StatusForbidden)).
+				WithStatusCode(http.StatusForbidden),
+		).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "aaa", "123")

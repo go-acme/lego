@@ -24,7 +24,7 @@ type Client struct {
 	apiKey string
 	secret string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -39,7 +39,7 @@ func NewClient(baseAPIDomain, apiKey, secret string) (*Client, error) {
 	return &Client{
 		apiKey:     apiKey,
 		secret:     secret,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
@@ -47,7 +47,7 @@ func NewClient(baseAPIDomain, apiKey, secret string) (*Client, error) {
 // GetServices lists of all services.
 // https://rest.active24.cz/docs/v1.service#services
 func (c *Client) GetServices(ctx context.Context) ([]Service, error) {
-	endpoint := c.baseURL.JoinPath("v1", "user", "self", "service")
+	endpoint := c.BaseURL.JoinPath("v1", "user", "self", "service")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -67,7 +67,7 @@ func (c *Client) GetServices(ctx context.Context) ([]Service, error) {
 // GetRecords lists of DNS records.
 // https://rest.active24.cz/v2/docs#/DNS/rest.v2.dns.record_f94908d4e0e48489468498fce87cb90b
 func (c *Client) GetRecords(ctx context.Context, service string, filter RecordFilter) ([]Record, error) {
-	endpoint := c.baseURL.JoinPath("v2", "service", service, "dns", "record")
+	endpoint := c.BaseURL.JoinPath("v2", "service", service, "dns", "record")
 
 	encodedFilter, err := json.Marshal(filter)
 	if err != nil {
@@ -95,7 +95,7 @@ func (c *Client) GetRecords(ctx context.Context, service string, filter RecordFi
 // CreateRecord creates a new DNS record.
 // https://rest.active24.cz/v2/docs#/DNS/rest.v2.dns.create-record_6773d572235be9a72646bf6c54863573
 func (c *Client) CreateRecord(ctx context.Context, service string, record Record) error {
-	endpoint := c.baseURL.JoinPath("v2", "service", service, "dns", "record")
+	endpoint := c.BaseURL.JoinPath("v2", "service", service, "dns", "record")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
@@ -108,7 +108,7 @@ func (c *Client) CreateRecord(ctx context.Context, service string, record Record
 // DeleteRecord deletes a DNS record.
 // https://rest.active24.cz/v2/docs#/DNS/rest.v2.dns.delete-record_fc6603c14848e547f8d0b967842f0a2c
 func (c *Client) DeleteRecord(ctx context.Context, service, recordID string) error {
-	endpoint := c.baseURL.JoinPath("v2", "service", service, "dns", "record", recordID)
+	endpoint := c.BaseURL.JoinPath("v2", "service", service, "dns", "record", recordID)
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

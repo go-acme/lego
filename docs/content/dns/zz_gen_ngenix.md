@@ -52,8 +52,8 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `NGENIX_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
-| `NGENIX_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
-| `NGENIX_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
+| `NGENIX_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 20) |
+| `NGENIX_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 600) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

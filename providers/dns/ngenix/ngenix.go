@@ -114,6 +114,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	if err != nil {
 		return fmt.Errorf("ngenix: %w", err)
 	}
+
 	records := append(zone.Records, internal.DNSRecord{
 		Name: subDomain,
 		Type: "TXT",

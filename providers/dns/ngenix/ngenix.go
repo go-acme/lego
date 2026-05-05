@@ -20,7 +20,7 @@ const (
 	envNamespace = "NGENIX_"
 
 	EnvUsername   = envNamespace + "USERNAME"
-	EnvPassword   = envNamespace + "PASSWORD"
+	EnvToken      = envNamespace + "TOKEN"
 	EnvCustomerID = envNamespace + "CUSTOMER_ID"
 
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -33,7 +33,7 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Username   string
-	Password   string
+	Token      string
 	CustomerID string
 
 	PropagationTimeout time.Duration
@@ -60,14 +60,14 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Ngenix.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUsername, EnvPassword, EnvCustomerID)
+	values, err := env.Get(EnvUsername, EnvToken, EnvCustomerID)
 	if err != nil {
 		return nil, fmt.Errorf("ngenix: %w", err)
 	}
 
 	config := NewDefaultConfig()
 	config.Username = values[EnvUsername]
-	config.Password = values[EnvPassword]
+	config.Token = values[EnvToken]
 	config.CustomerID = values[EnvCustomerID]
 
 	return NewDNSProviderConfig(config)
@@ -79,7 +79,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("ngenix: the configuration of the DNS provider is nil")
 	}
 
-	client, err := internal.NewClient(config.Username, config.Password, config.CustomerID)
+	client, err := internal.NewClient(config.Username, config.Token, config.CustomerID)
 	if err != nil {
 		return nil, fmt.Errorf("ngenix: %w", err)
 	}

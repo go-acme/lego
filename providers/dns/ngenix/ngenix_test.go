@@ -14,7 +14,7 @@ const envDomain = envNamespace + "DOMAIN"
 
 var envTest = tester.NewEnvTest(
 	EnvUsername,
-	EnvPassword,
+	EnvToken,
 	EnvCustomerID,
 ).WithDomain(envDomain)
 
@@ -28,7 +28,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "success",
 			envVars: map[string]string{
 				EnvUsername:   "email@example.com",
-				EnvPassword:   "secret",
+				EnvToken:      "secret",
 				EnvCustomerID: "42",
 			},
 		},
@@ -36,25 +36,25 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "missing username",
 			envVars: map[string]string{
 				EnvUsername:   "",
-				EnvPassword:   "secret",
+				EnvToken:      "secret",
 				EnvCustomerID: "42",
 			},
 			expected: "ngenix: some credentials information are missing: NGENIX_USERNAME",
 		},
 		{
-			desc: "missing password",
+			desc: "missing token",
 			envVars: map[string]string{
 				EnvUsername:   "email@example.com",
-				EnvPassword:   "",
+				EnvToken:      "",
 				EnvCustomerID: "42",
 			},
-			expected: "ngenix: some credentials information are missing: NGENIX_PASSWORD",
+			expected: "ngenix: some credentials information are missing: NGENIX_TOKEN",
 		},
 		{
 			desc: "missing customer ID",
 			envVars: map[string]string{
 				EnvUsername:   "email@example.com",
-				EnvPassword:   "secret",
+				EnvToken:      "secret",
 				EnvCustomerID: "",
 			},
 			expected: "ngenix: some credentials information are missing: NGENIX_CUSTOMER_ID",
@@ -62,7 +62,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "ngenix: some credentials information are missing: NGENIX_USERNAME,NGENIX_PASSWORD,NGENIX_CUSTOMER_ID",
+			expected: "ngenix: some credentials information are missing: NGENIX_USERNAME,NGENIX_TOKEN,NGENIX_CUSTOMER_ID",
 		},
 	}
 
@@ -92,32 +92,32 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc       string
 		username   string
-		password   string
+		token      string
 		customerID string
 		expected   string
 	}{
 		{
 			desc:       "success",
 			username:   "email@example.com",
-			password:   "secret",
+			token:      "secret",
 			customerID: "42",
 		},
 		{
 			desc:       "missing username",
-			password:   "secret",
+			token:      "secret",
 			customerID: "42",
 			expected:   "ngenix: credentials missing: username",
 		},
 		{
-			desc:       "missing password",
+			desc:       "missing token",
 			username:   "email@example.com",
 			customerID: "42",
-			expected:   "ngenix: credentials missing: password",
+			expected:   "ngenix: credentials missing: token",
 		},
 		{
 			desc:     "missing customer ID",
 			username: "email@example.com",
-			password: "secret",
+			token:    "secret",
 			expected: "ngenix: credentials missing: customerID",
 		},
 		{
@@ -130,7 +130,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
 			config.Username = test.username
-			config.Password = test.password
+			config.Token = test.token
 			config.CustomerID = test.customerID
 
 			p, err := NewDNSProviderConfig(config)
@@ -180,7 +180,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.Username = "email@example.com"
-			config.Password = "secret"
+			config.Token = "secret"
 			config.CustomerID = "42"
 			config.HTTPClient = server.Client()
 

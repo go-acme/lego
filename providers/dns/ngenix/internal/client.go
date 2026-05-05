@@ -21,7 +21,7 @@ const defaultBaseURL = "https://api.ngenix.net/api/v3"
 // Client the Ngenix API client.
 type Client struct {
 	username   string
-	password   string
+	token      string
 	customerID string
 
 	BaseURL    *url.URL
@@ -29,13 +29,13 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(username, password, customerID string) (*Client, error) {
+func NewClient(username, token, customerID string) (*Client, error) {
 	if username == "" {
 		return nil, errors.New("credentials missing: username")
 	}
 
-	if password == "" {
-		return nil, errors.New("credentials missing: password")
+	if token == "" {
+		return nil, errors.New("credentials missing: token")
 	}
 
 	if customerID == "" {
@@ -46,7 +46,7 @@ func NewClient(username, password, customerID string) (*Client, error) {
 
 	return &Client{
 		username:   username,
-		password:   password,
+		token:      token,
 		customerID: customerID,
 		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
@@ -114,7 +114,7 @@ func (c *Client) UpdateDNSZone(ctx context.Context, zoneID int64, update DNSZone
 func (c *Client) do(req *http.Request, result any) error {
 	useragent.SetHeader(req.Header)
 
-	req.SetBasicAuth(c.username+"/token", c.password)
+	req.SetBasicAuth(c.username+"/token", c.token)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

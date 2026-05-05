@@ -27,7 +27,7 @@ Here is an example bash command using the Ngenix provider:
 
 ```bash
 NGENIX_USERNAME="xxx" \
-NGENIX_PASSWORD="yyy" \
+NGENIX_TOKEN="yyy" \
 NGENIX_CUSTOMER_ID="zzz" \
 lego run --dns ngenix -d '*.example.com' -d example.com
 ```
@@ -40,7 +40,7 @@ lego run --dns ngenix -d '*.example.com' -d example.com
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `NGENIX_CUSTOMER_ID` | Customer ID |
-| `NGENIX_PASSWORD` | User password |
+| `NGENIX_TOKEN` | API token |
 | `NGENIX_USERNAME` | Username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

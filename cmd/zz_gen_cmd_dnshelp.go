@@ -3180,7 +3180,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "NGENIX_CUSTOMER_ID":	Customer ID`)
-		ew.writeln(`	- "NGENIX_PASSWORD":	User password`)
+		ew.writeln(`	- "NGENIX_TOKEN":	API token`)
 		ew.writeln(`	- "NGENIX_USERNAME":	Username`)
 		ew.writeln()
 

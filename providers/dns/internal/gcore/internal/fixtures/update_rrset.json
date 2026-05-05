@@ -1,0 +1,49 @@
+{
+  "name": "sub.example.com",
+  "resource_records": [
+    {
+      "content": [
+        100,
+        1,
+        5061,
+        "example.com"
+      ],
+      "enabled": true,
+      "id": 42,
+      "meta": {
+        "continents": [
+          "europe",
+          "asia"
+        ],
+        "countries": [
+          "us",
+          "gb",
+          "lu"
+        ],
+        "ip": [
+          "192.168.15.150/25",
+          "2003:de:2016::/48"
+        ]
+      }
+    }
+  ],
+  "type": "A",
+  "filter_set_id": 123,
+  "meta": {},
+  "pickers": [
+    {
+      "type": "geodns",
+      "limit": 123,
+      "strict": true
+    }
+  ],
+  "ttl": 123,
+  "updated_at": "2023-11-07T05:31:56Z",
+  "warning": "<string>",
+  "warnings": [
+    {
+      "key": "<string>",
+      "message": "<string>"
+    }
+  ]
+}

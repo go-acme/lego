@@ -1,0 +1,10 @@
+{
+  "ttl": 10,
+  "resource_records": [
+    {
+      "content": [
+        "foo"
+      ]
+    }
+  ]
+}

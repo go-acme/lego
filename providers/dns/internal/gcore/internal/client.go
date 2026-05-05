@@ -23,7 +23,7 @@ const (
 
 const txtRecordType = "TXT"
 
-// Client for DNS API.
+// Client for Gcore API.
 type Client struct {
 	token string
 
@@ -31,7 +31,7 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-// NewClient constructor of Client.
+// NewClient creates a new Client.
 func NewClient(token string) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 
@@ -43,7 +43,7 @@ func NewClient(token string) *Client {
 }
 
 // GetZone gets zone information.
-// https://api.gcore.com/docs/dns#tag/zones/operation/Zone
+// https://gcore.com/docs/api-reference/dns/zones/list-of-zones
 func (c *Client) GetZone(ctx context.Context, name string) (Zone, error) {
 	endpoint := c.BaseURL.JoinPath("v2", "zones", name)
 
@@ -58,7 +58,7 @@ func (c *Client) GetZone(ctx context.Context, name string) (Zone, error) {
 }
 
 // GetRRSet gets RRSet item.
-// https://api.gcore.com/docs/dns#tag/rrsets/operation/RRSet
+// https://gcore.com/docs/api-reference/dns/rrsets/get-rrset
 func (c *Client) GetRRSet(ctx context.Context, zone, name string) (RRSet, error) {
 	endpoint := c.BaseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
@@ -73,7 +73,7 @@ func (c *Client) GetRRSet(ctx context.Context, zone, name string) (RRSet, error)
 }
 
 // DeleteRRSet removes RRSet record.
-// https://api.gcore.com/docs/dns#tag/rrsets/operation/DeleteRRSet
+// https://gcore.com/docs/api-reference/dns/rrsets/delete-rrset
 func (c *Client) DeleteRRSet(ctx context.Context, zone, name string) error {
 	endpoint := c.BaseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
@@ -104,14 +104,14 @@ func (c *Client) AddRRSet(ctx context.Context, zone, recordName, value string, t
 	return c.createRRSet(ctx, zone, recordName, record)
 }
 
-// https://api.gcore.com/docs/dns#tag/rrsets/operation/CreateRRSet
+// https://gcore.com/docs/api-reference/dns/rrsets/create-rrset
 func (c *Client) createRRSet(ctx context.Context, zone, name string, record RRSet) error {
 	endpoint := c.BaseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
 	return c.doRequest(ctx, http.MethodPost, endpoint, record, nil)
 }
 
-// https://api.gcore.com/docs/dns#tag/rrsets/operation/UpdateRRSet
+// https://gcore.com/docs/api-reference/dns/rrsets/update-rrset
 func (c *Client) updateRRSet(ctx context.Context, zone, name string, record RRSet) error {
 	endpoint := c.BaseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 

@@ -110,13 +110,8 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("ngenix: get DNS zone: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zoneView.Name)
-	if err != nil {
-		return fmt.Errorf("ngenix: %w", err)
-	}
-
 	records := append(zone.Records, internal.DNSRecord{
-		Name: subDomain,
+		Name: dns01.UnFqdn(info.EffectiveFQDN),
 		Type: "TXT",
 		Data: info.Value,
 	})
@@ -143,15 +138,10 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("ngenix: get DNS zone: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zoneView.Name)
-	if err != nil {
-		return fmt.Errorf("ngenix: %w", err)
-	}
-
 	var records []internal.DNSRecord
 
 	for _, record := range zone.Records {
-		if record.Type == "TXT" && record.Name == subDomain && record.Data == info.Value {
+		if record.Type == "TXT" && record.Name == dns01.UnFqdn(info.EffectiveFQDN) && record.Data == info.Value {
 			continue
 		}
 

@@ -83,7 +83,7 @@ func TestClient_UpdateDNSZone(t *testing.T) {
 		{Name: "www", Type: "A", Data: "198.51.100.1"},
 		{Name: "mail", Type: "MX", Data: "10 mail.example.com."},
 		{
-			Name: "_acme-challenge",
+			Name: "_acme-challenge.example.com",
 			Type: "TXT",
 			Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 		},

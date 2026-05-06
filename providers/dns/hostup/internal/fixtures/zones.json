@@ -1,0 +1,13 @@
+{
+  "data": [
+    {
+      "id": "zone_01hxa3b4c5d6e7f8g9h0j1k2m3",
+      "name": "example.com",
+      "zoneStatus": "active",
+      "isDnsOnly": false,
+      "kind": "linked"
+    }
+  ],
+  "hasMore": false,
+  "nextCursor": null
+}

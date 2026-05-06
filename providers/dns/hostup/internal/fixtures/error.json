@@ -1,0 +1,17 @@
+{
+  "type": "https://developer.hostup.se/errors/invalid_request",
+  "title": "Invalid request",
+  "status": 400,
+  "detail": "The request body failed validation.",
+  "code": "invalid_request",
+  "instance": "/api/v2/resource",
+  "requestId": "req_01hxa3b4c5d6e7f8g9h0j1k2m3",
+  "timestamp": "2026-04-27T12:34:56.000Z",
+  "errors": [
+    {
+      "pointer": "/items/0/domainName",
+      "detail": "`domainName` is required.",
+      "code": "invalid_request"
+    }
+  ]
+}

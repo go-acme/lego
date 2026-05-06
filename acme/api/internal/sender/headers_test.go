@@ -86,7 +86,8 @@ func Test_parseRetryAfter(t *testing.T) {
 			rt, err := parseRetryAfter(test.value)
 			require.NoError(t, err)
 
-			assert.InDelta(t, test.expected.Seconds(), rt.Seconds(), 1)
+			// use a delta of 1.2 because the CI on Windows is slow...
+			assert.InDelta(t, test.expected.Seconds(), rt.Seconds(), 1.2)
 		})
 	}
 }

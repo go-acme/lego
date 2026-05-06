@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "timestamp": "2026-01-01T00:00:00.000Z",
+  "requestId": "00000000-0000-0000-0000-000000000000",
+  "data": {
+    "record": {
+      "id": "drr_06ezwatrgahtygnvpz8cp995y0",
+      "type": "TXT",
+      "name": "_acme-challenge.example.com",
+      "value": "\"txt-value\"",
+      "ttl": 60,
+      "status": "pending"
+    }
+  }
+}

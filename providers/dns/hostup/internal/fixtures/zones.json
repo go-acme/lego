@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "timestamp": "2026-01-01T00:00:00.000Z",
+  "requestId": "00000000-0000-0000-0000-000000000000",
+  "data": {
+    "zones": [
+      {
+        "server_id": "25",
+        "account_id": "6894",
+        "domain_id": "9149",
+        "domain": "example.com",
+        "displayName": "example.com"
+      },
+      {
+        "server_id": "25",
+        "account_id": "6894",
+        "domain_id": "9150",
+        "domain": "example.org",
+        "displayName": "example.org"
+      }
+    ]
+  }
+}

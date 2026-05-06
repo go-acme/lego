@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
@@ -53,8 +54,9 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	client *internal.Client
 	config *Config
+
+	lazyClient func() (*internal.Client, error)
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for RU Center.
@@ -79,26 +81,28 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("nicru: the configuration of the DNS provider is nil")
 	}
 
-	clientCfg := &internal.OauthConfiguration{
-		OAuth2ClientID: config.ServiceID,
-		OAuth2SecretID: config.Secret,
-		Username:       config.Username,
-		Password:       config.Password,
-	}
-
-	oauthClient, err := internal.NewOauthClient(context.Background(), clientCfg)
+	err := validate(config)
 	if err != nil {
 		return nil, fmt.Errorf("nicru: %w", err)
 	}
 
-	client, err := internal.NewClient(clientdebug.Wrap(oauthClient))
-	if err != nil {
-		return nil, fmt.Errorf("nicru: unable to build API client: %w", err)
-	}
+	lazyClient := sync.OnceValues(func() (*internal.Client, error) {
+		oauthClient, err := internal.NewOauthClient(context.Background(), config.ServiceID, config.Secret, config.Username, config.Password)
+		if err != nil {
+			return nil, err
+		}
+
+		client, err := internal.NewClient(clientdebug.Wrap(oauthClient))
+		if err != nil {
+			return nil, fmt.Errorf("unable to build the API client: %w", err)
+		}
+
+		return client, nil
+	})
 
 	return &DNSProvider{
-		client: client,
-		config: config,
+		config:     config,
+		lazyClient: lazyClient,
 	}, nil
 }
 
@@ -113,7 +117,12 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 
 	authZone = dns01.UnFqdn(authZone)
 
-	zone, err := d.findZone(ctx, authZone)
+	client, err := d.lazyClient()
+	if err != nil {
+		return fmt.Errorf("nicru: %w", err)
+	}
+
+	zone, err := findZone(ctx, client, authZone)
 	if err != nil {
 		return fmt.Errorf("nicru: find zone: %w", err)
 	}
@@ -123,7 +132,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 		return fmt.Errorf("nicru: %w", err)
 	}
 
-	records, err := d.client.GetRecords(ctx, zone.Service, authZone)
+	records, err := client.GetRecords(ctx, zone.Service, authZone)
 	if err != nil {
 		return fmt.Errorf("nicru: get records: %w", err)
 	}
@@ -145,12 +154,12 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 		TXT:  &internal.TXT{String: info.Value},
 	}}
 
-	_, err = d.client.AddRecords(ctx, zone.Service, authZone, rrs)
+	_, err = client.AddRecords(ctx, zone.Service, authZone, rrs)
 	if err != nil {
 		return fmt.Errorf("nicru: add records: %w", err)
 	}
 
-	err = d.client.CommitZone(ctx, zone.Service, authZone)
+	err = client.CommitZone(ctx, zone.Service, authZone)
 	if err != nil {
 		return fmt.Errorf("nicru: commit zone: %w", err)
 	}
@@ -169,7 +178,12 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) er
 
 	authZone = dns01.UnFqdn(authZone)
 
-	zone, err := d.findZone(ctx, authZone)
+	client, err := d.lazyClient()
+	if err != nil {
+		return fmt.Errorf("nicru: %w", err)
+	}
+
+	zone, err := findZone(ctx, client, authZone)
 	if err != nil {
 		return fmt.Errorf("nicru: find zone: %w", err)
 	}
@@ -179,7 +193,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) er
 		return fmt.Errorf("nicru: %w", err)
 	}
 
-	records, err := d.client.GetRecords(ctx, zone.Service, authZone)
+	records, err := client.GetRecords(ctx, zone.Service, authZone)
 	if err != nil {
 		return fmt.Errorf("nicru: get records: %w", err)
 	}
@@ -195,13 +209,13 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) er
 			continue
 		}
 
-		err = d.client.DeleteRecord(ctx, zone.Service, authZone, record.ID)
+		err = client.DeleteRecord(ctx, zone.Service, authZone, record.ID)
 		if err != nil {
 			return fmt.Errorf("nicru: delete record: %w", err)
 		}
 	}
 
-	err = d.client.CommitZone(ctx, zone.Service, authZone)
+	err = client.CommitZone(ctx, zone.Service, authZone)
 	if err != nil {
 		return fmt.Errorf("nicru: commit zone: %w", err)
 	}
@@ -215,8 +229,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*internal.Zone, error) {
-	zones, err := d.client.ListZones(ctx)
+func findZone(ctx context.Context, client *internal.Client, authZone string) (*internal.Zone, error) {
+	zones, err := client.ListZones(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch dns zones: %w", err)
 	}
@@ -232,4 +246,26 @@ func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*internal.
 	}
 
 	return nil, fmt.Errorf("zone not found for %s", authZone)
+}
+
+func validate(config *Config) error {
+	msg := " is missing in credentials information"
+
+	if config.Username == "" {
+		return errors.New("username" + msg)
+	}
+
+	if config.Password == "" {
+		return errors.New("password" + msg)
+	}
+
+	if config.ServiceID == "" {
+		return errors.New("serviceID" + msg)
+	}
+
+	if config.Secret == "" {
+		return errors.New("secret" + msg)
+	}
+
+	return nil
 }

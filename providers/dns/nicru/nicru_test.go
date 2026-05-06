@@ -32,7 +32,6 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvUsername:  fakeUsername,
 				EnvPassword:  fakePassword,
 			},
-			expected: "nicru: failed to create oauth2 token: oauth2: \"unauthorized_client\"",
 		},
 		{
 			desc: "missing serviceID",
@@ -107,7 +106,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				Username:  fakeUsername,
 				Password:  fakePassword,
 			},
-			expected: "nicru: failed to create oauth2 token: oauth2: \"unauthorized_client\"",
 		},
 		{
 			desc:     "nil config",

@@ -14,8 +14,6 @@ import (
 	"github.com/go-acme/lego/v5/internal/useragent"
 )
 
-const defaultBaseURL = "https://dcp.c.artfiles.de/api/"
-
 // Client the ArtFiles API client.
 type Client struct {
 	username string
@@ -26,12 +24,15 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(username, password string) (*Client, error) {
+func NewClient(username, password, serverName string) (*Client, error) {
 	if username == "" || password == "" {
 		return nil, errors.New("credentials missing")
 	}
 
-	baseURL, _ := url.Parse(defaultBaseURL)
+	baseURL, err := url.Parse(getServerURL(serverName))
+	if err != nil {
+		return nil, fmt.Errorf("parse server URL: %w", err)
+	}
 
 	return &Client{
 		username:   username,
@@ -130,4 +131,12 @@ func (c *Client) do(req *http.Request) ([]byte, error) {
 	}
 
 	return raw, nil
+}
+
+func getServerURL(serverName string) string {
+	if serverName == "" {
+		serverName = "dcp"
+	}
+
+	return fmt.Sprintf("https://%s.c.artfiles.de/api/", serverName)
 }

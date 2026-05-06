@@ -18,8 +18,8 @@
       {
         "id": "123",
         "accountId": "456",
-        "status": "s",
-        "name": "n",
+        "status": "active",
+        "name": "example.com",
         "nameUnicode": "u",
         "masterIp": "m",
         "type": "t",

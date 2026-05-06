@@ -3,8 +3,8 @@
   "zoneConfig": {
     "id": "123",
     "accountId": "456",
-    "status": "s",
-    "name": "n",
+    "status": "active",
+    "name": "example.com",
     "nameUnicode": "u",
     "masterIp": "m",
     "type": "t",
@@ -29,7 +29,7 @@
     {
       "name": "_acme-challenge.example.com",
       "type": "TXT",
-      "content": "\"txt\""
+      "content": "\"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY\""
     }
   ]
 }

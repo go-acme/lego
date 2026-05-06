@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
@@ -32,9 +31,6 @@ type Config struct {
 type DNSProvider struct {
 	config *Config
 	client *internal.Client
-
-	recordIDs   map[string]string
-	recordIDsMu sync.Mutex
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for hosting.de.
@@ -60,9 +56,8 @@ func NewDNSProviderConfig(config *Config, baseURL string) (*DNSProvider, error) 
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{
-		config:    config,
-		client:    client,
-		recordIDs: make(map[string]string),
+		config: config,
+		client: client,
 	}, nil
 }
 
@@ -114,17 +109,11 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	for _, record := range response.Records {
 		if record.Name == dns01.UnFqdn(info.EffectiveFQDN) && record.Content == fmt.Sprintf(`%q`, info.Value) {
-			d.recordIDsMu.Lock()
-			d.recordIDs[info.EffectiveFQDN] = record.ID
-			d.recordIDsMu.Unlock()
+			return nil
 		}
 	}
 
-	if d.recordIDs[info.EffectiveFQDN] == "" {
-		return fmt.Errorf("error getting ID of just created record, for domain %s", domain)
-	}
-
-	return nil
+	return fmt.Errorf("error getting ID of just created record, for domain %s", domain)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
@@ -165,11 +154,6 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	if err != nil {
 		return err
 	}
-
-	// Delete record ID from map
-	d.recordIDsMu.Lock()
-	delete(d.recordIDs, info.EffectiveFQDN)
-	d.recordIDsMu.Unlock()
 
 	return nil
 }

@@ -1,10 +1,14 @@
 package hostup
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v5/internal/tester"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -85,6 +89,68 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			}
 		})
 	}
+}
+
+func mockProvider() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.APIKey = "secret"
+			config.HTTPClient = server.Client()
+
+			p, err := NewDNSProviderConfig(config)
+			if err != nil {
+				return nil, err
+			}
+
+			p.client.BaseURL, _ = url.Parse(server.URL)
+
+			return p, nil
+		},
+		servermock.CheckHeader().
+			WithJSONHeaders().
+			WithAuthorization("Bearer secret"))
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider := mockProvider().
+		Route("GET /dns/zones",
+			servermock.ResponseFromInternal("zones.json")).
+		Route("POST /dns/zones/9149/records",
+			servermock.ResponseFromInternal("record.json").
+				WithStatusCode(http.StatusCreated)).
+		Build(t)
+
+	err := provider.Present(t.Context(), "example.com", "token", "123d==")
+	require.NoError(t, err)
+
+	provider.recordsMu.Lock()
+	ref, ok := provider.records["token"]
+	provider.recordsMu.Unlock()
+
+	require.True(t, ok)
+	require.Equal(t, "9149", ref.ZoneID)
+	require.Equal(t, "drr_06ezwatrgahtygnvpz8cp995y0", ref.RecordID)
+}
+
+func TestDNSProvider_CleanUp(t *testing.T) {
+	provider := mockProvider().
+		Route("DELETE /dns/zones/9149/records/drr_06ezwatrgahtygnvpz8cp995y0",
+			servermock.Noop().WithStatusCode(http.StatusNoContent)).
+		Build(t)
+
+	provider.recordsMu.Lock()
+	provider.records["token"] = recordRef{ZoneID: "9149", RecordID: "drr_06ezwatrgahtygnvpz8cp995y0"}
+	provider.recordsMu.Unlock()
+
+	err := provider.CleanUp(t.Context(), "example.com", "token", "123d==")
+	require.NoError(t, err)
+
+	provider.recordsMu.Lock()
+	_, ok := provider.records["token"]
+	provider.recordsMu.Unlock()
+
+	require.False(t, ok)
 }
 
 func TestLivePresent(t *testing.T) {

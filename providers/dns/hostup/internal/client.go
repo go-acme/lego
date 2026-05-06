@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/internal/errutils"
+	"github.com/go-acme/lego/v5/internal/useragent"
 	"golang.org/x/oauth2"
 )
 
@@ -18,8 +19,8 @@ const defaultBaseURL = "https://cloud.hostup.se/api"
 
 // Client a HostUp client.
 type Client struct {
-	baseURL    *url.URL
-	httpClient *http.Client
+	BaseURL    *url.URL
+	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
@@ -30,13 +31,13 @@ func NewClient(hc *http.Client) *Client {
 		hc = &http.Client{Timeout: 10 * time.Second}
 	}
 
-	return &Client{baseURL: baseURL, httpClient: hc}
+	return &Client{BaseURL: baseURL, HTTPClient: hc}
 }
 
 // GetZones returns the zones available to the API key.
 // https://hostup.se/en/support/api-autentisering/
 func (c *Client) GetZones(ctx context.Context) ([]Zone, error) {
-	endpoint := c.baseURL.JoinPath("dns", "zones")
+	endpoint := c.BaseURL.JoinPath("dns", "zones")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -55,7 +56,7 @@ func (c *Client) GetZones(ctx context.Context) ([]Zone, error) {
 
 // AddRecord creates a new record in the given zone.
 func (c *Client) AddRecord(ctx context.Context, zoneID string, record Record) (*Record, error) {
-	endpoint := c.baseURL.JoinPath("dns", "zones", zoneID, "records")
+	endpoint := c.BaseURL.JoinPath("dns", "zones", zoneID, "records")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
@@ -74,7 +75,7 @@ func (c *Client) AddRecord(ctx context.Context, zoneID string, record Record) (*
 
 // DeleteRecord deletes a record by ID in the given zone.
 func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID string) error {
-	endpoint := c.baseURL.JoinPath("dns", "zones", zoneID, "records", recordID)
+	endpoint := c.BaseURL.JoinPath("dns", "zones", zoneID, "records", recordID)
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
@@ -85,7 +86,9 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID string) erro
 }
 
 func (c *Client) do(req *http.Request, result any) error {
-	resp, errD := c.httpClient.Do(req)
+	useragent.SetHeader(req.Header)
+
+	resp, errD := c.HTTPClient.Do(req)
 	if errD != nil {
 		return errutils.NewHTTPDoError(req, errD)
 	}

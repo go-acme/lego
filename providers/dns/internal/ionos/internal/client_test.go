@@ -25,23 +25,24 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders(),
-		servermock.CheckHeader().With(APIKeyHeader, "secret"))
+		servermock.CheckHeader().With(APIKeyHeader, "secret"),
+	)
 }
 
 func TestClient_ListZones(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/zones",
-			servermock.ResponseFromFixture("list_zones.json")).
+			servermock.ResponseFromFixture("list_zones.json"),
+		).
 		Build(t)
 
 	zones, err := client.ListZones(t.Context())
 	require.NoError(t, err)
 
-	expected := []Zone{{
-		ID:   "11af3414-ebba-11e9-8df5-66fbe8a334b4",
-		Name: "test.com",
-		Type: "NATIVE",
-	}}
+	expected := []Zone{
+		{ID: "11af3414-ebba-11e9-8df5-66fbe8a334b4", Name: "test.com", Type: "NATIVE"},
+		{ID: "f6821d2f-2ff3-4762-99bd-711733624a77", Name: "example.com", Type: "NATIVE"},
+	}
 
 	assert.Equal(t, expected, zones)
 }
@@ -50,7 +51,8 @@ func TestClient_ListZones_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/zones",
 			servermock.ResponseFromFixture("list_zones_error.json").
-				WithStatusCode(http.StatusUnauthorized)).
+				WithStatusCode(http.StatusUnauthorized),
+		).
 		Build(t)
 
 	zones, err := client.ListZones(t.Context())
@@ -66,14 +68,15 @@ func TestClient_ListZones_error(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/zones/azone01",
-			servermock.ResponseFromFixture("get_records.json")).
+			servermock.ResponseFromFixture("get_records.json"),
+		).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "azone01", nil)
 	require.NoError(t, err)
 
 	expected := []Record{{
-		ID:      "22af3414-abbe-9e11-5df5-66fbe8e334b4",
+		ID:      "a4c09921-c677-44ee-bba8-ddbc3b5d0051",
 		Name:    "string",
 		Content: "string",
 		Type:    "A",
@@ -86,7 +89,8 @@ func TestClient_GetRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v1/zones/azone01",
 			servermock.ResponseFromFixture("get_records_error.json").
-				WithStatusCode(http.StatusUnauthorized)).
+				WithStatusCode(http.StatusUnauthorized),
+		).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "azone01", nil)
@@ -101,7 +105,9 @@ func TestClient_GetRecords_error(t *testing.T) {
 
 func TestClient_RemoveRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /v1/zones/azone01/records/arecord01", nil).
+		Route("DELETE /v1/zones/azone01/records/arecord01",
+			servermock.Noop(),
+		).
 		Build(t)
 
 	err := client.RemoveRecord(t.Context(), "azone01", "arecord01")
@@ -112,7 +118,8 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v1/zones/azone01/records/arecord01",
 			servermock.ResponseFromFixture("remove_record_error.json").
-				WithStatusCode(http.StatusInternalServerError)).
+				WithStatusCode(http.StatusInternalServerError),
+		).
 		Build(t)
 
 	err := client.RemoveRecord(t.Context(), "azone01", "arecord01")
@@ -125,15 +132,26 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 
 func TestClient_ReplaceRecords(t *testing.T) {
 	client := mockBuilder().
-		Route("PATCH /v1/zones/azone01", nil).
+		Route("PATCH /v1/zones/azone01",
+			servermock.Noop(),
+			servermock.CheckRequestJSONBodyFromFixture("replace_records-request.json"),
+		).
 		Build(t)
 
-	records := []Record{{
-		ID:      "22af3414-abbe-9e11-5df5-66fbe8e334b4",
-		Name:    "string",
-		Content: "string",
-		Type:    "A",
-	}}
+	records := []Record{
+		{
+			ID:      "a4c09921-c677-44ee-bba8-ddbc3b5d0051",
+			Name:    "string",
+			Content: "string",
+			Type:    "A",
+		},
+		{
+			Name:    "_acme-challenge.example.com",
+			Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+			Type:    "TXT",
+			TTL:     300,
+		},
+	}
 
 	err := client.ReplaceRecords(t.Context(), "azone01", records)
 	require.NoError(t, err)
@@ -143,7 +161,8 @@ func TestClient_ReplaceRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /v1/zones/azone01",
 			servermock.ResponseFromFixture("replace_records_error.json").
-				WithStatusCode(http.StatusBadRequest)).
+				WithStatusCode(http.StatusBadRequest),
+		).
 		Build(t)
 
 	records := []Record{{

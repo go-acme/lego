@@ -13,6 +13,15 @@
       "ttl": 0,
       "prio": 0,
       "disabled": false
+    },
+    {
+      "id": "830a8feb-fc36-4641-980b-043d4402d34e",
+      "name": "_acme-challenge.example.com",
+      "type": "TXT",
+      "content": "\"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY\"",
+      "changeDate": "string",
+      "ttl": 300,
+      "disabled": false
     }
   ]
 }

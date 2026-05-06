@@ -1,0 +1,14 @@
+[
+  {
+    "id": "a4c09921-c677-44ee-bba8-ddbc3b5d0051",
+    "name": "string",
+    "content": "string",
+    "type": "A"
+  },
+  {
+    "name": "_acme-challenge.example.com",
+    "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "ttl": 300,
+    "type": "TXT"
+  }
+]

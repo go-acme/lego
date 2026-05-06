@@ -78,6 +78,15 @@ func (j *JWS) SignContent(url string, content []byte) (*jose.JSONWebSignature, e
 		return nil, fmt.Errorf("failed to sign content: %w", err)
 	}
 
+	// Verify the signed payload.
+	key, ok := signKey.Key.(jose.JSONWebKey)
+	if ok {
+		_, err = signed.Verify(key.Public())
+		if err != nil {
+			return nil, fmt.Errorf("verify signature: %w", err)
+		}
+	}
+
 	return signed, nil
 }
 

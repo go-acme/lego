@@ -5,16 +5,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/allinkl/internal"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/allinkl/internal"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -119,17 +120,15 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	ctx := context.Background()
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	credential, err := d.identifier.Authentication(ctx, 60, true)
 	if err != nil {
 		return fmt.Errorf("allinkl: authentication: %w", err)
 	}
 
-	ctx = internal.WithContext(ctx, credential)
+	ctxAuth := internal.WithContext(ctx, credential)
 
 	authZone, err := d.findZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -148,7 +147,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		RecordData: info.Value,
 	}
 
-	recordID, err := d.client.AddDNSSettings(ctx, record)
+	recordID, err := d.client.AddDNSSettings(ctxAuth, record)
 	if err != nil {
 		return fmt.Errorf("allinkl: add DNS settings: %w", err)
 	}
@@ -161,17 +160,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	ctx := context.Background()
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	credential, err := d.identifier.Authentication(ctx, 60, true)
 	if err != nil {
 		return fmt.Errorf("allinkl: authentication: %w", err)
 	}
 
-	ctx = internal.WithContext(ctx, credential)
+	ctxAuth := internal.WithContext(ctx, credential)
 
 	// gets the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
@@ -182,7 +179,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("allinkl: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	_, err = d.client.DeleteDNSSettings(ctx, recordID)
+	_, err = d.client.DeleteDNSSettings(ctxAuth, recordID)
 	if err != nil {
 		return fmt.Errorf("allinkl: delete DNS settings: %w", err)
 	}
@@ -198,7 +195,7 @@ func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (string, error)
 	for z := range dns01.DomainsSeq(fqdn) {
 		_, errG := d.client.GetDNSSettings(ctx, z, "")
 		if errG != nil {
-			log.Infof("get DNS settings zone[%q] %v", z, errG)
+			log.Debug("get DNS settings zone", slog.String("zone", z), log.ErrorAttr(errG))
 			continue
 		}
 

@@ -27,10 +27,10 @@ Here is an example bash command using the Hurricane Electric DNS provider:
 
 ```bash
 HURRICANE_TOKENS=example.org:token \
-lego --dns hurricane -d '*.example.com' -d example.com run
+lego run --dns hurricane -d '*.example.com' -d example.com
 
 HURRICANE_TOKENS=my.example.org:token1,demo.example.org:token2 \
-lego --dns hurricane -d my.example.org -d demo.example.org
+lego run --dns hurricane -d my.example.org -d demo.example.org
 ```
 
 

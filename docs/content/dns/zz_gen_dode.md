@@ -27,7 +27,7 @@ Here is an example bash command using the Domain Offensive (do.de) provider:
 
 ```bash
 DODE_TOKEN=xxxxxx \
-lego --dns dode -d '*.example.com' -d example.com run
+lego run --dns dode -d '*.example.com' -d example.com
 ```
 
 

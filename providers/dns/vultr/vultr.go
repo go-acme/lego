@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/vultr/govultr/v3"
 	"golang.org/x/oauth2"
 )
@@ -39,7 +39,6 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
-	HTTPTimeout        time.Duration // TODO(ldez): remove in v5
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -48,7 +47,9 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
 	}
 }
 
@@ -83,7 +84,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	authClient := OAuthStaticAccessToken(config.HTTPClient, config.APIKey)
-	authClient.Timeout = config.HTTPTimeout
 
 	client := govultr.NewClient(clientdebug.Wrap(authClient))
 
@@ -91,10 +91,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the DNS-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	zoneDomain, err := d.getHostedZone(ctx, domain)
@@ -124,10 +122,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	zoneDomain, records, err := d.findTxtRecords(ctx, domain, info.EffectiveFQDN)

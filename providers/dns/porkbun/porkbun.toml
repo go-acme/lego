@@ -8,7 +8,7 @@ Since = "v4.4.0"
 Example = '''
 PORKBUN_SECRET_API_KEY=xxxxxx \
 PORKBUN_API_KEY=yyyyyy \
-lego --dns porkbun -d '*.example.com' -d example.com run
+lego run --dns porkbun -d '*.example.com' -d example.com
 '''
 
 [Configuration]

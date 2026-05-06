@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v4/providers/dns/internal/westcn/internal"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/providers/dns/internal/westcn/internal"
 )
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
@@ -69,10 +69,10 @@ func NewDNSProviderConfig(config *Config, baseURL string) (*DNSProvider, error) 
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("could not find zone for domain %q: %w", domain, err)
 	}
@@ -90,7 +90,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:    d.config.TTL,
 	}
 
-	recordID, err := d.client.AddRecord(context.Background(), record)
+	recordID, err := d.client.AddRecord(ctx, record)
 	if err != nil {
 		return fmt.Errorf("add record: %w", err)
 	}
@@ -103,10 +103,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("could not find zone for domain %q: %w", domain, err)
 	}
@@ -120,7 +120,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err = d.client.DeleteRecord(context.Background(), dns01.UnFqdn(authZone), recordID)
+	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
 	if err != nil {
 		return fmt.Errorf("delete record: %w", err)
 	}

@@ -2,16 +2,17 @@
 package hetzner
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal/hetznerv1"
-	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal/legacy"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/hetzner/internal/hetznerv1"
+	"github.com/go-acme/lego/v5/providers/dns/hetzner/internal/legacy"
 )
 
 // Environment variables names.
@@ -75,7 +76,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return &DNSProvider{provider: provider}, nil
 
 	case foundAPIKey:
-		log.Warnf("APIKey (legacy Hetzner DNS API) is deprecated, please use APIToken (Hetzner Cloud API) instead.")
+		log.Warn("hetzner: APIKey (legacy Hetzner DNS API) is deprecated, please use APIToken (Hetzner Cloud API) instead.")
 
 		provider, err := legacy.NewDNSProvider()
 		if err != nil {
@@ -97,7 +98,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for hetzner.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("hetzner: the configuration of the DNS provider is nil")
+		return nil, errors.New(": the configuration of the DNS provider is nil")
 	}
 
 	switch {
@@ -118,7 +119,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return &DNSProvider{provider: provider}, nil
 
 	case config.APIKey != "":
-		log.Warnf("%s (legacy Hetzner DNS API) is deprecated, please use %s (Hetzner Cloud API) instead.", EnvAPIKey, EnvAPIToken)
+		log.Warnf(log.LazySprintf("%s (legacy Hetzner DNS API) is deprecated, please use %s (Hetzner Cloud API) instead.", EnvAPIKey, EnvAPIToken))
 
 		cfg := &legacy.Config{
 			APIKey:             config.APIKey,
@@ -146,11 +147,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	return d.provider.Present(domain, token, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	return d.provider.Present(ctx, domain, token, keyAuth)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	return d.provider.CleanUp(domain, token, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	return d.provider.CleanUp(ctx, domain, token, keyAuth)
 }

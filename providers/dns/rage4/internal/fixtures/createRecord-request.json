@@ -1,0 +1,8 @@
+{
+  "id": 123,
+  "name": "_acme-challenge.example.com",
+  "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+  "type": "TXT",
+  "ttl": 120,
+  "isActive": true
+}

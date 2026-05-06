@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -165,7 +165,7 @@ func TestDNSProvider_FindZoneAndRecordName(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			zone, recordName, err := provider.findZoneAndRecordName(test.fqdn)
+			zone, recordName, err := provider.findZoneAndRecordName(t.Context(), test.fqdn)
 			require.NoError(t, err)
 			assert.Equal(t, test.expected.zone, zone)
 			assert.Equal(t, test.expected.recordName, recordName)
@@ -183,11 +183,11 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 
 	// Present Twice to handle create / update
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -203,6 +203,6 @@ func TestLiveCleanUp(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

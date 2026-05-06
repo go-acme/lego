@@ -27,7 +27,7 @@ Here is an example bash command using the Derak Cloud provider:
 
 ```bash
 DERAK_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns derak -d '*.example.com' -d example.com run
+lego run --dns derak -d '*.example.com' -d example.com
 ```
 
 

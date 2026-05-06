@@ -9,11 +9,11 @@ import (
 	"slices"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v4/providers/dns/servercow/internal"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/providers/dns/servercow/internal"
 )
 
 // Environment variables names.
@@ -101,15 +101,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := getAuthZone(info.EffectiveFQDN)
+	authZone, err := getAuthZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
-
-	ctx := context.Background()
 
 	records, err := d.client.GetRecords(ctx, authZone)
 	if err != nil {
@@ -160,15 +158,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record previously created.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := getAuthZone(info.EffectiveFQDN)
+	authZone, err := getAuthZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
-
-	ctx := context.Background()
 
 	records, err := d.client.GetRecords(ctx, authZone)
 	if err != nil {
@@ -219,8 +215,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func getAuthZone(domain string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(domain)
+func getAuthZone(ctx context.Context, domain string) (string, error) {
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, domain)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone: %w", err)
 	}

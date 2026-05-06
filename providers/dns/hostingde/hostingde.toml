@@ -6,7 +6,7 @@ Since = "v1.1.0"
 
 Example = '''
 HOSTINGDE_API_KEY=xxxxxxxx \
-lego --dns hostingde -d '*.example.com' -d example.com run
+lego run --dns hostingde -d '*.example.com' -d example.com
 '''
 
 [Configuration]

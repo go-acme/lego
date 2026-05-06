@@ -1,11 +1,12 @@
 package resolver
 
 import (
+	"context"
 	"fmt"
 	"time"
 
-	"github.com/go-acme/lego/v4/acme"
-	"github.com/go-acme/lego/v4/challenge"
+	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/challenge"
 )
 
 type preSolverMock struct {
@@ -18,19 +19,19 @@ type preSolverMock struct {
 	cleanUpCounter  int
 }
 
-func (s *preSolverMock) PreSolve(authorization acme.Authorization) error {
+func (s *preSolverMock) PreSolve(ctx context.Context, authorization acme.Authorization) error {
 	s.preSolveCounter++
 
 	return s.preSolve[authorization.Identifier.Value]
 }
 
-func (s *preSolverMock) Solve(authorization acme.Authorization) error {
+func (s *preSolverMock) Solve(ctx context.Context, authorization acme.Authorization) error {
 	s.solveCounter++
 
 	return s.solve[authorization.Identifier.Value]
 }
 
-func (s *preSolverMock) CleanUp(authorization acme.Authorization) error {
+func (s *preSolverMock) CleanUp(ctx context.Context, authorization acme.Authorization) error {
 	s.cleanUpCounter++
 
 	return s.cleanUp[authorization.Identifier.Value]

@@ -6,7 +6,7 @@ Since = "v4.3.0"
 
 Example = '''
 NJALLA_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --dns njalla -d '*.example.com' -d example.com run
+lego run --dns njalla -d '*.example.com' -d example.com
 '''
 
 [Configuration]

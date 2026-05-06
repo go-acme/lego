@@ -27,7 +27,7 @@ Here is an example bash command using the Metaregistrar provider:
 
 ```bash
 METAREGISTRAR_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns metaregistrar -d '*.example.com' -d example.com run
+lego run --dns metaregistrar -d '*.example.com' -d example.com
 ```
 
 

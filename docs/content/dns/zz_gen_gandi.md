@@ -27,7 +27,7 @@ Here is an example bash command using the Gandi provider:
 
 ```bash
 GANDI_API_KEY=abcdefghijklmnopqrstuvwx \
-lego --dns gandi -d '*.example.com' -d example.com run
+lego run --dns gandi -d '*.example.com' -d example.com
 ```
 
 

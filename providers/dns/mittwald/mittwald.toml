@@ -6,7 +6,7 @@ Since = "v1.48.0"
 
 Example = '''
 MITTWALD_TOKEN=my-token \
-lego --dns mittwald -d '*.example.com' -d example.com run
+lego run --dns mittwald -d '*.example.com' -d example.com
 '''
 
 [Configuration]

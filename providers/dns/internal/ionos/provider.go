@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	ionos "github.com/go-acme/lego/v4/providers/dns/internal/ionos/internal"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	ionos "github.com/go-acme/lego/v5/providers/dns/internal/ionos/internal"
 )
 
 const MinTTL = 300
@@ -74,10 +74,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	ctx := context.Background()
+func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zones, err := d.client.ListZones(ctx)
 	if err != nil {
@@ -117,10 +115,8 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	ctx := context.Background()
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zones, err := d.client.ListZones(ctx)
 	if err != nil {

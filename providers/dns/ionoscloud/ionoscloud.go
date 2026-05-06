@@ -9,10 +9,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v4/providers/dns/ionoscloud/internal"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/providers/dns/ionoscloud/internal"
 )
 
 // Environment variables names.
@@ -26,6 +27,8 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
@@ -98,12 +101,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ionoscloud: could not find zone for domain %q: %w", domain, err)
 	}
@@ -145,8 +146,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	d.recordIDsMu.Lock()
 	zoneID, ok := d.zoneIDs[token]
@@ -164,7 +165,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("ionoscloud: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err := d.client.DeleteRecord(context.Background(), zoneID, recordID)
+	err := d.client.DeleteRecord(ctx, zoneID, recordID)
 	if err != nil {
 		return fmt.Errorf("ionoscloud: delete record: %w", err)
 	}

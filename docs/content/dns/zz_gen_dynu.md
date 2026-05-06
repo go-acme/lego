@@ -27,7 +27,7 @@ Here is an example bash command using the Dynu provider:
 
 ```bash
 DYNU_API_KEY=1234567890abcdefghijklmnopqrstuvwxyz \
-lego --dns dynu -d '*.example.com' -d example.com run
+lego run --dns dynu -d '*.example.com' -d example.com
 ```
 
 

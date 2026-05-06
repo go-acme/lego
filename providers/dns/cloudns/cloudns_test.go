@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,7 +45,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvSubAuthID:    "",
 				EnvAuthPassword: "",
 			},
-			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_ID or CLOUDNS_SUB_AUTH_ID",
+			expected: "cloudns: some credentials information are missing: CLOUDNS_AUTH_ID or CLOUDNS_SUB_AUTH_ID",
 		},
 		{
 			desc: "missing auth-id",
@@ -54,7 +54,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvSubAuthID:    "",
 				EnvAuthPassword: "456",
 			},
-			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_ID or CLOUDNS_SUB_AUTH_ID",
+			expected: "cloudns: some credentials information are missing: CLOUDNS_AUTH_ID or CLOUDNS_SUB_AUTH_ID",
 		},
 		{
 			desc: "missing sub-auth-id",
@@ -63,7 +63,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvSubAuthID:    "",
 				EnvAuthPassword: "456",
 			},
-			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_ID or CLOUDNS_SUB_AUTH_ID",
+			expected: "cloudns: some credentials information are missing: CLOUDNS_AUTH_ID or CLOUDNS_SUB_AUTH_ID",
 		},
 		{
 			desc: "missing auth-password",
@@ -72,7 +72,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvSubAuthID:    "",
 				EnvAuthPassword: "",
 			},
-			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_PASSWORD",
+			expected: "cloudns: some credentials information are missing: CLOUDNS_AUTH_PASSWORD",
 		},
 	}
 
@@ -120,26 +120,26 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "ClouDNS: credentials missing: authID or subAuthID",
+			expected: "cloudns: credentials missing: authID or subAuthID",
 		},
 		{
 			desc:         "missing auth-id",
 			authID:       "",
 			subAuthID:    "",
 			authPassword: "456",
-			expected:     "ClouDNS: credentials missing: authID or subAuthID",
+			expected:     "cloudns: credentials missing: authID or subAuthID",
 		},
 		{
 			desc:         "missing sub-auth-id",
 			authID:       "",
 			subAuthID:    "",
 			authPassword: "456",
-			expected:     "ClouDNS: credentials missing: authID or subAuthID",
+			expected:     "cloudns: credentials missing: authID or subAuthID",
 		},
 		{
 			desc:     "missing auth-password",
 			authID:   "123",
-			expected: "ClouDNS: credentials missing: authPassword",
+			expected: "cloudns: credentials missing: authPassword",
 		},
 	}
 
@@ -174,7 +174,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -190,6 +190,6 @@ func TestLiveCleanUp(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

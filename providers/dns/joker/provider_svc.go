@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v4/providers/dns/joker/internal/svc"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/providers/dns/joker/internal/svc"
 )
 
 var _ challenge.ProviderTimeout = (*svcProvider)(nil)
@@ -60,10 +60,10 @@ func (d *svcProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *svcProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *svcProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("joker: could not find zone for domain %q: %w", domain, err)
 	}
@@ -73,14 +73,19 @@ func (d *svcProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	return d.client.SendRequest(context.Background(), dns01.UnFqdn(zone), subDomain, info.Value)
+	err = d.client.SendRequest(ctx, dns01.UnFqdn(zone), subDomain, info.Value)
+	if err != nil {
+		return fmt.Errorf("joker: send request: %w", err)
+	}
+
+	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *svcProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *svcProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("joker: could not find zone for domain %q: %w", domain, err)
 	}
@@ -90,7 +95,12 @@ func (d *svcProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	return d.client.SendRequest(context.Background(), dns01.UnFqdn(zone), subDomain, "")
+	err = d.client.SendRequest(ctx, dns01.UnFqdn(zone), subDomain, "")
+	if err != nil {
+		return fmt.Errorf("joker: send request: %w", err)
+	}
+
+	return nil
 }
 
 // Sequential All DNS challenges for this provider will be resolved sequentially.

@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -171,7 +171,7 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 			err:      "authentication error",
 		},
 		{
-			desc:     "uknown error",
+			desc:     "unknown error",
 			password: "goodpassword",
 			domain:   "badexample.com",
 			request:  removeRecordNonValidDomain,

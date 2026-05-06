@@ -25,18 +25,30 @@ Solving the DNS-01 challenge using CLI prompt.
 Here is an example bash command using the Manual provider:
 
 ```bash
-lego --dns manual -d '*.example.com' -d example.com run
+lego run --dns manual -d '*.example.com' -d example.com
 ```
 
 
 
+
+
+
+## Additional Configuration
+
+| Environment Variable Name | Description |
+|--------------------------------|-------------|
+| `MANUAL_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `MANUAL_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## Example
 
 To start using the CLI prompt "provider", start lego with `--dns manual`:
 
 ```console
-$ lego --dns manual -d example.com run
+$ lego run --dns manual -d example.com
 ```
 
 What follows are a few log print-outs, interspersed with some prompts, asking for you to do perform some actions:

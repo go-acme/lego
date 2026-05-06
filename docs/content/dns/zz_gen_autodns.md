@@ -28,7 +28,7 @@ Here is an example bash command using the Autodns provider:
 ```bash
 AUTODNS_API_USER=username \
 AUTODNS_API_PASSWORD=supersecretpassword \
-lego --dns autodns -d '*.example.com' -d example.com run
+lego run --dns autodns -d '*.example.com' -d example.com
 ```
 
 

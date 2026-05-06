@@ -6,7 +6,7 @@ Since = "v1.1.0"
 
 Example = '''
 DREAMHOST_API_KEY="YOURAPIKEY" \
-lego --dns dreamhost -d '*.example.com' -d example.com run
+lego run --dns dreamhost -d '*.example.com' -d example.com
 '''
 
 [Configuration]

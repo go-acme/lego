@@ -22,16 +22,6 @@ import (
 	"golang.org/x/crypto/ocsp"
 )
 
-// Constants for all key types we support.
-const (
-	EC256   = KeyType("P256")
-	EC384   = KeyType("P384")
-	RSA2048 = KeyType("2048")
-	RSA3072 = KeyType("3072")
-	RSA4096 = KeyType("4096")
-	RSA8192 = KeyType("8192")
-)
-
 const (
 	// OCSPGood means that the certificate is valid.
 	OCSPGood = ocsp.Good
@@ -48,9 +38,6 @@ var (
 	tlsFeatureExtensionOID = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 24}
 	ocspMustStapleFeature  = []byte{0x30, 0x03, 0x02, 0x01, 0x05}
 )
-
-// KeyType represents the key algo as well as the key size or curve to use.
-type KeyType string
 
 type DERCertificateBytes []byte
 
@@ -89,7 +76,7 @@ func ParsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 // Borrowed from Go standard library, to handle various private key and PEM block types.
 // https://github.com/golang/go/blob/693748e9fa385f1e2c3b91ca9acbb6c0ad2d133d/src/crypto/tls/tls.go#L291-L308
 // https://github.com/golang/go/blob/693748e9fa385f1e2c3b91ca9acbb6c0ad2d133d/src/crypto/tls/tls.go#L238
-func ParsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
+func ParsePEMPrivateKey(key []byte) (crypto.Signer, error) {
 	keyBlockDER, _ := pem.Decode(key)
 	if keyBlockDER == nil {
 		return nil, errors.New("invalid PEM block")
@@ -105,7 +92,11 @@ func ParsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
 
 	if key, err := x509.ParsePKCS8PrivateKey(keyBlockDER.Bytes); err == nil {
 		switch key := key.(type) {
-		case *rsa.PrivateKey, *ecdsa.PrivateKey, ed25519.PrivateKey:
+		case *rsa.PrivateKey:
+			return key, nil
+		case *ecdsa.PrivateKey:
+			return key, nil
+		case ed25519.PrivateKey:
 			return key, nil
 		default:
 			return nil, fmt.Errorf("found unknown private key type in PKCS#8 wrapping: %T", key)
@@ -119,7 +110,7 @@ func ParsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
 	return nil, errors.New("failed to parse private key")
 }
 
-func GeneratePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
+func GeneratePrivateKey(keyType KeyType) (crypto.Signer, error) {
 	switch keyType {
 	case EC256:
 		return ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -138,15 +129,6 @@ func GeneratePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
 	return nil, fmt.Errorf("invalid KeyType: %s", keyType)
 }
 
-// Deprecated: uses [CreateCSR] instead.
-func GenerateCSR(privateKey crypto.PrivateKey, domain string, san []string, mustStaple bool) ([]byte, error) {
-	return CreateCSR(privateKey, CSROptions{
-		Domain:     domain,
-		SAN:        san,
-		MustStaple: mustStaple,
-	})
-}
-
 type CSROptions struct {
 	Domain         string
 	SAN            []string
@@ -154,7 +136,7 @@ type CSROptions struct {
 	EmailAddresses []string
 }
 
-func CreateCSR(privateKey crypto.PrivateKey, opts CSROptions) ([]byte, error) {
+func CreateCSR(privateKey crypto.Signer, opts CSROptions) ([]byte, error) {
 	var (
 		dnsNames    []string
 		ipAddresses []net.IP
@@ -193,11 +175,9 @@ func PEMBlock(data any) *pem.Block {
 	var pemBlock *pem.Block
 
 	switch key := data.(type) {
-	case *ecdsa.PrivateKey:
-		keyBytes, _ := x509.MarshalECPrivateKey(key)
-		pemBlock = &pem.Block{Type: "EC PRIVATE KEY", Bytes: keyBytes}
-	case *rsa.PrivateKey:
-		pemBlock = &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)}
+	case *ecdsa.PrivateKey, *rsa.PrivateKey:
+		keyBytes, _ := x509.MarshalPKCS8PrivateKey(key)
+		pemBlock = &pem.Block{Type: "PRIVATE KEY", Bytes: keyBytes}
 	case *x509.CertificateRequest:
 		pemBlock = &pem.Block{Type: "CERTIFICATE REQUEST", Bytes: key.Raw}
 	case DERCertificateBytes:

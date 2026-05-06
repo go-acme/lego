@@ -28,7 +28,7 @@ Here is an example bash command using the reg.ru provider:
 ```bash
 REGRU_USERNAME=xxxxxx \
 REGRU_PASSWORD=yyyyyy \
-lego --dns regru -d '*.example.com' -d example.com run
+lego run --dns regru -d '*.example.com' -d example.com
 ```
 
 

@@ -2,16 +2,16 @@
 package ns1
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 )
@@ -92,10 +92,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ns1: %w", err)
 	}
@@ -104,8 +104,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// Create a new record
 	if errors.Is(err, rest.ErrRecordMissing) || record == nil {
-		log.Infof("Create a new record for [zone: %s, fqdn: %s, domain: %s]", zone.Zone, info.EffectiveFQDN, domain)
-
 		// Work through a bug in the NS1 API library that causes 400 Input validation failed (Value None for field '<obj>.filters' is not of type ...)
 		// So the `tags` and `blockedTags` parameters should be initialized to empty.
 		record = dns.NewRecord(zone.Zone, dns01.UnFqdn(info.EffectiveFQDN), "TXT", make(map[string]string), make([]string, 0))
@@ -114,34 +112,32 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 		_, err = d.client.Records.Create(record)
 		if err != nil {
-			return fmt.Errorf("ns1: failed to create record [zone: %q, fqdn: %q]: %w", zone.Zone, info.EffectiveFQDN, err)
+			return fmt.Errorf("ns1: create record [zone: %q, fqdn: %q]: %w", zone.Zone, info.EffectiveFQDN, err)
 		}
 
 		return nil
 	}
 
 	if err != nil {
-		return fmt.Errorf("ns1: failed to get the existing record: %w", err)
+		return fmt.Errorf("ns1: get the existing record: %w", err)
 	}
 
 	// Update the existing records
 	record.Answers = append(record.Answers, &dns.Answer{Rdata: []string{info.Value}})
 
-	log.Infof("Update an existing record for [zone: %s, fqdn: %s, domain: %s]", zone.Zone, info.EffectiveFQDN, domain)
-
 	_, err = d.client.Records.Update(record)
 	if err != nil {
-		return fmt.Errorf("ns1: failed to update record [zone: %q, fqdn: %q]: %w", zone.Zone, info.EffectiveFQDN, err)
+		return fmt.Errorf("ns1: update record [zone: %q, fqdn: %q]: %w", zone.Zone, info.EffectiveFQDN, err)
 	}
 
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ns1: %w", err)
 	}
@@ -150,7 +146,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, err = d.client.Records.Delete(zone.Zone, name, "TXT")
 	if err != nil {
-		return fmt.Errorf("ns1: failed to delete record [zone: %q, domain: %q]: %w", zone.Zone, name, err)
+		return fmt.Errorf("ns1: delete record [zone: %q, domain: %q]: %w", zone.Zone, name, err)
 	}
 
 	return nil
@@ -162,8 +158,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) getHostedZone(fqdn string) (*dns.Zone, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+func (d *DNSProvider) getHostedZone(ctx context.Context, fqdn string) (*dns.Zone, error) {
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
@@ -172,7 +168,7 @@ func (d *DNSProvider) getHostedZone(fqdn string) (*dns.Zone, error) {
 
 	zone, _, err := d.client.Zones.Get(authZone, false)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get zone [authZone: %q, fqdn: %q]: %w", authZone, fqdn, err)
+		return nil, fmt.Errorf("get zone [authZone: %q, fqdn: %q]: %w", authZone, fqdn, err)
 	}
 
 	return zone, nil

@@ -1,15 +1,17 @@
 package api
 
 import (
+	"context"
 	"errors"
 
-	"github.com/go-acme/lego/v4/acme"
+	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/acme/api/internal/sender"
 )
 
 type ChallengeService service
 
 // New Creates a challenge.
-func (c *ChallengeService) New(chlgURL string) (acme.ExtendedChallenge, error) {
+func (c *ChallengeService) New(ctx context.Context, chlgURL string) (acme.ExtendedChallenge, error) {
 	if chlgURL == "" {
 		return acme.ExtendedChallenge{}, errors.New("challenge[new]: empty URL")
 	}
@@ -18,32 +20,32 @@ func (c *ChallengeService) New(chlgURL string) (acme.ExtendedChallenge, error) {
 	// We use an empty struct instance as the postJSON payload here to achieve this result.
 	var chlng acme.ExtendedChallenge
 
-	resp, err := c.core.post(chlgURL, struct{}{}, &chlng)
+	resp, err := c.core.post(ctx, chlgURL, struct{}{}, &chlng)
 	if err != nil {
 		return acme.ExtendedChallenge{}, err
 	}
 
-	chlng.AuthorizationURL = getLink(resp.Header, "up")
-	chlng.RetryAfter = getRetryAfter(resp)
+	chlng.AuthorizationURL = sender.GetLink(resp.Header, "up")
+	chlng.RetryAfter = sender.GetRetryAfter(resp)
 
 	return chlng, nil
 }
 
 // Get Gets a challenge.
-func (c *ChallengeService) Get(chlgURL string) (acme.ExtendedChallenge, error) {
+func (c *ChallengeService) Get(ctx context.Context, chlgURL string) (acme.ExtendedChallenge, error) {
 	if chlgURL == "" {
 		return acme.ExtendedChallenge{}, errors.New("challenge[get]: empty URL")
 	}
 
 	var chlng acme.ExtendedChallenge
 
-	resp, err := c.core.postAsGet(chlgURL, &chlng)
+	resp, err := c.core.postAsGet(ctx, chlgURL, &chlng)
 	if err != nil {
 		return acme.ExtendedChallenge{}, err
 	}
 
-	chlng.AuthorizationURL = getLink(resp.Header, "up")
-	chlng.RetryAfter = getRetryAfter(resp)
+	chlng.AuthorizationURL = sender.GetLink(resp.Header, "up")
+	chlng.RetryAfter = sender.GetRetryAfter(resp)
 
 	return chlng, nil
 }

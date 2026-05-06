@@ -27,7 +27,7 @@ func (c *Client) login(ctx context.Context) (string, error) {
 
 	err := c.doRequest(ctx, payload, &responseData)
 	if err != nil {
-		return "", fmt.Errorf("loging error: %w", err)
+		return "", fmt.Errorf("logging error: %w", err)
 	}
 
 	return responseData.APISessionID, nil

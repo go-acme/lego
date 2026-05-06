@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,13 +23,12 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
-			desc: "complete credentials, but login failed",
+			desc: "complete credentials",
 			envVars: map[string]string{
 				EnvTenantID:    "tenant_id",
 				EnvAPIUserID:   "api_user_id",
 				EnvAPIPassword: "api_password",
 			},
-			expected: `conohav3: failed to log in: unexpected status code: [status code: 400] body: {"code": 400, "error": "user does not exist"}`,
 		},
 		{
 			desc: "missing credentials",
@@ -99,8 +98,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		password string
 	}{
 		{
-			desc:     "complete credentials, but login failed",
-			expected: `conohav3: failed to log in: unexpected status code: [status code: 400] body: {"code": 400, "error": "user does not exist"}`,
+			desc:     "complete credentials",
 			tenant:   "tenant_id",
 			userid:   "api_user_id",
 			password: "api_password",
@@ -160,7 +158,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -176,6 +174,6 @@ func TestLiveCleanUp(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

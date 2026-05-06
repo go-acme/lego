@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/acmedns/internal"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/acmedns/internal"
 	"github.com/nrdcg/goacmedns"
 	"github.com/nrdcg/goacmedns/storage"
 )
@@ -113,62 +113,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}, nil
 }
 
-// NewDNSProviderClient creates an ACME-DNS DNSProvider with the given acmeDNSClient and [goacmedns.Storage].
-//
-// Deprecated: use [NewDNSProviderConfig] instead.
-func NewDNSProviderClient(client acmeDNSClient, store goacmedns.Storage) (*DNSProvider, error) {
-	if client == nil {
-		return nil, errors.New("acme-dns: Client must be not nil")
-	}
-
-	if store == nil {
-		return nil, errors.New("acme-dns: Storage must be not nil")
-	}
-
-	return &DNSProvider{
-		config:  NewDefaultConfig(),
-		client:  client,
-		storage: store,
-	}, nil
-}
-
-// ErrCNAMERequired is returned by Present when the Domain indicated had no
-// existing ACME-DNS account in the Storage and additional setup is required.
-// The user must create a CNAME in the DNS zone for Domain that aliases FQDN
-// to Target in order to complete setup for the ACME-DNS account that was created.
-type ErrCNAMERequired struct {
-	// The Domain that is being issued for.
-	Domain string
-	// The alias of the CNAME (left hand DNS label).
-	FQDN string
-	// The RDATA of the CNAME (right hand side, canonical name).
-	Target string
-}
-
-// Error returns a descriptive message for the ErrCNAMERequired instance telling
-// the user that a CNAME needs to be added to the DNS zone of c.Domain before
-// the ACME-DNS hook will work.
-// The CNAME to be created should be of the form: {{ c.FQDN }} 	CNAME	{{ c.Target }}.
-func (e ErrCNAMERequired) Error() string {
-	return fmt.Sprintf("acme-dns: new account created for %q. "+
-		"To complete setup for %q you must provision the following "+
-		"CNAME in your DNS zone and re-run this provider when it is "+
-		"in place:\n"+
-		"%s CNAME %s.",
-		e.Domain, e.Domain, e.FQDN, e.Target)
-}
-
 // Present creates a TXT record to fulfill the DNS-01 challenge.
 // If there is an existing account for the domain in the provider's storage
 // then it will be used to set the challenge response TXT record with the ACME-DNS server and issuance will continue.
 // If there is not an account for the given domain present in the DNSProvider storage
 // one will be created and registered with the ACME DNS server and an ErrCNAMERequired error is returned.
 // This will halt issuance and indicate to the user that a one-time manual setup is required for the domain.
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) error {
 	// Compute the challenge response FQDN and TXT value for the domain based on the keyAuth.
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// Check if credentials were previously saved for this domain.
 	account, err := d.storage.Fetch(ctx, domain)
@@ -191,7 +144,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 // CleanUp removes the record matching the specified parameters. It is not
 // implemented for the ACME-DNS provider.
-func (d *DNSProvider) CleanUp(_, _, _ string) error {
+func (d *DNSProvider) CleanUp(_ context.Context, _, _, _ string) error {
 	// ACME-DNS doesn't support the notion of removing a record.
 	// For users of ACME-DNS it is expected the stale records remain in-place.
 	return nil
@@ -256,4 +209,30 @@ func getStorage(config *Config) (goacmedns.Storage, error) {
 	}
 
 	return st, nil
+}
+
+// ErrCNAMERequired is returned by Present when the Domain indicated had no
+// existing ACME-DNS account in the Storage and additional setup is required.
+// The user must create a CNAME in the DNS zone for Domain that aliases FQDN
+// to Target in order to complete setup for the ACME-DNS account that was created.
+type ErrCNAMERequired struct {
+	// The Domain that is being issued for.
+	Domain string
+	// The alias of the CNAME (left hand DNS label).
+	FQDN string
+	// The RDATA of the CNAME (right hand side, canonical name).
+	Target string
+}
+
+// Error returns a descriptive message for the ErrCNAMERequired instance telling
+// the user that a CNAME needs to be added to the DNS zone of c.Domain before
+// the ACME-DNS hook will work.
+// The CNAME to be created should be of the form: {{ c.FQDN }} 	CNAME	{{ c.Target }}.
+func (e ErrCNAMERequired) Error() string {
+	return fmt.Sprintf("acme-dns: new account created for %q. "+
+		"To complete setup for %q you must provision the following "+
+		"CNAME in your DNS zone and re-run this provider when it is "+
+		"in place:\n"+
+		"%s CNAME %s.",
+		e.Domain, e.Domain, e.FQDN, e.Target)
 }

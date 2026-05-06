@@ -28,7 +28,7 @@ Here is an example bash command using the Domeneshop provider:
 ```bash
 DOMENESHOP_API_TOKEN=<token> \
 DOMENESHOP_API_SECRET=<secret> \
-lego --dns domeneshop -d '*.example.com' -d example.com run
+lego run --dns domeneshop -d '*.example.com' -d example.com
 ```
 
 

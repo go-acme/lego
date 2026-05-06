@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/hurricane/internal"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/hurricane/internal"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -95,10 +95,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present updates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	err := d.client.UpdateTxtRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
+	zone := dns01.UnFqdn(info.EffectiveDomain())
+	fqdn := dns01.UnFqdn(info.EffectiveFQDN)
+
+	err := d.client.UpdateTxtRecord(ctx, zone, fqdn, info.Value)
 	if err != nil {
 		return fmt.Errorf("hurricane: %w", err)
 	}
@@ -107,10 +110,13 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 }
 
 // CleanUp updates the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	err := d.client.UpdateTxtRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), ".")
+	zone := dns01.UnFqdn(info.EffectiveDomain())
+	fqdn := dns01.UnFqdn(info.EffectiveFQDN)
+
+	err := d.client.UpdateTxtRecord(ctx, zone, fqdn, ".")
 	if err != nil {
 		return fmt.Errorf("hurricane: %w", err)
 	}

@@ -1,19 +1,20 @@
 package http01
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"time"
 
-	"github.com/go-acme/lego/v4/acme"
-	"github.com/go-acme/lego/v4/acme/api"
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/acme/api"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/log"
 )
 
 const PathPrefix = "/.well-known/acme-challenge/"
 
-type ValidateFunc func(core *api.Core, domain string, chlng acme.Challenge) error
+type ValidateFunc func(ctx context.Context, core *api.Core, domain string, chlng acme.Challenge) error
 
 type ChallengeOption func(*Challenge) error
 
@@ -51,20 +52,16 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 	for _, opt := range opts {
 		err := opt(chlg)
 		if err != nil {
-			log.Infof("challenge option error: %v", err)
+			log.Warn("http01: Challenge option skipped.", log.ErrorAttr(err))
 		}
 	}
 
 	return chlg
 }
 
-func (c *Challenge) SetProvider(provider challenge.Provider) {
-	c.provider = provider
-}
-
-func (c *Challenge) Solve(authz acme.Authorization) error {
+func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
-	log.Infof("[%s] acme: Trying to solve HTTP-01", domain)
+	log.Info("http01: Trying to solve HTTP-01.", log.DomainAttr(domain))
 
 	chlng, err := challenge.FindChallenge(challenge.HTTP01, authz)
 	if err != nil {
@@ -77,15 +74,15 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 		return err
 	}
 
-	err = c.provider.Present(authz.Identifier.Value, chlng.Token, keyAuth)
+	err = c.provider.Present(ctx, authz.Identifier.Value, chlng.Token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("[%s] acme: error presenting token: %w", domain, err)
+		return fmt.Errorf("[%s] http01: error presenting token: %w", domain, err)
 	}
 
 	defer func() {
-		err := c.provider.CleanUp(authz.Identifier.Value, chlng.Token, keyAuth)
+		err := c.provider.CleanUp(ctx, authz.Identifier.Value, chlng.Token, keyAuth)
 		if err != nil {
-			log.Warnf("[%s] acme: cleaning up failed: %v", domain, err)
+			log.Warn("http01: cleaning up failed.", log.DomainAttr(domain), log.ErrorAttr(err))
 		}
 	}()
 
@@ -95,7 +92,7 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 
 	chlng.KeyAuthorization = keyAuth
 
-	return c.validate(c.core, domain, chlng)
+	return c.validate(ctx, c.core, domain, chlng)
 }
 
 // https://en.wikipedia.org/wiki/Base64#Alphabet

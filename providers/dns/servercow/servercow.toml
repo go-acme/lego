@@ -7,7 +7,7 @@ Since = "v3.4.0"
 Example = '''
 SERVERCOW_USERNAME=xxxxxxxx \
 SERVERCOW_PASSWORD=xxxxxxxx \
-lego --dns servercow -d '*.example.com' -d example.com run
+lego run --dns servercow -d '*.example.com' -d example.com
 '''
 
 [Configuration]

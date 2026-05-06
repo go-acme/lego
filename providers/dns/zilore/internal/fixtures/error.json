@@ -1,0 +1,9 @@
+{
+  "status": "fail",
+  "error": {
+    "code": 3,
+    "message": "Authorization failed",
+    "http_redirect": "/account/billing"
+  },
+  "details": "Payment required"
+}

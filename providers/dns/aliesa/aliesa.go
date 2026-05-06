@@ -12,9 +12,10 @@ import (
 	"github.com/alibabacloud-go/tea/dara"
 	"github.com/aliyun/credentials-go/credentials"
 	esa "github.com/go-acme/esa-20240910/v2/client"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/ptr"
+	"github.com/go-acme/lego/v5/platform/env"
 )
 
 // Environment variables names.
@@ -34,6 +35,8 @@ const (
 )
 
 const defaultRegionID = "cn-hangzhou"
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
@@ -158,10 +161,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	siteID, err := d.getSiteID(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -189,10 +190,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// gets the record's unique ID
 	d.recordIDsMu.Lock()
@@ -226,7 +225,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) getSiteID(ctx context.Context, fqdn string) (int64, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return 0, fmt.Errorf("aliesa: could not find zone for domain %q: %w", fqdn, err)
 	}
@@ -242,10 +241,8 @@ func (d *DNSProvider) getSiteID(ctx context.Context, fqdn string) (int64, error)
 	}
 
 	for f := range dns01.UnFqdnDomainsSeq(fqdn) {
-		domain := dns01.UnFqdn(f)
-
 		for _, site := range lsResp.Body.GetSites() {
-			if ptr.Deref(site.GetSiteName()) == domain {
+			if ptr.Deref(site.GetSiteName()) == f {
 				return ptr.Deref(site.GetSiteId()), nil
 			}
 		}

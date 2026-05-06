@@ -3,7 +3,7 @@ package challenge
 import (
 	"fmt"
 
-	"github.com/go-acme/lego/v4/acme"
+	"github.com/go-acme/lego/v5/acme"
 )
 
 // Type is a string that identifies a particular challenge type and version of ACME challenge.
@@ -17,6 +17,9 @@ const (
 	// DNS01 is the "dns-01" ACME challenge https://www.rfc-editor.org/rfc/rfc8555.html#section-8.4
 	// Note: GetRecord returns a DNS record which will fulfill this challenge.
 	DNS01 = Type("dns-01")
+
+	// DNSPersist01 is the "dns-persist-01" ACME challenge https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist.
+	DNSPersist01 = Type("dns-persist-01")
 
 	// TLSALPN01 is the "tls-alpn-01" ACME challenge https://www.rfc-editor.org/rfc/rfc8737.html
 	TLSALPN01 = Type("tls-alpn-01")

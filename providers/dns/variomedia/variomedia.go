@@ -11,13 +11,12 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/platform/wait"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v4/providers/dns/variomedia/internal"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/wait"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/providers/dns/variomedia/internal"
 )
 
 // Environment variables names.
@@ -115,10 +114,10 @@ func (d *DNSProvider) Sequential() time.Duration {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("variomedia: could not find zone for domain %q: %w", domain, err)
 	}
@@ -127,8 +126,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("variomedia: %w", err)
 	}
-
-	ctx := context.Background()
 
 	record := internal.DNSRecord{
 		RecordType: "TXT",
@@ -156,10 +153,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record previously created.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	ctx := context.Background()
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
@@ -194,8 +189,6 @@ func (d *DNSProvider) waitJob(ctx context.Context, domain, id string) error {
 			if err != nil {
 				return fmt.Errorf("apply change on %s: %w", domain, err)
 			}
-
-			log.Infof("variomedia: [%s] %s: %s %s", domain, result.Data.ID, result.Data.Attributes.JobType, result.Data.Attributes.Status)
 
 			if result.Data.Attributes.Status != "done" {
 				return fmt.Errorf("apply change on %s: status: %s", domain, result.Data.Attributes.Status)

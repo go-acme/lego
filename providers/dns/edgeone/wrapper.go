@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/ptr"
 	teo "github.com/go-acme/tencentedgdeone/v20220901"
 )
 
 func (d *DNSProvider) getHostedZoneID(ctx context.Context, domain string) (*string, error) {
-	authZone, err := dns01.FindZoneByFqdn(domain)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, domain)
 	if err != nil {
 		return nil, fmt.Errorf("could not find zone: %w", err)
 	}

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v13/pkg/edgegrid"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/stretchr/testify/require"
 )
 
@@ -244,7 +244,7 @@ func Test_findZone(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			zone, err := getZone(test.domain)
+			zone, err := getZone(t.Context(), test.domain)
 			require.NoError(t, err)
 			require.Equal(t, test.expected, zone)
 		})

@@ -27,10 +27,10 @@ Here is an example bash command using the dnsHome.de provider:
 
 ```bash
 DNSHOMEDE_CREDENTIALS=example.org:password \
-lego --dns dnshomede -d '*.example.com' -d example.com run
+lego run --dns dnshomede -d '*.example.com' -d example.com
 
 DNSHOMEDE_CREDENTIALS=my.example.org:password1,demo.example.org:password2 \
-lego --dns dnshomede -d my.example.org -d demo.example.org
+lego run --dns dnshomede -d my.example.org -d demo.example.org
 ```
 
 

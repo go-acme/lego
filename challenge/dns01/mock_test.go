@@ -6,10 +6,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:unparam // Keep the name for test readability.
 func fakeNS(name, ns string) *dns.NS {
 	return &dns.NS{
 		Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeNS, Class: dns.ClassINET, Ttl: 172800},
@@ -17,10 +19,10 @@ func fakeNS(name, ns string) *dns.NS {
 	}
 }
 
-func fakeA(name, ip string) *dns.A {
+func fakeA(name string) *dns.A {
 	return &dns.A{
 		Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: 10},
-		A:   net.ParseIP(ip),
+		A:   net.ParseIP("127.0.0.1"),
 	}
 }
 
@@ -32,50 +34,51 @@ func fakeTXT(name, value string) *dns.TXT {
 }
 
 // mockResolver modifies the default DNS resolver to use a custom network address during the test execution.
-// IMPORTANT: it modifying global variables.
-func mockResolver(t *testing.T, addr net.Addr) {
-	t.Helper()
+// IMPORTANT: it modifying std global variables.
+func mockResolver(authoritativeNS net.Addr) func(t *testing.T, client *Client) {
+	return func(t *testing.T, client *Client) {
+		t.Helper()
 
-	_, port, err := net.SplitHostPort(addr.String())
-	require.NoError(t, err)
+		t.Log("authoritativeNS", authoritativeNS)
 
-	originalDefaultNameserverPort := defaultNameserverPort
+		_, port, err := net.SplitHostPort(authoritativeNS.String())
+		require.NoError(t, err)
 
-	t.Cleanup(func() {
-		defaultNameserverPort = originalDefaultNameserverPort
-	})
+		client.authoritativeNSPort = port
 
-	defaultNameserverPort = port
+		originalResolver := net.DefaultResolver
 
-	originalResolver := net.DefaultResolver
+		t.Cleanup(func() {
+			net.DefaultResolver = originalResolver
+		})
 
-	t.Cleanup(func() {
-		net.DefaultResolver = originalResolver
-	})
+		net.DefaultResolver = &net.Resolver{
+			PreferGo: true,
+			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				d := net.Dialer{Timeout: 1 * time.Second}
 
-	net.DefaultResolver = &net.Resolver{
-		PreferGo: true,
-		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-			d := net.Dialer{Timeout: 1 * time.Second}
-
-			return d.DialContext(ctx, network, addr.String())
-		},
+				return d.DialContext(ctx, network, authoritativeNS.String())
+			},
+		}
 	}
 }
 
-func useAsNameserver(t *testing.T, addr net.Addr) {
+func mockDefault(t *testing.T, recursiveNS net.Addr, opts ...func(t *testing.T, client *Client)) {
 	t.Helper()
 
-	ClearFqdnCache()
-	t.Cleanup(func() {
-		ClearFqdnCache()
-	})
-
-	originalRecursiveNameservers := recursiveNameservers
+	backup := DefaultClient()
 
 	t.Cleanup(func() {
-		recursiveNameservers = originalRecursiveNameservers
+		SetDefaultClient(backup)
 	})
 
-	recursiveNameservers = ParseNameservers([]string{addr.String()})
+	t.Log("recursiveNS", recursiveNS)
+
+	client := NewClient(&Options{RecursiveNameservers: []string{recursiveNS.String()}, NetworkStack: challenge.IPv4Only})
+
+	for _, opt := range opts {
+		opt(t, client)
+	}
+
+	SetDefaultClient(client)
 }

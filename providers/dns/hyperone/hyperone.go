@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/hyperone/internal"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/hyperone/internal"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -110,10 +110,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	ctx := context.Background()
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -144,10 +142,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters and recordset if no other records are remaining.
 // There is a small possibility that race will cause to delete recordset with records for other DNS Challenges.
-func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	ctx := context.Background()
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -197,7 +193,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 // getHostedZone gets the hosted zone.
 func (d *DNSProvider) getHostedZone(ctx context.Context, fqdn string) (*internal.Zone, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return nil, fmt.Errorf("could not find zone: %w", err)
 	}

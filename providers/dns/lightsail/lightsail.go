@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"strconv"
 	"time"
 
@@ -14,9 +14,9 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/lightsail"
 	awstypes "github.com/aws/aws-sdk-go-v2/service/lightsail/types"
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
 )
 
 // Environment variables names.
@@ -98,7 +98,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 				options.Backoff = retry.BackoffDelayerFunc(func(attempt int, err error) (time.Duration, error) {
 					retryCount := min(attempt, 7)
 
-					delay := (1 << uint(retryCount)) * (rand.Intn(50) + 200)
+					delay := (1 << uint(retryCount)) * (rand.IntN(50) + 200)
 
 					return time.Duration(delay) * time.Millisecond, nil
 				})
@@ -116,9 +116,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	ctx := context.Background()
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	params := &lightsail.CreateDomainEntryInput{
 		DomainName: aws.String(d.config.DNSZone),
@@ -138,9 +137,8 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	ctx := context.Background()
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	params := &lightsail.DeleteDomainEntryInput{
 		DomainName: aws.String(d.config.DNSZone),

@@ -1,0 +1,26 @@
+Name = "Ngenix"
+Description = ''''''
+URL = "https://ngenix.net"
+Code = "ngenix"
+Since = "v5.0.0"
+
+Example = '''
+NGENIX_USERNAME="xxx" \
+NGENIX_TOKEN="yyy" \
+NGENIX_CUSTOMER_ID="zzz" \
+lego run --dns ngenix -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    NGENIX_USERNAME = "Username"
+    NGENIX_TOKEN = "API token"
+    NGENIX_CUSTOMER_ID = "Customer ID"
+  [Configuration.Additional]
+    NGENIX_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 20)"
+    NGENIX_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 600)"
+    NGENIX_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://help.ngenix.net/articles/#!apidocs/upravlenie-dns"
+  Swagger = "https://help.ngenix.net/resources/AutoDocsSrc/apidocs/openapi_api_v3_20.01.20261.json"

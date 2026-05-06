@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vultr/govultr/v3"
@@ -226,7 +226,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -242,6 +242,6 @@ func TestLiveCleanUp(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

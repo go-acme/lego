@@ -10,10 +10,10 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
-	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
+	"github.com/go-acme/lego/v5/platform/env"
 )
 
 // Environment variables names.
@@ -79,8 +79,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	err := d.run(context.Background(), "present", domain, token, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	err := d.run(ctx, "present", domain, token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("exec: %w", err)
 	}
@@ -89,8 +89,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	err := d.run(context.Background(), "cleanup", domain, token, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	err := d.run(ctx, "cleanup", domain, token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("exec: %w", err)
 	}
@@ -115,7 +115,7 @@ func (d *DNSProvider) run(ctx context.Context, command, domain, token, keyAuth s
 	if d.config.Mode == "RAW" {
 		args = []string{command, "--", domain, token, keyAuth}
 	} else {
-		info := dns01.GetChallengeInfo(domain, keyAuth)
+		info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 		args = []string{command, info.EffectiveFQDN, info.Value}
 	}
 
@@ -135,7 +135,7 @@ func (d *DNSProvider) run(ctx context.Context, command, domain, token, keyAuth s
 
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
-		log.Println(scanner.Text())
+		log.Info(scanner.Text())
 	}
 
 	err = cmd.Wait()

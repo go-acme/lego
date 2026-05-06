@@ -11,11 +11,11 @@ import (
 
 	egoscale "github.com/exoscale/egoscale/v3"
 	"github.com/exoscale/egoscale/v3/credentials"
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/useragent"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -104,12 +104,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	zoneName, recordName, err := d.findZoneAndRecordName(info.EffectiveFQDN)
+	zoneName, recordName, err := d.findZoneAndRecordName(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("exoscale: %w", err)
 	}
@@ -144,12 +142,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	zoneName, recordName, err := d.findZoneAndRecordName(info.EffectiveFQDN)
+	zoneName, recordName, err := d.findZoneAndRecordName(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("exoscale: %w", err)
 	}
@@ -227,8 +223,8 @@ func (d *DNSProvider) findExistingRecordID(ctx context.Context, zoneID egoscale.
 }
 
 // findZoneAndRecordName Extract DNS zone and DNS entry name.
-func (d *DNSProvider) findZoneAndRecordName(fqdn string) (string, string, error) {
-	zone, err := dns01.FindZoneByFqdn(fqdn)
+func (d *DNSProvider) findZoneAndRecordName(ctx context.Context, fqdn string) (string, string, error) {
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", "", fmt.Errorf("could not find zone: %w", err)
 	}

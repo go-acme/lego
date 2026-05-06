@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -29,11 +29,11 @@ func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/1234/records",
 			servermock.ResponseFromFixture("add-records.json"),
-			servermock.CheckRequestJSONBody(`{"records":[{"name":"exmaple.com","type":"TXT","data":"value1","ttl":120,"id":"abc"}]}`)).
+			servermock.CheckRequestJSONBody(`{"records":[{"name":"example.com","type":"TXT","data":"value1","ttl":120,"id":"abc"}]}`)).
 		Build(t)
 
 	record := Record{
-		Name: "exmaple.com",
+		Name: "example.com",
 		Type: "TXT",
 		Data: "value1",
 		TTL:  120,

@@ -1,0 +1,19 @@
+servers:
+  pebble:
+    url: https://localhost:17000/dir
+
+challenges:
+  mychallenge:
+    http:
+      address: ":5009"
+
+certificates:
+  'example.localhost':
+    challenge: mychallenge
+    domains:
+      - acme.localhost
+
+accounts:
+  foo:
+    server: pebble
+    acceptsTermsOfService: true

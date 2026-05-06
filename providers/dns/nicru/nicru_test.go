@@ -3,7 +3,7 @@ package nicru
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,7 +32,6 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvUsername:  fakeUsername,
 				EnvPassword:  fakePassword,
 			},
-			expected: "nicru: failed to create oauth2 token: oauth2: \"unauthorized_client\"",
 		},
 		{
 			desc: "missing serviceID",
@@ -107,7 +106,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				Username:  fakeUsername,
 				Password:  fakePassword,
 			},
-			expected: "nicru: failed to create oauth2 token: oauth2: \"unauthorized_client\"",
 		},
 		{
 			desc:     "nil config",
@@ -176,7 +174,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -190,6 +188,6 @@ func TestLiveCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

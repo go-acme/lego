@@ -7,7 +7,7 @@ Since = "v4.28.0"
 Example = '''
 WEBNAMESCA_API_USER="xxx" \
 WEBNAMESCA_API_KEY="yyy" \
-lego --dns webnamesca -d '*.example.com' -d example.com run
+lego run --dns webnamesca -d '*.example.com' -d example.com
 '''
 
 [Configuration]

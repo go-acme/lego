@@ -28,7 +28,7 @@ Here is an example bash command using the MyDNS.jp provider:
 ```bash
 MYDNSJP_MASTER_ID=xxxxx \
 MYDNSJP_PASSWORD=xxxxx \
-lego --dns mydnsjp -d '*.example.com' -d example.com run
+lego run --dns mydnsjp -d '*.example.com' -d example.com
 ```
 
 

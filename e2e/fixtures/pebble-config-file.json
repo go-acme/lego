@@ -1,0 +1,20 @@
+{
+  "pebble": {
+    "listenAddress": "0.0.0.0:17000",
+    "IGNOREmanagementListenAddress": "0.0.0.0:17500",
+    "certificate": "fixtures/certs/localhost/cert.pem",
+    "privateKey": "fixtures/certs/localhost/key.pem",
+    "httpPort": 5009,
+    "tlsPort": 5008,
+    "profiles": {
+      "default": {
+        "description": "The profile you know and love",
+        "validityPeriod": 7776000
+      },
+      "shortlived": {
+        "description": "A short-lived cert profile, without actual enforcement",
+        "validityPeriod": 518400
+      }
+    }
+  }
+}

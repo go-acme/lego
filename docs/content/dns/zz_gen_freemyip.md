@@ -27,7 +27,7 @@ Here is an example bash command using the freemyip.com provider:
 
 ```bash
 FREEMYIP_TOKEN=xxxxxx \
-lego --dns freemyip -d '*.example.com' -d example.com run
+lego run --dns freemyip -d '*.example.com' -d example.com
 ```
 
 

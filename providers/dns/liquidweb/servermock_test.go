@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math/rand"
+	"math/rand/v2"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/liquidweb/liquidweb-go/network"
 	"github.com/liquidweb/liquidweb-go/types"
 )
@@ -63,7 +63,7 @@ func mockAPICreate(recs map[int]network.DNSRecord) http.HandlerFunc {
 			return
 		}
 
-		payload.Params.ID = types.FlexInt(rand.Intn(10000000))
+		payload.Params.ID = types.FlexInt(rand.IntN(10000000))
 		payload.Params.ZoneID = types.FlexInt(mockAPIServerZones[payload.Params.Name])
 
 		if _, exists := recs[int(payload.Params.ID)]; exists {

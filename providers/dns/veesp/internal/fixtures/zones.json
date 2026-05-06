@@ -1,0 +1,18 @@
+{
+  "service_ids": [
+    "10",
+    "20"
+  ],
+  "zones": [
+    {
+      "domain_id": "60",
+      "name": "example.com",
+      "service_id": "10"
+    },
+    {
+      "domain_id": "61",
+      "name": "example.org",
+      "service_id": "20"
+    }
+  ]
+}

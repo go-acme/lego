@@ -28,7 +28,7 @@ Here is an example bash command using the West.cn/西部数码 provider:
 ```bash
 WESTCN_USERNAME="xxx" \
 WESTCN_PASSWORD="yyy" \
-lego --dns westcn -d '*.example.com' -d example.com run
+lego run --dns westcn -d '*.example.com' -d example.com
 ```
 
 

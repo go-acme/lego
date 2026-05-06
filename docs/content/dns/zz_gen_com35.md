@@ -28,7 +28,7 @@ Here is an example bash command using the 35.com/三五互联 provider:
 ```bash
 COM35_USERNAME="xxx" \
 COM35_PASSWORD="yyy" \
-lego --dns com35 -d '*.example.com' -d example.com run
+lego run --dns com35 -d '*.example.com' -d example.com
 ```
 
 

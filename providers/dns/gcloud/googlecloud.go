@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
@@ -13,12 +14,12 @@ import (
 
 	"cloud.google.com/go/compute/metadata"
 	"github.com/cenkalti/backoff/v5"
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/platform/wait"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/wait"
+	"github.com/go-acme/lego/v5/log"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/miekg/dns"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -188,12 +189,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("googlecloud: %w", err)
 	}
@@ -212,7 +211,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			rrd = append(rrd, data)
 
 			if data == info.Value {
-				log.Printf("skip: the record already exists: %s", info.Value)
 				return nil
 			}
 		}
@@ -257,7 +255,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) applyChanges(ctx context.Context, zone string, change *gdns.Change) error {
 	if d.config.Debug {
 		data, _ := json.Marshal(change)
-		log.Printf("change (Create): %s", string(data))
+		log.Info("googlecloud: change (Create)", slog.String("data", string(data)))
 	}
 
 	chg, err := d.client.Changes.Create(d.config.Project, zone, change).Do()
@@ -283,7 +281,7 @@ func (d *DNSProvider) applyChanges(ctx context.Context, zone string, change *gdn
 		func() error {
 			if d.config.Debug {
 				data, _ := json.Marshal(change)
-				log.Printf("change (Get): %s", string(data))
+				log.Info("googlecloud: change (Get)", slog.String("data", string(data)))
 			}
 
 			chg, err = d.client.Changes.Get(d.config.Project, zone, chgID).Do()
@@ -304,10 +302,10 @@ func (d *DNSProvider) applyChanges(ctx context.Context, zone string, change *gdn
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("googlecloud: %w", err)
 	}
@@ -336,8 +334,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // getHostedZone returns the managed-zone.
-func (d *DNSProvider) getHostedZone(domain string) (string, error) {
-	authZone, zones, err := d.lookupHostedZoneID(domain)
+func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string, error) {
+	authZone, zones, err := d.lookupHostedZoneID(ctx, domain)
 	if err != nil {
 		return "", err
 	}
@@ -371,7 +369,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 //	(gcloud projects get-iam-policy $project_id) (a role with permission dns.managedZones.list)
 //
 // If we force a zone list to succeed, we demand more permissions than needed.
-func (d *DNSProvider) lookupHostedZoneID(domain string) (string, []*gdns.ManagedZone, error) {
+func (d *DNSProvider) lookupHostedZoneID(ctx context.Context, domain string) (string, []*gdns.ManagedZone, error) {
 	// GCE_ZONE_ID override for service accounts to avoid needing zones-list permission
 	if d.config.ZoneID != "" {
 		zone, err := d.client.ManagedZones.Get(d.config.Project, d.config.ZoneID).Do()
@@ -382,7 +380,7 @@ func (d *DNSProvider) lookupHostedZoneID(domain string) (string, []*gdns.Managed
 		return zone.DnsName, []*gdns.ManagedZone{zone}, nil
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(dns.Fqdn(domain))
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, dns.Fqdn(domain))
 	if err != nil {
 		return "", nil, fmt.Errorf("could not find zone: %w", err)
 	}

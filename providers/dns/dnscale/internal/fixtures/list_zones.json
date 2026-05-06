@@ -1,0 +1,33 @@
+{
+  "status": "success",
+  "data": {
+    "items": [
+      {
+        "id": "zone_ghi789",
+        "name": "foo.example.com",
+        "type": "primary",
+        "status": "active",
+        "record_count": 6
+      },
+      {
+        "id": "zone_abc123",
+        "name": "example.com",
+        "type": "primary",
+        "status": "active",
+        "record_count": 15,
+        "dnssec_enabled": true
+      },
+      {
+        "id": "zone_def456",
+        "name": "example.org",
+        "type": "primary",
+        "status": "active",
+        "record_count": 8,
+        "dnssec_enabled": false
+      }
+    ],
+    "total": 2,
+    "limit": 20,
+    "offset": 0
+  }
+}

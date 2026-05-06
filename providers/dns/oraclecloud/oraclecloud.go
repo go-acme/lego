@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/nrdcg/oci-go-sdk/common/v1065"
 	"github.com/nrdcg/oci-go-sdk/common/v1065/auth"
 	"github.com/nrdcg/oci-go-sdk/dns/v1065"
@@ -170,10 +170,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zoneNameOrID, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	zoneNameOrID, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("oraclecloud: could not find zone for domain %q: %w", domain, err)
 	}
@@ -196,7 +196,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		},
 	}
 
-	_, err = d.client.PatchDomainRecords(context.Background(), request)
+	_, err = d.client.PatchDomainRecords(ctx, request)
 	if err != nil {
 		return fmt.Errorf("oraclecloud: %w", err)
 	}
@@ -205,10 +205,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zoneNameOrID, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	zoneNameOrID, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("oraclecloud: could not find zone for domain %q: %w", domain, err)
 	}
@@ -220,8 +220,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		CompartmentId: common.String(d.config.CompartmentID),
 		Rtype:         common.String("TXT"),
 	}
-
-	ctx := context.Background()
 
 	domainRecords, err := d.client.GetDomainRecords(ctx, getRequest)
 	if err != nil {

@@ -1,0 +1,16 @@
+{
+  "type": "https://www.rfc-editor.org/rfc/rfc7231#section-6.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "instance": "/api/route",
+  "traceId": "0HMPNHL0JHL76:00000001",
+  "detail": "detail",
+  "errors": [
+    {
+      "name": "Error or field name",
+      "reason": "Error reason",
+      "code": "code",
+      "severity": "severity"
+    }
+  ]
+}

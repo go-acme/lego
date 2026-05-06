@@ -1,6 +1,7 @@
 package tlsalpn01
 
 import (
+	"context"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/tls"
@@ -9,18 +10,18 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-acme/lego/v4/acme"
-	"github.com/go-acme/lego/v4/acme/api"
-	"github.com/go-acme/lego/v4/certcrypto"
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/acme/api"
+	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/log"
 )
 
 // idPeAcmeIdentifierV1 is the SMI Security for PKIX Certification Extension OID referencing the ACME extension.
 // Reference: https://www.rfc-editor.org/rfc/rfc8737.html#section-6.1
 var idPeAcmeIdentifierV1 = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 31}
 
-type ValidateFunc func(core *api.Core, domain string, chlng acme.Challenge) error
+type ValidateFunc func(ctx context.Context, core *api.Core, domain string, chlng acme.Challenge) error
 
 type ChallengeOption func(*Challenge) error
 
@@ -49,21 +50,17 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 	for _, opt := range opts {
 		err := opt(chlg)
 		if err != nil {
-			log.Infof("challenge option error: %v", err)
+			log.Warn("tlsalpn01: Challenge option skipped.", log.ErrorAttr(err))
 		}
 	}
 
 	return chlg
 }
 
-func (c *Challenge) SetProvider(provider challenge.Provider) {
-	c.provider = provider
-}
-
 // Solve manages the provider to validate and solve the challenge.
-func (c *Challenge) Solve(authz acme.Authorization) error {
+func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	domain := authz.Identifier.Value
-	log.Infof("[%s] acme: Trying to solve TLS-ALPN-01", challenge.GetTargetedDomain(authz))
+	log.Info("tlsalpn01: Trying to solve TLS-ALPN-01.", log.DomainAttr(challenge.GetTargetedDomain(authz)))
 
 	chlng, err := challenge.FindChallenge(challenge.TLSALPN01, authz)
 	if err != nil {
@@ -76,15 +73,15 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 		return err
 	}
 
-	err = c.provider.Present(domain, chlng.Token, keyAuth)
+	err = c.provider.Present(ctx, domain, chlng.Token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("[%s] acme: error presenting token: %w", challenge.GetTargetedDomain(authz), err)
+		return fmt.Errorf("[%s] tlsalpn01: error presenting token: %w", challenge.GetTargetedDomain(authz), err)
 	}
 
 	defer func() {
-		err := c.provider.CleanUp(domain, chlng.Token, keyAuth)
+		err := c.provider.CleanUp(ctx, domain, chlng.Token, keyAuth)
 		if err != nil {
-			log.Warnf("[%s] acme: cleaning up failed: %v", challenge.GetTargetedDomain(authz), err)
+			log.Warn("tlsalpn01: cleaning up failed.", log.DomainAttr(challenge.GetTargetedDomain(authz)), log.ErrorAttr(err))
 		}
 	}()
 
@@ -94,7 +91,7 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 
 	chlng.KeyAuthorization = keyAuth
 
-	return c.validate(c.core, domain, chlng)
+	return c.validate(ctx, c.core, domain, chlng)
 }
 
 // ChallengeBlocks returns PEM blocks (certPEMBlock, keyPEMBlock) with the acmeValidation-v1 extension

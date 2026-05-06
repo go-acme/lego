@@ -1,6 +1,7 @@
 package tlsalpn01
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
@@ -10,10 +11,10 @@ import (
 	"net"
 	"testing"
 
-	"github.com/go-acme/lego/v4/acme"
-	"github.com/go-acme/lego/v4/acme/api"
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/acme/api"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,7 +26,7 @@ func TestChallenge(t *testing.T) {
 	domain := "localhost"
 	port := "24457"
 
-	mockValidate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
+	mockValidate := func(_ context.Context, _ *api.Core, _ string, chlng acme.Challenge) error {
 		conn, err := tls.Dial("tcp", net.JoinHostPort(domain, port), &tls.Config{
 			ServerName:         domain,
 			InsecureSkipVerify: true,
@@ -75,7 +76,7 @@ func TestChallenge(t *testing.T) {
 	solver := NewChallenge(
 		core,
 		mockValidate,
-		&ProviderServer{port: port},
+		NewProviderServerWithOptions(Options{Host: domain, Port: port}),
 	)
 
 	authz := acme.Authorization{
@@ -88,7 +89,7 @@ func TestChallenge(t *testing.T) {
 		},
 	}
 
-	err = solver.Solve(authz)
+	err = solver.Solve(t.Context(), authz)
 	require.NoError(t, err)
 }
 
@@ -103,8 +104,8 @@ func TestChallengeInvalidPort(t *testing.T) {
 
 	solver := NewChallenge(
 		core,
-		func(_ *api.Core, _ string, _ acme.Challenge) error { return nil },
-		&ProviderServer{port: "123456"},
+		func(_ context.Context, _ *api.Core, _ string, _ acme.Challenge) error { return nil },
+		NewProviderServerWithOptions(Options{Host: "127.0.0.1", Port: "123456"}),
 	)
 
 	authz := acme.Authorization{
@@ -116,7 +117,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 		},
 	}
 
-	err = solver.Solve(authz)
+	err = solver.Solve(t.Context(), authz)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid port")
 	assert.Contains(t, err.Error(), "123456")
@@ -129,7 +130,7 @@ func TestChallengeIPaddress(t *testing.T) {
 	port := "24457"
 	rd, _ := dns.ReverseAddr(domain)
 
-	mockValidate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
+	mockValidate := func(_ context.Context, _ *api.Core, _ string, chlng acme.Challenge) error {
 		conn, err := tls.Dial("tcp", net.JoinHostPort(domain, port), &tls.Config{
 			ServerName:         rd,
 			InsecureSkipVerify: true,
@@ -182,7 +183,7 @@ func TestChallengeIPaddress(t *testing.T) {
 	solver := NewChallenge(
 		core,
 		mockValidate,
-		&ProviderServer{port: port},
+		NewProviderServerWithOptions(Options{Host: domain, Port: port}),
 	)
 
 	authz := acme.Authorization{
@@ -195,5 +196,5 @@ func TestChallengeIPaddress(t *testing.T) {
 		},
 	}
 
-	require.NoError(t, solver.Solve(authz))
+	require.NoError(t, solver.Solve(t.Context(), authz))
 }

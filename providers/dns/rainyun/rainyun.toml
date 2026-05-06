@@ -6,7 +6,7 @@ Since = "v4.21.0"
 
 Example = '''
 RAINYUN_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns rainyun -d '*.example.com' -d example.com run
+lego run --dns rainyun -d '*.example.com' -d example.com
 '''
 
 [Configuration]

@@ -9,10 +9,10 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v4/providers/dns/internal/gcore/internal"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/providers/dns/internal/gcore/internal"
 )
 
 const (
@@ -66,10 +66,8 @@ func NewDNSProviderConfig(config *Config, baseURL string) (*DNSProvider, error) 
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	ctx := context.Background()
+func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.guessZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -85,10 +83,8 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 }
 
 // CleanUp removes the record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	ctx := context.Background()
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := d.guessZone(ctx, info.EffectiveFQDN)
 	if err != nil {

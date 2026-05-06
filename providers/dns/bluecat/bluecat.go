@@ -5,15 +5,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/bluecat/internal"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/bluecat/internal"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -119,26 +120,32 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Present creates a TXT record using the specified parameters
 // This will *not* create a sub-zone to contain the TXT record,
 // so make sure the FQDN specified is within an existent zone.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
 	if err != nil {
 		return fmt.Errorf("bluecat: login: %w", err)
 	}
 
-	viewID, err := d.client.LookupViewID(ctx, d.config.ConfigName, d.config.DNSView)
+	viewID, err := d.client.LookupViewID(ctxAuth, d.config.ConfigName, d.config.DNSView)
 	if err != nil {
 		return fmt.Errorf("bluecat: lookupViewID: %w", err)
 	}
 
-	parentZoneID, name, err := d.client.LookupParentZoneID(ctx, viewID, info.EffectiveFQDN)
+	parentZoneID, name, err := d.client.LookupParentZoneID(ctxAuth, viewID, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("bluecat: lookupParentZoneID: %w", err)
 	}
 
 	if d.config.Debug {
-		log.Infof("fqdn: %s; viewID: %d; ZoneID: %d; zone: %s", info.EffectiveFQDN, viewID, parentZoneID, name)
+		log.Info(
+			"bluecat: debug information.",
+			slog.String("fqdn", info.EffectiveFQDN),
+			slog.Uint64("viewID", uint64(viewID)),
+			slog.Uint64("zoneID", uint64(parentZoneID)),
+			slog.String("zone", name),
+		)
 	}
 
 	txtRecord := internal.Entity{
@@ -147,19 +154,19 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Properties: fmt.Sprintf("ttl=%d|absoluteName=%s|txt=%s|", d.config.TTL, info.EffectiveFQDN, info.Value),
 	}
 
-	_, err = d.client.AddEntity(ctx, parentZoneID, txtRecord)
+	_, err = d.client.AddEntity(ctxAuth, parentZoneID, txtRecord)
 	if err != nil {
 		return fmt.Errorf("bluecat: add TXT record: %w", err)
 	}
 
 	if !d.config.SkipDeploy {
-		err = d.client.Deploy(ctx, parentZoneID)
+		err = d.client.Deploy(ctxAuth, parentZoneID)
 		if err != nil {
 			return fmt.Errorf("bluecat: deploy: %w", err)
 		}
 	}
 
-	err = d.client.Logout(ctx)
+	err = d.client.Logout(ctxAuth)
 	if err != nil {
 		return fmt.Errorf("bluecat: logout: %w", err)
 	}
@@ -168,42 +175,42 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
+	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
 	if err != nil {
 		return fmt.Errorf("bluecat: login: %w", err)
 	}
 
-	viewID, err := d.client.LookupViewID(ctx, d.config.ConfigName, d.config.DNSView)
+	viewID, err := d.client.LookupViewID(ctxAuth, d.config.ConfigName, d.config.DNSView)
 	if err != nil {
 		return fmt.Errorf("bluecat: lookupViewID: %w", err)
 	}
 
-	parentZoneID, name, err := d.client.LookupParentZoneID(ctx, viewID, info.EffectiveFQDN)
+	parentZoneID, name, err := d.client.LookupParentZoneID(ctxAuth, viewID, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("bluecat: lookupParentZoneID: %w", err)
 	}
 
-	txtRecord, err := d.client.GetEntityByName(ctx, parentZoneID, name, internal.TXTType)
+	txtRecord, err := d.client.GetEntityByName(ctxAuth, parentZoneID, name, internal.TXTType)
 	if err != nil {
 		return fmt.Errorf("bluecat: get TXT record: %w", err)
 	}
 
-	err = d.client.Delete(ctx, txtRecord.ID)
+	err = d.client.Delete(ctxAuth, txtRecord.ID)
 	if err != nil {
 		return fmt.Errorf("bluecat: delete TXT record: %w", err)
 	}
 
 	if !d.config.SkipDeploy {
-		err = d.client.Deploy(ctx, parentZoneID)
+		err = d.client.Deploy(ctxAuth, parentZoneID)
 		if err != nil {
 			return fmt.Errorf("bluecat: deploy: %w", err)
 		}
 	}
 
-	err = d.client.Logout(ctx)
+	err = d.client.Logout(ctxAuth)
 	if err != nil {
 		return fmt.Errorf("bluecat: logout: %w", err)
 	}

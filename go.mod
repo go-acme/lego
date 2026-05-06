@@ -1,18 +1,14 @@
-module github.com/go-acme/lego/v4
+module github.com/go-acme/lego/v5
 
 go 1.25.0
 
 require (
 	cloud.google.com/go/compute/metadata v0.9.0
-	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.1
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns v1.2.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns v1.3.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph v0.9.0
-	github.com/Azure/go-autorest/autorest v0.11.30
-	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
-	github.com/Azure/go-autorest/autorest/to v0.4.1
 	github.com/BurntSushi/toml v1.6.0
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v13 v13.1.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.16
@@ -28,6 +24,7 @@ require (
 	github.com/aziontech/azionapi-go-sdk v0.144.0
 	github.com/baidubce/bce-sdk-go v0.9.265
 	github.com/bodgit/tsig v1.2.2
+	github.com/bradfitz/gomemcache v0.0.0-20250403215159-8d39553ac7cf
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/dnsimple/dnsimple-go/v4 v4.0.0
 	github.com/exoscale/egoscale/v3 v3.1.34
@@ -46,20 +43,20 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/hashicorp/go-version v1.9.0
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.192
-	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/infobloxopen/infoblox-go-client/v2 v2.11.0
+	github.com/joho/godotenv v1.5.1
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/ldez/grignotin v0.10.1
 	github.com/linode/linodego v1.68.0
 	github.com/liquidweb/liquidweb-go v1.6.4
 	github.com/mattn/go-isatty v0.0.21
+	github.com/mattn/go-zglob v0.0.6
 	github.com/miekg/dns v1.1.72
 	github.com/mimuret/golang-iij-dpf v0.9.1
 	github.com/namedotcom/go/v4 v4.0.2
 	github.com/nrdcg/auroradns v1.2.0
 	github.com/nrdcg/bunny-go v0.1.0
 	github.com/nrdcg/desec v0.11.1
-	github.com/nrdcg/dnspod-go v0.4.0
 	github.com/nrdcg/freemyip v0.3.0
 	github.com/nrdcg/goacmedns v0.2.0
 	github.com/nrdcg/goinwx v0.12.0
@@ -73,7 +70,6 @@ require (
 	github.com/nzdjb/go-metaname v1.0.0
 	github.com/ovh/go-ovh v1.9.0
 	github.com/pquerna/otp v1.5.0
-	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/regfish/regfish-dnsapi-go v0.1.1
 	github.com/sacloud/api-client-go v0.3.5
 	github.com/sacloud/iaas-api-go v1.23.1
@@ -86,13 +82,14 @@ require (
 	github.com/transip/gotransip/v6 v6.26.2
 	github.com/ucloud/ucloud-sdk-go v0.22.63
 	github.com/ultradns/ultradns-go-sdk v1.8.1-20250722213956-faef419
-	github.com/urfave/cli/v2 v2.27.7
+	github.com/urfave/cli/v3 v3.6.2
 	github.com/vinyldns/go-vinyldns v0.9.17
 	github.com/volcengine/volc-sdk-golang v1.0.242
 	github.com/vultr/govultr/v3 v3.31.0
 	github.com/yandex-cloud/go-genproto v0.73.0
 	github.com/yandex-cloud/go-sdk/services/dns v0.0.54
 	github.com/yandex-cloud/go-sdk/v2 v2.92.0
+	gitlab.com/greyxor/slogor v1.6.9
 	golang.org/x/crypto v0.50.0
 	golang.org/x/net v0.53.0
 	golang.org/x/oauth2 v0.36.0
@@ -101,6 +98,7 @@ require (
 	google.golang.org/api v0.276.0
 	gopkg.in/ns1/ns1-go.v2 v2.17.2
 	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 	software.sslmate.com/src/go-pkcs12 v0.7.1
 )
 
@@ -109,12 +107,6 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	github.com/AdamSLevy/jsonrpc2/v14 v14.1.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.12.0 // indirect
-	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
-	github.com/Azure/go-autorest/autorest/adal v0.9.22 // indirect
-	github.com/Azure/go-autorest/autorest/azure/cli v0.4.6 // indirect
-	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
-	github.com/Azure/go-autorest/logger v0.2.1 // indirect
-	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.6.0 // indirect
 	github.com/alexbrainman/sspi v0.0.0-20180613141037-e580b900e9f5 // indirect
 	github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.5 // indirect
@@ -139,9 +131,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clbanning/mxj/v2 v2.7.0 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
@@ -194,7 +184,6 @@ require (
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sacloud/go-http v0.1.9 // indirect
 	github.com/sacloud/packages-go v0.0.12 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
@@ -211,7 +200,6 @@ require (
 	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
-	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	go.mongodb.org/mongo-driver v1.17.9 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
@@ -232,7 +220,4 @@ require (
 	google.golang.org/grpc v1.80.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/ini.v1 v1.67.1 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-retract v4.30.0 // Problem related to misuse of sycalls by aliyun/credentials-go

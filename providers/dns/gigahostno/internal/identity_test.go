@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -37,7 +37,7 @@ func TestIdentifier_Authenticate(t *testing.T) {
 			servermock.CheckRequestJSONBodyFromFixture("authenticate-request.json")).
 		Build(t)
 
-	token, err := identifier.Authenticate(context.Background())
+	token, err := identifier.Authenticate(t.Context())
 	require.NoError(t, err)
 
 	expected := &Token{

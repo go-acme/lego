@@ -6,7 +6,7 @@ Since = "v4.11.0"
 
 Example = '''
 NODION_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns nodion -d '*.example.com' -d example.com run
+lego run --dns nodion -d '*.example.com' -d example.com
 '''
 
 [Configuration]

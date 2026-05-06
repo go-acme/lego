@@ -27,7 +27,7 @@ Here is an example bash command using the Hosting.de provider:
 
 ```bash
 HOSTINGDE_API_KEY=xxxxxxxx \
-lego --dns hostingde -d '*.example.com' -d example.com run
+lego run --dns hostingde -d '*.example.com' -d example.com
 ```
 
 

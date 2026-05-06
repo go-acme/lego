@@ -28,7 +28,7 @@ Here is an example bash command using the Loopia provider:
 ```bash
 LOOPIA_API_USER=xxxxxxxx \
 LOOPIA_API_PASSWORD=yyyyyyyy \
-lego --dns loopia -d '*.example.com' -d example.com run
+lego run --dns loopia -d '*.example.com' -d example.com
 ```
 
 

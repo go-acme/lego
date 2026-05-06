@@ -1,0 +1,19 @@
+{
+  "modelName": "DnsZoneCollection",
+  "elements": [
+    {
+      "id": 1,
+      "name": "example.com",
+      "links": {
+        "self": "https://api.ngenix.net/api/v3/dns-zone/1"
+      }
+    },
+    {
+      "id": 2,
+      "name": "example.org",
+      "links": {
+        "self": "https://api.ngenix.net/api/v3/dns-zone/2"
+      }
+    }
+  ]
+}

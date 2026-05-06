@@ -31,32 +31,32 @@ Here is an example bash command using the Azure DNS provider:
 AZURE_CLIENT_ID=<your service principal client ID> \
 AZURE_TENANT_ID=<your service principal tenant ID> \
 AZURE_CLIENT_SECRET=<your service principal client secret> \
-lego --dns azuredns -d '*.example.com' -d example.com run
+lego run --dns azuredns -d '*.example.com' -d example.com
 
 ### Using client certificate
 
 AZURE_CLIENT_ID=<your service principal client ID> \
 AZURE_TENANT_ID=<your service principal tenant ID> \
 AZURE_CLIENT_CERTIFICATE_PATH=<your service principal certificate path> \
-lego --dns azuredns -d '*.example.com' -d example.com run
+lego run --dns azuredns -d '*.example.com' -d example.com
 
 ### Using Azure CLI
 
 az login \
-lego --dns azuredns -d '*.example.com' -d example.com run
+lego run --dns azuredns -d '*.example.com' -d example.com
 
 ### Using Managed Identity (Azure VM)
 
 AZURE_TENANT_ID=<your service principal tenant ID> \
 AZURE_RESOURCE_GROUP=<your target zone resource group name> \
-lego --dns azuredns -d '*.example.com' -d example.com run
+lego run --dns azuredns -d '*.example.com' -d example.com
 
 ### Using Managed Identity (Azure Arc)
 
 AZURE_TENANT_ID=<your service principal tenant ID> \
 IMDS_ENDPOINT=http://localhost:40342 \
 IDENTITY_ENDPOINT=http://localhost:40342/metadata/identity/oauth2/token \
-lego --dns azuredns -d '*.example.com' -d example.com run
+lego run --dns azuredns -d '*.example.com' -d example.com
 
 ```
 

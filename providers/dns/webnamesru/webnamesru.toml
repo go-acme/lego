@@ -1,0 +1,30 @@
+Name = "webnames.ru"
+Description = ''''''
+URL = "https://www.webnames.ru/"
+Code = "webnamesru"
+Aliases = ["webnames"] # "webnames" is for compatibility with v4, must be dropped in the future.
+Since = "v4.15.0"
+
+Example = '''
+WEBNAMESRU_API_KEY=xxxxxx \
+lego run --dns webnamesru -d '*.example.com' -d example.com
+'''
+
+Additional = '''
+## API Key
+
+To obtain the key, you need to change the DNS server to `*.nameself.com`: Personal account / My domains and services / Select the required domain / DNS servers
+
+The API key can be found: Personal account / My domains and services / Select the required domain / Zone management / acme.sh or certbot settings
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    WEBNAMESRU_API_KEY = "Domain API key"
+  [Configuration.Additional]
+    WEBNAMESRU_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    WEBNAMESRU_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    WEBNAMESRU_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://github.com/regtime-ltd/certbot-dns-webnames"

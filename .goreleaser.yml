@@ -5,7 +5,7 @@ project_name: lego
 builds:
   - binary: lego
 
-    main: ./cmd/lego/
+    main: .
     env:
       - CGO_ENABLED=0
     flags:
@@ -91,6 +91,7 @@ dockers_v2:
     platforms:
       - linux/amd64
       - linux/arm64
+      - linux/arm/v6
       - linux/arm/v7
     tags:
       - 'latest'
@@ -124,7 +125,7 @@ snapcrafts:
       
       Usage:
       * `sudo snap install lego`
-      * `sudo lego --email="you@example.com" --domains="example.com" --server=https://acme-staging-v02.api.letsencrypt.org/directory --http --http.port :8080 run
+      * `sudo lego run --domains="example.com" --server=letsencrypt-staging --http --http.address :8080
     apps:
       lego:
         command: lego
@@ -134,7 +135,7 @@ snapcrafts:
           - network-bind
 
 aurs:
-  - description: "Let s Encrypt client and ACME library written in Go"
+  - description: "ACME client and ACME library written in Go"
     skip_upload: false
     homepage: https://go-acme.github.io/lego/
     name: 'lego-bin'

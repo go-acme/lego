@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/miekg/dns"
 	dpfapi "github.com/mimuret/golang-iij-dpf/pkg/api"
 	dpfapiutils "github.com/mimuret/golang-iij-dpf/pkg/apiutils"
@@ -95,10 +95,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zoneID, err := dpfapiutils.GetZoneIdFromServiceCode(ctx, d.client, d.config.ServiceCode)
 	if err != nil {
@@ -119,10 +117,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zoneID, err := dpfapiutils.GetZoneIdFromServiceCode(ctx, d.client, d.config.ServiceCode)
 	if err != nil {

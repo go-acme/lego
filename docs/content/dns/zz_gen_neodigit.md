@@ -27,7 +27,7 @@ Here is an example bash command using the Neodigit provider:
 
 ```bash
 NEODIGIT_TOKEN=xxxxxx \
-lego --dns neodigit -d '*.example.com' -d example.com run
+lego run --dns neodigit -d '*.example.com' -d example.com
 ```
 
 

@@ -8,7 +8,7 @@ Example = '''
 SELFHOSTDE_USERNAME=xxx \
 SELFHOSTDE_PASSWORD=yyy \
 SELFHOSTDE_RECORDS_MAPPING=my.example.com:123 \
-lego --dns selfhostde -d '*.example.com' -d example.com run
+lego run --dns selfhostde -d '*.example.com' -d example.com
 '''
 
 Additional = """

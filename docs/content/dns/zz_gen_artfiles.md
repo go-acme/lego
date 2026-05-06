@@ -28,7 +28,7 @@ Here is an example bash command using the ArtFiles provider:
 ```bash
 ARTFILES_USERNAME="xxx" \
 ARTFILES_PASSWORD="yyy" \
-lego --dns artfiles -d '*.example.com' -d example.com run
+lego run --dns artfiles -d '*.example.com' -d example.com
 ```
 
 

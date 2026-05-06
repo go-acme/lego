@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
-	"github.com/go-acme/lego/v4/log"
-	"github.com/go-acme/lego/v4/platform/wait"
-	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v5/internal/errutils"
+	"github.com/go-acme/lego/v5/internal/wait"
+	"github.com/go-acme/lego/v5/log"
 )
 
 const defaultBaseURL = "https://api.dynu.com/v2"
@@ -122,7 +122,7 @@ func (c *Client) doRetry(ctx context.Context, method, uri string, body []byte, r
 	}
 
 	notify := func(err error, duration time.Duration) {
-		log.Printf("client retries because of %v", err)
+		log.Warn("dynu: client retries.", log.ErrorAttr(err))
 	}
 
 	bo := backoff.NewExponentialBackOff()

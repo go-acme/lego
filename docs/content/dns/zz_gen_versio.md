@@ -28,7 +28,7 @@ Here is an example bash command using the Versio.[nl|eu|uk] provider:
 ```bash
 VERSIO_USERNAME=<your login> \
 VERSIO_PASSWORD=<your password> \
-lego --dns versio -d '*.example.com' -d example.com run
+lego run --dns versio -d '*.example.com' -d example.com
 ```
 
 

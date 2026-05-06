@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/bookmyname/internal"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/bookmyname/internal"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -97,8 +97,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	record := internal.Record{
 		Hostname: dns01.UnFqdn(info.EffectiveFQDN),
@@ -107,7 +107,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Value:    info.Value,
 	}
 
-	err := d.client.AddRecord(context.Background(), record)
+	err := d.client.AddRecord(ctx, record)
 	if err != nil {
 		return fmt.Errorf("bookmyname: add record: %w", err)
 	}
@@ -116,8 +116,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	record := internal.Record{
 		Hostname: dns01.UnFqdn(info.EffectiveFQDN),
@@ -126,7 +126,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Value:    info.Value,
 	}
 
-	err := d.client.RemoveRecord(context.Background(), record)
+	err := d.client.RemoveRecord(ctx, record)
 	if err != nil {
 		return fmt.Errorf("bookmyname: add record: %w", err)
 	}

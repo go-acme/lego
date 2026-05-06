@@ -27,7 +27,7 @@ Here is an example bash command using the HTTP request provider:
 
 ```bash
 HTTPREQ_ENDPOINT=http://my.server.com:9090 \
-lego --dns httpreq -d '*.example.com' -d example.com run
+lego run --dns httpreq -d '*.example.com' -d example.com
 ```
 
 

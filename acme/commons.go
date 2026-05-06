@@ -77,7 +77,7 @@ type Meta struct {
 
 	// profiles (optional, object):
 	// A map of profile names to human-readable descriptions of those profiles.
-	// https://www.ietf.org/id/draft-ietf-acme-profiles-00.html#section-3
+	// https://www.ietf.org/archive/id/draft-ietf-acme-profiles-01.html#name-extensions-to-the-directory
 	Profiles map[string]string `json:"profiles"`
 }
 
@@ -86,7 +86,7 @@ type ExtendedAccount struct {
 	Account
 
 	// Contains the value of the response header `Location`
-	Location string `json:"-"`
+	Location string `json:"accountURL,omitempty"`
 }
 
 // Account the ACME account Object.
@@ -157,7 +157,7 @@ type Order struct {
 	// profile (string, optional):
 	// A string uniquely identifying the profile
 	// which will be used to affect issuance of the certificate requested by this Order.
-	// https://www.ietf.org/id/draft-ietf-acme-profiles-00.html#section-4
+	// https://www.ietf.org/archive/id/draft-ietf-acme-profiles-01.html#name-extensions-to-the-order-res
 	Profile string `json:"profile,omitempty"`
 
 	// notBefore (optional, string):
@@ -242,12 +242,13 @@ type Authorization struct {
 	Wildcard bool `json:"wildcard,omitempty"`
 }
 
-// ExtendedChallenge a extended Challenge.
+// ExtendedChallenge an extended Challenge.
 type ExtendedChallenge struct {
 	Challenge
 
 	// Contains the value of the response header `Retry-After`
-	RetryAfter string `json:"-"`
+	RetryAfter time.Duration `json:"-"`
+
 	// Contains the value of the response header `Link` rel="up"
 	AuthorizationURL string `json:"-"`
 }
@@ -281,7 +282,7 @@ type Challenge struct {
 	// A challenge object with an error MUST have status equal to "invalid".
 	Error *ProblemDetails `json:"error,omitempty"`
 
-	// token (required, string):
+	// token (required for dns-01, http-01, tlsalpn-01, string):
 	// A random value that uniquely identifies the challenge.
 	// This value MUST have at least 128 bits of entropy.
 	// It MUST NOT contain any characters outside the base64url alphabet,
@@ -290,6 +291,16 @@ type Challenge struct {
 	// https://www.rfc-editor.org/rfc/rfc8555.html#section-8.3
 	// https://www.rfc-editor.org/rfc/rfc8555.html#section-8.4
 	Token string `json:"token"`
+
+	// accounturi (required for dns-persist-01, string):
+	// A URI identifying the ACME account requesting validation.
+	// https://www.ietf.org/archive/id/draft-ietf-acme-dns-persist-01.html#section-3.1
+	AccountURI string `json:"accounturi,omitempty"`
+
+	// issuer-domain-names (required for dns-persist-01, []string):
+	// A list of one or more Issuer Domain Names.
+	// https://www.ietf.org/archive/id/draft-ietf-acme-dns-persist-01.html#section-3.1
+	IssuerDomainNames []string `json:"issuer-domain-names,omitempty"`
 
 	// https://www.rfc-editor.org/rfc/rfc8555.html#section-8.1
 	KeyAuthorization string `json:"keyAuthorization"`
@@ -344,15 +355,19 @@ type RawCertificate struct {
 	Issuer []byte
 }
 
-// Window is a window of time.
-type Window struct {
-	Start time.Time `json:"start"`
-	End   time.Time `json:"end"`
+type ExtendedRenewalInfo struct {
+	RenewalInfo
+
+	// RetryAfter header indicating the polling interval that the ACME server recommends.
+	// Conforming clients SHOULD query the renewalInfo URL again after the RetryAfter period has passed,
+	// as the server may provide a different suggestedWindow.
+	// https://www.rfc-editor.org/rfc/rfc9773.html#section-4.2
+	RetryAfter time.Duration `json:"-"`
 }
 
-// RenewalInfoResponse is the response to GET requests made the renewalInfo endpoint.
-// - (4.1. Getting Renewal Information) https://www.rfc-editor.org/rfc/rfc9773.html
-type RenewalInfoResponse struct {
+// RenewalInfo is the response to GET requests made the renewalInfo endpoint.
+// - (4.2. RenewalInfo Objects) https://www.rfc-editor.org/rfc/rfc9773.html#section-4.2
+type RenewalInfo struct {
 	// SuggestedWindow contains two fields, start and end,
 	// whose values are timestamps which bound the window of time in which the CA recommends renewing the certificate.
 	SuggestedWindow Window `json:"suggestedWindow"`
@@ -363,16 +378,15 @@ type RenewalInfoResponse struct {
 	ExplanationURL string `json:"explanationURL"`
 }
 
-// RenewalInfoUpdateRequest is the JWS payload for POST requests made to the renewalInfo endpoint.
-// - (4.2. RenewalInfo Objects) https://www.rfc-editor.org/rfc/rfc9773.html#section-4.2
-type RenewalInfoUpdateRequest struct {
-	// CertID is a composite string in the format: base64url(AKI) || '.' || base64url(Serial), where AKI is the
-	// certificate's authority key identifier and Serial is the certificate's serial number. For details, see:
-	// https://www.rfc-editor.org/rfc/rfc9773.html#section-4.1
-	CertID string `json:"certID"`
-	// Replaced is required and indicates whether or not the client considers the certificate to have been replaced.
-	// A certificate is considered replaced when its revocation would not disrupt any ongoing services,
-	// for instance because it has been renewed and the new certificate is in use, or because it is no longer in use.
-	// Clients SHOULD NOT send a request where this value is false.
-	Replaced bool `json:"replaced"`
+// Window is a window of time.
+type Window struct {
+	Start time.Time `json:"start"`
+	End   time.Time `json:"end"`
+}
+
+// KeyChange is the response to POST requests made the keyChange endpoint.
+// - https://www.rfc-editor.org/rfc/rfc8555.html#section-7.3.5
+type KeyChange struct {
+	Account string          `json:"account"`
+	OldKey  json.RawMessage `json:"oldKey"`
 }

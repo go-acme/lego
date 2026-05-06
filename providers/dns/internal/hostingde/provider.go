@@ -7,13 +7,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"sync"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v4/providers/dns/internal/hostingde/internal"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/providers/dns/internal/hostingde/internal"
 )
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
@@ -32,9 +31,6 @@ type Config struct {
 type DNSProvider struct {
 	config *Config
 	client *internal.Client
-
-	recordIDs   map[string]string
-	recordIDsMu sync.Mutex
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for hosting.de.
@@ -60,9 +56,8 @@ func NewDNSProviderConfig(config *Config, baseURL string) (*DNSProvider, error) 
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{
-		config:    config,
-		client:    client,
-		recordIDs: make(map[string]string),
+		config: config,
+		client: client,
 	}, nil
 }
 
@@ -73,15 +68,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zoneName, err := d.getZoneName(info.EffectiveFQDN)
+	zoneName, err := d.getZoneName(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("could not find zone for domain %q: %w", domain, err)
 	}
-
-	ctx := context.Background()
 
 	// get the ZoneConfig for that domain
 	zonesFind := internal.ZoneConfigsFindRequest{
@@ -116,29 +109,21 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	for _, record := range response.Records {
 		if record.Name == dns01.UnFqdn(info.EffectiveFQDN) && record.Content == fmt.Sprintf(`%q`, info.Value) {
-			d.recordIDsMu.Lock()
-			d.recordIDs[info.EffectiveFQDN] = record.ID
-			d.recordIDsMu.Unlock()
+			return nil
 		}
 	}
 
-	if d.recordIDs[info.EffectiveFQDN] == "" {
-		return fmt.Errorf("error getting ID of just created record, for domain %s", domain)
-	}
-
-	return nil
+	return fmt.Errorf("error getting ID of just created record, for domain %s", domain)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zoneName, err := d.getZoneName(info.EffectiveFQDN)
+	zoneName, err := d.getZoneName(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("could not find zone for domain %q: %w", domain, err)
 	}
-
-	ctx := context.Background()
 
 	// get the ZoneConfig for that domain
 	zonesFind := internal.ZoneConfigsFindRequest{
@@ -170,20 +155,15 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return err
 	}
 
-	// Delete record ID from map
-	d.recordIDsMu.Lock()
-	delete(d.recordIDs, info.EffectiveFQDN)
-	d.recordIDsMu.Unlock()
-
 	return nil
 }
 
-func (d *DNSProvider) getZoneName(fqdn string) (string, error) {
+func (d *DNSProvider) getZoneName(ctx context.Context, fqdn string) (string, error) {
 	if d.config.ZoneName != "" {
 		return d.config.ZoneName, nil
 	}
 
-	zoneName, err := dns01.FindZoneByFqdn(fqdn)
+	zoneName, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone for %s: %w", fqdn, err)
 	}

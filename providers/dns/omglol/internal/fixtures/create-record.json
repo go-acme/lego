@@ -1,0 +1,28 @@
+{
+  "request": {
+    "status_code": 200,
+    "success": true
+  },
+  "response": {
+    "message": "Your DNS record was created successfully.",
+    "data_sent": {
+      "type": "A",
+      "priority": null,
+      "ttl": null,
+      "name": "foobar",
+      "content": "10.0.0.1"
+    },
+    "response_received": {
+      "data": {
+        "id": "2857074",
+        "name": "foobar",
+        "content": "10.0.0.1",
+        "ttl": 3600,
+        "priority": null,
+        "type": "A",
+        "created_at": "2022-11-26T04:30:13Z",
+        "updated_at": "2022-11-26T04:30:13Z"
+      }
+    }
+  }
+}

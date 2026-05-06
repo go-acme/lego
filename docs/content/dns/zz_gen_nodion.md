@@ -27,7 +27,7 @@ Here is an example bash command using the Nodion provider:
 
 ```bash
 NODION_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns nodion -d '*.example.com' -d example.com run
+lego run --dns nodion -d '*.example.com' -d example.com
 ```
 
 

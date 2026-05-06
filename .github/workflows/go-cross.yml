@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - main
   pull_request:
 
 permissions: {}
@@ -33,4 +34,4 @@ jobs:
         run: go test -v -cover ./...
 
       - name: Build
-        run: go build -v -ldflags "-s -w" -trimpath -o ./dist/lego ./cmd/lego/
+        run: go build -v -ldflags "-s -w" -trimpath -o ./dist/lego ./

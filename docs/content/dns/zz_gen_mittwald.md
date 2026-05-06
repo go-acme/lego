@@ -27,7 +27,7 @@ Here is an example bash command using the Mittwald provider:
 
 ```bash
 MITTWALD_TOKEN=my-token \
-lego --dns mittwald -d '*.example.com' -d example.com run
+lego run --dns mittwald -d '*.example.com' -d example.com
 ```
 
 

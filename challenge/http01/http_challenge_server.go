@@ -1,23 +1,37 @@
 package http01
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/textproto"
 	"os"
 	"strings"
+	"time"
 
-	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/log"
 )
+
+var _ challenge.Provider = (*ProviderServer)(nil)
+
+type Options struct {
+	Network         string
+	NetworkStack    challenge.NetworkStack
+	Address         string
+	SocketMode      fs.FileMode
+	ProxyHeaderName string
+}
 
 // ProviderServer implements ChallengeProvider for `http-01` challenge.
 // It may be instantiated without using the NewProviderServer function if
 // you want only to use the default values.
 type ProviderServer struct {
-	address string
 	network string // must be valid argument to net.Listen
+	address string
 
 	socketMode fs.FileMode
 
@@ -26,23 +40,46 @@ type ProviderServer struct {
 	listener net.Listener
 }
 
+// NewProviderServerWithOptions creates a new ProviderServer.
+func NewProviderServerWithOptions(opts Options) *ProviderServer {
+	if opts.Network == "" {
+		opts.Network = "tcp"
+	}
+
+	return &ProviderServer{
+		network:    opts.NetworkStack.Network(opts.Network),
+		address:    opts.Address,
+		socketMode: opts.SocketMode,
+		matcher:    getMatcher(opts.ProxyHeaderName),
+	}
+}
+
 // NewProviderServer creates a new ProviderServer on the selected interface and port.
-// Setting iface and / or port to an empty string will make the server fall back to
+// Setting host and / or port to an empty string will make the server fall back to
 // the "any" interface and port 80 respectively.
-func NewProviderServer(iface, port string) *ProviderServer {
+func NewProviderServer(host, port string) *ProviderServer {
 	if port == "" {
+		// Fallback to port 80 if the port was not provided.
 		port = "80"
 	}
 
-	return &ProviderServer{network: "tcp", address: net.JoinHostPort(iface, port), matcher: &hostMatcher{}}
+	return NewProviderServerWithOptions(Options{
+		Network: "tcp",
+		Address: net.JoinHostPort(host, port),
+	})
 }
 
-func NewUnixProviderServer(socketPath string, mode fs.FileMode) *ProviderServer {
-	return &ProviderServer{network: "unix", address: socketPath, socketMode: mode, matcher: &hostMatcher{}}
+// NewUnixProviderServer creates a new ProviderServer.
+func NewUnixProviderServer(socketPath string, socketMode fs.FileMode) *ProviderServer {
+	return NewProviderServerWithOptions(Options{
+		Network:    "unix",
+		Address:    socketPath,
+		SocketMode: socketMode,
+	})
 }
 
 // Present starts a web server and makes the token available at `ChallengePath(token)` for web requests.
-func (s *ProviderServer) Present(domain, token, keyAuth string) error {
+func (s *ProviderServer) Present(ctx context.Context, domain, token, keyAuth string) error {
 	var err error
 
 	s.listener, err = net.Listen(s.network, s.GetAddress())
@@ -63,12 +100,8 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (s *ProviderServer) GetAddress() string {
-	return s.address
-}
-
 // CleanUp closes the HTTP server and removes the token from `ChallengePath(token)`.
-func (s *ProviderServer) CleanUp(domain, token, keyAuth string) error {
+func (s *ProviderServer) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	if s.listener == nil {
 		return nil
 	}
@@ -80,26 +113,30 @@ func (s *ProviderServer) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-// SetProxyHeader changes the validation of incoming requests.
-// By default, s matches the "Host" header value to the domain name.
+func (s *ProviderServer) GetAddress() string {
+	return s.address
+}
+
+// getMatcher gets the matcher for incoming requests.
+// By default, it matches the "Host" header value to the domain name.
 //
 // When the server runs behind a proxy server, this is not the correct place to look at;
 // Apache and NGINX have traditionally moved the original Host header into a new header named "X-Forwarded-Host".
 // Other webservers might use different names;
 // and RFC7239 has standardized a new header named "Forwarded" (with slightly different semantics).
 //
-// The exact behavior depends on the value of headerName:
+// The exact behavior depends on the value of proxyHeaderName:
 // - "" (the empty string) and "Host" will restore the default and only check the Host header
 // - "Forwarded" will look for a Forwarded header, and inspect it according to https://www.rfc-editor.org/rfc/rfc7239.html
 // - any other value will check the header value with the same name.
-func (s *ProviderServer) SetProxyHeader(headerName string) {
-	switch h := textproto.CanonicalMIMEHeaderKey(headerName); h {
+func getMatcher(proxyHeaderName string) domainMatcher {
+	switch h := textproto.CanonicalMIMEHeaderKey(proxyHeaderName); h {
 	case "", "Host":
-		s.matcher = &hostMatcher{}
+		return &hostMatcher{}
 	case "Forwarded":
-		s.matcher = &forwardedMatcher{}
+		return &forwardedMatcher{}
 	default:
-		s.matcher = arbitraryMatcher(h)
+		return arbitraryMatcher(h)
 	}
 }
 
@@ -120,12 +157,16 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 				return
 			}
 
-			log.Infof("[%s] Served key authentication", domain)
+			log.Debug("Served key authentication.", log.DomainAttr(domain))
 
 			return
 		}
 
-		log.Warnf("Received request for domain %s with method %s but the domain did not match any challenge. Please ensure you are passing the %s header properly.", r.Host, r.Method, s.matcher.name())
+		log.Warn("http01: Received request but the domain did not match any challenge. Please ensure you are passing the header properly.",
+			log.DomainAttr(r.Host),
+			slog.String("method", r.Method),
+			slog.String("header", s.matcher.name()),
+		)
 
 		_, err := w.Write([]byte("TEST"))
 		if err != nil {
@@ -134,7 +175,13 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 		}
 	})
 
-	httpServer := &http.Server{Handler: mux}
+	httpServer := &http.Server{
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
 
 	// Once httpServer is shut down
 	// we don't want any lingering connections, so disable KeepAlives.
@@ -142,7 +189,7 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 
 	err := httpServer.Serve(s.listener)
 	if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
-		log.Println(err)
+		log.Warn("http01: HTTP server serve.", log.ErrorAttr(err))
 	}
 
 	s.done <- true

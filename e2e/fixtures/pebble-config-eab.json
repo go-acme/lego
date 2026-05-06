@@ -1,0 +1,25 @@
+{
+  "pebble": {
+    "listenAddress": "0.0.0.0:16000",
+    "certificate": "fixtures/certs/localhost/cert.pem",
+    "privateKey": "fixtures/certs/localhost/key.pem",
+    "httpPort": 5006,
+    "tlsPort": 5005,
+    "externalAccountBindingRequired": true,
+    "externalAccountMACKeys": {
+      "kid-1": "zWNDZM6eQGHWpSRTPal5eIUYFTu7EajVIoguysqZ9wG44nMEtx3MUAsUDkMTQ12W",
+      "kid-2": "b10lLJs8l1GPIzsLP0s6pMt8O0XVGnfTaCeROxQM0BIt2XrJMDHJZBM5NuQmQJQH",
+      "kid-3": "HjudV5qnbreN-n9WyFSH-t4HXuEx_XFen45zuxY-G1h6fr74V3cUM_dVlwQZBWmc"
+    },
+    "profiles": {
+      "default": {
+        "description": "The profile you know and love",
+        "validityPeriod": 7776000
+      },
+      "shortlived": {
+        "description": "A short-lived cert profile, without actual enforcement",
+        "validityPeriod": 518400
+      }
+    }
+  }
+}

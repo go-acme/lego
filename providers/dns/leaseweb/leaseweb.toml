@@ -6,7 +6,7 @@ Since = "v4.32.0"
 
 Example = '''
 LEASEWEB_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns leaseweb -d '*.example.com' -d example.com run
+lego run --dns leaseweb -d '*.example.com' -d example.com
 '''
 
 [Configuration]

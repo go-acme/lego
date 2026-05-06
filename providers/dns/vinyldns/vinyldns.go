@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/useragent"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/vinyldns/go-vinyldns/vinyldns"
 )
 
@@ -106,9 +106,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
-	} else {
-		// For compatibility, it should be removed in v5.
-		client.HTTPClient.Timeout = 30 * time.Second
 	}
 
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
@@ -117,12 +114,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	existingRecord, err := d.getRecordSet(info.EffectiveFQDN)
+	existingRecord, err := d.getRecordSet(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("vinyldns: %w", err)
 	}
@@ -158,12 +153,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	existingRecord, err := d.getRecordSet(info.EffectiveFQDN)
+	existingRecord, err := d.getRecordSet(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("vinyldns: %w", err)
 	}

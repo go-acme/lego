@@ -3,7 +3,6 @@ package dnsmadeeasy
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/dnsmadeeasy/internal"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/dnsmadeeasy/internal"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -48,22 +47,12 @@ type Config struct {
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
-	tr := &http.Transport{}
-
-	defaultTransport, ok := http.DefaultTransport.(*http.Transport)
-	if ok {
-		tr = defaultTransport.Clone()
-	}
-
-	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout:   env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
-			Transport: tr,
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 		},
 	}
 }
@@ -131,15 +120,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domainName, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domainName, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domainName, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("dnsmadeeasy: could not find zone for domain %q: %w", domainName, err)
 	}
-
-	ctx := context.Background()
 
 	// fetch the domain details
 	domain, err := d.client.GetDomain(ctx, authZone)
@@ -160,15 +147,13 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT records matching the specified parameters.
-func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domainName, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domainName, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domainName, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("dnsmadeeasy: could not find zone for domain %q: %w", domainName, err)
 	}
-
-	ctx := context.Background()
 
 	// fetch the domain details
 	domain, err := d.client.GetDomain(ctx, authZone)

@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-acme/lego/v4/acme"
-	"github.com/go-acme/lego/v4/acme/api"
-	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/acme/api"
+	"github.com/go-acme/lego/v5/internal/tester"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -31,7 +31,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 
 	user := mockUser{
 		email:      "test@test.com",
-		regres:     &Resource{},
+		regres:     &acme.ExtendedAccount{},
 		privatekey: key,
 	}
 
@@ -40,8 +40,8 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 
 	registrar := NewRegistrar(core, user)
 
-	res, err := registrar.ResolveAccountByKey()
+	res, err := registrar.ResolveAccountByKey(t.Context())
 	require.NoError(t, err, "Unexpected error resolving account by key")
 
-	assert.Equal(t, "valid", res.Body.Status, "Unexpected account status")
+	assert.Equal(t, "valid", res.Status, "Unexpected account status")
 }

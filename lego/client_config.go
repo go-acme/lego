@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v4/certcrypto"
-	"github.com/go-acme/lego/v4/registration"
+	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/registration"
 )
 
 const (
@@ -32,12 +32,6 @@ const (
 	// authenticate an ACME server with an HTTPS certificate not issued by a CA in
 	// the system-wide trusted root list.
 	caServerNameEnvVar = "LEGO_CA_SERVER_NAME"
-
-	// LEDirectoryProduction URL to the Let's Encrypt production.
-	LEDirectoryProduction = "https://acme-v02.api.letsencrypt.org/directory"
-
-	// LEDirectoryStaging URL to the Let's Encrypt staging.
-	LEDirectoryStaging = "https://acme-staging-v02.api.letsencrypt.org/directory"
 )
 
 type Config struct {
@@ -50,21 +44,19 @@ type Config struct {
 
 func NewConfig(user registration.User) *Config {
 	return &Config{
-		CADirURL:   LEDirectoryProduction,
+		CADirURL:   DirectoryURLLetsEncrypt,
 		User:       user,
 		HTTPClient: createDefaultHTTPClient(),
 		Certificate: CertificateConfig{
-			KeyType: certcrypto.RSA2048,
-			Timeout: 30 * time.Second,
+			Timeout:             30 * time.Second,
+			OverallRequestLimit: certificate.DefaultOverallRequestLimit,
 		},
 	}
 }
 
 type CertificateConfig struct {
-	KeyType             certcrypto.KeyType
 	Timeout             time.Duration
 	OverallRequestLimit int
-	DisableCommonName   bool
 }
 
 // createDefaultHTTPClient Creates an HTTP client with a reasonable timeout value

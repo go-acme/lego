@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/domeneshop/internal"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/domeneshop/internal"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -99,15 +99,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, host, err := d.splitDomain(info.EffectiveFQDN)
+	zone, host, err := d.splitDomain(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
-
-	ctx := context.Background()
 
 	domainInstance, err := d.client.GetDomainByName(ctx, zone)
 	if err != nil {
@@ -123,15 +121,13 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, host, err := d.splitDomain(info.EffectiveFQDN)
+	zone, host, err := d.splitDomain(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
-
-	ctx := context.Background()
 
 	domainInstance, err := d.client.GetDomainByName(ctx, zone)
 	if err != nil {
@@ -146,8 +142,8 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 }
 
 // splitDomain splits the hostname from the authoritative zone, and returns both parts (non-fqdn).
-func (d *DNSProvider) splitDomain(fqdn string) (string, string, error) {
-	zone, err := dns01.FindZoneByFqdn(fqdn)
+func (d *DNSProvider) splitDomain(ctx context.Context, fqdn string) (string, string, error) {
+	zone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, fqdn)
 	if err != nil {
 		return "", "", fmt.Errorf("could not find zone: %w", err)
 	}

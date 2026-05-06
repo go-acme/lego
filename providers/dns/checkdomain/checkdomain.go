@@ -9,11 +9,11 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/checkdomain/internal"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/checkdomain/internal"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -102,9 +102,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	domainID, err := d.client.GetDomainIDByName(ctx, domain)
 	if err != nil {
@@ -116,7 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("checkdomain: %w", err)
 	}
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	err = d.client.CreateRecord(ctx, domainID, &internal.Record{
 		Name:  info.EffectiveFQDN,
@@ -132,9 +130,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record previously created.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	domainID, err := d.client.GetDomainIDByName(ctx, domain)
 	if err != nil {
@@ -146,7 +142,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("checkdomain: %w", err)
 	}
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	defer d.client.CleanCache(info.EffectiveFQDN)
 

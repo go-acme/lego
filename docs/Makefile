@@ -10,5 +10,5 @@ build: clean
 	hugo --enableGitInfo --source .
 
 serve:
-	hugo server --disableFastRender --enableGitInfo --watch --source .
+	hugo server --disableFastRender --watch --source .
 	# hugo server -D

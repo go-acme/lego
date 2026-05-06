@@ -12,10 +12,10 @@ title = "Lego"
   showVisitedLinks = true
   # Change default color scheme with a variant one. Can be "red", "blue", "green".
   themeVariant = "blue"
-  custom_css = ["css/theme-custom.css"]
   disableLandingPageButton = true
   hideAuthorEmail = true
   hideAuthorName = true
+#  externalLinkTarget = '_blank'
 
   # Author of the site, will be used in meta information
   [params.author]
@@ -49,3 +49,8 @@ title = "Lego"
 [module]
 [[module.imports]]
   path = "github.com/McShelby/hugo-theme-relearn"
+
+[markup]
+[markup.goldmark]
+[markup.goldmark.renderer]
+  unsafe = true

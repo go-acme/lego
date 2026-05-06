@@ -9,11 +9,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v4/providers/dns/ipv64/internal"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/providers/dns/ipv64/internal"
 	"github.com/miekg/dns"
 )
 
@@ -36,7 +36,6 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HTTPClient         *http.Client
-	SequenceInterval   time.Duration // Deprecated: unused, will be removed in v5.
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -92,15 +91,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	sub, root, err := splitDomain(dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("ipv64: %w", err)
 	}
 
-	err = d.client.AddRecord(context.Background(), root, sub, "TXT", info.Value)
+	err = d.client.AddRecord(ctx, root, sub, "TXT", info.Value)
 	if err != nil {
 		return fmt.Errorf("ipv64: %w", err)
 	}
@@ -109,15 +108,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp clears IPv64 TXT record.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	sub, root, err := splitDomain(dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("ipv64: %w", err)
 	}
 
-	err = d.client.DeleteRecord(context.Background(), root, sub, "TXT", info.Value)
+	err = d.client.DeleteRecord(ctx, root, sub, "TXT", info.Value)
 	if err != nil {
 		return fmt.Errorf("ipv64: %w", err)
 	}

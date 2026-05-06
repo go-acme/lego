@@ -9,10 +9,10 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/go-acme/lego/v4/acme"
-	"github.com/go-acme/lego/v4/acme/api"
-	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/acme/api"
+	"github.com/go-acme/lego/v5/internal/tester"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/go-jose/go-jose/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,13 +20,13 @@ import (
 
 func TestByType(t *testing.T) {
 	challenges := []acme.Challenge{
-		{Type: "dns-01"}, {Type: "tlsalpn-01"}, {Type: "http-01"},
+		{Type: "dns-01"}, {Type: "dns-persist-01"}, {Type: "tlsalpn-01"}, {Type: "http-01"},
 	}
 
 	sort.Sort(byType(challenges))
 
 	expected := []acme.Challenge{
-		{Type: "tlsalpn-01"}, {Type: "http-01"}, {Type: "dns-01"},
+		{Type: "tlsalpn-01"}, {Type: "http-01"}, {Type: "dns-01"}, {Type: "dns-persist-01"},
 	}
 
 	assert.Equal(t, expected, challenges)
@@ -118,7 +118,7 @@ func TestValidate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			statuses = test.statuses
 
-			err := validate(core, "example.com", acme.Challenge{Type: "http-01", Token: "token", URL: server.URL + "/chlg"})
+			err := validate(t.Context(), core, "example.com", acme.Challenge{Type: "http-01", Token: "token", URL: server.URL + "/chlg"})
 			if test.want == "" {
 				require.NoError(t, err)
 			} else {

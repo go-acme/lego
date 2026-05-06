@@ -1,0 +1,6 @@
+{
+  "status": "Internal Server Error!",
+  "code": 500,
+  "reason": "Something unexpected has happened",
+  "note": "See application log for stack trace."
+}

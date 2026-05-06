@@ -1,0 +1,29 @@
+{
+  "service_id": 10,
+  "name": "example.com",
+  "records": [
+    {
+      "id": "10",
+      "name": "qwerty",
+      "ttl": 1800,
+      "priority": 0,
+      "content": "127.0.0.1",
+      "type": "A"
+    },
+    {
+      "id": "11",
+      "name": "qwerty",
+      "ttl": 1800,
+      "priority": 0,
+      "content": "ns1.example.com",
+      "type": "NS"
+    },
+    {
+      "id": "66",
+      "name": "_acme-challenge",
+      "ttl": 120,
+      "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "type": "TXT"
+    }
+  ]
+}

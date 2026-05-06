@@ -10,12 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v4/providers/dns/namecheap/internal"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/providers/dns/namecheap/internal"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -39,7 +39,6 @@ const (
 	EnvAPIKey  = envNamespace + "API_KEY"
 
 	EnvSandbox = envNamespace + "SANDBOX"
-	EnvDebug   = envNamespace + "DEBUG"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -51,7 +50,6 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Debug              bool
 	BaseURL            string
 	APIUser            string
 	APIKey             string
@@ -71,7 +69,6 @@ func NewDefaultConfig() *Config {
 
 	return &Config{
 		BaseURL:            baseURL,
-		Debug:              env.GetOrDefaultBool(EnvDebug, false),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, time.Hour),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
@@ -115,7 +112,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.ClientIP == "" {
-		clientIP, err := internal.GetClientIP(context.Background(), config.HTTPClient, config.Debug)
+		clientIP, err := internal.GetClientIP(context.Background(), config.HTTPClient)
 		if err != nil {
 			return nil, fmt.Errorf("namecheap: %w", err)
 		}
@@ -142,14 +139,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present installs a TXT record for the DNS challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	pr, err := newPseudoRecord(domain, keyAuth)
+	pr, err := newPseudoRecord(ctx, domain, keyAuth)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)
 	}
-
-	ctx := context.Background()
 
 	records, err := d.client.GetHosts(ctx, pr.sld, pr.tld)
 	if err != nil {
@@ -166,10 +161,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	records = append(records, record)
 
-	if d.config.Debug {
-		for _, h := range records {
-			log.Printf("%-5.5s %-30.30s %-6s %-70.70s", h.Type, h.Name, h.TTL, h.Address)
-		}
+	for _, h := range records {
+		log.Debugf(log.LazySprintf("%-5.5s %-30.30s %-6s %-70.70s", h.Type, h.Name, h.TTL, h.Address))
 	}
 
 	err = d.client.SetHosts(ctx, pr.sld, pr.tld, records)
@@ -181,14 +174,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes a TXT record used for a previous DNS challenge.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	pr, err := newPseudoRecord(domain, keyAuth)
+	pr, err := newPseudoRecord(ctx, domain, keyAuth)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)
 	}
-
-	ctx := context.Background()
 
 	records, err := d.client.GetHosts(ctx, pr.sld, pr.tld)
 	if err != nil {
@@ -233,7 +224,7 @@ type pseudoRecord struct {
 }
 
 // newPseudoRecord builds a challenge record from a domain name and a challenge authentication key.
-func newPseudoRecord(domain, keyAuth string) (*pseudoRecord, error) {
+func newPseudoRecord(ctx context.Context, domain, keyAuth string) (*pseudoRecord, error) {
 	domain = dns01.UnFqdn(domain)
 
 	tld, _ := publicsuffix.PublicSuffix(domain)
@@ -250,11 +241,11 @@ func newPseudoRecord(domain, keyAuth string) (*pseudoRecord, error) {
 		host = strings.Join(parts[:longest-1], ".")
 	}
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	return &pseudoRecord{
 		domain:   domain,
-		key:      "_acme-challenge." + host,
+		key:      info.Prefix + host,
 		keyFqdn:  info.EffectiveFQDN,
 		keyValue: info.Value,
 		tld:      tld,

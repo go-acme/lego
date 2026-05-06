@@ -2,31 +2,32 @@ package webroot
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v5/challenge/http01"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestHTTPProvider(t *testing.T) {
-	webroot := "webroot"
+	webroot := t.TempDir()
+
 	domain := "domain"
 	token := "token"
 	keyAuth := "keyAuth"
-	challengeFilePath := webroot + "/.well-known/acme-challenge/" + token
 
-	require.NoError(t, os.MkdirAll(webroot+"/.well-known/acme-challenge", 0o777))
-	defer os.RemoveAll(webroot)
+	require.NoError(t, os.MkdirAll(filepath.Join(webroot, filepath.FromSlash(http01.PathPrefix)), 0o777))
 
 	provider, err := NewHTTPProvider(webroot)
 	require.NoError(t, err)
 
-	err = provider.Present(domain, token, keyAuth)
+	err = provider.Present(t.Context(), domain, token, keyAuth)
 	require.NoError(t, err)
 
-	if _, err = os.Stat(challengeFilePath); os.IsNotExist(err) {
-		t.Error("Challenge file was not created in webroot")
-	}
+	challengeFilePath := filepath.Join(webroot, filepath.FromSlash(http01.PathPrefix), token)
+
+	require.FileExists(t, challengeFilePath, "Challenge file was not created in webroot")
 
 	var data []byte
 
@@ -36,6 +37,6 @@ func TestHTTPProvider(t *testing.T) {
 	dataStr := string(data)
 	assert.Equal(t, keyAuth, dataStr)
 
-	err = provider.CleanUp(domain, token, keyAuth)
+	err = provider.CleanUp(t.Context(), domain, token, keyAuth)
 	require.NoError(t, err)
 }

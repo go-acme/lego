@@ -3,5 +3,10 @@
     "id": "11af3414-ebba-11e9-8df5-66fbe8a334b4",
     "name": "test.com",
     "type": "NATIVE"
+  },
+  {
+    "id": "f6821d2f-2ff3-4762-99bd-711733624a77",
+    "name": "example.com",
+    "type": "NATIVE"
   }
 ]

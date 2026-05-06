@@ -6,7 +6,7 @@ Since = "v4.7.0"
 
 Example = '''
 VERCEL_API_TOKEN=xxxxxx \
-lego --dns vercel -d '*.example.com' -d example.com run
+lego run --dns vercel -d '*.example.com' -d example.com
 '''
 
 [Configuration]

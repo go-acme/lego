@@ -6,7 +6,7 @@ Since = "v2.4.0"
 
 Example = '''
 DODE_TOKEN=xxxxxx \
-lego --dns dode -d '*.example.com' -d example.com run
+lego run --dns dode -d '*.example.com' -d example.com
 '''
 
 [Configuration]

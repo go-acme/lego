@@ -1,0 +1,6 @@
+{
+  "name": "_acme-challenge",
+  "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+  "ttl": 120,
+  "record_type": "TXT"
+}

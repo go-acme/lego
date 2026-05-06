@@ -7,7 +7,7 @@ Since = "v4.34.0"
 Example = '''
 UCLOUD_PUBLIC_KEY="xxx" \
 UCLOUD_PRIVATE_KEY="yyy" \
-lego --dns ucloud -d '*.example.com' -d example.com run
+lego run --dns ucloud -d '*.example.com' -d example.com
 '''
 
 [Configuration]

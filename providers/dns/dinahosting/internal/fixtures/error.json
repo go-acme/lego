@@ -1,0 +1,12 @@
+{
+  "trId": "dh6958820711fcf9.04537876",
+  "responseCode": 2200,
+  "errors": [
+    {
+      "message": "Authentication error.",
+      "code": 2200,
+      "parameter": ""
+    }
+  ],
+  "command": "Domain_Zone_AddTypeTXT"
+}

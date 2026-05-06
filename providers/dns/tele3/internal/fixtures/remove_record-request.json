@@ -1,0 +1,7 @@
+{
+  "key": "keyA",
+  "secret": "secretA",
+  "ope": "rm",
+  "domain": "_acme-challenge.example.com",
+  "value": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+}

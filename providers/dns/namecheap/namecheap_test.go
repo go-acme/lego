@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -47,7 +47,7 @@ var testCases = []testCase{
 func TestDNSProvider_Present(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			ch, _ := newPseudoRecord(test.domain, "")
+			ch, _ := newPseudoRecord(t.Context(), test.domain, "")
 
 			provider := mockBuilder().
 				Route("GET /",
@@ -74,7 +74,7 @@ func TestDNSProvider_Present(t *testing.T) {
 				).
 				Build(t)
 
-			err := provider.Present(test.domain, "", "dummyKey")
+			err := provider.Present(t.Context(), test.domain, "", "dummyKey")
 			if test.errString != "" {
 				assert.EqualError(t, err, "namecheap: "+test.errString)
 			} else {
@@ -87,7 +87,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			ch, _ := newPseudoRecord(test.domain, "")
+			ch, _ := newPseudoRecord(t.Context(), test.domain, "")
 
 			provider := mockBuilder().
 				Route("GET /",
@@ -114,7 +114,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 				).
 				Build(t)
 
-			err := provider.CleanUp(test.domain, "", "dummyKey")
+			err := provider.CleanUp(t.Context(), test.domain, "", "dummyKey")
 			if test.errString != "" {
 				assert.EqualError(t, err, "namecheap: "+test.errString)
 			} else {
@@ -153,7 +153,7 @@ func Test_newPseudoRecord_domainSplit(t *testing.T) {
 		t.Run(test.domain, func(t *testing.T) {
 			valid := true
 
-			ch, err := newPseudoRecord(test.domain, "")
+			ch, err := newPseudoRecord(t.Context(), test.domain, "")
 			if err != nil {
 				valid = false
 			}

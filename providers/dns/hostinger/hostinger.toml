@@ -6,7 +6,7 @@ Since = "v4.27.0"
 
 Example = '''
 HOSTINGER_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns hostinger -d '*.example.com' -d example.com run
+lego run --dns hostinger -d '*.example.com' -d example.com
 '''
 
 [Configuration]

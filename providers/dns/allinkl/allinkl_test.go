@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/servermock"
-	"github.com/go-acme/lego/v4/providers/dns/allinkl/internal"
+	"github.com/go-acme/lego/v5/internal/tester"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/providers/dns/allinkl/internal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -135,7 +135,7 @@ func TestLivePresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	err = provider.Present(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -149,7 +149,7 @@ func TestLiveCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -240,7 +240,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		).
 		Build(t)
 
-	err := provider.Present("example.com", "abc", "123d==")
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 }
 
@@ -254,6 +254,6 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	provider.recordIDs["abc"] = "57347450"
 
-	err := provider.CleanUp("example.com", "abc", "123d==")
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 }

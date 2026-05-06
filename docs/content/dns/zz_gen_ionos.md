@@ -27,7 +27,7 @@ Here is an example bash command using the Ionos provider:
 
 ```bash
 IONOS_API_KEY=xxxxxxxx \
-lego --dns ionos -d '*.example.com' -d example.com run
+lego run --dns ionos -d '*.example.com' -d example.com
 ```
 
 

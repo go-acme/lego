@@ -1,13 +1,15 @@
 package api
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"slices"
 	"time"
 
-	"github.com/go-acme/lego/v4/acme"
+	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/acme/api/internal/sender"
 )
 
 // OrderOptions used to create an order (optional).
@@ -17,7 +19,7 @@ type OrderOptions struct {
 
 	// A string uniquely identifying the profile
 	// which will be used to affect issuance of the certificate requested by this Order.
-	// - https://www.ietf.org/id/draft-ietf-acme-profiles-00.html#section-4
+	// - https://www.ietf.org/archive/id/draft-ietf-acme-profiles-01.html#name-extensions-to-the-order-res
 	Profile string
 
 	// A string uniquely identifying a previously-issued certificate which this
@@ -29,12 +31,7 @@ type OrderOptions struct {
 type OrderService service
 
 // New Creates a new order.
-func (o *OrderService) New(domains []string) (acme.ExtendedOrder, error) {
-	return o.NewWithOptions(domains, nil)
-}
-
-// NewWithOptions Creates a new order.
-func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acme.ExtendedOrder, error) {
+func (o *OrderService) New(ctx context.Context, domains []string, opts *OrderOptions) (acme.ExtendedOrder, error) {
 	orderReq := acme.Order{Identifiers: createIdentifiers(domains)}
 
 	if opts != nil {
@@ -57,7 +54,7 @@ func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acm
 
 	var order acme.Order
 
-	resp, err := o.core.post(o.core.GetDirectory().NewOrderURL, orderReq, &order)
+	resp, err := o.core.post(ctx, o.core.GetDirectory().NewOrderURL, orderReq, &order)
 	if err != nil {
 		are := &acme.AlreadyReplacedError{}
 		if !errors.As(err, &are) {
@@ -69,7 +66,7 @@ func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acm
 		// https://www.rfc-editor.org/rfc/rfc9773.html#section-5
 		orderReq.Replaces = ""
 
-		resp, err = o.core.post(o.core.GetDirectory().NewOrderURL, orderReq, &order)
+		resp, err = o.core.post(ctx, o.core.GetDirectory().NewOrderURL, orderReq, &order)
 		if err != nil {
 			return acme.ExtendedOrder{}, err
 		}
@@ -97,19 +94,19 @@ func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acm
 
 	return acme.ExtendedOrder{
 		Order:    order,
-		Location: resp.Header.Get("Location"),
+		Location: sender.GetLocation(resp),
 	}, nil
 }
 
 // Get Gets an order.
-func (o *OrderService) Get(orderURL string) (acme.ExtendedOrder, error) {
+func (o *OrderService) Get(ctx context.Context, orderURL string) (acme.ExtendedOrder, error) {
 	if orderURL == "" {
 		return acme.ExtendedOrder{}, errors.New("order[get]: empty URL")
 	}
 
 	var order acme.Order
 
-	_, err := o.core.postAsGet(orderURL, &order)
+	_, err := o.core.postAsGet(ctx, orderURL, &order)
 	if err != nil {
 		return acme.ExtendedOrder{}, err
 	}
@@ -118,14 +115,14 @@ func (o *OrderService) Get(orderURL string) (acme.ExtendedOrder, error) {
 }
 
 // UpdateForCSR Updates an order for a CSR.
-func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (acme.ExtendedOrder, error) {
+func (o *OrderService) UpdateForCSR(ctx context.Context, orderURL string, csr []byte) (acme.ExtendedOrder, error) {
 	csrMsg := acme.CSRMessage{
 		Csr: base64.RawURLEncoding.EncodeToString(csr),
 	}
 
 	var order acme.Order
 
-	_, err := o.core.post(orderURL, csrMsg, &order)
+	_, err := o.core.post(ctx, orderURL, csrMsg, &order)
 	if err != nil {
 		return acme.ExtendedOrder{}, err
 	}

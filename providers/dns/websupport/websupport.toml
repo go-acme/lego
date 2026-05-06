@@ -7,7 +7,7 @@ Since = "v4.10.0"
 Example = '''
 WEBSUPPORT_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
 WEBSUPPORT_SECRET="yyyyyyyyyyyyyyyyyyyyy" \
-lego --dns websupport -d '*.example.com' -d example.com run
+lego run --dns websupport -d '*.example.com' -d example.com
 '''
 
 [Configuration]

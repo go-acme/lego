@@ -27,7 +27,7 @@ Here is an example bash command using the United-Domains provider:
 
 ```bash
 UNITEDDOMAINS_API_KEY=xxxxxxxx \
-lego --dns uniteddomains -d '*.example.com' -d example.com run
+lego run --dns uniteddomains -d '*.example.com' -d example.com
 ```
 
 

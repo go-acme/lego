@@ -27,10 +27,10 @@ Here is an example bash command using the Syse provider:
 
 ```bash
 SYSE_CREDENTIALS=example.com:password \
-lego --dns syse -d '*.example.com' -d example.com run
+lego run --dns syse -d '*.example.com' -d example.com
 
 SYSE_CREDENTIALS=example.org:password1,example.com:password2 \
-lego --dns syse -d '*.example.org' -d example.org -d '*.example.com' -d example.com
+lego run --dns syse -d '*.example.org' -d example.org -d '*.example.com' -d example.com
 ```
 
 

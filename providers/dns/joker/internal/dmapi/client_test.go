@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -199,7 +199,7 @@ func Test_RemoveTxtEntryFromZone(t *testing.T) {
 			modified: false,
 		},
 		{
-			desc:     "zone with only clenup entry",
+			desc:     "zone with only cleanup entry",
 			input:    "_acme-challenge TXT 0  \"old \" 120",
 			expected: "",
 			modified: true,

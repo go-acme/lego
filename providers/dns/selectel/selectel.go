@@ -4,22 +4,22 @@
 package selectel
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/selectel"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/selectel"
 )
 
 // Environment variables names.
 const (
 	envNamespace = "SELECTEL_"
 
-	EnvBaseURL  = envNamespace + "BASE_URL"
 	EnvAPIToken = envNamespace + "API_TOKEN"
 
 	EnvTTL                = envNamespace + "TTL"
@@ -27,6 +27,8 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+const defaultBaseURL = "https://api.selectel.ru/domains/v1"
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
@@ -36,7 +38,6 @@ type Config = selectel.Config
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(EnvBaseURL, ""),
 		TTL:                env.GetOrDefaultInt(EnvTTL, selectel.MinTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
@@ -71,7 +72,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("selectel: the configuration of the DNS provider is nil")
 	}
 
-	provider, err := selectel.NewDNSProviderConfig(config)
+	provider, err := selectel.NewDNSProviderConfig(config, defaultBaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("selectel: %w", err)
 	}
@@ -80,8 +81,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	err := d.prv.Present(domain, token, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	err := d.prv.Present(ctx, domain, token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("selectel: %w", err)
 	}
@@ -90,8 +91,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	err := d.prv.CleanUp(domain, token, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	err := d.prv.CleanUp(ctx, domain, token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("selectel: %w", err)
 	}

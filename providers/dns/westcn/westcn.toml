@@ -7,7 +7,7 @@ Since = "v4.21.0"
 Example = '''
 WESTCN_USERNAME="xxx" \
 WESTCN_PASSWORD="yyy" \
-lego --dns westcn -d '*.example.com' -d example.com run
+lego run --dns westcn -d '*.example.com' -d example.com
 '''
 
 [Configuration]

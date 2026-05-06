@@ -27,7 +27,7 @@ Here is an example bash command using the Civo provider:
 
 ```bash
 CIVO_TOKEN=xxxxxx \
-lego --dns civo -d '*.example.com' -d example.com run
+lego run --dns civo -d '*.example.com' -d example.com
 ```
 
 

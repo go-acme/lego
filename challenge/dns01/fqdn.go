@@ -3,15 +3,9 @@ package dns01
 import (
 	"iter"
 
+	"github.com/go-acme/lego/v5/challenge/internal"
 	"github.com/miekg/dns"
 )
-
-// ToFqdn converts the name into a fqdn appending a trailing dot.
-//
-// Deprecated: Use [github.com/miekg/dns.Fqdn] directly.
-func ToFqdn(name string) string {
-	return dns.Fqdn(name)
-}
 
 // UnFqdn converts the fqdn into a name removing the trailing dot.
 func UnFqdn(name string) string {
@@ -40,15 +34,5 @@ func UnFqdnDomainsSeq(fqdn string) iter.Seq[string] {
 
 // DomainsSeq generates a sequence of domain names derived from a domain (FQDN or not) in descending order.
 func DomainsSeq(fqdn string) iter.Seq[string] {
-	return func(yield func(string) bool) {
-		if fqdn == "" {
-			return
-		}
-
-		for _, index := range dns.Split(fqdn) {
-			if !yield(fqdn[index:]) {
-				return
-			}
-		}
-	}
+	return internal.DomainsSeq(fqdn)
 }

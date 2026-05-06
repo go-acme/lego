@@ -1,0 +1,15 @@
+{
+  "dns_zone": {
+    "name": "example.com"
+  },
+  "properties": {
+    "name": "_acme-challenge",
+    "type": "TXT",
+    "ttl": 120,
+    "content": {
+      "TXT": {
+        "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+      }
+    }
+  }
+}

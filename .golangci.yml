@@ -103,9 +103,9 @@ linters:
             - Print
             - Printf
             - Warn
-            - Warnf
             - Fatal
             - Fatalf
+            - LazySprintf
     misspell:
       locale: US
       ignore-rules:
@@ -185,34 +185,31 @@ linters:
       - text: "string `TXT` has \\d+ occurrences, make it a constant"
         linters:
           - goconst
-      - path: internal/clihelp/generator.go
-        text: "string `(help|lego)` has \\d+ occurrences, make it a constant"
+      - path: internal/generators/clihelp/generator.go
+        text: "string `(lego|accounts|list)` has \\d+ occurrences, make it a constant"
         linters:
           - goconst
       - path: certcrypto/crypto.go
         text: "string `CERTIFICATE` has \\d+ occurrences, make it a constant"
         linters:
           - goconst
-      - path: cmd/(certs_storage|flags).go
-        text: "string `RC2` has \\d+ occurrences, make it a constant"
+      - path: acme/api/internal/secure/signer.go
+        text: "string `url` has \\d+ occurrences, make it a constant"
+        linters:
+          - goconst
+      - path: cmd/cmd_(.+)\.go
+        text: "string `list` has \\d+ occurrences, make it a constant"
         linters:
           - goconst
       - path: certcrypto/crypto.go
         text: (tlsFeatureExtensionOID|ocspMustStapleFeature) is a global variable
         linters:
           - gochecknoglobals
-      - path: challenge/dns01/nameserver.go
-        text: (defaultNameservers|recursiveNameservers|fqdnSoaCache|muFqdnSoaCache) is a global variable
+      # The complexity is related to HTTP calls, and so we don't need to reduce the complexity for now.
+      - path: certificate/certificates.go
+        text: "cyclomatic complexity \\d+ of func `\\(\\*Certifier\\)\\.GetOCSP` is high"
         linters:
-          - gochecknoglobals
-      - path: challenge/dns01/nameserver_.+.go
-        text: dnsTimeout is a global variable
-        linters:
-          - gochecknoglobals
-      - path: challenge/dns01/precheck.go
-        text: defaultNameserverPort is a global variable
-        linters:
-          - gochecknoglobals
+          - gocyclo
       - path: challenge/http01/domain_matcher.go
         text: cyclomatic complexity \d+ of func `parseForwardedHeader` is high
         linters:
@@ -229,7 +226,7 @@ linters:
         text: Logger is a global variable
         linters:
           - gochecknoglobals
-      - path: e2e/(dnschallenge/)?[\d\w]+_test.go
+      - path: e2e/(dnschallenge/|eab/|configuration/)?[\d\w]+_test.go
         text: load is a global variable
         linters:
           - gochecknoglobals
@@ -249,15 +246,11 @@ linters:
         text: egTestAccount is a global variable
         linters:
           - gochecknoglobals
-      - path: providers/http/memcached/memcached_test.go
-        text: memcachedHosts is a global variable
-        linters:
-          - gochecknoglobals
       - path: providers/dns/checkdomain/internal/types.go
         text: '`payed` is a misspelling of `paid`'
         linters:
           - misspell
-      - path: platform/tester/env_test.go
+      - path: internal/tester/env_test.go
         linters:
           - thelper
       - path: providers/dns/oraclecloud/oraclecloud_test.go
@@ -268,27 +261,38 @@ linters:
         text: mu is a global variable
         linters:
           - gochecknoglobals
-      - path: cmd/cmd_renew.go
+      - path: cmd/cmd_run_renew.go
         text: cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high
         linters:
           - gocyclo
-      - path: cmd/cmd_renew.go
-        text: Function 'renewForDomains' has too many statements
+      - path: cmd/cmd_run.go
+        text: cyclomatic complexity \d+ of func `run` is high
         linters:
-          - funlen
+          - gocyclo
+      - path: cmd/internal/root/process_renew.go
+        text: cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high
+        linters:
+          - gocyclo
       - path: providers/dns/cpanel/cpanel.go
         text: cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high
         linters:
           - gocyclo
-      - path: providers/dns/manual/manual.go
-        text: 'SA1019: dns01.DNSProviderManual is deprecated'
-        linters:
-          - staticcheck
       # Those elements have been replaced by non-exposed structures.
       - path: providers/dns/linode/linode_test.go
         text: 'SA1019: linodego\.(DomainsPagedResponse|DomainRecordsPagedResponse) is deprecated'
         linters:
           - staticcheck
+      - path: log/logger.go
+        linters:
+          - gochecknoinits
+      - path: challenge/(dns01|dnspersist01)/client.go
+        text: defaultClient is a global variable
+        linters:
+          - gochecknoglobals
+      - path: challenge/(dns01|dnspersist01)/client.go
+        text: don't use `init` function
+        linters:
+          - gochecknoinits
 
 issues:
   max-issues-per-linter: 0

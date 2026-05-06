@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -86,7 +86,7 @@ func TestDNSProvider_Present(t *testing.T) {
 
 			provider := test.builder.Build(t)
 
-			err := provider.Present(testDomain, "token", "keyAuth")
+			err := provider.Present(t.Context(), testDomain, "token", "keyAuth")
 			if test.expectedError == "" {
 				assert.NoError(t, err)
 			} else {
@@ -146,7 +146,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 			provider := test.builder.Build(t)
 
-			err := provider.CleanUp(testDomain, "token", "keyAuth")
+			err := provider.CleanUp(t.Context(), testDomain, "token", "keyAuth")
 			if test.expectedError == "" {
 				assert.NoError(t, err)
 			} else {

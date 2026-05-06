@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/conohav3/internal"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/conohav3/internal"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
@@ -59,8 +59,9 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config *Config
-	client *internal.Client
+	config     *Config
+	client     *internal.Client
+	identifier *internal.Identifier
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for ConoHa DNS.
@@ -101,29 +102,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	identifier.HTTPClient = clientdebug.Wrap(identifier.HTTPClient)
 
-	auth := internal.Auth{
-		Identity: internal.Identity{
-			Methods: []string{"password"},
-			Password: internal.Password{
-				User: internal.User{
-					ID:       config.UserID,
-					Password: config.Password,
-				},
-			},
-		},
-		Scope: internal.Scope{
-			Project: internal.Project{
-				ID: config.TenantID,
-			},
-		},
-	}
-
-	token, err := identifier.GetToken(context.Background(), auth)
-	if err != nil {
-		return nil, fmt.Errorf("conohav3: failed to log in: %w", err)
-	}
-
-	client, err := internal.NewClient(config.Region, token)
+	client, err := internal.NewClient(config.Region)
 	if err != nil {
 		return nil, fmt.Errorf("conohav3: failed to create client: %w", err)
 	}
@@ -134,21 +113,30 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
-	return &DNSProvider{config: config, client: client}, nil
+	return &DNSProvider{
+		config:     config,
+		client:     client,
+		identifier: identifier,
+	}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	tok, err := d.getToken(ctx)
+	if err != nil {
+		return fmt.Errorf("conohav3: failed to log in: %w", err)
+	}
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	ctxAuth := internal.WithContext(ctx, tok)
+
+	info := dns01.GetChallengeInfo(ctxAuth, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctxAuth, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("conohav3: could not find zone for domain %q: %w", domain, err)
 	}
 
-	ctx := context.Background()
-
-	id, err := d.client.GetDomainID(ctx, authZone)
+	id, err := d.client.GetDomainID(ctxAuth, authZone)
 	if err != nil {
 		return fmt.Errorf("conohav3: failed to get domain ID: %w", err)
 	}
@@ -160,7 +148,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:  d.config.TTL,
 	}
 
-	err = d.client.CreateRecord(ctx, id, record)
+	err = d.client.CreateRecord(ctxAuth, id, record)
 	if err != nil {
 		return fmt.Errorf("conohav3: failed to create record: %w", err)
 	}
@@ -169,27 +157,32 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp clears ConoHa DNS TXT record.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	tok, err := d.getToken(ctx)
+	if err != nil {
+		return fmt.Errorf("conohav3: failed to log in: %w", err)
+	}
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	ctxAuth := internal.WithContext(ctx, tok)
+
+	info := dns01.GetChallengeInfo(ctxAuth, domain, keyAuth)
+
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctxAuth, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("conohav3: could not find zone for domain %q: %w", domain, err)
 	}
 
-	ctx := context.Background()
-
-	domID, err := d.client.GetDomainID(ctx, authZone)
+	domID, err := d.client.GetDomainID(ctxAuth, authZone)
 	if err != nil {
 		return fmt.Errorf("conohav3: failed to get domain ID: %w", err)
 	}
 
-	recID, err := d.client.GetRecordID(ctx, domID, info.EffectiveFQDN, "TXT", info.Value)
+	recID, err := d.client.GetRecordID(ctxAuth, domID, info.EffectiveFQDN, "TXT", info.Value)
 	if err != nil {
 		return fmt.Errorf("conohav3: failed to get record ID: %w", err)
 	}
 
-	err = d.client.DeleteRecord(ctx, domID, recID)
+	err = d.client.DeleteRecord(ctxAuth, domID, recID)
 	if err != nil {
 		return fmt.Errorf("conohav3: failed to delete record: %w", err)
 	}
@@ -200,4 +193,30 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) getToken(ctx context.Context) (string, error) {
+	auth := internal.Auth{
+		Identity: internal.Identity{
+			Methods: []string{"password"},
+			Password: internal.Password{
+				User: internal.User{
+					ID:       d.config.UserID,
+					Password: d.config.Password,
+				},
+			},
+		},
+		Scope: internal.Scope{
+			Project: internal.Project{
+				ID: d.config.TenantID,
+			},
+		},
+	}
+
+	tok, err := d.identifier.GetToken(ctx, auth)
+	if err != nil {
+		return "", fmt.Errorf("get token: %w", err)
+	}
+
+	return tok, nil
 }

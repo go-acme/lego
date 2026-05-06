@@ -27,7 +27,7 @@ Here is an example bash command using the Online.net provider:
 
 ```bash
 ONLINENET_API_TOKEN="xxx" \
-lego --dns onlinenet -d '*.example.com' -d example.com run
+lego run --dns onlinenet -d '*.example.com' -d example.com
 ```
 
 

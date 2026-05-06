@@ -7,7 +7,7 @@ Since = "v4.32.0"
 Example = '''
 ARTFILES_USERNAME="xxx" \
 ARTFILES_PASSWORD="yyy" \
-lego --dns artfiles -d '*.example.com' -d example.com run
+lego run --dns artfiles -d '*.example.com' -d example.com
 '''
 
 [Configuration]

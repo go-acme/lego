@@ -1,0 +1,27 @@
+{
+  "code": 0,
+  "message": "foo",
+  "data": {
+    "data": [
+      {
+        "groupID": 123,
+        "domainID": 456,
+        "domains": "example.com",
+        "state": 0,
+        "userLock": 0,
+        "adminLock": 0
+      },
+      {
+        "groupID": 123,
+        "domainID": 789,
+        "domains": "example.org",
+        "state": 0,
+        "userLock": 0,
+        "adminLock": 0
+      }
+    ],
+    "page": 1,
+    "pageSize": 10,
+    "pageCount": 1
+  }
+}

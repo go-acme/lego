@@ -1,0 +1,12 @@
+{
+  "request": {
+    "status_code": 401,
+    "success": false
+  },
+  "response": {
+    "message": "You need to authenticate with an API key.",
+    "see-also": [
+      "https:\/\/api.omg.lol"
+    ]
+  }
+}

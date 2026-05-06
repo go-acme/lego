@@ -14,7 +14,7 @@ More information in the section [Enabling API Access](https://www.namecheap.com/
 Example = '''
 NAMECHEAP_API_USER=user \
 NAMECHEAP_API_KEY=key \
-lego --dns namecheap -d '*.example.com' -d example.com run
+lego run --dns namecheap -d '*.example.com' -d example.com
 '''
 
 [Configuration]

@@ -6,7 +6,7 @@ Since = "v4.34.0"
 
 Example = '''
 NETNOD_TOKEN="xxx" \
-lego --dns netnod -d '*.example.com' -d example.com run
+lego run --dns netnod -d '*.example.com' -d example.com
 '''
 
 [Configuration]

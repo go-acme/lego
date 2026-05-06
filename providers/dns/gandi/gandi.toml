@@ -6,7 +6,7 @@ Since = "v0.3.0"
 
 Example = '''
 GANDI_API_KEY=abcdefghijklmnopqrstuvwx \
-lego --dns gandi -d '*.example.com' -d example.com run
+lego run --dns gandi -d '*.example.com' -d example.com
 '''
 
 [Configuration]

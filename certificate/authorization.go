@@ -1,14 +1,17 @@
 package certificate
 
 import (
+	"context"
+	"errors"
+	"log/slog"
 	"time"
 
-	"github.com/go-acme/lego/v4/acme"
-	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v5/acme"
+	"github.com/go-acme/lego/v5/log"
 )
 
-func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authorization, error) {
-	resc, errc := make(chan acme.Authorization), make(chan domainError)
+func (c *Certifier) getAuthorizations(ctx context.Context, order acme.ExtendedOrder) ([]acme.Authorization, error) {
+	resc, errc := make(chan acme.Authorization), make(chan error)
 
 	delay := time.Second / time.Duration(c.overallRequestLimit)
 
@@ -16,9 +19,9 @@ func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authoriz
 		time.Sleep(delay)
 
 		go func(authzURL string) {
-			authz, err := c.core.Authorizations.Get(authzURL)
+			authz, err := c.core.Authorizations.Get(ctx, authzURL)
 			if err != nil {
-				errc <- domainError{Domain: authz.Identifier.Value, Error: err}
+				errc <- err
 				return
 			}
 
@@ -28,44 +31,52 @@ func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authoriz
 
 	var responses []acme.Authorization
 
-	failures := newObtainError()
+	var failures error
 
 	for range len(order.Authorizations) {
 		select {
 		case res := <-resc:
 			responses = append(responses, res)
 		case err := <-errc:
-			failures.Add(err.Domain, err.Error)
+			failures = errors.Join(failures, err)
 		}
 	}
 
 	for i, auth := range order.Authorizations {
-		log.Infof("[%s] AuthURL: %s", order.Identifiers[i].Value, auth)
+		log.Debug("Authorization",
+			slog.String("url", order.Identifiers[i].Value),
+			slog.String("authz", auth),
+		)
 	}
 
 	close(resc)
 	close(errc)
 
-	return responses, failures.Join()
+	return responses, failures
 }
 
-func (c *Certifier) deactivateAuthorizations(order acme.ExtendedOrder, force bool) {
+func (c *Certifier) deactivateAuthorizations(ctx context.Context, order acme.ExtendedOrder, force bool) {
 	for _, authzURL := range order.Authorizations {
-		auth, err := c.core.Authorizations.Get(authzURL)
+		auth, err := c.core.Authorizations.Get(ctx, authzURL)
 		if err != nil {
-			log.Infof("Unable to get the authorization for %s: %v", authzURL, err)
+			log.Warn("Unable to get the authorization.",
+				slog.String("url", authzURL),
+				log.ErrorAttr(err),
+			)
+
 			continue
 		}
 
 		if auth.Status == acme.StatusValid && !force {
-			log.Infof("Skipping deactivating of valid auth: %s", authzURL)
+			log.Info("Skipping deactivating of valid authorization.", slog.String("url", authzURL))
+
 			continue
 		}
 
-		log.Infof("Deactivating auth: %s", authzURL)
+		log.Info("Deactivating authorization.", slog.String("url", authzURL))
 
-		if c.core.Authorizations.Deactivate(authzURL) != nil {
-			log.Infof("Unable to deactivate the authorization: %s", authzURL)
+		if c.core.Authorizations.Deactivate(ctx, authzURL) != nil {
+			log.Warn("Unable to deactivate the authorization.", slog.String("url", authzURL))
 		}
 	}
 }

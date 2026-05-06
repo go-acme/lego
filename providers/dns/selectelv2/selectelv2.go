@@ -9,10 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v4/providers/dns/internal/useragent"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/useragent"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/miekg/dns"
 	selectelapi "github.com/selectel/domains-go/pkg/v2"
 	"github.com/selectel/go-selvpcclient/v4/selvpcclient"
@@ -51,6 +52,8 @@ const (
 )
 
 const tokenHeader = "X-Auth-Token"
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 var errNotFound = errors.New("rrset not found")
 
@@ -147,15 +150,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill DNS-01 challenge.
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) error {
 	client, err := d.authorize(ctx)
 	if err != nil {
 		return fmt.Errorf("selectelv2: authorize: %w", err)
 	}
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := client.getZone(ctx, domain)
 	if err != nil {
@@ -194,15 +195,13 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 }
 
 // CleanUp removes a TXT record used for DNS-01 challenge.
-func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	ctx := context.Background()
-
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) error {
 	client, err := d.authorize(ctx)
 	if err != nil {
 		return fmt.Errorf("selectelv2: authorize: %w", err)
 	}
 
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zone, err := client.getZone(ctx, domain)
 	if err != nil {

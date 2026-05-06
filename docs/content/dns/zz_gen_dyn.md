@@ -29,7 +29,7 @@ Here is an example bash command using the Dyn provider:
 DYN_CUSTOMER_NAME=xxxxxx \
 DYN_USER_NAME=yyyyy \
 DYN_PASSWORD=zzzz \
-lego --dns dyn -d '*.example.com' -d example.com run
+lego run --dns dyn -d '*.example.com' -d example.com
 ```
 
 

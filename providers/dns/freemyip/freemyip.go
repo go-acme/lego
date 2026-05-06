@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/clientdebug"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/platform/env"
+	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/nrdcg/freemyip"
 )
 
@@ -110,15 +110,15 @@ func (d *DNSProvider) Sequential() time.Duration {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, freemyip.RootDomain)
 	if err != nil {
 		return fmt.Errorf("freemyip: %w", err)
 	}
 
-	_, err = d.client.EditTXTRecord(context.Background(), subDomain, info.Value)
+	_, err = d.client.EditTXTRecord(ctx, subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("freemyip: %w", err)
 	}
@@ -127,15 +127,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, freemyip.RootDomain)
 	if err != nil {
 		return fmt.Errorf("freemyip: %w", err)
 	}
 
-	_, err = d.client.DeleteTXTRecord(context.Background(), subDomain)
+	_, err = d.client.DeleteTXTRecord(ctx, subDomain)
 	if err != nil {
 		return fmt.Errorf("freemyip: %w", err)
 	}

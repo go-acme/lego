@@ -27,7 +27,7 @@ Here is an example bash command using the deSEC.io provider:
 
 ```bash
 DESEC_TOKEN=x-xxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --dns desec -d '*.example.com' -d example.com run
+lego run --dns desec -d '*.example.com' -d example.com
 ```
 
 

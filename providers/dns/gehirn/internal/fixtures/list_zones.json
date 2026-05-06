@@ -1,0 +1,20 @@
+[
+  {
+    "id": "ZONE-ID-1",
+    "name": "example.net",
+    "deletion_protection": true,
+    "current_version_id": "VERSION-ID-1"
+  },
+  {
+    "id": "ZONE-ID-2",
+    "name": "example.org",
+    "deletion_protection": true,
+    "current_version_id": "VERSION-ID-2"
+  },
+  {
+    "id": "ZONE-ID-3",
+    "name": "example.com",
+    "deletion_protection": true,
+    "current_version_id": "VERSION-ID-3"
+  }
+]

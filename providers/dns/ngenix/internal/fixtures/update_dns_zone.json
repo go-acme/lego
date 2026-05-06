@@ -1,0 +1,33 @@
+{
+  "modelName": "DnsZone",
+  "id": 1,
+  "name": "example.com",
+  "records": [
+    {
+      "name": "www",
+      "type": "A",
+      "data": "195.230.64.13"
+    },
+    {
+      "name": "mail",
+      "type": "MX",
+      "data": "10 mail.client.ru."
+    },
+    {
+      "name": "cdn",
+      "type": "A",
+      "configRef": {
+        "id": 12,
+        "link": "https://api.ngenix.net/api/v3/config/12"
+      }
+    },
+    {
+      "name": "_acme-challenge",
+      "type": "TXT",
+      "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+    }
+  ],
+  "links": {
+    "self": "https://api.ngenix.net/api/v3/dns-zone/1"
+  }
+}

@@ -9,8 +9,8 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/lightsail"
-	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -76,6 +76,6 @@ func TestDNSProvider_Present(t *testing.T) {
 	domain := "example.com"
 	keyAuth := "123456d=="
 
-	err := provider.Present(domain, "", keyAuth)
+	err := provider.Present(t.Context(), domain, "", keyAuth)
 	require.NoError(t, err)
 }

@@ -27,7 +27,7 @@ Here is an example bash command using the Leaseweb provider:
 
 ```bash
 LEASEWEB_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns leaseweb -d '*.example.com' -d example.com run
+lego run --dns leaseweb -d '*.example.com' -d example.com
 ```
 
 

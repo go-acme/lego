@@ -27,7 +27,7 @@ Here is an example bash command using the Vscale provider:
 
 ```bash
 VSCALE_API_TOKEN=xxxxx \
-lego --dns vscale -d '*.example.com' -d example.com run
+lego run --dns vscale -d '*.example.com' -d example.com
 ```
 
 
@@ -47,7 +47,6 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `VSCALE_BASE_URL` | API endpoint URL |
 | `VSCALE_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
 | `VSCALE_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
 | `VSCALE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |

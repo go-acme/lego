@@ -30,7 +30,7 @@ EFFICIENTIP_USERNAME="user" \
 EFFICIENTIP_PASSWORD="secret" \
 EFFICIENTIP_HOSTNAME="ipam.example.org" \
 EFFICIENTIP_DNS_NAME="dns.smart" \
-lego --dns efficientip -d '*.example.com' -d example.com run
+lego run --dns efficientip -d '*.example.com' -d example.com
 ```
 
 

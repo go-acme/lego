@@ -1,0 +1,50 @@
+{
+  "id": 1,
+  "modelName": "DnsZone",
+  "name": "example.com",
+  "links": {
+    "self": "https://api.ngenix.net/api/v3/dns-zone/22",
+    "config": "https://api.ngenix.net/api/v3/config?customer=4321"
+  },
+  "customerRef": {
+    "id": 4321,
+    "link": "https://api.ngenix.net/api/v3/customer/4321"
+  },
+  "records": [
+    {
+      "name": "www",
+      "type": "A",
+      "data": "195.230.64.13"
+    },
+    {
+      "name": "mail",
+      "type": "MX",
+      "data": "10 mail.client.ru."
+    },
+    {
+      "name": "cdn",
+      "type": "A",
+      "configRef": {
+        "id": 12,
+        "link": "https://api.ngenix.net/api/v3/config/12"
+      }
+    }
+  ],
+  "nameservers": [
+    "1.1.1.1",
+    "2.2.2.2"
+  ],
+  "soa": {
+    "mname": "example.com.",
+    "rname": "noc.example.com.",
+    "minimum": 1290980980
+  },
+  "dnssec": {
+    "enabled": true,
+    "dnssecKeyRef": {
+      "id": 1234,
+      "link": "https://api.ngenix.net/api/v3/dnssec-key/4321"
+    }
+  },
+  "comment": "Комментарий, указанный при последнем редактировании зоны."
+}

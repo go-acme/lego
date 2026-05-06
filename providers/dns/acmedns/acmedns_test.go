@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester/servermock"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/nrdcg/goacmedns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -70,7 +70,7 @@ func TestPresent(t *testing.T) {
 				p.storage = test.Storage
 			}
 
-			err := p.Present(egDomain, "foo", egKeyAuth)
+			err := p.Present(t.Context(), egDomain, "foo", egKeyAuth)
 			if test.ExpectedError != nil {
 				assert.Equal(t, test.ExpectedError, err)
 			} else {
@@ -182,7 +182,7 @@ func TestPresent_httpStorage(t *testing.T) {
 			client := newMockClient().WithRegisterAccount(egTestAccount)
 			provider.client = client
 
-			err := provider.Present(egDomain, "foo", egKeyAuth)
+			err := provider.Present(t.Context(), egDomain, "foo", egKeyAuth)
 			if test.ExpectedError != nil {
 				assert.EqualError(t, err, test.ExpectedError.Error())
 				assert.True(t, client.registerAccountCalled)

@@ -11,10 +11,10 @@ import (
 	"github.com/alibabacloud-go/tea/dara"
 	"github.com/aliyun/credentials-go/credentials"
 	alidns "github.com/go-acme/alidns-20150109/v4/client"
-	"github.com/go-acme/lego/v4/challenge"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
+	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/ptr"
+	"github.com/go-acme/lego/v5/platform/env"
 	"golang.org/x/net/idna"
 )
 
@@ -154,10 +154,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	zoneName, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -178,10 +176,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	ctx := context.Background()
-
-	info := dns01.GetChallengeInfo(domain, keyAuth)
+func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
+	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	records, err := d.findTxtRecords(ctx, info.EffectiveFQDN)
 	if err != nil {
@@ -231,7 +227,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string,
 		startPage++
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(domain)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, domain)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone: %w", err)
 	}

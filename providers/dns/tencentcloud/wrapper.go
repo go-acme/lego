@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v5/challenge/dns01"
 	dnspod "github.com/go-acme/tencentclouddnspod/v20210323"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	errorsdk "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
@@ -32,7 +32,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*dnspod
 		request.Offset = common.Int64Ptr(int64(len(domains)))
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(domain)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, domain)
 	if err != nil {
 		return nil, fmt.Errorf("could not find zone: %w", err)
 	}

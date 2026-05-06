@@ -1,0 +1,33 @@
+{
+  "records": [
+    {
+      "name": "www",
+      "type": "A",
+      "data": "195.230.64.13"
+    },
+    {
+      "name": "mail",
+      "type": "MX",
+      "data": "10 mail.client.ru."
+    },
+    {
+      "name": "cdn",
+      "type": "A",
+      "configRef": {
+        "id": 12
+      }
+    },
+    {
+      "name": "_acme-challenge",
+      "type": "TXT",
+      "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+    }
+  ],
+  "comment": "Комментарий, указанный при последнем редактировании зоны.",
+  "dnssec": {
+    "enabled": true,
+    "dnssecKeyRef": {
+      "id": 1234
+    }
+  }
+}

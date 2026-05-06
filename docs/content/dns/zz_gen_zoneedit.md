@@ -28,7 +28,7 @@ Here is an example bash command using the ZoneEdit provider:
 ```bash
 ZONEEDIT_USER="xxxxxxxxxxxxxxxxxxxxx" \
 ZONEEDIT_AUTH_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
-lego --dns zoneedit -d '*.example.com' -d example.com run
+lego run --dns zoneedit -d '*.example.com' -d example.com
 ```
 
 

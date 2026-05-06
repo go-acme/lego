@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/go-acme/lego/v5/internal/errutils"
 )
 
 type Client struct {

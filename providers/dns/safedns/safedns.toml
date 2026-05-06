@@ -6,7 +6,7 @@ Since = "v4.6.0"
 
 Example = '''
 SAFEDNS_AUTH_TOKEN=xxxxxx \
-lego --dns safedns -d '*.example.com' -d example.com run
+lego run --dns safedns -d '*.example.com' -d example.com
 '''
 
 [Configuration]

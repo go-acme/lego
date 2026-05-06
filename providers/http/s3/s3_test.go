@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-acme/lego/v4/challenge/http01"
-	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v5/challenge/http01"
+	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -50,7 +50,7 @@ func TestLiveNewHTTPProvider(t *testing.T) {
 
 	// Present
 
-	err = provider.Present(domain, token, keyAuth)
+	err = provider.Present(t.Context(), domain, token, keyAuth)
 	require.NoError(t, err)
 
 	chlgPath := fmt.Sprintf("http://%s.s3.%s.amazonaws.com%s",
@@ -68,7 +68,7 @@ func TestLiveNewHTTPProvider(t *testing.T) {
 
 	// CleanUp
 
-	err = provider.CleanUp(domain, token, keyAuth)
+	err = provider.CleanUp(t.Context(), domain, token, keyAuth)
 	require.NoError(t, err)
 
 	cleanupResp, err := http.Get(chlgPath)

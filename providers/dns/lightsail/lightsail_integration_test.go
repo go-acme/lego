@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/lightsail"
-	"github.com/go-acme/lego/v4/providers/dns/internal/ptr"
+	"github.com/go-acme/lego/v5/internal/ptr"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,7 +22,7 @@ func TestLiveTTL(t *testing.T) {
 
 	domain := envTest.GetDomain()
 
-	err = provider.Present(domain, "foo", "bar")
+	err = provider.Present(t.Context(), domain, "foo", "bar")
 	require.NoError(t, err)
 
 	// we need a separate Lightsail client here as the one in the DNS provider is unexported.
@@ -38,7 +38,7 @@ func TestLiveTTL(t *testing.T) {
 	require.NoError(t, err)
 
 	defer func() {
-		errC := provider.CleanUp(domain, "foo", "bar")
+		errC := provider.CleanUp(t.Context(), domain, "foo", "bar")
 		if errC != nil {
 			t.Log(errC)
 		}

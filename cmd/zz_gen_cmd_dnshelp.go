@@ -102,6 +102,7 @@ func allDNSCodes() string {
 		"hostinger",
 		"hostingnl",
 		"hosttech",
+		"hostup",
 		"httpnet",
 		"httpreq",
 		"huaweicloud",
@@ -2164,6 +2165,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hosttech`)
+
+	case "hostup":
+		// generated from: providers/dns/hostup/hostup.toml
+		ew.writeln(`Configuration for HostUp.`)
+		ew.writeln(`Code:	'hostup'`)
+		ew.writeln(`Since:	'v5.0.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "HOSTUP_API_KEY":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "HOSTUP_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "HOSTUP_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "HOSTUP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "HOSTUP_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hostup`)
 
 	case "httpnet":
 		// generated from: providers/dns/httpnet/httpnet.toml

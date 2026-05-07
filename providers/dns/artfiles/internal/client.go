@@ -12,7 +12,10 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/errutils"
 	"github.com/go-acme/lego/v5/internal/useragent"
+	"github.com/miekg/dns"
 )
+
+const maxRedirects = 5
 
 // Client the ArtFiles API client.
 type Client struct {
@@ -139,4 +142,26 @@ func getServerURL(serverName string) string {
 	}
 
 	return fmt.Sprintf("https://%s.c.artfiles.de/api/", serverName)
+}
+
+func CheckRedirect(req *http.Request, via []*http.Request) error {
+	if len(via) == 0 {
+		return nil
+	}
+
+	if len(via) >= maxRedirects {
+		return fmt.Errorf("stopped after %d redirects", maxRedirects)
+	}
+
+	prev := via[len(via)-1]
+
+	// Same main domain: `c.artfiles.de` (3 labels in common).
+	if dns.CompareDomainName(req.URL.Host, prev.URL.Host) == 3 {
+		auth := prev.Header.Get("Authorization")
+		if auth != "" {
+			req.Header.Set("Authorization", auth)
+		}
+	}
+
+	return nil
 }

@@ -2174,7 +2174,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "HOSTUP_API_KEY":	API token`)
+		ew.writeln(`	- "HOSTUP_API_KEY":	API token (required scopes: read:dns, write:dns, read:domains)`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

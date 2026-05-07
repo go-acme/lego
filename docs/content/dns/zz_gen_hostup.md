@@ -37,7 +37,7 @@ lego run --dns hostup -d '*.example.com' -d example.com
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `HOSTUP_API_KEY` | API token |
+| `HOSTUP_API_KEY` | API token (required scopes: read:dns, write:dns, read:domains) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

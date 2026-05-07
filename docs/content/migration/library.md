@@ -78,7 +78,7 @@ The method `http01.ProviderServer.SetProxyHeader()` is removed and replaced by a
 
 The function `dns01.RecursiveNSsPropagationRequirement()` is removed and replaced by `dns01.DisableAuthoritativeNssPropagationRequirement()`.
 
-## Fields changes
+## Field changes
 
 The field `RetryAfter` of `acme.RateLimitedError` and `acme.ExtendedChallenge` is now a `time.Duration` instead of a `string`.
 
@@ -126,6 +126,36 @@ The following elements have been removed without replacements:
 - `netcup.EnvTTL`
 - `vultr.Config.HTTPTimeout`
 
+## Package changes
+
+The package `platform/config/env` has been moved to `platform/env`.
+
+The following packages have been removed:
+
+- `platform/tester`
+- `platform/wait`
+
 ## PEM encoding
 
 It uses `PKCS#8` instead of `PKCS#1` for PEM encoding.
+
+## Default resolver/nameserver fallbacks
+
+The default resolver/nameserver fallbacks have been changed.
+
+{{< tabs groupid="migration-examples" >}}
+{{% tab title="v4" %}}
+
+- `google-public-dns-a.google.com:53`
+- `google-public-dns-b.google.com:53`
+
+{{% /tab %}}
+{{% tab title="v5" %}}
+
+- `1.1.1.1:53`
+- `1.0.0.1:53`
+- `[2606:4700:4700::1111]:53`
+- `[2606:4700:4700::1001]:53`
+
+{{% /tab %}}
+{{< /tabs >}}

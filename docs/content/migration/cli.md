@@ -153,3 +153,24 @@ The support of the common name is disabled by default.
 ## PEM encoding
 
 Lego uses `PKCS#8` instead of `PKCS#1` for PEM encoding.
+
+## Default resolver/nameserver fallbacks
+
+The default resolver/nameserver fallbacks have been changed.
+
+{{< tabs groupid="migration-examples" >}}
+{{% tab title="v4" %}}
+
+- `google-public-dns-a.google.com:53`
+- `google-public-dns-b.google.com:53`
+
+{{% /tab %}}
+{{% tab title="v5" %}}
+
+- `1.1.1.1:53`
+- `1.0.0.1:53`
+- `[2606:4700:4700::1111]:53`
+- `[2606:4700:4700::1001]:53`
+
+{{% /tab %}}
+{{< /tabs >}}

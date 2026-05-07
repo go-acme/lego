@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/internal/errutils"
 	"github.com/go-acme/lego/v5/log"
 )
 
@@ -50,7 +51,7 @@ func NewProber(solverManager *SolverManager) *Prober {
 // Solve Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
 func (p *Prober) Solve(ctx context.Context, authorizations []acme.Authorization) error {
-	failures := make(obtainError)
+	failures := errutils.NewDomainsError("resolver")
 
 	var (
 		authSolvers           []*selectedAuthSolver
@@ -82,7 +83,7 @@ func (p *Prober) Solve(ctx context.Context, authorizations []acme.Authorization)
 				authSolvers = append(authSolvers, authSolver)
 			}
 		} else {
-			failures[domain] = fmt.Errorf("[%s] acme: could not determine solvers", domain)
+			failures.Add(domain, fmt.Errorf("[%s] acme: could not determine solvers", domain))
 		}
 	}
 
@@ -90,16 +91,10 @@ func (p *Prober) Solve(ctx context.Context, authorizations []acme.Authorization)
 
 	sequentialSolve(ctx, authSolversSequential, failures)
 
-	// Be careful not to return an empty failures map,
-	// for even an empty obtainError is a non-nil error value
-	if len(failures) > 0 {
-		return failures
-	}
-
-	return nil
+	return failures.Join()
 }
 
-func sequentialSolve(ctx context.Context, authSolvers []*selectedAuthSolver, failures obtainError) {
+func sequentialSolve(ctx context.Context, authSolvers []*selectedAuthSolver, failures *errutils.DomainsError) {
 	// Some CA are using the same token,
 	// this can be a problem with the DNS01 challenge when the DNS provider doesn't support duplicate TXT records.
 	// In the sequential mode, this is not a problem because we can solve the challenges in order.
@@ -122,7 +117,7 @@ func sequentialSolve(ctx context.Context, authSolvers []*selectedAuthSolver, fai
 
 			err := solvr.PreSolve(ctx, authSolver.authz)
 			if err != nil {
-				failures[domain] = err
+				failures.Add(domain, err)
 
 				cleanUp(ctx, authSolver.solver, authSolver.authz)
 
@@ -135,7 +130,7 @@ func sequentialSolve(ctx context.Context, authSolvers []*selectedAuthSolver, fai
 		// Solve the challenge
 		err := authSolver.solver.Solve(ctx, authSolver.authz)
 		if err != nil {
-			failures[domain] = err
+			failures.Add(domain, err)
 
 			cleanUp(ctx, authSolver.solver, authSolver.authz)
 
@@ -161,7 +156,7 @@ func sequentialSolve(ctx context.Context, authSolvers []*selectedAuthSolver, fai
 	}
 }
 
-func parallelSolve(ctx context.Context, authSolvers []*selectedAuthSolver, failures obtainError) {
+func parallelSolve(ctx context.Context, authSolvers []*selectedAuthSolver, failures *errutils.DomainsError) {
 	// Some CA are using the same token,
 	// this can be a problem with the DNS01 challenge when the DNS provider doesn't support duplicate TXT records.
 	uniq := make(map[string]struct{})
@@ -185,7 +180,7 @@ func parallelSolve(ctx context.Context, authSolvers []*selectedAuthSolver, failu
 		if solvr, ok := authSolver.solver.(preSolver); ok {
 			err := solvr.PreSolve(ctx, authz)
 			if err != nil {
-				failures[challenge.GetTargetedDomain(authz)] = err
+				failures.Add(challenge.GetTargetedDomain(authz), err)
 			}
 		}
 	}
@@ -209,19 +204,19 @@ func parallelSolve(ctx context.Context, authSolvers []*selectedAuthSolver, failu
 		}
 	}()
 
-	// Finally solve all challenges for real
+	// Finally, solve all challenges for real.
 	for _, authSolver := range authSolvers {
 		authz := authSolver.authz
 
 		domain := challenge.GetTargetedDomain(authz)
-		if failures[domain] != nil {
+		if failures.Has(domain) {
 			// already failed in previous loop
 			continue
 		}
 
 		err := authSolver.solver.Solve(ctx, authz)
 		if err != nil {
-			failures[domain] = err
+			failures.Add(domain, err)
 		}
 	}
 }

@@ -18,6 +18,7 @@ import (
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/internal/errutils"
 	"github.com/go-acme/lego/v5/internal/wait"
 	"github.com/go-acme/lego/v5/log"
 	"golang.org/x/crypto/ocsp"
@@ -225,7 +226,7 @@ func (c *Certifier) Obtain(ctx context.Context, request ObtainRequest) (*Resourc
 
 	log.Info("acme: Validations succeeded; requesting certificates.", log.DomainsAttr(domains))
 
-	failures := newObtainError()
+	failures := errutils.NewDomainsError("certificates")
 
 	cert, err := c.getForOrder(ctx, domains, order, request)
 	if err != nil {
@@ -303,7 +304,7 @@ func (c *Certifier) ObtainForCSR(ctx context.Context, request ObtainForCSRReques
 
 	log.Info("acme: Validations succeeded; requesting certificates.", log.DomainsAttr(domains))
 
-	failures := newObtainError()
+	failures := errutils.NewDomainsError("certificates")
 
 	certRes := &Resource{
 		ID:      domains[0],

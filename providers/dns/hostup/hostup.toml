@@ -1,0 +1,22 @@
+Name = "HostUp"
+Description = ''''''
+URL = "https://hostup.se/en/"
+Code = "hostup"
+Since = "v5.0.0"
+
+Example = '''
+HOSTUP_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+lego run --dns hostup -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    HOSTUP_API_KEY = "API token (required scopes: read:dns, write:dns, read:domains)"
+  [Configuration.Additional]
+    HOSTUP_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    HOSTUP_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    HOSTUP_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    HOSTUP_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://developer.hostup.se/"

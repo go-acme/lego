@@ -17,9 +17,13 @@ type Response[T any] struct {
 	Data              T      `json:"data,omitempty"`
 }
 
-type RecordData struct {
+type RecordsData struct {
 	Domain  string   `json:"domain,omitempty"`
 	Records []Record `json:"records,omitempty"`
+}
+
+type RecordData struct {
+	Record Record `json:"record"`
 }
 
 type Record struct {

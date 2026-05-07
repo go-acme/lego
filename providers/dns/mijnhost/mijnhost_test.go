@@ -147,12 +147,9 @@ func TestDNSProvider_Present(t *testing.T) {
 		Route("GET /domains",
 			servermock.ResponseFromInternal("list_domains.json"),
 		).
-		Route("GET /domains/example.com/dns",
-			servermock.ResponseFromInternal("get_dns_records.json"),
-		).
-		Route("PUT /domains/example.com/dns",
-			servermock.ResponseFromInternal("update_dns_records.json"),
-			servermock.CheckRequestJSONBodyFromInternal("update_dns_records-request_add.json"),
+		Route("PATCH /domains/example.com/dns",
+			servermock.ResponseFromInternal("update_dns_record.json"),
+			servermock.CheckRequestJSONBodyFromInternal("update_dns_record-request.json"),
 		).
 		Build(t)
 
@@ -165,12 +162,9 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		Route("GET /domains",
 			servermock.ResponseFromInternal("list_domains.json"),
 		).
-		Route("GET /domains/example.com/dns",
-			servermock.ResponseFromInternal("get_dns_records-existing.json"),
-		).
-		Route("PUT /domains/example.com/dns",
-			servermock.ResponseFromInternal("update_dns_records.json"),
-			servermock.CheckRequestJSONBodyFromInternal("update_dns_records-request_remove.json"),
+		Route("DELETE /domains/example.com/dns",
+			servermock.ResponseFromInternal("delete_dns_record.json"),
+			servermock.CheckRequestJSONBodyFromInternal("delete_dns_record-request.json"),
 		).
 		Build(t)
 

@@ -138,3 +138,40 @@ func TestClient_UpdateRecords(t *testing.T) {
 	err := client.UpdateRecords(t.Context(), "example.com", records)
 	require.NoError(t, err)
 }
+
+func TestClient_UpdateRecord(t *testing.T) {
+	client := mockBuilder().
+		Route("PATCH /domains/example.com/dns",
+			servermock.ResponseFromFixture("update_dns_record.json"),
+			servermock.CheckRequestJSONBodyFromFixture("update_dns_record-request.json"),
+		).
+		Build(t)
+
+	record := Record{
+		Type:  "TXT",
+		Name:  "_acme-challenge",
+		Value: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		TTL:   120,
+	}
+
+	err := client.UpdateRecord(t.Context(), "example.com", record)
+	require.NoError(t, err)
+}
+
+func TestClient_DeleteRecord(t *testing.T) {
+	client := mockBuilder().
+		Route("DELETE /domains/example.com/dns",
+			servermock.ResponseFromFixture("delete_dns_record.json"),
+			servermock.CheckRequestJSONBodyFromFixture("delete_dns_record-request.json"),
+		).
+		Build(t)
+
+	record := Record{
+		Type:  "TXT",
+		Name:  "_acme-challenge",
+		Value: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+	}
+
+	err := client.DeleteRecord(t.Context(), "example.com", record)
+	require.NoError(t, err)
+}

@@ -66,7 +66,7 @@ func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 
-	var results Response[RecordData]
+	var results Response[RecordsData]
 
 	err = c.do(req, &results)
 	if err != nil {
@@ -81,17 +81,38 @@ func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error
 func (c *Client) UpdateRecords(ctx context.Context, domain string, records []Record) error {
 	endpoint := c.BaseURL.JoinPath("domains", domain, "dns")
 
-	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, RecordData{Records: records})
+	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, RecordsData{Records: records})
 	if err != nil {
 		return fmt.Errorf("create request: %w", err)
 	}
 
-	err = c.do(req, nil)
+	return c.do(req, nil)
+}
+
+// UpdateRecord Update a single DNS record.
+// https://mijn.host/api/doc/api-3600003
+func (c *Client) UpdateRecord(ctx context.Context, domain string, record Record) error {
+	endpoint := c.BaseURL.JoinPath("domains", domain, "dns")
+
+	req, err := newJSONRequest(ctx, http.MethodPatch, endpoint, RecordData{Record: record})
 	if err != nil {
-		return err
+		return fmt.Errorf("create request: %w", err)
 	}
 
-	return nil
+	return c.do(req, nil)
+}
+
+// DeleteRecord Delete a single DNS record.
+// https://mijn.host/api/doc/api-4293957
+func (c *Client) DeleteRecord(ctx context.Context, domain string, record Record) error {
+	endpoint := c.BaseURL.JoinPath("domains", domain, "dns")
+
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, RecordData{Record: record})
+	if err != nil {
+		return fmt.Errorf("create request: %w", err)
+	}
+
+	return c.do(req, nil)
 }
 
 func (c *Client) do(req *http.Request, result any) error {

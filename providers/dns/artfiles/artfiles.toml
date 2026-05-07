@@ -15,6 +15,7 @@ lego run --dns artfiles -d '*.example.com' -d example.com
     ARTFILES_USERNAME = "API username"
     ARTFILES_PASSWORD = "API password"
   [Configuration.Additional]
+    ARTFILES_SERVER_NAME = "Your server name (Default: dcp)"
     ARTFILES_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     ARTFILES_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 360)"
     ARTFILES_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"

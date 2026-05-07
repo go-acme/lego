@@ -21,8 +21,9 @@ import (
 const (
 	envNamespace = "ARTFILES_"
 
-	EnvUsername = envNamespace + "USERNAME"
-	EnvPassword = envNamespace + "PASSWORD"
+	EnvUsername   = envNamespace + "USERNAME"
+	EnvPassword   = envNamespace + "PASSWORD"
+	EnvServerName = envNamespace + "SERVER_NAME"
 
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -33,8 +34,9 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Username string
-	Password string
+	Username   string
+	Password   string
+	ServerName string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -47,7 +49,8 @@ func NewDefaultConfig() *Config {
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 6*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout:       env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			CheckRedirect: internal.CheckRedirect,
 		},
 	}
 }
@@ -68,6 +71,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Username = values[EnvUsername]
 	config.Password = values[EnvPassword]
+	config.ServerName = env.GetOrDefaultString(EnvServerName, "dcp")
 
 	return NewDNSProviderConfig(config)
 }
@@ -78,7 +82,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("artfiles: the configuration of the DNS provider is nil")
 	}
 
-	client, err := internal.NewClient(config.Username, config.Password)
+	client, err := internal.NewClient(config.Username, config.Password, config.ServerName)
 	if err != nil {
 		return nil, fmt.Errorf("artfiles: %w", err)
 	}

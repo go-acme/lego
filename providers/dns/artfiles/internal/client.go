@@ -12,9 +12,10 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/errutils"
 	"github.com/go-acme/lego/v5/internal/useragent"
+	"github.com/miekg/dns"
 )
 
-const defaultBaseURL = "https://dcp.c.artfiles.de/api/"
+const maxRedirects = 5
 
 // Client the ArtFiles API client.
 type Client struct {
@@ -26,12 +27,15 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(username, password string) (*Client, error) {
+func NewClient(username, password, serverName string) (*Client, error) {
 	if username == "" || password == "" {
 		return nil, errors.New("credentials missing")
 	}
 
-	baseURL, _ := url.Parse(defaultBaseURL)
+	baseURL, err := url.Parse(getServerURL(serverName))
+	if err != nil {
+		return nil, fmt.Errorf("parse server URL: %w", err)
+	}
 
 	return &Client{
 		username:   username,
@@ -130,4 +134,34 @@ func (c *Client) do(req *http.Request) ([]byte, error) {
 	}
 
 	return raw, nil
+}
+
+func getServerURL(serverName string) string {
+	if serverName == "" {
+		serverName = "dcp"
+	}
+
+	return fmt.Sprintf("https://%s.c.artfiles.de/api/", serverName)
+}
+
+func CheckRedirect(req *http.Request, via []*http.Request) error {
+	if len(via) == 0 {
+		return nil
+	}
+
+	if len(via) >= maxRedirects {
+		return fmt.Errorf("stopped after %d redirects", maxRedirects)
+	}
+
+	prev := via[len(via)-1]
+
+	// Same main domain: `c.artfiles.de` (3 labels in common).
+	if dns.CompareDomainName(req.URL.Host, prev.URL.Host) == 3 {
+		auth := prev.Header.Get("Authorization")
+		if auth != "" {
+			req.Header.Set("Authorization", auth)
+		}
+	}
+
+	return nil
 }

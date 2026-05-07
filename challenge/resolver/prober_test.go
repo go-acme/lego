@@ -96,9 +96,7 @@ func TestProber_Solve(t *testing.T) {
 				createStubAuthorizationHTTP01("example.org", acme.StatusProcessing),
 				createStubAuthorizationHTTP01("example.net", acme.StatusProcessing),
 			},
-			expectedError: `error: one or more domains had a problem:
-[example.com] preSolve error example.com
-`,
+			expectedError: `resolver: one or more domains had a problem: [example.com: preSolve error example.com]`,
 			expectedCounters: map[challenge.Type]string{
 				challenge.HTTP01: "PreSolve: 3, Solve: 2, CleanUp: 3",
 			},
@@ -124,10 +122,7 @@ func TestProber_Solve(t *testing.T) {
 				createStubAuthorizationHTTP01("example.org", acme.StatusProcessing),
 				createStubAuthorizationHTTP01("example.net", acme.StatusProcessing),
 			},
-			expectedError: `error: one or more domains had a problem:
-[example.com] preSolve error example.com
-[example.org] solve error example.org
-`,
+			expectedError: `resolver: one or more domains had a problem: [example.com: preSolve error example.com] [example.org: solve error example.org]`,
 			expectedCounters: map[challenge.Type]string{
 				challenge.HTTP01: "PreSolve: 3, Solve: 2, CleanUp: 3",
 			},

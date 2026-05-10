@@ -9,6 +9,7 @@ import (
 const (
 	errNS              = "urn:ietf:params:acme:error:"
 	BadNonceErr        = errNS + "badNonce"
+	MalformedErr       = errNS + "malformed"
 	AlreadyReplacedErr = errNS + "alreadyReplaced"
 	RateLimitedErr     = errNS + "rateLimited"
 )
@@ -65,6 +66,16 @@ type NonceError struct {
 }
 
 func (e *NonceError) Unwrap() error {
+	return e.ProblemDetails
+}
+
+// MalformedError represents the error which is returned
+// if the request message was malformed.
+type MalformedError struct {
+	*ProblemDetails
+}
+
+func (e *MalformedError) Unwrap() error {
 	return e.ProblemDetails
 }
 

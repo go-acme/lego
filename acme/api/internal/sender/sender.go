@@ -145,8 +145,15 @@ func checkError(req *http.Request, resp *http.Response) error {
 
 	// Check for errors we handle specifically
 	switch {
-	case errorDetails.HTTPStatus == http.StatusBadRequest && errorDetails.Type == acme.BadNonceErr:
-		return &acme.NonceError{ProblemDetails: errorDetails}
+	case errorDetails.HTTPStatus == http.StatusBadRequest:
+		switch errorDetails.Type {
+		case acme.BadNonceErr:
+			return &acme.NonceError{ProblemDetails: errorDetails}
+		case acme.MalformedErr:
+			return &acme.MalformedError{ProblemDetails: errorDetails}
+		default:
+			return errorDetails
+		}
 
 	case errorDetails.HTTPStatus == http.StatusConflict && errorDetails.Type == acme.AlreadyReplacedErr:
 		return &acme.AlreadyReplacedError{ProblemDetails: errorDetails}

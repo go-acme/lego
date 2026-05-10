@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"maps"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
@@ -101,11 +103,15 @@ func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
 
 	for _, chlg := range authz.Challenges {
 		if solvr, ok := c.solvers[challenge.Type(chlg.Type)]; ok {
-			log.Debug("acme: Use solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
+			log.Debug("Use solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
 			return solvr
 		}
 
-		log.Info("acme: Could not find the solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
+		log.Info("Could not find the solver.",
+			log.DomainAttr(domain),
+			slog.String("type", chlg.Type),
+			slog.String("solvers", solversToString(c.solvers)),
+		)
 	}
 
 	return nil
@@ -200,4 +206,18 @@ func checkAuthorizationStatus(authz acme.Authorization) (bool, error) {
 	default:
 		return false, fmt.Errorf("the server returned an unexpected authorization status: %s", authz.Status)
 	}
+}
+
+func solversToString(s map[challenge.Type]solver) string {
+	if len(s) == 0 {
+		return "empty"
+	}
+
+	var types []string
+
+	for k := range maps.Keys(s) {
+		types = append(types, k.String())
+	}
+
+	return strings.Join(types, ", ")
 }

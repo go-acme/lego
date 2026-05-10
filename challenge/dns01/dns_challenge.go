@@ -73,7 +73,7 @@ func (c *Challenge) PreSolve(ctx context.Context, authz acme.Authorization) erro
 	}
 
 	if c.provider == nil {
-		return fmt.Errorf("[%s] dns01: no DNS Provider configured", domain)
+		return fmt.Errorf("dns01: no DNS Provider configured (%s)", domain)
 	}
 
 	// Generate the Key Authorization for the challenge
@@ -84,7 +84,7 @@ func (c *Challenge) PreSolve(ctx context.Context, authz acme.Authorization) erro
 
 	err = c.provider.Present(ctx, authz.Identifier.Value, chlng.Token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("[%s] dns01: error presenting token: %w", domain, err)
+		return fmt.Errorf("dns01: error presenting token (%s): %w", domain, err)
 	}
 
 	return nil

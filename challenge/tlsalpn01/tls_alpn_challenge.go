@@ -75,7 +75,7 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 
 	err = c.provider.Present(ctx, domain, chlng.Token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("[%s] tlsalpn01: error presenting token: %w", challenge.GetTargetedDomain(authz), err)
+		return fmt.Errorf("tlsalpn01: error presenting token (%s): %w", challenge.GetTargetedDomain(authz), err)
 	}
 
 	defer func() {

@@ -88,9 +88,14 @@ func (a *Core) retrievablePost(uri string, content []byte, response any) (*http.
 		resp, err := a.signedPost(uri, content, response)
 		if err != nil {
 			// Retry if the nonce was invalidated
-			var e *acme.NonceError
-			if errors.As(err, &e) {
+			var ne *acme.NonceError
+			if errors.As(err, &ne) {
 				return resp, err
+			}
+
+			var me *acme.MalformedError
+			if errors.As(err, &me) {
+				log.Println("Malformed request (KID: %s)", a.jws.GetKid())
 			}
 
 			return resp, backoff.Permanent(err)

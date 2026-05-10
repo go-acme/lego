@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/go-acme/lego/v4/acme/api/internal/nonces"
-	jose "github.com/go-jose/go-jose/v4"
+	"github.com/go-jose/go-jose/v4"
 )
 
 // JWS Represents a JWS.
@@ -31,6 +31,10 @@ func NewJWS(privateKey crypto.PrivateKey, kid string, nonceManager *nonces.Manag
 // SetKid Sets a key identifier.
 func (j *JWS) SetKid(kid string) {
 	j.kid = kid
+}
+
+func (j *JWS) GetKid() string {
+	return j.kid
 }
 
 // SignContent Signs a content with the JWS.

@@ -101,11 +101,11 @@ func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
 
 	for _, chlg := range authz.Challenges {
 		if solvr, ok := c.solvers[challenge.Type(chlg.Type)]; ok {
-			log.Debug("acme: Use solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
+			log.Debug("Use solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
 			return solvr
 		}
 
-		log.Info("acme: Could not find the solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
+		log.Info("Could not find the solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
 	}
 
 	return nil

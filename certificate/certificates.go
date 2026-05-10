@@ -193,9 +193,9 @@ func (c *Certifier) Obtain(ctx context.Context, request ObtainRequest) (*Resourc
 	domains := sanitizeDomain(request.Domains)
 
 	if request.Bundle {
-		log.Info("acme: Obtaining bundled SAN certificate.", log.DomainsAttr(domains))
+		log.Info("Obtaining bundled SAN certificate.", log.DomainsAttr(domains))
 	} else {
-		log.Info("acme: Obtaining SAN certificate.", log.DomainsAttr(domains))
+		log.Info("Obtaining SAN certificate.", log.DomainsAttr(domains))
 	}
 
 	orderOpts := &api.OrderOptions{
@@ -224,7 +224,7 @@ func (c *Certifier) Obtain(ctx context.Context, request ObtainRequest) (*Resourc
 		return nil, err
 	}
 
-	log.Info("acme: Validations succeeded; requesting certificates.", log.DomainsAttr(domains))
+	log.Info("Validations succeeded; requesting certificates.", log.DomainsAttr(domains))
 
 	failures := errutils.NewDomainsError("certificates")
 
@@ -271,9 +271,9 @@ func (c *Certifier) ObtainForCSR(ctx context.Context, request ObtainForCSRReques
 	domains := certcrypto.ExtractDomainsCSR(request.CSR)
 
 	if request.Bundle {
-		log.Info("acme: Obtaining bundled SAN certificate given a CSR.", log.DomainsAttr(domains))
+		log.Info("Obtaining bundled SAN certificate given a CSR.", log.DomainsAttr(domains))
 	} else {
-		log.Info("acme: Obtaining SAN certificate given a CSR.", log.DomainsAttr(domains))
+		log.Info("Obtaining SAN certificate given a CSR.", log.DomainsAttr(domains))
 	}
 
 	orderOpts := &api.OrderOptions{
@@ -302,7 +302,7 @@ func (c *Certifier) ObtainForCSR(ctx context.Context, request ObtainForCSRReques
 		return nil, err
 	}
 
-	log.Info("acme: Validations succeeded; requesting certificates.", log.DomainsAttr(domains))
+	log.Info("Validations succeeded; requesting certificates.", log.DomainsAttr(domains))
 
 	failures := errutils.NewDomainsError("certificates")
 
@@ -419,7 +419,7 @@ func (c *Certifier) getForCSR(ctx context.Context, certRes *Resource, order acme
 
 	interval := timeout / 60
 
-	log.Info("acme: waiting for certificates.",
+	log.Info("Waiting for certificates.",
 		slog.Duration("timeout", timeout),
 		slog.Duration("interval", interval),
 		log.DomainsAttr(certRes.Domains),
@@ -566,12 +566,12 @@ func (c *Certifier) Renew(ctx context.Context, certRes Resource, options *RenewO
 
 	x509Cert := certificates[0]
 	if x509Cert.IsCA {
-		return nil, fmt.Errorf("[%s] Certificate bundle starts with a CA certificate", strings.Join(certRes.Domains, ", "))
+		return nil, fmt.Errorf("certificate bundle starts with a CA certificate (%s)", strings.Join(certRes.Domains, ", "))
 	}
 
 	// This is just meant to be informal for the user.
 	timeLeft := x509Cert.NotAfter.Sub(time.Now().UTC())
-	log.Info("acme: Trying renewal.",
+	log.Info("Trying renewal.",
 		log.DomainsAttr(certRes.Domains),
 		slog.Int("hoursRemaining", int(timeLeft.Hours())),
 	)

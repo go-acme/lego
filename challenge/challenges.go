@@ -36,7 +36,7 @@ func FindChallenge(chlgType Type, authz acme.Authorization) (acme.Challenge, err
 		}
 	}
 
-	return acme.Challenge{}, fmt.Errorf("[%s] acme: unable to find challenge %s", GetTargetedDomain(authz), chlgType)
+	return acme.Challenge{}, fmt.Errorf("acme: unable to find challenge %s (%s)", chlgType, GetTargetedDomain(authz))
 }
 
 func GetTargetedDomain(authz acme.Authorization) string {

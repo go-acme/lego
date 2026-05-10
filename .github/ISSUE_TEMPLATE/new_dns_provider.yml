@@ -88,11 +88,15 @@ body:
     id: profile
     attributes:
       label: Who are you?
+      # This is required because of a bug in Issue Forms:
+      # The first option is always selected unless you are using the "multiple" attribute.
+      multiple: true
       options:
-        - I don't know
-        - A customer of this DNS provider
-        - An employee of this DNS provider
-        - An employee of an ACME CA
+        - Customer of this DNS provider
+        - Employee of this DNS provider
+        - Owner of this DNS provider
+        - Employee of an ACME CA
+        - Owner of an ACME CA
         - Other (please explain)
     validations:
       required: true

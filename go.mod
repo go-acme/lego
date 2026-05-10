@@ -2,6 +2,11 @@ module github.com/go-acme/lego/v5
 
 go 1.25.0
 
+ignore (
+	./.github
+	./docs
+)
+
 require (
 	cloud.google.com/go/compute/metadata v0.9.0
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.1

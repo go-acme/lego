@@ -9,6 +9,11 @@ This guide explains how to get and renew a certificate with the DNS-PERSIST-01 c
 
 <!--more-->
 
+{{% notice note %}}
+- The [RFC](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/) is still a draft.
+- This is currently not available in most CA production.
+{{% /notice %}}
+
 {{< tabs groupid="usage-examples" >}}
 {{% tab title="Classic Way" %}}
 

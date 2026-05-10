@@ -1,6 +1,7 @@
 package resolver
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/acme/api"
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/go-jose/go-jose/v4"
@@ -18,7 +20,59 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestByType(t *testing.T) {
+func TestSolverManager_chooseSolver(t *testing.T) {
+	testCases := []struct {
+		desc       string
+		solvers    map[challenge.Type]solver
+		challenges []acme.Challenge
+		expected   assert.ValueAssertionFunc
+	}{
+		{
+			desc: "not found",
+			solvers: map[challenge.Type]solver{
+				challenge.DNS01:  &solverMock{},
+				challenge.HTTP01: &solverMock{},
+			},
+			challenges: []acme.Challenge{
+				{Type: challenge.TLSALPN01.String()},
+			},
+			expected: assert.Nil,
+		},
+		{
+			desc: "found",
+			solvers: map[challenge.Type]solver{
+				challenge.HTTP01: &solverMock{},
+				challenge.DNS01:  &solverMock{},
+			},
+			challenges: []acme.Challenge{
+				{Type: challenge.HTTP01.String()},
+				{Type: challenge.TLSALPN01.String()},
+			},
+			expected: assert.NotNil,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			manager := SolverManager{
+				solvers: test.solvers,
+			}
+
+			authz := acme.Authorization{
+				Identifier: acme.Identifier{Type: "dns", Value: "example.com"},
+				Challenges: test.challenges,
+			}
+
+			solvr := manager.chooseSolver(authz)
+
+			test.expected(t, solvr)
+		})
+	}
+}
+
+func Test_byType(t *testing.T) {
 	challenges := []acme.Challenge{
 		{Type: "dns-01"}, {Type: "dns-persist-01"}, {Type: "tlsalpn-01"}, {Type: "http-01"},
 	}
@@ -32,7 +86,7 @@ func TestByType(t *testing.T) {
 	assert.Equal(t, expected, challenges)
 }
 
-func TestValidate(t *testing.T) {
+func Test_validate(t *testing.T) {
 	var statuses []string
 
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
@@ -278,5 +332,11 @@ func validateNoBody(privateKey *rsa.PrivateKey, r *http.Request) error {
 		return fmt.Errorf(`expected JWS POST body "{}" or "", got %q`, bodyStr)
 	}
 
+	return nil
+}
+
+type solverMock struct{}
+
+func (s *solverMock) Solve(ctx context.Context, authz acme.Authorization) error {
 	return nil
 }

@@ -1623,8 +1623,8 @@ github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1
 github.com/transip/gotransip/v6 v6.26.2 h1:pnbDXrkFevOngpi6ertLw6e57lOW+Rk3djJ9AewmJ94=
 github.com/transip/gotransip/v6 v6.26.2/go.mod h1:x0/RWGRK/zob817O3tfO2xhFoP1vu8YOHORx6Jpk80s=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
-github.com/ucloud/ucloud-sdk-go v0.22.63 h1:lcRazDZwOrK7pdWuqcREVhLWNTR+biiBoRdyXgxSfOI=
-github.com/ucloud/ucloud-sdk-go v0.22.63/go.mod h1:dyLmFHmUfgb4RZKYQP9IArlvQ2pxzFthfhwxRzOEPIw=
+github.com/ucloud/ucloud-sdk-go v0.22.70 h1:EFXJmdWjq38u2k9E8FqLZ3d9EGYwP/wh+YWYHsIsaIQ=
+github.com/ucloud/ucloud-sdk-go v0.22.70/go.mod h1:dyLmFHmUfgb4RZKYQP9IArlvQ2pxzFthfhwxRzOEPIw=
 github.com/ultradns/ultradns-go-sdk v1.8.1-20250722213956-faef419 h1:/VaznPrb/b68e3iMvkr27fU7JqPKU4j7tIITZnjQX1k=
 github.com/ultradns/ultradns-go-sdk v1.8.1-20250722213956-faef419/go.mod h1:QN0/PdenvYWB0GRMz6JJbPeZz2Lph2iys1p8AFVHm2c=
 github.com/urfave/cli/v2 v2.3.0/go.mod h1:LJmUH05zAU44vOAcrfzZQKsZbVcdbOG8rtL3/XcUArI=

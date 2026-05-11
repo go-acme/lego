@@ -77,7 +77,7 @@ jobs:
         id: goreleaser
         uses: goreleaser/goreleaser-action@v7
         with:
-          version: v2.15.3
+          version: v2.15.4
           args: release -p 1 --clean --timeout=90m
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

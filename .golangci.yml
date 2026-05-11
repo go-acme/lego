@@ -282,6 +282,11 @@ linters:
         text: 'SA1019: linodego\.(DomainsPagedResponse|DomainRecordsPagedResponse) is deprecated'
         linters:
           - staticcheck
+      # There is no explanation about the replacement.
+      - path: providers/dns/sakuracloud/sakuracloud.go
+        text: 'SA1019: iaas.NewClientWithOptions is deprecated: この関数からは指定できない設定項目がある'
+        linters:
+          - staticcheck
       - path: log/logger.go
         linters:
           - gochecknoinits

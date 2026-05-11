@@ -477,6 +477,7 @@ hooks:
     # The timeout of the command.
     #
     # optional.
+    # Default: 2 minutes.
     timeout: 3s
   
   # The deploy-hook.
@@ -491,6 +492,7 @@ hooks:
     # The timeout of the command.
     #
     # optional.
+    # Default: 2 minutes.
     timeout: 3s
   
   # The post-hook.
@@ -505,5 +507,6 @@ hooks:
     # The timeout of the command.
     #
     # optional.
+    # Default: 2 minutes.
     timeout: 3s
 ```

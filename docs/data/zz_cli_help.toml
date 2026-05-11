@@ -165,7 +165,7 @@ OPTIONS:
    --accept-tos, -a              By setting this flag to true, you indicate that you accept the current CA terms of service. [$LEGO_ACCEPT_TOS]
    --email string, -m string     Email used for registration and recovery contact. [$LEGO_EMAIL]
    --help, -h                    show help
-   --key-type string, -k string  Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
+   --key-type string, -k string  Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
    --server string, -s string    CA (ACME server). It can be either a URL or a shortcode.
                                  (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
 
@@ -210,7 +210,7 @@ USAGE:
 OPTIONS:
    --email string, -m string     Email used for registration and recovery contact. [$LEGO_EMAIL]
    --help, -h                    show help
-   --key-type string, -k string  Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
+   --key-type string, -k string  Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
    --private-key string          Path to the account private key (PEM encoded). [$LEGO_PRIVATE_KEY]
    --server string, -s string    CA (ACME server). It can be either a URL or a shortcode.
                                  (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
@@ -256,7 +256,6 @@ USAGE:
 OPTIONS:
    --email string, -m string     Email used for registration and recovery contact. [$LEGO_EMAIL]
    --help, -h                    show help
-   --key-type string, -k string  Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
    --key-type string, -k string  Key type to use for the new private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
    --private-key string          Path to the new account private key (PEM encoded). If not specified, the private key will be generated. [$LEGO_PRIVATE_KEY]
    --server string, -s string    CA (ACME server). It can be either a URL or a shortcode.
@@ -328,7 +327,7 @@ OPTIONS:
    --email string, -m string                                        Email used for registration and recovery contact. [$LEGO_EMAIL]
    --help, -h                                                       show help
    --keep                                                           Keep the certificates after the revocation instead of archiving them. [$LEGO_KEEP]
-   --key-type string, -k string                                     Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
+   --key-type string, -k string                                     Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
    --reason uint                                                    Identifies the reason for the certificate revocation. See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1.
                                                                     Valid values are: 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged), 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL), 9 (privilegeWithdrawn), or 10 (aACompromise). (default: 0) [$LEGO_REASON]
    --server string, -s string                                       CA (ACME server). It can be either a URL or a shortcode.

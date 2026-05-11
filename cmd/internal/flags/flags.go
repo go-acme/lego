@@ -36,6 +36,7 @@ func CreateRunFlags() []cli.Flag {
 		createDomainFlag(),
 		createCertNameFlag(),
 		createAcceptFlag(),
+		createKeyTypeFlag("Key type to use for private keys."),
 	}
 
 	flags = append(flags, createAccountFlags()...)
@@ -113,6 +114,7 @@ func CreateRevokeFlags() []cli.Flag {
 	flags := []cli.Flag{
 		CreatePathFlag(false),
 		createCertNamesFlag(),
+		createKeyTypeFlag("Key type to use for the private key of the account."),
 		&cli.BoolFlag{
 			Name:    FlgKeep,
 			Sources: cli.EnvVars(toEnvName(FlgKeep)),
@@ -142,6 +144,7 @@ func CreateRegisterFlags() []cli.Flag {
 	flags := []cli.Flag{
 		CreatePathFlag(true),
 		createAcceptFlag(),
+		createKeyTypeFlag("Key type to use for the private key of the account."),
 	}
 
 	flags = append(flags, createACMEClientFlags()...)
@@ -153,6 +156,7 @@ func CreateRegisterFlags() []cli.Flag {
 func CreateRecoverFlags() []cli.Flag {
 	flags := []cli.Flag{
 		CreatePathFlag(true),
+		createKeyTypeFlag("Key type to use for the private key of the account."),
 		&cli.StringFlag{
 			Name:     FlgPrivateKey,
 			Sources:  cli.EnvVars(toEnvName(FlgPrivateKey)),
@@ -233,7 +237,6 @@ func createACMEClientFlags() []cli.Flag {
 			Sources:  cli.EnvVars(toEnvName(FlgEnableCommonName)),
 			Usage:    "Enable the use of the common name. (Not recommended)",
 		},
-		createKeyTypeFlag("Key type to use for private keys."),
 		&cli.IntFlag{
 			Category: categoryACMEClient,
 			Name:     FlgHTTPTimeout,

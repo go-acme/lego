@@ -1,0 +1,15 @@
+{
+  "messages": [
+    {
+      "code": "ttl_on_create_changed",
+      "message": "TTL modified to ensure RFC compliance. For a different TTL, you can run an update that will change all relevant records TTL"
+    }
+  ],
+  "errors": [
+    "string"
+  ],
+  "status_code": 200,
+  "data": {
+    "id": "8a746001-d319-4583-bfb6-ae8aacc628aa"
+  }
+}

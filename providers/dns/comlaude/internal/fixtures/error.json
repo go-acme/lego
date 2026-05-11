@@ -1,0 +1,18 @@
+{
+  "errors": [
+    {
+      "code": "incorrect_login_details",
+      "message": "Incorrect login details",
+      "details": [
+        "string"
+      ]
+    }
+  ],
+  "messages": [
+    "string"
+  ],
+  "data": [
+    "string"
+  ],
+  "status_code": 401
+}

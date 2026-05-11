@@ -44,6 +44,7 @@ func allDNSCodes() string {
 		"cloudru",
 		"cloudxns",
 		"com35",
+		"comlaude",
 		"conoha",
 		"conohav3",
 		"constellix",
@@ -920,6 +921,29 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/com35`)
+
+	case "comlaude":
+		// generated from: providers/dns/comlaude/comlaude.toml
+		ew.writeln(`Configuration for Com Laude.`)
+		ew.writeln(`Code:	'comlaude'`)
+		ew.writeln(`Since:	'v4.33.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "COMLAUDE_API_KEY":	API ley`)
+		ew.writeln(`	- "COMLAUDE_GROUP_ID":	Group ID`)
+		ew.writeln(`	- "COMLAUDE_PASSWORD":	password`)
+		ew.writeln(`	- "COMLAUDE_USERNAME":	username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "COMLAUDE_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "COMLAUDE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "COMLAUDE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "COMLAUDE_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/comlaude`)
 
 	case "conoha":
 		// generated from: providers/dns/conoha/conoha.toml

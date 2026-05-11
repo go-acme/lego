@@ -57,8 +57,8 @@ Some flags have been changed, renamed or removed:
 | `--dns.propagation-disable-ans` | {{% icon icon="right-left" color="green" %}} renamed                              | `--dns.propagation.disable-ans`   |
 | `--dns.propagation-rns`         | {{% icon icon="arrow-down-up-across-line" color="orange" %}} removed and replaced | `--dns.propagation.disable-rns`   |
 | `--dns-timeout`                 | {{% icon icon="right-left" color="green" %}} renamed                              | `--dns.timeout`                   |
-| `--kid`                         | {{% icon icon="right-left" color="green" %}} renamed                              | `--eab-kid`                       |
-| `--hmac`                        | {{% icon icon="right-left" color="green" %}} renamed                              | `--eab-hmac`                      |
+| `--kid`                         | {{% icon icon="right-left" color="green" %}} renamed                              | `--eab.kid`                       |
+| `--hmac`                        | {{% icon icon="right-left" color="green" %}} renamed                              | `--eab.hmac`                      |
 | `--days`                        | {{% icon icon="right-left" color="green" %}} renamed                              | `--renew-days`[^1]                |
 | `--dynamic`                     | {{% icon icon="xmark" color="red" %}} removed                                     | This is the default behavior now. |
 | `--run-hook`                    | {{% icon icon="right-left" color="green" %}} renamed                              | `--deploy-hook`                   |

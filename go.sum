@@ -1628,8 +1628,8 @@ github.com/transip/gotransip/v6 v6.27.1/go.mod h1:x0/RWGRK/zob817O3tfO2xhFoP1vu8
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
 github.com/ucloud/ucloud-sdk-go v0.22.70 h1:EFXJmdWjq38u2k9E8FqLZ3d9EGYwP/wh+YWYHsIsaIQ=
 github.com/ucloud/ucloud-sdk-go v0.22.70/go.mod h1:dyLmFHmUfgb4RZKYQP9IArlvQ2pxzFthfhwxRzOEPIw=
-github.com/ultradns/ultradns-go-sdk v1.8.1-20250722213956-faef419 h1:/VaznPrb/b68e3iMvkr27fU7JqPKU4j7tIITZnjQX1k=
-github.com/ultradns/ultradns-go-sdk v1.8.1-20250722213956-faef419/go.mod h1:QN0/PdenvYWB0GRMz6JJbPeZz2Lph2iys1p8AFVHm2c=
+github.com/ultradns/ultradns-go-sdk v1.8.2-20260507133303-3f324c7 h1:Mkvb+FtIIV92zHL2HMn9JuA9u08ukeEG5JbJmWwxAUs=
+github.com/ultradns/ultradns-go-sdk v1.8.2-20260507133303-3f324c7/go.mod h1:QN0/PdenvYWB0GRMz6JJbPeZz2Lph2iys1p8AFVHm2c=
 github.com/urfave/cli/v2 v2.3.0/go.mod h1:LJmUH05zAU44vOAcrfzZQKsZbVcdbOG8rtL3/XcUArI=
 github.com/urfave/cli/v3 v3.6.2 h1:lQuqiPrZ1cIz8hz+HcrG0TNZFxU70dPZ3Yl+pSrH9A8=
 github.com/urfave/cli/v3 v3.6.2/go.mod h1:ysVLtOEmg2tOy6PknnYVhDoouyC/6N42TMeoMzskhso=

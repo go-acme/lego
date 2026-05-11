@@ -1,6 +1,8 @@
 package configuration
 
 import (
+	"time"
+
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/lego"
@@ -46,6 +48,7 @@ func ApplyDefaults(cfg *Configuration) {
 	applyAccountsDefaults(cfg)
 	applyChallengesDefaults(cfg)
 	applyCertificatesDefaults(cfg)
+	applyDefaultHooks(cfg)
 }
 
 func applyServersDefaults(cfg *Configuration) {
@@ -203,4 +206,24 @@ func getDefaultCertificateKeyType(cfg *Configuration, acc string) certcrypto.Key
 	}
 
 	return certcrypto.EC256
+}
+
+func applyDefaultHooks(cfg *Configuration) {
+	if cfg.Hooks == nil {
+		return
+	}
+
+	applyDefaultHook(cfg.Hooks.Pre)
+	applyDefaultHook(cfg.Hooks.Deploy)
+	applyDefaultHook(cfg.Hooks.Post)
+}
+
+func applyDefaultHook(h *Hook) {
+	if h == nil || h.Cmd == "" {
+		return
+	}
+
+	if h.Timeout == 0 {
+		h.Timeout = 2 * time.Minute
+	}
 }

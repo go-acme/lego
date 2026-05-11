@@ -14,6 +14,18 @@ This guide explains how to get and renew a certificate with the DNS-PERSIST-01 c
 - This is currently not available in most CA production.
 {{% /notice %}}
 
+{{% notice important %}}
+This challenge could be less secure than [DNS-01]({{% ref "obtain/dns01" %}}) due to its requirements.
+
+This is especially true if your DNS provider does not offer any way to limit the access controls to the specific persistent record required by the DNS-PERSIST-01 challenge.
+
+- [7. Security Considerations](https://www.ietf.org/archive/id/draft-ietf-acme-dns-persist-01.html#section-7)
+- [9.5. DNS Provider Considerations](https://www.ietf.org/archive/id/draft-ietf-acme-dns-persist-01.html#section-9.5)
+
+The security of this challenge relies primarily on protecting your account's private key.
+
+{{% /notice %}}
+
 {{< tabs groupid="usage-examples" >}}
 {{% tab title="Classic Way" %}}
 

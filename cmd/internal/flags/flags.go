@@ -175,7 +175,6 @@ func CreateKeyRolloverFlags() []cli.Flag {
 			Sources: cli.EnvVars(toEnvName(FlgPrivateKey)),
 			Usage:   "Path to the new account private key (PEM encoded). If not specified, the private key will be generated.",
 		},
-		createKeyTypeFlag("Key type to use for the new private key of the account."),
 	}
 
 	flags = append(flags, createACMEClientFlags()...)

@@ -77,7 +77,7 @@ require (
 	github.com/pquerna/otp v1.5.0
 	github.com/regfish/regfish-dnsapi-go v0.1.1
 	github.com/sacloud/api-client-go v0.3.5
-	github.com/sacloud/iaas-api-go v1.23.1
+	github.com/sacloud/iaas-api-go v1.29.0
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.36
 	github.com/selectel/domains-go v1.1.0
 	github.com/selectel/go-selvpcclient/v4 v4.2.0
@@ -149,7 +149,7 @@ require (
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.23.0 // indirect
+	github.com/go-playground/validator/v10 v10.30.2 // indirect
 	github.com/go-resty/resty/v2 v2.17.2 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/gofrs/flock v0.13.0 // indirect
@@ -190,7 +190,8 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/sacloud/go-http v0.1.9 // indirect
-	github.com/sacloud/packages-go v0.0.12 // indirect
+	github.com/sacloud/packages-go v0.1.0 // indirect
+	github.com/sacloud/saclient-go v0.3.7 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect

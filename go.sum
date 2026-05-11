@@ -1668,8 +1668,8 @@ github.com/yuin/goldmark v1.4.1/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 github.com/zeebo/assert v1.3.0/go.mod h1:Pq9JiuJQpG8JLJdtkwrJESF0Foym2/D9XMU5ciN/wJ0=
 github.com/zeebo/xxh3 v1.0.2/go.mod h1:5NWz9Sef7zIDm2JHfFlcQvNekmcEl9ekUZQQKCYaDcA=
-gitlab.com/greyxor/slogor v1.6.9 h1:FtoWpf9pZhdEkdb5/6y04+QVLZt4WFoTDf3mPxaJLwc=
-gitlab.com/greyxor/slogor v1.6.9/go.mod h1:cTQmsyF7KZCylunZpBr49rae/cKbus5Sw0rBF/zFWJo=
+gitlab.com/greyxor/slogor v1.6.10 h1:oJwdJjhbVjlko82YWXr5kaBeJCQ+nQ2qlcqLjp/wljU=
+gitlab.com/greyxor/slogor v1.6.10/go.mod h1:PMFCV6jvZltjjDTsV2oPMV+wJx9/AgvfCaA5p6ORdGg=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/etcd/api/v3 v3.5.0/go.mod h1:cbVKeC6lCfl7j/8jBhAK6aIYO9XOjdptoxU/nLQcPvs=
 go.etcd.io/etcd/api/v3 v3.5.7/go.mod h1:9qew1gCdDDLu+VwmeG+iFpL+QlpHTo7iubavdVDgCAA=

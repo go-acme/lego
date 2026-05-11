@@ -16,7 +16,7 @@ There are three hooks available:
 
 ## Pre-Hook
 
-The hook is executed only when the certificates are effectively renewed or created.
+This hook is executed, before the creation or the renewal, in cases where a certificate will be effectively created/renewed.
 
 {{< tabs groupid="usage-examples" >}}
 {{% tab title="Classic Way" %}}
@@ -43,7 +43,7 @@ hooks:
 
 ## Deploy-Hook
 
-This hook is executed, before the creation or the renewal, in cases where a certificate will be effectively created/renewed.
+This hook is executed after the successful creation or the renewal of a certificate.
 
 {{< tabs groupid="usage-examples" >}}
 {{% tab title="Classic Way" %}}

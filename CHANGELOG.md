@@ -6,6 +6,95 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v5.0.0
+
+- Release date: 2026-05-11
+- Tag: [v5.0.0](https://github.com/go-acme/lego/releases/tag/v5.0.0)
+
+### Added
+
+- **[challenge/dns-persist-01]** Add support for DNS-PERSIST-01 challenge type
+- **[cli,config]** Add experimental support for dotenv files
+- **[cli,config]** Support a configuration file
+- **[cli,migration,config]** generate configuration file during migration
+- **[cli]** Add --cert.name flag
+- **[cli]** Add account key rollover
+- **[cli]** Add commands related to archives management
+- **[cli]** Add logger flags
+- **[cli]** Add register command
+- **[cli]** Add server shortcodes
+- **[cli]** Flag names and environment variables
+- **[cli]** Hook manager
+- **[cli]** One command to run or renew a certificate.
+- **[cli]** Recover/import an account from the private key
+- **[cli]** Refactor: clean flag names
+- **[dnsprovider]** artfiles: add server name option
+- **[dnsprovider]** manual: add PropagationTimeout and PollingInterval options
+- **[lib,cli]** Add GetServerMetadata
+- **[lib,cli]** Choose a network stack for challenges
+- **[lib,dnsprovider]** New approach of the DNS calls
+- **[lib,httpprovider]** New HTTP-01 and TLS-ALPN-01 servers constructors
+- **[lib,log]** New logger (slog)
+- **[lib]** ACME error codes
+- **[lib]** Add Account Key Rollover support
+- **[lib]** Add support for context
+- **[dnsprovider]** Add DNS provider for 51DNS
+- **[dnsprovider]** Add DNS provider for Abion
+- **[dnsprovider]** Add DNS provider for Curanet
+- **[dnsprovider]** Add DNS provider for DanDomain
+- **[dnsprovider]** Add DNS provider for ScanNet
+- **[dnsprovider]** Add DNS provider for Wannafind
+- **[dnsprovider]** Add DNS provider for Dinahosting
+- **[dnsprovider]** Add DNS provider for DNS.services
+- **[dnsprovider]** Add DNS provider for Veesp
+- **[dnsprovider]** Add DNS provider for DNScale
+- **[dnsprovider]** Add DNS provider for dnsla
+- **[dnsprovider]** Add DNS provider for EUsrv
+- **[dnsprovider]** Add DNS provider for Fornex
+- **[dnsprovider]** Add DNS provider for Gehirn
+- **[dnsprovider]** Add DNS provider for Gname
+- **[dnsprovider]** Add DNS provider for HostUp
+- **[dnsprovider]** Add DNS provider for Katapult
+- **[dnsprovider]** Add DNS provider for NederHost
+- **[dnsprovider]** Add DNS provider for NGENIX
+- **[dnsprovider]** Add DNS provider for omg.lol
+- **[dnsprovider]** Add DNS provider for PointDNS/PointHQ
+- **[dnsprovider]** Add DNS provider for Rage4
+- **[dnsprovider]** Add DNS provider for Tele3
+- **[dnsprovider]** Add DNS provider for Xinnet
+- **[dnsprovider]** Add DNS provider for Zilore
+- **[documentation]** Update to lego v5
+
+### Changed
+
+- **[challenge/dns-persist-01]** Update draft-ietf-acme-dns-persist-00 support to 01
+- **[challenge/http-01]** Case insensitive match domain
+- **[cli,config]** Move revoke command
+- **[cli,log]** Format renewal duration
+- **[cli]** Add subcommands to the list subcommand
+- **[cli]** Certificates sub command
+- **[cli]** Move the main package to the root.
+- **[cli]** Rename flags tls.port and http.port to tls.address and http.address
+- **[cli]** Replace --run-hook and --renew-hook with --deploy-hook
+- **[cli]** Require EAB parameters only when needed
+- **[dnsprovider]** conoha,conohav3: remove get token from the constructor
+- **[dnsprovider]** mijnhost: use single endpoints
+- **[dnsprovider]** rfc2136: rename to dnsupdate
+- **[httpprovider]** Convert SetProxyHeader to an option
+- **[lib,cli]** Change registar method returns
+- **[lib,cli]** Use PKCS#8 instead of PKCS#1
+- **[lib]** Change CertificateService and GetRenewalInfo signatures
+- **[lib]** Disable Common Name by default
+- **[lib]** Move enableCommonName option to Request
+- **[lib]** Replace `crypto.PrivateKey` with `crypto.Signer`
+- **[lib]** Use duration as RetryAfter field type
+- **[lib]** Use the public key corresponding to the opaque
+- **[log]** Improve some log and error messages
+
+### Removed
+
+- **[dnsprovider]** Remove deprecated DNS providers: `googledomains`, `azure` (replaced by `azuredns`), `cloudxns`, `dnspod`, `brandit`, `iwantmyname`, `iij` (replaced by `iijdpf`).
+ 
 ## v4.35.2
 
 - Release date: 2026-04-24

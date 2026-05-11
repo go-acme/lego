@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
@@ -489,6 +490,108 @@ func Test_applyCertificatesDefaults(t *testing.T) {
 			t.Parallel()
 
 			applyCertificatesDefaults(test.cfg)
+
+			assert.Equal(t, test.expected, test.cfg)
+		})
+	}
+}
+
+func Test_applyDefaultHooks(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		cfg      *Configuration
+		expected *Configuration
+	}{
+		{
+			desc:     "no hooks",
+			cfg:      &Configuration{},
+			expected: &Configuration{},
+		},
+		{
+			desc: "pre-hook without timeout",
+			cfg: &Configuration{
+				Hooks: &Hooks{
+					Pre: &Hook{Cmd: "echo"},
+				},
+			},
+			expected: &Configuration{
+				Hooks: &Hooks{
+					Pre: &Hook{Cmd: "echo", Timeout: 2 * time.Minute},
+				},
+			},
+		},
+		{
+			desc: "deploy-hook without timeout",
+			cfg: &Configuration{
+				Hooks: &Hooks{
+					Deploy: &Hook{Cmd: "echo"},
+				},
+			},
+			expected: &Configuration{
+				Hooks: &Hooks{
+					Deploy: &Hook{Cmd: "echo", Timeout: 2 * time.Minute},
+				},
+			},
+		},
+		{
+			desc: "post-hook without timeout",
+			cfg: &Configuration{
+				Hooks: &Hooks{
+					Post: &Hook{Cmd: "echo"},
+				},
+			},
+			expected: &Configuration{
+				Hooks: &Hooks{
+					Post: &Hook{Cmd: "echo", Timeout: 2 * time.Minute},
+				},
+			},
+		},
+		{
+			desc: "pre-hook with timeout",
+			cfg: &Configuration{
+				Hooks: &Hooks{
+					Pre: &Hook{Cmd: "echo", Timeout: 1 * time.Minute},
+				},
+			},
+			expected: &Configuration{
+				Hooks: &Hooks{
+					Pre: &Hook{Cmd: "echo", Timeout: 1 * time.Minute},
+				},
+			},
+		},
+		{
+			desc: "deploy-hook without timeout",
+			cfg: &Configuration{
+				Hooks: &Hooks{
+					Deploy: &Hook{Cmd: "echo", Timeout: 1 * time.Minute},
+				},
+			},
+			expected: &Configuration{
+				Hooks: &Hooks{
+					Deploy: &Hook{Cmd: "echo", Timeout: 1 * time.Minute},
+				},
+			},
+		},
+		{
+			desc: "post-hook without timeout",
+			cfg: &Configuration{
+				Hooks: &Hooks{
+					Post: &Hook{Cmd: "echo", Timeout: 1 * time.Minute},
+				},
+			},
+			expected: &Configuration{
+				Hooks: &Hooks{
+					Post: &Hook{Cmd: "echo", Timeout: 1 * time.Minute},
+				},
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			applyDefaultHooks(test.cfg)
 
 			assert.Equal(t, test.expected, test.cfg)
 		})

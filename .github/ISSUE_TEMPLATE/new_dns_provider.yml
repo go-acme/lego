@@ -136,9 +136,9 @@ body:
         [Support Project Longevity →](https://donate.ldez.dev)
 
   - type: checkboxes
-    id: validation
+    id: confirmation
     attributes:
-      label: Validation
+      label: Confirmation
       options:
-        - label: Yes, I've included all the information above (version, usage, etc.).
+        - label: Yes, I've included all the information above (links, notes, etc.).
           required: true

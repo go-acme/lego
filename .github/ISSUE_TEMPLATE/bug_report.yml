@@ -12,16 +12,6 @@ body:
         - label: Yes, I've searched for similar issues on GitHub and didn't find any.
           required: true
 
-  - type: markdown
-    attributes:
-      value: |
-        #### Do you want your request to be released in a specific timeframe?
-
-        If it is possible to implement it, your request should be released (after implementation, review, and merge):
-
-        - In 1 week (7 days) maximum. Requires [High priority tier](https://github.com/sponsors/go-acme/sponsorships?tier_id=606068).
-        - In 2 days maximum. Requires [Critical priority tier](https://github.com/sponsors/go-acme/sponsorships?tier_id=606069).
-
   - type: dropdown
     id: type
     attributes:
@@ -150,9 +140,19 @@ body:
         [Support Project Longevity →](https://donate.ldez.dev)
 
   - type: checkboxes
-    id: validation
+    id: confirmation
     attributes:
-      label: Validation
+      label: Confirmation
       options:
         - label: Yes, I've included all the information above (version, usage, etc.).
           required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        #### Do you want your request to be released in a specific timeframe?
+
+        If it is possible to implement it, your request should be released (after implementation, review, and merge):
+
+        - In 1 week (7 days) maximum. Requires [High priority tier](https://github.com/sponsors/go-acme/sponsorships?tier_id=606068).
+        - In 2 days maximum. Requires [Critical priority tier](https://github.com/sponsors/go-acme/sponsorships?tier_id=606069).

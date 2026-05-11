@@ -54,7 +54,7 @@ require (
 	github.com/ldez/grignotin v0.10.1
 	github.com/linode/linodego v1.69.0
 	github.com/liquidweb/liquidweb-go v1.6.4
-	github.com/mattn/go-isatty v0.0.21
+	github.com/mattn/go-isatty v0.0.22
 	github.com/mattn/go-zglob v0.0.6
 	github.com/miekg/dns v1.1.72
 	github.com/mimuret/golang-iij-dpf v0.9.1

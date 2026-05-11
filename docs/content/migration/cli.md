@@ -11,7 +11,7 @@ This guide describes the changes between the v4 and v5 versions of the command l
 
 {{% notice style="caution" %}}
 
-Before upgrading to v5, please run the command `lego migrate`.
+Please run the new v5 command `lego migrate` before running any other commands.
 
 This command will migrate the file structure to the new one.
 

@@ -103,7 +103,7 @@ func createHTTPProvider(chlg *configuration.HTTPChallenge, networkStack challeng
 	default:
 		srv := http01.NewProviderServerWithOptions(http01.Options{
 			Network:         networkStack.Network("tcp"),
-			Address:         net.JoinHostPort("", ":80"),
+			Address:         net.JoinHostPort("", "80"),
 			ProxyHeaderName: chlg.ProxyHeader,
 		})
 

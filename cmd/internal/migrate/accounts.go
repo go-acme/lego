@@ -63,10 +63,15 @@ func Accounts(root string, cfg *configuration.Configuration) error {
 			Email:  oldAccount.Email,
 			Server: guessServer(serverDir),
 			Origin: storage.OriginMigration,
-			Registration: &acme.ExtendedAccount{
+		}
+
+		if oldAccount.Registration != nil {
+			account.Registration = &acme.ExtendedAccount{
 				Account:  oldAccount.Registration.Body,
 				Location: oldAccount.Registration.URI,
-			},
+			}
+		} else {
+			log.Warn("No registration was found for the account.", slog.String("account", accountID))
 		}
 
 		srcKeyPath := filepath.Join(accountDir, oldKeysFolderName, account.GetID()+storage.ExtKey)

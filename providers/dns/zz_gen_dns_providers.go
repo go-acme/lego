@@ -149,6 +149,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/nicmanager"
 	"github.com/go-acme/lego/v5/providers/dns/nicru"
 	"github.com/go-acme/lego/v5/providers/dns/nifcloud"
+	"github.com/go-acme/lego/v5/providers/dns/nitrado"
 	"github.com/go-acme/lego/v5/providers/dns/njalla"
 	"github.com/go-acme/lego/v5/providers/dns/nodion"
 	"github.com/go-acme/lego/v5/providers/dns/ns1"
@@ -510,6 +511,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return nicru.NewDNSProvider()
 	case "nifcloud":
 		return nifcloud.NewDNSProvider()
+	case "nitrado":
+		return nitrado.NewDNSProvider()
 	case "njalla":
 		return njalla.NewDNSProvider()
 	case "nodion":

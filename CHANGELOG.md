@@ -6,6 +6,16 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v5.0.2
+
+- Release date: 2026-05-12
+- Tag: [v5.0.2](https://github.com/go-acme/lego/releases/tag/v5.0.2)
+
+### Fixed
+
+- **[cli,httpprovider]** Invalid default port for the HTTP server
+- **[cli,migration]** Account migration with missing registration
+
 ## v5.0.1
 
 - Release date: 2026-05-11

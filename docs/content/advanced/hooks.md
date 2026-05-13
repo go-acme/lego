@@ -10,9 +10,14 @@ This section describes how to use hooks.
 <!--more-->
 
 There are three hooks available:
-- `pre-hook`
-- `deploy-hook`
-- `post-hook`
+
+| Hook                                                     | When it runs                                                                         |
+|----------------------------------------------------------|--------------------------------------------------------------------------------------|
+| [pre-hook]({{% ref "advanced/hooks/#pre-hook" %}})       | Before the certificate is created or renewed (only if a change will actually happen) |
+| [deploy-hook]({{% ref "advanced/hooks/#deploy-hook" %}}) | After the certificate is successfully created or renewed                             |
+| [post-hook]({{% ref "advanced/hooks/#post-hook" %}})     | After the operation completes, regardless of outcome                                 |
+
+Don't hesitate to share your hook scripts with [the community](https://github.com/go-acme/lego/discussions/categories/ideas).
 
 ## Pre-Hook
 
@@ -136,3 +141,5 @@ if [ "$LEGO_HOOK_CERT_NAME" = "example.com" ]; then
   systemctl reload postfix@-service
 fi
 ```
+
+Don't hesitate to share your hook scripts with [the community](https://github.com/go-acme/lego/discussions/categories/ideas).

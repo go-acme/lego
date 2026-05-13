@@ -3,6 +3,8 @@ title: "Configuration file"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 weight: 6
+params:
+  menuPre: '<i class="fa-regular fa-file"></i> '
 ---
 
 This describes the configuration file format.
@@ -225,7 +227,7 @@ challenges:
       memcachedHosts:
         - memcached:11211
       
-      # Tthe S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.
+      # The S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.
       s3Bucket: 's3-bucket'
 
   # The ID/Name of the challenge.

@@ -3,6 +3,8 @@ title: "Library Guide"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 weight: 2
+params:
+  menuPre: '<i class="fa-solid fa-code"></i> '
 ---
 
 This guide describes the changes between the v4 and v5 versions of the library.

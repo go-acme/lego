@@ -3,6 +3,8 @@ title: "Installation"
 date: 2019-03-03T16:39:46+01:00
 weight: 1
 draft: false
+params:
+  menuPre: '<i class="fa-solid fa-box-archive"></i> '
 aliases:
   - installation
 ---

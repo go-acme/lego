@@ -3,6 +3,8 @@ title: "Commands & Flags"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 weight: 7
+params:
+  menuPre: '<i class="fa-solid fa-terminal"></i> '
 ---
 
 This page lists all the available commands and flags.

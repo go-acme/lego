@@ -3,6 +3,8 @@ title: "DNS Providers"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 weight: 3
+params:
+  menuPre: '<i class="fa-solid fa-globe"></i> '
 ---
 
 > [!INFO] Important

@@ -3,6 +3,8 @@ title: "Library"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 weight: 6
+params:
+  menuPre: '<i class="fa-solid fa-code"></i> '
 ---
 
 Lego can be used as a Go Library.

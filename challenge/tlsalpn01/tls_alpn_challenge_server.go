@@ -86,10 +86,14 @@ func (s *ProviderServer) Present(ctx context.Context, domain, token, keyAuth str
 	tlsConf.NextProtos = []string{ACMETLS1Protocol}
 
 	// Create the listener with the created tls.Config.
-	s.listener, err = tls.Listen(s.network, s.GetAddress(), tlsConf)
+	var lc net.ListenConfig
+
+	l, err := lc.Listen(ctx, s.network, s.GetAddress())
 	if err != nil {
 		return fmt.Errorf("could not start HTTPS server for challenge: %w", err)
 	}
+
+	s.listener = tls.NewListener(l, tlsConf)
 
 	srv := &http.Server{
 		Handler:           http.NewServeMux(),

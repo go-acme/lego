@@ -82,7 +82,9 @@ func NewUnixProviderServer(socketPath string, socketMode fs.FileMode) *ProviderS
 func (s *ProviderServer) Present(ctx context.Context, domain, token, keyAuth string) error {
 	var err error
 
-	s.listener, err = net.Listen(s.network, s.GetAddress())
+	var lc net.ListenConfig
+
+	s.listener, err = lc.Listen(ctx, s.network, s.GetAddress())
 	if err != nil {
 		return fmt.Errorf("could not start HTTP server for challenge: %w", err)
 	}

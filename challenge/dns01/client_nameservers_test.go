@@ -59,7 +59,7 @@ func TestClient_checkNameserversPropagationCustom_authoritativeNss(t *testing.T)
 
 			addr := test.fakeDNSServer.Build(t)
 
-			ok, err := client.checkNameserversPropagationCustom(t.Context(), test.fqdn, test.value, []string{addr.String()}, false)
+			ok, err := client.checkNameserversPropagationCustom(t.Context(), test.fqdn, test.value, []string{addr.String()}, false, false)
 
 			if test.expectedError == "" {
 				require.NoError(t, err)

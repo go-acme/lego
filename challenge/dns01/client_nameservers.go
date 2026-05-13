@@ -11,7 +11,7 @@ import (
 
 // checkRecursiveNameserversPropagation queries each of the recursive nameservers for the expected TXT record.
 func (c *Client) checkRecursiveNameserversPropagation(ctx context.Context, fqdn, value string) (bool, error) {
-	return c.checkNameserversPropagationCustom(ctx, fqdn, value, c.core.GetRecursiveNameservers(), false)
+	return c.checkNameserversPropagationCustom(ctx, fqdn, value, c.core.GetRecursiveNameservers(), false, true)
 }
 
 // checkRecursiveNameserversPropagation queries each of the authoritative nameservers for the expected TXT record.
@@ -21,17 +21,17 @@ func (c *Client) checkAuthoritativeNameserversPropagation(ctx context.Context, f
 		return false, err
 	}
 
-	return c.checkNameserversPropagationCustom(ctx, fqdn, value, authoritativeNss, true)
+	return c.checkNameserversPropagationCustom(ctx, fqdn, value, authoritativeNss, true, false)
 }
 
 // checkNameserversPropagationCustom queries each of the given nameservers for the expected TXT record.
-func (c *Client) checkNameserversPropagationCustom(ctx context.Context, fqdn, value string, nameservers []string, addPort bool) (bool, error) {
+func (c *Client) checkNameserversPropagationCustom(ctx context.Context, fqdn, value string, nameservers []string, addPort, recursive bool) (bool, error) {
 	for _, ns := range nameservers {
 		if addPort {
 			ns = net.JoinHostPort(ns, c.authoritativeNSPort)
 		}
 
-		r, err := c.core.SendQueryCustom(ctx, fqdn, dns.TypeTXT, []string{ns}, false)
+		r, err := c.core.SendQueryCustom(ctx, fqdn, dns.TypeTXT, []string{ns}, recursive)
 		if err != nil {
 			return false, err
 		}

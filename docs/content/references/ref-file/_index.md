@@ -227,7 +227,7 @@ challenges:
       memcachedHosts:
         - memcached:11211
       
-      # Tthe S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.
+      # The S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.
       s3Bucket: 's3-bucket'
 
   # The ID/Name of the challenge.

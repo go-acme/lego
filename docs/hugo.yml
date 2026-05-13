@@ -1,0 +1,61 @@
+baseURL: 'https://go-acme.github.io/lego/'
+languageCode: en-us
+title: Lego
+
+permalinks:
+  dns: '/dns/:slug/'
+
+params:
+  # Shows a checkmark for visited pages on the menu
+  showVisitedLinks: true
+  # Change default color scheme with a variant one. Can be "red", "blue", "green".
+  themeVariant: blue
+  disableLandingPageButton: true
+  disableLanguageSwitchingButton: true
+  hideAuthorEmail: true
+  hideAuthorName: true
+#  externalLinkTarget: '_blank'
+
+  # Author of the site, will be used in meta information
+  author:
+    name: Lego Team
+
+languages:
+  en:
+    title: ACME client and library written in Go.
+    weight: 1
+    languageName: English
+    menu:
+      shortcuts:
+        - name: <i class='fab fa-fw fa-github'></i> GitHub repo
+          url: 'https://github.com/go-acme/lego'
+          weight: 10
+        - name: <i class='fas fa-fw fa-bug'></i> Issues
+          url: 'https://github.com/go-acme/lego/issues'
+          weight: 11
+        - name: <i class='fas fa-fw fa-comments'></i> Discussions
+          url: 'https://github.com/go-acme/lego/discussions'
+          weight: 12
+        - name: <i class='fas fa-fw fa-heart red cstyle'></i> Donate
+          url: 'https://github.com/sponsors/go-acme'
+          weight: 13
+
+outputs:
+  home:
+    - html
+    - print
+  page:
+    - html
+    - print
+  section:
+    - html
+    - print
+
+module:
+  imports:
+    - path: github.com/McShelby/hugo-theme-relearn
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true

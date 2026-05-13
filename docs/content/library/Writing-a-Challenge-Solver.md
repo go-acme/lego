@@ -2,6 +2,8 @@
 title: "Writing a Challenge Solver"
 date: 2019-03-03T16:39:46+01:00
 draft: false
+params:
+  menuPre: '<i class="fa-solid fa-file-pen"></i> '
 ---
 
 Lego can solve multiple ACME challenge types out of the box, but sometimes you have custom requirements.

@@ -3,6 +3,8 @@ title: "Obtain or renew certificates"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 weight: 2
+params:
+  menuPre: '<i class="fa-solid fa-shield-halved"></i> '
 aliases:
   - usage/cli
   - usage/cli/general-instructions

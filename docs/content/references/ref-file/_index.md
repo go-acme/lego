@@ -3,6 +3,8 @@ title: "Configuration file"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 weight: 6
+params:
+  menuPre: '<i class="fa-regular fa-file"></i> '
 ---
 
 This describes the configuration file format.

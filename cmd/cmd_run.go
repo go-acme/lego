@@ -73,9 +73,9 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		}
 	}
 
-	err = handleRegistration(ctx, cmd, lazyClient, store.Account, account, resource == nil)
+	err = handleRegistration(ctx, cmd, lazyClient, store.Account, account, true)
 	if err != nil {
-		return fmt.Errorf("renew: registration: %w", err)
+		return fmt.Errorf("registration: %w", err)
 	}
 
 	if resource == nil {

@@ -6,6 +6,20 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v5.0.3
+
+- Release date: 2026-05-13
+- Tag: [v5.0.3](https://github.com/go-acme/lego/releases/tag/v5.0.3)
+
+### Fixed
+
+- **[httpprovider]** Context propagation to server listeners
+- **[lib,challenge/dns-01]** Recursive NSs propagation checks
+
+### Added
+
+- **[documentation,migration]** Add a note about JSON files migration inside the documentation
+
 ## v5.0.2
 
 - Release date: 2026-05-12

@@ -54,7 +54,7 @@ func addCertificatePathsMetadata(meta map[string]string, certRes *certificate.Re
 }
 
 func addCertificateMetadata(meta map[string]string, certID string, domains []string, keyType certcrypto.KeyType) {
-	if certID == "" {
+	if certID != "" {
 		meta[EnvCertName] = certID
 		meta[EnvCertNameSanitized] = storage.SanitizedName(certID)
 	}

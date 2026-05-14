@@ -41,7 +41,7 @@ You can revoke existing certificates.
 Execute the following command:
 
 ```bash
-lego certificates revoke --cert-name 'example.com'
+lego certificates revoke --cert.name 'example.com'
 ```
 
 {{% /tab %}}
@@ -60,7 +60,7 @@ certificates:
 And execute:
 
 ```bash
-lego certificates revoke --cert-name foo
+lego certificates revoke --cert.name foo
 ```
 
 When using a configuration file, you can revoke all certificates at once:

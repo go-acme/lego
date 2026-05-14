@@ -5,14 +5,13 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
-
 jobs:
 
   doc:
     name: Build and deploy documentation
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       GO_VERSION: stable
       HUGO_VERSION: 0.157.0

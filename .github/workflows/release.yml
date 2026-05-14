@@ -5,18 +5,17 @@ on:
     tags:
       - v*
 
-permissions:
-  contents: write
-  packages: write
-  # Allow the workflow to write attestations.
-  id-token: write
-  attestations: write
-
 jobs:
 
   release:
     name: Release version
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      # Allow the workflow to write attestations.
+      id-token: write
+      attestations: write
     env:
       GO_VERSION: stable
       CGO_ENABLED: 0

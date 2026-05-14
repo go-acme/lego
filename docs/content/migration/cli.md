@@ -75,6 +75,16 @@ Some flags have been changed, renamed or removed:
 
 The directory structure has been changed.
 
+{{% notice style="caution" %}}
+
+The directory structure has changed but also the content of the JSON files, so don't migrate the files manually.
+
+To migrate the directory structure and the files, run the command `lego migrate`.
+
+If you need to do it manually, please open a [discussion](https://github.com/go-acme/lego/discussions/new?category=q-a) and we will help you.
+
+{{% /notice %}}
+
 {{< tabs groupid="migration-examples" >}}
 {{% tab title="v4" %}}
 
@@ -129,12 +139,6 @@ The directory structure has been changed.
 
 {{% /tab %}}
 {{< /tabs >}}
-
-The directory structure has changed but also the content of the JSON files, so don't migrate the files manually.
-
-To migrate the directory structure and the files, run the command `lego migrate`.
-
-If you need to do it manually, please open a [discussion](https://github.com/go-acme/lego/discussions/new?category=q-a) and we will help you.
 
 ## Environment variables
 

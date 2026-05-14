@@ -27,6 +27,8 @@ CLOUDFLARE_API_KEY='yourprivatecloudflareapikey' \
 lego run --dns cloudflare --domains 'example.org' --domains '*.example.org'
 ```
 
+To know the available options, read the [documentation]({{% ref "references/ref-flags/#run-command" %}}).
+
 {{% /tab %}}
 {{% tab title="With a Configuration File" %}}
 
@@ -52,6 +54,8 @@ CLOUDFLARE_EMAIL='you@example.com' \
 CLOUDFLARE_API_KEY='yourprivatecloudflareapikey' \
 lego
 ```
+
+To know the available options, read the [documentation]({{% ref "references/ref-file/#challenges" %}}).
 
 {{% /tab %}}
 {{< /tabs >}}

@@ -25,6 +25,8 @@ Execute the following command:
 lego run -d 'example.com' --http
 ```
 
+To know the available options, read the [documentation]({{% ref "references/ref-flags/#run-command" %}}).
+
 {{% /tab %}}
 {{% tab title="With a Configuration File" %}}
 
@@ -43,6 +45,8 @@ And execute:
 ```bash
 lego
 ```
+
+To know the available options, read the [documentation]({{% ref "references/ref-file/#challenges" %}}).
 
 {{% /tab %}}
 {{< /tabs >}}
@@ -69,6 +73,8 @@ Execute the following command:
 lego run --http --http.webroot /path/to/webroot --domains example.com
 ```
 
+To know the available options, read the [documentation]({{% ref "references/ref-flags/#run-command" %}}).
+
 {{% /tab %}}
 {{% tab title="With a Configuration File" %}}
 
@@ -92,6 +98,8 @@ And execute:
 ```bash
 lego
 ```
+
+To know the available options, read the [documentation]({{% ref "references/ref-file/#challenges" %}}).
 
 {{% /tab %}}
 {{< /tabs >}}

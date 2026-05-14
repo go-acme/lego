@@ -23,6 +23,8 @@ Execute the following command:
 lego run -d 'example.com' --tls
 ```
 
+To know the available options, read the [documentation]({{% ref "references/ref-flags/#run-command" %}}).
+
 {{% /tab %}}
 {{% tab title="With a Configuration File" %}}
 
@@ -41,6 +43,8 @@ And execute:
 ```bash
 lego
 ```
+
+To know the available options, read the [documentation]({{% ref "references/ref-file/#challenges" %}}).
 
 {{% /tab %}}
 {{< /tabs >}}

@@ -2,7 +2,7 @@
 title: 'Hooks'
 date: 2019-03-03T16:39:46+01:00
 draft: false
-weight: 1
+weight: 3
 ---
 
 This section describes how to use hooks.

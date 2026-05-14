@@ -2,7 +2,7 @@
 title: "Account Operations"
 date: 2019-03-03T16:39:46+01:00
 draft: false
-weight: 3
+weight: 2
 ---
 
 This section describes account operations.
@@ -56,6 +56,14 @@ lego accounts register --account-id='myaccount' \
 {{% /tab %}}
 {{< /tabs >}}
 
+To know the available options, run:
+
+```bash
+lego accounts register --help
+```
+
+Or read the [documentation]({{% ref "references/ref-flags/#accounts-register-command" %}}).
+
 ## Key Rollover
 
 You can change the account private key (a key rollover) by using the following command:
@@ -63,6 +71,14 @@ You can change the account private key (a key rollover) by using the following c
 ```bash
 lego accounts keyrollover --account-id='myaccount'
 ```
+
+To know the available options, run:
+
+```bash
+lego accounts keyrollover --help
+```
+
+Or read the [documentation]({{% ref "references/ref-flags/#accounts-keyrollover-command" %}}).
 
 ## Account Recovery
 
@@ -73,3 +89,11 @@ lego accounts recover --account-id='myaccount' --private-key /path/to/private-ke
 ```
 
 The account will be imported and added to `.lego/accounts/`.
+
+To know the available options, run:
+
+```bash
+lego accounts recover --help
+```
+
+Or read the [documentation]({{% ref "references/ref-flags/#accounts-recover-command" %}}).

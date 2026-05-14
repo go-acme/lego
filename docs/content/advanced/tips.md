@@ -2,7 +2,7 @@
 title: "Tips"
 date: 2019-03-03T16:39:46+01:00
 draft: false
-weight: 7
+weight: 8
 ---
 
 This section contains some tips and tricks for using lego.

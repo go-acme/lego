@@ -2,7 +2,7 @@
 title: "Certificate Operations"
 date: 2019-03-03T16:39:46+01:00
 draft: false
-weight: 2
+weight: 1
 ---
 
 This section describes certificate operations.
@@ -72,3 +72,10 @@ lego certificates revoke
 {{% /tab %}}
 {{< /tabs >}}
 
+To know the available options, run:
+
+```bash
+lego certificates revoke --help
+```
+
+Or read the [documentation]({{% ref "references/ref-flags/#certificates-revoke-command" %}}).

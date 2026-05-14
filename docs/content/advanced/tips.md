@@ -96,7 +96,7 @@ This involves a few DNS queries to different servers:
    If there is no SOA record, Lego requests the SOA record of the parent label, then for its parent, etc., until it reaches the apex domain[^apex].
    Should any DNS label on the way be a CNAME, it is resolved as per usual.
 
-   In the default configuration, Lego uses the system name servers for this, and falls back to Google's DNS servers, should they be absent.
+   In the default configuration, Lego uses the system name servers for this, and falls back to Cloudflare's DNS servers, should they be absent.
 
 2. Verifying the challenge token.
 

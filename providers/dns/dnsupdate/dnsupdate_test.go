@@ -2,6 +2,8 @@ package dnsupdate
 
 import (
 	"bytes"
+	"fmt"
+	"net"
 	"strings"
 	"testing"
 	"time"
@@ -466,6 +468,85 @@ func TestProvider_findZone(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, zone)
+		})
+	}
+}
+
+func Test_parseNameserver(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		ns       string
+		expected string
+	}{
+		{
+			desc:     "domain",
+			ns:       "example.com",
+			expected: "example.com:53",
+		},
+		{
+			desc:     "IPv4 without port",
+			ns:       "127.0.0.1",
+			expected: "127.0.0.1:53",
+		},
+		{
+			desc:     "IPv4 with port",
+			ns:       "127.0.0.1:53",
+			expected: "127.0.0.1:53",
+		},
+		{
+			desc:     "IPv6 without port",
+			ns:       "::1",
+			expected: "[::1]:53",
+		},
+		{
+			desc:     "IPv6 with port",
+			ns:       "[::1]:53",
+			expected: "[::1]:53",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			actual, err := parseNameserver(test.ns)
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expected, actual)
+		})
+	}
+}
+
+func TestName(t *testing.T) {
+	fmt.Println(net.SplitHostPort("[[::1]]:53"))
+}
+
+func Test_parseNameserver_error(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		ns       string
+		expected string
+	}{
+		{
+			desc:     "wrong ipv6",
+			ns:       "[::1]",
+			expected: "[::1]",
+		},
+		{
+			desc:     "invalid",
+			ns:       "127.0.0.1::80",
+			expected: "127.0.0.1::80",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			actual, err := parseNameserver(test.ns)
+			require.Error(t, err)
+
+			assert.Equal(t, test.expected, actual)
 		})
 	}
 }

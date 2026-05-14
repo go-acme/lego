@@ -1,0 +1,35 @@
+{
+  "data": [
+    {
+      "name": "example.com",
+      "created_at": "2019-08-24T14:15:22Z",
+      "updated_at": "2024-08-24T14:15:22Z"
+    }
+  ],
+  "page": {
+    "limit": 0,
+    "offset": 0,
+    "total": 10
+  },
+  "errors": [
+    {
+      "id": "err_eXgLfYUj",
+      "code": "2451",
+      "title": "invalid request query",
+      "detail": "unknown variant `summary`, expected `detail` or `name_only`",
+      "location": "query"
+    },
+    {
+      "id": "err_oWfehpGt",
+      "code": "3809",
+      "title": "invalid url encoded request body"
+    }
+  ],
+  "warnings": [
+    {
+      "title": "Resource expiring soon",
+      "code": "W1001",
+      "detail": "The related resource will expire soon"
+    }
+  ]
+}

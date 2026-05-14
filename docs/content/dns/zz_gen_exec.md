@@ -61,7 +61,7 @@ For example, requesting a certificate for the domain 'my.example.org' can be ach
 
 ```bash
 EXEC_PATH=./update-dns.sh \
-lego --dns exec --d my.example.org run
+lego run --dns exec --d my.example.org
 ```
 
 It will then call the program './update-dns.sh' with like this:
@@ -81,7 +81,7 @@ If you want to use the raw domain, token, and keyAuth values with your program, 
 ```bash
 EXEC_MODE=RAW \
 EXEC_PATH=./update-dns.sh \
-lego --dns exec -d my.example.org run
+lego run --dns exec -d my.example.org
 ```
 
 It will then call the program `./update-dns.sh` like this:

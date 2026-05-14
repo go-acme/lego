@@ -69,7 +69,7 @@ lego accounts keyrollover --account-id='myaccount'
 You can recover/import an account, to do that, you need the private key of the account.
 
 ```bash
-lego account recover --account-id='myaccount' --private-key /path/to/private-key.pem
+lego accounts recover --account-id='myaccount' --private-key /path/to/private-key.pem
 ```
 
 The account will be imported and added to `.lego/accounts/`.

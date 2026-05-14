@@ -3,11 +3,13 @@ package internal
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net"
 	"slices"
 	"strings"
 
 	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/miekg/dns"
 )
 
@@ -81,6 +83,8 @@ func parseNameservers(servers []string) []string {
 	for _, resolver := range servers {
 		// ensure all servers have a port number
 		if _, _, err := net.SplitHostPort(resolver); err != nil {
+			log.Debug("The nameserver does not contain a port, assuming port 53", slog.String("nameserver", resolver), log.ErrorAttr(err))
+
 			resolvers = append(resolvers, net.JoinHostPort(resolver, "53"))
 		} else {
 			resolvers = append(resolvers, resolver)

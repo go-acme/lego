@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 	"slices"
 	"strings"
@@ -15,6 +16,7 @@ import (
 	"github.com/bodgit/tsig/gss"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/dnsupdate/internal"
 	"github.com/miekg/dns"
@@ -160,16 +162,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("dnsupdate: nameserver missing")
 	}
 
-	// Append the default DNS port if none is specified.
-	if _, _, err := net.SplitHostPort(config.Nameserver); err != nil {
-		if strings.Contains(err.Error(), "missing port") {
-			config.Nameserver = net.JoinHostPort(config.Nameserver, "53")
-		} else {
-			return nil, fmt.Errorf("dnsupdate: %w", err)
-		}
+	var err error
+
+	config.Nameserver, err = parseNameserver(config.Nameserver)
+	if err != nil {
+		return nil, fmt.Errorf("dnsupdate: %w", err)
 	}
 
-	err := setupTSIG(config)
+	err = setupTSIG(config)
 	if err != nil {
 		return nil, fmt.Errorf("dnsupdate: %w", err)
 	}
@@ -413,4 +413,30 @@ func prepareTSIG(config *Config) error {
 	}
 
 	return nil
+}
+
+func parseNameserver(ns string) (string, error) {
+	if ns == "" {
+		return "", errors.New("nameserver is missing")
+	}
+
+	_, _, err := net.SplitHostPort(ns)
+	if err == nil {
+		return ns, nil
+	}
+
+	log.Debug("The nameserver does not contain a port, assuming port 53", slog.String("nameserver", ns), log.ErrorAttr(err))
+
+	if len(net.ParseIP(ns)) > 0 || strings.Contains(err.Error(), "missing port") {
+		addr := net.JoinHostPort(ns, "53")
+
+		_, _, err = net.SplitHostPort(addr)
+		if err != nil {
+			return ns, err
+		}
+
+		return addr, nil
+	}
+
+	return ns, fmt.Errorf("parse nameserver: %w", err)
 }

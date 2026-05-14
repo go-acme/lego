@@ -25,25 +25,58 @@ each entry has a key (a name you choose) and a value (its configuration).
 
 Certificates reference accounts and challenges by their name, and accounts reference servers by their name.
 
-More information about the configuration file structure can be found in the [configuration file structure]({{% ref "references/ref-file" %}}).
+More information about the configuration file structure can be found in the [configuration file reference]({{% ref "references/ref-file" %}}).
 
 ## Smart Defaults
 
 The configuration file applies a number of defaults to reduce verbosity:
 
-| Setting                | Description                                                       |
-|------------------------|-------------------------------------------------------------------|
-| Storage                | Defaults to `.lego` in the current directory.                     |
-| Account server         | Defaults to the Let's Encrypt production if not specified.        |
-| Certificate key type   | Inherits from its account if not specified.                       |
-| Certificate account    | If there is only one account defined, it is used automatically.   |
-| Certificate challenge  | If there is only one challenge defined, it is used automatically. |
+| Setting                           | Description                                                                                                 |
+|-----------------------------------|-------------------------------------------------------------------------------------------------------------|
+| Storage                           | Defaults to `.lego` in the current directory.                                                               |
+| Account server                    | Defaults to the Let's Encrypt production if not specified.                                                  |
+| Certificate key type              | Inherits from its account if not specified.                                                                 |
+| Certificate account               | If there is only one account defined, it is used automatically.                                             |
+| Certificate challenge             | If there is only one challenge defined, it is used automatically.                                           |
+| Certificate predefined challenges | `http-01`, `tls-alpn-01`, `dns-persist-01` can be used as a challenge name without dedicated configuration. |
 
-This means the minimal configuration to obtain a certificate is just a challenge and a certificate entry:
+This means the minimal configuration to obtain a certificate is just a certificate entry (and a challenge for DNS-01):
+
+{{< tabs >}}
+{{% tab title="HTTP-01" %}}
+
+Minimal example for a certificate (Let's Encrypt).
 
 ```yaml
 # .lego.yml
-# Minimal example for a wildcard certificate (Let's Encrypt and DNS-01 via Cloudflare).
+certificates:
+  my-cert:
+    challenge: http-01
+    domains:
+      - example.com
+```
+
+{{% /tab %}}
+{{% tab title="TLS-ALPN-01" %}}
+
+Minimal example for a certificate (Let's Encrypt).
+
+```yaml
+# .lego.yml
+certificates:
+  my-cert:
+    challenge: tls-alpn-01
+    domains:
+      - example.com
+```
+
+{{% /tab %}}
+{{% tab title="DNS-01" %}}
+
+Minimal example for a wildcard certificate (Let's Encrypt and DNS-01 via Cloudflare).
+
+```yaml
+# .lego.yml
 challenges:
   my-dns:
     dns:
@@ -55,6 +88,14 @@ certificates:
       - example.com
       - '*.example.com'
 ```
+
+{{% /tab %}}
+{{% tab title="DNS-PERSIST-01" %}}
+
+Please read the dedicated [documentation]({{% ref "obtain/dnspersist01" %}}).
+
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Archive Behavior
 

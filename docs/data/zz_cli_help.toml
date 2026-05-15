@@ -4,456 +4,626 @@
 [[command]]
 title   = "lego -h"
 content = """
-NAME:
-   lego - ACME client written in Go
+## lego
 
-USAGE:
-   lego [global options] [command [command options]]
+> ACME client written in Go
 
-COMMANDS:
-   run           Get or renew a certificate
-   certificates  Certificates management.
-   accounts      Accounts management.
-   archives      Archives management.
-   dnshelp       Shows additional help for the '--dns' global option
-   migrate       Migrate certificates and accounts.
-   help, h       Shows a list of commands or help for one command
+### Usage
 
-GLOBAL OPTIONS:
-   --help, -h  show help
+```
+lego [options] [command [command options]]
+```
 
-   Flags related to logs:
+### Commands
 
-   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
-   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
+| Name | Usage |
+|------|-------|
+| `run` | Get or renew a certificate |
+| `certificates` | Certificates management. |
+| `accounts` | Accounts management. |
+| `archives` | Archives management. |
+| `dnshelp` | Shows additional help for the '--dns' global option |
+| `migrate` | Migrate certificates and accounts. |
 
-   Flags related to the configuration file:
+### Global Options
 
-   --config string  Path to the configuration file. [$LEGO_CONFIG]
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--help`, `-h` |  | show help  |
+
+#### Flags related to logs:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
+| `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
+
+#### Flags related to the configuration file:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--config string` | `LEGO_CONFIG` | Path to the configuration file.  |
 """
 
 [[command]]
 title   = "lego run -h"
 content = """
-NAME:
-   lego run - Get or renew a certificate
+## `lego run`
 
-USAGE:
-   lego run [options]
+> Get or renew a certificate
 
-OPTIONS:
-   --accept-tos, -a                                             By setting this flag to true, you indicate that you accept the current CA terms of service. [$LEGO_ACCEPT_TOS]
-   --domains string, -d string [ --domains string, -d string ]  Add a domain. For multiple domains either repeat the option or provide a comma-separated list. [$LEGO_DOMAINS]
-   --email string, -m string                                    Email used for registration and recovery contact. [$LEGO_EMAIL]
-   --help, -h                                                   show help
-   --key-type string, -k string                                 Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
-   --server string, -s string                                   CA (ACME server). It can be either a URL or a shortcode.
-                                                                (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
+### Usage
 
-   Flags related to External Account Binding:
+```
+lego run [options]
+```
 
-   --eab              Use External Account Binding for account registration. Requires eab.kid and eab.hmac. [$LEGO_EAB]
-   --eab.hmac string  MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format. [$LEGO_EAB_HMAC]
-   --eab.kid string   Key identifier for External Account Binding. [$LEGO_EAB_KID]
+### Options
 
-   Flags related to advanced options:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--accept-tos`, `-a` | `LEGO_ACCEPT_TOS` | By setting this flag to true, you indicate that you accept the current CA terms of service.  |
+| `--domains string`, `-d string` | `LEGO_DOMAINS` | Add a domain. For multiple domains either repeat the option or provide a comma-separated list.  |
+| `--email string`, `-m string` | `LEGO_EMAIL` | Email used for registration and recovery contact.  |
+| `--help`, `-h` |  | show help  |
+| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: "EC256") |
+| `--server string`, `-s string` | `LEGO_SERVER` | CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: "https://acme-v02.api.letsencrypt.org/directory") |
 
-   --always-deactivate-authorizations string  Force the authorizations to be relinquished even if the certificate request was successful. [$LEGO_ALWAYS_DEACTIVATE_AUTHORIZATIONS]
-   --cert.timeout int                         Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30) [$LEGO_CERT_TIMEOUT]
-   --csr string                               Certificate signing request filename, if an external CSR is to be used. [$LEGO_CSR]
-   --enable-cn                                Enable the use of the common name. (Not recommended) [$LEGO_ENABLE_CN]
-   --ipv4only, -4                             Use IPv4 only. [$LEGO_IPV4ONLY]
-   --ipv6only, -6                             Use IPv6 only. [$LEGO_IPV6ONLY]
-   --must-staple                              Include the OCSP must staple TLS extension in the CSR and generated certificate. Only works if the CSR is generated by lego. [$LEGO_MUST_STAPLE]
-   --no-bundle                                Do not create a certificate bundle by adding the issuers certificate to the new certificate. [$LEGO_NO_BUNDLE]
-   --not-after time                           Set the notAfter field in the certificate (RFC3339 format) [$LEGO_NOT_AFTER]
-   --not-before time                          Set the notBefore field in the certificate (RFC3339 format) [$LEGO_NOT_BEFORE]
-   --preferred-chain string                   If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used. [$LEGO_PREFERRED_CHAIN]
-   --private-key string                       Path to a private key (in PEM encoding) for the certificate. By default, a private key is generated. [$LEGO_PRIVATE_KEY]
-   --profile string                           If the CA offers multiple certificate profiles (draft-ietf-acme-profiles), choose this one. [$LEGO_PROFILE]
+#### Flags related to External Account Binding:
 
-   Flags related to certificate renewal:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--eab` | `LEGO_EAB` | Use External Account Binding for account registration. Requires eab.kid and eab.hmac.  |
+| `--eab.hmac string` | `LEGO_EAB_HMAC` | MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format.  |
+| `--eab.kid string` | `LEGO_EAB_KID` | Key identifier for External Account Binding.  |
 
-   --ari-disable                          (ARI) Do not use the renewalInfo endpoint (RFC9773) to check if a certificate should be renewed. [$LEGO_ARI_DISABLE]
-   --ari-wait-to-renew-duration duration  (ARI) The maximum duration you're willing to sleep for a renewal time returned by the renewalInfo endpoint. (default: 0s) [$LEGO_ARI_WAIT_TO_RENEW_DURATION]
-   --force-cert-domains                   Check and ensure that the cert's domain list matches those passed in the domains argument. [$LEGO_FORCE_CERT_DOMAINS]
-   --no-random-sleep                      Do not add a random sleep before the renewal. We do not recommend using this flag if you are doing your renewals in an automated way. [$LEGO_NO_RANDOM_SLEEP]
-   --renew-days int                       The number of days left on a certificate to renew it.
-                                          By default, compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates). (default: 0) [$LEGO_RENEW_DAYS]
-   --renew-force                          Force the renewal of the certificate even if it is not due for renewal yet. [$LEGO_RENEW_FORCE]
-   --reuse-key                            Used to indicate you want to reuse the current certificate private key for the new certificate. [$LEGO_REUSE_KEY]
+#### Flags related to advanced options:
 
-   Flags related to hooks:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--always-deactivate-authorizations string` | `LEGO_ALWAYS_DEACTIVATE_AUTHORIZATIONS` | Force the authorizations to be relinquished even if the certificate request was successful.  |
+| `--cert.timeout int` | `LEGO_CERT_TIMEOUT` | Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. <br> (Default: 30) |
+| `--csr string` | `LEGO_CSR` | Certificate signing request filename, if an external CSR is to be used.  |
+| `--enable-cn` | `LEGO_ENABLE_CN` | Enable the use of the common name. (Not recommended)  |
+| `--ipv4only`, `-4` | `LEGO_IPV4ONLY` | Use IPv4 only.  |
+| `--ipv6only`, `-6` | `LEGO_IPV6ONLY` | Use IPv6 only.  |
+| `--must-staple` | `LEGO_MUST_STAPLE` | Include the OCSP must staple TLS extension in the CSR and generated certificate. Only works if the CSR is generated by lego.  |
+| `--no-bundle` | `LEGO_NO_BUNDLE` | Do not create a certificate bundle by adding the issuers certificate to the new certificate.  |
+| `--not-after time` | `LEGO_NOT_AFTER` | Set the notAfter field in the certificate (RFC3339 format)  |
+| `--not-before time` | `LEGO_NOT_BEFORE` | Set the notBefore field in the certificate (RFC3339 format)  |
+| `--preferred-chain string` | `LEGO_PREFERRED_CHAIN` | If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.  |
+| `--private-key string` | `LEGO_PRIVATE_KEY` | Path to a private key (in PEM encoding) for the certificate. By default, a private key is generated.  |
+| `--profile string` | `LEGO_PROFILE` | If the CA offers multiple certificate profiles (draft-ietf-acme-profiles), choose this one.  |
 
-   --deploy-hook string            Define a hook. The hook runs, after the creation or the renewal, in cases where a certificate is successfully created/renewed. [$LEGO_DEPLOY_HOOK]
-   --deploy-hook-timeout duration  Define the timeout for the deploy-hook execution. (default: 2m0s) [$LEGO_DEPLOY_HOOK_TIMEOUT]
-   --post-hook string              Define a post-hook. This hook runs, after the creation or the renewal, in cases where a certificate is created/renewed, regardless of whether any errors occurred. [$LEGO_POST_HOOK]
-   --post-hook-timeout duration    Define the timeout for the post-hook execution. (default: 2m0s) [$LEGO_POST_HOOK_TIMEOUT]
-   --pre-hook string               Define a pre-hook. This hook runs, before the creation or the renewal, in cases where a certificate will be effectively created/renewed. [$LEGO_PRE_HOOK]
-   --pre-hook-timeout duration     Define the timeout for the pre-hook execution. (default: 2m0s) [$LEGO_PRE_HOOK_TIMEOUT]
+#### Flags related to certificate renewal:
 
-   Flags related to the ACME client:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--ari-disable` | `LEGO_ARI_DISABLE` | (ARI) Do not use the renewalInfo endpoint (RFC9773) to check if a certificate should be renewed.  |
+| `--ari-wait-to-renew-duration duration` | `LEGO_ARI_WAIT_TO_RENEW_DURATION` | (ARI) The maximum duration you're willing to sleep for a renewal time returned by the renewalInfo endpoint. <br> (Default: 0s) |
+| `--force-cert-domains` | `LEGO_FORCE_CERT_DOMAINS` | Check and ensure that the cert's domain list matches those passed in the domains argument.  |
+| `--no-random-sleep` | `LEGO_NO_RANDOM_SLEEP` | Do not add a random sleep before the renewal. We do not recommend using this flag if you are doing your renewals in an automated way.  |
+| `--renew-days int` | `LEGO_RENEW_DAYS` | The number of days left on a certificate to renew it.<br>	By default, compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates). <br> (Default: 0) |
+| `--renew-force` | `LEGO_RENEW_FORCE` | Force the renewal of the certificate even if it is not due for renewal yet.  |
+| `--reuse-key` | `LEGO_REUSE_KEY` | Used to indicate you want to reuse the current certificate private key for the new certificate.  |
 
-   --http-timeout int           Set the HTTP timeout value to a specific value in seconds. (default: 0) [$LEGO_HTTP_TIMEOUT]
-   --overall-request-limit int  ACME overall requests limit. (default: 18) [$LEGO_OVERALL_REQUEST_LIMIT]
-   --tls-skip-verify            Skip the TLS verification of the ACME server. [$LEGO_TLS_SKIP_VERIFY]
-   --user-agent string          Add to the user-agent sent to the CA to identify an application embedding lego-cli [$LEGO_USER_AGENT]
+#### Flags related to hooks:
 
-   Flags related to the DNS-01 challenge:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--deploy-hook string` | `LEGO_DEPLOY_HOOK` | Define a hook. The hook runs, after the creation or the renewal, in cases where a certificate is successfully created/renewed.  |
+| `--deploy-hook-timeout duration` | `LEGO_DEPLOY_HOOK_TIMEOUT` | Define the timeout for the deploy-hook execution. <br> (Default: 2m0s) |
+| `--post-hook string` | `LEGO_POST_HOOK` | Define a post-hook. This hook runs, after the creation or the renewal, in cases where a certificate is created/renewed, regardless of whether any errors occurred.  |
+| `--post-hook-timeout duration` | `LEGO_POST_HOOK_TIMEOUT` | Define the timeout for the post-hook execution. <br> (Default: 2m0s) |
+| `--pre-hook string` | `LEGO_PRE_HOOK` | Define a pre-hook. This hook runs, before the creation or the renewal, in cases where a certificate will be effectively created/renewed.  |
+| `--pre-hook-timeout duration` | `LEGO_PRE_HOOK_TIMEOUT` | Define the timeout for the pre-hook execution. <br> (Default: 2m0s) |
 
-   --dns string                                       Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage. [$LEGO_DNS]
-   --dns.propagation.disable-ans                      By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers. [$LEGO_DNS_PROPAGATION_DISABLE_ANS]
-   --dns.propagation.disable-rns                      By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers). [$LEGO_DNS_PROPAGATION_DISABLE_RNS]
-   --dns.propagation.wait duration                    By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. (default: 0s) [$LEGO_DNS_PROPAGATION_WAIT]
-   --dns.resolvers string [ --dns.resolvers string ]  Set the nameservers to use for performing (recursive) CNAME resolving and apex domain determination. For DNS-01 challenge verification, the authoritative DNS server is queried directly. Supported: host:port. The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined. [$LEGO_DNS_RESOLVERS]
-   --dns.timeout int                                  Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries. (default: 10) [$LEGO_DNS_TIMEOUT]
+#### Flags related to the ACME client:
 
-   Flags related to the DNS-PERSIST-01 challenge:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--http-timeout int` | `LEGO_HTTP_TIMEOUT` | Set the HTTP timeout value to a specific value in seconds. <br> (Default: 0) |
+| `--overall-request-limit int` | `LEGO_OVERALL_REQUEST_LIMIT` | ACME overall requests limit. <br> (Default: 18) |
+| `--tls-skip-verify` | `LEGO_TLS_SKIP_VERIFY` | Skip the TLS verification of the ACME server.  |
+| `--user-agent string` | `LEGO_USER_AGENT` | Add to the user-agent sent to the CA to identify an application embedding lego-cli  |
 
-   --dns-persist                                                      Use the DNS-PERSIST-01 challenge to solve challenges. Manual verification only. Can be mixed with other types of challenges. [$LEGO_DNS_PERSIST]
-   --dns-persist.issuer-domain-name string                            Override the issuer-domain-name to use for DNS-PERSIST-01 when multiple are offered. Must be offered by the challenge. [$LEGO_DNS_PERSIST_ISSUER_DOMAIN_NAME]
-   --dns-persist.persist-until time                                   Set the optional persistUntil for DNS-PERSIST-01 records as an RFC3339 timestamp (for example, 2026-03-01T00:00:00Z). [$LEGO_DNS_PERSIST_PERSIST_UNTIL]
-   --dns-persist.propagation.disable-ans                              By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers. [$LEGO_DNS_PERSIST_PROPAGATION_DISABLE_ANS]
-   --dns-persist.propagation.disable-rns                              By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers). [$LEGO_DNS_PERSIST_PROPAGATION_DISABLE_RNS]
-   --dns-persist.propagation.wait duration                            By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. (default: 0s) [$LEGO_DNS_PERSIST_PROPAGATION_WAIT]
-   --dns-persist.resolvers string [ --dns-persist.resolvers string ]  Set the resolvers to use for DNS-PERSIST-01 TXT lookups. Supported: host:port. The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined. [$LEGO_DNS_PERSIST_RESOLVERS]
-   --dns-persist.timeout int                                          Set the DNS timeout value to a specific value in seconds. Used for DNS-PERSIST-01 lookups. (default: 0) [$LEGO_DNS_PERSIST_TIMEOUT]
+#### Flags related to the DNS-01 challenge:
 
-   Flags related to the HTTP-01 challenge:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--dns string` | `LEGO_DNS` | Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage.  |
+| `--dns.propagation.disable-ans` | `LEGO_DNS_PROPAGATION_DISABLE_ANS` | By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.  |
+| `--dns.propagation.disable-rns` | `LEGO_DNS_PROPAGATION_DISABLE_RNS` | By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).  |
+| `--dns.propagation.wait duration` | `LEGO_DNS_PROPAGATION_WAIT` | By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. <br> (Default: 0s) |
+| `--dns.resolvers string` | `LEGO_DNS_RESOLVERS` | Set the nameservers to use for performing (recursive) CNAME resolving and apex domain determination. For DNS-01 challenge verification, the authoritative DNS server is queried directly. Supported: host:port. The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined.  |
+| `--dns.timeout int` | `LEGO_DNS_TIMEOUT` | Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries. <br> (Default: 10) |
 
-   --http                                                         Use the HTTP-01 challenge to solve challenges. Can be mixed with other types of challenges. [$LEGO_HTTP]
-   --http.address string                                          Set the address to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port. (default: ":80") [$LEGO_HTTP_ADDRESS]
-   --http.delay duration                                          Delay between the starts of the HTTP server (use for HTTP-01 based challenges) and the validation of the challenge. (default: 0s) [$LEGO_HTTP_DELAY]
-   --http.memcached-host string [ --http.memcached-host string ]  Set the memcached host(s) to use for HTTP-01 based challenges. Challenges will be written to all specified hosts. [$LEGO_HTTP_MEMCACHED_HOST]
-   --http.proxy-header string                                     Validate against this HTTP header when solving HTTP-01 based challenges behind a reverse proxy. (default: "Host") [$LEGO_HTTP_PROXY_HEADER]
-   --http.s3-bucket string                                        Set the S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket. [$LEGO_HTTP_S3_BUCKET]
-   --http.webroot string                                          Set the webroot folder to use for HTTP-01 based challenges to write directly to the .well-known/acme-challenge file. This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge [$LEGO_HTTP_WEBROOT]
+#### Flags related to the DNS-PERSIST-01 challenge:
 
-   Flags related to the TLS-ALPN-01 challenge:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--dns-persist` | `LEGO_DNS_PERSIST` | Use the DNS-PERSIST-01 challenge to solve challenges. Manual verification only. Can be mixed with other types of challenges.  |
+| `--dns-persist.issuer-domain-name string` | `LEGO_DNS_PERSIST_ISSUER_DOMAIN_NAME` | Override the issuer-domain-name to use for DNS-PERSIST-01 when multiple are offered. Must be offered by the challenge.  |
+| `--dns-persist.persist-until time` | `LEGO_DNS_PERSIST_PERSIST_UNTIL` | Set the optional persistUntil for DNS-PERSIST-01 records as an RFC3339 timestamp (for example, 2026-03-01T00:00:00Z).  |
+| `--dns-persist.propagation.disable-ans` | `LEGO_DNS_PERSIST_PROPAGATION_DISABLE_ANS` | By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.  |
+| `--dns-persist.propagation.disable-rns` | `LEGO_DNS_PERSIST_PROPAGATION_DISABLE_RNS` | By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).  |
+| `--dns-persist.propagation.wait duration` | `LEGO_DNS_PERSIST_PROPAGATION_WAIT` | By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. <br> (Default: 0s) |
+| `--dns-persist.resolvers string` | `LEGO_DNS_PERSIST_RESOLVERS` | Set the resolvers to use for DNS-PERSIST-01 TXT lookups. Supported: host:port. The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined.  |
+| `--dns-persist.timeout int` | `LEGO_DNS_PERSIST_TIMEOUT` | Set the DNS timeout value to a specific value in seconds. Used for DNS-PERSIST-01 lookups. <br> (Default: 0) |
 
-   --tls                 Use the TLS-ALPN-01 challenge to solve challenges. Can be mixed with other types of challenges. [$LEGO_TLS]
-   --tls.address string  Set the address to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port. (default: ":443") [$LEGO_TLS_ADDRESS]
-   --tls.delay duration  Delay between the start of the TLS listener (use for TLSALPN-01 based challenges) and the validation of the challenge. (default: 0s) [$LEGO_TLS_DELAY]
+#### Flags related to the HTTP-01 challenge:
 
-   Flags related to the storage:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--http` | `LEGO_HTTP` | Use the HTTP-01 challenge to solve challenges. Can be mixed with other types of challenges.  |
+| `--http.address string` | `LEGO_HTTP_ADDRESS` | Set the address to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port. <br> (Default: ":80") |
+| `--http.delay duration` | `LEGO_HTTP_DELAY` | Delay between the starts of the HTTP server (use for HTTP-01 based challenges) and the validation of the challenge. <br> (Default: 0s) |
+| `--http.memcached-host string` | `LEGO_HTTP_MEMCACHED_HOST` | Set the memcached host(s) to use for HTTP-01 based challenges. Challenges will be written to all specified hosts.  |
+| `--http.proxy-header string` | `LEGO_HTTP_PROXY_HEADER` | Validate against this HTTP header when solving HTTP-01 based challenges behind a reverse proxy. <br> (Default: "Host") |
+| `--http.s3-bucket string` | `LEGO_HTTP_S3_BUCKET` | Set the S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.  |
+| `--http.webroot string` | `LEGO_HTTP_WEBROOT` | Set the webroot folder to use for HTTP-01 based challenges to write directly to the .well-known/acme-challenge file. This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge  |
 
-   --account-id string            Account identifier (The email is used if the account ID is undefined). [$LEGO_ACCOUNT_ID]
-   --cert.name string, -c string  The certificate ID/Name, used to store and retrieve a certificate. By default, it uses the first domain name. [$LEGO_CERT_NAME]
-   --env-file string              The path to the dotenv file. [$LEGO_ENV_FILE]
-   --path string                  Directory to use for storing the data. [$LEGO_PATH]
-   --pem                          Generate an additional .pem (base64) file by concatenating the .key and .crt files together. [$LEGO_PEM]
-   --pfx                          Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together. [$LEGO_PFX]
-   --pfx.format string            The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: DES, RC2, SHA256, PBMAC1. (default: "RC2") [$LEGO_PFX_FORMAT]
-   --pfx.password string          The password used to encrypt the .pfx (PCKS#12) file. (default: "changeit") [$LEGO_PFX_PASSWORD]
+#### Flags related to the TLS-ALPN-01 challenge:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--tls` | `LEGO_TLS` | Use the TLS-ALPN-01 challenge to solve challenges. Can be mixed with other types of challenges.  |
+| `--tls.address string` | `LEGO_TLS_ADDRESS` | Set the address to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port. <br> (Default: ":443") |
+| `--tls.delay duration` | `LEGO_TLS_DELAY` | Delay between the start of the TLS listener (use for TLSALPN-01 based challenges) and the validation of the challenge. <br> (Default: 0s) |
+
+#### Flags related to the storage:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--account-id string` | `LEGO_ACCOUNT_ID` | Account identifier (The email is used if the account ID is undefined).  |
+| `--cert.name string`, `-c string` | `LEGO_CERT_NAME` | The certificate ID/Name, used to store and retrieve a certificate. By default, it uses the first domain name.  |
+| `--env-file string` | `LEGO_ENV_FILE` | The path to the dotenv file.  |
+| `--path string` | `LEGO_PATH` | Directory to use for storing the data.  |
+| `--pem` | `LEGO_PEM` | Generate an additional .pem (base64) file by concatenating the .key and .crt files together.  |
+| `--pfx` | `LEGO_PFX` | Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together.  |
+| `--pfx.format string` | `LEGO_PFX_FORMAT` | The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: DES, RC2, SHA256, PBMAC1. <br> (Default: "RC2") |
+| `--pfx.password string` | `LEGO_PFX_PASSWORD` | The password used to encrypt the .pfx (PCKS#12) file. <br> (Default: "changeit") |
 
 
-GLOBAL OPTIONS:
-   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
-   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+### Global Options
+
+| Flag | Usage | Env Var |
+|------|-------|-------|
+| `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
+| `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
 """
 
 [[command]]
 title   = "lego accounts register -h"
 content = """
-NAME:
-   lego accounts register - Register an account.
+## `lego accounts register`
 
-USAGE:
-   lego accounts register [options]
+> Register an account.
 
-OPTIONS:
-   --accept-tos, -a              By setting this flag to true, you indicate that you accept the current CA terms of service. [$LEGO_ACCEPT_TOS]
-   --email string, -m string     Email used for registration and recovery contact. [$LEGO_EMAIL]
-   --help, -h                    show help
-   --key-type string, -k string  Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
-   --server string, -s string    CA (ACME server). It can be either a URL or a shortcode.
-                                 (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
+### Usage
 
-   Flags related to External Account Binding:
+```
+lego accounts register [options]
+```
 
-   --eab              Use External Account Binding for account registration. Requires eab.kid and eab.hmac. [$LEGO_EAB]
-   --eab.hmac string  MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format. [$LEGO_EAB_HMAC]
-   --eab.kid string   Key identifier for External Account Binding. [$LEGO_EAB_KID]
+### Options
 
-   Flags related to advanced options:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--accept-tos`, `-a` | `LEGO_ACCEPT_TOS` | By setting this flag to true, you indicate that you accept the current CA terms of service.  |
+| `--email string`, `-m string` | `LEGO_EMAIL` | Email used for registration and recovery contact.  |
+| `--help`, `-h` |  | show help  |
+| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: "EC256") |
+| `--server string`, `-s string` | `LEGO_SERVER` | CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: "https://acme-v02.api.letsencrypt.org/directory") |
 
-   --cert.timeout int  Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30) [$LEGO_CERT_TIMEOUT]
-   --enable-cn         Enable the use of the common name. (Not recommended) [$LEGO_ENABLE_CN]
+#### Flags related to External Account Binding:
 
-   Flags related to the ACME client:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--eab` | `LEGO_EAB` | Use External Account Binding for account registration. Requires eab.kid and eab.hmac.  |
+| `--eab.hmac string` | `LEGO_EAB_HMAC` | MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format.  |
+| `--eab.kid string` | `LEGO_EAB_KID` | Key identifier for External Account Binding.  |
 
-   --http-timeout int           Set the HTTP timeout value to a specific value in seconds. (default: 0) [$LEGO_HTTP_TIMEOUT]
-   --overall-request-limit int  ACME overall requests limit. (default: 18) [$LEGO_OVERALL_REQUEST_LIMIT]
-   --tls-skip-verify            Skip the TLS verification of the ACME server. [$LEGO_TLS_SKIP_VERIFY]
-   --user-agent string          Add to the user-agent sent to the CA to identify an application embedding lego-cli [$LEGO_USER_AGENT]
+#### Flags related to advanced options:
 
-   Flags related to the storage:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--cert.timeout int` | `LEGO_CERT_TIMEOUT` | Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. <br> (Default: 30) |
+| `--enable-cn` | `LEGO_ENABLE_CN` | Enable the use of the common name. (Not recommended)  |
 
-   --account-id string  Account identifier (The email is used if the account ID is undefined). [$LEGO_ACCOUNT_ID]
-   --path string        Directory to use for storing the data. [$LEGO_PATH]
+#### Flags related to the ACME client:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--http-timeout int` | `LEGO_HTTP_TIMEOUT` | Set the HTTP timeout value to a specific value in seconds. <br> (Default: 0) |
+| `--overall-request-limit int` | `LEGO_OVERALL_REQUEST_LIMIT` | ACME overall requests limit. <br> (Default: 18) |
+| `--tls-skip-verify` | `LEGO_TLS_SKIP_VERIFY` | Skip the TLS verification of the ACME server.  |
+| `--user-agent string` | `LEGO_USER_AGENT` | Add to the user-agent sent to the CA to identify an application embedding lego-cli  |
+
+#### Flags related to the storage:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--account-id string` | `LEGO_ACCOUNT_ID` | Account identifier (The email is used if the account ID is undefined).  |
+| `--path string` | `LEGO_PATH` | Directory to use for storing the data.  |
 
 
-GLOBAL OPTIONS:
-   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
-   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+### Global Options
+
+| Flag | Usage | Env Var |
+|------|-------|-------|
+| `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
+| `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
 """
 
 [[command]]
 title   = "lego accounts recover -h"
 content = """
-NAME:
-   lego accounts recover - Recover/import an account from the private key.
+## `lego accounts recover`
 
-USAGE:
-   lego accounts recover [options]
+> Recover/import an account from the private key.
 
-OPTIONS:
-   --email string, -m string     Email used for registration and recovery contact. [$LEGO_EMAIL]
-   --help, -h                    show help
-   --key-type string, -k string  Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
-   --private-key string          Path to the account private key (PEM encoded). [$LEGO_PRIVATE_KEY]
-   --server string, -s string    CA (ACME server). It can be either a URL or a shortcode.
-                                 (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
+### Usage
 
-   Flags related to External Account Binding:
+```
+lego accounts recover [options]
+```
 
-   --eab              Use External Account Binding for account registration. Requires eab.kid and eab.hmac. [$LEGO_EAB]
-   --eab.hmac string  MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format. [$LEGO_EAB_HMAC]
-   --eab.kid string   Key identifier for External Account Binding. [$LEGO_EAB_KID]
+### Options
 
-   Flags related to advanced options:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--email string`, `-m string` | `LEGO_EMAIL` | Email used for registration and recovery contact.  |
+| `--help`, `-h` |  | show help  |
+| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: "EC256") |
+| `--private-key string` | `LEGO_PRIVATE_KEY` | Path to the account private key (PEM encoded).  |
+| `--server string`, `-s string` | `LEGO_SERVER` | CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: "https://acme-v02.api.letsencrypt.org/directory") |
 
-   --cert.timeout int  Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30) [$LEGO_CERT_TIMEOUT]
-   --enable-cn         Enable the use of the common name. (Not recommended) [$LEGO_ENABLE_CN]
+#### Flags related to External Account Binding:
 
-   Flags related to the ACME client:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--eab` | `LEGO_EAB` | Use External Account Binding for account registration. Requires eab.kid and eab.hmac.  |
+| `--eab.hmac string` | `LEGO_EAB_HMAC` | MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format.  |
+| `--eab.kid string` | `LEGO_EAB_KID` | Key identifier for External Account Binding.  |
 
-   --http-timeout int           Set the HTTP timeout value to a specific value in seconds. (default: 0) [$LEGO_HTTP_TIMEOUT]
-   --overall-request-limit int  ACME overall requests limit. (default: 18) [$LEGO_OVERALL_REQUEST_LIMIT]
-   --tls-skip-verify            Skip the TLS verification of the ACME server. [$LEGO_TLS_SKIP_VERIFY]
-   --user-agent string          Add to the user-agent sent to the CA to identify an application embedding lego-cli [$LEGO_USER_AGENT]
+#### Flags related to advanced options:
 
-   Flags related to the storage:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--cert.timeout int` | `LEGO_CERT_TIMEOUT` | Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. <br> (Default: 30) |
+| `--enable-cn` | `LEGO_ENABLE_CN` | Enable the use of the common name. (Not recommended)  |
 
-   --account-id string  Account identifier (The email is used if the account ID is undefined). [$LEGO_ACCOUNT_ID]
-   --path string        Directory to use for storing the data. [$LEGO_PATH]
+#### Flags related to the ACME client:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--http-timeout int` | `LEGO_HTTP_TIMEOUT` | Set the HTTP timeout value to a specific value in seconds. <br> (Default: 0) |
+| `--overall-request-limit int` | `LEGO_OVERALL_REQUEST_LIMIT` | ACME overall requests limit. <br> (Default: 18) |
+| `--tls-skip-verify` | `LEGO_TLS_SKIP_VERIFY` | Skip the TLS verification of the ACME server.  |
+| `--user-agent string` | `LEGO_USER_AGENT` | Add to the user-agent sent to the CA to identify an application embedding lego-cli  |
+
+#### Flags related to the storage:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--account-id string` | `LEGO_ACCOUNT_ID` | Account identifier (The email is used if the account ID is undefined).  |
+| `--path string` | `LEGO_PATH` | Directory to use for storing the data.  |
 
 
-GLOBAL OPTIONS:
-   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
-   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+### Global Options
+
+| Flag | Usage | Env Var |
+|------|-------|-------|
+| `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
+| `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
 """
 
 [[command]]
 title   = "lego accounts keyrollover -h"
 content = """
-NAME:
-   lego accounts keyrollover - Update the account private key.
+## `lego accounts keyrollover`
 
-USAGE:
-   lego accounts keyrollover [options]
+> Update the account private key.
 
-OPTIONS:
-   --email string, -m string     Email used for registration and recovery contact. [$LEGO_EMAIL]
-   --help, -h                    show help
-   --key-type string, -k string  Key type to use for the new private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
-   --private-key string          Path to the new account private key (PEM encoded). If not specified, the private key will be generated. [$LEGO_PRIVATE_KEY]
-   --server string, -s string    CA (ACME server). It can be either a URL or a shortcode.
-                                 (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
+### Usage
 
-   Flags related to External Account Binding:
+```
+lego accounts keyrollover [options]
+```
 
-   --eab              Use External Account Binding for account registration. Requires eab.kid and eab.hmac. [$LEGO_EAB]
-   --eab.hmac string  MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format. [$LEGO_EAB_HMAC]
-   --eab.kid string   Key identifier for External Account Binding. [$LEGO_EAB_KID]
+### Options
 
-   Flags related to advanced options:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--email string`, `-m string` | `LEGO_EMAIL` | Email used for registration and recovery contact.  |
+| `--help`, `-h` |  | show help  |
+| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for the new private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: "EC256") |
+| `--private-key string` | `LEGO_PRIVATE_KEY` | Path to the new account private key (PEM encoded). If not specified, the private key will be generated.  |
+| `--server string`, `-s string` | `LEGO_SERVER` | CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: "https://acme-v02.api.letsencrypt.org/directory") |
 
-   --cert.timeout int  Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30) [$LEGO_CERT_TIMEOUT]
-   --enable-cn         Enable the use of the common name. (Not recommended) [$LEGO_ENABLE_CN]
+#### Flags related to External Account Binding:
 
-   Flags related to the ACME client:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--eab` | `LEGO_EAB` | Use External Account Binding for account registration. Requires eab.kid and eab.hmac.  |
+| `--eab.hmac string` | `LEGO_EAB_HMAC` | MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format.  |
+| `--eab.kid string` | `LEGO_EAB_KID` | Key identifier for External Account Binding.  |
 
-   --http-timeout int           Set the HTTP timeout value to a specific value in seconds. (default: 0) [$LEGO_HTTP_TIMEOUT]
-   --overall-request-limit int  ACME overall requests limit. (default: 18) [$LEGO_OVERALL_REQUEST_LIMIT]
-   --tls-skip-verify            Skip the TLS verification of the ACME server. [$LEGO_TLS_SKIP_VERIFY]
-   --user-agent string          Add to the user-agent sent to the CA to identify an application embedding lego-cli [$LEGO_USER_AGENT]
+#### Flags related to advanced options:
 
-   Flags related to the storage:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--cert.timeout int` | `LEGO_CERT_TIMEOUT` | Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. <br> (Default: 30) |
+| `--enable-cn` | `LEGO_ENABLE_CN` | Enable the use of the common name. (Not recommended)  |
 
-   --account-id string  Account identifier (The email is used if the account ID is undefined). [$LEGO_ACCOUNT_ID]
-   --path string        Directory to use for storing the data. [$LEGO_PATH]
+#### Flags related to the ACME client:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--http-timeout int` | `LEGO_HTTP_TIMEOUT` | Set the HTTP timeout value to a specific value in seconds. <br> (Default: 0) |
+| `--overall-request-limit int` | `LEGO_OVERALL_REQUEST_LIMIT` | ACME overall requests limit. <br> (Default: 18) |
+| `--tls-skip-verify` | `LEGO_TLS_SKIP_VERIFY` | Skip the TLS verification of the ACME server.  |
+| `--user-agent string` | `LEGO_USER_AGENT` | Add to the user-agent sent to the CA to identify an application embedding lego-cli  |
+
+#### Flags related to the storage:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--account-id string` | `LEGO_ACCOUNT_ID` | Account identifier (The email is used if the account ID is undefined).  |
+| `--path string` | `LEGO_PATH` | Directory to use for storing the data.  |
 
 
-GLOBAL OPTIONS:
-   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
-   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+### Global Options
+
+| Flag | Usage | Env Var |
+|------|-------|-------|
+| `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
+| `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
 """
 
 [[command]]
 title   = "lego accounts list -h"
 content = """
-NAME:
-   lego accounts list - Display information about accounts.
+## `lego accounts list`
 
-USAGE:
-   lego accounts list [options]
+> Display information about accounts.
 
-OPTIONS:
-   --help, -h  show help
-   --json      Format the output as JSON.
+### Usage
 
-   Flags related to the storage:
+```
+lego accounts list [options]
+```
 
-   --path string  Directory to use for storing the data. [$LEGO_PATH]
+### Options
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--help`, `-h` |  | show help  |
+| `--json` |  | Format the output as JSON.  |
+
+#### Flags related to the storage:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--path string` | `LEGO_PATH` | Directory to use for storing the data.  |
 
 
-GLOBAL OPTIONS:
-   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
-   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+### Global Options
+
+| Flag | Usage | Env Var |
+|------|-------|-------|
+| `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
+| `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
 """
 
 [[command]]
 title   = "lego certificates revoke -h"
 content = """
-NAME:
-   lego certificates revoke - Revoke a certificate
+## `lego certificates revoke`
 
-USAGE:
-   lego certificates revoke [options]
+> Revoke a certificate
 
-OPTIONS:
-   --cert.name string, -c string [ --cert.name string, -c string ]  The certificate IDs/Names, used to retrieve the certificates. [$LEGO_CERT_NAME]
-   --email string, -m string                                        Email used for registration and recovery contact. [$LEGO_EMAIL]
-   --help, -h                                                       show help
-   --keep                                                           Keep the certificates after the revocation instead of archiving them. [$LEGO_KEEP]
-   --key-type string, -k string                                     Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. (default: "EC256") [$LEGO_KEY_TYPE]
-   --reason uint                                                    Identifies the reason for the certificate revocation. See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1.
-                                                                    Valid values are: 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged), 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL), 9 (privilegeWithdrawn), or 10 (aACompromise). (default: 0) [$LEGO_REASON]
-   --server string, -s string                                       CA (ACME server). It can be either a URL or a shortcode.
-                                                                    (available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
+### Usage
 
-   Flags related to External Account Binding:
+```
+lego certificates revoke [options]
+```
 
-   --eab              Use External Account Binding for account registration. Requires eab.kid and eab.hmac. [$LEGO_EAB]
-   --eab.hmac string  MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format. [$LEGO_EAB_HMAC]
-   --eab.kid string   Key identifier for External Account Binding. [$LEGO_EAB_KID]
+### Options
 
-   Flags related to advanced options:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--cert.name string`, `-c string` | `LEGO_CERT_NAME` | The certificate IDs/Names, used to retrieve the certificates.  |
+| `--email string`, `-m string` | `LEGO_EMAIL` | Email used for registration and recovery contact.  |
+| `--help`, `-h` |  | show help  |
+| `--keep` | `LEGO_KEEP` | Keep the certificates after the revocation instead of archiving them.  |
+| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: "EC256") |
+| `--reason uint` | `LEGO_REASON` | Identifies the reason for the certificate revocation. See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1.<br>	Valid values are: 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged), 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL), 9 (privilegeWithdrawn), or 10 (aACompromise). <br> (Default: 0) |
+| `--server string`, `-s string` | `LEGO_SERVER` | CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: "https://acme-v02.api.letsencrypt.org/directory") |
 
-   --cert.timeout int  Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30) [$LEGO_CERT_TIMEOUT]
-   --enable-cn         Enable the use of the common name. (Not recommended) [$LEGO_ENABLE_CN]
+#### Flags related to External Account Binding:
 
-   Flags related to the ACME client:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--eab` | `LEGO_EAB` | Use External Account Binding for account registration. Requires eab.kid and eab.hmac.  |
+| `--eab.hmac string` | `LEGO_EAB_HMAC` | MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format.  |
+| `--eab.kid string` | `LEGO_EAB_KID` | Key identifier for External Account Binding.  |
 
-   --http-timeout int           Set the HTTP timeout value to a specific value in seconds. (default: 0) [$LEGO_HTTP_TIMEOUT]
-   --overall-request-limit int  ACME overall requests limit. (default: 18) [$LEGO_OVERALL_REQUEST_LIMIT]
-   --tls-skip-verify            Skip the TLS verification of the ACME server. [$LEGO_TLS_SKIP_VERIFY]
-   --user-agent string          Add to the user-agent sent to the CA to identify an application embedding lego-cli [$LEGO_USER_AGENT]
+#### Flags related to advanced options:
 
-   Flags related to the configuration file:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--cert.timeout int` | `LEGO_CERT_TIMEOUT` | Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. <br> (Default: 30) |
+| `--enable-cn` | `LEGO_ENABLE_CN` | Enable the use of the common name. (Not recommended)  |
 
-   --config string  Path to the configuration file. [$LEGO_CONFIG]
+#### Flags related to the ACME client:
 
-   Flags related to the storage:
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--http-timeout int` | `LEGO_HTTP_TIMEOUT` | Set the HTTP timeout value to a specific value in seconds. <br> (Default: 0) |
+| `--overall-request-limit int` | `LEGO_OVERALL_REQUEST_LIMIT` | ACME overall requests limit. <br> (Default: 18) |
+| `--tls-skip-verify` | `LEGO_TLS_SKIP_VERIFY` | Skip the TLS verification of the ACME server.  |
+| `--user-agent string` | `LEGO_USER_AGENT` | Add to the user-agent sent to the CA to identify an application embedding lego-cli  |
 
-   --account-id string  Account identifier (The email is used if the account ID is undefined). [$LEGO_ACCOUNT_ID]
-   --path string        Directory to use for storing the data. [$LEGO_PATH]
+#### Flags related to the configuration file:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--config string` | `LEGO_CONFIG` | Path to the configuration file.  |
+
+#### Flags related to the storage:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--account-id string` | `LEGO_ACCOUNT_ID` | Account identifier (The email is used if the account ID is undefined).  |
+| `--path string` | `LEGO_PATH` | Directory to use for storing the data.  |
 
 
-GLOBAL OPTIONS:
-   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
-   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+### Global Options
+
+| Flag | Usage | Env Var |
+|------|-------|-------|
+| `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
+| `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
 """
 
 [[command]]
 title   = "lego certificates list -h"
 content = """
-NAME:
-   lego certificates list - Display information about certificates.
+## `lego certificates list`
 
-USAGE:
-   lego certificates list [options]
+> Display information about certificates.
 
-OPTIONS:
-   --help, -h  show help
-   --json      Format the output as JSON.
+### Usage
 
-   Flags related to the storage:
+```
+lego certificates list [options]
+```
 
-   --path string  Directory to use for storing the data. [$LEGO_PATH]
+### Options
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--help`, `-h` |  | show help  |
+| `--json` |  | Format the output as JSON.  |
+
+#### Flags related to the storage:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--path string` | `LEGO_PATH` | Directory to use for storing the data.  |
 
 
-GLOBAL OPTIONS:
-   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
-   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+### Global Options
+
+| Flag | Usage | Env Var |
+|------|-------|-------|
+| `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
+| `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
 """
 
 [[command]]
 title   = "lego archives restore -h"
 content = """
-NAME:
-   lego archives restore - Restore an archive.
+## `lego archives restore`
 
-USAGE:
-   lego archives restore [options]
+> Restore an archive.
 
-OPTIONS:
-   --help, -h  show help
+### Usage
 
-   Flags related to the storage:
+```
+lego archives restore [options]
+```
 
-   --path string  Directory to use for storing the data. [$LEGO_PATH]
+### Options
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--help`, `-h` |  | show help  |
+
+#### Flags related to the storage:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--path string` | `LEGO_PATH` | Directory to use for storing the data.  |
 
 
-GLOBAL OPTIONS:
-   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
-   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+### Global Options
+
+| Flag | Usage | Env Var |
+|------|-------|-------|
+| `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
+| `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
 """
 
 [[command]]
 title   = "lego archives list -h"
 content = """
-NAME:
-   lego archives list - List all archives.
+## `lego archives list`
 
-USAGE:
-   lego archives list [options]
+> List all archives.
 
-OPTIONS:
-   --help, -h  show help
+### Usage
 
-   Flags related to the storage:
+```
+lego archives list [options]
+```
 
-   --path string  Directory to use for storing the data. [$LEGO_PATH]
+### Options
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--help`, `-h` |  | show help  |
+
+#### Flags related to the storage:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--path string` | `LEGO_PATH` | Directory to use for storing the data.  |
 
 
-GLOBAL OPTIONS:
-   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
-   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+### Global Options
+
+| Flag | Usage | Env Var |
+|------|-------|-------|
+| `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
+| `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
 """
 
 [[command]]
 title   = "lego migrate -h"
 content = """
-NAME:
-   lego migrate - Migrate certificates and accounts.
+## `lego migrate`
 
-USAGE:
-   lego migrate [options]
+> Migrate certificates and accounts.
 
-OPTIONS:
-   --account-only  Only migrate accounts. [$LEGO_ACCOUNT_ONLY]
-   --help, -h      show help
+### Usage
 
-   Flags related to the storage:
+```
+lego migrate [options]
+```
 
-   --path string  Directory to use for storing the data. [$LEGO_PATH]
+### Options
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--account-only` | `LEGO_ACCOUNT_ONLY` | Only migrate accounts.  |
+| `--help`, `-h` |  | show help  |
+
+#### Flags related to the storage:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--path string` | `LEGO_PATH` | Directory to use for storing the data.  |
 
 
-GLOBAL OPTIONS:
-   --log.level string   Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. (default: "info") [$LEGO_LOG_LEVEL]
-   --log.format string  Set the logging format. Supported values: 'colored', 'text', 'json'. (default: "colored") [$LEGO_LOG_FORMAT]
+### Global Options
+
+| Flag | Usage | Env Var |
+|------|-------|-------|
+| `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
+| `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
 """
 
 [[command]]

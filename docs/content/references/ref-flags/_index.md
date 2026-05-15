@@ -11,46 +11,82 @@ This page lists all the available commands and flags.
 
 <!--more-->
 
-## Main Command
+## Table of Contents
+
+- [lego]({{% ref "references/ref-flags/#lego" %}})
+- [lego run]({{% ref "references/ref-flags/#lego-run" %}})
+- [lego certificates revoke]({{% ref "references/ref-flags/#lego-certificates-revoke" %}})
+- [lego certificates list]({{% ref "references/ref-flags/#lego-certificates-list" %}})
+- [lego accounts register]({{% ref "references/ref-flags/#lego-accounts-register" %}})
+- [lego accounts recover]({{% ref "references/ref-flags/#lego-accounts-recover" %}})
+- [lego accounts keyrollover]({{% ref "references/ref-flags/#lego-accounts-keyrollover" %}})
+- [lego accounts list]({{% ref "references/ref-flags/#lego-accounts-list" %}})
+- [lego archives restore]({{% ref "references/ref-flags/#lego-archives-restore" %}})
+- [lego archives list]({{% ref "references/ref-flags/#lego-archives-list" %}})
+- [lego migrate]({{% ref "references/ref-flags/#lego-migrate" %}})
+
+---
 
 {{% cmdhelp name="lego -h" %}}
 
-## `run` command
+{{% button href="references/ref-flags/" style="transparent" icon="angle-double-up" %}}Back on Top{{% /button %}}
+
+---
 
 {{% cmdhelp name="lego run -h" %}}
 
-## `certificates revoke` command
+{{% button href="references/ref-flags/" style="transparent" icon="angle-double-up" %}}Back on Top{{% /button %}}
+
+---
 
 {{% cmdhelp name="lego certificates revoke -h" %}}
 
-## `certificates list` command
+{{% button href="references/ref-flags/" style="transparent" icon="angle-double-up" %}}Back on Top{{% /button %}}
+
+---
 
 {{% cmdhelp name="lego certificates list -h" %}}
 
-## `accounts register` command
+{{% button href="references/ref-flags/" style="transparent" icon="angle-double-up" %}}Back on Top{{% /button %}}
+
+---
 
 {{% cmdhelp name="lego accounts register -h" %}}
 
-## `accounts recover` command
+{{% button href="references/ref-flags/" style="transparent" icon="angle-double-up" %}}Back on Top{{% /button %}}
+
+---
 
 {{% cmdhelp name="lego accounts recover -h" %}}
 
-## `accounts keyrollover` command
+{{% button href="references/ref-flags/" style="transparent" icon="angle-double-up" %}}Back on Top{{% /button %}}
+
+---
 
 {{% cmdhelp name="lego accounts keyrollover -h" %}}
 
-## `accounts list` command
+{{% button href="references/ref-flags/" style="transparent" icon="angle-double-up" %}}Back on Top{{% /button %}}
+
+---
 
 {{% cmdhelp name="lego accounts list -h" %}}
 
-## `archives restore` command
+{{% button href="references/ref-flags/" style="transparent" icon="angle-double-up" %}}Back on Top{{% /button %}}
+
+---
 
 {{% cmdhelp name="lego archives restore -h" %}}
 
-## `archives list` command
+{{% button href="references/ref-flags/" style="transparent" icon="angle-double-up" %}}Back on Top{{% /button %}}
+
+---
 
 {{% cmdhelp name="lego archives list -h" %}}
 
-## `migrate` command
+{{% button href="references/ref-flags/" style="transparent" icon="angle-double-up" %}}Back on Top{{% /button %}}
+
+---
 
 {{% cmdhelp name="lego migrate -h" %}}
+
+{{% button href="references/ref-flags/" style="transparent" icon="angle-double-up" %}}Back on Top{{% /button %}}

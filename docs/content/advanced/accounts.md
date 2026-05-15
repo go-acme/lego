@@ -62,7 +62,7 @@ To know the available options, run:
 lego accounts register --help
 ```
 
-Or read the [documentation]({{% ref "references/ref-flags/#accounts-register-command" %}}).
+Or read the [documentation]({{% ref "references/ref-flags/#lego-accounts-register" %}}).
 
 ## Key Rollover
 
@@ -78,7 +78,7 @@ To know the available options, run:
 lego accounts keyrollover --help
 ```
 
-Or read the [documentation]({{% ref "references/ref-flags/#accounts-keyrollover-command" %}}).
+Or read the [documentation]({{% ref "references/ref-flags/#lego-accounts-keyrollover" %}}).
 
 ## Account Recovery
 
@@ -96,4 +96,4 @@ To know the available options, run:
 lego accounts recover --help
 ```
 
-Or read the [documentation]({{% ref "references/ref-flags/#accounts-recover-command" %}}).
+Or read the [documentation]({{% ref "references/ref-flags/#lego-accounts-recover" %}}).

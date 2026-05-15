@@ -12,6 +12,7 @@ import (
 	"text/template"
 
 	"github.com/go-acme/lego/v5/cmd"
+	"github.com/go-acme/lego/v5/internal/generators/clihelp/internal"
 	"github.com/urfave/cli/v3"
 )
 
@@ -95,6 +96,11 @@ func generate(ctx context.Context) error {
 // - do not include version information, because we're likely running against a snapshot
 // - skip DNS help and provider list, as initialization takes time, and we don't generate `lego dns --help` here.
 func createStubApp() *cli.Command {
+	cli.RootCommandHelpTemplate = internal.RootCommandHelpTemplate
+	cli.CommandHelpTemplate = internal.CommandHelpTemplate
+	cli.SubcommandHelpTemplate = internal.SubcommandHelpTemplate
+	cli.HelpPrinter = internal.PrintMarkdown
+
 	root := cmd.CreateRootCommand()
 	root.EnableShellCompletion = false
 	root.Before = nil

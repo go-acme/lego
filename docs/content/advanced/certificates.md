@@ -78,4 +78,4 @@ To know the available options, run:
 lego certificates revoke --help
 ```
 
-Or read the [documentation]({{% ref "references/ref-flags/#certificates-revoke-command" %}}).
+Or read the [documentation]({{% ref "references/ref-flags/#lego-certificates-revoke" %}}).

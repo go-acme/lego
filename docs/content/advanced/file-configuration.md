@@ -9,6 +9,13 @@ The configuration file is a way to simplify the management of multiple certifica
 
 <!--more-->
 
+## Commands
+
+The configuration file is used by the following commands:
+
+- `lego`
+- `lego certificates revoke`
+
 ## File Location and Format
 
 The configuration file is a YAML file named `.lego.yml` (or `.lego.yaml`) placed in the current working directory.

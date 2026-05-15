@@ -27,7 +27,7 @@ CLOUDFLARE_API_KEY='yourprivatecloudflareapikey' \
 lego run --dns cloudflare --domains 'example.org' --domains '*.example.org'
 ```
 
-To know the available options, read the [documentation]({{% ref "references/ref-flags/#run-command" %}}).
+To know the available options, read the [documentation]({{% ref "references/ref-flags/#lego-run" %}}).
 
 {{% /tab %}}
 {{% tab title="With a Configuration File" %}}

@@ -23,7 +23,7 @@ To know the available options, run:
 lego archives list --help
 ```
 
-Or read the [documentation]({{% ref "references/ref-flags/#archives-list-command" %}}).
+Or read the [documentation]({{% ref "references/ref-flags/#lego-archives-list" %}}).
 
 ## Restore
 
@@ -41,4 +41,4 @@ To know the available options, run:
 lego archives restore --help
 ```
 
-Or read the [documentation]({{% ref "references/ref-flags/#archives-restore-command" %}}).
+Or read the [documentation]({{% ref "references/ref-flags/#lego-archives-restore" %}}).

@@ -23,7 +23,7 @@ Execute the following command:
 lego run -d 'example.com' --tls
 ```
 
-To know the available options, read the [documentation]({{% ref "references/ref-flags/#run-command" %}}).
+To know the available options, read the [documentation]({{% ref "references/ref-flags/#llego-run" %}}).
 
 {{% /tab %}}
 {{% tab title="With a Configuration File" %}}

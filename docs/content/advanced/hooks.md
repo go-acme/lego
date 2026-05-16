@@ -143,3 +143,17 @@ fi
 ```
 
 Don't hesitate to share your hook scripts with [the community](https://github.com/go-acme/lego/discussions/categories/ideas).
+
+## Notes
+
+The hooks must be a system-executable: binary or script with a proper shebang (e.g. `#!/bin/bash` and `chmod +x my-hook.sh`).
+
+There is neither subshell nor shell interpretation.
+Arguments are allowed, but there is no shell-escaping support (spaces inside arguments or paths are not supported).
+
+The hooks run in the same environment as lego, augmented with `LEGO_HOOK_*` variables.
+
+Both `stdout` and `stderr` used by the hooks are merged into a single pipe.
+The output is read line by line and printed to lego's own `stdout`.
+
+If the hook exits with a non-zero code (or times out), lego will surface it as a failure.

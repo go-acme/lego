@@ -24,6 +24,7 @@ This page lists all the available commands and flags.
 - [lego archives restore]({{% ref "references/ref-flags/#lego-archives-restore" %}})
 - [lego archives list]({{% ref "references/ref-flags/#lego-archives-list" %}})
 - [lego migrate]({{% ref "references/ref-flags/#lego-migrate" %}})
+- [lego dnshelp]({{% ref "references/ref-flags/#lego-dnshelp" %}})
 
 ---
 
@@ -82,6 +83,12 @@ This page lists all the available commands and flags.
 ---
 
 {{% cmdhelp name="lego archives list -h" %}}
+
+{{% button href="references/ref-flags/" style="transparent" icon="angle-double-up" %}}Back on Top{{% /button %}}
+
+---
+
+{{% cmdhelp name="lego dnshelp -h" %}}
 
 {{% button href="references/ref-flags/" style="transparent" icon="angle-double-up" %}}Back on Top{{% /button %}}
 

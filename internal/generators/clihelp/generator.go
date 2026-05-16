@@ -64,8 +64,8 @@ func generate(ctx context.Context) error {
 		{"lego", "certificates", "list", "-h"},
 		{"lego", "archives", "restore", "-h"},
 		{"lego", "archives", "list", "-h"},
+		{"lego", "dnshelp", "-h"},
 		{"lego", "migrate", "-h"},
-		{"lego", "dnshelp"},
 	} {
 		content, err := run(ctx, app, args)
 		if err != nil {

@@ -52,18 +52,18 @@ const (
 {{end}}
 {{end}}`
 
-	markdownFlagsTemplate = `| Flag | Usage | Env Var |
+	markdownFlagsTemplate = `| Flag | Env Var | Usage |
 |------|-------|-------|
 {{range .VisibleFlags}}| {{ GetFlagNames .}} | {{ GetEnvVars . }} | {{ GetUsage . }} {{ $def := GetDefaultText . }}{{if $def }}<br> (Default: {{ $def }}){{end}} |
 {{end}}`
 
-	markdownPersistentFlagsTemplate = `| Flag | Usage | Env Var |
+	markdownPersistentFlagsTemplate = `| Flag | Env Var | Usage |
 |------|-------|-------|
 {{range .VisiblePersistentFlags}}| {{ GetFlagNames .}} | {{ GetEnvVars . }} | {{ GetUsage . }} {{ $def := GetDefaultText . }}{{if $def }}<br> (Default: {{ $def }}){{end}} |
 {{end}}`
 )
 
-const RootCommandHelpTemplate = `## {{.FullName}}{{if .Usage}}
+const RootCommandHelpTemplate = `## ` + "`" + `{{.FullName}}` + "`" + `{{if .Usage}}
 
 > {{.Usage}}
 {{end}}{{template "markdownVersionTemplate" .}}
@@ -103,7 +103,7 @@ const CommandHelpTemplate = `## ` + "`" + `{{.FullName}}` + "`" + `{{if .Usage}}
 
 {{template "markdownPersistentFlagsTemplate" .}}{{end}}`
 
-const SubcommandHelpTemplate = `## {{.FullName}}{{if .Usage}}
+const SubcommandHelpTemplate = `## ` + "`" + `{{.FullName}}` + "`" + `{{if .Usage}}
 
 > {{.Usage}}
 {{end}}

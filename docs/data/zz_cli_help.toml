@@ -4,26 +4,15 @@
 [[command]]
 title   = "lego -h"
 content = """
-## lego
+## `lego`
 
 > ACME client written in Go
 
 ### Usage
 
 ```
-lego [options] [command [command options]]
+lego [options]
 ```
-
-### Commands
-
-| Name | Usage |
-|------|-------|
-| `run` | Get or renew a certificate |
-| `certificates` | Certificates management. |
-| `accounts` | Accounts management. |
-| `archives` | Archives management. |
-| `dnshelp` | Shows additional help for the '--dns' global option |
-| `migrate` | Migrate certificates and accounts. |
 
 ### Global Options
 
@@ -187,7 +176,7 @@ lego run [options]
 
 ### Global Options
 
-| Flag | Usage | Env Var |
+| Flag | Env Var | Usage |
 |------|-------|-------|
 | `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
 | `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
@@ -250,7 +239,7 @@ lego accounts register [options]
 
 ### Global Options
 
-| Flag | Usage | Env Var |
+| Flag | Env Var | Usage |
 |------|-------|-------|
 | `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
 | `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
@@ -313,7 +302,7 @@ lego accounts recover [options]
 
 ### Global Options
 
-| Flag | Usage | Env Var |
+| Flag | Env Var | Usage |
 |------|-------|-------|
 | `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
 | `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
@@ -376,7 +365,7 @@ lego accounts keyrollover [options]
 
 ### Global Options
 
-| Flag | Usage | Env Var |
+| Flag | Env Var | Usage |
 |------|-------|-------|
 | `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
 | `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
@@ -411,7 +400,7 @@ lego accounts list [options]
 
 ### Global Options
 
-| Flag | Usage | Env Var |
+| Flag | Env Var | Usage |
 |------|-------|-------|
 | `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
 | `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
@@ -482,7 +471,7 @@ lego certificates revoke [options]
 
 ### Global Options
 
-| Flag | Usage | Env Var |
+| Flag | Env Var | Usage |
 |------|-------|-------|
 | `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
 | `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
@@ -517,7 +506,7 @@ lego certificates list [options]
 
 ### Global Options
 
-| Flag | Usage | Env Var |
+| Flag | Env Var | Usage |
 |------|-------|-------|
 | `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
 | `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
@@ -551,7 +540,7 @@ lego archives restore [options]
 
 ### Global Options
 
-| Flag | Usage | Env Var |
+| Flag | Env Var | Usage |
 |------|-------|-------|
 | `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
 | `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
@@ -585,7 +574,35 @@ lego archives list [options]
 
 ### Global Options
 
-| Flag | Usage | Env Var |
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
+| `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
+"""
+
+[[command]]
+title   = "lego dnshelp -h"
+content = """
+## `lego dnshelp`
+
+> Shows additional help for the '--dns' global option
+
+### Usage
+
+```
+lego dnshelp [options]
+```
+
+### Options
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--code string`, `-c string` |  | DNS code: abion, acmedns, active24, alidns, aliesa, allinkl, alwaysdata, anexia, artfiles, arvancloud, auroradns, autodns, axelname, azion, azuredns, baiducloud, beget, binarylane, bindman, bluecat, bluecatv2, bookmyname, bunny, checkdomain, civo, clouddns, cloudflare, cloudns, cloudru, com35, conoha, conohav3, constellix, corenetworks, cpanel, curanet, czechia, dandomain, ddnss, derak, desec, designate, digitalocean, dinahosting, directadmin, dns51, dnscale, dnsexit, dnshomede, dnsimple, dnsla, dnsmadeeasy, dnsservices, dnsupdate, dode, domeneshop, dreamhost, duckdns, dyn, dyndnsfree, dynu, easydns, edgecenter, edgedns, edgeone, efficientip, epik, eurodns, euserv, excedo, exec, exoscale, f5xc, fornex, freemyip, gandi, gandiv5, gcloud, gcore, gehirn, gigahostno, glesys, gname, godaddy, gravity, hetzner, hostingde, hostinger, hostingnl, hosttech, hostup, httpnet, httpreq, huaweicloud, hurricane, hyperone, ibmcloud, iijdpf, infoblox, infomaniak, internetbs, inwx, ionos, ionoscloud, ipv64, ispconfig, ispconfigddns, jdcloud, joker, katapult, keyhelp, leaseweb, liara, lightsail, limacity, linode, liquidweb, loopia, luadns, mailinabox, manageengine, manual, metaname, metaregistrar, mijnhost, mittwald, myaddr, mydnsjp, mythicbeasts, namecheap, namedotcom, namesilo, namesurfer, nearlyfreespeech, nederhost, neodigit, netcup, netlify, netnod, ngenix, nicmanager, nicru, nifcloud, njalla, nodion, ns1, octenium, omglol, onecloudru, onlinenet, oraclecloud, otc, ovh, pdns, plesk, pointdns, porkbun, rackspace, rage4, rainyun, rcodezero, regfish, regru, rimuhosting, route53, safedns, sakuracloud, scaleway, scannet, selectel, selectelv2, selfhostde, servercow, shellrent, simply, sonic, spaceship, stackpath, syse, technitium, tele3, tencentcloud, timewebcloud, todaynic, transip, ucloud, ultradns, uniteddomains, variomedia, veesp, vegadns, vercel, versio, vinyldns, virtualname, vkcloud, volcengine, vscale, vultr, wannafind, webnamesca, webnamesru, websupport, wedos, westcn, xinnet, yandex, yandex360, yandexcloud, zilore, zoneedit, zoneee, zonomi  |
+| `--help`, `-h` |  | show help  |
+
+### Global Options
+
+| Flag | Env Var | Usage |
 |------|-------|-------|
 | `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
 | `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
@@ -620,23 +637,8 @@ lego migrate [options]
 
 ### Global Options
 
-| Flag | Usage | Env Var |
+| Flag | Env Var | Usage |
 |------|-------|-------|
 | `--log.level string` | `LEGO_LOG_LEVEL` | Set the logging level. Supported values: 'debug', 'info', 'warn', 'error'. <br> (Default: "info") |
 | `--log.format string` | `LEGO_LOG_FORMAT` | Set the logging format. Supported values: 'colored', 'text', 'json'. <br> (Default: "colored") |
-"""
-
-[[command]]
-title   = "lego dnshelp"
-content = """
-Credentials for DNS providers must be passed through environment variables.
-
-To display the documentation for a specific DNS provider, run:
-
-  $ lego dnshelp -c code
-
-Supported DNS providers:
-  abion, acmedns, active24, alidns, aliesa, allinkl, alwaysdata, anexia, artfiles, arvancloud, auroradns, autodns, axelname, azion, azuredns, baiducloud, beget, binarylane, bindman, bluecat, bluecatv2, bookmyname, bunny, checkdomain, civo, clouddns, cloudflare, cloudns, cloudru, com35, conoha, conohav3, constellix, corenetworks, cpanel, curanet, czechia, dandomain, ddnss, derak, desec, designate, digitalocean, dinahosting, directadmin, dns51, dnscale, dnsexit, dnshomede, dnsimple, dnsla, dnsmadeeasy, dnsservices, dnsupdate, dode, domeneshop, dreamhost, duckdns, dyn, dyndnsfree, dynu, easydns, edgecenter, edgedns, edgeone, efficientip, epik, eurodns, euserv, excedo, exec, exoscale, f5xc, fornex, freemyip, gandi, gandiv5, gcloud, gcore, gehirn, gigahostno, glesys, gname, godaddy, gravity, hetzner, hostingde, hostinger, hostingnl, hosttech, hostup, httpnet, httpreq, huaweicloud, hurricane, hyperone, ibmcloud, iijdpf, infoblox, infomaniak, internetbs, inwx, ionos, ionoscloud, ipv64, ispconfig, ispconfigddns, jdcloud, joker, katapult, keyhelp, leaseweb, liara, lightsail, limacity, linode, liquidweb, loopia, luadns, mailinabox, manageengine, manual, metaname, metaregistrar, mijnhost, mittwald, myaddr, mydnsjp, mythicbeasts, namecheap, namedotcom, namesilo, namesurfer, nearlyfreespeech, nederhost, neodigit, netcup, netlify, netnod, ngenix, nicmanager, nicru, nifcloud, njalla, nodion, ns1, octenium, omglol, onecloudru, onlinenet, oraclecloud, otc, ovh, pdns, plesk, pointdns, porkbun, rackspace, rage4, rainyun, rcodezero, regfish, regru, rimuhosting, route53, safedns, sakuracloud, scaleway, scannet, selectel, selectelv2, selfhostde, servercow, shellrent, simply, sonic, spaceship, stackpath, syse, technitium, tele3, tencentcloud, timewebcloud, todaynic, transip, ucloud, ultradns, uniteddomains, variomedia, veesp, vegadns, vercel, versio, vinyldns, virtualname, vkcloud, volcengine, vscale, vultr, wannafind, webnamesca, webnamesru, websupport, wedos, westcn, xinnet, yandex, yandex360, yandexcloud, zilore, zoneedit, zoneee, zonomi
-
-More information: https://go-acme.github.io/lego/dns
 """

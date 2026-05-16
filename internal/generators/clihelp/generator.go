@@ -64,8 +64,8 @@ func generate(ctx context.Context) error {
 		{"lego", "certificates", "list", "-h"},
 		{"lego", "archives", "restore", "-h"},
 		{"lego", "archives", "list", "-h"},
+		{"lego", "dnshelp", "-h"},
 		{"lego", "migrate", "-h"},
-		{"lego", "dnshelp"},
 	} {
 		content, err := run(ctx, app, args)
 		if err != nil {
@@ -103,6 +103,12 @@ func createStubApp() *cli.Command {
 
 	root := cmd.CreateRootCommand()
 	root.EnableShellCompletion = false
+
+	// Hides the subcommands for a better render of the root command.
+	for _, command := range root.Commands {
+		command.Hidden = true
+	}
+
 	root.Before = nil
 
 	return root

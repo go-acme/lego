@@ -42,6 +42,7 @@ func allDNSCodes() string {
 		"cloudns",
 		"cloudru",
 		"com35",
+		"connbyte",
 		"conoha",
 		"conohav3",
 		"constellix",
@@ -889,6 +890,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/com35`)
+
+	case "connbyte":
+		// generated from: providers/dns/connbyte/connbyte.toml
+		ew.writeln(`Configuration for Connbyte.`)
+		ew.writeln(`Code:	'connbyte'`)
+		ew.writeln(`Since:	'v5.1.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "CONNBYTE_TOKEN":	Token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CONNBYTE_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "CONNBYTE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "CONNBYTE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "CONNBYTE_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/connbyte`)
 
 	case "conoha":
 		// generated from: providers/dns/conoha/conoha.toml

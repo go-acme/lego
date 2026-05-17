@@ -1,0 +1,32 @@
+Name = "Rackcorp"
+Description = ''''''
+URL = "https://rackcorp.com"
+Code = "rackcorp"
+Since = "v5.1.0"
+
+Example = '''
+RACKCORP_API_UUID=xxxx \
+RACKCORP_API_SECRET=xxxx \
+lego run --dns rackcorp -d '*.example.com' -d example.com
+'''
+
+Additional = '''
+## Description
+
+To authenticate you need to provide a valid API key UUID and Secret.
+The API key must have permissions for: dns.domain.getall, dns.domain.get,
+  dns.record.create, dns.record.get, dns.record.update, and dns.record.delete.
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    RACKCORP_API_UUID = "API key"
+    RACKCORP_API_SECRET = "API key"
+  [Configuration.Additional]
+    RACKCORP_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    RACKCORP_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    RACKCORP_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    RACKCORP_HTTP_TIMEOUT = "API request timeout in seconds (Default: 10)"
+
+[Links]
+  API = "https://github.com/RackCorpCloud/rackcorp-api/wiki/RACKCORP-REST-API"

@@ -94,17 +94,21 @@ func (c *SolverManager) ResetSolvers() {
 	clear(c.solvers)
 }
 
-// Checks all challenges from the server in order and returns the first matching solver.
-func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
+// Checks all challenges from the server in order and returns all matching solvers.
+// This allows fallback: if the first solver fails, the next one can be tried.
+func (c *SolverManager) chooseSolvers(authz acme.Authorization) []solver {
 	// Allow having a deterministic challenge order
 	sort.Sort(byType(authz.Challenges))
 
 	domain := challenge.GetTargetedDomain(authz)
 
+	var solvers []solver
+
 	for _, chlg := range authz.Challenges {
 		if solvr, ok := c.solvers[challenge.Type(chlg.Type)]; ok {
 			log.Debug("Use solver.", log.DomainAttr(domain), slog.String("type", chlg.Type))
-			return solvr
+			solvers = append(solvers, solvr)
+			continue
 		}
 
 		log.Info("Could not find the solver.",
@@ -114,7 +118,17 @@ func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
 		)
 	}
 
-	return nil
+	return solvers
+}
+
+// chooseSolver returns the first matching solver for backward compatibility.
+// Deprecated: Use chooseSolvers instead.
+func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
+	solvers := c.chooseSolvers(authz)
+	if len(solvers) == 0 {
+		return nil
+	}
+	return solvers[0]
 }
 
 func validate(ctx context.Context, core *api.Core, domain string, chlg acme.Challenge) error {

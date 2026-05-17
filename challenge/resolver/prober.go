@@ -3,6 +3,7 @@ package resolver
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -34,8 +35,8 @@ type sequential interface {
 
 // an authz with the solver we have chosen and the index of the challenge associated with it.
 type selectedAuthSolver struct {
-	authz  acme.Authorization
-	solver solver
+	authz   acme.Authorization
+	solvers []solver
 }
 
 type Prober struct {
@@ -50,6 +51,9 @@ func NewProber(solverManager *SolverManager) *Prober {
 
 // Solve Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
+// If the first solver fails, subsequent matching solvers are tried as fallback.
+// For example, when both HTTP-01 and TLS-ALPN-01 are enabled and TLS-ALPN-01 fails
+// due to CDN TLS termination, HTTP-01 is automatically tried next.
 func (p *Prober) Solve(ctx context.Context, authorizations []acme.Authorization) error {
 	failures := errutils.NewDomainsError("resolver")
 
@@ -69,8 +73,15 @@ func (p *Prober) Solve(ctx context.Context, authorizations []acme.Authorization)
 			continue
 		}
 
-		if solvr := p.solverManager.chooseSolver(authz); solvr != nil {
-			authSolver := &selectedAuthSolver{authz: authz, solver: solvr}
+		solvers := p.solverManager.chooseSolvers(authz)
+
+		if len(solvers) > 0 {
+			authSolver := &selectedAuthSolver{authz: authz, solvers: solvers}
+
+			// Use the first solver for categorization (sequential vs parallel).
+			// All solvers for the same authz should have the same nature,
+			// but we only care about the first one for grouping.
+			solvr := solvers[0]
 
 			switch s := solvr.(type) {
 			case sequential:
@@ -102,49 +113,70 @@ func sequentialSolve(ctx context.Context, authSolvers []*selectedAuthSolver, fai
 	uniq := make(map[string]struct{})
 
 	for i, authSolver := range authSolvers {
-		// Submit the challenge
 		domain := challenge.GetTargetedDomain(authSolver.authz)
 
-		chlg, _ := challenge.FindChallenge(challenge.DNS01, authSolver.authz)
-
-		if solvr, ok := authSolver.solver.(preSolver); ok {
-			if _, ok := uniq[authSolver.authz.Identifier.Value+chlg.Token]; ok && chlg.Token != "" {
-				log.Debug("Duplicate token; skipping pre-solve.",
-					slog.String("identifier", authSolver.authz.Identifier.Value),
-					slog.String("type", challenge.DNS01.String()),
+		// Try each solver in order as fallback
+		var lastErr error
+		for _, solvr := range authSolver.solvers {
+			if lastErr != nil {
+				log.Debug("Trying fallback solver.",
+					log.DomainAttr(domain),
+					slog.String("solver_type", fmt.Sprintf("%T", solvr)),
 				)
-
-				continue
 			}
 
-			err := solvr.PreSolve(ctx, authSolver.authz)
-			if err != nil {
-				failures.Add(domain, err)
+			chlg, _ := challenge.FindChallenge(challenge.DNS01, authSolver.authz)
 
-				cleanUp(ctx, authSolver.solver, authSolver.authz)
+			if preSolvr, ok := solvr.(preSolver); ok {
+				if _, ok := uniq[authSolver.authz.Identifier.Value+chlg.Token]; ok && chlg.Token != "" {
+					log.Debug("Duplicate token; skipping pre-solve.",
+						slog.String("identifier", authSolver.authz.Identifier.Value),
+						slog.String("type", challenge.DNS01.String()),
+					)
+					continue
+				}
 
-				continue
+				err := preSolvr.PreSolve(ctx, authSolver.authz)
+				if err != nil {
+					failures.Add(domain, err)
+					cleanUp(ctx, solvr, authSolver.authz)
+					lastErr = err
+					continue
+				}
+
+				uniq[authSolver.authz.Identifier.Value+chlg.Token] = struct{}{}
 			}
 
-			uniq[authSolver.authz.Identifier.Value+chlg.Token] = struct{}{}
+			// Solve the challenge
+			err := solvr.Solve(ctx, authSolver.authz)
+			if err == nil {
+				lastErr = nil
+				break
+			}
+
+			lastErr = err
+			log.Warn("Solver failed, trying fallback.",
+				log.DomainAttr(domain),
+				slog.String("solver_type", fmt.Sprintf("%T", solvr)),
+				log.ErrorAttr(err),
+			)
 		}
 
-		// Solve the challenge
-		err := authSolver.solver.Solve(ctx, authSolver.authz)
-		if err != nil {
-			failures.Add(domain, err)
-
-			cleanUp(ctx, authSolver.solver, authSolver.authz)
-
+		if lastErr != nil {
+			failures.Add(domain, lastErr)
 			continue
 		}
 
+		chlg, _ := challenge.FindChallenge(challenge.DNS01, authSolver.authz)
+
 		if _, ok := uniq[authSolver.authz.Identifier.Value+chlg.Token]; ok || chlg.Token == "" {
 			// Clean challenge
-			cleanUp(ctx, authSolver.solver, authSolver.authz)
+			for _, solvr := range authSolver.solvers {
+				cleanUp(ctx, solvr, authSolver.authz)
+			}
 
 			if len(authSolvers)-1 > i {
-				solvr := authSolver.solver.(sequential)
+				solvr := authSolver.solvers[0].(sequential)
 				_, interval := solvr.Sequential()
 				log.Info("sequence: wait.", slog.Duration("interval", interval), log.DomainAttr(domain))
 				time.Sleep(interval)
@@ -183,7 +215,8 @@ func parallelSolve(ctx context.Context, authSolvers []*selectedAuthSolver, failu
 			uniq[authz.Identifier.Value+chlg.Token] = struct{}{}
 		}
 
-		if solvr, ok := authSolver.solver.(preSolver); ok {
+		// Only pre-solve the first solver; fallback solvers will do their own pre-solve if needed
+		if solvr, ok := authSolver.solvers[0].(preSolver); ok {
 			err := solvr.PreSolve(ctx, authz)
 			if err != nil {
 				failures.Add(challenge.GetTargetedDomain(authz), err)
@@ -208,7 +241,9 @@ func parallelSolve(ctx context.Context, authSolvers []*selectedAuthSolver, failu
 				}
 			}
 
-			cleanUp(ctx, authSolver.solver, authSolver.authz)
+			for _, solvr := range authSolver.solvers {
+				cleanUp(ctx, solvr, authSolver.authz)
+			}
 		}
 	}()
 
@@ -222,9 +257,45 @@ func parallelSolve(ctx context.Context, authSolvers []*selectedAuthSolver, failu
 			continue
 		}
 
-		err := authSolver.solver.Solve(ctx, authz)
-		if err != nil {
-			failures.Add(domain, err)
+		// Try each solver in order as fallback
+		var lastErr error
+		for _, solvr := range authSolver.solvers {
+			if lastErr != nil {
+				log.Debug("Trying fallback solver.",
+					log.DomainAttr(domain),
+					slog.String("solver_type", fmt.Sprintf("%T", solvr)),
+				)
+			}
+
+			// Pre-solve for fallback solvers if needed (skip for first, already done above)
+			if lastErr != nil {
+				if preSolvr, ok := solvr.(preSolver); ok {
+					err := preSolvr.PreSolve(ctx, authz)
+					if err != nil {
+						failures.Add(domain, err)
+						cleanUp(ctx, solvr, authz)
+						lastErr = err
+						continue
+					}
+				}
+			}
+
+			err := solvr.Solve(ctx, authz)
+			if err == nil {
+				lastErr = nil
+				break
+			}
+
+			lastErr = err
+			log.Warn("Solver failed, trying fallback.",
+				log.DomainAttr(domain),
+				slog.String("solver_type", fmt.Sprintf("%T", solvr)),
+				log.ErrorAttr(err),
+			)
+		}
+
+		if lastErr != nil {
+			failures.Add(domain, lastErr)
 		}
 	}
 }

@@ -169,6 +169,7 @@ func allDNSCodes() string {
 		"plesk",
 		"pointdns",
 		"porkbun",
+		"rackcorp",
 		"rackspace",
 		"rage4",
 		"rainyun",
@@ -3595,6 +3596,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/porkbun`)
+
+	case "rackcorp":
+		// generated from: providers/dns/rackcorp/rackcorp.toml
+		ew.writeln(`Configuration for Rackcorp.`)
+		ew.writeln(`Code:	'rackcorp'`)
+		ew.writeln(`Since:	'v5.1.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "RACKCORP_API_SECRET":	API key`)
+		ew.writeln(`	- "RACKCORP_API_UUID":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "RACKCORP_HTTP_TIMEOUT":	API request timeout in seconds (Default: 10)`)
+		ew.writeln(`	- "RACKCORP_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "RACKCORP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "RACKCORP_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rackcorp`)
 
 	case "rackspace":
 		// generated from: providers/dns/rackspace/rackspace.toml

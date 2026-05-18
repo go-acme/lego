@@ -107,12 +107,17 @@ func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
 			return solvr
 		}
 
-		log.Info("Could not find the solver.",
+		log.Debug("The challenge type is not inside the list of available solvers. Skipping.",
 			log.DomainAttr(domain),
 			slog.String("type", chlg.Type),
 			slog.String("solvers", solversToString(c.solvers)),
 		)
 	}
+
+	log.Warn("No available solvers were found for the challenge.",
+		log.DomainAttr(domain),
+		slog.String("solvers", solversToString(c.solvers)),
+	)
 
 	return nil
 }
@@ -120,7 +125,7 @@ func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
 func validate(ctx context.Context, core *api.Core, domain string, chlg acme.Challenge) error {
 	chlng, err := core.Challenges.New(ctx, chlg.URL)
 	if err != nil {
-		return fmt.Errorf("failed to initiate challenge: %w", err)
+		return fmt.Errorf("failed to initiate the challenge: %w", err)
 	}
 
 	valid, err := checkChallengeStatus(chlng)

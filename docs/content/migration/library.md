@@ -66,7 +66,7 @@ dns01.SetDefaultClient(dns01.NewClient(opts))
 
 The functions and methods related to the private key are now using the `crypto.Signer` interface instead of the `crypto.PrivateKey` type.
 
-The following methods now return an `*acme.ExtendedAccount` instead of an `*registration.Ressource`.
+The following methods now return an `*acme.ExtendedAccount` instead of an `*registration.Resource`.
 
 - `registration.Registrar.Register`
 - `registration.Registrar.RegisterWithExternalAccountBinding`
@@ -74,7 +74,7 @@ The following methods now return an `*acme.ExtendedAccount` instead of an `*regi
 - `registration.Registrar.UpdateRegistration`
 - `registration.Registrar.ResolveAccountByKey`
 
-The structure `registration.Ressource` has been removed.
+The structure `registration.Resource` has been removed.
 
 The method `http01.ProviderServer.SetProxyHeader()` is removed and replaced by an option `http01.Options.ProxyHeaderName`.
 

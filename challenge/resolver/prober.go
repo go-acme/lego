@@ -230,12 +230,15 @@ func parallelSolve(ctx context.Context, authSolvers []*selectedAuthSolver, failu
 }
 
 func cleanUp(ctx context.Context, solvr solver, authz acme.Authorization) {
-	if solvr, ok := solvr.(cleanup); ok {
-		domain := challenge.GetTargetedDomain(authz)
+	s, ok := solvr.(cleanup)
+	if !ok {
+		return
+	}
 
-		err := solvr.CleanUp(ctx, authz)
-		if err != nil {
-			log.Warn("Cleaning up failed.", log.DomainAttr(domain), log.ErrorAttr(err))
-		}
+	err := s.CleanUp(ctx, authz)
+	if err != nil {
+		log.Warn("Cleaning up failed.",
+			log.DomainAttr(challenge.GetTargetedDomain(authz)),
+			log.ErrorAttr(err))
 	}
 }

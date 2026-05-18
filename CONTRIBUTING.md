@@ -9,12 +9,13 @@ To ensure a great and easy experience for everyone, please review the few guidel
 - Also look for closed issues to see if your issue has already been fixed.
 - If both of the above do not apply, create a new issue and include as much information as possible.
 
-Bug reports should include all information a person could need to reproduce your problem without the need to
-follow up for more information. If possible, provide detailed steps for us to reproduce it, the expected behavior and the actual behavior.
+Bug reports should include all information a person could need to reproduce your problem without the need to follow up for more information.
+If possible, provide detailed steps for us to reproduce it, the expected behavior and the actual behavior.
 
 ## Feature proposals and requests
 
 Feature requests are welcome and should be discussed in an issue.
+
 Please keep proposals focused on one thing at a time and be as detailed as possible.
 It is up to you to make a strong point about your proposal and convince us of the merits and the added complexity of this feature.
 
@@ -34,10 +35,10 @@ add new behavior or somehow alter code in a non-trivial way should **always** in
 
 Requirements:
 
-- `go` v1.24+
+- `go` v1.25+
 - environment variable: `GO111MODULE=on`
 
-First, you have to install [GoLang](https://golang.org/doc/install) and [golangci-lint](https://github.com/golangci/golangci-lint#install).
+First, you have to install [Go](https://golang.org/doc/install) and [golangci-lint](https://github.com/golangci/golangci-lint#install).
 
 ```bash
 # clone your fork

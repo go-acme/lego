@@ -10,7 +10,7 @@ body:
       options:
         - label: Yes, I've searched for similar issues on GitHub and didn't find any.
           required: true
-        - label: Yes, the DNS provider has a documented API.
+        - label: Yes, the DNS provider has a publicly documented API.
           required: true
         - label: Yes, I know that the lego maintainers don't have an account in all DNS providers in the world.
           required: true
@@ -30,9 +30,7 @@ body:
     attributes:
       label: Implementation
       options:
-        - label: Yes, I'm able to create a pull request and be able to maintain the implementation.
-          required: false
-        - label: Yes, I can test an implementation with the help of the maintainers if someone creates a pull request.
+        - label: Yes, I can test an implementation with the help of the maintainers.
           required: false
 
   - type: input

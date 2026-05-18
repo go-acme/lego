@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html id="R-html" lang="en-us" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="print">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.157.0">
+    <meta name="generator" content="Relearn 9.0.3+bf3dbc8308313d6dd1f7ad32ba2a7983a4e9b3e5">
+    <meta name="description" content="The configuration file is a way to simplify the management of multiple certificates.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="File Configuration :: ACME client and library written in Go.">
+    <meta name="twitter:description" content="The configuration file is a way to simplify the management of multiple certificates.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/advanced/file-configuration/index.html">
+    <meta property="og:site_name" content="ACME client and library written in Go.">
+    <meta property="og:title" content="File Configuration :: ACME client and library written in Go.">
+    <meta property="og:description" content="The configuration file is a way to simplify the management of multiple certificates.">
+    <meta property="og:locale" content="en_us">
+    <meta property="og:type" content="article">
+    <meta property="article:section" content="Advanced usages">
+    <meta property="article:published_time" content="2019-03-03T16:39:46+01:00">
+    <meta property="article:modified_time" content="2026-05-15T19:54:10+02:00">
+    <meta itemprop="name" content="File Configuration :: ACME client and library written in Go.">
+    <meta itemprop="description" content="The configuration file is a way to simplify the management of multiple certificates.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2026-05-15T19:54:10+02:00">
+    <meta itemprop="wordCount" content="372">
+    <title>File Configuration :: ACME client and library written in Go.</title>
+    <link href="https://go-acme.github.io/lego/advanced/file-configuration/index.html" rel="canonical" type="text/html" title="File Configuration :: ACME client and library written in Go.">
+    <link href="/lego/images/favicon.svg?1779110359" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1779110359" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1779110359" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1779110359" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1779110359" defer></script>
+    <script src="/lego/js/search.min.js?1779110359" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1779110359";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1779110359" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1779110359" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1779110359" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1779110359" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/all.min.css?1779110359" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/all.min.css?1779110359" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1779110359" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1779110359" rel="stylesheet">
+    <link href="/lego/css/format-print.min.css?1779110359" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/advanced\/file-configuration\/index.html';
+      window.relearn.relBasePath='..\/..';
+      window.relearn.relBaseUri='..\/..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // translations
+      window.T_Copy_to_clipboard = `Copy text to clipboard`;
+      window.T_Copied_to_clipboard = `Text copied to clipboard!`;
+      window.T_Link_copied_to_clipboard = `Link copied to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      window.T_Browser_unsupported_feature = `This browser doesn't support this feature`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantprefix = "my-custom-";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant") ?? "";
+        if( !variant ||
+            (!variant.startsWith(window.relearn.customvariantprefix) && !window.relearn.themevariants.includes(variant)) ||
+            (variant.startsWith(window.relearn.customvariantprefix) && !window.localStorage.getItem(window.relearn.absBaseUri + "/variantstylesheet-" + variant)) ){
+          variant = window.relearn.themevariants[0];
+          window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+    <link href="/lego/css/custom.css?1779110359" rel="stylesheet">
+  </head>
+  <body class="mobile-support print" data-origin="/lego/advanced/file-configuration/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar" class="default-animation">
+        <div class="topbar-wrapper default-animation">
+          <div class="topbar-sidebar-divider default-animation"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar default-animation" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button></span>
+            </div>
+            <div class="topbar-button topbar-button-toc default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-table-list"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+<nav class="TableOfContents">
+  <ul>
+    <li><a href="#commands">Commands</a></li>
+    <li><a href="#file-location-and-format">File Location and Format</a></li>
+    <li><a href="#configuration-file-structure">Configuration File Structure</a></li>
+    <li><a href="#smart-defaults">Smart Defaults</a></li>
+    <li><a href="#archive-behavior">Archive Behavior</a></li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/advanced/index.html"><span itemprop="name">Advanced usages</span></a><meta itemprop="position" content="2">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">File Configuration</span><meta itemprop="position" content="3"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-print default-animation" data-content-empty="disable" data-width-s="area-more" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/advanced/file-configuration/index.print.html" title="Print whole chapter (CTRL+ALT+p)"><i class="fa-fw fas fa-print"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-prev default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/advanced/caservers/index.html" title="CA servers (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-next default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/advanced/options/index.html" title="Options (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-more default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable advanced" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="file-configuration">File Configuration</h1>
+
+<p>The configuration file is a way to simplify the management of multiple certificates.</p>
+<h2 id="commands">Commands<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The configuration file is used by the following commands:</p>
+<ul>
+<li><code>lego</code></li>
+<li><code>lego certificates revoke</code></li>
+</ul>
+<h2 id="file-location-and-format">File Location and Format<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The configuration file is a YAML file named <code>.lego.yml</code> (or <code>.lego.yaml</code>) placed in the current working directory.
+lego will automatically find and use it when present.</p>
+<p>You can also pass a custom path with the <code>--config</code> flag.</p>
+<h2 id="configuration-file-structure">Configuration File Structure<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The configuration file is organized in a way that makes it easy to understand and modify.</p>
+<p>The four main sections (<code>servers</code>, <code>accounts</code>, <code>challenges</code>, and <code>certificates</code>) are named maps:
+each entry has a key (a name you choose) and a value (its configuration).</p>
+<p>Certificates reference accounts and challenges by their name, and accounts reference servers by their name.</p>
+<p>More information about the configuration file structure can be found in the <a href="https://go-acme.github.io/lego/references/ref-file/" rel="external">configuration file reference</a>.</p>
+<h2 id="smart-defaults">Smart Defaults<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The configuration file applies a number of defaults to reduce verbosity:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Setting</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Storage</td>
+          <td>Defaults to <code>.lego</code> in the current directory.</td>
+      </tr>
+      <tr>
+          <td>Account server</td>
+          <td>Defaults to the Let&rsquo;s Encrypt production if not specified.</td>
+      </tr>
+      <tr>
+          <td>Certificate key type</td>
+          <td>Inherits from its account if not specified.</td>
+      </tr>
+      <tr>
+          <td>Certificate account</td>
+          <td>If there is only one account defined, it is used automatically.</td>
+      </tr>
+      <tr>
+          <td>Certificate challenge</td>
+          <td>If there is only one challenge defined, it is used automatically.</td>
+      </tr>
+      <tr>
+          <td>Certificate predefined challenges</td>
+          <td><code>http-01</code>, <code>tls-alpn-01</code>, <code>dns-persist-01</code> can be used as a challenge name without dedicated configuration.</td>
+      </tr>
+  </tbody>
+</table>
+<p>This means the minimal configuration to obtain a certificate is just a certificate entry (and a challenge for DNS-01):</p>
+<div class="tab-panel" data-tab-group="R-tabs-7b5677c3ce1776a45d814c329d91942a">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-9fd1f3208fde8f0495d0902a9e6b829e" aria-expanded="true"
+      data-tab-item="R-tab-e68e4c806d3d279e55e9345c736a0a6a"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-7b5677c3ce1776a45d814c329d91942a','R-tab-e68e4c806d3d279e55e9345c736a0a6a')"
+    >
+      <span class="tab-nav-text">HTTP-01</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-8a0e12b676c9f68891d107544708a854" aria-expanded="false"
+      data-tab-item="R-tab-e33a9f7cd2f3ea16a316b0611283af5b"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-7b5677c3ce1776a45d814c329d91942a','R-tab-e33a9f7cd2f3ea16a316b0611283af5b')"
+    >
+      <span class="tab-nav-text">TLS-ALPN-01</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-81ecea6dc2e024549a44832ecdbbd222" aria-expanded="false"
+      data-tab-item="R-tab-81f0558783c981ff38e0581fce73f306"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-7b5677c3ce1776a45d814c329d91942a','R-tab-81f0558783c981ff38e0581fce73f306')"
+    >
+      <span class="tab-nav-text">DNS-01</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-6a685babd4fe794de870436b6d1bed93" aria-expanded="false"
+      data-tab-item="R-tab-873f3e2749410ac2e164cf67b0a76125"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-7b5677c3ce1776a45d814c329d91942a','R-tab-873f3e2749410ac2e164cf67b0a76125')"
+    >
+      <span class="tab-nav-text">DNS-PERSIST-01</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-9fd1f3208fde8f0495d0902a9e6b829e"
+      data-tab-item="R-tab-e68e4c806d3d279e55e9345c736a0a6a"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<p>Minimal example for a certificate (Let&rsquo;s Encrypt).</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># .lego.yml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">certificates</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">my-cert</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">challenge</span>: <span style="color:#ae81ff">http-01</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">domains</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">example.com</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-8a0e12b676c9f68891d107544708a854"
+      data-tab-item="R-tab-e33a9f7cd2f3ea16a316b0611283af5b"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Minimal example for a certificate (Let&rsquo;s Encrypt).</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># .lego.yml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">certificates</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">my-cert</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">challenge</span>: <span style="color:#ae81ff">tls-alpn-01</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">domains</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">example.com</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-81ecea6dc2e024549a44832ecdbbd222"
+      data-tab-item="R-tab-81f0558783c981ff38e0581fce73f306"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Minimal example for a wildcard certificate (Let&rsquo;s Encrypt and DNS-01 via Cloudflare).</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># .lego.yml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">challenges</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">my-dns</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">dns</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">provider</span>: <span style="color:#ae81ff">cloudflare</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">certificates</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">my-cert</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">domains</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">example.com</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#e6db74">&#39;*.example.com&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-6a685babd4fe794de870436b6d1bed93"
+      data-tab-item="R-tab-873f3e2749410ac2e164cf67b0a76125"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Please read the dedicated <a href="https://go-acme.github.io/lego/obtain/dnspersist01/" rel="external">documentation</a>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="archive-behavior">Archive Behavior<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The configuration file drives lifecycle management:</p>
+<ul>
+<li>When a certificate entry is removed, its files are archived.</li>
+<li>When an account entry is removed, its files are archived.</li>
+<li>When a server entry is removed, the server and its related accounts are archived.</li>
+</ul>
+<p>More information about commands related to archives can be found in the <a href="https://go-acme.github.io/lego/advanced/archives/" rel="external">archives section</a>.</p>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> May 15, 2026
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1779110359" defer></script>
+    <script src="/lego/js/theme.min.js?1779110359" defer></script>
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  </body>
+</html>

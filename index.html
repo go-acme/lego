@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html id="R-html" lang="en-us" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="html">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.157.0">
+    <meta name="generator" content="Relearn 9.0.3+bf3dbc8308313d6dd1f7ad32ba2a7983a4e9b3e5">
+    <meta name="description" content="ACME client and ACME library written in Go.
+Important lego is an independent, free, and open-source project, if you value it, consider supporting it! ❤️
+Features ChallengesDNS-01 HTTP-01 TLS-ALPN-01 DNS-PERSIST-01 ACME serversMultiple ACME servers support (Let’s Encrypt, ZeroSSL, etc.)Certificate ManagementObtain, renew, revoke.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Lego :: ACME client and library written in Go.">
+    <meta name="twitter:description" content="ACME client and ACME library written in Go.
+Important lego is an independent, free, and open-source project, if you value it, consider supporting it! ❤️
+Features ChallengesDNS-01 HTTP-01 TLS-ALPN-01 DNS-PERSIST-01 ACME serversMultiple ACME servers support (Let’s Encrypt, ZeroSSL, etc.)Certificate ManagementObtain, renew, revoke.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/index.html">
+    <meta property="og:site_name" content="ACME client and library written in Go.">
+    <meta property="og:title" content="Lego :: ACME client and library written in Go.">
+    <meta property="og:description" content="ACME client and ACME library written in Go.
+Important lego is an independent, free, and open-source project, if you value it, consider supporting it! ❤️
+Features ChallengesDNS-01 HTTP-01 TLS-ALPN-01 DNS-PERSIST-01 ACME serversMultiple ACME servers support (Let’s Encrypt, ZeroSSL, etc.)Certificate ManagementObtain, renew, revoke.">
+    <meta property="og:locale" content="en_us">
+    <meta property="og:type" content="website">
+    <meta itemprop="name" content="Lego :: ACME client and library written in Go.">
+    <meta itemprop="description" content="ACME client and ACME library written in Go.
+Important lego is an independent, free, and open-source project, if you value it, consider supporting it! ❤️
+Features ChallengesDNS-01 HTTP-01 TLS-ALPN-01 DNS-PERSIST-01 ACME serversMultiple ACME servers support (Let’s Encrypt, ZeroSSL, etc.)Certificate ManagementObtain, renew, revoke.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2026-04-28T17:11:54+02:00">
+    <meta itemprop="wordCount" content="143">
+    <title>Lego :: ACME client and library written in Go.</title>
+    <link href="/lego/index.print.html" rel="alternate" type="text/html" title="Lego :: ACME client and library written in Go.">
+    <link href="/lego/images/favicon.svg?1779110359" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1779110359" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1779110359" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1779110359" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1779110359" defer></script>
+    <script src="/lego/js/search.min.js?1779110359" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1779110359";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1779110359" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1779110359" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1779110359" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1779110359" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/all.min.css?1779110359" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/all.min.css?1779110359" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1779110359" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1779110359" rel="stylesheet">
+    <link href="/lego/css/format-html.min.css?1779110359" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/index.html';
+      window.relearn.relBasePath='.';
+      window.relearn.relBaseUri='..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // translations
+      window.T_Copy_to_clipboard = `Copy text to clipboard`;
+      window.T_Copied_to_clipboard = `Text copied to clipboard!`;
+      window.T_Link_copied_to_clipboard = `Link copied to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      window.T_Browser_unsupported_feature = `This browser doesn't support this feature`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantprefix = "my-custom-";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant") ?? "";
+        if( !variant ||
+            (!variant.startsWith(window.relearn.customvariantprefix) && !window.relearn.themevariants.includes(variant)) ||
+            (variant.startsWith(window.relearn.customvariantprefix) && !window.localStorage.getItem(window.relearn.absBaseUri + "/variantstylesheet-" + variant)) ){
+          variant = window.relearn.themevariants[0];
+          window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+    <link href="/lego/css/custom.css?1779110359" rel="stylesheet">
+  </head>
+  <body class="mobile-support html" data-origin="/lego/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar" class="default-animation">
+        <div class="topbar-wrapper default-animation">
+          <div class="topbar-sidebar-divider default-animation"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar default-animation" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button></span>
+            </div>
+            <div class="topbar-button topbar-button-toc default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-table-list"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+<nav class="TableOfContents">
+  <ul>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#supported-rfcs">Supported RFCs</a></li>
+    <li><a href="#supporting-lego">Supporting lego</a></li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">Lego</span><meta itemprop="position" content="1"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-print default-animation" data-content-empty="disable" data-width-s="area-more" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/index.print.html" title="Print whole chapter (CTRL+ALT+p)"><i class="fa-fw fas fa-print"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-prev default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle"><span><i class="fa-fw fas fa-chevron-left"></i></span></span>
+            </div>
+            <div class="topbar-button topbar-button-next default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/install/index.html" title="Installation (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-more default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable page" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="lego">Lego</h1>
+
+<p>ACME client and ACME library written in Go.</p>
+
+<details open class="box cstyle notices info">
+  <summary class="box-label" tabindex="-1">
+    <i class="fa-fw fas fa-info-circle"></i> 
+    Important
+  </summary>
+  <div class="box-content">
+<p>lego is an independent, free, and open-source project, if you value it, consider <a href="https://donate.ldez.dev" rel="external">supporting it</a>! ❤️</p>
+  </div>
+</details>
+<h2 id="features">Features<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<ul class="card-container">
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-c60b8004c776a9a644d63c6849839fc8">
+    <div class="card-content">
+      <div class="card-title" id="R-card-c60b8004c776a9a644d63c6849839fc8">
+        <a href="/lego/obtain/index.html">
+        Challenges
+        </a>
+      </div>
+      <div class="card-content-text">
+          <ul>
+<li>DNS-01</li>
+<li>HTTP-01</li>
+<li>TLS-ALPN-01</li>
+<li>DNS-PERSIST-01</li>
+</ul>
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-81d76ba79c7fe28348429bc23965ddbc">
+    <div class="card-content">
+      <div class="card-title" id="R-card-81d76ba79c7fe28348429bc23965ddbc">
+        <a href="advanced/caservers">
+        ACME servers
+        </a>
+      </div>
+      <div class="card-content-text">
+          Multiple ACME servers support (Let&rsquo;s Encrypt, ZeroSSL, etc.)
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-dc0d065542a43d155e24fc46f7dd2f7b">
+    <div class="card-content">
+      <div class="card-title" id="R-card-dc0d065542a43d155e24fc46f7dd2f7b">
+        <a href="/lego/obtain/index.html">
+        Certificate Management
+        </a>
+      </div>
+      <div class="card-content-text">
+          <p>Obtain, renew, revoke.</p>
+<p>Wildcard and SAN certificate support.</p>
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-af912afc6606a04c3e555261cce0d189">
+    <div class="card-content">
+      <div class="card-title" id="R-card-af912afc6606a04c3e555261cce0d189">
+        <a href="/lego/dns/index.html">
+        DNS providers
+        </a>
+      </div>
+      <div class="card-content-text">
+          Comes with the support of more than 200 DNS providers
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-364a71af760902b185f0524aa80944ea">
+    <div class="card-content">
+      <div class="card-title" id="R-card-364a71af760902b185f0524aa80944ea">
+        <a href="/lego/advanced/options/index.html#lego_disable_cname_support">
+        CNAME
+        </a>
+      </div>
+      <div class="card-content-text">
+          Supported by default.
+      </div>
+    </div>
+  </article>
+</li>
+</ul>
+<h2 id="supported-rfcs">Supported RFCs<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<table>
+  <thead>
+      <tr>
+          <th>RFC</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><a href="https://www.rfc-editor.org/rfc/rfc8555.html" rel="external">RFC 8555</a></td>
+          <td>Automatic Certificate Management Environment (ACME).</td>
+      </tr>
+      <tr>
+          <td><a href="https://www.rfc-editor.org/rfc/rfc8737.html" rel="external">RFC 8737</a></td>
+          <td>TLS Application‑Layer Protocol Negotiation (ALPN) Challenge Extension.</td>
+      </tr>
+      <tr>
+          <td><a href="https://www.rfc-editor.org/rfc/rfc8738.html" rel="external">RFC 8738</a></td>
+          <td>IP Identifier Validation Extension. Issues certificates for IP addresses.</td>
+      </tr>
+      <tr>
+          <td><a href="https://www.rfc-editor.org/rfc/rfc9773.html" rel="external">RFC 9773</a></td>
+          <td>Renewal Information (ARI) Extension.</td>
+      </tr>
+      <tr>
+          <td><a href="https://datatracker.ietf.org/doc/draft-ietf-acme-profiles/" rel="external">draft-ietf-acme-profiles-01</a></td>
+          <td>Profiles Extension.</td>
+      </tr>
+      <tr>
+          <td><a href="https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/" rel="external">draft-ietf-acme-dns-persist-01</a></td>
+          <td>Challenge for Persistent DNS TXT Record Validation.</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="supporting-lego">Supporting lego<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>Special thanks to the organizations sponsoring lego&rsquo;s development.</p>
+<ul>
+<li>
+<p><a href="https://www.fairssl.dk/" rel="external"><img alt="FairSSL" class="inline lazy figure-image" loading="lazy" src="./images/fairssl.svg?height=20px&classes=inline&lightbox=false" style="height: 20px;width: auto;"></a></p>
+</li>
+<li>
+<p><a href="https://canonical.com/" rel="external"><img alt="Canonical" class="inline lazy figure-image" loading="lazy" src="./images/canonical.svg?height=30px&classes=inline&lightbox=false" style="height: 30px;width: auto;"></a></p>
+</li>
+</ul>
+<hr>
+
+<details open class="box cstyle notices important">
+  <summary class="box-label" tabindex="-1">
+    <i class="fa-fw fas fa-bolt"></i> 
+    Info
+  </summary>
+  <div class="box-content">
+<p>You are an organization and want to support lego?
+We have a dedicated <a href="https://github.com/sponsors/go-acme" rel="external">sponsorship page</a> for you.</p>
+  </div>
+</details>
+<hr>
+
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Apr 28, 2026
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <aside id="R-sidebar" class="default-animation">
+      <div id="R-header-topbar" class="default-animation"></div>
+      <div id="R-header-wrapper" class="default-animation"><a id="logo" href="/lego"><img src="/lego/images/lego-logo-white.min.svg" alt="lego logo" width="80%"></a>
+
+        <search><form action="/lego/search/index.html" method="get">
+          <div class="searchbox default-animation">
+            <button class="search-detail" type="submit" title="Search (CTRL+ALT+f)"><i class="fas fa-fw fa-search"></i></button>
+            <label class="a11y-only" for="R-search-by">Search</label>
+            <input data-search-input id="R-search-by" name="search-by" class="search-by" type="search" placeholder="Search...">
+            <button class="search-clear" type="button" data-search-clear="" title="Clear search"><i class="fas fa-fw fa-times" title="Clear search"></i></button>
+          </div>
+        </form></search>
+      </div>
+      <div id="R-homelinks" class="default-animation">
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-homelinks default-animation">
+          <ul class="space collapsible-menu">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-headercontrols default-animation">
+          <ul class="">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+      </div>
+      <div id="R-content-wrapper" class="highlightable">
+        <div class="R-sidebarmenu R-shortcutmenu-main default-animation">
+          <ul class="enlarge morespace collapsible-menu">
+            <li class="" data-nav-id="/lego/install/index.html"><a class="padding" href="/lego/install/index.html"><i class="fa-solid fa-box-archive"></i> Installation<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/obtain/index.html"><a class="padding default-animation" href="/lego/obtain/index.html"><i class="fa-solid fa-shield-halved"></i> Obtain or renew certificates<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-13caf4337333ddfe7f5b96479cbd6814" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/dns/index.html"><a class="padding default-animation" href="/lego/dns/index.html"><i class="fa-solid fa-globe"></i> DNS Providers<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-1a5c4aa622b091f451ffa4fea9c3a5f1" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/advanced/index.html"><a class="padding default-animation" href="/lego/advanced/index.html"><i class="fa-solid fa-gears"></i> Advanced usages<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-ab6684576aada2b2c1ce071df63f2853" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/references/index.html"><a class="padding default-animation" href="/lego/references/index.html"><i class="fa-regular fa-bookmark"></i> References<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-26caf0e43dd165bcbddd8eb517876f9e" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/library/index.html"><a class="padding default-animation" href="/lego/library/index.html"><i class="fa-solid fa-code"></i> Library<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-afbce53b44a67cf171cfa6ad78fcc6cf" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/migration/index.html"><a class="padding default-animation" href="/lego/migration/index.html"><i class="fa-solid fa-recycle"></i> Migration from v4 to v5<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-a5eba261a62a08c005636c948c971d1e" class="collapsible-menu"></ul></li>
+          </ul>
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-shortcuts default-animation">
+          <div class="nav-title padding">More</div>
+          <ul class="space collapsible-menu">
+            <li class="" data-nav-id="https://github.com/go-acme/lego"><a class="padding" href="https://github.com/go-acme/lego" rel="external"><i class='fab fa-fw fa-github'></i> GitHub repo<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/issues"><a class="padding" href="https://github.com/go-acme/lego/issues" rel="external"><i class='fas fa-fw fa-bug'></i> Issues<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/discussions"><a class="padding" href="https://github.com/go-acme/lego/discussions" rel="external"><i class='fas fa-fw fa-comments'></i> Discussions<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/sponsors/go-acme"><a class="padding" href="https://github.com/sponsors/go-acme" rel="external"><i class='fas fa-fw fa-heart red cstyle'></i> Donate<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          </ul>
+        </div>
+        <div id="R-footer-margin" class="default-animation"></div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-footercontrols default-animation">
+          <ul class="">
+            <li class="R-historyclearer">
+              <div class="padding menu-control">
+                <i class="fa-fw fas fa-history"></i>
+                <span>&nbsp;</span>
+                <div class="control-style">
+                  <button>Clear History</button>
+                </div>
+                <div class="clear"></div>
+              </div>
+            </li>
+          </ul>
+        </div>
+<div id="R-footer" class="default-animation"><p>Built with <a href="https://github.com/McShelby/hugo-theme-relearn" title="love"><i class="fas fa-heart"></i></a> by <a href="https://gohugo.io/">Hugo</a></p></div>
+      </div>
+    </aside>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1779110359" defer></script>
+    <script src="/lego/js/theme.min.js?1779110359" defer></script>
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  </body>
+</html>

@@ -8,6 +8,10 @@ import (
 )
 
 func RunFlagsValidation(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+	if cmd.IsSet(FlgConfig) {
+		return ctx, fmt.Errorf("the flag '--%s' cannot be used with the 'run' command ", FlgConfig)
+	}
+
 	hasDomains := len(cmd.StringSlice(FlgDomains)) > 0
 	hasCsr := cmd.String(FlgCSR) != ""
 	hasCertID := cmd.String(FlgCertName) != ""

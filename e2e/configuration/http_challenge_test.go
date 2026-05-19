@@ -18,6 +18,23 @@ func TestChallengeHTTP_Run_simple(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestChallengeHTTP_Run_update(t *testing.T) {
+	loader.CleanLegoFiles(t.Context())
+
+	err := load.RunLego(t.Context(),
+		"--config", filepath.Join("fixtures", "lego_http-simple.yml"),
+		"--log.level", "debug",
+	)
+	require.NoError(t, err)
+
+	// Add a new SAN, a new certificate should be issued without the renewal constraints.
+	err = load.RunLego(t.Context(),
+		"--config", filepath.Join("fixtures", "lego_http-update.yml"),
+		"--log.level", "debug",
+	)
+	require.NoError(t, err)
+}
+
 func TestChallengeHTTP_Run_file_server(t *testing.T) {
 	loader.CleanLegoFiles(t.Context())
 

@@ -52,11 +52,6 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		return fmt.Errorf("certificate bundle for %q starts with a CA certificate", certID)
 	}
 
-	ariRenewalTime, replacesCertID, err := getARIInfo(ctx, cmd, lazyClient, certID, cert)
-	if err != nil {
-		return err
-	}
-
 	certDomains := certcrypto.ExtractDomains(cert)
 
 	renewalDomains := slices.Clone(domains)
@@ -64,9 +59,20 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		renewalDomains = merge(certDomains, domains)
 	}
 
-	if ariRenewalTime == nil && !cmd.Bool(flags.FlgRenewForce) && sameDomains(certDomains, renewalDomains) &&
-		!isInRenewalPeriod(cert, certID, getFlagRenewDays(cmd), time.Now()) {
-		return nil
+	var replacesCertID string
+
+	// If the domains are different, this must create a new certificate, then the renewal constraints must be skipped.
+	if sameDomains(certDomains, renewalDomains) {
+		var ariRenewalTime *time.Time
+
+		ariRenewalTime, replacesCertID, err = getARIInfo(ctx, cmd, lazyClient, certID, cert)
+		if err != nil {
+			return err
+		}
+
+		if ariRenewalTime == nil && !cmd.Bool(flags.FlgRenewForce) && !isInRenewalPeriod(cert, certID, getFlagRenewDays(cmd), time.Now()) {
+			return nil
+		}
 	}
 
 	// This is just meant to be informal for the user.
@@ -103,7 +109,10 @@ func renewForDomains(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, 
 		return fmt.Errorf("set up client: %w", err)
 	}
 
-	randomSleep(cmd)
+	// If the domains are different, this must create a new certificate, then the renewal constraints must be skipped.
+	if sameDomains(certDomains, renewalDomains) {
+		randomSleep(cmd)
+	}
 
 	certRes, err := client.Certificate.Obtain(ctx, request)
 	if err != nil {
@@ -146,14 +155,20 @@ func renewForCSR(ctx context.Context, cmd *cli.Command, lazyClient lzSetUp, cert
 		return fmt.Errorf("CSR: certificate bundle for %q starts with a CA certificate", certID)
 	}
 
-	ariRenewalTime, replacesCertID, err := getARIInfo(ctx, cmd, lazyClient, certID, cert)
-	if err != nil {
-		return fmt.Errorf("CSR: %w", err)
-	}
+	var replacesCertID string
 
-	if ariRenewalTime == nil && !cmd.Bool(flags.FlgRenewForce) && sameDomainsCertificate(cert, csr) &&
-		!isInRenewalPeriod(cert, certID, getFlagRenewDays(cmd), time.Now()) {
-		return nil
+	// If the domains are different, this must create a new certificate, then the renewal constraints must be skipped.
+	if sameDomainsCertificate(cert, csr) {
+		var ariRenewalTime *time.Time
+
+		ariRenewalTime, replacesCertID, err = getARIInfo(ctx, cmd, lazyClient, certID, cert)
+		if err != nil {
+			return fmt.Errorf("CSR: %w", err)
+		}
+
+		if ariRenewalTime == nil && !cmd.Bool(flags.FlgRenewForce) && !isInRenewalPeriod(cert, certID, getFlagRenewDays(cmd), time.Now()) {
+			return nil
+		}
 	}
 
 	// This is just meant to be informal for the user.

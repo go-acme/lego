@@ -45,18 +45,24 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 		return fmt.Errorf("certificate bundle for %q starts with a CA certificate", certID)
 	}
 
-	ariRenewalTime, replacesCertID, err := getARIInfo(ctx, lazyClient, certID, certConfig.Renew, cert)
-	if err != nil {
-		return err
-	}
-
 	certDomains := certcrypto.ExtractDomains(cert)
 
 	renewalDomains := slices.Clone(certConfig.Domains)
 
-	if ariRenewalTime == nil && sameDomains(certDomains, renewalDomains) &&
-		!isInRenewalPeriod(cert, certID, certConfig.Renew.Days, time.Now()) {
-		return nil
+	var replacesCertID string
+
+	// If the domains are different, this must create a new certificate, then the renewal constraints must be skipped.
+	if sameDomains(certDomains, renewalDomains) {
+		var ariRenewalTime *time.Time
+
+		ariRenewalTime, replacesCertID, err = getARIInfo(ctx, lazyClient, certID, certConfig.Renew, cert)
+		if err != nil {
+			return err
+		}
+
+		if ariRenewalTime == nil && !isInRenewalPeriod(cert, certID, certConfig.Renew.Days, time.Now()) {
+			return nil
+		}
 	}
 
 	// This is just meant to be informal for the user.
@@ -90,7 +96,10 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 		return fmt.Errorf("set up client: %w", err)
 	}
 
-	randomSleep(certConfig)
+	// If the domains are different, this must create a new certificate, then the renewal constraints must be skipped.
+	if sameDomains(certDomains, renewalDomains) {
+		randomSleep(certConfig)
+	}
 
 	certRes, err := client.Certificate.Obtain(ctx, request)
 	if err != nil {
@@ -133,14 +142,20 @@ func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certCon
 		return fmt.Errorf("CSR: certificate bundle for %q starts with a CA certificate", certID)
 	}
 
-	ariRenewalTime, replacesCertID, err := getARIInfo(ctx, lazyClient, certID, certConfig.Renew, cert)
-	if err != nil {
-		return fmt.Errorf("CSR: %w", err)
-	}
+	var replacesCertID string
 
-	if ariRenewalTime == nil && sameDomainsCertificate(cert, csr) &&
-		!isInRenewalPeriod(cert, certID, certConfig.Renew.Days, time.Now()) {
-		return nil
+	// If the domains are different, this must create a new certificate, then the renewal constraints must be skipped.
+	if sameDomainsCertificate(cert, csr) {
+		var ariRenewalTime *time.Time
+
+		ariRenewalTime, replacesCertID, err = getARIInfo(ctx, lazyClient, certID, certConfig.Renew, cert)
+		if err != nil {
+			return fmt.Errorf("CSR: %w", err)
+		}
+
+		if ariRenewalTime == nil && !isInRenewalPeriod(cert, certID, certConfig.Renew.Days, time.Now()) {
+			return nil
+		}
 	}
 
 	// This is just meant to be informal for the user.

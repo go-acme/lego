@@ -45,19 +45,24 @@ func (c *Client) checkNameserversPropagationCustom(ctx context.Context, fqdn, va
 		var found bool
 
 		for _, rr := range r.Answer {
-			if txt, ok := rr.(*dns.TXT); ok {
-				record := strings.Join(txt.Txt, "")
-
-				records = append(records, record)
-				if record == value {
-					found = true
-					break
-				}
+			txt, ok := rr.(*dns.TXT)
+			if !ok {
+				continue
 			}
+
+			record := strings.Join(txt.Txt, "")
+
+			if record == value {
+				found = true
+				break
+			}
+
+			records = append(records, record)
 		}
 
 		if !found {
-			return false, fmt.Errorf("NS %s did not return the expected TXT record [fqdn: %s, value: %s]: %s", ns, fqdn, value, strings.Join(records, ", "))
+			return false, fmt.Errorf("NS %s did not return the expected TXT record [fqdn: %s, value: %s]: %s",
+				ns, fqdn, value, strings.Join(records, ", "))
 		}
 	}
 

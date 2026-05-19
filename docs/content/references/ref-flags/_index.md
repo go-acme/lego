@@ -23,8 +23,8 @@ This page lists all the available commands and flags.
 - [lego accounts list]({{% ref "references/ref-flags/#lego-accounts-list" %}})
 - [lego archives restore]({{% ref "references/ref-flags/#lego-archives-restore" %}})
 - [lego archives list]({{% ref "references/ref-flags/#lego-archives-list" %}})
-- [lego migrate]({{% ref "references/ref-flags/#lego-migrate" %}})
 - [lego dnshelp]({{% ref "references/ref-flags/#lego-dnshelp" %}})
+- [lego migrate]({{% ref "references/ref-flags/#lego-migrate" %}})
 
 ---
 

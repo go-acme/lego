@@ -107,7 +107,7 @@ func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
 			return solvr
 		}
 
-		log.Debug("The challenge type is not inside the list of available solvers. Skipping.",
+		log.Debug("The challenge type is not in the list of available solvers. Skipping.",
 			log.DomainAttr(domain),
 			slog.String("type", chlg.Type),
 			slog.String("solvers", solversToString(c.solvers)),

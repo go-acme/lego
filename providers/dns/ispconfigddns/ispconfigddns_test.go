@@ -161,7 +161,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("POST /ddns/update.php",
-			servermock.DumpRequest(),
+			servermock.Noop(),
 			servermock.CheckQueryParameter().Strict().
 				With("action", "add").
 				With("zone", "example.com").
@@ -178,7 +178,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("DELETE /ddns/update.php",
-			servermock.DumpRequest(),
+			servermock.Noop(),
 			servermock.CheckQueryParameter().Strict().
 				With("action", "delete").
 				With("zone", "example.com").

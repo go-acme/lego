@@ -180,8 +180,6 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.Noop(),
 			servermock.CheckRequestJSONBodyFromInternal("add_record-request.json"),
 		).
-		Route("/",
-			servermock.DumpRequest()).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")

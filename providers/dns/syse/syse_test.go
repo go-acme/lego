@@ -197,7 +197,6 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
-		Route("/", servermock.DumpRequest()).
 		Route("POST /dns/example.com",
 			servermock.ResponseFromInternal("create_record.json"),
 			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json")).

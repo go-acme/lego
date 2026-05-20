@@ -1,5 +1,6 @@
 name: 💡 Feature request
 description: Suggest an idea for this project.
+labels: ['need-triage', enhancement]
 body:
   - type: checkboxes
     id: terms

@@ -190,7 +190,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /",
-			servermock.DumpRequest(),
+			servermock.Noop(),
 			servermock.CheckQueryParameter().
 				With("domain", "example.com").
 				With("hostname", "_acme-challenge").

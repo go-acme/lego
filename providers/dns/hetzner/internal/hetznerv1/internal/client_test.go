@@ -132,7 +132,6 @@ func TestClient_RemoveRRSetRecords(t *testing.T) {
 func TestClient_GetAction(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /actions/123", servermock.ResponseFromFixture("get_action.json")).
-		Route("/", servermock.DumpRequest()).
 		Build(t)
 
 	result, err := client.GetAction(t.Context(), 123)

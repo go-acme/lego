@@ -72,7 +72,7 @@ func TestClient_AddTXTRecord_error(t *testing.T) {
 func TestClient_DeleteTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /",
-			servermock.DumpRequest(),
+			servermock.Noop(),
 			servermock.CheckQueryParameter().
 				With("domain", "example.com").
 				With("hostname", "_acme-challenge").

@@ -1,0 +1,12 @@
+{
+  "data": {
+    "type": "dns-record",
+    "attributes": {
+      "record_type": "TXT",
+      "name": "_acme-challenge",
+      "domain": "example.com",
+      "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "ttl": 300
+    }
+  }
+}

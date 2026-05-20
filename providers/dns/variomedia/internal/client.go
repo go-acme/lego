@@ -21,7 +21,7 @@ const authorizationHeader = "Authorization"
 type Client struct {
 	apiToken string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -31,7 +31,7 @@ func NewClient(apiToken string) *Client {
 
 	return &Client{
 		apiToken:   apiToken,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
@@ -39,7 +39,7 @@ func NewClient(apiToken string) *Client {
 // CreateDNSRecord creates a new DNS entry.
 // https://api.variomedia.de/docs/dns-records.html#erstellen
 func (c *Client) CreateDNSRecord(ctx context.Context, record DNSRecord) (*CreateDNSRecordResponse, error) {
-	endpoint := c.baseURL.JoinPath("dns-records")
+	endpoint := c.BaseURL.JoinPath("dns-records")
 
 	data := CreateDNSRecordRequest{Data: Data{
 		Type:       "dns-record",
@@ -64,7 +64,7 @@ func (c *Client) CreateDNSRecord(ctx context.Context, record DNSRecord) (*Create
 // DeleteDNSRecord deletes a DNS record.
 // https://api.variomedia.de/docs/dns-records.html#l%C3%B6schen
 func (c *Client) DeleteDNSRecord(ctx context.Context, id string) (*DeleteRecordResponse, error) {
-	endpoint := c.baseURL.JoinPath("dns-records", id)
+	endpoint := c.BaseURL.JoinPath("dns-records", id)
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
@@ -84,7 +84,7 @@ func (c *Client) DeleteDNSRecord(ctx context.Context, id string) (*DeleteRecordR
 // GetJob returns a single job based on its ID.
 // https://api.variomedia.de/docs/job-queue.html
 func (c *Client) GetJob(ctx context.Context, id string) (*GetJobResponse, error) {
-	endpoint := c.baseURL.JoinPath("queue-jobs", id)
+	endpoint := c.BaseURL.JoinPath("queue-jobs", id)
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {

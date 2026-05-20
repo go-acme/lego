@@ -14,30 +14,32 @@ func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("secret")
-			client.baseURL, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 			client.HTTPClient = server.Client()
 
 			return client, nil
 		},
 		servermock.CheckHeader().
 			WithAccept("application/vnd.variomedia.v1+json").
-			WithAuthorization("token secret"))
+			WithAuthorization("token secret"),
+	)
 }
 
 func TestClient_CreateDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns-records",
-			servermock.ResponseFromFixture("POST_dns-records.json"),
+			servermock.ResponseFromFixture("POST_dns_records.json"),
+			servermock.CheckRequestJSONBodyFromFixture("POST_dns_records-request.json"),
 			servermock.CheckHeader().
 				WithContentType("application/vnd.api+json"),
-			servermock.CheckRequestJSONBody(`{"data":{"type":"dns-record","attributes":{"record_type":"TXT","name":"_acme-challenge","domain":"example.com","data":"test","ttl":300}}}`)).
+		).
 		Build(t)
 
 	record := DNSRecord{
 		RecordType: "TXT",
 		Name:       "_acme-challenge",
 		Domain:     "example.com",
-		Data:       "test",
+		Data:       "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 		TTL:        300,
 	}
 
@@ -79,7 +81,8 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 func TestClient_DeleteDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /dns-records/test",
-			servermock.ResponseFromFixture("DELETE_dns-records_pending.json")).
+			servermock.ResponseFromFixture("DELETE_dns_records_pending.json"),
+		).
 		Build(t)
 
 	resp, err := client.DeleteDNSRecord(t.Context(), "test")
@@ -115,7 +118,8 @@ func TestClient_DeleteDNSRecord(t *testing.T) {
 func TestClient_GetJob(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /queue-jobs/test",
-			servermock.ResponseFromFixture("GET_queue-jobs.json")).
+			servermock.ResponseFromFixture("GET_queue_jobs.json"),
+		).
 		Build(t)
 
 	resp, err := client.GetJob(t.Context(), "test")

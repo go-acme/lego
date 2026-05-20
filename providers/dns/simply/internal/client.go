@@ -113,10 +113,15 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneName string, id int64) er
 }
 
 func (c *Client) createEndpoint(zoneName, uri string) *url.URL {
-	return c.baseURL.JoinPath("my", "products", zoneName, "dns", "records", strings.TrimSuffix(uri, "/"))
+	endpoint := c.baseURL.JoinPath("my", "products", zoneName, "dns", "records", strings.TrimSuffix(uri, "/"))
+	// Simply.com's API requires trailing slashes on all record endpoints.
+	if !strings.HasSuffix(endpoint.Path, "/") {
+		endpoint.Path += "/"
+	}
+	return endpoint
 }
 
-func (c *Client) do(req *http.Request, result Response) error {
+func (c *Client) do(req *http.Request, result any) error {
 	req.SetBasicAuth(c.accountName, c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)
@@ -126,22 +131,26 @@ func (c *Client) do(req *http.Request, result Response) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode >= http.StatusInternalServerError {
-		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
-	}
-
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
+	// Simply's "status" and "message" response body fields are deprecated
+	// per the OpenAPI spec and will be removed. Trust the HTTP status code;
+	// error responses carry an "error" field which is surfaced via the body
+	// in the returned error.
+	if resp.StatusCode != http.StatusOK {
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
+	}
+
+	if result == nil {
+		return nil
+	}
+
 	err = json.Unmarshal(raw, result)
 	if err != nil {
 		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
-	}
-
-	if result.GetStatus() != http.StatusOK {
-		return fmt.Errorf("unexpected error: %s", result.GetMessage())
 	}
 
 	return nil

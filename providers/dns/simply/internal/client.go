@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v5/internal/errutils"
@@ -23,7 +22,7 @@ type Client struct {
 	accountName string
 	apiKey      string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -45,7 +44,7 @@ func NewClient(accountName, apiKey string) (*Client, error) {
 	return &Client{
 		accountName: accountName,
 		apiKey:      apiKey,
-		baseURL:     baseURL,
+		BaseURL:     baseURL,
 		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
 	}, nil
 }
@@ -113,10 +112,10 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneName string, id int64) er
 }
 
 func (c *Client) createEndpoint(zoneName, uri string) *url.URL {
-	return c.baseURL.JoinPath("my", "products", zoneName, "dns", "records", strings.TrimSuffix(uri, "/"))
+	return c.BaseURL.JoinPath("my", "products", zoneName, "dns", "records", uri, "/")
 }
 
-func (c *Client) do(req *http.Request, result Response) error {
+func (c *Client) do(req *http.Request, result any) error {
 	req.SetBasicAuth(c.accountName, c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)
@@ -126,8 +125,12 @@ func (c *Client) do(req *http.Request, result Response) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode >= http.StatusInternalServerError {
-		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	if resp.StatusCode/100 != 2 {
+		return parseError(req, resp)
+	}
+
+	if result == nil {
+		return nil
 	}
 
 	raw, err := io.ReadAll(resp.Body)
@@ -138,10 +141,6 @@ func (c *Client) do(req *http.Request, result Response) error {
 	err = json.Unmarshal(raw, result)
 	if err != nil {
 		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
-	}
-
-	if result.GetStatus() != http.StatusOK {
-		return fmt.Errorf("unexpected error: %s", result.GetMessage())
 	}
 
 	return nil
@@ -169,4 +168,17 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 	}
 
 	return req, nil
+}
+
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	response := new(APIError)
+
+	err := json.Unmarshal(raw, &response)
+	if err != nil {
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
+	}
+
+	return response
 }

@@ -128,7 +128,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
-		return fmt.Errorf("regru: %w", err)
+		return fmt.Errorf("simply: %w", err)
 	}
 
 	recordBody := internal.Record{

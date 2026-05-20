@@ -10,55 +10,69 @@ import (
 )
 
 func mockBuilder() *servermock.Builder[*Client] {
-	return servermock.NewBuilder(func(server *httptest.Server) (*Client, error) {
-		client, err := NewClient("user", "secret")
-		if err != nil {
-			return nil, err
-		}
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*Client, error) {
+			client, err := NewClient("user", "secret")
+			if err != nil {
+				return nil, err
+			}
 
-		client.baseURL, _ = url.Parse(server.URL)
-		client.HTTPClient = server.Client()
+			client.BaseURL, _ = url.Parse(server.URL)
+			client.HTTPClient = server.Client()
 
-		return client, nil
-	})
+			return client, nil
+		},
+		servermock.CheckHeader().
+			WithBasicAuth("user", "secret"),
+	)
 }
 
 func TestClient_CreateTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /txt-create.php",
-			servermock.ResponseFromFixture("success.xml")).
+			servermock.ResponseFromFixture("success.xml"),
+			servermock.CheckQueryParameter().Strict().
+				With("host", "_acme-challenge.example.com").
+				With("rdata", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"),
+		).
 		Build(t)
 
-	err := client.CreateTXTRecord(t.Context(), "_acme-challenge.example.com", "value")
+	err := client.CreateTXTRecord(t.Context(), "_acme-challenge.example.com", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")
 	require.NoError(t, err)
 }
 
 func TestClient_CreateTXTRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /txt-create.php",
-			servermock.ResponseFromFixture("error.xml")).
+			servermock.ResponseFromFixture("error.xml"),
+		).
 		Build(t)
 
-	err := client.CreateTXTRecord(t.Context(), "_acme-challenge.example.com", "value")
+	err := client.CreateTXTRecord(t.Context(), "_acme-challenge.example.com", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")
 	require.EqualError(t, err, "[status code: 200] 708: Failed Login: user (_acme-challenge.example.com)")
 }
 
 func TestClient_DeleteTXTRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /txt-delete.php",
-			servermock.ResponseFromFixture("success.xml")).
+			servermock.ResponseFromFixture("success.xml"),
+			servermock.CheckQueryParameter().Strict().
+				With("host", "_acme-challenge.example.com").
+				With("rdata", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"),
+		).
 		Build(t)
 
-	err := client.DeleteTXTRecord(t.Context(), "_acme-challenge.example.com", "value")
+	err := client.DeleteTXTRecord(t.Context(), "_acme-challenge.example.com", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteTXTRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /txt-delete.php",
-			servermock.ResponseFromFixture("error.xml")).
+			servermock.ResponseFromFixture("error.xml"),
+		).
 		Build(t)
 
-	err := client.DeleteTXTRecord(t.Context(), "_acme-challenge.example.com", "value")
+	err := client.DeleteTXTRecord(t.Context(), "_acme-challenge.example.com", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")
 	require.EqualError(t, err, "[status code: 200] 708: Failed Login: user (_acme-challenge.example.com)")
 }

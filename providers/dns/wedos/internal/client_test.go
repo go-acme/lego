@@ -22,14 +22,16 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().
-			WithContentTypeFromURLEncoded())
+			WithContentTypeFromURLEncoded(),
+	)
 }
 
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
 			servermock.ResponseFromFixture(commandDNSRowsList+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-rows-list","data":{"domain":"example.com"}}}`)).
+			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-rows-list","data":{"domain":"example.com"}}}`),
+		).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "example.com.")
@@ -72,7 +74,8 @@ func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
 			servermock.ResponseFromFixture(commandDNSRowAdd+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-add","data":{"domain":"example.com","name":"foo","ttl":1800,"type":"TXT","rdata":"foobar"}}}`)).
+			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-add","data":{"domain":"example.com","name":"foo","ttl":1800,"type":"TXT","rdata":"foobar"}}}`),
+		).
 		Build(t)
 
 	record := DNSRow{
@@ -91,7 +94,8 @@ func TestClient_AddRecord_update(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
 			servermock.ResponseFromFixture(commandDNSRowUpdate+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-update","data":{"row_id":"1","domain":"example.com","ttl":1800,"type":"TXT","rdata":"foobar"}}}`)).
+			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-update","data":{"row_id":"1","domain":"example.com","ttl":1800,"type":"TXT","rdata":"foobar"}}}`),
+		).
 		Build(t)
 
 	record := DNSRow{
@@ -110,7 +114,8 @@ func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
 			servermock.ResponseFromFixture(commandDNSRowDelete+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-delete","data":{"row_id":"1","domain":"example.com","rdata":""}}}`)).
+			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-delete","data":{"row_id":"1","domain":"example.com","rdata":""}}}`),
+		).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "example.com.", "1")
@@ -121,7 +126,8 @@ func TestClient_Commit(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
 			servermock.ResponseFromFixture(commandDNSDomainCommit+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-domain-commit","data":{"name":"example.com"}}}`)).
+			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-domain-commit","data":{"name":"example.com"}}}`),
+		).
 		Build(t)
 
 	err := client.Commit(t.Context(), "example.com.")

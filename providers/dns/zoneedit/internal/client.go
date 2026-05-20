@@ -22,7 +22,7 @@ type Client struct {
 	user      string
 	authToken string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -37,7 +37,7 @@ func NewClient(user, authToken string) (*Client, error) {
 	return &Client{
 		user:       user,
 		authToken:  authToken,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
@@ -51,7 +51,7 @@ func (c *Client) DeleteTXTRecord(ctx context.Context, domain, rdata string) erro
 }
 
 func (c *Client) perform(ctx context.Context, actionPath, domain, rdata string) error {
-	endpoint := c.baseURL.JoinPath(actionPath)
+	endpoint := c.BaseURL.JoinPath(actionPath)
 
 	query := endpoint.Query()
 	query.Set("host", domain)
@@ -93,7 +93,7 @@ func (c *Client) do(req *http.Request) error {
 
 	raw = bytes.TrimSpace(raw)
 
-	// The answer is not an XML valid (missing closing), so I fix it to parse it.
+	// The answer is not a XML valid (missing closing), so I fix it to be able to parse it.
 	if bytes.HasSuffix(raw, []byte(">")) {
 		raw = slices.Concat(raw[:len(raw)-1], []byte("/>"))
 	}

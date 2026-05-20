@@ -21,7 +21,9 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithContentTypeFromURLEncoded())
+		servermock.CheckHeader().
+			WithContentTypeFromURLEncoded(),
+	)
 }
 
 func TestClient_AddRecord(t *testing.T) {
@@ -29,16 +31,17 @@ func TestClient_AddRecord(t *testing.T) {
 		Route("POST /api/zones/records/add",
 			servermock.ResponseFromFixture("add-record.json"),
 			servermock.CheckForm().Strict().
-				With("domain", "_acme-challenge.example.com").
-				With("text", "txtTXTtxt").
+				With("domain", "_acme-challenge.example.com.").
+				With("text", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
 				With("type", "TXT").
-				With("token", "secret")).
+				With("token", "secret"),
+		).
 		Build(t)
 
 	record := Record{
-		Domain: "_acme-challenge.example.com",
+		Domain: "_acme-challenge.example.com.",
 		Type:   "TXT",
-		Text:   "txtTXTtxt",
+		Text:   "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
 	newRecord, err := client.AddRecord(t.Context(), record)
@@ -52,13 +55,14 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/zones/records/add",
-			servermock.ResponseFromFixture("error.json")).
+			servermock.ResponseFromFixture("error.json"),
+		).
 		Build(t)
 
 	record := Record{
-		Domain: "_acme-challenge.example.com",
+		Domain: "_acme-challenge.example.com.",
 		Type:   "TXT",
-		Text:   "txtTXTtxt",
+		Text:   "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
 	_, err := client.AddRecord(t.Context(), record)
@@ -72,16 +76,17 @@ func TestClient_DeleteRecord(t *testing.T) {
 		Route("POST /api/zones/records/delete",
 			servermock.ResponseFromFixture("delete-record.json"),
 			servermock.CheckForm().Strict().
-				With("domain", "_acme-challenge.example.com").
-				With("text", "txtTXTtxt").
+				With("domain", "_acme-challenge.example.com.").
+				With("text", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
 				With("type", "TXT").
-				With("token", "secret")).
+				With("token", "secret"),
+		).
 		Build(t)
 
 	record := Record{
-		Domain: "_acme-challenge.example.com",
+		Domain: "_acme-challenge.example.com.",
 		Type:   "TXT",
-		Text:   "txtTXTtxt",
+		Text:   "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
 	err := client.DeleteRecord(t.Context(), record)
@@ -91,13 +96,14 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/zones/records/delete",
-			servermock.ResponseFromFixture("error.json")).
+			servermock.ResponseFromFixture("error.json"),
+		).
 		Build(t)
 
 	record := Record{
 		Domain: "_acme-challenge.example.com",
 		Type:   "TXT",
-		Text:   "txtTXTtxt",
+		Text:   "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
 	err := client.DeleteRecord(t.Context(), record)

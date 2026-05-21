@@ -2,7 +2,7 @@
   "answer": {
     "domains": [
       {
-        "dname": "test.ru",
+        "dname": "example.com",
         "result": "success",
         "service_id": 12345
       }

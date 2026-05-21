@@ -4031,7 +4031,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "stackpath":
 		// generated from: providers/dns/stackpath/stackpath.toml
-		ew.writeln(`Configuration for Stackpath.`)
+		ew.writeln(`Configuration for Stackpath (Deprecated).`)
 		ew.writeln(`Code:	'stackpath'`)
 		ew.writeln(`Since:	'v1.1.0'`)
 		ew.writeln()

@@ -1,10 +1,14 @@
 package safedns
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v5/internal/tester"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -117,5 +121,53 @@ func TestLiveCleanUp(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.AuthToken = "secret"
+			config.HTTPClient = server.Client()
+
+			p, err := NewDNSProviderConfig(config)
+			if err != nil {
+				return nil, err
+			}
+
+			p.client.BaseURL, _ = url.Parse(server.URL)
+
+			return p, nil
+		},
+		servermock.CheckHeader().
+			WithJSONHeaders(),
+	)
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider := mockBuilder().
+		Route("POST /zones/example.com/records",
+			servermock.ResponseFromInternal("add_record.json").
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromInternal("add_record-request.json"),
+		).
+		Build(t)
+
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp(t *testing.T) {
+	provider := mockBuilder().
+		Route("DELETE /zones/example.com/records/1234567",
+			servermock.Noop().
+				WithStatusCode(http.StatusNoContent),
+		).
+		Build(t)
+
+	provider.recordIDs["abc"] = 1234567
+
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 }

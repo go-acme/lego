@@ -16,12 +16,13 @@ func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("secret")
-			client.baseURL, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 			client.HTTPClient = server.Client()
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders(),
+		servermock.CheckHeader().
+			WithJSONHeaders(),
 	)
 }
 
@@ -30,13 +31,14 @@ func TestClient_AddRecord(t *testing.T) {
 		Route("POST /zones/example.com/records",
 			servermock.ResponseFromFixture("add_record.json").
 				WithStatusCode(http.StatusCreated),
-			servermock.CheckRequestJSONBodyFromFixture("add_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("add_record-request.json"),
+		).
 		Build(t)
 
 	record := Record{
 		Name:    "_acme-challenge.example.com",
 		Type:    "TXT",
-		Content: `"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"`,
+		Content: `"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"`,
 		TTL:     dns01.DefaultTTL,
 	}
 
@@ -63,13 +65,14 @@ func TestClient_AddRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /zones/example.com/records",
 			servermock.ResponseFromFixture("error.json").
-				WithStatusCode(http.StatusUnauthorized)).
+				WithStatusCode(http.StatusUnauthorized),
+		).
 		Build(t)
 
 	record := Record{
 		Name:    "_acme-challenge.example.com",
 		Type:    "TXT",
-		Content: `"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"`,
+		Content: `"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"`,
 		TTL:     dns01.DefaultTTL,
 	}
 
@@ -81,7 +84,8 @@ func TestClient_RemoveRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/example.com/records/1234567",
 			servermock.Noop().
-				WithStatusCode(http.StatusNoContent)).
+				WithStatusCode(http.StatusNoContent),
+		).
 		Build(t)
 
 	err := client.RemoveRecord(t.Context(), "example.com", 1234567)
@@ -92,7 +96,8 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /zones/example.com/records/1234567",
 			servermock.ResponseFromFixture("error.json").
-				WithStatusCode(http.StatusUnauthorized)).
+				WithStatusCode(http.StatusUnauthorized),
+		).
 		Build(t)
 
 	err := client.RemoveRecord(t.Context(), "example.com", 1234567)

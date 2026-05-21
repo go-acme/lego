@@ -1,6 +1,8 @@
-Name = "Stackpath"
-Description = ''''''
-URL = "https://www.stackpath.com/"
+Name = "Stackpath (Deprecated)"
+Description = '''
+The Stackpath DNS provider shut down in 2024.
+'''
+URL = "https://en.wikipedia.org/wiki/StackPath"
 Code = "stackpath"
 Since = "v1.1.0"
 
@@ -20,6 +22,3 @@ lego run --dns stackpath -d '*.example.com' -d example.com
     STACKPATH_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     STACKPATH_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
     STACKPATH_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
-
-[Links]
-  API = "https://developer.stackpath.com/en/api/dns/#tag/Zone"

@@ -282,7 +282,7 @@ If your DNS provider is not supported, please open an [issue](https://github.com
   <td><a href="https://go-acme.github.io/lego/dns/sonic/">Sonic</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/spaceship/">Spaceship</a></td>
 </tr><tr>
-  <td><a href="https://go-acme.github.io/lego/dns/stackpath/">Stackpath</a></td>
+  <td><a href="https://go-acme.github.io/lego/dns/stackpath/">Stackpath (Deprecated)</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/syse/">Syse</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/technitium/">Technitium</a></td>
   <td><a href="https://go-acme.github.io/lego/dns/tele3/">Tele3</a></td>

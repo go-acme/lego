@@ -8,11 +8,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v5/internal/errutils"
-	"github.com/miekg/dns"
 )
 
 const defaultBaseURL = "https://my.rcodezero.at/api"
@@ -23,7 +21,7 @@ const authorizationHeader = "Authorization"
 type Client struct {
 	apiToken string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -33,13 +31,13 @@ func NewClient(apiToken string) *Client {
 
 	return &Client{
 		apiToken:   apiToken,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
 
 func (c *Client) UpdateRecords(ctx context.Context, authZone string, sets []UpdateRRSet) (*APIResponse, error) {
-	endpoint := c.baseURL.JoinPath("v1", "acme", "zones", strings.TrimSuffix(dns.Fqdn(authZone), "."), "rrsets")
+	endpoint := c.BaseURL.JoinPath("v1", "acme", "zones", authZone, "rrsets")
 
 	req, err := newJSONRequest(ctx, http.MethodPatch, endpoint, sets)
 	if err != nil {

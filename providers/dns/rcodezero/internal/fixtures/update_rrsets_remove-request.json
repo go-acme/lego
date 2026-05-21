@@ -1,0 +1,9 @@
+[
+  {
+    "name": "_acme-challenge.example.com.",
+    "type": "TXT",
+    "changetype": "delete",
+    "records": null,
+    "ttl": 0
+  }
+]

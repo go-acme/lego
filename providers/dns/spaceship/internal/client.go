@@ -21,7 +21,7 @@ type Client struct {
 	apiKey    string
 	apiSecret string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -36,7 +36,7 @@ func NewClient(apiKey, apiSecret string) (*Client, error) {
 	return &Client{
 		apiKey:     apiKey,
 		apiSecret:  apiSecret,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
@@ -74,7 +74,7 @@ func (c *Client) do(req *http.Request, result any) error {
 }
 
 func (c *Client) AddRecord(ctx context.Context, domain string, record Record) error {
-	endpoint := c.baseURL.JoinPath("dns", "records", domain)
+	endpoint := c.BaseURL.JoinPath("dns", "records", domain)
 
 	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, Foo{Items: []Record{record}})
 	if err != nil {
@@ -90,7 +90,7 @@ func (c *Client) AddRecord(ctx context.Context, domain string, record Record) er
 }
 
 func (c *Client) DeleteRecord(ctx context.Context, domain string, record Record) error {
-	endpoint := c.baseURL.JoinPath("dns", "records", domain)
+	endpoint := c.BaseURL.JoinPath("dns", "records", domain)
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, []Record{record})
 	if err != nil {
@@ -106,7 +106,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domain string, record Record)
 }
 
 func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error) {
-	endpoint := c.baseURL.JoinPath("dns", "records", domain)
+	endpoint := c.BaseURL.JoinPath("dns", "records", domain)
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {

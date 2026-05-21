@@ -115,7 +115,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		Records:    []internal.Record{{Content: `"` + info.Value + `"`}},
 	}}
 
-	_, err = d.client.UpdateRecords(ctx, authZone, rrSet)
+	_, err = d.client.UpdateRecords(ctx, dns01.UnFqdn(authZone), rrSet)
 	if err != nil {
 		return fmt.Errorf("rcodezero: %w", err)
 	}
@@ -138,7 +138,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		ChangeType: "delete",
 	}}
 
-	_, err = d.client.UpdateRecords(ctx, authZone, rrSet)
+	_, err = d.client.UpdateRecords(ctx, dns01.UnFqdn(authZone), rrSet)
 	if err != nil {
 		return fmt.Errorf("rcodezero: %w", err)
 	}

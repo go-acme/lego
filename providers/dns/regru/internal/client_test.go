@@ -28,13 +28,13 @@ func TestRemoveRecord(t *testing.T) {
 		Route("POST /zone/remove_record",
 			servermock.ResponseFromFixture("remove_record.json"),
 			servermock.CheckForm().Strict().
-				With("input_data", `{"domains":[{"dname":"test.ru"}],"subdomain":"_acme-challenge","content":"txttxttxt","record_type":"TXT","output_content_type":"plain"}`).
+				With("input_data", `{"domains":[{"dname":"example.com"}],"subdomain":"_acme-challenge","content":"txttxttxt","record_type":"TXT","output_content_type":"plain"}`).
 				With("username", "user").
 				With("password", "secret").
 				With("input_format", "json")).
 		Build(t)
 
-	err := client.RemoveTxtRecord(t.Context(), "test.ru", "_acme-challenge", "txttxttxt")
+	err := client.RemoveTxtRecord(t.Context(), "example.com", "_acme-challenge", "txttxttxt")
 	require.NoError(t, err)
 }
 
@@ -47,7 +47,7 @@ func TestRemoveRecord_errors(t *testing.T) {
 	}{
 		{
 			desc:     "authentication failed",
-			domain:   "test.ru",
+			domain:   "example.com",
 			response: "remove_record_error_auth.json",
 			expected: "API error: NO_AUTH: No authorization mechanism selected",
 		},
@@ -78,13 +78,13 @@ func TestAddTXTRecord(t *testing.T) {
 		Route("POST /zone/add_txt",
 			servermock.ResponseFromFixture("add_txt_record.json"),
 			servermock.CheckForm().Strict().
-				With("input_data", `{"domains":[{"dname":"test.ru"}],"subdomain":"_acme-challenge","text":"txttxttxt","output_content_type":"plain"}`).
+				With("input_data", `{"domains":[{"dname":"example.com"}],"subdomain":"_acme-challenge","text":"txttxttxt","output_content_type":"plain"}`).
 				With("username", "user").
 				With("password", "secret").
 				With("input_format", "json")).
 		Build(t)
 
-	err := client.AddTXTRecord(t.Context(), "test.ru", "_acme-challenge", "txttxttxt")
+	err := client.AddTXTRecord(t.Context(), "example.com", "_acme-challenge", "txttxttxt")
 	require.NoError(t, err)
 }
 
@@ -97,7 +97,7 @@ func TestAddTXTRecord_errors(t *testing.T) {
 	}{
 		{
 			desc:     "authentication failed",
-			domain:   "test.ru",
+			domain:   "example.com",
 			response: "add_txt_record_error_auth.json",
 			expected: "API error: NO_AUTH: No authorization mechanism selected",
 		},

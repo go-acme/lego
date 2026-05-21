@@ -1,0 +1,8 @@
+{
+  "userid": "user",
+  "apikey": "secret",
+  "hostname": "_acme-challenge.example.com",
+  "value": "_",
+  "ttl": 120,
+  "type": "TXT"
+}

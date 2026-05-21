@@ -49,7 +49,7 @@ func (c *Client) GetSite(ctx context.Context, domain string) (int, error) {
 		return 0, response.System
 	}
 
-	if response == nil || response.Site.Get.Result == nil {
+	if response.Site.Get.Result == nil {
 		return 0, errors.New("unexpected empty result")
 	}
 
@@ -122,7 +122,11 @@ func (c *Client) doRequest(ctx context.Context, payload RequestPacketType) (*Res
 
 	body := new(bytes.Buffer)
 
-	err := xml.NewEncoder(body).Encode(payload)
+	encoder := xml.NewEncoder(body)
+
+	defer func() { _ = encoder.Close() }()
+
+	err := encoder.Encode(payload)
 	if err != nil {
 		return nil, err
 	}

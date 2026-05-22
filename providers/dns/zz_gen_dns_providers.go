@@ -66,6 +66,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/dreamhost"
 	"github.com/go-acme/lego/v5/providers/dns/duckdns"
 	"github.com/go-acme/lego/v5/providers/dns/dyn"
+	"github.com/go-acme/lego/v5/providers/dns/dynadot"
 	"github.com/go-acme/lego/v5/providers/dns/dyndnsfree"
 	"github.com/go-acme/lego/v5/providers/dns/dynu"
 	"github.com/go-acme/lego/v5/providers/dns/easydns"
@@ -345,6 +346,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return duckdns.NewDNSProvider()
 	case "dyn":
 		return dyn.NewDNSProvider()
+	case "dynadot":
+		return dynadot.NewDNSProvider()
 	case "dyndnsfree":
 		return dyndnsfree.NewDNSProvider()
 	case "dynu":

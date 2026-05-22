@@ -1,0 +1,11 @@
+{
+  "sub_list": [
+    {
+      "sub_host": "_acme-challenge",
+      "record_type": "TXT",
+      "record_value1": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+    }
+  ],
+  "ttl": 120,
+  "add_dns_to_current_setting": true
+}

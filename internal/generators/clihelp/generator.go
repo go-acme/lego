@@ -103,6 +103,7 @@ func createStubApp() *cli.Command {
 
 	root := cmd.CreateRootCommand()
 	root.EnableShellCompletion = false
+	root.Usage = "Get or renew a certificate with a configuration file"
 
 	// Hides the subcommands for a better render of the root command.
 	for _, command := range root.Commands {

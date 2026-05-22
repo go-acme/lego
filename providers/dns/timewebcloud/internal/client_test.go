@@ -33,7 +33,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		).
 		Build(t)
 
-	payload := DNSRecordPayload{
+	payload := DNSRecordRequest{
 		Type:  "TXT",
 		Value: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
@@ -45,7 +45,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		ID:   123,
 		Type: "TXT",
 		Fqdn: "example.com",
-		Data: DNSRecordData{
+		Data: Data{
 			Value:     payload.Value,
 			Subdomain: "_acme-challenge",
 		},
@@ -62,7 +62,7 @@ func TestClient_CreateRecord_error(t *testing.T) {
 		).
 		Build(t)
 
-	_, err := client.CreateRecord(t.Context(), "_acme-challenge.example.com.", DNSRecordPayload{})
+	_, err := client.CreateRecord(t.Context(), "_acme-challenge.example.com.", DNSRecordRequest{})
 	require.Error(t, err)
 
 	assert.EqualError(t, err, "400: Value must be a number conforming to the specified constraints (bad_request) [15095f25-aac3-4d60-a788-96cb5136f186]")

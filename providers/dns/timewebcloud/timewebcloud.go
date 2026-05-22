@@ -110,7 +110,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("timewebcloud: could not find zone for domain %q: %w", domain, err)
 	}
 
-	record := internal.DNSRecordPayload{
+	record := internal.DNSRecordRequest{
 		Type:  "TXT",
 		Value: info.Value,
 	}

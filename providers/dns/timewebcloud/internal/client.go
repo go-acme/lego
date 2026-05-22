@@ -40,7 +40,7 @@ func NewClient(hc *http.Client) *Client {
 
 // CreateRecord creates a DNS record.
 // https://timeweb.cloud/api-docs#tag/Domeny/operation/createDomainDNSRecordV2
-func (c *Client) CreateRecord(ctx context.Context, zone string, payload DNSRecordPayload) (*DNSRecord, error) {
+func (c *Client) CreateRecord(ctx context.Context, zone string, payload DNSRecordRequest) (*DNSRecord, error) {
 	endpoint := c.BaseURL.JoinPath("v2", "domains", dns01.UnFqdn(zone), "dns-records")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, payload)

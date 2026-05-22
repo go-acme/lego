@@ -2,19 +2,19 @@ package internal
 
 import "fmt"
 
-type DNSRecordPayload struct {
+type DNSRecordRequest struct {
 	Type  string `json:"type,omitempty"`
 	Value string `json:"value,omitempty"`
 }
 
 type DNSRecord struct {
-	ID   int           `json:"id,omitempty"`
-	Type string        `json:"type,omitempty"`
-	Fqdn string        `json:"fqdn,omitempty"`
-	Data DNSRecordData `json:"data"`
+	ID   int    `json:"id,omitempty"`
+	Type string `json:"type,omitempty"`
+	Fqdn string `json:"fqdn,omitempty"`
+	Data Data   `json:"data"`
 }
 
-type DNSRecordData struct {
+type Data struct {
 	Value     string `json:"value,omitempty"`
 	Subdomain string `json:"sub,omitempty"`
 }

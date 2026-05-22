@@ -91,10 +91,7 @@ func GetServerConfig(cfg *Configuration, accountID string) *Server {
 			slog.String("server", accountConfig.Server),
 		)
 
-		return &Server{
-			URL:                 accountConfig.Server,
-			OverallRequestLimit: certificate.DefaultOverallRequestLimit,
-		}
+		return getServerConfig(accountID, accountConfig)
 	}
 
 	if _, ok := cfg.Servers[accountConfig.Server]; ok {
@@ -106,6 +103,10 @@ func GetServerConfig(cfg *Configuration, accountID string) *Server {
 		slog.String("server", accountConfig.Server),
 	)
 
+	return getServerConfig(accountID, accountConfig)
+}
+
+func getServerConfig(accountID string, accountConfig *Account) *Server {
 	directoryURL, err := lego.GetDirectoryURL(accountConfig.Server)
 	if err == nil {
 		return &Server{
@@ -119,6 +120,13 @@ func GetServerConfig(cfg *Configuration, accountID string) *Server {
 		slog.String("server", accountConfig.Server),
 		log.ErrorAttr(err),
 	)
+
+	if accountConfig.Server == "" {
+		return &Server{
+			URL:                 lego.DirectoryURLLetsEncrypt,
+			OverallRequestLimit: certificate.DefaultOverallRequestLimit,
+		}
+	}
 
 	return &Server{
 		URL:                 accountConfig.Server,

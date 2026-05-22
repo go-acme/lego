@@ -6,14 +6,14 @@ on:
       - opened
       - reopened
 
-permissions:
-  issues: write
+permissions: {}
 
 jobs:
   no-blank-issue:
     name: No Blank Issue
     runs-on: ubuntu-slim
-
+    permissions:
+      issues: write
     steps:
       - name: Check New Issue
         uses: ldez/no-blank-issue@800e2d0c81c9e0ca7bdb58f3e7480a74602d91e0 # v1.2.0

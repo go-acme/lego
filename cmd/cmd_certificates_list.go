@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/internal"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/mattn/go-zglob"
 	"github.com/urfave/cli/v3"
 )
@@ -36,8 +38,15 @@ func createListCertificates() *cli.Command {
 	}
 }
 
-func listCertificates(ctx context.Context, cmd *cli.Command) error {
+func listCertificates(_ context.Context, cmd *cli.Command) error {
 	basePath := cmd.String(flags.FlgPath)
+
+	cfg, err := loadConfiguration(cmd)
+	if err == nil {
+		log.Debug("Configuration loaded from a file.", slog.String("cmd", "certificates list"))
+
+		basePath = cfg.Storage
+	}
 
 	if cmd.Bool(flags.FlgFormatJSON) {
 		return listCertificatesJSON(basePath)

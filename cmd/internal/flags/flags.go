@@ -112,6 +112,7 @@ func CreateRenewFlags() []cli.Flag {
 
 func CreateRevokeFlags() []cli.Flag {
 	flags := []cli.Flag{
+		createConfigFlag(),
 		CreatePathFlag(false),
 		createCertNamesFlag(),
 		createKeyTypeFlag("Key type to use for the private key of the account."),
@@ -131,7 +132,6 @@ func CreateRevokeFlags() []cli.Flag {
 				" 9 (privilegeWithdrawn), or 10 (aACompromise).",
 			Value: acme.CRLReasonUnspecified,
 		},
-		createConfigFlag(),
 	}
 
 	flags = append(flags, createAccountFlags()...)
@@ -190,11 +190,19 @@ func CreateKeyRolloverFlags() []cli.Flag {
 
 func CreateListFlags() []cli.Flag {
 	return []cli.Flag{
+		createConfigFlag(),
 		CreatePathFlag(false),
 		&cli.BoolFlag{
 			Name:  FlgFormatJSON,
 			Usage: "Format the output as JSON.",
 		},
+	}
+}
+
+func CreateArchivesListFlags() []cli.Flag {
+	return []cli.Flag{
+		createConfigFlag(),
+		CreatePathFlag(false),
 	}
 }
 

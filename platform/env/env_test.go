@@ -9,26 +9,38 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	envVarNameExist1   = "TEST_LEGO_VAR_EXIST_1"
+	envVarNameExist2   = "TEST_LEGO_VAR_EXIST_2"
+	envVarNameMissing1 = "TEST_LEGO_VAR_MISSING_1"
+	envVarNameMissing2 = "TEST_LEGO_VAR_MISSING_2"
+)
+
+const (
+	envVarNameVarFile = "TEST_LEGO_ENV_VAR_FILE"
+	envVarNameVar     = "TEST_LEGO_ENV_VAR"
+)
+
 func TestGetWithFallback(t *testing.T) {
-	var1Exist := os.Getenv("TEST_LEGO_VAR_EXIST_1")
-	var2Exist := os.Getenv("TEST_LEGO_VAR_EXIST_2")
-	var1Missing := os.Getenv("TEST_LEGO_VAR_MISSING_1")
-	var2Missing := os.Getenv("TEST_LEGO_VAR_MISSING_2")
+	var1Exist := os.Getenv(envVarNameExist1)
+	var2Exist := os.Getenv(envVarNameExist2)
+	var1Missing := os.Getenv(envVarNameMissing1)
+	var2Missing := os.Getenv(envVarNameMissing2)
 
 	t.Cleanup(func() {
-		_ = os.Setenv("TEST_LEGO_VAR_EXIST_1", var1Exist)
-		_ = os.Setenv("TEST_LEGO_VAR_EXIST_2", var2Exist)
-		_ = os.Setenv("TEST_LEGO_VAR_MISSING_1", var1Missing)
-		_ = os.Setenv("TEST_LEGO_VAR_MISSING_2", var2Missing)
+		_ = os.Setenv(envVarNameExist1, var1Exist)
+		_ = os.Setenv(envVarNameExist2, var2Exist)
+		_ = os.Setenv(envVarNameMissing1, var1Missing)
+		_ = os.Setenv(envVarNameMissing2, var2Missing)
 	})
 
-	err := os.Setenv("TEST_LEGO_VAR_EXIST_1", "VAR1")
+	err := os.Setenv(envVarNameExist1, "VAR1")
 	require.NoError(t, err)
-	err = os.Setenv("TEST_LEGO_VAR_EXIST_2", "VAR2")
+	err = os.Setenv(envVarNameExist2, "VAR2")
 	require.NoError(t, err)
-	err = os.Unsetenv("TEST_LEGO_VAR_MISSING_1")
+	err = os.Unsetenv(envVarNameMissing1)
 	require.NoError(t, err)
-	err = os.Unsetenv("TEST_LEGO_VAR_MISSING_2")
+	err = os.Unsetenv(envVarNameMissing2)
 	require.NoError(t, err)
 
 	type expected struct {
@@ -57,37 +69,37 @@ func TestGetWithFallback(t *testing.T) {
 		},
 		{
 			desc:   "missing env var",
-			groups: [][]string{{"TEST_LEGO_VAR_MISSING_1"}},
+			groups: [][]string{{envVarNameMissing1}},
 			expected: expected{
 				error: "some credentials information are missing: TEST_LEGO_VAR_MISSING_1",
 			},
 		},
 		{
 			desc:   "all env var in a groups are missing",
-			groups: [][]string{{"TEST_LEGO_VAR_MISSING_1", "TEST_LEGO_VAR_MISSING_2"}},
+			groups: [][]string{{envVarNameMissing1, envVarNameMissing2}},
 			expected: expected{
 				error: "some credentials information are missing: TEST_LEGO_VAR_MISSING_1",
 			},
 		},
 		{
 			desc:   "only the first env var have a value",
-			groups: [][]string{{"TEST_LEGO_VAR_EXIST_1", "TEST_LEGO_VAR_MISSING_1"}},
+			groups: [][]string{{envVarNameExist1, envVarNameMissing1}},
 			expected: expected{
-				value: map[string]string{"TEST_LEGO_VAR_EXIST_1": "VAR1"},
+				value: map[string]string{envVarNameExist1: "VAR1"},
 			},
 		},
 		{
 			desc:   "only the second env var have a value",
-			groups: [][]string{{"TEST_LEGO_VAR_MISSING_1", "TEST_LEGO_VAR_EXIST_1"}},
+			groups: [][]string{{envVarNameMissing1, envVarNameExist1}},
 			expected: expected{
-				value: map[string]string{"TEST_LEGO_VAR_MISSING_1": "VAR1"},
+				value: map[string]string{envVarNameMissing1: "VAR1"},
 			},
 		},
 		{
 			desc:   "all env vars in a groups have a value",
-			groups: [][]string{{"TEST_LEGO_VAR_EXIST_1", "TEST_LEGO_VAR_EXIST_2"}},
+			groups: [][]string{{envVarNameExist1, envVarNameExist2}},
 			expected: expected{
-				value: map[string]string{"TEST_LEGO_VAR_EXIST_1": "VAR1"},
+				value: map[string]string{envVarNameExist1: "VAR1"},
 			},
 		},
 	}
@@ -108,25 +120,25 @@ func TestGetWithFallback(t *testing.T) {
 }
 
 func TestGetOneWithFallback(t *testing.T) {
-	var1Exist := os.Getenv("TEST_LEGO_VAR_EXIST_1")
-	var2Exist := os.Getenv("TEST_LEGO_VAR_EXIST_2")
-	var1Missing := os.Getenv("TEST_LEGO_VAR_MISSING_1")
-	var2Missing := os.Getenv("TEST_LEGO_VAR_MISSING_2")
+	var1Exist := os.Getenv(envVarNameExist1)
+	var2Exist := os.Getenv(envVarNameExist2)
+	var1Missing := os.Getenv(envVarNameMissing1)
+	var2Missing := os.Getenv(envVarNameMissing2)
 
 	t.Cleanup(func() {
-		_ = os.Setenv("TEST_LEGO_VAR_EXIST_1", var1Exist)
-		_ = os.Setenv("TEST_LEGO_VAR_EXIST_2", var2Exist)
-		_ = os.Setenv("TEST_LEGO_VAR_MISSING_1", var1Missing)
-		_ = os.Setenv("TEST_LEGO_VAR_MISSING_2", var2Missing)
+		_ = os.Setenv(envVarNameExist1, var1Exist)
+		_ = os.Setenv(envVarNameExist2, var2Exist)
+		_ = os.Setenv(envVarNameMissing1, var1Missing)
+		_ = os.Setenv(envVarNameMissing2, var2Missing)
 	})
 
-	err := os.Setenv("TEST_LEGO_VAR_EXIST_1", "VAR1")
+	err := os.Setenv(envVarNameExist1, "VAR1")
 	require.NoError(t, err)
-	err = os.Setenv("TEST_LEGO_VAR_EXIST_2", "VAR2")
+	err = os.Setenv(envVarNameExist2, "VAR2")
 	require.NoError(t, err)
-	err = os.Unsetenv("TEST_LEGO_VAR_MISSING_1")
+	err = os.Unsetenv(envVarNameMissing1)
 	require.NoError(t, err)
-	err = os.Unsetenv("TEST_LEGO_VAR_MISSING_2")
+	err = os.Unsetenv(envVarNameMissing2)
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -138,28 +150,28 @@ func TestGetOneWithFallback(t *testing.T) {
 	}{
 		{
 			desc:         "with value and no alternative",
-			main:         "TEST_LEGO_VAR_EXIST_1",
+			main:         envVarNameExist1,
 			defaultValue: "oops",
 			expected:     "VAR1",
 		},
 		{
 			desc:         "with value and alternatives",
-			main:         "TEST_LEGO_VAR_EXIST_1",
+			main:         envVarNameExist1,
 			defaultValue: "oops",
-			alts:         []string{"TEST_LEGO_VAR_MISSING_1"},
+			alts:         []string{envVarNameMissing1},
 			expected:     "VAR1",
 		},
 		{
 			desc:         "without value and no alternatives",
-			main:         "TEST_LEGO_VAR_MISSING_1",
+			main:         envVarNameMissing1,
 			defaultValue: "oops",
 			expected:     "oops",
 		},
 		{
 			desc:         "without value and alternatives",
-			main:         "TEST_LEGO_VAR_MISSING_1",
+			main:         envVarNameMissing1,
 			defaultValue: "oops",
-			alts:         []string{"TEST_LEGO_VAR_EXIST_1"},
+			alts:         []string{envVarNameExist1},
 			expected:     "VAR1",
 		},
 	}
@@ -335,17 +347,14 @@ func TestGetOrDefaultBool(t *testing.T) {
 }
 
 func TestGetOrFile_ReadsEnvVars(t *testing.T) {
-	t.Setenv("TEST_LEGO_ENV_VAR", "lego_env")
+	t.Setenv(envVarNameVar, "lego_env")
 
-	value := GetOrFile("TEST_LEGO_ENV_VAR")
+	value := GetOrFile(envVarNameVar)
 
 	assert.Equal(t, "lego_env", value)
 }
 
 func TestGetOrFile_ReadsFiles(t *testing.T) {
-	varEnvFileName := "TEST_LEGO_ENV_VAR_FILE"
-	varEnvName := "TEST_LEGO_ENV_VAR"
-
 	testCases := []struct {
 		desc        string
 		fileContent []byte
@@ -358,13 +367,17 @@ func TestGetOrFile_ReadsFiles(t *testing.T) {
 			desc:        "with an empty last line",
 			fileContent: []byte("lego_file\n"),
 		},
+		{
+			desc:        "with carriage return",
+			fileContent: []byte("lego_file\n\r"),
+		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			err := os.Unsetenv(varEnvFileName)
+			err := os.Unsetenv(envVarNameVarFile)
 			require.NoError(t, err)
-			err = os.Unsetenv(varEnvName)
+			err = os.Unsetenv(envVarNameVar)
 			require.NoError(t, err)
 
 			file, err := os.CreateTemp(t.TempDir(), "lego")
@@ -375,9 +388,9 @@ func TestGetOrFile_ReadsFiles(t *testing.T) {
 			err = os.WriteFile(file.Name(), []byte("lego_file\n"), 0o644)
 			require.NoError(t, err)
 
-			t.Setenv(varEnvFileName, file.Name())
+			t.Setenv(envVarNameVarFile, file.Name())
 
-			value := GetOrFile(varEnvName)
+			value := GetOrFile(envVarNameVar)
 
 			assert.Equal(t, "lego_file", value)
 		})
@@ -385,12 +398,9 @@ func TestGetOrFile_ReadsFiles(t *testing.T) {
 }
 
 func TestGetOrFile_PrefersEnvVars(t *testing.T) {
-	varEnvFileName := "TEST_LEGO_ENV_VAR_FILE"
-	varEnvName := "TEST_LEGO_ENV_VAR"
-
-	err := os.Unsetenv(varEnvFileName)
+	err := os.Unsetenv(envVarNameVarFile)
 	require.NoError(t, err)
-	err = os.Unsetenv(varEnvName)
+	err = os.Unsetenv(envVarNameVar)
 	require.NoError(t, err)
 
 	file, err := os.CreateTemp(t.TempDir(), "lego")
@@ -401,10 +411,10 @@ func TestGetOrFile_PrefersEnvVars(t *testing.T) {
 	err = os.WriteFile(file.Name(), []byte("lego_file"), 0o644)
 	require.NoError(t, err)
 
-	t.Setenv(varEnvFileName, file.Name())
-	t.Setenv(varEnvName, "lego_env")
+	t.Setenv(envVarNameVarFile, file.Name())
+	t.Setenv(envVarNameVar, "lego_env")
 
-	value := GetOrFile(varEnvName)
+	value := GetOrFile(envVarNameVar)
 
 	assert.Equal(t, "lego_env", value)
 }

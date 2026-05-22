@@ -170,7 +170,7 @@ func GetOrFile(envVar string) string {
 		return ""
 	}
 
-	return strings.TrimSuffix(string(fileContents), "\n")
+	return strings.TrimRight(string(fileContents), "\r\n")
 }
 
 // ParseSecond parses env var value (string) to a second (time.Duration).

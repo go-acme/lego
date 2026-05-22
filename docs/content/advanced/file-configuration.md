@@ -15,6 +15,9 @@ The configuration file is used by the following commands:
 
 - `lego`
 - `lego certificates revoke`
+- `lego certificates list`
+- `lego accounts list`
+- `lego archives list`
 
 ## File Location and Format
 

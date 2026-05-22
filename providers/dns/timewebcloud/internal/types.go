@@ -2,13 +2,21 @@ package internal
 
 import "fmt"
 
-type DNSRecord struct {
-	ID    int    `json:"id,omitempty"`
+type DNSRecordRequest struct {
 	Type  string `json:"type,omitempty"`
 	Value string `json:"value,omitempty"`
+}
 
-	// SubDomain is the full name of a subdomain (not only the subdomain label).
-	SubDomain string `json:"subdomain,omitempty"`
+type DNSRecord struct {
+	ID   int    `json:"id,omitempty"`
+	Type string `json:"type,omitempty"`
+	Fqdn string `json:"fqdn,omitempty"`
+	Data Data   `json:"data"`
+}
+
+type Data struct {
+	Value     string `json:"value,omitempty"`
+	Subdomain string `json:"sub,omitempty"`
 }
 
 type CreateRecordResponse struct {

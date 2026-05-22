@@ -105,20 +105,19 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	_, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("timewebcloud: could not find zone for domain %q: %w", domain, err)
 	}
 
-	record := internal.DNSRecord{
-		Type:      "TXT",
-		Value:     info.Value,
-		SubDomain: dns01.UnFqdn(info.EffectiveFQDN),
+	record := internal.DNSRecordRequest{
+		Type:  "TXT",
+		Value: info.Value,
 	}
 
-	response, err := d.client.CreateRecord(ctx, authZone, record)
+	response, err := d.client.CreateRecord(ctx, info.EffectiveFQDN, record)
 	if err != nil {
-		return fmt.Errorf("timewebcloud: %w", err)
+		return fmt.Errorf("timewebcloud: create record: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -132,7 +131,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	_, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("timewebcloud: could not find zone for domain %q: %w", domain, err)
 	}
@@ -145,9 +144,9 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("timewebcloud: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
-	err = d.client.DeleteRecord(ctx, authZone, recordID)
+	err = d.client.DeleteRecord(ctx, info.EffectiveFQDN, recordID)
 	if err != nil {
-		return fmt.Errorf("timewebcloud: %w", err)
+		return fmt.Errorf("timewebcloud: delete record: %w", err)
 	}
 
 	d.recordIDsMu.Lock()

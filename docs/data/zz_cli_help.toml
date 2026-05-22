@@ -6,7 +6,7 @@ title   = "lego -h"
 content = """
 ## `lego`
 
-> ACME client written in Go
+> Get or renew a certificate with a configuration file
 
 ### Usage
 

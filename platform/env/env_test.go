@@ -384,6 +384,30 @@ func TestGetOrFile_ReadsFiles(t *testing.T) {
 	}
 }
 
+func TestGetOrFile_TrimsWindowsNewline(t *testing.T) {
+	varEnvFileName := "TEST_LEGO_ENV_VAR_FILE"
+	varEnvName := "TEST_LEGO_ENV_VAR"
+
+	err := os.Unsetenv(varEnvFileName)
+	require.NoError(t, err)
+	err = os.Unsetenv(varEnvName)
+	require.NoError(t, err)
+
+	file, err := os.CreateTemp(t.TempDir(), "lego")
+	require.NoError(t, err)
+
+	t.Cleanup(func() { _ = file.Close() })
+
+	err = os.WriteFile(file.Name(), []byte("lego_file\r\n"), 0o644)
+	require.NoError(t, err)
+
+	t.Setenv(varEnvFileName, file.Name())
+
+	value := GetOrFile(varEnvName)
+
+	assert.Equal(t, "lego_file", value)
+}
+
 func TestGetOrFile_PrefersEnvVars(t *testing.T) {
 	varEnvFileName := "TEST_LEGO_ENV_VAR_FILE"
 	varEnvName := "TEST_LEGO_ENV_VAR"

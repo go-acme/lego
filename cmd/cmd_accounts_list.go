@@ -29,15 +29,17 @@ func createAccountsList() *cli.Command {
 }
 
 func listAccounts(ctx context.Context, cmd *cli.Command) error {
+	basePath := cmd.String(flags.FlgPath)
+
 	if cmd.Bool(flags.FlgFormatJSON) {
-		return listAccountsJSON(ctx, cmd)
+		return listAccountsJSON(basePath)
 	}
 
-	return listAccountsText(ctx, cmd)
+	return listAccountsText(basePath)
 }
 
-func listAccountsText(_ context.Context, cmd *cli.Command) error {
-	accounts, err := readAccounts(cmd)
+func listAccountsText(basePath string) error {
+	accounts, err := readAccounts(basePath)
 	if err != nil {
 		return err
 	}
@@ -61,8 +63,8 @@ func listAccountsText(_ context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-func listAccountsJSON(_ context.Context, cmd *cli.Command) error {
-	accounts, err := readAccounts(cmd)
+func listAccountsJSON(basePath string) error {
+	accounts, err := readAccounts(basePath)
 	if err != nil {
 		return err
 	}
@@ -70,8 +72,8 @@ func listAccountsJSON(_ context.Context, cmd *cli.Command) error {
 	return json.NewEncoder(os.Stdout).Encode(accounts)
 }
 
-func readAccounts(cmd *cli.Command) ([]ListAccount, error) {
-	accountsStorage := storage.NewAccountsStorage(cmd.String(flags.FlgPath))
+func readAccounts(basePath string) ([]ListAccount, error) {
+	accountsStorage := storage.NewAccountsStorage(basePath)
 
 	matches, err := zglob.Glob(filepath.Join(accountsStorage.GetRootPath(), "**", "account.json"))
 	if err != nil {

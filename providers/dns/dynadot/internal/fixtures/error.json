@@ -1,0 +1,7 @@
+{
+  "code": 403,
+  "message": "Forbidden",
+  "error": {
+    "description": "The domain doesn't have main dns."
+  }
+}

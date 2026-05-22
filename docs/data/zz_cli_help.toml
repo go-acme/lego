@@ -543,6 +543,12 @@ lego archives restore [options]
 |------|-------|-------|
 | `--help`, `-h` |  | show help  |
 
+#### Flags related to the configuration file:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--config string` | `LEGO_CONFIG` | Path to the configuration file.  |
+
 #### Flags related to the storage:
 
 | Flag | Env Var | Usage |

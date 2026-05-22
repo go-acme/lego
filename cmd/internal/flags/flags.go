@@ -206,6 +206,13 @@ func CreateArchivesListFlags() []cli.Flag {
 	}
 }
 
+func CreateArchivesRestoreFlags() []cli.Flag {
+	return []cli.Flag{
+		createConfigFlag(),
+		CreatePathFlag(false),
+	}
+}
+
 func CreateMigrateFlags() []cli.Flag {
 	return []cli.Flag{
 		CreatePathFlag(false),

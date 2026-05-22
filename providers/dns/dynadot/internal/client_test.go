@@ -35,17 +35,21 @@ func TestClient_SetDNS(t *testing.T) {
 		Route("POST /restful/v2/domains/example.com/records",
 			servermock.ResponseFromFixture("success.json"),
 			servermock.CheckRequestJSONBodyFromFixture("set_dns-request.json"),
+			servermock.CheckHeader().
+				With("X-Signature", "StGY3XMuHaR4iZ1vcddPkasNsVuPyoxdG44w29/iYSM="),
 		).
 		Build(t)
 
 	payload := &SetDNSRequest{
-		SubList: []SubRecord{{
-			SubHost:      "_acme-challenge",
-			RecordType:   "TXT",
-			RecordValue1: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		Subs: []SubRecord{{
+			SubHost: "_acme-challenge",
+			Record: Record{
+				Type:   "TXT",
+				Value1: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+			},
 		}},
-		TTL:                    120,
-		AddDNSToCurrentSetting: true,
+		TTL:             120,
+		AddDNSToCurrent: true,
 	}
 
 	err := client.SetDNS(t.Context(), "example.com", payload)
@@ -61,13 +65,15 @@ func TestClient_SetDNS_error(t *testing.T) {
 		Build(t)
 
 	payload := &SetDNSRequest{
-		SubList: []SubRecord{{
-			SubHost:      "_acme-challenge",
-			RecordType:   "TXT",
-			RecordValue1: "value",
+		Subs: []SubRecord{{
+			SubHost: "_acme-challenge",
+			Record: Record{
+				Type:   "TXT",
+				Value1: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+			},
 		}},
-		TTL:                    120,
-		AddDNSToCurrentSetting: true,
+		TTL:             120,
+		AddDNSToCurrent: true,
 	}
 
 	err := client.SetDNS(t.Context(), "example.com", payload)
@@ -79,14 +85,18 @@ func TestClient_RemoveDNS(t *testing.T) {
 		Route("DELETE /restful/v2/domains/example.com/records",
 			servermock.ResponseFromFixture("success.json"),
 			servermock.CheckRequestJSONBodyFromFixture("remove_dns-request.json"),
+			servermock.CheckHeader().
+				With("X-Signature", "dNpJ/HG586+FnDdgeiNQHGRLl2Sdxav6Q0G3IiGBQT0="),
 		).
 		Build(t)
 
 	payload := &RemoveDNSRequest{
-		SubList: []SubRecord{{
-			SubHost:      "_acme-challenge",
-			RecordType:   "TXT",
-			RecordValue1: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		Subs: []SubRecord{{
+			SubHost: "_acme-challenge",
+			Record: Record{
+				Type:   "TXT",
+				Value1: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+			},
 		}},
 	}
 
@@ -103,10 +113,12 @@ func TestClient_RemoveDNS_error(t *testing.T) {
 		Build(t)
 
 	payload := &RemoveDNSRequest{
-		SubList: []SubRecord{{
-			SubHost:      "_acme-challenge",
-			RecordType:   "TXT",
-			RecordValue1: "value",
+		Subs: []SubRecord{{
+			SubHost: "_acme-challenge",
+			Record: Record{
+				Type:   "TXT",
+				Value1: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+			},
 		}},
 	}
 

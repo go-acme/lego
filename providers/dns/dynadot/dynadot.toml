@@ -2,11 +2,11 @@ Name = "Dynadot"
 Description = ''''''
 URL = "https://www.dynadot.com/"
 Code = "dynadot"
-Since = "v5.x.x"
+Since = "v5.1.0"
 
 Example = '''
-DYNADOT_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
-DYNADOT_API_SECRET="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+DYNADOT_API_KEY="xxx" \
+DYNADOT_API_SECRET="yyy" \
 lego run --dns dynadot -d '*.example.com' -d example.com
 '''
 

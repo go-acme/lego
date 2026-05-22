@@ -1,42 +1,77 @@
 package internal
 
 import (
+	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestGenerateSignature(t *testing.T) {
-	// Reference vector: precomputed Base64( HMAC-SHA256(secret, msg) )
-	// where msg = "key\npath\nreq-id\nbody".
-	const (
-		apiKey     = "key"
-		apiSecret  = "secret"
-		path       = "/restful/v2/domains/example.com/records"
-		xRequestID = "req-id"
-		body       = `{"sub_list":[]}`
-	)
+func TestClient_sign(t *testing.T) {
+	testCases := []struct {
+		desc       string
+		apiKey     string
+		apiSecret  string
+		path       string
+		body       string
+		xRequestID string
+		expected   string
+	}{
+		{
+			desc:       "simple",
+			apiKey:     "key",
+			apiSecret:  "secret",
+			path:       "restful/v2/domains/example.com/records",
+			body:       `{"sub_list":[]}`,
+			xRequestID: "8e5bc897-75c8-4a9c-9362-5671405c7761",
+			expected:   "1v6pCnviEO/dqOIRV2wSc+YRJHt92L+P2xqkyuTVQyk=",
+		},
+		{
+			desc:       "path with slash prefix",
+			apiKey:     "key",
+			apiSecret:  "secret",
+			path:       "/restful/v2/domains/example.com/records",
+			body:       `{"sub_list":[]}`,
+			xRequestID: "8e5bc897-75c8-4a9c-9362-5671405c7761",
+			expected:   "1v6pCnviEO/dqOIRV2wSc+YRJHt92L+P2xqkyuTVQyk=",
+		},
+		{
+			desc:       "another secret",
+			apiKey:     "key",
+			apiSecret:  "other-secret",
+			path:       "restful/v2/domains/example.com/records",
+			body:       `{"sub_list":[]}`,
+			xRequestID: "8e5bc897-75c8-4a9c-9362-5671405c7761",
+			expected:   "ro+dZ59kmfLkWb1CWDsp/rVUeXSScDDr01J7Yg8Bj/E=",
+		},
+		{
+			desc:      "no xRequestID and body",
+			apiKey:    "key",
+			apiSecret: "secret",
+			path:      "restful/v2/domains/example.com/records",
+			expected:  "bmpyYo9wpBlZBrcjmZOGrHdp1nQcsesmr8fxibvpefA=",
+		},
+	}
 
-	got := generateSignature(apiKey, apiSecret, path, xRequestID, body)
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
 
-	// Sanity checks: deterministic, non-empty, base64-shaped.
-	assert.NotEmpty(t, got)
+			endpoint, err := url.Parse("https://example.com")
+			require.NoError(t, err)
 
-	// Determinism: same inputs -> same output.
-	got2 := generateSignature(apiKey, apiSecret, path, xRequestID, body)
-	assert.Equal(t, got, got2)
+			endpoint.JoinPath(test.path)
 
-	// Different secret yields a different signature.
-	other := generateSignature(apiKey, "other-secret", path, xRequestID, body)
-	assert.NotEqual(t, got, other)
+			req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, endpoint.JoinPath(test.path).String(), http.NoBody)
+			require.NoError(t, err)
 
-	// Different body yields a different signature.
-	otherBody := generateSignature(apiKey, apiSecret, path, xRequestID, `{}`)
-	assert.NotEqual(t, got, otherBody)
-}
+			client := &Client{apiKey: test.apiKey, apiSecret: test.apiSecret}
 
-func TestGenerateSignature_EmptyOptionalSegments(t *testing.T) {
-	// Empty xRequestID and body are allowed by the spec.
-	got := generateSignature("key", "secret", "/restful/v2/domains/example.com/records", "", "")
-	assert.NotEmpty(t, got)
+			actual := client.sign(req, test.xRequestID, test.body)
+
+			assert.Equal(t, test.expected, actual)
+		})
+	}
 }

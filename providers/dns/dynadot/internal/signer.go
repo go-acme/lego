@@ -4,20 +4,23 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"net/http"
+	"path"
+	"strings"
 )
 
-// generateSignature builds the X-Signature header value as required by the
-// Dynadot RESTful v2 API. It signs the concatenation of:
-//
-//	apiKey + "\n" + fullPathAndQuery + "\n" + xRequestID + "\n" + requestBody
-//
-// using HMAC-SHA256 with the API secret as key, then encodes the result with standard Base64.
-// https://www.dynadot.com/domain/api-document
-func generateSignature(apiKey, apiSecret, fullPathAndQuery, xRequestID, requestBody string) string {
-	stringToSign := apiKey + "\n" + fullPathAndQuery + "\n" + xRequestID + "\n" + requestBody
+// https://www.dynadot.com/domain/api-document?api-version=2.0.0#request-header
+func (c *Client) sign(req *http.Request, xRequestID, body string) string {
+	fpq := path.Clean("/" + req.URL.EscapedPath())
 
-	mac := hmac.New(sha256.New, []byte(apiSecret))
-	mac.Write([]byte(stringToSign))
+	if req.URL.RawQuery != "" {
+		fpq += "?" + req.URL.RawQuery
+	}
+
+	elements := []string{c.apiKey, fpq, xRequestID, body}
+
+	mac := hmac.New(sha256.New, []byte(c.apiSecret))
+	mac.Write([]byte(strings.Join(elements, "\n")))
 
 	return base64.StdEncoding.EncodeToString(mac.Sum(nil))
 }

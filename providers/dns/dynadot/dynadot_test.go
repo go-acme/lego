@@ -176,6 +176,8 @@ func TestDNSProvider_Present(t *testing.T) {
 		Route("POST /restful/v2/domains/example.com/records",
 			servermock.ResponseFromInternal("success.json"),
 			servermock.CheckRequestJSONBodyFromInternal("set_dns-request.json"),
+			servermock.CheckHeader().
+				With("X-Signature", "StGY3XMuHaR4iZ1vcddPkasNsVuPyoxdG44w29/iYSM="),
 		).
 		Build(t)
 
@@ -188,6 +190,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		Route("DELETE /restful/v2/domains/example.com/records",
 			servermock.ResponseFromInternal("success.json"),
 			servermock.CheckRequestJSONBodyFromInternal("remove_dns-request.json"),
+			servermock.CheckHeader().
+				With("X-Signature", "dNpJ/HG586+FnDdgeiNQHGRLl2Sdxav6Q0G3IiGBQT0="),
 		).
 		Build(t)
 

@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v5/internal/errutils"
@@ -43,8 +42,7 @@ func NewClient(apiKey, apiSecret string) (*Client, error) {
 }
 
 // SetDNS adds DNS records for the specified domain.
-// Uses `add_dns_to_current_setting=true` so the request appends records without overwriting existing ones.
-// https://www.dynadot.com/domain/api-document
+// https://www.dynadot.com/domain/api-document?api-version=2.0.0#set_dns
 func (c *Client) SetDNS(ctx context.Context, domain string, payload *SetDNSRequest) error {
 	endpoint := c.BaseURL.JoinPath("restful", "v2", "domains", domain, "records")
 
@@ -53,12 +51,11 @@ func (c *Client) SetDNS(ctx context.Context, domain string, payload *SetDNSReque
 		return err
 	}
 
-	return c.do(req, nil)
+	return c.do(req)
 }
 
 // RemoveDNS removes DNS records for the specified domain.
-// Records are only removed if all fields in the request exactly match existing records.
-// https://www.dynadot.com/domain/api-document
+// Currently not documented.
 func (c *Client) RemoveDNS(ctx context.Context, domain string, payload *RemoveDNSRequest) error {
 	endpoint := c.BaseURL.JoinPath("restful", "v2", "domains", domain, "records")
 
@@ -67,10 +64,10 @@ func (c *Client) RemoveDNS(ctx context.Context, domain string, payload *RemoveDN
 		return err
 	}
 
-	return c.do(req, nil)
+	return c.do(req)
 }
 
-func (c *Client) do(req *http.Request, result any) error {
+func (c *Client) do(req *http.Request) error {
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)
@@ -83,53 +80,28 @@ func (c *Client) do(req *http.Request, result any) error {
 		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	// Dynadot mirrors HTTP-style status codes inside the response body and
-	// always returns code: 200 on success.
-	var envelope APIResponse
-	if len(raw) != 0 {
-		if jerr := json.Unmarshal(raw, &envelope); jerr != nil {
-			return errutils.NewUnmarshalError(req, resp.StatusCode, raw, jerr)
-		}
+	envelope := new(APIResponse)
+
+	err = json.Unmarshal(raw, envelope)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	if resp.StatusCode/100 != 2 || (envelope.Code != 0 && envelope.Code != 200) {
-		apiErr := &APIError{
-			Code:    envelope.Code,
-			Message: envelope.Message,
-		}
-		if envelope.Error != nil {
-			apiErr.Description = envelope.Error.Description
-		}
-
-		// Fall back to the HTTP-level error if the body did not include a
-		// Dynadot envelope.
-		if apiErr.Code == 0 && apiErr.Message == "" {
-			return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
-		}
-
-		return apiErr
+		return envelope
 	}
 
-	if result == nil {
-		return nil
-	}
-
-	return json.Unmarshal(raw, result)
+	return nil
 }
 
 func (c *Client) newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
 	buf := new(bytes.Buffer)
 
-	var body string
-
 	if payload != nil {
-		jsonb, err := json.Marshal(payload)
+		err := json.NewEncoder(buf).Encode(payload)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
 		}
-
-		body = string(jsonb)
-		buf = bytes.NewBuffer(jsonb)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
@@ -144,21 +116,7 @@ func (c *Client) newJSONRequest(ctx context.Context, method string, endpoint *ur
 	}
 
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
-
-	// Build the path used for signing: path + (?query if present).
-	// Note: we always need a leading "/" because that is what Dynadot
-	// signs against; url.URL.EscapedPath can drop it when the base URL
-	// has no path component.
-	pathAndQuery := endpoint.EscapedPath()
-	if !strings.HasPrefix(pathAndQuery, "/") {
-		pathAndQuery = "/" + pathAndQuery
-	}
-
-	if endpoint.RawQuery != "" {
-		pathAndQuery += "?" + endpoint.RawQuery
-	}
-
-	req.Header.Set("X-Signature", generateSignature(c.apiKey, c.apiSecret, pathAndQuery, "", body))
+	req.Header.Set("X-Signature", c.sign(req, "", buf.String()))
 
 	return req, nil
 }

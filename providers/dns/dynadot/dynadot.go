@@ -111,15 +111,15 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	}
 
 	request := &internal.SetDNSRequest{
-		SubList: []internal.SubRecord{
-			{
-				SubHost:      subDomain,
-				RecordType:   "TXT",
-				RecordValue1: info.Value,
+		Subs: []internal.SubRecord{{
+			SubHost: subDomain,
+			Record: internal.Record{
+				Type:   "TXT",
+				Value1: info.Value,
 			},
-		},
-		TTL:                    int64(d.config.TTL),
-		AddDNSToCurrentSetting: true,
+		}},
+		TTL:             d.config.TTL,
+		AddDNSToCurrent: true,
 	}
 
 	err = d.client.SetDNS(ctx, dns01.UnFqdn(authZone), request)
@@ -145,13 +145,13 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	}
 
 	request := &internal.RemoveDNSRequest{
-		SubList: []internal.SubRecord{
-			{
-				SubHost:      subDomain,
-				RecordType:   "TXT",
-				RecordValue1: info.Value,
+		Subs: []internal.SubRecord{{
+			SubHost: subDomain,
+			Record: internal.Record{
+				Type:   "TXT",
+				Value1: info.Value,
 			},
-		},
+		}},
 	}
 
 	err = d.client.RemoveDNS(ctx, dns01.UnFqdn(authZone), request)

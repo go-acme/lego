@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"sync"
 
 	"github.com/go-acme/lego/v5/certcrypto"
@@ -29,6 +30,8 @@ func createRevoke() *cli.Command {
 func revokeFromConfig(ctx context.Context, cmd *cli.Command) error {
 	cfg, err := loadConfiguration(cmd)
 	if err == nil {
+		log.Debug("Configuration loaded from a file.", slog.String("cmd", "revoke"))
+
 		if len(cmd.StringSlice(flags.FlgCertName)) == 0 && !prompt.Confirm("Are you sure you want to revoke all certificates defined in the configuration file?") {
 			return nil
 		}

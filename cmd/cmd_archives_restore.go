@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -19,14 +20,21 @@ func createArchivesRestore() *cli.Command {
 		Name:   "restore",
 		Usage:  "Restore an archive.",
 		Action: restoreArchive,
-		Flags: []cli.Flag{
-			flags.CreatePathFlag(false),
-		},
+		Flags:  flags.CreateArchivesRestoreFlags(),
 	}
 }
 
 func restoreArchive(_ context.Context, cmd *cli.Command) error {
-	archiver := storage.NewArchiver(cmd.String(flags.FlgPath))
+	basePath := cmd.String(flags.FlgPath)
+
+	cfg, err := loadConfiguration(cmd)
+	if err == nil {
+		log.Debug("Configuration loaded from a file.", slog.String("cmd", "accounts list"))
+
+		basePath = cfg.Storage
+	}
+
+	archiver := storage.NewArchiver(basePath)
 
 	accountPaths, err := archiver.ListArchivedAccounts()
 	if err != nil {

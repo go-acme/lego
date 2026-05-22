@@ -391,6 +391,12 @@ lego accounts list [options]
 | `--help`, `-h` |  | show help  |
 | `--json` |  | Format the output as JSON.  |
 
+#### Flags related to the configuration file:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--config string` | `LEGO_CONFIG` | Path to the configuration file.  |
+
 #### Flags related to the storage:
 
 | Flag | Env Var | Usage |
@@ -497,6 +503,12 @@ lego certificates list [options]
 | `--help`, `-h` |  | show help  |
 | `--json` |  | Format the output as JSON.  |
 
+#### Flags related to the configuration file:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--config string` | `LEGO_CONFIG` | Path to the configuration file.  |
+
 #### Flags related to the storage:
 
 | Flag | Env Var | Usage |
@@ -531,6 +543,12 @@ lego archives restore [options]
 |------|-------|-------|
 | `--help`, `-h` |  | show help  |
 
+#### Flags related to the configuration file:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--config string` | `LEGO_CONFIG` | Path to the configuration file.  |
+
 #### Flags related to the storage:
 
 | Flag | Env Var | Usage |
@@ -564,6 +582,12 @@ lego archives list [options]
 | Flag | Env Var | Usage |
 |------|-------|-------|
 | `--help`, `-h` |  | show help  |
+
+#### Flags related to the configuration file:
+
+| Flag | Env Var | Usage |
+|------|-------|-------|
+| `--config string` | `LEGO_CONFIG` | Path to the configuration file.  |
 
 #### Flags related to the storage:
 

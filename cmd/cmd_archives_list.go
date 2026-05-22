@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"slices"
 
@@ -17,14 +18,21 @@ func createArchivesList() *cli.Command {
 		Name:   "list",
 		Usage:  "List all archives.",
 		Action: listArchives,
-		Flags: []cli.Flag{
-			flags.CreatePathFlag(false),
-		},
+		Flags:  flags.CreateArchivesListFlags(),
 	}
 }
 
 func listArchives(_ context.Context, cmd *cli.Command) error {
-	archiver := storage.NewArchiver(cmd.String(flags.FlgPath))
+	basePath := cmd.String(flags.FlgPath)
+
+	cfg, err := loadConfiguration(cmd)
+	if err == nil {
+		log.Debug("Configuration loaded from a file.", slog.String("cmd", "archives list"))
+
+		basePath = cfg.Storage
+	}
+
+	archiver := storage.NewArchiver(basePath)
 
 	accountPaths, err := archiver.ListArchivedAccounts()
 	if err != nil {

@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/mattn/go-zglob"
 	"github.com/urfave/cli/v3"
 )
@@ -28,16 +30,25 @@ func createAccountsList() *cli.Command {
 	}
 }
 
-func listAccounts(ctx context.Context, cmd *cli.Command) error {
-	if cmd.Bool(flags.FlgFormatJSON) {
-		return listAccountsJSON(ctx, cmd)
+func listAccounts(_ context.Context, cmd *cli.Command) error {
+	basePath := cmd.String(flags.FlgPath)
+
+	cfg, err := loadConfiguration(cmd)
+	if err == nil {
+		log.Debug("Configuration loaded from a file.", slog.String("cmd", "accounts list"))
+
+		basePath = cfg.Storage
 	}
 
-	return listAccountsText(ctx, cmd)
+	if cmd.Bool(flags.FlgFormatJSON) {
+		return listAccountsJSON(basePath)
+	}
+
+	return listAccountsText(basePath)
 }
 
-func listAccountsText(_ context.Context, cmd *cli.Command) error {
-	accounts, err := readAccounts(cmd)
+func listAccountsText(basePath string) error {
+	accounts, err := readAccounts(basePath)
 	if err != nil {
 		return err
 	}
@@ -61,8 +72,8 @@ func listAccountsText(_ context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-func listAccountsJSON(_ context.Context, cmd *cli.Command) error {
-	accounts, err := readAccounts(cmd)
+func listAccountsJSON(basePath string) error {
+	accounts, err := readAccounts(basePath)
 	if err != nil {
 		return err
 	}
@@ -70,8 +81,8 @@ func listAccountsJSON(_ context.Context, cmd *cli.Command) error {
 	return json.NewEncoder(os.Stdout).Encode(accounts)
 }
 
-func readAccounts(cmd *cli.Command) ([]ListAccount, error) {
-	accountsStorage := storage.NewAccountsStorage(cmd.String(flags.FlgPath))
+func readAccounts(basePath string) ([]ListAccount, error) {
+	accountsStorage := storage.NewAccountsStorage(basePath)
 
 	matches, err := zglob.Glob(filepath.Join(accountsStorage.GetRootPath(), "**", "account.json"))
 	if err != nil {

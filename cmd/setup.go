@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/cmd/internal"
+	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
@@ -128,4 +129,40 @@ func parseAddress(cmd *cli.Command, flgName string) (string, string, error) {
 	}
 
 	return host, port, nil
+}
+
+func loadConfiguration(cmd *cli.Command) (*configuration.Configuration, error) {
+	filename, err := getConfigurationPath(cmd)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg, err := configuration.ReadConfiguration(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	setUpLogger(cmd, cfg.Log)
+
+	configuration.ApplyDefaults(cfg)
+
+	err = configuration.Validate(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set effective User Agent.
+	cfg.UserAgent = getUserAgent(cmd, cfg.UserAgent)
+
+	return cfg, nil
+}
+
+func getConfigurationPath(cmd *cli.Command) (string, error) {
+	configPath := cmd.String(flags.FlgConfig)
+
+	if configPath != "" {
+		return configPath, nil
+	}
+
+	return configuration.FindDefaultConfigurationFile()
 }

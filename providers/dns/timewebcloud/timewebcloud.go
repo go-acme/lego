@@ -117,7 +117,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	response, err := d.client.CreateRecord(ctx, info.EffectiveFQDN, record)
 	if err != nil {
-		return fmt.Errorf("timewebcloud: %w", err)
+		return fmt.Errorf("timewebcloud: create record: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -146,7 +146,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 
 	err = d.client.DeleteRecord(ctx, info.EffectiveFQDN, recordID)
 	if err != nil {
-		return fmt.Errorf("timewebcloud: %w", err)
+		return fmt.Errorf("timewebcloud: delete record: %w", err)
 	}
 
 	d.recordIDsMu.Lock()

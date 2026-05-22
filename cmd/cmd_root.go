@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/root"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
@@ -58,40 +57,4 @@ func rootRun(ctx context.Context, cmd *cli.Command) error {
 	store := storage.NewConfigurationStorage(cfg.Storage)
 
 	return store.Backup(cfg)
-}
-
-func loadConfiguration(cmd *cli.Command) (*configuration.Configuration, error) {
-	filename, err := getConfigurationPath(cmd)
-	if err != nil {
-		return nil, err
-	}
-
-	cfg, err := configuration.ReadConfiguration(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	setUpLogger(cmd, cfg.Log)
-
-	configuration.ApplyDefaults(cfg)
-
-	err = configuration.Validate(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	// Set effective User Agent.
-	cfg.UserAgent = getUserAgent(cmd, cfg.UserAgent)
-
-	return cfg, nil
-}
-
-func getConfigurationPath(cmd *cli.Command) (string, error) {
-	configPath := cmd.String(flags.FlgConfig)
-
-	if configPath != "" {
-		return configPath, nil
-	}
-
-	return configuration.FindDefaultConfigurationFile()
 }

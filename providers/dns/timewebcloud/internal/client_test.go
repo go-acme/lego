@@ -15,11 +15,12 @@ func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(OAuthStaticAccessToken(server.Client(), "secret"))
-			client.baseURL, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().
+			WithJSONHeaders().
 			WithAuthorization("Bearer secret"),
 	)
 }
@@ -28,12 +29,13 @@ func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /v2/domains/_acme-challenge.example.com/dns-records",
 			servermock.ResponseFromFixture("createDomainDNSRecord.json"),
-			servermock.CheckRequestJSONBody(`{"type":"TXT","value":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"}`)).
+			servermock.CheckRequestJSONBodyFromFixture("createDomainDNSRecord-request.json"),
+		).
 		Build(t)
 
 	payload := DNSRecordPayload{
 		Type:  "TXT",
-		Value: "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI",
+		Value: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
 	response, err := client.CreateRecord(t.Context(), "_acme-challenge.example.com.", payload)
@@ -56,7 +58,8 @@ func TestClient_CreateRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /v2/domains/_acme-challenge.example.com/dns-records",
 			servermock.ResponseFromFixture("error_bad_request.json").
-				WithStatusCode(http.StatusBadRequest)).
+				WithStatusCode(http.StatusBadRequest),
+		).
 		Build(t)
 
 	_, err := client.CreateRecord(t.Context(), "_acme-challenge.example.com.", DNSRecordPayload{})
@@ -69,7 +72,8 @@ func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v2/domains/_acme-challenge.example.com/dns-records/123",
 			servermock.Noop().
-				WithStatusCode(http.StatusNoContent)).
+				WithStatusCode(http.StatusNoContent),
+		).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "_acme-challenge.example.com.", 123)
@@ -80,7 +84,8 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /v2/domains/_acme-challenge.example.com/dns-records/123",
 			servermock.ResponseFromFixture("error_unauthorized.json").
-				WithStatusCode(http.StatusBadRequest)).
+				WithStatusCode(http.StatusBadRequest),
+		).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "_acme-challenge.example.com.", 123)

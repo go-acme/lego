@@ -20,7 +20,7 @@ const defaultBaseURL = "https://api.timeweb.cloud/api"
 
 // Client Timeweb Cloud client.
 type Client struct {
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	httpClient *http.Client
 }
 
@@ -33,7 +33,7 @@ func NewClient(hc *http.Client) *Client {
 	}
 
 	return &Client{
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		httpClient: hc,
 	}
 }
@@ -41,7 +41,7 @@ func NewClient(hc *http.Client) *Client {
 // CreateRecord creates a DNS record.
 // https://timeweb.cloud/api-docs#tag/Domeny/operation/createDomainDNSRecordV2
 func (c *Client) CreateRecord(ctx context.Context, zone string, payload DNSRecordPayload) (*DNSRecord, error) {
-	endpoint := c.baseURL.JoinPath("v2", "domains", dns01.UnFqdn(zone), "dns-records")
+	endpoint := c.BaseURL.JoinPath("v2", "domains", dns01.UnFqdn(zone), "dns-records")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, payload)
 	if err != nil {
@@ -61,7 +61,7 @@ func (c *Client) CreateRecord(ctx context.Context, zone string, payload DNSRecor
 // DeleteRecord deletes a DNS record.
 // https://timeweb.cloud/api-docs#tag/Domeny/operation/deleteDomainDNSRecordV2
 func (c *Client) DeleteRecord(ctx context.Context, zone string, recordID int) error {
-	endpoint := c.baseURL.JoinPath("v2", "domains", dns01.UnFqdn(zone), "dns-records", strconv.Itoa(recordID))
+	endpoint := c.BaseURL.JoinPath("v2", "domains", dns01.UnFqdn(zone), "dns-records", strconv.Itoa(recordID))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

@@ -6,6 +6,31 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v5.1.0
+
+- Release date: 2026-05-22
+- Tag: [v5.1.0](https://github.com/go-acme/lego/releases/tag/v5.1.0)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Connbyte
+- **[dnsprovider]** Add DNS provider for Dynadot
+
+### Changed
+
+- **[cli,config]** Use the configuration file to list related commands
+- **[dnsprovider]** timewebcloud: update API client to new API version
+- **[dnsprovider]** stackpath: provider deprecation
+- **[dnsprovider]** simply: update API client implementation
+- Improve documentation
+
+### Fixed
+
+- **[cli]** Ignore ARI and random sleep if SANs changed
+- **[config]** Server shortcode evaluation inside the file configuration
+- **[dnsprovider]** dnsupdate: fix IPv6 nameserver parsing
+- **[dnsprovider]** Improve env file parsing on Windows
+
 ## v5.0.4
 
 - Release date: 2026-05-14

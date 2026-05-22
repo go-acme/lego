@@ -37,15 +37,17 @@ func createListCertificates() *cli.Command {
 }
 
 func listCertificates(ctx context.Context, cmd *cli.Command) error {
+	basePath := cmd.String(flags.FlgPath)
+
 	if cmd.Bool(flags.FlgFormatJSON) {
-		return listCertificatesJSON(ctx, cmd)
+		return listCertificatesJSON(basePath)
 	}
 
-	return listCertificatesText(ctx, cmd)
+	return listCertificatesText(basePath)
 }
 
-func listCertificatesText(_ context.Context, cmd *cli.Command) error {
-	certs, err := readCertificates(cmd)
+func listCertificatesText(basePath string) error {
+	certs, err := readCertificates(basePath)
 	if err != nil {
 		return err
 	}
@@ -82,8 +84,8 @@ func listCertificatesText(_ context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-func listCertificatesJSON(_ context.Context, cmd *cli.Command) error {
-	certs, err := readCertificates(cmd)
+func listCertificatesJSON(basePath string) error {
+	certs, err := readCertificates(basePath)
 	if err != nil {
 		return err
 	}
@@ -91,8 +93,8 @@ func listCertificatesJSON(_ context.Context, cmd *cli.Command) error {
 	return json.NewEncoder(os.Stdout).Encode(certs)
 }
 
-func readCertificates(cmd *cli.Command) ([]ListCertificate, error) {
-	certsStorage := storage.NewCertificatesStorage(cmd.String(flags.FlgPath))
+func readCertificates(basePath string) ([]ListCertificate, error) {
+	certsStorage := storage.NewCertificatesStorage(basePath)
 
 	matches, err := zglob.Glob(filepath.Join(certsStorage.GetRootPath(), "**", "*.json"))
 	if err != nil {

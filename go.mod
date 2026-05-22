@@ -87,7 +87,7 @@ require (
 	github.com/transip/gotransip/v6 v6.27.1
 	github.com/ucloud/ucloud-sdk-go v0.22.73
 	github.com/ultradns/ultradns-go-sdk v1.8.2-20260507133303-3f324c7
-	github.com/urfave/cli/v3 v3.8.0
+	github.com/urfave/cli/v3 v3.9.0
 	github.com/vinyldns/go-vinyldns v0.9.17
 	github.com/volcengine/volc-sdk-golang v1.0.246
 	github.com/vultr/govultr/v3 v3.31.1

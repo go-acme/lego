@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/providers/dns/opusdns/internal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,7 +24,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAPIKey: "opk_test123",
+				EnvAPIKey: "secret",
 			},
 		},
 		{
@@ -62,7 +63,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}{
 		{
 			desc:   "success",
-			apiKey: "opk_test123",
+			apiKey: "secret",
 		},
 		{
 			desc:     "missing API key",
@@ -121,7 +122,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
-			config.APIKey = "opk_test_secret"
+			config.APIKey = "secret"
 			config.HTTPClient = server.Client()
 
 			p, err := NewDNSProviderConfig(config)
@@ -135,7 +136,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 		},
 		servermock.CheckHeader().
 			WithJSONHeaders().
-			With("X-Api-Key", "opk_test_secret"),
+			With(internal.AuthenticationHeader, "secret"),
 	)
 }
 

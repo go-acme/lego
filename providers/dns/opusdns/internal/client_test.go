@@ -13,7 +13,7 @@ import (
 func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client, err := NewClient("opk_test_secret")
+			client, err := NewClient("secret")
 			if err != nil {
 				return nil, err
 			}
@@ -25,7 +25,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 		},
 		servermock.CheckHeader().
 			WithJSONHeaders().
-			With("X-Api-Key", "opk_test_secret"),
+			With(AuthenticationHeader, "secret"),
 	)
 }
 
@@ -38,7 +38,7 @@ func TestClient_PatchRecords_upsert(t *testing.T) {
 		Build(t)
 
 	ops := []RecordOperation{{
-		Op: "upsert",
+		Op: RecordOperationUpset,
 		Record: Record{
 			Name:  "_acme-challenge",
 			Type:  "TXT",
@@ -60,7 +60,7 @@ func TestClient_PatchRecords_remove(t *testing.T) {
 		Build(t)
 
 	ops := []RecordOperation{{
-		Op: "remove",
+		Op: RecordOperationRemove,
 		Record: Record{
 			Name:  "_acme-challenge",
 			Type:  "TXT",
@@ -82,7 +82,7 @@ func TestClient_PatchRecords_error(t *testing.T) {
 		Build(t)
 
 	ops := []RecordOperation{{
-		Op: "upsert",
+		Op: RecordOperationUpset,
 		Record: Record{
 			Name:  "_acme-challenge",
 			Type:  "TXT",

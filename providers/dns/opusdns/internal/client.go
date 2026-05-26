@@ -15,6 +15,13 @@ import (
 	"github.com/go-acme/lego/v5/internal/useragent"
 )
 
+const AuthenticationHeader = "X-Api-Key"
+
+const (
+	RecordOperationUpset  = "upsert"
+	RecordOperationRemove = "remove"
+)
+
 const defaultBaseURL = "https://api.opusdns.com"
 
 // Client the OpusDNS API client.
@@ -40,18 +47,15 @@ func NewClient(apiKey string) (*Client, error) {
 	}, nil
 }
 
-// SetBaseURL overrides the default API base URL.
-func (c *Client) SetBaseURL(rawURL string) {
-	c.BaseURL, _ = url.Parse(rawURL)
-}
-
 // PatchRecords applies record operations to a zone.
+// https://developers.opusdns.com/products/dns/manage-records#add-a-single-record
+// https://developers.opusdns.com/products/dns/manage-records#remove-a-single-record
 func (c *Client) PatchRecords(ctx context.Context, zone string, ops []RecordOperation) error {
 	endpoint := c.BaseURL.JoinPath("v1", "dns", zone, "records")
 
 	payload := PatchRequest{Ops: ops}
 
-	req, err := c.newJSONRequest(ctx, http.MethodPatch, endpoint, payload)
+	req, err := newJSONRequest(ctx, http.MethodPatch, endpoint, payload)
 	if err != nil {
 		return err
 	}
@@ -61,6 +65,8 @@ func (c *Client) PatchRecords(ctx context.Context, zone string, ops []RecordOper
 
 func (c *Client) do(req *http.Request) error {
 	useragent.SetHeader(req.Header)
+
+	req.Header.Set(AuthenticationHeader, c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
@@ -76,7 +82,7 @@ func (c *Client) do(req *http.Request) error {
 	return nil
 }
 
-func (c *Client) newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
 	buf := new(bytes.Buffer)
 
 	if payload != nil {
@@ -92,8 +98,10 @@ func (c *Client) newJSONRequest(ctx context.Context, method string, endpoint *ur
 	}
 
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Api-Key", c.apiKey)
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 
 	return req, nil
 }

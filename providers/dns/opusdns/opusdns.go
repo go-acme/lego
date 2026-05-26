@@ -32,8 +32,7 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	APIKey      string
-	APIEndpoint string
+	APIKey string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -68,7 +67,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config := NewDefaultConfig()
 	config.APIKey = values[EnvAPIKey]
-	config.APIEndpoint = env.GetOrDefaultString(EnvAPIEndpoint, "")
 
 	return NewDNSProviderConfig(config)
 }
@@ -82,10 +80,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client, err := internal.NewClient(config.APIKey)
 	if err != nil {
 		return nil, fmt.Errorf("opusdns: %w", err)
-	}
-
-	if config.APIEndpoint != "" {
-		client.SetBaseURL(config.APIEndpoint)
 	}
 
 	if config.HTTPClient != nil {
@@ -115,7 +109,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	}
 
 	ops := []internal.RecordOperation{{
-		Op: "upsert",
+		Op: internal.RecordOperationUpset,
 		Record: internal.Record{
 			Name:  subDomain,
 			Type:  "TXT",
@@ -126,7 +120,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	err = d.client.PatchRecords(ctx, dns01.UnFqdn(authZone), ops)
 	if err != nil {
-		return fmt.Errorf("opusdns: %w", err)
+		return fmt.Errorf("opusdns: patch records (upsert): %w", err)
 	}
 
 	return nil
@@ -147,7 +141,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	}
 
 	ops := []internal.RecordOperation{{
-		Op: "remove",
+		Op: internal.RecordOperationRemove,
 		Record: internal.Record{
 			Name:  subDomain,
 			Type:  "TXT",
@@ -158,7 +152,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 
 	err = d.client.PatchRecords(ctx, dns01.UnFqdn(authZone), ops)
 	if err != nil {
-		return fmt.Errorf("opusdns: %w", err)
+		return fmt.Errorf("opusdns: patch records (remove): %w", err)
 	}
 
 	return nil

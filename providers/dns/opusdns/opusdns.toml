@@ -1,0 +1,22 @@
+Name = "OpusDNS"
+Description = ''''''
+URL = "https://www.opusdns.com"
+Code = "opusdns"
+Since = "v5.2.0"
+
+Example = '''
+OPUSDNS_API_KEY=opk_xxxxxxxxxxxxxxxxxxxxxxxx \
+lego run --dns opusdns -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    OPUSDNS_API_KEY = "API key (format: opk_...)"
+  [Configuration.Additional]
+    OPUSDNS_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 4)"
+    OPUSDNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 120)"
+    OPUSDNS_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)"
+    OPUSDNS_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://developers.opusdns.com/products/dns/manage-records"

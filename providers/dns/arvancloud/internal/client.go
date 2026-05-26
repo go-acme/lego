@@ -23,7 +23,7 @@ const authorizationHeader = "Authorization"
 type Client struct {
 	apiKey string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -33,7 +33,7 @@ func NewClient(apiKey string) *Client {
 
 	return &Client{
 		apiKey:     apiKey,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
@@ -56,7 +56,7 @@ func (c *Client) GetTxtRecord(ctx context.Context, domain, name, value string) (
 
 // https://www.arvancloud.ir/docs/api/cdn/4.0#operation/dns_records.list
 func (c *Client) getRecords(ctx context.Context, domain, search string) ([]DNSRecord, error) {
-	endpoint := c.baseURL.JoinPath("cdn", "4.0", "domains", domain, "dns-records")
+	endpoint := c.BaseURL.JoinPath("cdn", "4.0", "domains", domain, "dns-records")
 
 	if search != "" {
 		query := endpoint.Query()
@@ -82,7 +82,7 @@ func (c *Client) getRecords(ctx context.Context, domain, search string) ([]DNSRe
 // CreateRecord creates a DNS record.
 // https://www.arvancloud.ir/docs/api/cdn/4.0#operation/dns_records.create
 func (c *Client) CreateRecord(ctx context.Context, domain string, record DNSRecord) (*DNSRecord, error) {
-	endpoint := c.baseURL.JoinPath("cdn", "4.0", "domains", domain, "dns-records")
+	endpoint := c.BaseURL.JoinPath("cdn", "4.0", "domains", domain, "dns-records")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
@@ -102,7 +102,7 @@ func (c *Client) CreateRecord(ctx context.Context, domain string, record DNSReco
 // DeleteRecord deletes a DNS record.
 // https://www.arvancloud.ir/docs/api/cdn/4.0#operation/dns_records.remove
 func (c *Client) DeleteRecord(ctx context.Context, domain, id string) error {
-	endpoint := c.baseURL.JoinPath("cdn", "4.0", "domains", domain, "dns-records", id)
+	endpoint := c.BaseURL.JoinPath("cdn", "4.0", "domains", domain, "dns-records", id)
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

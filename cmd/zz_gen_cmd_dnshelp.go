@@ -164,6 +164,7 @@ func allDNSCodes() string {
 		"omglol",
 		"onecloudru",
 		"onlinenet",
+		"opusdns",
 		"oraclecloud",
 		"otc",
 		"ovh",
@@ -3465,6 +3466,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/onlinenet`)
+
+	case "opusdns":
+		// generated from: providers/dns/opusdns/opusdns.toml
+		ew.writeln(`Configuration for OpusDNS.`)
+		ew.writeln(`Code:	'opusdns'`)
+		ew.writeln(`Since:	'v5.2.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "OPUSDNS_API_KEY":	API key (format: opk_...)`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "OPUSDNS_API_ENDPOINT":	API endpoint URL (Default: https://api.opusdns.com)`)
+		ew.writeln(`	- "OPUSDNS_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "OPUSDNS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 4)`)
+		ew.writeln(`	- "OPUSDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
+		ew.writeln(`	- "OPUSDNS_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 60)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/opusdns`)
 
 	case "oraclecloud":
 		// generated from: providers/dns/oraclecloud/oraclecloud.toml

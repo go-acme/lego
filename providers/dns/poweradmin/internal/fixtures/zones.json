@@ -1,18 +1,35 @@
 {
   "success": true,
+  "data": {
+    "zones": [
+      {
+        "id": 1,
+        "name": "example.com",
+        "type": "MASTER",
+        "created_at": "2025-01-01 12:00:00"
+      },
+      {
+        "id": 2,
+        "name": "10.in-addr.arpa",
+        "type": "NATIVE",
+        "created_at": null
+      },
+      {
+        "id": 3,
+        "name": "example.org",
+        "type": "NATIVE",
+        "created_at": null
+      }
+    ]
+  },
   "message": "Zones retrieved successfully",
-  "data": [
-    {
-      "id": 1,
-      "name": "example.com",
-      "type": "MASTER",
-      "created_at": "2025-01-01 12:00:00"
-    }
-  ],
+  "meta": {
+    "timestamp": "2026-05-26 21:17:55"
+  },
   "pagination": {
     "current_page": 1,
-    "per_page": 25,
-    "total": 100,
-    "last_page": 4
+    "per_page": 100,
+    "total": 2,
+    "last_page": 1
   }
 }

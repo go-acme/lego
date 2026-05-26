@@ -102,14 +102,14 @@ func (c *Client) GetZones(ctx context.Context, pager *Pager) ([]Zone, *Paginatio
 		return nil, nil, err
 	}
 
-	result := new(APIResponse[[]Zone])
+	result := new(APIResponse[Zones])
 
 	err = c.do(req, result)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return result.Data, result.Pagination, nil
+	return result.Data.Zones, result.Pagination, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

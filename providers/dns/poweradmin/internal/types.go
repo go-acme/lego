@@ -31,6 +31,10 @@ type Record struct {
 	Disabled bool   `json:"disabled,omitempty"`
 }
 
+type Zones struct {
+	Zones []Zone `json:"zones,omitempty"`
+}
+
 type Zone struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`

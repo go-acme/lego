@@ -90,11 +90,13 @@ func TestClient_GetZones(t *testing.T) {
 
 	expected := []Zone{
 		{ID: 1, Name: "example.com", Type: "MASTER", CreatedAt: "2025-01-01 12:00:00"},
+		{ID: 2, Name: "10.in-addr.arpa", Type: "NATIVE"},
+		{ID: 3, Name: "example.org", Type: "NATIVE"},
 	}
 
 	assert.Equal(t, expected, zones)
 
-	expectedPagination := &Pagination{CurrentPage: 1, PerPage: 25, Total: 100, LastPage: 4}
+	expectedPagination := &Pagination{CurrentPage: 1, PerPage: 100, Total: 2, LastPage: 1}
 
 	assert.Equal(t, expectedPagination, pagination)
 }

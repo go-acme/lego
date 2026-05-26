@@ -107,12 +107,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("poweradmin: could not find zone for domain %q: %w", domain, err)
-	}
-
-	zone, err := d.findZone(ctx, dns01.UnFqdn(authZone))
+	zone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("poweradmin: %w", err)
 	}
@@ -176,11 +171,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*internal.Zone, error) {
+func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*internal.Zone, error) {
 	pager := &internal.Pager{
 		Page:    1,
 		PerPage: 100,
 	}
+
+	var zone internal.Zone
 
 	for {
 		zones, pagination, err := d.client.GetZones(ctx, pager)
@@ -192,9 +189,11 @@ func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*internal.
 			break
 		}
 
-		for _, z := range zones {
-			if z.Name == authZone {
-				return &z, nil
+		for s := range dns01.UnFqdnDomainsSeq(fqdn) {
+			for _, z := range zones {
+				if z.Name == s && len(z.Name) > len(zone.Name) {
+					zone = z
+				}
 			}
 		}
 
@@ -205,5 +204,9 @@ func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*internal.
 		pager.Page = pagination.CurrentPage + 1
 	}
 
-	return nil, fmt.Errorf("could not find zone for domain %q", authZone)
+	if zone.Name == "" {
+		return nil, fmt.Errorf("could not find zone for domain %q", fqdn)
+	}
+
+	return &zone, nil
 }

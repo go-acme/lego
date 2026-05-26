@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "message": "Record created successfully",
+  "data": {
+    "record_id": 456,
+    "name": "_acme-challenge.example.com",
+    "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "type": "TXT",
+    "ttl": 120
+  }
+}

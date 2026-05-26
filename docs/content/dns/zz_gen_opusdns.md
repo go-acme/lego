@@ -47,7 +47,6 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `OPUSDNS_API_ENDPOINT` | API endpoint URL (Default: https://api.opusdns.com) |
 | `OPUSDNS_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
 | `OPUSDNS_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 4) |
 | `OPUSDNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |
@@ -61,7 +60,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://developers.opusdns.com)
+- [API documentation](https://developers.opusdns.com/products/dns/manage-records)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/opusdns/opusdns.toml -->

@@ -3479,7 +3479,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "OPUSDNS_API_ENDPOINT":	API endpoint URL (Default: https://api.opusdns.com)`)
 		ew.writeln(`	- "OPUSDNS_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "OPUSDNS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 4)`)
 		ew.writeln(`	- "OPUSDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)

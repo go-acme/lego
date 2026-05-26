@@ -59,14 +59,14 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID int, record Record) (*
 		return nil, err
 	}
 
-	result := new(APIResponse[*Record])
+	result := new(APIResponse[RecordResponse])
 
 	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return result.Data, nil
+	return result.Data.Record, nil
 }
 
 // DeleteRecord deletes a record from a zone.
@@ -102,7 +102,7 @@ func (c *Client) GetZones(ctx context.Context, pager *Pager) ([]Zone, *Paginatio
 		return nil, nil, err
 	}
 
-	result := new(APIResponse[Zones])
+	result := new(APIResponse[ZonesResponse])
 
 	err = c.do(req, result)
 	if err != nil {

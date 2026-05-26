@@ -2,8 +2,8 @@
   "domain_record": {
     "id": 123,
     "type": "TXT",
-    "name": "foo",
-    "data": "txtTXTtxt",
-    "ttl": 300
+    "name": "_acme-challenge",
+    "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "ttl": 3600
   }
 }

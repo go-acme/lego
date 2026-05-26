@@ -1,6 +1,6 @@
 module github.com/go-acme/lego/v5
 
-go 1.25.0
+go 1.26.0
 
 ignore (
 	./.github
@@ -73,6 +73,7 @@ require (
 	github.com/nrdcg/porkbun v0.4.0
 	github.com/nrdcg/vegadns v0.3.0
 	github.com/nzdjb/go-metaname v1.0.0
+	github.com/opusdns/opusdns-go-client v1.0.10
 	github.com/ovh/go-ovh v1.9.0
 	github.com/pquerna/otp v1.5.0
 	github.com/regfish/regfish-dnsapi-go v0.1.1
@@ -201,7 +202,7 @@ require (
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.7.0 // indirect
-	github.com/spf13/pflag v1.0.7 // indirect
+	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/spf13/viper v1.18.2 // indirect
 	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect

@@ -22,7 +22,8 @@ type APIResponse[T any] struct {
 }
 
 type Record struct {
-	ID       int    `json:"record_id,omitempty"`
+	ID       int    `json:"id,omitempty"`
+	ZoneID   int    `json:"zone_id,omitempty"`
 	Name     string `json:"name,omitempty"`
 	Type     string `json:"type,omitempty"`
 	Content  string `json:"content,omitempty"`

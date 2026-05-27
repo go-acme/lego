@@ -49,6 +49,7 @@ func TestClient_CreateRecord(t *testing.T) {
 
 	expected := &Record{
 		ID:      456,
+		ZoneID:  1,
 		Name:    "_acme-challenge.example.com",
 		Type:    "TXT",
 		Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",

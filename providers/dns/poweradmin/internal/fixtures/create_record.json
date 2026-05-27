@@ -3,7 +3,8 @@
   "message": "Record created successfully",
   "data": {
     "record": {
-      "record_id": 456,
+      "id": 456,
+      "zone_id": 1,
       "name": "_acme-challenge.example.com",
       "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
       "type": "TXT",

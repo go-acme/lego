@@ -72,20 +72,22 @@ func (c *Client) DeleteDNSRecord(ctx context.Context, domainID uint64, recordID 
 func (c *Client) GetDomainByName(ctx context.Context, name string) (*DNSDomain, error) {
 	// Try to find the most specific domain
 	for n := range dns01.UnFqdnDomainsSeq(dns01.UnFqdn(name)) {
-		domain, err := c.getDomainByName(ctx, n)
+		domains, err := c.GetDomains(ctx, n)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("get domains: %w", err)
 		}
 
-		if domain != nil {
-			return domain, nil
+		for _, domain := range domains {
+			if domain.CustomerName == n {
+				return &domain, nil
+			}
 		}
 	}
 
 	return nil, fmt.Errorf("domain not found %s", name)
 }
 
-func (c *Client) getDomainByName(ctx context.Context, name string) (*DNSDomain, error) {
+func (c *Client) GetDomains(ctx context.Context, name string) ([]DNSDomain, error) {
 	endpoint := c.baseURL.JoinPath("1", "product")
 
 	query := endpoint.Query()
@@ -105,13 +107,7 @@ func (c *Client) getDomainByName(ctx context.Context, name string) (*DNSDomain, 
 		return nil, err
 	}
 
-	for _, domain := range result.Data {
-		if domain.CustomerName == name {
-			return &domain, nil
-		}
-	}
-
-	return nil, nil
+	return result.Data, nil
 }
 
 func (c *Client) do(req *http.Request, result Response) error {

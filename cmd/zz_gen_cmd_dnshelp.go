@@ -172,6 +172,7 @@ func allDNSCodes() string {
 		"plesk",
 		"pointdns",
 		"porkbun",
+		"poweradmin",
 		"rackspace",
 		"rage4",
 		"rainyun",
@@ -3659,6 +3660,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/porkbun`)
+
+	case "poweradmin":
+		// generated from: providers/dns/poweradmin/poweradmin.toml
+		ew.writeln(`Configuration for Poweradmin.`)
+		ew.writeln(`Code:	'poweradmin'`)
+		ew.writeln(`Since:	'v5.2.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "POWERADMIN_API_KEY":	API key`)
+		ew.writeln(`	- "POWERADMIN_BASE_URL":	Base URL`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "POWERADMIN_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "POWERADMIN_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "POWERADMIN_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "POWERADMIN_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/poweradmin`)
 
 	case "rackspace":
 		// generated from: providers/dns/rackspace/rackspace.toml

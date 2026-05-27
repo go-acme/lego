@@ -1,0 +1,24 @@
+Name = "Poweradmin"
+Description = ''''''
+URL = "https://www.poweradmin.org/"
+Code = "poweradmin"
+Since = "v5.2.0"
+
+Example = '''
+POWERADMIN_BASE_URL="https://example.org" \
+POWERADMIN_API_KEY="xxx" \
+lego --dns poweradmin -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    POWERADMIN_BASE_URL = "Base URL"
+    POWERADMIN_API_KEY = "API key"
+  [Configuration.Additional]
+    POWERADMIN_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    POWERADMIN_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    POWERADMIN_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    POWERADMIN_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://docs.poweradmin.org/configuration/api/"

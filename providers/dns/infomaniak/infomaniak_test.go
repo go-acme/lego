@@ -1,19 +1,17 @@
 package infomaniak
 
 import (
+	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/go-acme/lego/v5/internal/tester"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(
-	EnvEndpoint,
-	EnvAccessToken).
-	WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvEndpoint, EnvAccessToken).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -24,14 +22,13 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAccessToken: "123",
+				EnvEndpoint:    "https://example.com",
+				EnvAccessToken: "secret",
 			},
 		},
 		{
-			desc: "missing access token",
-			envVars: map[string]string{
-				EnvAccessToken: "",
-			},
+			desc:     "missing credentials",
+			envVars:  map[string]string{},
 			expected: "infomaniak: some credentials information are missing: INFOMANIAK_ACCESS_TOKEN",
 		},
 	}
@@ -51,7 +48,6 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
 				require.NotNil(t, p.client)
-				require.NotNil(t, p.recordIDs)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -67,12 +63,11 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}{
 		{
 			desc:        "success",
-			accessToken: "123",
+			accessToken: "secret",
 		},
 		{
-			desc:        "missing access token",
-			accessToken: "",
-			expected:    "infomaniak: missing access token",
+			desc:     "missing credentials",
+			expected: "infomaniak: missing access token",
 		},
 	}
 
@@ -88,7 +83,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
 				require.NotNil(t, p.client)
-				require.NotNil(t, p.recordIDs)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -120,8 +114,61 @@ func TestLiveCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
-
 	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.APIEndpoint = server.URL
+			config.AccessToken = "secret"
+			config.HTTPClient = server.Client()
+
+			p, err := NewDNSProviderConfig(config)
+			if err != nil {
+				return nil, err
+			}
+
+			return p, nil
+		},
+		servermock.CheckHeader().
+			WithJSONHeaders().
+			WithAuthorization("Bearer secret"),
+	)
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /2/zones/_acme-challenge.example.com/exists",
+			servermock.ResponseFromInternal("zone_exists_not.json"),
+		).
+		Route("GET /2/zones/example.com/exists",
+			servermock.ResponseFromInternal("zone_exists.json"),
+		).
+		Route("POST /2/zones/example.com/records",
+			servermock.ResponseFromInternal("record_create.json"),
+			servermock.CheckRequestJSONBodyFromInternal("record_create-request.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("with", "idn"),
+		).
+		Build(t)
+
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp(t *testing.T) {
+	provider := mockBuilder().
+		Route("DELETE /2/zones/example.com/records/32824",
+			servermock.ResponseFromInternal("record_delete.json"),
+		).
+		Build(t)
+
+	provider.zones["abc"] = "example.com"
+	provider.recordIDs["abc"] = 32824
+
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 }

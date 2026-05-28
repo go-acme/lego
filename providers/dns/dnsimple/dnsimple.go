@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dnsimple/dnsimple-go/v4/dnsimple"
+	"github.com/dnsimple/dnsimple-go/v9/dnsimple"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/internal/useragent"

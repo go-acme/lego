@@ -191,7 +191,7 @@ func (d *DNSProvider) findZone(ctx context.Context, fdqn string) (string, error)
 	for n := range dns01.UnFqdnDomainsSeq(fdqn) {
 		exists, err := d.client.ZoneExists(ctx, n)
 		if err != nil {
-			return "", fmt.Errorf("check zone: %w", err)
+			return "", fmt.Errorf("check zone (%s): %w", n, err)
 		}
 
 		if exists {

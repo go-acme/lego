@@ -107,12 +107,12 @@ func (c *Client) ZoneExists(ctx context.Context, zone string) (bool, error) {
 
 	err = c.do(req, result)
 	if err != nil {
-		return false, err
-	}
+		var apiErr *APIError
+		if errors.As(err, &apiErr) && apiErr.Code == "object_not_found" {
+			return false, nil
+		}
 
-	var apiErr *APIError
-	if errors.As(err, &apiErr) && apiErr.Code == "object_not_found" {
-		return false, nil
+		return false, err
 	}
 
 	if result.Result != statusSuccess {

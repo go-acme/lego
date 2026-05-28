@@ -1,9 +1,12 @@
 package axelname
 
 import (
+	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -140,5 +143,69 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 
 	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.Nickname = "user"
+			config.Token = "secret"
+			config.HTTPClient = server.Client()
+
+			p, err := NewDNSProviderConfig(config)
+			if err != nil {
+				return nil, err
+			}
+
+			p.client.BaseURL, _ = url.Parse(server.URL)
+
+			return p, nil
+		},
+	)
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /dns_add",
+			servermock.ResponseFromInternal("dns_add.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("domain", "example.com").
+				With("name", "_acme-challenge").
+				With("type", "TXT").
+				With("value", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
+				With("nichdl", "user").
+				With("token", "secret"),
+		).
+		Build(t)
+
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /dns_list",
+			servermock.ResponseFromInternal("dns_list.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("domain", "example.com").
+				With("nichdl", "user").
+				With("token", "secret"),
+		).
+		Route("GET /dns_delete",
+			servermock.ResponseFromInternal("dns_delete.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("id", "74760").
+				With("domain", "example.com").
+				With("name", "_acme-challenge").
+				With("type", "TXT").
+				With("value", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
+				With("nichdl", "user").
+				With("token", "secret"),
+		).
+		Build(t)
+
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 }

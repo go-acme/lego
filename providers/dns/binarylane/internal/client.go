@@ -23,7 +23,7 @@ const authorizationHeader = "Authorization"
 type Client struct {
 	apiToken string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -37,7 +37,7 @@ func NewClient(apiToken string) (*Client, error) {
 
 	return &Client{
 		apiToken:   apiToken,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
@@ -45,7 +45,7 @@ func NewClient(apiToken string) (*Client, error) {
 // CreateRecord Creates a new domain record.
 // https://api.binarylane.com.au/reference/#tag/Domains/paths/~1v2~1domains~1%7Bdomain_name%7D~1records/post
 func (c *Client) CreateRecord(ctx context.Context, domain string, record Record) (*Record, error) {
-	endpoint := c.baseURL.JoinPath("domains", domain, "records")
+	endpoint := c.BaseURL.JoinPath("domains", domain, "records")
 
 	if record.Name == "" {
 		record.Name = "@"
@@ -69,7 +69,7 @@ func (c *Client) CreateRecord(ctx context.Context, domain string, record Record)
 // DeleteRecord Deletes an existing domain record.
 // https://api.binarylane.com.au/reference/#tag/Domains/paths/~1v2~1domains~1%7Bdomain_name%7D~1records~1%7Brecord_id%7D/delete
 func (c *Client) DeleteRecord(ctx context.Context, domainName string, recordID int64) error {
-	endpoint := c.baseURL.JoinPath("domains", domainName, "records", strconv.FormatInt(recordID, 10))
+	endpoint := c.BaseURL.JoinPath("domains", domainName, "records", strconv.FormatInt(recordID, 10))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

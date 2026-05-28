@@ -1,12 +1,12 @@
 {
   "data": {
-    "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "id": "fe93c082-70d9-4d53-a121-66928adc40c8",
     "type": "txt",
     "name": "_acme-challenge",
     "value": {
-      "text": "txtxtxt"
+      "text": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
     },
-    "ttl": 120,
+    "ttl": 600,
     "cloud": false,
     "upstream_https": "default",
     "ip_filter_mode": {

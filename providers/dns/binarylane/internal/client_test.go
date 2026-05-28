@@ -18,12 +18,13 @@ func mockBuilder() *servermock.Builder[*Client] {
 				return nil, err
 			}
 
-			client.baseURL, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 			client.HTTPClient = server.Client()
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().
+			WithJSONHeaders().
 			WithAuthorization("Bearer secret"),
 	)
 }
@@ -32,14 +33,15 @@ func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/records",
 			servermock.ResponseFromFixture("create_record.json"),
-			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json"),
+		).
 		Build(t)
 
 	record := Record{
 		Type: "TXT",
-		Name: "foo",
-		Data: "txtTXTtxt",
-		TTL:  300,
+		Name: "_acme-challenge",
+		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		TTL:  3600,
 	}
 
 	rec, err := client.CreateRecord(t.Context(), "example.com", record)
@@ -48,9 +50,9 @@ func TestClient_CreateRecord(t *testing.T) {
 	expected := &Record{
 		ID:   123,
 		Type: "TXT",
-		Name: "foo",
-		Data: "txtTXTtxt",
-		TTL:  300,
+		Name: "_acme-challenge",
+		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		TTL:  3600,
 	}
 
 	require.Equal(t, expected, rec)
@@ -60,7 +62,8 @@ func TestClient_CreateRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /domains/example.com/records",
 			servermock.ResponseFromFixture("error.json").
-				WithStatusCode(http.StatusBadRequest)).
+				WithStatusCode(http.StatusBadRequest),
+		).
 		Build(t)
 
 	record := Record{
@@ -78,7 +81,8 @@ func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/records/123",
 			servermock.Noop().
-				WithStatusCode(http.StatusNoContent)).
+				WithStatusCode(http.StatusNoContent),
+		).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "example.com", 123)
@@ -89,7 +93,8 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /domains/example.com/records/123",
 			servermock.ResponseFromFixture("error.json").
-				WithStatusCode(http.StatusBadRequest)).
+				WithStatusCode(http.StatusBadRequest),
+		).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "example.com", 123)

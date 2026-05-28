@@ -1,8 +1,14 @@
 {
   "type": "txt",
   "value": {
-    "text": "txtxtxt"
+    "text": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
   },
   "name": "_acme-challenge",
-  "ttl": 600
+  "ttl": 600,
+  "upstream_https": "default",
+  "ip_filter_mode": {
+    "count": "single",
+    "order": "none",
+    "geo_filter": "none"
+  }
 }

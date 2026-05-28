@@ -14,7 +14,6 @@ import (
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/infomaniak/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
-	"golang.org/x/net/idna"
 )
 
 // Environment variables names.
@@ -115,12 +114,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	unicoded, err := idna.ToUnicode(dns01.UnFqdn(info.EffectiveFQDN))
-	if err != nil {
-		return fmt.Errorf("infomaniak: to Unicode: %w", err)
-	}
-
-	zone, err := d.findZone(ctx, unicoded)
+	zone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("infomaniak: %w", err)
 	}
@@ -129,7 +123,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	d.zones[token] = zone
 	d.recordIDsMu.Unlock()
 
-	subDomain, err := dns01.ExtractSubDomain(unicoded, zone)
+	subDomain, err := dns01.ExtractSubDomain(dns01.UnFqdn(info.EffectiveFQDN), zone)
 	if err != nil {
 		return fmt.Errorf("infomaniak: %w", err)
 	}

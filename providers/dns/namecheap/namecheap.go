@@ -40,6 +40,8 @@ const (
 
 	EnvSandbox = envNamespace + "SANDBOX"
 
+	EnvSourceIP = envNamespace + "SOURCEIP"
+
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -97,6 +99,11 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.APIUser = values[EnvAPIUser]
 	config.APIKey = values[EnvAPIKey]
+	config.ClientIP = env.GetOrDefaultString(EnvSourceIP, "")
+
+	if config.ClientIP != "" {
+		log.Infof(log.LazySprintf("namecheap: client IP from environment %s=%s", EnvSourceIP, config.ClientIP))
+	}
 
 	return NewDNSProviderConfig(config)
 }
@@ -112,12 +119,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.ClientIP == "" {
+		log.Infof(log.LazySprintf("namecheap: %s not set, detecting client IP automatically", EnvSourceIP))
 		clientIP, err := internal.GetClientIP(context.Background(), config.HTTPClient)
 		if err != nil {
 			return nil, fmt.Errorf("namecheap: %w", err)
 		}
 
 		config.ClientIP = clientIP
+		log.Infof(log.LazySprintf("namecheap: detected client IP: %s", config.ClientIP))
+	} else {
+		log.Infof(log.LazySprintf("namecheap: using client IP from %s: %s", EnvSourceIP, config.ClientIP))
 	}
 
 	client := internal.NewClient(config.APIUser, config.APIKey, config.ClientIP)

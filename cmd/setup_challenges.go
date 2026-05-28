@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"os"
+
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/challenge/dnspersist01"
@@ -134,6 +136,8 @@ func setupTLSProvider(cmd *cli.Command, client *lego.Client) error {
 }
 
 func setupDNS(cmd *cli.Command, client *lego.Client) error {
+	syncNetworkStackEnv(getNetworkStack(cmd))
+
 	provider, err := dns.NewDNSChallengeProviderByName(cmd.String(flags.FlgDNS))
 	if err != nil {
 		return err
@@ -202,11 +206,25 @@ func getNetworkStack(cmd *cli.Command) challenge.NetworkStack {
 	switch {
 	case cmd.Bool(flags.FlgIPv4Only):
 		return challenge.IPv4Only
-
 	case cmd.Bool(flags.FlgIPv6Only):
 		return challenge.IPv6Only
-
 	default:
 		return challenge.DualStack
 	}
+}
+
+
+// syncNetworkStackEnv writes the network stack preference to environment variables
+// so that DNS providers can read them during initialization.
+func syncNetworkStackEnv(networkStack challenge.NetworkStack) {
+	_ = os.Unsetenv("LEGO_IPV4ONLY")
+	_ = os.Unsetenv("LEGO_IPV6ONLY")
+
+	switch networkStack {
+	case challenge.IPv4Only:
+		_ = os.Setenv("LEGO_IPV4ONLY", "true")
+	case challenge.IPv6Only:
+		_ = os.Setenv("LEGO_IPV6ONLY", "true")
+	}
+
 }

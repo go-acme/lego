@@ -3046,6 +3046,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "NAMECHEAP_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 15)`)
 		ew.writeln(`	- "NAMECHEAP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 3600)`)
 		ew.writeln(`	- "NAMECHEAP_SANDBOX":	Activate the sandbox (boolean)`)
+		ew.writeln(`	- "NAMECHEAP_SOURCEIP":	Source IP address for Namecheap API. Override the auto-detected IP (optional)`)
 		ew.writeln(`	- "NAMECHEAP_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
 
 		ew.writeln()

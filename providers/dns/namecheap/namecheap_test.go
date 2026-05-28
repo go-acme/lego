@@ -187,3 +187,26 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 		return NewDNSProviderConfig(config)
 	})
 }
+
+func TestNewDNSProviderConfig_ClientIP_priority(t *testing.T) {
+	t.Run("config ClientIP takes priority", func(t *testing.T) {
+		config := NewDefaultConfig()
+		config.APIUser = envTestUser
+		config.APIKey = envTestKey
+		config.ClientIP = "198.51.100.1"
+
+		p, err := NewDNSProviderConfig(config)
+		require.NoError(t, err)
+		assert.Equal(t, "198.51.100.1", p.config.ClientIP)
+	})
+}
+
+func TestNewDNSProvider_SourceIP_env(t *testing.T) {
+	t.Setenv("NAMECHEAP_API_USER", envTestUser)
+	t.Setenv("NAMECHEAP_API_KEY", envTestKey)
+	t.Setenv("NAMECHEAP_SOURCEIP", "203.0.113.50")
+
+	p, err := NewDNSProvider()
+	require.NoError(t, err)
+	assert.Equal(t, "203.0.113.50", p.config.ClientIP)
+}

@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"os"
+
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/challenge/dnspersist01"
@@ -133,6 +135,8 @@ func setupTLSProvider(client *lego.Client, chlg *configuration.TLSChallenge, net
 }
 
 func setupDNS(client *lego.Client, chlg *configuration.DNSChallenge, networkStack challenge.NetworkStack) error {
+	syncNetworkStackEnv(networkStack)
+
 	provider, err := dns.NewDNSChallengeProviderByName(chlg.Provider)
 	if err != nil {
 		return err
@@ -167,6 +171,7 @@ func setupDNS(client *lego.Client, chlg *configuration.DNSChallenge, networkStac
 }
 
 func setupDNSPersist(client *lego.Client, chlg *configuration.DNSPersistChallenge, networkStack challenge.NetworkStack) error {
+	syncNetworkStackEnv(networkStack)
 	opts := &dns01.Options{RecursiveNameservers: chlg.Resolvers}
 
 	if chlg.DNSTimeout > 0 {
@@ -197,4 +202,20 @@ func setupDNSPersist(client *lego.Client, chlg *configuration.DNSPersistChalleng
 			)
 		}),
 	)
+}
+
+
+// syncNetworkStackEnv writes the network stack preference to environment variables
+// so that DNS providers (e.g. namecheap) can read them during initialization
+// for their own HTTP client configuration (e.g. IP auto-detection).
+func syncNetworkStackEnv(networkStack challenge.NetworkStack) {
+	_ = os.Unsetenv("LEGO_IPV4ONLY")
+	_ = os.Unsetenv("LEGO_IPV6ONLY")
+
+	switch networkStack {
+	case challenge.IPv4Only:
+		_ = os.Setenv("LEGO_IPV4ONLY", "true")
+	case challenge.IPv6Only:
+		_ = os.Setenv("LEGO_IPV6ONLY", "true")
+	}
 }

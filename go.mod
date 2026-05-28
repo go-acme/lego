@@ -77,7 +77,7 @@ require (
 	github.com/pquerna/otp v1.5.0
 	github.com/regfish/regfish-dnsapi-go v0.1.1
 	github.com/sacloud/api-client-go v0.3.5
-	github.com/sacloud/iaas-api-go v1.29.0
+	github.com/sacloud/iaas-api-go v1.29.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.36
 	github.com/selectel/domains-go v1.1.0
 	github.com/selectel/go-selvpcclient/v4 v4.2.0
@@ -140,7 +140,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/fsnotify/fsnotify v1.9.0 // indirect
+	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
@@ -192,7 +192,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/sacloud/go-http v0.1.9 // indirect
 	github.com/sacloud/packages-go v0.1.0 // indirect
-	github.com/sacloud/saclient-go v0.3.7 // indirect
+	github.com/sacloud/saclient-go v0.4.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect

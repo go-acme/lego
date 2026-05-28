@@ -890,8 +890,8 @@ github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMo
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/fsnotify/fsnotify v1.5.1/go.mod h1:T3375wBYaZdLLcVNkcVbzGHY7f1l/uK5T5Ai1i3InKU=
 github.com/fsnotify/fsnotify v1.6.0/go.mod h1:sl3t1tCWJFWoRz9R8WJCbQihKKwmorjAbSClcnxKAGw=
-github.com/fsnotify/fsnotify v1.9.0 h1:2Ml+OJNzbYCTzsxtv8vKSFD9PbJjmhYF14k/jKC7S9k=
-github.com/fsnotify/fsnotify v1.9.0/go.mod h1:8jBTzvmWwFyi3Pb8djgCCO5IBqzKJ/Jwo8TRcHyHii0=
+github.com/fsnotify/fsnotify v1.10.1 h1:b0/UzAf9yR5rhf3RPm9gf3ehBPpf0oZKIjtpKrx59Ho=
+github.com/fsnotify/fsnotify v1.10.1/go.mod h1:TLheqan6HD6GBK6PrDWyDPBaEV8LspOxvPSjC+bVfgo=
 github.com/gabriel-vasile/mimetype v1.4.13 h1:46nXokslUBsAJE/wMsp5gtO500a4F3Nkz9Ufpk2AcUM=
 github.com/gabriel-vasile/mimetype v1.4.13/go.mod h1:d+9Oxyo1wTzWdyVUPMmXFvp4F9tea18J8ufA774AB3s=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
@@ -1518,12 +1518,12 @@ github.com/sacloud/api-client-go v0.3.5 h1:0ALibvbC+6MBhN7t61k+RhguhiEQ8+NejqBjq
 github.com/sacloud/api-client-go v0.3.5/go.mod h1:akdcCOl6wszywa0YQ5X8cMnNgWTm+7N4EneODTdiH48=
 github.com/sacloud/go-http v0.1.9 h1:Xa5PY8/pb7XWhwG9nAeXSrYXPbtfBWqawgzxD5co3VE=
 github.com/sacloud/go-http v0.1.9/go.mod h1:DpDG+MSyxYaBwPJ7l3aKLMzwYdTVtC5Bo63HActcgoE=
-github.com/sacloud/iaas-api-go v1.29.0 h1:ZsgeArFg2PSYfvxiKfJoMkpU7QerSUiclfue9YVtk6c=
-github.com/sacloud/iaas-api-go v1.29.0/go.mod h1:VsW1NC1FPmwRjQRb3npmaOsI2hMtG813HjlomzaLr0U=
+github.com/sacloud/iaas-api-go v1.29.1 h1:GlcYaFJUt0z12hZmbNEYCRtyZoXjeIGgNN6Ert+jVmY=
+github.com/sacloud/iaas-api-go v1.29.1/go.mod h1:Z2LZiTqA1WiD/qW3NQOS7UzjzTqUBVp0MpmAwtrdtYw=
 github.com/sacloud/packages-go v0.1.0 h1:rixWcvkVUI4kX6UYTFJbQgZIoBoNhN48MivHIu3aYq0=
 github.com/sacloud/packages-go v0.1.0/go.mod h1:ntmPnjF8+mGWNtxgBmO0CrLphUlmRkpy+DztjlECp8M=
-github.com/sacloud/saclient-go v0.3.7 h1:LAkOHStYxIKoypiaarhNOwm/JPuubgoKuOSXZWEerbc=
-github.com/sacloud/saclient-go v0.3.7/go.mod h1:h8ATHi9AnQhOxYNm8mbVWyM9/2569PPESIGwAc2SNg4=
+github.com/sacloud/saclient-go v0.4.0 h1:d4CqjKDU0muPVukZ2qGB9Me6ANEcMg73z5tIqXIyGWA=
+github.com/sacloud/saclient-go v0.4.0/go.mod h1:5CqxypkPgUW6qZxBGRdKX3I+mVx/OWbbFrrRm6LBNeE=
 github.com/sagikazarmark/crypt v0.10.0/go.mod h1:gwTNHQVoOS3xp9Xvz5LLR+1AauC5M6880z5NWzdhOyQ=
 github.com/sagikazarmark/locafero v0.4.0 h1:HApY1R9zGo4DBgr7dqsTH/JJxLTTsOt7u6keLGt6kNQ=
 github.com/sagikazarmark/locafero v0.4.0/go.mod h1:Pe1W6UlPYUk/+wc/6KFhbORCfqzgYEpgQ3O5fPuL3H4=

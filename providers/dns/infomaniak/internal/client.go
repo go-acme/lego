@@ -109,11 +109,16 @@ func (c *Client) ZoneExists(ctx context.Context, zone string) (bool, error) {
 		return false, err
 	}
 
-	if result.Result != statusSuccess {
+	switch result.Result {
+	case "object_not_found":
+		return false, nil
+
+	case statusSuccess:
+		return result.Data, nil
+
+	default:
 		return false, fmt.Errorf("%s: %s: %w", zone, result.Result, result.Error)
 	}
-
-	return result.Data, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

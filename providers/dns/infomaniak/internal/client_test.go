@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -12,64 +13,109 @@ import (
 func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client, err := New(OAuthStaticAccessToken(server.Client(), "token"), server.URL)
-			if err != nil {
-				return nil, err
-			}
-
-			return client, nil
+			return NewClient(OAuthStaticAccessToken(server.Client(), "secret"), server.URL)
 		},
-		servermock.CheckHeader().WithJSONHeaders().
-			WithAuthorization("Bearer token"))
+		servermock.CheckHeader().
+			WithJSONHeaders().
+			WithAuthorization("Bearer secret"),
+	)
 }
 
-func TestClient_CreateDNSRecord(t *testing.T) {
+func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /1/domain/666/dns/record",
-			servermock.RawStringResponse(`{"result":"success","data": "123"}`),
-			servermock.CheckRequestJSONBodyFromFixture("create_dns_record-request.json")).
-		Build(t)
-
-	domain := &DNSDomain{
-		ID:           666,
-		CustomerName: "test",
-	}
-
-	record := Record{
-		Source: "foo",
-		Target: "txtxtxttxt",
-		Type:   "TXT",
-		TTL:    60,
-	}
-
-	recordID, err := client.CreateDNSRecord(t.Context(), domain, record)
-	require.NoError(t, err)
-
-	assert.Equal(t, "123", recordID)
-}
-
-func TestClient_GetDomainByName(t *testing.T) {
-	client := mockBuilder().
-		Route("GET /1/product",
-			servermock.ResponseFromFixture("get_domain_name.json"),
+		Route("POST /2/zones/example.com/records",
+			servermock.ResponseFromFixture("record_create.json"),
+			servermock.CheckRequestJSONBodyFromFixture("record_create-request.json"),
 			servermock.CheckQueryParameter().Strict().
-				WithRegexp("customer_name", `.+\.example\.com`).
-				With("service_name", "domain")).
+				With("with", "idn"),
+		).
 		Build(t)
 
-	domain, err := client.GetDomainByName(t.Context(), "one.two.three.example.com.")
+	record := RecordRequest{
+		Source: "_acme-challenge",
+		Target: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		TTL:    300,
+		Type:   "TXT",
+	}
+
+	result, err := client.CreateRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 
-	expected := &DNSDomain{ID: 123, CustomerName: "two.three.example.com"}
-	assert.Equal(t, expected, domain)
+	expected := &Record{
+		ID:        32824,
+		Source:    "_acme-challenge",
+		SourceIDN: "_acme-challenge.example.com",
+		Type:      "TXT",
+		TTL:       300,
+		Target:    "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+	}
+
+	assert.Equal(t, expected, result)
 }
 
-func TestClient_DeleteDNSRecord(t *testing.T) {
+func TestClient_CreateRecord_errors(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /1/domain/123/dns/record/456",
-			servermock.RawStringResponse(`{"result":"success"}`)).
+		Route("POST /2/zones/example.com/records",
+			servermock.ResponseFromFixture("errors.json"),
+		).
 		Build(t)
 
-	err := client.DeleteDNSRecord(t.Context(), 123, "456")
+	record := RecordRequest{
+		Source: "_acme-challenge",
+		Target: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		TTL:    3600,
+		Type:   "TXT",
+	}
+
+	_, err := client.CreateRecord(t.Context(), "example.com", record)
+	require.EqualError(t, err, "error: [validation_failed] Validation failed (attribute_required: The name attribute is required) (attribute_min_value: You must be at least 18 years old)")
+}
+
+func TestClient_DeleteRecord(t *testing.T) {
+	client := mockBuilder().
+		Route("DELETE /2/zones/example.com/records/32824",
+			servermock.ResponseFromFixture("record_delete.json"),
+		).
+		Build(t)
+
+	err := client.DeleteRecord(t.Context(), "example.com", 32824)
 	require.NoError(t, err)
+}
+
+func TestClient_DeleteRecord_error(t *testing.T) {
+	client := mockBuilder().
+		Route("DELETE /2/zones/example.com/records/32824",
+			servermock.ResponseFromFixture("error.json"),
+		).
+		Build(t)
+
+	err := client.DeleteRecord(t.Context(), "example.com", 32824)
+	require.EqualError(t, err, "error: [object_not_found] Object not found")
+}
+
+func TestClient_ZoneExists(t *testing.T) {
+	client := mockBuilder().
+		Route("GET /2/zones/example.com/exists",
+			servermock.ResponseFromFixture("zone_exists.json"),
+		).
+		Build(t)
+
+	result, err := client.ZoneExists(t.Context(), "example.com")
+	require.NoError(t, err)
+
+	assert.True(t, result)
+}
+
+func TestClient_ZoneExists_notFound(t *testing.T) {
+	client := mockBuilder().
+		Route("GET /2/zones/example.com/exists",
+			servermock.ResponseFromFixture("zone_exists_not.json").
+				WithStatusCode(http.StatusNotFound),
+		).
+		Build(t)
+
+	result, err := client.ZoneExists(t.Context(), "example.com")
+	require.NoError(t, err)
+
+	assert.False(t, result)
 }

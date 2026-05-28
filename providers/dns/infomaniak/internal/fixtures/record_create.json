@@ -1,0 +1,12 @@
+{
+  "result": "success",
+  "data": {
+    "id": 32824,
+    "source": "_acme-challenge",
+    "source_idn": "_acme-challenge.example.com",
+    "target": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "ttl": 300,
+    "type": "TXT",
+    "updated_at": 1779826643
+  }
+}

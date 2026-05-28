@@ -2,48 +2,60 @@ package internal
 
 import (
 	"fmt"
+	"strings"
 )
 
-// Record a DNS record.
-type Record struct {
-	ID     string `json:"id,omitempty"`
-	Source string `json:"source,omitempty"`
-	Type   string `json:"type,omitempty"`
-	TTL    int    `json:"ttl,omitempty"`
-	Target string `json:"target,omitempty"`
-}
-
-type DNSDomain struct {
-	ID           uint64 `json:"id,omitempty"`
-	CustomerName string `json:"customer_name,omitempty"`
-}
-
-type Response interface {
-	GetResult() string
-	GetError() *APIErrorResponse
-}
-
 type APIResponse[T any] struct {
-	Result      string            `json:"result"`
-	Data        T                 `json:"data,omitempty"`
-	ErrResponse *APIErrorResponse `json:"error,omitempty"`
+	Result string    `json:"result"`
+	Data   T         `json:"data"`
+	Error  *APIError `json:"error"`
 }
 
-func (a APIResponse[T]) GetResult() string {
-	return a.Result
+type APIError struct {
+	Code        string         `json:"code"`
+	Description string         `json:"description"`
+	Errors      []ErrorDetails `json:"errors"`
 }
 
-func (a APIResponse[T]) GetError() *APIErrorResponse {
-	return a.ErrResponse
+func (a *APIError) Error() string {
+	msg := new(strings.Builder)
+
+	_, _ = fmt.Fprintf(msg, "[%s] %s", a.Code, a.Description)
+
+	for _, err := range a.Errors {
+		_, _ = fmt.Fprintf(msg, " (%s: %s)", err.Code, err.Description)
+	}
+
+	return msg.String()
 }
 
-type APIErrorResponse struct {
-	Code        string             `json:"code"`
-	Description string             `json:"description,omitempty"`
-	Context     map[string]string  `json:"context,omitempty"`
-	Errors      []APIErrorResponse `json:"errors,omitempty"`
+type ErrorDetails struct {
+	Code        string         `json:"code"`
+	Description string         `json:"description"`
+	Context     map[string]any `json:"context"`
 }
 
-func (a APIErrorResponse) Error() string {
-	return fmt.Sprintf("code: %s, description: %s", a.Code, a.Description)
+type RecordRequest struct {
+	Source string `json:"source,omitempty"`
+	Target string `json:"target,omitempty"`
+	TTL    int    `json:"ttl,omitempty"`
+	Type   string `json:"type,omitempty"`
+}
+
+type Record struct {
+	ID        int    `json:"id,omitempty"`
+	Source    string `json:"source,omitempty"`
+	SourceIDN string `json:"source_idn,omitempty"`
+	Type      string `json:"type,omitempty"`
+	TTL       int    `json:"ttl,omitempty"`
+	Target    string `json:"target,omitempty"`
+}
+
+type DomainParams struct {
+	AccountID int    `url:"account_id,omitempty"`
+	OrderBy   string `url:"order_by,omitempty"`
+	OrderDir  string `url:"order_dir,omitempty"`
+	Search    string `url:"search,omitempty"`
+	Page      int    `url:"page,omitempty"`
+	PerPage   int    `url:"per_page,omitempty"`
 }

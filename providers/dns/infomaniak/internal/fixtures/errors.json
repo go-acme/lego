@@ -1,0 +1,24 @@
+{
+  "result": "error",
+  "error": {
+    "code": "validation_failed",
+    "description": "Validation failed",
+    "errors": [
+      {
+        "code": "attribute_required",
+        "description": "The name attribute is required",
+        "context": {
+          "attribute": "name"
+        }
+      },
+      {
+        "code": "attribute_min_value",
+        "description": "You must be at least 18 years old",
+        "context": {
+          "attribute": "age",
+          "min_value": 18
+        }
+      }
+    ]
+  }
+}

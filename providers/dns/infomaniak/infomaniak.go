@@ -14,6 +14,7 @@ import (
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/infomaniak/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	"golang.org/x/net/idna"
 )
 
 // Environment variables names.
@@ -114,7 +115,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := d.findZone(ctx, info.EffectiveFQDN)
+	unicoded, err := idna.ToUnicode(dns01.UnFqdn(info.EffectiveFQDN))
+	if err != nil {
+		return fmt.Errorf("infomaniak: to Unicode: %w", err)
+	}
+
+	zone, err := d.findZone(ctx, unicoded)
 	if err != nil {
 		return fmt.Errorf("infomaniak: %w", err)
 	}
@@ -123,7 +129,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	d.zones[token] = zone
 	d.recordIDsMu.Unlock()
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
+	subDomain, err := dns01.ExtractSubDomain(unicoded, zone)
 	if err != nil {
 		return fmt.Errorf("infomaniak: %w", err)
 	}
@@ -182,10 +188,10 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) findZone(ctx context.Context, fdqn string) (string, error) {
-	for n := range dns01.UnFqdnDomainsSeq(dns01.UnFqdn(fdqn)) {
+	for n := range dns01.UnFqdnDomainsSeq(fdqn) {
 		exists, err := d.client.ZoneExists(ctx, n)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("check zone: %w", err)
 		}
 
 		if exists {

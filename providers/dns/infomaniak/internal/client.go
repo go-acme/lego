@@ -110,7 +110,7 @@ func (c *Client) ZoneExists(ctx context.Context, zone string) (bool, error) {
 	}
 
 	if result.Result != statusSuccess {
-		return false, fmt.Errorf("%s: %w", result.Result, result.Error)
+		return false, fmt.Errorf("%s: %s: %w", zone, result.Result, result.Error)
 	}
 
 	return result.Data, nil

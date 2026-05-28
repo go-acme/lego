@@ -1652,8 +1652,8 @@ github.com/yandex-cloud/go-genproto v0.84.0 h1:lzptMyo1wleGBGNkkEb8bzpgbnW3xPlha
 github.com/yandex-cloud/go-genproto v0.84.0/go.mod h1:0LDD/IZLIUIV4iPH+YcF+jysO3jkSvADFGm4dCAuwQo=
 github.com/yandex-cloud/go-sdk/services/dns v0.0.63 h1:56Js6StVdpBSa5MDyqBXrOU8ngH9O4G4tskuoSdZ0b0=
 github.com/yandex-cloud/go-sdk/services/dns v0.0.63/go.mod h1:YCv8CNxKyTMFfnpkaCOqifAuc95McZB+RWdD0gjvlIc=
-github.com/yandex-cloud/go-sdk/v2 v2.110.0 h1:uI7UNyJO0BlKqBOsA3dgcNtU89kiuHSf8up7jkys1mQ=
-github.com/yandex-cloud/go-sdk/v2 v2.110.0/go.mod h1:adyjFidhunXEFEuwJud3KC/MElurfA4n4yLPC5lCsYo=
+github.com/yandex-cloud/go-sdk/v2 v2.114.0 h1:gx03giWYrzMhgpFK4NJNuOnASSgdCuv4nkLUFejnCSs=
+github.com/yandex-cloud/go-sdk/v2 v2.114.0/go.mod h1:XrF79/a3olVf0YUUCMYePI8Ik0m4KDcQlTooHGGZJB0=
 github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d/go.mod h1:rHwXgn7JulP+udvsHwJoVG1YGAP6VLg4y9I5dyZdqmA=
 github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 h1:ilQV1hzziu+LLM3zUTJ0trRztfwgjqKnBWNtSRkbmwM=
 github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78/go.mod h1:aL8wCCfTfSfmXjznFBSZNN13rSJjlIOI1fUNAtF7rmI=

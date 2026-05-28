@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -107,6 +108,11 @@ func (c *Client) ZoneExists(ctx context.Context, zone string) (bool, error) {
 	err = c.do(req, result)
 	if err != nil {
 		return false, err
+	}
+
+	var apiErr *APIError
+	if errors.As(err, &apiErr) && apiErr.Code == "object_not_found" {
+		return false, nil
 	}
 
 	if result.Result != statusSuccess {

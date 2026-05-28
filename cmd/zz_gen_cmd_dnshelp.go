@@ -2417,7 +2417,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "INFOMANIAK_ENDPOINT":	https://api.infomaniak.com`)
+		ew.writeln(`	- "INFOMANIAK_ENDPOINT":	API endpoint (default: https://api.infomaniak.com)`)
 		ew.writeln(`	- "INFOMANIAK_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "INFOMANIAK_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 10)`)
 		ew.writeln(`	- "INFOMANIAK_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)

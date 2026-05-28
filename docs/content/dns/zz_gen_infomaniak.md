@@ -47,7 +47,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `INFOMANIAK_ENDPOINT` | https://api.infomaniak.com |
+| `INFOMANIAK_ENDPOINT` | API endpoint (default: https://api.infomaniak.com) |
 | `INFOMANIAK_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
 | `INFOMANIAK_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 10) |
 | `INFOMANIAK_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 120) |
@@ -58,14 +58,14 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## Access token
 
-Access token can be created at the url https://manager.infomaniak.com/v3/infomaniak-api.
-You will need domain scope.
+Access token can be created at the url https://manager.infomaniak.com/v3/ng/accounts/token/list.
+You will need `dns:read` and `dns:write` permissions.
 
 
 
 ## More information
 
-- [API documentation](https://api.infomaniak.com/doc)
+- [API documentation](https://developer.infomaniak.com/docs/api)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/infomaniak/infomaniak.toml -->

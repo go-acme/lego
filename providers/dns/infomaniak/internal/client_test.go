@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -103,4 +104,18 @@ func TestClient_ZoneExists(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.True(t, result)
+}
+
+func TestClient_ZoneExists_notFound(t *testing.T) {
+	client := mockBuilder().
+		Route("GET /2/zones/example.com/exists",
+			servermock.ResponseFromFixture("zone_exists_not.json").
+				WithStatusCode(http.StatusNotFound),
+		).
+		Build(t)
+
+	result, err := client.ZoneExists(t.Context(), "example.com")
+	require.NoError(t, err)
+
+	assert.False(t, result)
 }

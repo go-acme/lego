@@ -1,6 +1,7 @@
 package infomaniak
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -142,7 +143,8 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /2/zones/_acme-challenge.example.com/exists",
-			servermock.ResponseFromInternal("zone_exists_not.json"),
+			servermock.ResponseFromInternal("zone_exists_not.json").
+				WithStatusCode(http.StatusNotFound),
 		).
 		Route("GET /2/zones/example.com/exists",
 			servermock.ResponseFromInternal("zone_exists.json"),

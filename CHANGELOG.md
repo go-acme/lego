@@ -6,6 +6,20 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v5.2.0
+
+- Release date: 2026-05-29
+- Tag: [v5.2.0](https://github.com/go-acme/lego/releases/tag/v5.2.0)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for OpusDNS
+- **[dnsprovider]** Add DNS provider for Poweradmin
+
+### Changed
+
+- **[dnsprovider]** informaniak: support API v2
+
 ## v5.1.0
 
 - Release date: 2026-05-22

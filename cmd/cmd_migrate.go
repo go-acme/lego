@@ -52,7 +52,7 @@ func createMigrate() *cli.Command {
 			}
 
 			if cmd.Bool(flags.FlgAccountOnly) {
-				return createConfigurationFile(cfg)
+				return createConfigurationFile(cmd.String(flags.FlgPath), cfg)
 			}
 
 			err = migrate.Certificates(cmd.String(flags.FlgPath), cfg)
@@ -60,16 +60,16 @@ func createMigrate() *cli.Command {
 				return err
 			}
 
-			return createConfigurationFile(cfg)
+			return createConfigurationFile(cmd.String(flags.FlgPath), cfg)
 		},
 		Flags: flags.CreateMigrateFlags(),
 	}
 }
 
-func createConfigurationFile(cfg *configuration.Configuration) error {
+func createConfigurationFile(root string, cfg *configuration.Configuration) error {
 	date := strconv.FormatInt(time.Now().Unix(), 10)
 
-	file, err := os.Create(fmt.Sprintf(".lego.migration.%s.yml", date))
+	file, err := os.Create(filepath.Join(root, fmt.Sprintf(".lego.migration.%s.yml", date)))
 	if err != nil {
 		return err
 	}

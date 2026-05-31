@@ -408,9 +408,8 @@ func createDNSChallengeFlags() []cli.Flag {
 			Category: categoryDNS01Challenge,
 			Name:     FlgDNSResolvers,
 			Sources:  cli.EnvVars(toEnvName(FlgDNSResolvers)),
-			Usage: "Set the nameservers to use for performing (recursive) CNAME resolving and apex domain determination." +
-				" For DNS-01 challenge verification, the authoritative DNS server is queried directly." +
-				" Supported: host:port." +
+			Usage: "Set the nameservers to use for performing (recursive) CNAME resolving, apex domain determination, and propagation checks." +
+				" Syntax: 'host:port'. For multiple values either repeat the flag or provide a comma-separated list." +
 				" The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined.",
 		},
 		&cli.IntFlag{
@@ -462,7 +461,7 @@ func createDNSPersistChallengeFlags() []cli.Flag {
 			Name:     FlgDNSPersistResolvers,
 			Sources:  cli.EnvVars(toEnvName(FlgDNSPersistResolvers)),
 			Usage: "Set the resolvers to use for DNS-PERSIST-01 TXT lookups." +
-				" Supported: host:port." +
+				" Syntax: 'host:port'. For multiple values either repeat the flag or provide a comma-separated list." +
 				" The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined.",
 		},
 		&cli.IntFlag{
@@ -730,7 +729,7 @@ func createDomainFlag() cli.Flag {
 		Name:    FlgDomains,
 		Aliases: []string{flgAliasDomains},
 		Sources: cli.EnvVars(toEnvName(FlgDomains)),
-		Usage:   "Add a domain. For multiple domains either repeat the option or provide a comma-separated list.",
+		Usage:   "Add a domain. For multiple values either repeat the flag or provide a comma-separated list.",
 	}
 }
 
@@ -749,7 +748,8 @@ func createCertNamesFlag() cli.Flag {
 		Name:    FlgCertName,
 		Aliases: []string{flgAliasCertName},
 		Sources: cli.EnvVars(toEnvName(FlgCertName)),
-		Usage:   "The certificate IDs/Names, used to retrieve the certificates.",
+		Usage: "The certificate IDs/Names, used to retrieve the certificates." +
+			" For multiple values either repeat the flag or provide a comma-separated list.",
 	}
 }
 

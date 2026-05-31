@@ -52,7 +52,7 @@ lego run [options]
 | Flag | Env Var | Usage |
 |------|-------|-------|
 | `--accept-tos`, `-a` | `LEGO_ACCEPT_TOS` | By setting this flag to true, you indicate that you accept the current CA terms of service.  |
-| `--domains string`, `-d string` | `LEGO_DOMAINS` | Add a domain. For multiple domains either repeat the option or provide a comma-separated list.  |
+| `--domains string`, `-d string` | `LEGO_DOMAINS` | Add a domain. For multiple values either repeat the flag or provide a comma-separated list.  |
 | `--email string`, `-m string` | `LEGO_EMAIL` | Email used for registration and recovery contact.  |
 | `--help`, `-h` |  | show help  |
 | `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: "EC256") |
@@ -124,7 +124,7 @@ lego run [options]
 | `--dns.propagation.disable-ans` | `LEGO_DNS_PROPAGATION_DISABLE_ANS` | By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.  |
 | `--dns.propagation.disable-rns` | `LEGO_DNS_PROPAGATION_DISABLE_RNS` | By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).  |
 | `--dns.propagation.wait duration` | `LEGO_DNS_PROPAGATION_WAIT` | By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. <br> (Default: 0s) |
-| `--dns.resolvers string` | `LEGO_DNS_RESOLVERS` | Set the nameservers to use for performing (recursive) CNAME resolving and apex domain determination. For DNS-01 challenge verification, the authoritative DNS server is queried directly. Supported: host:port. The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined.  |
+| `--dns.resolvers string` | `LEGO_DNS_RESOLVERS` | Set the nameservers to use for performing (recursive) CNAME resolving, apex domain determination, and propagation checks. Syntax: 'host:port'. For multiple values either repeat the flag or provide a comma-separated list. The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined.  |
 | `--dns.timeout int` | `LEGO_DNS_TIMEOUT` | Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries. <br> (Default: 10) |
 
 #### Flags related to the DNS-PERSIST-01 challenge:
@@ -137,7 +137,7 @@ lego run [options]
 | `--dns-persist.propagation.disable-ans` | `LEGO_DNS_PERSIST_PROPAGATION_DISABLE_ANS` | By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.  |
 | `--dns-persist.propagation.disable-rns` | `LEGO_DNS_PERSIST_PROPAGATION_DISABLE_RNS` | By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).  |
 | `--dns-persist.propagation.wait duration` | `LEGO_DNS_PERSIST_PROPAGATION_WAIT` | By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. <br> (Default: 0s) |
-| `--dns-persist.resolvers string` | `LEGO_DNS_PERSIST_RESOLVERS` | Set the resolvers to use for DNS-PERSIST-01 TXT lookups. Supported: host:port. The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined.  |
+| `--dns-persist.resolvers string` | `LEGO_DNS_PERSIST_RESOLVERS` | Set the resolvers to use for DNS-PERSIST-01 TXT lookups. Syntax: 'host:port'. For multiple values either repeat the flag or provide a comma-separated list. The default is to use the system nameservers, or Cloudflare's nameservers if the system's cannot be determined.  |
 | `--dns-persist.timeout int` | `LEGO_DNS_PERSIST_TIMEOUT` | Set the DNS timeout value to a specific value in seconds. Used for DNS-PERSIST-01 lookups. <br> (Default: 0) |
 
 #### Flags related to the HTTP-01 challenge:
@@ -429,7 +429,7 @@ lego certificates revoke [options]
 
 | Flag | Env Var | Usage |
 |------|-------|-------|
-| `--cert.name string`, `-c string` | `LEGO_CERT_NAME` | The certificate IDs/Names, used to retrieve the certificates.  |
+| `--cert.name string`, `-c string` | `LEGO_CERT_NAME` | The certificate IDs/Names, used to retrieve the certificates. For multiple values either repeat the flag or provide a comma-separated list.  |
 | `--email string`, `-m string` | `LEGO_EMAIL` | Email used for registration and recovery contact.  |
 | `--help`, `-h` |  | show help  |
 | `--keep` | `LEGO_KEEP` | Keep the certificates after the revocation instead of archiving them.  |

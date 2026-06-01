@@ -30,42 +30,44 @@ const callToAction = `#######
 
 func createMigrate() *cli.Command {
 	return &cli.Command{
-		Name:  "migrate",
-		Usage: "Migrate certificates and accounts.",
-		Action: func(ctx context.Context, cmd *cli.Command) error {
-			root := cmd.String(flags.FlgPath)
-
-			log.Warnf(log.LazySprintf("The migration will not work if the certificates have been generated with the '--filename' flag."+
-				" Use the flag '--%s' to only migrate accounts.", flags.FlgAccountOnly))
-			log.Warnf(log.LazySprintf("Please create a backup of %q before the migration.", root))
-
-			if !prompt.Confirm("Continue?") {
-				return nil
-			}
-
-			cfg := &configuration.Configuration{
-				Accounts:     map[string]*configuration.Account{},
-				Certificates: map[string]*configuration.Certificate{},
-			}
-
-			err := migrate.Accounts(root, cfg)
-			if err != nil {
-				return err
-			}
-
-			if cmd.Bool(flags.FlgAccountOnly) {
-				return createConfigurationFile(root, cfg)
-			}
-
-			err = migrate.Certificates(root, cfg)
-			if err != nil {
-				return err
-			}
-
-			return createConfigurationFile(root, cfg)
-		},
-		Flags: flags.CreateMigrateFlags(),
+		Name:   "migrate",
+		Usage:  "Migrate certificates and accounts.",
+		Action: migration,
+		Flags:  flags.CreateMigrateFlags(),
 	}
+}
+
+func migration(_ context.Context, cmd *cli.Command) error {
+	root := cmd.String(flags.FlgPath)
+
+	log.Warnf(log.LazySprintf("The migration will not work if the certificates have been generated with the '--filename' flag."+
+		" Use the flag '--%s' to only migrate accounts.", flags.FlgAccountOnly))
+	log.Warnf(log.LazySprintf("Please create a backup of %q before the migration.", root))
+
+	if !prompt.Confirm("Continue?") {
+		return nil
+	}
+
+	cfg := &configuration.Configuration{
+		Accounts:     map[string]*configuration.Account{},
+		Certificates: map[string]*configuration.Certificate{},
+	}
+
+	err := migrate.Accounts(root, cfg)
+	if err != nil {
+		return err
+	}
+
+	if cmd.Bool(flags.FlgAccountOnly) {
+		return createConfigurationFile(root, cfg)
+	}
+
+	err = migrate.Certificates(root, cfg)
+	if err != nil {
+		return err
+	}
+
+	return createConfigurationFile(root, cfg)
 }
 
 func createConfigurationFile(root string, cfg *configuration.Configuration) error {

@@ -33,9 +33,11 @@ func createMigrate() *cli.Command {
 		Name:  "migrate",
 		Usage: "Migrate certificates and accounts.",
 		Action: func(ctx context.Context, cmd *cli.Command) error {
+			root := cmd.String(flags.FlgPath)
+
 			log.Warnf(log.LazySprintf("The migration will not work if the certificates have been generated with the '--filename' flag."+
 				" Use the flag '--%s' to only migrate accounts.", flags.FlgAccountOnly))
-			log.Warnf(log.LazySprintf("Please create a backup of %q before the migration.", cmd.String(flags.FlgPath)))
+			log.Warnf(log.LazySprintf("Please create a backup of %q before the migration.", root))
 
 			if !prompt.Confirm("Continue?") {
 				return nil
@@ -46,21 +48,21 @@ func createMigrate() *cli.Command {
 				Certificates: map[string]*configuration.Certificate{},
 			}
 
-			err := migrate.Accounts(cmd.String(flags.FlgPath), cfg)
+			err := migrate.Accounts(root, cfg)
 			if err != nil {
 				return err
 			}
 
 			if cmd.Bool(flags.FlgAccountOnly) {
-				return createConfigurationFile(cmd.String(flags.FlgPath), cfg)
+				return createConfigurationFile(root, cfg)
 			}
 
-			err = migrate.Certificates(cmd.String(flags.FlgPath), cfg)
+			err = migrate.Certificates(root, cfg)
 			if err != nil {
 				return err
 			}
 
-			return createConfigurationFile(cmd.String(flags.FlgPath), cfg)
+			return createConfigurationFile(root, cfg)
 		},
 		Flags: flags.CreateMigrateFlags(),
 	}

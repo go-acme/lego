@@ -123,9 +123,9 @@ body:
   - type: checkboxes
     id: value-affirmation
     attributes:
-      label: 🌱 Supporting the Maintainer
+      label: 🌱 Supporting the Maintainers
       options:
-        - label: "Yes, I find this project useful, and it has saved me time in my workflow/business."
+        - label: "Yes, I find this project useful, and I appreciate the work done by the maintainers."
           required: false
         - label: "Yes, I have [starred](https://github.com/go-acme/lego) this repository to help others find it."
           required: false

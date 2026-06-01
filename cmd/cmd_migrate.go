@@ -30,48 +30,61 @@ const callToAction = `#######
 
 func createMigrate() *cli.Command {
 	return &cli.Command{
-		Name:  "migrate",
-		Usage: "Migrate certificates and accounts.",
-		Action: func(ctx context.Context, cmd *cli.Command) error {
-			log.Warnf(log.LazySprintf("The migration will not work if the certificates have been generated with the '--filename' flag."+
-				" Use the flag '--%s' to only migrate accounts.", flags.FlgAccountOnly))
-			log.Warnf(log.LazySprintf("Please create a backup of %q before the migration.", cmd.String(flags.FlgPath)))
-
-			if !prompt.Confirm("Continue?") {
-				return nil
-			}
-
-			cfg := &configuration.Configuration{
-				Accounts:     map[string]*configuration.Account{},
-				Certificates: map[string]*configuration.Certificate{},
-			}
-
-			err := migrate.Accounts(cmd.String(flags.FlgPath), cfg)
-			if err != nil {
-				return err
-			}
-
-			if cmd.Bool(flags.FlgAccountOnly) {
-				return createConfigurationFile(cfg)
-			}
-
-			err = migrate.Certificates(cmd.String(flags.FlgPath), cfg)
-			if err != nil {
-				return err
-			}
-
-			return createConfigurationFile(cfg)
-		},
-		Flags: flags.CreateMigrateFlags(),
+		Name:   "migrate",
+		Usage:  "Migrate certificates and accounts.",
+		Action: migration,
+		Flags:  flags.CreateMigrateFlags(),
 	}
 }
 
-func createConfigurationFile(cfg *configuration.Configuration) error {
+func migration(_ context.Context, cmd *cli.Command) error {
+	root := cmd.String(flags.FlgPath)
+
+	log.Warnf(log.LazySprintf("The migration will not work if the certificates have been generated with the '--filename' flag."+
+		" Use the flag '--%s' to only migrate accounts.", flags.FlgAccountOnly))
+	log.Warnf(log.LazySprintf("Please create a backup of %q before the migration.", root))
+
+	if !prompt.Confirm("Continue?") {
+		return nil
+	}
+
+	cfg := &configuration.Configuration{
+		Accounts:     map[string]*configuration.Account{},
+		Certificates: map[string]*configuration.Certificate{},
+	}
+
+	err := migrate.Accounts(root, cfg)
+	if err != nil {
+		return err
+	}
+
+	if cmd.Bool(flags.FlgAccountOnly) {
+		return createConfigurationFile(root, cfg)
+	}
+
+	err = migrate.Certificates(root, cfg)
+	if err != nil {
+		return err
+	}
+
+	return createConfigurationFile(root, cfg)
+}
+
+func createConfigurationFile(root string, cfg *configuration.Configuration) error {
+	wd, err := os.Getwd()
+	if err == nil {
+		if filepath.Join(wd, ".lego") != root {
+			cfg.Storage = "FIXME: " + root
+		}
+	}
+
 	date := strconv.FormatInt(time.Now().Unix(), 10)
 
 	file, err := os.Create(fmt.Sprintf(".lego.migration.%s.yml", date))
 	if err != nil {
-		return err
+		log.Debug("The suggested configuration file cannot be created.", log.ErrorAttr(err))
+
+		return suggestedConfigurationFallback(cfg)
 	}
 
 	defer func() { _ = file.Close() }()
@@ -83,7 +96,18 @@ func createConfigurationFile(cfg *configuration.Configuration) error {
 
 	log.Debug("Creating the configuration file.", slog.String("filepath", filename))
 
-	_, err = file.WriteString(callToAction)
+	err = createSuggestedConfiguration(file, cfg)
+	if err != nil {
+		return err
+	}
+
+	log.Warn("If you want to use the configuration file, please rename and review the file to handle the FIXME.", slog.String("filepath", filename))
+
+	return nil
+}
+
+func createSuggestedConfiguration(file *os.File, cfg *configuration.Configuration) error {
+	_, err := file.WriteString(callToAction)
 	if err != nil {
 		return err
 	}
@@ -93,7 +117,18 @@ func createConfigurationFile(cfg *configuration.Configuration) error {
 		return fmt.Errorf("could not encode the configuration file: %w", err)
 	}
 
-	log.Warn("If you want to use the configuration file, please rename and review the file to handle the FIXME.", slog.String("filepath", filename))
+	return nil
+}
+
+func suggestedConfigurationFallback(cfg *configuration.Configuration) error {
+	log.Info("Suggested configuration file content.")
+
+	err := createSuggestedConfiguration(os.Stdout, cfg)
+	if err != nil {
+		return err
+	}
+
+	log.Warn("If you want to use the configuration file, please review the content to handle the FIXME and save it to a `.lego.yml` file.")
 
 	return nil
 }

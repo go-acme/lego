@@ -44,6 +44,11 @@ type dnsDomainGetAllResponse struct {
 	Domains map[string]DNSDomain `json:"domains"`
 }
 
+type dnsRecordCreateResponse struct {
+	response
+	Data []DNSRecord `json:"data"`
+}
+
 const DefaultURL = "https://api.rackcorp.net/api/rest/v2.9/json.php"
 
 type RCClient struct {
@@ -143,7 +148,7 @@ func (c *RCClient) DNSDomainGet(domainID json.Number) (*DNSDomain, error) {
 	return &apiResp.DNSDomain, nil
 }
 
-func (c *RCClient) DNSRecordCreateTXT(domainID json.Number, lookup, data string, ttl int) error {
+func (c *RCClient) DNSRecordCreateTXT(domainID json.Number, lookup, data string, ttl int) (*DNSRecord, error) {
 	record := DNSRecord{
 		ID:       "0",
 		Lookup:   lookup,
@@ -160,40 +165,22 @@ func (c *RCClient) DNSRecordCreateTXT(domainID json.Number, lookup, data string,
 		},
 	}
 
-	var apiResp response
+	var apiResp dnsRecordCreateResponse
 
 	err := doAPI(c, reqPayload, &apiResp)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if apiResp.Code != responseCodeOK {
-		return fmt.Errorf("api error: %s", apiResp.Message)
+		return nil, fmt.Errorf("api error: %s", apiResp.Message)
 	}
 
-	return nil
-}
-
-func (c *RCClient) DNSRecordUpdate(record DNSRecord) error {
-	reqPayload := map[string]any{
-		"cmd": "dns.record.update",
-		"data": map[json.Number]DNSRecord{
-			record.ID: record,
-		},
+	if len(apiResp.Data) == 0 {
+		return nil, fmt.Errorf("no record returned")
 	}
 
-	var apiResp response
-
-	err := doAPI(c, reqPayload, &apiResp)
-	if err != nil {
-		return err
-	}
-
-	if apiResp.Code != responseCodeOK {
-		return fmt.Errorf("api error: %s", apiResp.Message)
-	}
-
-	return nil
+	return &apiResp.Data[0], nil
 }
 
 func (c *RCClient) DNSRecordDelete(recordID json.Number) error {
@@ -226,9 +213,9 @@ func FindDomain(domains map[string]DNSDomain, domainName string) *DNSDomain {
 	return nil
 }
 
-func FindTXTRecord(records []DNSRecord, lookup string) *DNSRecord {
+func FindTXTRecord(records []DNSRecord, lookup string, data string) *DNSRecord {
 	for _, record := range records {
-		if record.Lookup == lookup && record.Type == recordTypeTXT {
+		if record.Lookup == lookup && record.Type == recordTypeTXT && record.Data == data {
 			return &record
 		}
 	}

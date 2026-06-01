@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
@@ -62,6 +62,9 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config *Config
 	client *internal.RCClient
+
+	mu        sync.Mutex
+	recordIDs map[string]json.Number
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Rackcorp.
@@ -88,7 +91,24 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		useragent.Get(),
 	)
 
-	return &DNSProvider{config: config, client: client}, nil
+	return &DNSProvider{
+		config:    config,
+		client:    client,
+		recordIDs: make(map[string]json.Number),
+	}, nil
+}
+
+func (d *DNSProvider) storeRecordID(token string, recordID json.Number) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.recordIDs[token] = recordID
+}
+
+func (d *DNSProvider) getRecordID(token string) (json.Number, bool) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	recordID, found := d.recordIDs[token]
+	return recordID, found
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
@@ -105,37 +125,28 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return err
 	}
 
-	record := internal.FindTXTRecord(zone.Records, info.Prefix)
+	record := internal.FindTXTRecord(zone.Records, info.Prefix, info.Value)
 	if record != nil {
-		record.Data = info.Value
-		record.TTL = json.Number(strconv.Itoa(d.config.TTL))
-
-		return d.client.DNSRecordUpdate(*record)
+		d.storeRecordID(token, record.ID)
+		return nil
 	}
 
-	return d.client.DNSRecordCreateTXT(zone.ID, info.Prefix, info.Value, d.config.TTL)
+	record, err = d.client.DNSRecordCreateTXT(zone.ID, info.Prefix, info.Value, d.config.TTL)
+	if err != nil {
+		return err
+	}
+	d.storeRecordID(token, record.ID)
+	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
-	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
-
-	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
-	if err != nil {
-		return err
+	recordID, ok := d.getRecordID(token)
+	if !ok {
+		info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
+		return fmt.Errorf("rackcorp: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
-
-	zone, err = d.client.DNSDomainGet(zone.ID)
-	if err != nil {
-		return err
-	}
-
-	record := internal.FindTXTRecord(zone.Records, info.Prefix)
-	if record != nil {
-		return d.client.DNSRecordDelete(record.ID)
-	}
-
-	return nil
+	return d.client.DNSRecordDelete(recordID)
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

@@ -426,7 +426,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "ARTFILES_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "ARTFILES_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 360)`)
 		ew.writeln(`	- "ARTFILES_SERVER_NAME":	Your server name (Default: dcp)`)
-		ew.writeln(`	- "ARTFILES_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/artfiles`)
@@ -771,6 +770,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CIVO_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "CIVO_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 30)`)
 		ew.writeln(`	- "CIVO_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 300)`)
 		ew.writeln(`	- "CIVO_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)`)
@@ -3295,7 +3295,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "NICRU_PASSWORD":	Password for an account in RU CENTER`)
 		ew.writeln(`	- "NICRU_SECRET":	Secret for application in DNS-hosting RU CENTER`)
 		ew.writeln(`	- "NICRU_SERVICE_ID":	Service ID for application in DNS-hosting RU CENTER`)
-		ew.writeln(`	- "NICRU_SERVICE_NAME":	Service Name for DNS-hosting RU CENTER`)
 		ew.writeln(`	- "NICRU_USER":	Agreement for an account in RU CENTER`)
 		ew.writeln()
 
@@ -3463,6 +3462,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "ONLINENET_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "ONLINENET_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 15)`)
 		ew.writeln(`	- "ONLINENET_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 240)`)
+		ew.writeln(`	- "ONLINENET_SEQUENCE_INTERVAL":	Time between sequential requests in seconds (Default: 60)`)
 		ew.writeln(`	- "ONLINENET_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
 
 		ew.writeln()
@@ -4660,7 +4660,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "WEBSUPPORT_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "WEBSUPPORT_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "WEBSUPPORT_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
-		ew.writeln(`	- "WEBSUPPORT_SEQUENCE_INTERVAL":	Time between sequential requests in seconds (Default: 60)`)
 		ew.writeln(`	- "WEBSUPPORT_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)`)
 
 		ew.writeln()

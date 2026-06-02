@@ -1,0 +1,119 @@
+name: Linting and Tests
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+permissions: {}
+
+jobs:
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    env:
+      GO_VERSION: stable
+      GOLANGCI_LINT_VERSION: v2.12
+      CGO_ENABLED: 0
+      MEMCACHED_HOSTS: localhost:11211
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Check Dependencies
+        run: go mod tidy --diff
+
+      - name: Generate and Check generated elements
+        run: |
+          make generate
+          git diff --exit-code
+
+      - name: Set up a Memcached server
+        run: docker run -d --rm -p 11211:11211 memcached:1.6-alpine
+
+      - name: Tests
+        run: make test
+
+  e2e-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    env:
+      GO_VERSION: stable
+      CGO_ENABLED: 0
+      LEGO_E2E_TESTS: CI
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Check Dependencies
+        run: go mod tidy --diff
+
+      - name: Generate and Check generated elements
+        run: |
+          make generate
+          git diff --exit-code
+
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
+
+      - name: Install Pebble
+        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble@v2.10.1
+
+      - name: Install challtestsrv
+        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble-challtestsrv@v2.10.1
+
+      - name: Integration Tests
+        run: make e2e
+
+  linting:
+    name: Linting
+    runs-on: ubuntu-latest
+    env:
+      GO_VERSION: stable
+      GOLANGCI_LINT_VERSION: v2.12
+      CGO_ENABLED: 0
+      LEGO_E2E_TESTS: CI
+      MEMCACHED_HOSTS: localhost:11211
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Check Dependencies
+        run: go mod tidy --diff
+
+      - name: Generate and Check generated elements
+        run: |
+          make generate
+          git diff --exit-code
+
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}

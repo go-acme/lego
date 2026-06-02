@@ -1,0 +1,68 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+permissions: {}
+
+jobs:
+
+  cross:
+    name: Go Matrix
+    runs-on: ${{ matrix.os }}
+    env:
+      CGO_ENABLED: 0
+
+    strategy:
+      matrix:
+        go-version: [ oldstable, stable ]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Test
+        run: go test -v -cover ./...
+
+      - name: Build
+        run: go build -v -ldflags "-s -w" -trimpath -o ./dist/lego ./
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    env:
+      GO_VERSION: stable
+      CGO_ENABLED: 0
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Check Dependencies
+        run: go mod tidy --diff
+
+      - name: Generate and Check generated elements
+        run: |
+          make generate
+          git diff --exit-code
+
+      - name: Docker image build
+        run: make build image

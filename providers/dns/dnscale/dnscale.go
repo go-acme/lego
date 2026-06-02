@@ -140,11 +140,11 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	d.recordIDsMu.Unlock()
 
 	if !zoneOK {
-		return fmt.Errorf("bluecatv2: unknown zone ID for '%s' '%s'", info.EffectiveFQDN, token)
+		return fmt.Errorf("dnscale: unknown zone ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
 	if !recordOK {
-		return fmt.Errorf("bluecatv2: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
+		return fmt.Errorf("dnscale: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
 	err := d.client.DeleteRecordByID(ctx, zoneID, recordID)

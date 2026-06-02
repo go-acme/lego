@@ -43,7 +43,6 @@ lego run --dns nicru -d '*.example.com' -d example.com
 | `NICRU_PASSWORD` | Password for an account in RU CENTER |
 | `NICRU_SECRET` | Secret for application in DNS-hosting RU CENTER |
 | `NICRU_SERVICE_ID` | Service ID for application in DNS-hosting RU CENTER |
-| `NICRU_SERVICE_NAME` | Service Name for DNS-hosting RU CENTER |
 | `NICRU_USER` | Agreement for an account in RU CENTER |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

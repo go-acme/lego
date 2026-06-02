@@ -129,7 +129,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 
 	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("arvancloud: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("cpanel: could not find zone for domain %q: %w", domain, err)
 	}
 
 	zone := dns01.UnFqdn(authZone)
@@ -206,7 +206,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) er
 
 	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("arvancloud: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("cpanel: could not find zone for domain %q: %w", domain, err)
 	}
 
 	zone := dns01.UnFqdn(authZone)

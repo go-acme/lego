@@ -19,8 +19,8 @@ import (
 const (
 	envNamespace = "ZONEEDIT_"
 
-	EnvUser     = envNamespace + "USER"
-	EnAuthToken = envNamespace + "AUTH_TOKEN"
+	EnvUser      = envNamespace + "USER"
+	EnvAuthToken = envNamespace + "AUTH_TOKEN"
 
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -58,14 +58,14 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for ZoneEdit.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUser, EnAuthToken)
+	values, err := env.Get(EnvUser, EnvAuthToken)
 	if err != nil {
 		return nil, fmt.Errorf("zoneedit: %w", err)
 	}
 
 	config := NewDefaultConfig()
 	config.User = values[EnvUser]
-	config.AuthToken = values[EnAuthToken]
+	config.AuthToken = values[EnvAuthToken]
 
 	return NewDNSProviderConfig(config)
 }

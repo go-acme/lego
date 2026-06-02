@@ -161,7 +161,12 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 			return nil
 		}
 
-		return d.updateRecord(existingRecord, info.Value)
+		err = d.updateRecord(existingRecord, info.Value)
+		if err != nil {
+			return fmt.Errorf("designate: %w", err)
+		}
+
+		return nil
 	}
 
 	err = d.createRecord(zoneID, info.EffectiveFQDN, info.Value)
@@ -231,7 +236,7 @@ func (d *DNSProvider) createRecord(zoneID, fqdn, value string) error {
 
 func (d *DNSProvider) updateRecord(record *recordsets.RecordSet, value string) error {
 	if slices.Contains(record.Records, value) {
-		log.Debug("skip: the record already exists.", slog.String("value", value))
+		log.Debug("designate: the record already exists. Skipping.", slog.String("value", value))
 		return nil
 	}
 

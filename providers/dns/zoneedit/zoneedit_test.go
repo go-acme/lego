@@ -12,7 +12,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvUser, EnAuthToken).WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvUser, EnvAuthToken).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -23,23 +23,23 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvUser:     "user",
-				EnAuthToken: "secret",
+				EnvUser:      "user",
+				EnvAuthToken: "secret",
 			},
 		},
 		{
 			desc: "missing user ID",
 			envVars: map[string]string{
-				EnvUser:     "",
-				EnAuthToken: "secret",
+				EnvUser:      "",
+				EnvAuthToken: "secret",
 			},
 			expected: "zoneedit: some credentials information are missing: ZONEEDIT_USER",
 		},
 		{
 			desc: "missing auth token",
 			envVars: map[string]string{
-				EnvUser:     "user",
-				EnAuthToken: "",
+				EnvUser:      "user",
+				EnvAuthToken: "",
 			},
 			expected: "zoneedit: some credentials information are missing: ZONEEDIT_AUTH_TOKEN",
 		},

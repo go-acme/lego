@@ -19,8 +19,7 @@ import (
 const (
 	envNamespace = "OPUSDNS_"
 
-	EnvAPIKey      = envNamespace + "API_KEY"
-	EnvAPIEndpoint = envNamespace + "API_ENDPOINT"
+	EnvAPIKey = envNamespace + "API_KEY"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"

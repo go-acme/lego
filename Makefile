@@ -1,4 +1,4 @@
-.PHONY: clean checks test build image e2e fmt
+.PHONY: clean checks test build image e2e
 
 export GO111MODULE=on
 export CGO_ENABLED=0

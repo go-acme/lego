@@ -59,14 +59,14 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Install snapcraft
-        run: sudo snap install snapcraft --classic
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
+
+      - name: Install snapcraft
+        run: sudo snap install snapcraft --classic
 
       - name: Setup Syft
         uses: anchore/sbom-action/download-syft@v0.24.0
@@ -76,8 +76,8 @@ jobs:
         id: goreleaser
         uses: goreleaser/goreleaser-action@v7
         with:
-          version: v2.15.4
-          args: release -p 1 --clean --timeout=90m
+          version: v2.16.0
+          args: release -p 2 --clean --timeout=90m
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}

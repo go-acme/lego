@@ -243,9 +243,14 @@ func newPseudoRecord(ctx context.Context, domain, keyAuth string) (*pseudoRecord
 
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
+	key := info.Prefix
+	if host != "" {
+		key += "." + host
+	}
+
 	return &pseudoRecord{
 		domain:   domain,
-		key:      info.Prefix + host,
+		key:      key,
 		keyFqdn:  info.EffectiveFQDN,
 		keyValue: info.Value,
 		tld:      tld,

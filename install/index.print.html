@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html id="R-html" lang="en-us" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="print">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.157.0">
+    <meta name="generator" content="Relearn 9.0.3+bf3dbc8308313d6dd1f7ad32ba2a7983a4e9b3e5">
+    <meta name="description" content="Binaries To get the binary, download the latest release for your OS/Arch from">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Installation :: ACME client and library written in Go.">
+    <meta name="twitter:description" content="Binaries To get the binary, download the latest release for your OS/Arch from">
+    <meta property="og:url" content="https://go-acme.github.io/lego/install/index.html">
+    <meta property="og:site_name" content="ACME client and library written in Go.">
+    <meta property="og:title" content="Installation :: ACME client and library written in Go.">
+    <meta property="og:description" content="Binaries To get the binary, download the latest release for your OS/Arch from">
+    <meta property="og:locale" content="en_us">
+    <meta property="og:type" content="website">
+    <meta itemprop="name" content="Installation :: ACME client and library written in Go.">
+    <meta itemprop="description" content="Binaries To get the binary, download the latest release for your OS/Arch from">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2026-06-03T02:43:13+02:00">
+    <meta itemprop="wordCount" content="13">
+    <title>Installation :: ACME client and library written in Go.</title>
+    <link href="https://go-acme.github.io/lego/install/index.html" rel="canonical" type="text/html" title="Installation :: ACME client and library written in Go.">
+    <link href="/lego/images/favicon.svg?1780447626" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1780447626" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1780447626" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1780447626" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1780447626" defer></script>
+    <script src="/lego/js/search.min.js?1780447626" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1780447626";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1780447626" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/all.min.css?1780447626" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/all.min.css?1780447626" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1780447626" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1780447626" rel="stylesheet">
+    <link href="/lego/css/format-print.min.css?1780447626" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/install\/index.html';
+      window.relearn.relBasePath='..';
+      window.relearn.relBaseUri='..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // translations
+      window.T_Copy_to_clipboard = `Copy text to clipboard`;
+      window.T_Copied_to_clipboard = `Text copied to clipboard!`;
+      window.T_Link_copied_to_clipboard = `Link copied to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      window.T_Browser_unsupported_feature = `This browser doesn't support this feature`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantprefix = "my-custom-";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant") ?? "";
+        if( !variant ||
+            (!variant.startsWith(window.relearn.customvariantprefix) && !window.relearn.themevariants.includes(variant)) ||
+            (variant.startsWith(window.relearn.customvariantprefix) && !window.localStorage.getItem(window.relearn.absBaseUri + "/variantstylesheet-" + variant)) ){
+          variant = window.relearn.themevariants[0];
+          window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+    <link href="/lego/css/custom.css?1780447626" rel="stylesheet">
+  </head>
+  <body class="mobile-support print" data-origin="/lego/install/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar" class="default-animation">
+        <div class="topbar-wrapper default-animation">
+          <div class="topbar-sidebar-divider default-animation"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar default-animation" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button></span>
+            </div>
+            <div class="topbar-button topbar-button-toc default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-table-list"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+<nav class="TableOfContents">
+  <ul>
+    <li><a href="#binaries">Binaries</a></li>
+    <li><a href="#from-docker">From Docker</a></li>
+    <li><a href="#from-package-managers">From package managers</a></li>
+    <li><a href="#from-sources">From sources</a></li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">Installation</span><meta itemprop="position" content="2"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-print default-animation" data-content-empty="disable" data-width-s="area-more" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/install/index.print.html" title="Print whole chapter (CTRL+ALT+p)"><i class="fa-fw fas fa-print"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-prev default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/index.html" title="Lego (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-next default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/obtain/index.html" title="Obtain or renew certificates (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-more default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable install" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="installation">Installation</h1>
+
+<h2 id="binaries">Binaries<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>To get the binary, download the latest release for your OS/Arch from <span class="btn cstyle button transparent interactive"><a href="https://github.com/go-acme/lego/releases\"" rel="external"><i class="fa-fw fas fa-download"></i> <span class="title">the release page</span></a></span> and put the binary somewhere convenient.</p>
+<p>lego does not assume anything about the location you run it from.</p>
+<span class="btn cstyle button primary interactive"><a href="https://github.com/go-acme/lego/releases\"" rel="external"><i class="fa-fw fas fa-download"></i> <span class="title">Download</span></a></span>
+<h2 id="from-docker">From Docker<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run goacme/lego -h</span></span></code></pre></div>
+<span class="btn cstyle button transparent interactive"><a href="https://hub.docker.com/r/goacme/lego" rel="external"><i class="fa-fw fas fa-arrow-up-right-from-square"></i> <span class="title">Link to the Docker Hub</span></a></span>
+<h2 id="from-package-managers">From package managers<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<div class="tab-panel" data-tab-group="R-tabs-3743f6db7df4b677e6f7adc88595e368">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-533214205d4020bda86bbaab1a1b4d5c" aria-expanded="true"
+      data-tab-item="R-tab-efd717440ab790091beef4a125935a73"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-3743f6db7df4b677e6f7adc88595e368','R-tab-efd717440ab790091beef4a125935a73')"
+    >
+      <span class="tab-nav-text">Arch</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-707ac985b825bab41bbd0b68e72f3721" aria-expanded="false"
+      data-tab-item="R-tab-dc07dbd15cb59b30b35946bc78d3822a"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-3743f6db7df4b677e6f7adc88595e368','R-tab-dc07dbd15cb59b30b35946bc78d3822a')"
+    >
+      <span class="tab-nav-text">AUR</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-12e3466013bdd27d6ba26624094f05dc" aria-expanded="false"
+      data-tab-item="R-tab-9ad09a90c3dbf80bdf18cf666f9d323e"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-3743f6db7df4b677e6f7adc88595e368','R-tab-9ad09a90c3dbf80bdf18cf666f9d323e')"
+    >
+      <span class="tab-nav-text">Snap</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-8654f02b93c441b4042483c9c4f8d02e" aria-expanded="false"
+      data-tab-item="R-tab-9f8c37bdd83cf7849a4378d7da9f1e4f"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-3743f6db7df4b677e6f7adc88595e368','R-tab-9f8c37bdd83cf7849a4378d7da9f1e4f')"
+    >
+      <span class="tab-nav-text">FreeBSD (Ports)</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-18175050b8580f1c017054c9031d43bd" aria-expanded="false"
+      data-tab-item="R-tab-082eda1d37f29113d8bb80656ebee192"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-3743f6db7df4b677e6f7adc88595e368','R-tab-082eda1d37f29113d8bb80656ebee192')"
+    >
+      <span class="tab-nav-text">Gentoo</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-ad114b2ff47a082754e8fb5d031c550a" aria-expanded="false"
+      data-tab-item="R-tab-3da481d133f45d1d7590bfa6cbb66587"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-3743f6db7df4b677e6f7adc88595e368','R-tab-3da481d133f45d1d7590bfa6cbb66587')"
+    >
+      <span class="tab-nav-text">Homebrew</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-8872190b437b1c836ff836149674bc66" aria-expanded="false"
+      data-tab-item="R-tab-df336bbc8ab1d221c97baaa1f388d989"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-3743f6db7df4b677e6f7adc88595e368','R-tab-df336bbc8ab1d221c97baaa1f388d989')"
+    >
+      <span class="tab-nav-text">OpenBSD (Ports)</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-533214205d4020bda86bbaab1a1b4d5c"
+      data-tab-item="R-tab-efd717440ab790091beef4a125935a73"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>pacman -S lego</span></span></code></pre></div>
+<p><span class="btn cstyle button transparent interactive"><a href="https://archlinux.org/packages/extra/x86_64/lego/" rel="external"><i class="fa-fw fas fa-arrow-up-right-from-square"></i> <span class="title">Link to the package</span></a></span></p>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-707ac985b825bab41bbd0b68e72f3721"
+      data-tab-item="R-tab-dc07dbd15cb59b30b35946bc78d3822a"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>yay -S lego-bin</span></span></code></pre></div>
+<p><span class="btn cstyle button transparent interactive"><a href="https://aur.archlinux.org/packages/lego-bin" rel="external"><i class="fa-fw fas fa-arrow-up-right-from-square"></i> <span class="title">Link to the package</span></a></span></p>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-12e3466013bdd27d6ba26624094f05dc"
+      data-tab-item="R-tab-9ad09a90c3dbf80bdf18cf666f9d323e"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo snap install lego</span></span></code></pre></div>
+<p>Note: The snap can only write to the <code>/var/snap/lego/common/.lego</code> directory.</p>
+<p><span class="btn cstyle button transparent interactive"><a href="https://snapcraft.io/lego" rel="external"><i class="fa-fw fas fa-arrow-up-right-from-square"></i> <span class="title">Link to the package</span></a></span></p>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-8654f02b93c441b4042483c9c4f8d02e"
+      data-tab-item="R-tab-9f8c37bdd83cf7849a4378d7da9f1e4f"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>pkg install lego</span></span></code></pre></div>
+<p><span class="btn cstyle button transparent interactive"><a href="https://www.freshports.org/security/lego" rel="external"><i class="fa-fw fas fa-arrow-up-right-from-square"></i> <span class="title">Link to the package</span></a></span></p>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-18175050b8580f1c017054c9031d43bd"
+      data-tab-item="R-tab-082eda1d37f29113d8bb80656ebee192"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>You can <a href="https://wiki.gentoo.org/wiki/Project:GURU/Information_for_End_Users" rel="external">enable GURU</a> repository and then:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>emerge app-crypt/lego</span></span></code></pre></div>
+<p><span class="btn cstyle button transparent interactive"><a href="https://gitweb.gentoo.org/repo/proj/guru.git/tree/app-crypt/lego" rel="external"><i class="fa-fw fas fa-arrow-up-right-from-square"></i> <span class="title">Link to the package</span></a></span></p>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-ad114b2ff47a082754e8fb5d031c550a"
+      data-tab-item="R-tab-3da481d133f45d1d7590bfa6cbb66587"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>brew install lego</span></span></code></pre></div>
+<p>or</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>pkg install lego</span></span></code></pre></div>
+<p><span class="btn cstyle button transparent interactive"><a href="https://formulae.brew.sh/formula/lego" rel="external"><i class="fa-fw fas fa-arrow-up-right-from-square"></i> <span class="title">Link to the package</span></a></span></p>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-8872190b437b1c836ff836149674bc66"
+      data-tab-item="R-tab-df336bbc8ab1d221c97baaa1f388d989"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>pkg_add lego</span></span></code></pre></div>
+<p><span class="btn cstyle button transparent interactive"><a href="https://openports.pl/path/security/lego" rel="external"><i class="fa-fw fas fa-arrow-up-right-from-square"></i> <span class="title">Link to the package</span></a></span></p>
+      </div>
+    </div>
+  </div>
+</div>
+<p>The lego maintainers are only maintaining the AUR and Snap packages, the other packages are community maintained.</p>
+<h2 id="from-sources">From sources<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>Requirements:</p>
+<ul>
+<li>go1.25+.</li>
+</ul>
+<p>To install the latest version from sources, just run:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>go install github.com/go-acme/lego/v5@latest</span></span></code></pre></div>
+<p>or</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git clone git@github.com:go-acme/lego.git
+</span></span><span style="display:flex;"><span>cd lego
+</span></span><span style="display:flex;"><span>make        <span style="color:#75715e"># tests + doc + build</span>
+</span></span><span style="display:flex;"><span>make build  <span style="color:#75715e"># only build</span></span></span></code></pre></div>
+
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 3, 2026
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1780447626" defer></script>
+    <script src="/lego/js/theme.min.js?1780447626" defer></script>
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  </body>
+</html>

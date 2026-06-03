@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html id="R-html" lang="en-us" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="html">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.157.0">
+    <meta name="generator" content="Relearn 9.0.3+bf3dbc8308313d6dd1f7ad32ba2a7983a4e9b3e5">
+    <meta name="description" content="This guide explains various ways to get and renew a certificate.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Obtain or renew certificates :: ACME client and library written in Go.">
+    <meta name="twitter:description" content="This guide explains various ways to get and renew a certificate.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/obtain/index.html">
+    <meta property="og:site_name" content="ACME client and library written in Go.">
+    <meta property="og:title" content="Obtain or renew certificates :: ACME client and library written in Go.">
+    <meta property="og:description" content="This guide explains various ways to get and renew a certificate.">
+    <meta property="og:locale" content="en_us">
+    <meta property="og:type" content="website">
+    <meta itemprop="name" content="Obtain or renew certificates :: ACME client and library written in Go.">
+    <meta itemprop="description" content="This guide explains various ways to get and renew a certificate.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2026-06-03T02:43:13+02:00">
+    <meta itemprop="wordCount" content="409">
+    <title>Obtain or renew certificates :: ACME client and library written in Go.</title>
+    <link href="/lego/obtain/index.print.html" rel="alternate" type="text/html" title="Obtain or renew certificates :: ACME client and library written in Go.">
+    <link href="/lego/images/favicon.svg?1780447626" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1780447626" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1780447626" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1780447626" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1780447626" defer></script>
+    <script src="/lego/js/search.min.js?1780447626" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1780447626";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1780447626" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/all.min.css?1780447626" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/all.min.css?1780447626" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1780447626" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1780447626" rel="stylesheet">
+    <link href="/lego/css/format-html.min.css?1780447626" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/obtain\/index.html';
+      window.relearn.relBasePath='..';
+      window.relearn.relBaseUri='..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // translations
+      window.T_Copy_to_clipboard = `Copy text to clipboard`;
+      window.T_Copied_to_clipboard = `Text copied to clipboard!`;
+      window.T_Link_copied_to_clipboard = `Link copied to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      window.T_Browser_unsupported_feature = `This browser doesn't support this feature`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantprefix = "my-custom-";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant") ?? "";
+        if( !variant ||
+            (!variant.startsWith(window.relearn.customvariantprefix) && !window.relearn.themevariants.includes(variant)) ||
+            (variant.startsWith(window.relearn.customvariantprefix) && !window.localStorage.getItem(window.relearn.absBaseUri + "/variantstylesheet-" + variant)) ){
+          variant = window.relearn.themevariants[0];
+          window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+    <link href="/lego/css/custom.css?1780447626" rel="stylesheet">
+  </head>
+  <body class="mobile-support html" data-origin="/lego/obtain/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar" class="default-animation">
+        <div class="topbar-wrapper default-animation">
+          <div class="topbar-sidebar-divider default-animation"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar default-animation" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button></span>
+            </div>
+            <div class="topbar-button topbar-button-toc default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-table-list"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+<nav class="TableOfContents">
+  <ul>
+    <li><a href="#quickstart">Quickstart</a></li>
+    <li><a href="#wildcard-certificates">Wildcard Certificates</a></li>
+    <li><a href="#certificates">Certificates</a></li>
+    <li><a href="#using-a-custom-certificate-signing-request-csr">Using a custom certificate signing request (CSR)</a></li>
+    <li><a href="#challenge-types">Challenge Types</a></li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">Obtain or renew certificates</span><meta itemprop="position" content="2"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-print default-animation" data-content-empty="disable" data-width-s="area-more" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/obtain/index.print.html" title="Print whole chapter (CTRL+ALT+p)"><i class="fa-fw fas fa-print"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-prev default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/install/index.html" title="Installation (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-next default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/obtain/dns01/index.html" title="DNS-01 Challenge (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-more default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable obtain" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="obtain-or-renew-certificates">Obtain or renew certificates</h1>
+
+<p>This guide explains various ways to get and renew a certificate.</p>
+<p>These examples assume you have <a href="https://go-acme.github.io/lego/install/" rel="external">lego installed</a>.
+You can get a pre-built binary from the <a href="https://github.com/go-acme/lego/releases" rel="external">releases</a> page.</p>
+<h2 id="quickstart">Quickstart<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<div class="tab-panel" data-tab-group="R-tabs-48b2327216a8c8325495e1dbc9ef40b4">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-51610b1d606a3a8e7603c5750b8af35d" aria-expanded="true"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-37fe9424033504d3b5b97695d72e7997')"
+    >
+      <span class="tab-nav-text">Classic Way</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-d0428b11dea4b208457f241a33dfa048" aria-expanded="false"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-de92ec79f6a16919fe493e313ff88356')"
+    >
+      <span class="tab-nav-text">With a Configuration File</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-51610b1d606a3a8e7603c5750b8af35d"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<p>Execute the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego run -d <span style="color:#e6db74">&#39;example.com&#39;</span> --http</span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-d0428b11dea4b208457f241a33dfa048"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Create a <code>.lego.yml</code> file with the following content:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">certificates</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">foo</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">challenge</span>: <span style="color:#ae81ff">http-01</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">domains</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">example.com</span></span></span></code></pre></div>
+<p>And execute:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego</span></span></code></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="wildcard-certificates">Wildcard Certificates<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<div class="tab-panel" data-tab-group="R-tabs-48b2327216a8c8325495e1dbc9ef40b4">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-93851adf1f4ac839444c23a5124d3690" aria-expanded="true"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-37fe9424033504d3b5b97695d72e7997')"
+    >
+      <span class="tab-nav-text">Classic Way</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-b5888a10608b4721dcba8142aef416b8" aria-expanded="false"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-de92ec79f6a16919fe493e313ff88356')"
+    >
+      <span class="tab-nav-text">With a Configuration File</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-93851adf1f4ac839444c23a5124d3690"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<p>Execute the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>CLOUDFLARE_EMAIL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;you@example.com&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>CLOUDFLARE_API_KEY<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;yourprivatecloudflareapikey&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>lego run --dns cloudflare -d <span style="color:#e6db74">&#39;example.org&#39;</span> -d <span style="color:#e6db74">&#39;*.example.org&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-b5888a10608b4721dcba8142aef416b8"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Create a <code>.lego.yml</code> file with the following content:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">challenges</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">cf</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">dns</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">provider</span>: <span style="color:#ae81ff">cloudflare</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">certificates</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">foo</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">domains</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">example.com</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#e6db74">&#39;*.example.com&#39;</span></span></span></code></pre></div>
+<p>And execute:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>CLOUDFLARE_EMAIL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;you@example.com&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>CLOUDFLARE_API_KEY<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;yourprivatecloudflareapikey&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>lego</span></span></code></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="certificates">Certificates<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>You will find your certificates in the <code>.lego</code> folder of the current working directory:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ ls -1 ./.lego/certificates
+</span></span><span style="display:flex;"><span>example.com.crt
+</span></span><span style="display:flex;"><span>example.com.issuer.crt
+</span></span><span style="display:flex;"><span>example.com.json
+</span></span><span style="display:flex;"><span>example.com.key
+</span></span><span style="display:flex;"><span>[maybe more files for different domains...]
+</span></span></code></pre></div>
+<p>where</p>
+<ul>
+<li><code>example.com.crt</code> is the server certificate (including the CA certificate),</li>
+<li><code>example.com.key</code> is the private key needed for the server certificate,</li>
+<li><code>example.com.issuer.crt</code> is the CA certificate, and</li>
+<li><code>example.com.json</code> contains some JSON encoded meta information.</li>
+</ul>
+<p>For each domain, you will have a set of these four files.
+For wildcard certificates (<code>*.example.com</code>), the filenames will look like <code>_.example.com.crt</code>.</p>
+<p>The <code>.crt</code> and <code>.key</code> files are PEM-encoded x509 certificates and private keys.
+If you&rsquo;re looking for a <code>cert.pem</code> and <code>privkey.pem</code>, you can just use <code>example.com.crt</code> and <code>example.com.key</code>.</p>
+<h2 id="using-a-custom-certificate-signing-request-csr">Using a custom certificate signing request (CSR)<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The first step in the process of obtaining certificates involves creating a signing request.
+This CSR bundles various information, including the domain name(s) and a public key.
+By default, lego will hide this step from you, but if you already have a CSR, you can easily reuse it:</p>
+<div class="tab-panel" data-tab-group="R-tabs-48b2327216a8c8325495e1dbc9ef40b4">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-ea13254e1f6cd2816c8131c6741ffddc" aria-expanded="true"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-37fe9424033504d3b5b97695d72e7997')"
+    >
+      <span class="tab-nav-text">Classic Way</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-08ac8e0a0a081019a56733579b34bf42" aria-expanded="false"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-de92ec79f6a16919fe493e313ff88356')"
+    >
+      <span class="tab-nav-text">With a Configuration File</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-ea13254e1f6cd2816c8131c6741ffddc"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<p>Execute the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego run --http --csr<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/path/to/csr.pem&#34;</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-08ac8e0a0a081019a56733579b34bf42"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Create a <code>.lego.yml</code> file with the following content:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">certificates</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">foo</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">csr</span>: <span style="color:#ae81ff">/path/to/csr.pem</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">challenge</span>: <span style="color:#ae81ff">http-01</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">domains</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">example.com</span></span></span></code></pre></div>
+<p>And execute:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego</span></span></code></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+<p>lego will infer the domains to be validated based on the contents of the CSR, so make sure the CSR&rsquo;s Common Name and SubjectAltNames are set correctly.</p>
+<h2 id="challenge-types">Challenge Types<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<ul class="card-container">
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-5b2861b3dcd7b8aae73edae8eb9edb15">
+    <div class="card-content">
+      <div class="card-title" id="R-card-5b2861b3dcd7b8aae73edae8eb9edb15">
+        <a href="/lego/obtain/dns01/index.html">
+        DNS-01 Challenge
+        </a>
+      </div>
+      <div class="card-content-text">
+          This guide explains how to get and renew a certificate with the DNS-01 challenge.
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-8d853306fea1663134aeffffa09233f4">
+    <div class="card-content">
+      <div class="card-title" id="R-card-8d853306fea1663134aeffffa09233f4">
+        <a href="/lego/obtain/http01/index.html">
+        HTTP-01 Challenge
+        </a>
+      </div>
+      <div class="card-content-text">
+          This guide explains how to get and renew a certificate with the HTTP-01 challenge.
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-b799cfabda09e3e418bcb1224c1e94f4">
+    <div class="card-content">
+      <div class="card-title" id="R-card-b799cfabda09e3e418bcb1224c1e94f4">
+        <a href="/lego/obtain/tlsalpn01/index.html">
+        TLS-ALPN-01 Challenge
+        </a>
+      </div>
+      <div class="card-content-text">
+          This guide explains how to get and renew a certificate with the TLS-ALPN-01 challenge.
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-b2ef4d0fd244d2b76057956e82d3d34f">
+    <div class="card-content">
+      <div class="card-title" id="R-card-b2ef4d0fd244d2b76057956e82d3d34f">
+        <a href="/lego/obtain/dnspersist01/index.html">
+        DNS-PERSIST-01 Challenge
+        </a>
+      </div>
+      <div class="card-content-text">
+          This guide explains how to get and renew a certificate with the DNS-PERSIST-01 challenge.
+      </div>
+    </div>
+  </article>
+</li>
+</ul>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 3, 2026
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <aside id="R-sidebar" class="default-animation">
+      <div id="R-header-topbar" class="default-animation"></div>
+      <div id="R-header-wrapper" class="default-animation"><a id="logo" href="/lego"><img src="/lego/images/lego-logo-white.min.svg" alt="lego logo" width="80%"></a>
+
+        <search><form action="/lego/search/index.html" method="get">
+          <div class="searchbox default-animation">
+            <button class="search-detail" type="submit" title="Search (CTRL+ALT+f)"><i class="fas fa-fw fa-search"></i></button>
+            <label class="a11y-only" for="R-search-by">Search</label>
+            <input data-search-input id="R-search-by" name="search-by" class="search-by" type="search" placeholder="Search...">
+            <button class="search-clear" type="button" data-search-clear="" title="Clear search"><i class="fas fa-fw fa-times" title="Clear search"></i></button>
+          </div>
+        </form></search>
+      </div>
+      <div id="R-homelinks" class="default-animation">
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-homelinks default-animation">
+          <ul class="space collapsible-menu">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-headercontrols default-animation">
+          <ul class="">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+      </div>
+      <div id="R-content-wrapper" class="highlightable">
+        <div class="R-sidebarmenu R-shortcutmenu-main default-animation">
+          <ul class="enlarge morespace collapsible-menu">
+            <li class="" data-nav-id="/lego/install/index.html"><a class="padding" href="/lego/install/index.html"><i class="fa-solid fa-box-archive"></i> Installation<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="active parent " data-nav-id="/lego/obtain/index.html"><a class="padding default-animation" href="/lego/obtain/index.html"><i class="fa-solid fa-shield-halved"></i> Obtain or renew certificates<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-13caf4337333ddfe7f5b96479cbd6814" class="collapsible-menu">
+            <li class="" data-nav-id="/lego/obtain/dns01/index.html"><a class="padding" href="/lego/obtain/dns01/index.html">DNS-01 Challenge<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/obtain/http01/index.html"><a class="padding" href="/lego/obtain/http01/index.html">HTTP-01 Challenge<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/obtain/tlsalpn01/index.html"><a class="padding" href="/lego/obtain/tlsalpn01/index.html">TLS-ALPN-01 Challenge<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/obtain/dnspersist01/index.html"><a class="padding" href="/lego/obtain/dnspersist01/index.html">DNS-PERSIST-01 Challenge<i class="fa-fw fas fa-check read-icon"></i></a></li></ul></li>
+            <li class="" data-nav-id="/lego/dns/index.html"><a class="padding default-animation" href="/lego/dns/index.html"><i class="fa-solid fa-globe"></i> DNS Providers<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-1a5c4aa622b091f451ffa4fea9c3a5f1" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/advanced/index.html"><a class="padding default-animation" href="/lego/advanced/index.html"><i class="fa-solid fa-gears"></i> Advanced usages<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-ab6684576aada2b2c1ce071df63f2853" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/references/index.html"><a class="padding default-animation" href="/lego/references/index.html"><i class="fa-regular fa-bookmark"></i> References<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-26caf0e43dd165bcbddd8eb517876f9e" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/library/index.html"><a class="padding default-animation" href="/lego/library/index.html"><i class="fa-solid fa-code"></i> Library<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-afbce53b44a67cf171cfa6ad78fcc6cf" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/migration/index.html"><a class="padding default-animation" href="/lego/migration/index.html"><i class="fa-solid fa-recycle"></i> Migration from v4 to v5<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-a5eba261a62a08c005636c948c971d1e" class="collapsible-menu"></ul></li>
+          </ul>
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-shortcuts default-animation">
+          <div class="nav-title padding">More</div>
+          <ul class="space collapsible-menu">
+            <li class="" data-nav-id="https://github.com/go-acme/lego"><a class="padding" href="https://github.com/go-acme/lego" rel="external"><i class='fab fa-fw fa-github'></i> GitHub repo<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/issues"><a class="padding" href="https://github.com/go-acme/lego/issues" rel="external"><i class='fas fa-fw fa-bug'></i> Issues<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/discussions"><a class="padding" href="https://github.com/go-acme/lego/discussions" rel="external"><i class='fas fa-fw fa-comments'></i> Discussions<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/sponsors/go-acme"><a class="padding" href="https://github.com/sponsors/go-acme" rel="external"><i class='fas fa-fw fa-heart red cstyle'></i> Donate<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          </ul>
+        </div>
+        <div id="R-footer-margin" class="default-animation"></div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-footercontrols default-animation">
+          <ul class="">
+            <li class="R-historyclearer">
+              <div class="padding menu-control">
+                <i class="fa-fw fas fa-history"></i>
+                <span>&nbsp;</span>
+                <div class="control-style">
+                  <button>Clear History</button>
+                </div>
+                <div class="clear"></div>
+              </div>
+            </li>
+          </ul>
+        </div>
+<div id="R-footer" class="default-animation"><p>Built with <a href="https://github.com/McShelby/hugo-theme-relearn" title="love"><i class="fas fa-heart"></i></a> by <a href="https://gohugo.io/">Hugo</a></p></div>
+      </div>
+    </aside>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1780447626" defer></script>
+    <script src="/lego/js/theme.min.js?1780447626" defer></script>
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  </body>
+</html>

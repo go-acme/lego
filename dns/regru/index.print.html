@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html id="R-html" lang="en-us" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="print">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.157.0">
+    <meta name="generator" content="Relearn 9.0.3+bf3dbc8308313d6dd1f7ad32ba2a7983a4e9b3e5">
+    <meta name="description" content="Configuration for reg.ru.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="reg.ru :: ACME client and library written in Go.">
+    <meta name="twitter:description" content="Configuration for reg.ru.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/dns/regru/index.html">
+    <meta property="og:site_name" content="ACME client and library written in Go.">
+    <meta property="og:title" content="reg.ru :: ACME client and library written in Go.">
+    <meta property="og:description" content="Configuration for reg.ru.">
+    <meta property="og:locale" content="en_us">
+    <meta property="og:type" content="article">
+    <meta property="article:section" content="DNS Providers">
+    <meta property="article:published_time" content="2019-03-03T16:39:46+01:00">
+    <meta property="article:modified_time" content="2026-06-03T02:43:13+02:00">
+    <meta itemprop="name" content="reg.ru :: ACME client and library written in Go.">
+    <meta itemprop="description" content="Configuration for reg.ru.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2026-06-03T02:43:13+02:00">
+    <meta itemprop="wordCount" content="142">
+    <title>reg.ru :: ACME client and library written in Go.</title>
+    <link href="https://go-acme.github.io/lego/dns/regru/index.html" rel="canonical" type="text/html" title="reg.ru :: ACME client and library written in Go.">
+    <link href="/lego/images/favicon.svg?1780447626" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1780447626" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1780447626" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1780447626" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1780447626" defer></script>
+    <script src="/lego/js/search.min.js?1780447626" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1780447626";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1780447626" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/all.min.css?1780447626" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/all.min.css?1780447626" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1780447626" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1780447626" rel="stylesheet">
+    <link href="/lego/css/format-print.min.css?1780447626" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/dns\/regru\/index.html';
+      window.relearn.relBasePath='..\/..';
+      window.relearn.relBaseUri='..\/..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // translations
+      window.T_Copy_to_clipboard = `Copy text to clipboard`;
+      window.T_Copied_to_clipboard = `Text copied to clipboard!`;
+      window.T_Link_copied_to_clipboard = `Link copied to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      window.T_Browser_unsupported_feature = `This browser doesn't support this feature`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantprefix = "my-custom-";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant") ?? "";
+        if( !variant ||
+            (!variant.startsWith(window.relearn.customvariantprefix) && !window.relearn.themevariants.includes(variant)) ||
+            (variant.startsWith(window.relearn.customvariantprefix) && !window.localStorage.getItem(window.relearn.absBaseUri + "/variantstylesheet-" + variant)) ){
+          variant = window.relearn.themevariants[0];
+          window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+    <link href="/lego/css/custom.css?1780447626" rel="stylesheet">
+  </head>
+  <body class="mobile-support print" data-origin="/lego/dns/regru/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar" class="default-animation">
+        <div class="topbar-wrapper default-animation">
+          <div class="topbar-sidebar-divider default-animation"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar default-animation" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button></span>
+            </div>
+            <div class="topbar-button topbar-button-toc default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-table-list"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+<nav class="TableOfContents">
+  <ul>
+    <li><a href="#credentials">Credentials</a></li>
+    <li><a href="#additional-configuration">Additional Configuration</a></li>
+    <li><a href="#more-information">More information</a></li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/dns/index.html"><span itemprop="name">DNS Providers</span></a><meta itemprop="position" content="2">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">reg.ru</span><meta itemprop="position" content="3"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-print default-animation" data-content-empty="disable" data-width-s="area-more" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/dns/regru/index.print.html" title="Print whole chapter (CTRL+ALT+p)"><i class="fa-fw fas fa-print"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-prev default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/dns/rcodezero/index.html" title="RcodeZero (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-next default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/dns/regfish/index.html" title="Regfish (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-more default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable dns" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="regru">reg.ru</h1>
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/regru/regru.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<p>Configuration for <a href="https://www.reg.ru/" rel="external">reg.ru</a>.</p>
+<ul>
+<li>Code: <code>regru</code></li>
+<li>Since: v3.5.0</li>
+</ul>
+<p>Here is an example bash command using the reg.ru provider:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>REGRU_USERNAME<span style="color:#f92672">=</span>xxxxxx <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>REGRU_PASSWORD<span style="color:#f92672">=</span>yyyyyy <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>lego run --dns regru -d <span style="color:#e6db74">&#39;*.example.com&#39;</span> -d example.com</span></span></code></pre></div>
+<h2 id="credentials">Credentials<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<table>
+  <thead>
+      <tr>
+          <th>Environment Variable Name</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>REGRU_PASSWORD</code></td>
+          <td>API password</td>
+      </tr>
+      <tr>
+          <td><code>REGRU_USERNAME</code></td>
+          <td>API username</td>
+      </tr>
+  </tbody>
+</table>
+<p>The environment variable names can be suffixed by <code>_FILE</code> to reference a file instead of a value.
+More information <a href="https://go-acme.github.io/lego/dns/#configuration-and-credentials" rel="external">here</a>.</p>
+<h2 id="additional-configuration">Additional Configuration<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<table>
+  <thead>
+      <tr>
+          <th>Environment Variable Name</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>REGRU_HTTP_TIMEOUT</code></td>
+          <td>API request timeout in seconds (Default: 30)</td>
+      </tr>
+      <tr>
+          <td><code>REGRU_POLLING_INTERVAL</code></td>
+          <td>Time between DNS propagation check in seconds (Default: 2)</td>
+      </tr>
+      <tr>
+          <td><code>REGRU_PROPAGATION_TIMEOUT</code></td>
+          <td>Maximum waiting time for DNS propagation in seconds (Default: 60)</td>
+      </tr>
+      <tr>
+          <td><code>REGRU_TLS_CERT</code></td>
+          <td>authentication certificate</td>
+      </tr>
+      <tr>
+          <td><code>REGRU_TLS_KEY</code></td>
+          <td>authentication private key</td>
+      </tr>
+      <tr>
+          <td><code>REGRU_TTL</code></td>
+          <td>The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)</td>
+      </tr>
+  </tbody>
+</table>
+<p>The environment variable names can be suffixed by <code>_FILE</code> to reference a file instead of a value.
+More information <a href="https://go-acme.github.io/lego/dns/#configuration-and-credentials" rel="external">here</a>.</p>
+<h2 id="more-information">More information<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<ul>
+<li><a href="https://www.reg.ru/support/help/api2" rel="external">API documentation</a></li>
+</ul>
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/regru/regru.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 3, 2026
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1780447626" defer></script>
+    <script src="/lego/js/theme.min.js?1780447626" defer></script>
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  </body>
+</html>

@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html id="R-html" lang="en-us" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="print">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.157.0">
+    <meta name="generator" content="Relearn 9.0.3+bf3dbc8308313d6dd1f7ad32ba2a7983a4e9b3e5">
+    <meta name="description" content="Certificate OperationsThis section describes certificate operations.Account OperationsThis section describes account operations.HooksThis section describes how to use hooks.CA serversThis page describes the usage of CA servers (ACME servers).File ConfigurationThe configuration file is a way to simplify the management of multiple certificates.OptionsThis section describes advanced options that can be used to configure lego.Archive OperationsThis section describes operations on the archives.TipsThis section contains some tips and tricks for using lego.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Advanced usages :: ACME client and library written in Go.">
+    <meta name="twitter:description" content="Certificate OperationsThis section describes certificate operations.Account OperationsThis section describes account operations.HooksThis section describes how to use hooks.CA serversThis page describes the usage of CA servers (ACME servers).File ConfigurationThe configuration file is a way to simplify the management of multiple certificates.OptionsThis section describes advanced options that can be used to configure lego.Archive OperationsThis section describes operations on the archives.TipsThis section contains some tips and tricks for using lego.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/advanced/index.html">
+    <meta property="og:site_name" content="ACME client and library written in Go.">
+    <meta property="og:title" content="Advanced usages :: ACME client and library written in Go.">
+    <meta property="og:description" content="Certificate OperationsThis section describes certificate operations.Account OperationsThis section describes account operations.HooksThis section describes how to use hooks.CA serversThis page describes the usage of CA servers (ACME servers).File ConfigurationThe configuration file is a way to simplify the management of multiple certificates.OptionsThis section describes advanced options that can be used to configure lego.Archive OperationsThis section describes operations on the archives.TipsThis section contains some tips and tricks for using lego.">
+    <meta property="og:locale" content="en_us">
+    <meta property="og:type" content="website">
+    <meta itemprop="name" content="Advanced usages :: ACME client and library written in Go.">
+    <meta itemprop="description" content="Certificate OperationsThis section describes certificate operations.Account OperationsThis section describes account operations.HooksThis section describes how to use hooks.CA serversThis page describes the usage of CA servers (ACME servers).File ConfigurationThe configuration file is a way to simplify the management of multiple certificates.OptionsThis section describes advanced options that can be used to configure lego.Archive OperationsThis section describes operations on the archives.TipsThis section contains some tips and tricks for using lego.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2026-06-03T02:43:13+02:00">
+    <meta itemprop="wordCount" content="82">
+    <title>Advanced usages :: ACME client and library written in Go.</title>
+    <link href="https://go-acme.github.io/lego/advanced/index.html" rel="canonical" type="text/html" title="Advanced usages :: ACME client and library written in Go.">
+    <link href="/lego/images/favicon.svg?1780447626" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1780447626" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1780447626" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1780447626" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1780447626" defer></script>
+    <script src="/lego/js/search.min.js?1780447626" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1780447626";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1780447626" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/all.min.css?1780447626" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/all.min.css?1780447626" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1780447626" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1780447626" rel="stylesheet">
+    <link href="/lego/css/format-print.min.css?1780447626" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/advanced\/index.html';
+      window.relearn.relBasePath='..';
+      window.relearn.relBaseUri='..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // translations
+      window.T_Copy_to_clipboard = `Copy text to clipboard`;
+      window.T_Copied_to_clipboard = `Text copied to clipboard!`;
+      window.T_Link_copied_to_clipboard = `Link copied to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      window.T_Browser_unsupported_feature = `This browser doesn't support this feature`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantprefix = "my-custom-";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant") ?? "";
+        if( !variant ||
+            (!variant.startsWith(window.relearn.customvariantprefix) && !window.relearn.themevariants.includes(variant)) ||
+            (variant.startsWith(window.relearn.customvariantprefix) && !window.localStorage.getItem(window.relearn.absBaseUri + "/variantstylesheet-" + variant)) ){
+          variant = window.relearn.themevariants[0];
+          window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+    <link href="/lego/css/custom.css?1780447626" rel="stylesheet">
+  </head>
+  <body class="mobile-support print" data-origin="/lego/advanced/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar" class="default-animation">
+        <div class="topbar-wrapper default-animation">
+          <div class="topbar-sidebar-divider default-animation"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar default-animation" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button></span>
+            </div>
+            <div class="topbar-button topbar-button-toc default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-table-list"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper"> 
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">Advanced usages</span><meta itemprop="position" content="2"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-print default-animation" data-content-empty="disable" data-width-s="area-more" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/advanced/index.print.html" title="Print whole chapter (CTRL+ALT+p)"><i class="fa-fw fas fa-print"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-prev default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/dns/zonomi/index.html" title="Zonomi (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-next default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/advanced/certificates/index.html" title="Certificate Operations (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-more default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable advanced" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="advanced-usages">Advanced usages</h1>
+
+<ul class="card-container">
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-ac13761a0ac3f366d75ed4ea70b6b23e">
+    <div class="card-content">
+      <div class="card-title" id="R-card-ac13761a0ac3f366d75ed4ea70b6b23e">
+        <a href="/lego/advanced/certificates/index.html">
+        Certificate Operations
+        </a>
+      </div>
+      <div class="card-content-text">
+          This section describes certificate operations.
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-c928cc5f616e58b6b78946486e3e576f">
+    <div class="card-content">
+      <div class="card-title" id="R-card-c928cc5f616e58b6b78946486e3e576f">
+        <a href="/lego/advanced/accounts/index.html">
+        Account Operations
+        </a>
+      </div>
+      <div class="card-content-text">
+          This section describes account operations.
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-c4cfaa82210945eec4cce20a55c4fcdd">
+    <div class="card-content">
+      <div class="card-title" id="R-card-c4cfaa82210945eec4cce20a55c4fcdd">
+        <a href="/lego/advanced/hooks/index.html">
+        Hooks
+        </a>
+      </div>
+      <div class="card-content-text">
+          This section describes how to use hooks.
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-96f245cce3855f204abf9177f6c22534">
+    <div class="card-content">
+      <div class="card-title" id="R-card-96f245cce3855f204abf9177f6c22534">
+        <a href="/lego/advanced/caservers/index.html">
+        CA servers
+        </a>
+      </div>
+      <div class="card-content-text">
+          This page describes the usage of CA servers (ACME servers).
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-0b668f15896b323850ad1d32e800224f">
+    <div class="card-content">
+      <div class="card-title" id="R-card-0b668f15896b323850ad1d32e800224f">
+        <a href="/lego/advanced/file-configuration/index.html">
+        File Configuration
+        </a>
+      </div>
+      <div class="card-content-text">
+          The configuration file is a way to simplify the management of multiple certificates.
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-3603a0d06be7acb852b3c01f119f334a">
+    <div class="card-content">
+      <div class="card-title" id="R-card-3603a0d06be7acb852b3c01f119f334a">
+        <a href="/lego/advanced/options/index.html">
+        Options
+        </a>
+      </div>
+      <div class="card-content-text">
+          This section describes advanced options that can be used to configure lego.
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-614c82a8f7d1d0e117f5f8d7ca4487bf">
+    <div class="card-content">
+      <div class="card-title" id="R-card-614c82a8f7d1d0e117f5f8d7ca4487bf">
+        <a href="/lego/advanced/archives/index.html">
+        Archive Operations
+        </a>
+      </div>
+      <div class="card-content-text">
+          This section describes operations on the archives.
+      </div>
+    </div>
+  </article>
+</li>
+<li>
+  <article class="card card-popout" aria-labelledby="R-card-8ae624d77d42940dfbed377006a1e493">
+    <div class="card-content">
+      <div class="card-title" id="R-card-8ae624d77d42940dfbed377006a1e493">
+        <a href="/lego/advanced/tips/index.html">
+        Tips
+        </a>
+      </div>
+      <div class="card-content-text">
+          This section contains some tips and tricks for using lego.
+      </div>
+    </div>
+  </article>
+</li>
+</ul>
+
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 3, 2026
+  </footer>
+</article>
+          <section>
+            <h1 class="a11y-only">Subsections of Advanced usages</h1>
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="certificate-operations">Certificate Operations</h1>
+
+<p>This section describes certificate operations.</p>
+<h2 id="list-certificates">List Certificates<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>You can list all certificates managed by lego with:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego certificates list</span></span></code></pre></div>
+<p>Output:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>Found the following certificates:
+_.example.com
+├── Status: this certificate is expired.
+├── Domains: *.example.com, example.com
+├── Expiration Date: 2026-04-08 21:02:27 +0000 UTC
+├── Issuer: CN=(STAGING) Puzzling Parsnip E7,O=(STAGING) Let&#39;s Encrypt,C=US
+└── Certificate Path: /path/to/.lego/certificates/_.example.com.crt
+
+...</code></pre></div>
+<h2 id="revoke-certificates">Revoke Certificates<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>You can revoke existing certificates.</p>
+<div class="tab-panel" data-tab-group="R-tabs-48b2327216a8c8325495e1dbc9ef40b4">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-828d73beecc8c3fde89133547f234d6c" aria-expanded="true"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-37fe9424033504d3b5b97695d72e7997')"
+    >
+      <span class="tab-nav-text">Classic Way</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-7016d761bc169aca0b6f103547f8f0d3" aria-expanded="false"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-de92ec79f6a16919fe493e313ff88356')"
+    >
+      <span class="tab-nav-text">With a Configuration File</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-828d73beecc8c3fde89133547f234d6c"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<p>Execute the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego certificates revoke --cert.name <span style="color:#e6db74">&#39;example.com&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-7016d761bc169aca0b6f103547f8f0d3"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>If you have the following <code>.lego.yml</code> configuration file:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">certificates</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">foo</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">challenge</span>: <span style="color:#ae81ff">http-01</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">domains</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">example.com</span></span></span></code></pre></div>
+<p>And execute:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego certificates revoke --cert.name foo</span></span></code></pre></div>
+<p>When using a configuration file, you can revoke all certificates at once:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego certificates revoke</span></span></code></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+<p>To know the available options, run:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego certificates revoke --help</span></span></code></pre></div>
+<p>Or read the <a href="https://go-acme.github.io/lego/references/ref-flags/#lego-certificates-revoke" rel="external">documentation</a>.</p>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 3, 2026
+  </footer>
+</article>
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="account-operations">Account Operations</h1>
+
+<p>This section describes account operations.</p>
+<h2 id="list-accounts">List Accounts<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>You can list all the accounts registered in your local storage:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego accounts list</span></span></code></pre></div>
+<p>Output:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>Found the following accounts:
+noemail@example.com
+├── Email: 
+├── Server: https://acme-v02.api.letsencrypt.org/directory
+├── Key Type: EC256
+└── Path: /path/to/.lego/accounts/acme-v02.api.letsencrypt.org/noemail@example.com/account.json
+
+...</code></pre></div>
+<h2 id="register">Register<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>You can register a new account by using the following command:</p>
+<div class="tab-panel" data-tab-group="R-tabs-9b6a49d4120160d266fb5a7de08d8430">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-0b437fb642837c843c64515897ba88ec" aria-expanded="true"
+      data-tab-item="R-tab-f9f0a1e435d267fc171754aef15f8c23"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-9b6a49d4120160d266fb5a7de08d8430','R-tab-f9f0a1e435d267fc171754aef15f8c23')"
+    >
+      <span class="tab-nav-text">Simple Registration</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-45c5e3ae66f93d5b4651670c7ade8c72" aria-expanded="false"
+      data-tab-item="R-tab-540f2a88df182b3681d5bf2ea8eca1d0"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-9b6a49d4120160d266fb5a7de08d8430','R-tab-540f2a88df182b3681d5bf2ea8eca1d0')"
+    >
+      <span class="tab-nav-text">With External Account Binding</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-0b437fb642837c843c64515897ba88ec"
+      data-tab-item="R-tab-f9f0a1e435d267fc171754aef15f8c23"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego accounts register --account-id<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;myaccount&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-45c5e3ae66f93d5b4651670c7ade8c72"
+      data-tab-item="R-tab-540f2a88df182b3681d5bf2ea8eca1d0"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego accounts register --account-id<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;myaccount&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>    --server https://example.com/ca <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>    --eab <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>    --eab.kid xxx <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>    --eab.hmac yyy</span></span></code></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+<p>To know the available options, run:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego accounts register --help</span></span></code></pre></div>
+<p>Or read the <a href="https://go-acme.github.io/lego/references/ref-flags/#lego-accounts-register" rel="external">documentation</a>.</p>
+<h2 id="key-rollover">Key Rollover<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>You can change the account private key (a key rollover) by using the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego accounts keyrollover --account-id<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;myaccount&#39;</span></span></span></code></pre></div>
+<p>To know the available options, run:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego accounts keyrollover --help</span></span></code></pre></div>
+<p>Or read the <a href="https://go-acme.github.io/lego/references/ref-flags/#lego-accounts-keyrollover" rel="external">documentation</a>.</p>
+<h2 id="account-recovery">Account Recovery<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>You can recover/import an account, to do that, you need the private key of the account.</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego accounts recover --account-id<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;myaccount&#39;</span> --private-key /path/to/private-key.pem</span></span></code></pre></div>
+<p>The account will be imported and added to <code>.lego/accounts/</code>.</p>
+<p>To know the available options, run:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego accounts recover --help</span></span></code></pre></div>
+<p>Or read the <a href="https://go-acme.github.io/lego/references/ref-flags/#lego-accounts-recover" rel="external">documentation</a>.</p>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 3, 2026
+  </footer>
+</article>
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="hooks">Hooks</h1>
+
+<p>This section describes how to use hooks.</p>
+<p>There are three hooks available:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Hook</th>
+          <th>When it runs</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><a href="https://go-acme.github.io/lego/advanced/hooks/#pre-hook" rel="external">pre-hook</a></td>
+          <td>Before the certificate is created or renewed (only if a change will actually happen)</td>
+      </tr>
+      <tr>
+          <td><a href="https://go-acme.github.io/lego/advanced/hooks/#deploy-hook" rel="external">deploy-hook</a></td>
+          <td>After the certificate is successfully created or renewed</td>
+      </tr>
+      <tr>
+          <td><a href="https://go-acme.github.io/lego/advanced/hooks/#post-hook" rel="external">post-hook</a></td>
+          <td>After the operation completes, regardless of outcome</td>
+      </tr>
+  </tbody>
+</table>
+<p>Don&rsquo;t hesitate to share your hook scripts with <a href="https://github.com/go-acme/lego/discussions/categories/ideas" rel="external">the community</a>.</p>
+<h2 id="pre-hook">Pre-Hook<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>This hook is executed, before the creation or the renewal, in cases where a certificate will be effectively created/renewed.</p>
+<div class="tab-panel" data-tab-group="R-tabs-48b2327216a8c8325495e1dbc9ef40b4">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-4f76f274bca2ddbc9ff9077ebf56ab2b" aria-expanded="true"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-37fe9424033504d3b5b97695d72e7997')"
+    >
+      <span class="tab-nav-text">Classic Way</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-6dc71db6c03bff93c143c40b02ec6e55" aria-expanded="false"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-de92ec79f6a16919fe493e313ff88356')"
+    >
+      <span class="tab-nav-text">With a Configuration File</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-4f76f274bca2ddbc9ff9077ebf56ab2b"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<p>Execute the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego run -d <span style="color:#e6db74">&#39;example.com&#39;</span> --pre-hook<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./my-pre-hook.sh&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-6dc71db6c03bff93c143c40b02ec6e55"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Define the following section in your <code>.lego.yaml</code> file:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">hooks</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">pre</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">command</span>: <span style="color:#e6db74">&#39;./my-pre-hook.sh&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="deploy-hook">Deploy-Hook<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>This hook is executed after the successful creation or the renewal of a certificate.</p>
+<div class="tab-panel" data-tab-group="R-tabs-48b2327216a8c8325495e1dbc9ef40b4">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-1654c1e262b733b0ef5c11181b6de110" aria-expanded="true"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-37fe9424033504d3b5b97695d72e7997')"
+    >
+      <span class="tab-nav-text">Classic Way</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-a4291fbe1791c5747c5068ee38a51044" aria-expanded="false"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-de92ec79f6a16919fe493e313ff88356')"
+    >
+      <span class="tab-nav-text">With a Configuration File</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-1654c1e262b733b0ef5c11181b6de110"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<p>Execute the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego run -d <span style="color:#e6db74">&#39;example.com&#39;</span> --deploy-hook<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./my-deploy-hook.sh&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-a4291fbe1791c5747c5068ee38a51044"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Define the following section in your <code>.lego.yaml</code> file:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">hooks</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">deploy</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">command</span>: <span style="color:#e6db74">&#39;./my-deploy-hook.sh&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="post-hook">Post-Hook<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>This hook is executed, after the creation or the renewal, in cases where a certificate is created/renewed, regardless of whether any errors occurred.</p>
+<div class="tab-panel" data-tab-group="R-tabs-48b2327216a8c8325495e1dbc9ef40b4">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-5613de638bef7fdb1a96798ea1d0f921" aria-expanded="true"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-37fe9424033504d3b5b97695d72e7997')"
+    >
+      <span class="tab-nav-text">Classic Way</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-b23a127c06f6b53e6dd2e93c291ef0bd" aria-expanded="false"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-de92ec79f6a16919fe493e313ff88356')"
+    >
+      <span class="tab-nav-text">With a Configuration File</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-5613de638bef7fdb1a96798ea1d0f921"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<p>Execute the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego run -d <span style="color:#e6db74">&#39;example.com&#39;</span> --post-hook<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./my-post-hook.sh&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-b23a127c06f6b53e6dd2e93c291ef0bd"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Define the following section in your <code>.lego.yaml</code> file:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">hooks</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">post</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">command</span>: <span style="color:#e6db74">&#39;./my-post-hook.sh&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="environment-variables">Environment Variables<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>Some details are passed through environment variables to help you with your hooks:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Environment Variable</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>LEGO_HOOK_ACCOUNT_ID</code></td>
+          <td>The account ID.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_ACCOUNT_EMAIL</code></td>
+          <td>The account email (if available).</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_ACCOUNT_SERVER</code></td>
+          <td>The server related to the account.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_NAME</code></td>
+          <td>The name/ID of the certificate.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_NAME_SANITIZED</code></td>
+          <td>The sanitized name/ID of the certificate.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_KEY_TYPE</code></td>
+          <td>The type of the certificate key.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_DOMAINS</code></td>
+          <td>The domains of the certificate.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_PATH</code></td>
+          <td>The path of the certificate.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_KEY_PATH</code></td>
+          <td>The path of the certificate key.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_ISSUER_CERT_PATH</code></td>
+          <td>The path of the issuer certificate.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_PEM_PATH</code></td>
+          <td>(only with <code>--pem</code>) The path to the PEM certificate.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_PFX_PATH</code></td>
+          <td>(only with <code>--pfx</code>) The path to the PFX certificate.</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="use-case">Use Case<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>A typical use case is distributing the certificate for other services and reload them if necessary.
+Since many programs understand PEM-formatted TLS certificates, it is relatively simple to use certificates for more than a web server.</p>
+<p>This example script installs the new certificate for a mail server and reloads it.
+Beware: this is just a starting point, error checking is omitted for brevity.</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e">#!/bin/bash
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># copy certificates to a directory controlled by Postfix</span>
+</span></span><span style="display:flex;"><span>postfix_cert_dir<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/etc/postfix/certificates&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># our Postfix server only handles mail for @example.com domain</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> <span style="color:#e6db74">&#34;</span>$LEGO_HOOK_CERT_NAME<span style="color:#e6db74">&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;example.com&#34;</span> <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>  install -u postfix -g postfix -m <span style="color:#ae81ff">0644</span> <span style="color:#e6db74">&#34;</span>$LEGO_HOOK_CERT_PATH<span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span>$postfix_cert_dir<span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>  install -u postfix -g postfix -m <span style="color:#ae81ff">0640</span> <span style="color:#e6db74">&#34;</span>$LEGO_HOOK_CERT_KEY_PATH<span style="color:#e6db74">&#34;</span>  <span style="color:#e6db74">&#34;</span>$postfix_cert_dir<span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  systemctl reload postfix@-service
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">fi</span></span></span></code></pre></div>
+<p>Don&rsquo;t hesitate to share your hook scripts with <a href="https://github.com/go-acme/lego/discussions/categories/ideas" rel="external">the community</a>.</p>
+<h2 id="notes">Notes<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The hooks must be a system-executable: binary or script with a proper shebang (e.g. <code>#!/bin/bash</code> and <code>chmod +x my-hook.sh</code>).</p>
+<p>There is neither subshell nor shell interpretation.
+Arguments are allowed, but there is no shell-escaping support (spaces inside arguments or paths are not supported).</p>
+<p>The hooks run in the same environment as lego, augmented with <code>LEGO_HOOK_*</code> variables.</p>
+<p>Both <code>stdout</code> and <code>stderr</code> used by the hooks are merged into a single pipe.
+The output is read line by line and printed to lego&rsquo;s own <code>stdout</code>.</p>
+<p>If the hook exits with a non-zero code (or times out), lego will surface it as a failure.</p>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 3, 2026
+  </footer>
+</article>
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="ca-servers">CA servers</h1>
+
+<p>This page describes the usage of CA servers (ACME servers).</p>
+
+<details open class="box cstyle notices note">
+  <summary class="box-label" tabindex="-1">
+    <i class="fa-fw fas fa-exclamation-circle"></i> 
+    Note
+  </summary>
+  <div class="box-content">
+<p>Any CA server that follow <a href="https://www.rfc-editor.org/rfc/rfc8555.html" rel="external">RFC 8555</a> can be used with lego.</p>
+  </div>
+</details>
+<h2 id="lets-encrypt-acme-server">Let&rsquo;s Encrypt ACME server<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>lego defaults to communicating with the production Let&rsquo;s Encrypt ACME server.</p>
+<p>If you&rsquo;d like to test something without issuing real certificates, consider using the staging endpoint instead:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego run --server<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;letsencrypt-staging&#39;</span> …</span></span></code></pre></div>
+<h2 id="ca-server-short-codes">CA Server short-codes<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>To ease the usage of the CA server in most of cases, we provide a short-code for each already known CA server.</p>
+<table>
+  <thead>
+      <tr>
+          <th>Name</th>
+          <th>Code</th>
+          <th>Directory URL</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Actalis</td>
+          <td><code>actalis</code></td>
+          <td><a href="https://acme-api.actalis.com/acme/directory" rel="external">https://acme-api.actalis.com/acme/directory</a></td>
+      </tr>
+      <tr>
+          <td>Digicert</td>
+          <td><code>digicert</code></td>
+          <td><a href="https://one.digicert.com/mpki/api/v1/acme/v2/directory" rel="external">https://one.digicert.com/mpki/api/v1/acme/v2/directory</a></td>
+      </tr>
+      <tr>
+          <td>FreeSSL</td>
+          <td><code>freessl</code></td>
+          <td><a href="https://acmepro.freessl.cn/v2/DV" rel="external">https://acmepro.freessl.cn/v2/DV</a></td>
+      </tr>
+      <tr>
+          <td>GlobalSign</td>
+          <td><code>globalsign</code></td>
+          <td><a href="https://emea.acme.atlas.globalsign.com/directory" rel="external">https://emea.acme.atlas.globalsign.com/directory</a></td>
+      </tr>
+      <tr>
+          <td>Google Trust</td>
+          <td><code>googletrust</code></td>
+          <td><a href="https://dv.acme-v02.api.pki.goog/directory" rel="external">https://dv.acme-v02.api.pki.goog/directory</a></td>
+      </tr>
+      <tr>
+          <td>Google Trust staging</td>
+          <td><code>googletrust-staging</code></td>
+          <td><a href="https://dv.acme-v02.test-api.pki.goog/directory" rel="external">https://dv.acme-v02.test-api.pki.goog/directory</a></td>
+      </tr>
+      <tr>
+          <td>Let&rsquo;s Encrypt</td>
+          <td><code>letsencrypt</code></td>
+          <td><a href="https://acme-v02.api.letsencrypt.org/directory" rel="external">https://acme-v02.api.letsencrypt.org/directory</a></td>
+      </tr>
+      <tr>
+          <td>Let&rsquo;s Encrypt staging</td>
+          <td><code>letsencrypt-staging</code></td>
+          <td><a href="https://acme-staging-v02.api.letsencrypt.org/directory" rel="external">https://acme-staging-v02.api.letsencrypt.org/directory</a></td>
+      </tr>
+      <tr>
+          <td>LiteSSL</td>
+          <td><code>litessl</code></td>
+          <td><a href="https://acme.litessl.com/acme/v2/directory" rel="external">https://acme.litessl.com/acme/v2/directory</a></td>
+      </tr>
+      <tr>
+          <td>PeeringHub</td>
+          <td><code>peeringhub</code></td>
+          <td><a href="https://stica.peeringhub.io/acme" rel="external">https://stica.peeringhub.io/acme</a></td>
+      </tr>
+      <tr>
+          <td>SSL.com ECDSA</td>
+          <td><code>sslcomecc</code></td>
+          <td><a href="https://acme.ssl.com/sslcom-dv-ecc" rel="external">https://acme.ssl.com/sslcom-dv-ecc</a></td>
+      </tr>
+      <tr>
+          <td>SSL.com RSA</td>
+          <td><code>sslcomrsa</code></td>
+          <td><a href="https://acme.ssl.com/sslcom-dv-rsa" rel="external">https://acme.ssl.com/sslcom-dv-rsa</a></td>
+      </tr>
+      <tr>
+          <td>Sectigo DV (Domain Validation)</td>
+          <td><code>sectigo</code></td>
+          <td><a href="https://acme.sectigo.com/v2/DV" rel="external">https://acme.sectigo.com/v2/DV</a></td>
+      </tr>
+      <tr>
+          <td>Sectigo EV (Extended Validation)</td>
+          <td><code>sectigoev</code></td>
+          <td><a href="https://acme.sectigo.com/v2/EV" rel="external">https://acme.sectigo.com/v2/EV</a></td>
+      </tr>
+      <tr>
+          <td>Sectigo OV (Organization Validation)</td>
+          <td><code>sectigoov</code></td>
+          <td><a href="https://acme.sectigo.com/v2/OV" rel="external">https://acme.sectigo.com/v2/OV</a></td>
+      </tr>
+      <tr>
+          <td>ZeroSSL</td>
+          <td><code>zerossl</code></td>
+          <td><a href="https://acme.zerossl.com/v2/DV90" rel="external">https://acme.zerossl.com/v2/DV90</a></td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="zerossl">ZeroSSL<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>lego supports three different ways to authenticate with ZeroSSL.</p>
+<ol>
+<li>Access key: if the environment variable <code>ZERO_SSL_ACCESS_KEY</code> is set.</li>
+<li>Email: if the email address is set and the environment variable <code>ZERO_SSL_ACCESS_KEY</code> is not set.</li>
+<li>External Account Binding (EAB): if none of the above elements are defined.</li>
+</ol>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 3, 2026
+  </footer>
+</article>
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="file-configuration">File Configuration</h1>
+
+<p>The configuration file is a way to simplify the management of multiple certificates.</p>
+<h2 id="commands">Commands<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The configuration file is used by the following commands:</p>
+<ul>
+<li><code>lego</code></li>
+<li><code>lego certificates revoke</code></li>
+<li><code>lego certificates list</code></li>
+<li><code>lego accounts list</code></li>
+<li><code>lego archives list</code></li>
+<li><code>lego archives restore</code></li>
+</ul>
+<h2 id="file-location-and-format">File Location and Format<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The configuration file is a YAML file named <code>.lego.yml</code> (or <code>.lego.yaml</code>) placed in the current working directory.
+lego will automatically find and use it when present.</p>
+<p>You can also pass a custom path with the <code>--config</code> flag.</p>
+<h2 id="configuration-file-structure">Configuration File Structure<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The configuration file is organized in a way that makes it easy to understand and modify.</p>
+<p>The four main sections (<code>servers</code>, <code>accounts</code>, <code>challenges</code>, and <code>certificates</code>) are named maps:
+each entry has a key (a name you choose) and a value (its configuration).</p>
+<p>Certificates reference accounts and challenges by their name, and accounts reference servers by their name.</p>
+<p>More information about the configuration file structure can be found in the <a href="https://go-acme.github.io/lego/references/ref-file/" rel="external">configuration file reference</a>.</p>
+<h2 id="smart-defaults">Smart Defaults<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The configuration file applies a number of defaults to reduce verbosity:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Setting</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Storage</td>
+          <td>Defaults to <code>.lego</code> in the current directory.</td>
+      </tr>
+      <tr>
+          <td>Account server</td>
+          <td>Defaults to the Let&rsquo;s Encrypt production if not specified.</td>
+      </tr>
+      <tr>
+          <td>Certificate key type</td>
+          <td>Inherits from its account if not specified.</td>
+      </tr>
+      <tr>
+          <td>Certificate account</td>
+          <td>If there is only one account defined, it is used automatically.</td>
+      </tr>
+      <tr>
+          <td>Certificate challenge</td>
+          <td>If there is only one challenge defined, it is used automatically.</td>
+      </tr>
+      <tr>
+          <td>Certificate predefined challenges</td>
+          <td><code>http-01</code>, <code>tls-alpn-01</code>, <code>dns-persist-01</code> can be used as a challenge name without dedicated configuration.</td>
+      </tr>
+  </tbody>
+</table>
+<p>This means the minimal configuration to obtain a certificate is just a certificate entry (and a challenge for DNS-01):</p>
+<div class="tab-panel" data-tab-group="R-tabs-0859d14fd87124c9854b372657d8319c">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-6cfcde6f0740e5b4e75e19885f29b7cf" aria-expanded="true"
+      data-tab-item="R-tab-e68e4c806d3d279e55e9345c736a0a6a"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-0859d14fd87124c9854b372657d8319c','R-tab-e68e4c806d3d279e55e9345c736a0a6a')"
+    >
+      <span class="tab-nav-text">HTTP-01</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-70957aa85c39e668662e75786dde9557" aria-expanded="false"
+      data-tab-item="R-tab-e33a9f7cd2f3ea16a316b0611283af5b"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-0859d14fd87124c9854b372657d8319c','R-tab-e33a9f7cd2f3ea16a316b0611283af5b')"
+    >
+      <span class="tab-nav-text">TLS-ALPN-01</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-9208bebe9665839f678a8a048ddbc32b" aria-expanded="false"
+      data-tab-item="R-tab-81f0558783c981ff38e0581fce73f306"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-0859d14fd87124c9854b372657d8319c','R-tab-81f0558783c981ff38e0581fce73f306')"
+    >
+      <span class="tab-nav-text">DNS-01</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-7fb5e9871cebb421e6fd110c789b8ce8" aria-expanded="false"
+      data-tab-item="R-tab-873f3e2749410ac2e164cf67b0a76125"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-0859d14fd87124c9854b372657d8319c','R-tab-873f3e2749410ac2e164cf67b0a76125')"
+    >
+      <span class="tab-nav-text">DNS-PERSIST-01</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-6cfcde6f0740e5b4e75e19885f29b7cf"
+      data-tab-item="R-tab-e68e4c806d3d279e55e9345c736a0a6a"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<p>Minimal example for a certificate (Let&rsquo;s Encrypt).</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># .lego.yml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">certificates</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">my-cert</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">challenge</span>: <span style="color:#ae81ff">http-01</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">domains</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">example.com</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-70957aa85c39e668662e75786dde9557"
+      data-tab-item="R-tab-e33a9f7cd2f3ea16a316b0611283af5b"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Minimal example for a certificate (Let&rsquo;s Encrypt).</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># .lego.yml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">certificates</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">my-cert</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">challenge</span>: <span style="color:#ae81ff">tls-alpn-01</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">domains</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">example.com</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-9208bebe9665839f678a8a048ddbc32b"
+      data-tab-item="R-tab-81f0558783c981ff38e0581fce73f306"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Minimal example for a wildcard certificate (Let&rsquo;s Encrypt and DNS-01 via Cloudflare).</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># .lego.yml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">challenges</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">my-dns</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">dns</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">provider</span>: <span style="color:#ae81ff">cloudflare</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">certificates</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">my-cert</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">domains</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">example.com</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#e6db74">&#39;*.example.com&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-7fb5e9871cebb421e6fd110c789b8ce8"
+      data-tab-item="R-tab-873f3e2749410ac2e164cf67b0a76125"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Please read the dedicated <a href="https://go-acme.github.io/lego/obtain/dnspersist01/" rel="external">documentation</a>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="archive-behavior">Archive Behavior<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The configuration file drives lifecycle management:</p>
+<ul>
+<li>When a certificate entry is removed, its files are archived.</li>
+<li>When an account entry is removed, its files are archived.</li>
+<li>When a server entry is removed, the server and its related accounts are archived.</li>
+</ul>
+<p>More information about commands related to archives can be found in the <a href="https://go-acme.github.io/lego/advanced/archives/" rel="external">archives section</a>.</p>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 3, 2026
+  </footer>
+</article>
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="options">Options</h1>
+
+<p>This section describes advanced options that can be used to configure lego.</p>
+<h2 id="lego_ca_certificates">LEGO_CA_CERTIFICATES<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The environment variable <code>LEGO_CA_CERTIFICATES</code> allows to specify the path to PEM-encoded CA certificates
+that can be used to authenticate an ACME server with an HTTPS certificate not issued by a CA in the system-wide trusted root list.</p>
+<p>Multiple file paths can be added by using <code>:</code> (unix) or <code>;</code> (Windows) as a separator.</p>
+<p>Example:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># On Unix system</span>
+</span></span><span style="display:flex;"><span>LEGO_CA_CERTIFICATES<span style="color:#f92672">=</span>/foo/cert1.pem:/foo/cert2.pem</span></span></code></pre></div>
+<h2 id="lego_ca_system_cert_pool">LEGO_CA_SYSTEM_CERT_POOL<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The environment variable <code>LEGO_CA_SYSTEM_CERT_POOL</code> can be used to define if the certificates pool must use a copy of the system cert pool.</p>
+<p>Example:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>LEGO_CA_SYSTEM_CERT_POOL<span style="color:#f92672">=</span>true</span></span></code></pre></div>
+<h2 id="lego_ca_server_name">LEGO_CA_SERVER_NAME<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The environment variable <code>LEGO_CA_SERVER_NAME</code> allows to specify the CA server name used to authenticate an ACME server
+with an HTTPS certificate not issued by a CA in the system-wide trusted root list.</p>
+<p>Example:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>LEGO_CA_SERVER_NAME<span style="color:#f92672">=</span>foo</span></span></code></pre></div>
+<h2 id="lego_disable_cname_support">LEGO_DISABLE_CNAME_SUPPORT<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>By default, lego follows CNAME, the environment variable <code>LEGO_DISABLE_CNAME_SUPPORT</code> allows to disable this support.</p>
+<p>Example:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>LEGO_DISABLE_CNAME_SUPPORT<span style="color:#f92672">=</span>true</span></span></code></pre></div>
+<p>There is a Let&rsquo;s Encrypt <a href="https://letsencrypt.org/2019/10/09/onboarding-your-customers-with-lets-encrypt-and-acme.html" rel="external">blog post</a> about the behavior of CNAMEs.</p>
+<h2 id="lego_debug_client_verbose_error">LEGO_DEBUG_CLIENT_VERBOSE_ERROR<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The environment variable <code>LEGO_DEBUG_CLIENT_VERBOSE_ERROR</code> allows to enrich error messages from some of the DNS clients.</p>
+<p>Example:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>LEGO_DEBUG_CLIENT_VERBOSE_ERROR<span style="color:#f92672">=</span>true</span></span></code></pre></div>
+<h2 id="lego_debug_dns_api_http_client">LEGO_DEBUG_DNS_API_HTTP_CLIENT<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<blockquote>
+<p><strong>⚠️ WARNING: This will expose credentials in the log output! ⚠️</strong></p>
+<p>Do not run this in production environments, or if you can&rsquo;t be sure that logs aren&rsquo;t accessed by third parties or tools (like log collectors).</p>
+<p>You have been warned. Here be dragons.</p>
+</blockquote>
+<p>The environment variable <code>LEGO_DEBUG_DNS_API_HTTP_CLIENT</code> allows debugging the DNS API interaction.
+It will dump the full request and response to the log output.</p>
+<p>Some DNS providers don&rsquo;t support this option.</p>
+<p>Example:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>LEGO_DEBUG_DNS_API_HTTP_CLIENT<span style="color:#f92672">=</span>true</span></span></code></pre></div>
+<h2 id="lego_debug_acme_http_client">LEGO_DEBUG_ACME_HTTP_CLIENT<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The environment variable <code>LEGO_DEBUG_ACME_HTTP_CLIENT</code> allows debug the calls to the ACME server.</p>
+<p>Example:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>LEGO_DEBUG_ACME_HTTP_CLIENT<span style="color:#f92672">=</span>true</span></span></code></pre></div>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 3, 2026
+  </footer>
+</article>
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="archive-operations">Archive Operations</h1>
+
+<p>This section describes operations on the archives.</p>
+<h2 id="list">List<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>You can list all the backuped accounts and certificates with the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego archives list</span></span></code></pre></div>
+<p>To know the available options, run:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego archives list --help</span></span></code></pre></div>
+<p>Or read the <a href="https://go-acme.github.io/lego/references/ref-flags/#lego-archives-list" rel="external">documentation</a>.</p>
+<h2 id="restore">Restore<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>You can restore a backup of an account or a certificate with the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego archives restore</span></span></code></pre></div>
+<p>The command will ask you for the backup file to restore.</p>
+<p>To know the available options, run:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego archives restore --help</span></span></code></pre></div>
+<p>Or read the <a href="https://go-acme.github.io/lego/references/ref-flags/#lego-archives-restore" rel="external">documentation</a>.</p>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 3, 2026
+  </footer>
+</article>
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="tips">Tips</h1>
+
+<p>This section contains some tips and tricks for using lego.</p>
+<h2 id="automatic-renewal">Automatic Renewal<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>It is tempting to create a cron job (or systemd timer) to automatically renew all you certificates.</p>
+<p>When doing so, please note that some cron defaults will cause a measurable load on the ACME provider&rsquo;s infrastructure.
+Notably <code>@daily</code> jobs run at midnight.</p>
+<p>To both counteract load spikes (caused by all lego users) and reduce subsequent renewal failures, we were asked to implement a small random delay for non-interactive renewals.<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>
+Since v4.8.0, lego will pause for up to 8 minutes to help spread the load.</p>
+<p>You can help further, by adjusting your crontab entry, like so:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#75715e"># avoid:</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#@daily      /usr/bin/lego ...</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#@midnight   /usr/bin/lego ...</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#0 0 * * *   /usr/bin/lego ...</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># instead, use a randomly chosen time:</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">35</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> <span style="color:#f92672">*</span> <span style="color:#f92672">*</span>  <span style="color:#e6db74">/usr/</span>bin<span style="color:#f92672">/</span>lego <span style="color:#f92672">...</span></span></span></code></pre></div>
+<p>If you use systemd timers, consider doing something similar, and/or introduce a <code>RandomizedDelaySec</code>:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-ini" data-lang="ini"><span style="display:flex;"><span><span style="color:#66d9ef">[Unit]</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">Description</span><span style="color:#f92672">=</span><span style="color:#e6db74">Renew certificates</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Timer]</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">Persistent</span><span style="color:#f92672">=</span><span style="color:#e6db74">true</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># avoid:</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#OnCalendar=*-*-* 00:00:00</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#OnCalendar=daily</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># instead, use a randomly chosen time:</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">OnCalendar</span><span style="color:#f92672">=</span><span style="color:#e6db74">*-*-* 3:35</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># add extra delay, here up to 1 hour:</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">RandomizedDelaySec</span><span style="color:#f92672">=</span><span style="color:#e6db74">1h</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Install]</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">WantedBy</span><span style="color:#f92672">=</span><span style="color:#e6db74">timers.target</span></span></span></code></pre></div>
+<h2 id="running-without-root-privileges">Running without root privileges<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The CLI does not require root permissions but needs to bind to port 80 and 443 for certain challenges.
+To run the CLI without <code>sudo</code>, you have four options:</p>
+<ul>
+<li>Use <code>setcap 'cap_net_bind_service=+ep' /path/to/lego</code> (Linux only)</li>
+<li>Pass the <code>--http.address</code> or/and the <code>--tls.address</code> option and specify a custom port to bind to. In this case you have to forward port 80/443 to these custom ports (see <a href="/lego/advanced/tips/index.html#port-usage">Port Usage</a>).</li>
+<li>Pass the <code>--http.webroot</code> option and specify the path to your webroot folder. In this case the challenge will be written in a file in <code>.well-known/acme-challenge/</code> inside your webroot.</li>
+<li>Pass the <code>--dns</code> option and specify a DNS provider.</li>
+</ul>
+<h2 id="port-usage">Port Usage<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>By default, lego assumes it is able to bind to ports 80 and 443 to solve challenges.
+If this is not possible in your environment, you can use the <code>--http.address</code> and <code>--tls.address</code> options to instruct
+lego to listen on that interface:port for any incoming challenges.</p>
+<p>If you are using either of these options, make sure you setup a proxy to redirect traffic to the chosen ports.</p>
+<p><strong>HTTP Port:</strong> All plaintext HTTP requests to port <strong>80</strong> which begin with a request path of <code>/.well-known/acme-challenge/</code> for the HTTP challenge<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup>.</p>
+<p><strong>TLS Port:</strong> All TLS handshakes on port <strong>443</strong> for the TLS-ALPN challenge.</p>
+<p>This traffic redirection is only needed as long as lego solves challenges. As soon as you have received your certificates you can deactivate the forwarding.</p>
+<h2 id="dns-resolvers-and-challenge-verification">DNS Resolvers and Challenge Verification<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>When using a DNS challenge provider (via <code>--dns &lt;name&gt;</code>), Lego tries to ensure the ACME challenge token is properly setup before instructing the ACME provider to perform the validation.</p>
+<p>This involves a few DNS queries to different servers:</p>
+<ol>
+<li>
+<p>Determining the DNS zone and resolving CNAMEs.</p>
+<p>The DNS zone for a given domain is determined by the SOA record, which contains the authoritative name server for the domain and all its subdomains.
+For simple domains like <code>example.com</code>, this is usually <code>example.com</code> itself.
+For other domains (like <code>fra.eu.cdn.example.com</code>), this can get complicated, as <code>cdn.example.com</code> may be delegated to the CDN provider, which means for <code>cdn.example.com</code> must exist a different SOA record.</p>
+<p>To find the correct zone, Lego requests the SOA record for each DNS label (starting on the leaf domain, i.e. the left-most DNS label).
+If there is no SOA record, Lego requests the SOA record of the parent label, then for its parent, etc., until it reaches the apex domain<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup>.
+Should any DNS label on the way be a CNAME, it is resolved as per usual.</p>
+<p>In the default configuration, Lego uses the system name servers for this, and falls back to Cloudflare&rsquo;s DNS servers, should they be absent.</p>
+</li>
+<li>
+<p>Verifying the challenge token.</p>
+<p>The <code>_acme-challenge.&lt;yourdomain&gt;</code> TXT record must be correctly installed.
+Lego verifies this by directly querying the authoritative name server for this record (as detected in the previous step).</p>
+</li>
+</ol>
+<p>Strictly speaking, this verification step is not necessary, but helps to protect your ACME account.
+Remember that some ACME providers impose a rate limit on certain actions (at the time of writing, Let&rsquo;s Encrypt allows 300 new certificate orders per account per 3 hours).</p>
+<p>There are also situations where this verification step doesn&rsquo;t work as expected:</p>
+<ul>
+<li>A &ldquo;split DNS&rdquo; setup gives different answers to clients on the internal network (Lego) vs. on the public internet (ACME server).</li>
+<li>With &ldquo;hidden master&rdquo; setups, Lego may be able to directly talk to the primary DNS server, while the <code>_acme-challenge</code> record might not have fully propagated to the (public) secondary servers, yet.</li>
+</ul>
+<p>The effect is the same: Lego determined the challenge token to be installed correctly, while the ACME server has a different view and rejects the certificate order.</p>
+<p>In these cases, you can instruct Lego to use a different DNS resolver, using the <code>--dns.resolvers</code> flag.
+You should prefer one on the public internet, otherwise you might be susceptible to the same problem.</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>See <a href="https://github.com/go-acme/lego/issues/1656" rel="external">GitHub issue #1656</a> for an excellent problem description.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>You must ensure that incoming validation requests contains the correct value for the HTTP <code>Host</code> header. If you operate lego behind a non-transparent reverse proxy (such as Apache or NGINX), you might need to alter the header field using <code>--http.proxy-header X-Forwarded-Host</code>.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3">
+<p>The apex domain is the domain you have registered with your domain registrar. For gTLDs (<code>.com</code>, <code>.fyi</code>) this is the 2nd level domain, but for ccTLDs, this can either be the 2nd level (<code>.de</code>) or 3rd level domain (<code>.co.uk</code>).&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 3, 2026
+  </footer>
+</article>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1780447626" defer></script>
+    <script src="/lego/js/theme.min.js?1780447626" defer></script>
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  </body>
+</html>

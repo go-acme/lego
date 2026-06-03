@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html id="R-html" lang="en-us" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="print">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.157.0">
+    <meta name="generator" content="Relearn 9.0.3+bf3dbc8308313d6dd1f7ad32ba2a7983a4e9b3e5">
+    <meta name="description" content="This page lists all the available commands and flags.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Commands &amp; Flags :: ACME client and library written in Go.">
+    <meta name="twitter:description" content="This page lists all the available commands and flags.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/references/ref-flags/index.html">
+    <meta property="og:site_name" content="ACME client and library written in Go.">
+    <meta property="og:title" content="Commands &amp; Flags :: ACME client and library written in Go.">
+    <meta property="og:description" content="This page lists all the available commands and flags.">
+    <meta property="og:locale" content="en_us">
+    <meta property="og:type" content="website">
+    <meta itemprop="name" content="Commands &amp; Flags :: ACME client and library written in Go.">
+    <meta itemprop="description" content="This page lists all the available commands and flags.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2026-06-03T02:43:13+02:00">
+    <meta itemprop="wordCount" content="3862">
+    <title>Commands &amp; Flags :: ACME client and library written in Go.</title>
+    <link href="https://go-acme.github.io/lego/references/ref-flags/index.html" rel="canonical" type="text/html" title="Commands &amp; Flags :: ACME client and library written in Go.">
+    <link href="/lego/images/favicon.svg?1780447626" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1780447626" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1780447626" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1780447626" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1780447626" defer></script>
+    <script src="/lego/js/search.min.js?1780447626" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1780447626";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1780447626" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1780447626" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/all.min.css?1780447626" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/all.min.css?1780447626" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1780447626" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1780447626" rel="stylesheet">
+    <link href="/lego/css/format-print.min.css?1780447626" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/references\/ref-flags\/index.html';
+      window.relearn.relBasePath='..\/..';
+      window.relearn.relBaseUri='..\/..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // translations
+      window.T_Copy_to_clipboard = `Copy text to clipboard`;
+      window.T_Copied_to_clipboard = `Text copied to clipboard!`;
+      window.T_Link_copied_to_clipboard = `Link copied to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      window.T_Browser_unsupported_feature = `This browser doesn't support this feature`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantprefix = "my-custom-";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant") ?? "";
+        if( !variant ||
+            (!variant.startsWith(window.relearn.customvariantprefix) && !window.relearn.themevariants.includes(variant)) ||
+            (variant.startsWith(window.relearn.customvariantprefix) && !window.localStorage.getItem(window.relearn.absBaseUri + "/variantstylesheet-" + variant)) ){
+          variant = window.relearn.themevariants[0];
+          window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+    <link href="/lego/css/custom.css?1780447626" rel="stylesheet">
+  </head>
+  <body class="mobile-support print" data-origin="/lego/references/ref-flags/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar" class="default-animation">
+        <div class="topbar-wrapper default-animation">
+          <div class="topbar-sidebar-divider default-animation"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar default-animation" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button></span>
+            </div>
+            <div class="topbar-button topbar-button-toc default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-table-list"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+<nav class="TableOfContents">
+  <ul>
+    <li><a href="#table-of-contents">Table of Contents</a></li>
+    <li><a href="#lego"><code>lego</code></a>
+      <ul>
+        <li><a href="#usage">Usage</a></li>
+        <li><a href="#global-options">Global Options</a></li>
+      </ul>
+    </li>
+    <li><a href="#lego-run"><code>lego run</code></a>
+      <ul>
+        <li><a href="#usage-1">Usage</a></li>
+        <li><a href="#options">Options</a></li>
+        <li><a href="#global-options-1">Global Options</a></li>
+      </ul>
+    </li>
+    <li><a href="#lego-certificates-revoke"><code>lego certificates revoke</code></a>
+      <ul>
+        <li><a href="#usage-2">Usage</a></li>
+        <li><a href="#options-1">Options</a></li>
+        <li><a href="#global-options-2">Global Options</a></li>
+      </ul>
+    </li>
+    <li><a href="#lego-certificates-list"><code>lego certificates list</code></a>
+      <ul>
+        <li><a href="#usage-3">Usage</a></li>
+        <li><a href="#options-2">Options</a></li>
+        <li><a href="#global-options-3">Global Options</a></li>
+      </ul>
+    </li>
+    <li><a href="#lego-accounts-register"><code>lego accounts register</code></a>
+      <ul>
+        <li><a href="#usage-4">Usage</a></li>
+        <li><a href="#options-3">Options</a></li>
+        <li><a href="#global-options-4">Global Options</a></li>
+      </ul>
+    </li>
+    <li><a href="#lego-accounts-recover"><code>lego accounts recover</code></a>
+      <ul>
+        <li><a href="#usage-5">Usage</a></li>
+        <li><a href="#options-4">Options</a></li>
+        <li><a href="#global-options-5">Global Options</a></li>
+      </ul>
+    </li>
+    <li><a href="#lego-accounts-keyrollover"><code>lego accounts keyrollover</code></a>
+      <ul>
+        <li><a href="#usage-6">Usage</a></li>
+        <li><a href="#options-5">Options</a></li>
+        <li><a href="#global-options-6">Global Options</a></li>
+      </ul>
+    </li>
+    <li><a href="#lego-accounts-list"><code>lego accounts list</code></a>
+      <ul>
+        <li><a href="#usage-7">Usage</a></li>
+        <li><a href="#options-6">Options</a></li>
+        <li><a href="#global-options-7">Global Options</a></li>
+      </ul>
+    </li>
+    <li><a href="#lego-archives-restore"><code>lego archives restore</code></a>
+      <ul>
+        <li><a href="#usage-8">Usage</a></li>
+        <li><a href="#options-7">Options</a></li>
+        <li><a href="#global-options-8">Global Options</a></li>
+      </ul>
+    </li>
+    <li><a href="#lego-archives-list"><code>lego archives list</code></a>
+      <ul>
+        <li><a href="#usage-9">Usage</a></li>
+        <li><a href="#options-8">Options</a></li>
+        <li><a href="#global-options-9">Global Options</a></li>
+      </ul>
+    </li>
+    <li><a href="#lego-dnshelp"><code>lego dnshelp</code></a>
+      <ul>
+        <li><a href="#usage-10">Usage</a></li>
+        <li><a href="#options-9">Options</a></li>
+        <li><a href="#global-options-10">Global Options</a></li>
+      </ul>
+    </li>
+    <li><a href="#lego-migrate"><code>lego migrate</code></a>
+      <ul>
+        <li><a href="#usage-11">Usage</a></li>
+        <li><a href="#options-10">Options</a></li>
+        <li><a href="#global-options-11">Global Options</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/references/index.html"><span itemprop="name">References</span></a><meta itemprop="position" content="2">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">Commands &amp; Flags</span><meta itemprop="position" content="3"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-print default-animation" data-content-empty="disable" data-width-s="area-more" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/references/ref-flags/index.print.html" title="Print whole chapter (CTRL+ALT+p)"><i class="fa-fw fas fa-print"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-prev default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/references/ref-file/index.html" title="Configuration file (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-next default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/library/index.html" title="Library (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-more default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable references" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="commands--flags">Commands &amp; Flags</h1>
+
+<p>This page lists all the available commands and flags.</p>
+<h2 id="table-of-contents">Table of Contents<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<ul>
+<li><a href="https://go-acme.github.io/lego/references/ref-flags/#lego" rel="external">lego</a></li>
+<li><a href="https://go-acme.github.io/lego/references/ref-flags/#lego-run" rel="external">lego run</a></li>
+<li><a href="https://go-acme.github.io/lego/references/ref-flags/#lego-certificates-revoke" rel="external">lego certificates revoke</a></li>
+<li><a href="https://go-acme.github.io/lego/references/ref-flags/#lego-certificates-list" rel="external">lego certificates list</a></li>
+<li><a href="https://go-acme.github.io/lego/references/ref-flags/#lego-accounts-register" rel="external">lego accounts register</a></li>
+<li><a href="https://go-acme.github.io/lego/references/ref-flags/#lego-accounts-recover" rel="external">lego accounts recover</a></li>
+<li><a href="https://go-acme.github.io/lego/references/ref-flags/#lego-accounts-keyrollover" rel="external">lego accounts keyrollover</a></li>
+<li><a href="https://go-acme.github.io/lego/references/ref-flags/#lego-accounts-list" rel="external">lego accounts list</a></li>
+<li><a href="https://go-acme.github.io/lego/references/ref-flags/#lego-archives-restore" rel="external">lego archives restore</a></li>
+<li><a href="https://go-acme.github.io/lego/references/ref-flags/#lego-archives-list" rel="external">lego archives list</a></li>
+<li><a href="https://go-acme.github.io/lego/references/ref-flags/#lego-dnshelp" rel="external">lego dnshelp</a></li>
+<li><a href="https://go-acme.github.io/lego/references/ref-flags/#lego-migrate" rel="external">lego migrate</a></li>
+</ul>
+<hr>
+<h2 id="lego"><code>lego</code><span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<blockquote>
+<p>Get or renew a certificate with a configuration file</p>
+</blockquote>
+<h3 id="usage">Usage<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>lego [options]</code></pre></div>
+<h3 id="global-options">Global Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--help</code>, <code>-h</code></td>
+          <td></td>
+          <td>show help</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-logs">Flags related to logs:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--log.format string</code></td>
+          <td><code>LEGO_LOG_FORMAT</code></td>
+          <td>Set the logging format. Supported values: &lsquo;colored&rsquo;, &rsquo;text&rsquo;, &lsquo;json&rsquo;. <br> (Default: &ldquo;colored&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--log.level string</code></td>
+          <td><code>LEGO_LOG_LEVEL</code></td>
+          <td>Set the logging level. Supported values: &lsquo;debug&rsquo;, &lsquo;info&rsquo;, &lsquo;warn&rsquo;, &rsquo;error&rsquo;. <br> (Default: &ldquo;info&rdquo;)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-configuration-file">Flags related to the configuration file:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--config string</code></td>
+          <td><code>LEGO_CONFIG</code></td>
+          <td>Path to the configuration file.</td>
+      </tr>
+  </tbody>
+</table>
+<span class="btn cstyle button transparent interactive"><a href="/lego/references/ref-flags/index.html"><i class="fa-fw fas fa-angle-double-up"></i> <span class="title">Back on Top</span></a></span>
+<hr>
+<h2 id="lego-run"><code>lego run</code><span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<blockquote>
+<p>Get or renew a certificate</p>
+</blockquote>
+<h3 id="usage-1">Usage<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>lego run [options]</code></pre></div>
+<h3 id="options">Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--accept-tos</code>, <code>-a</code></td>
+          <td><code>LEGO_ACCEPT_TOS</code></td>
+          <td>By setting this flag to true, you indicate that you accept the current CA terms of service.</td>
+      </tr>
+      <tr>
+          <td><code>--domains string</code>, <code>-d string</code></td>
+          <td><code>LEGO_DOMAINS</code></td>
+          <td>Add a domain. For multiple values either repeat the flag or provide a comma-separated list.</td>
+      </tr>
+      <tr>
+          <td><code>--email string</code>, <code>-m string</code></td>
+          <td><code>LEGO_EMAIL</code></td>
+          <td>Email used for registration and recovery contact.</td>
+      </tr>
+      <tr>
+          <td><code>--help</code>, <code>-h</code></td>
+          <td></td>
+          <td>show help</td>
+      </tr>
+      <tr>
+          <td><code>--key-type string</code>, <code>-k string</code></td>
+          <td><code>LEGO_KEY_TYPE</code></td>
+          <td>Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: &ldquo;EC256&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--server string</code>, <code>-s string</code></td>
+          <td><code>LEGO_SERVER</code></td>
+          <td>CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: &ldquo;<a href="https://acme-v02.api.letsencrypt.org/directory%22" rel="external">https://acme-v02.api.letsencrypt.org/directory"</a>)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-external-account-binding">Flags related to External Account Binding:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--eab</code></td>
+          <td><code>LEGO_EAB</code></td>
+          <td>Use External Account Binding for account registration. Requires eab.kid and eab.hmac.</td>
+      </tr>
+      <tr>
+          <td><code>--eab.hmac string</code></td>
+          <td><code>LEGO_EAB_HMAC</code></td>
+          <td>MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format.</td>
+      </tr>
+      <tr>
+          <td><code>--eab.kid string</code></td>
+          <td><code>LEGO_EAB_KID</code></td>
+          <td>Key identifier for External Account Binding.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-advanced-options">Flags related to advanced options:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--always-deactivate-authorizations string</code></td>
+          <td><code>LEGO_ALWAYS_DEACTIVATE_AUTHORIZATIONS</code></td>
+          <td>Force the authorizations to be relinquished even if the certificate request was successful.</td>
+      </tr>
+      <tr>
+          <td><code>--cert.timeout int</code></td>
+          <td><code>LEGO_CERT_TIMEOUT</code></td>
+          <td>Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. <br> (Default: 30)</td>
+      </tr>
+      <tr>
+          <td><code>--csr string</code></td>
+          <td><code>LEGO_CSR</code></td>
+          <td>Certificate signing request filename, if an external CSR is to be used.</td>
+      </tr>
+      <tr>
+          <td><code>--enable-cn</code></td>
+          <td><code>LEGO_ENABLE_CN</code></td>
+          <td>Enable the use of the common name. (Not recommended)</td>
+      </tr>
+      <tr>
+          <td><code>--ipv4only</code>, <code>-4</code></td>
+          <td><code>LEGO_IPV4ONLY</code></td>
+          <td>Use IPv4 only.</td>
+      </tr>
+      <tr>
+          <td><code>--ipv6only</code>, <code>-6</code></td>
+          <td><code>LEGO_IPV6ONLY</code></td>
+          <td>Use IPv6 only.</td>
+      </tr>
+      <tr>
+          <td><code>--must-staple</code></td>
+          <td><code>LEGO_MUST_STAPLE</code></td>
+          <td>Include the OCSP must staple TLS extension in the CSR and generated certificate. Only works if the CSR is generated by lego.</td>
+      </tr>
+      <tr>
+          <td><code>--no-bundle</code></td>
+          <td><code>LEGO_NO_BUNDLE</code></td>
+          <td>Do not create a certificate bundle by adding the issuers certificate to the new certificate.</td>
+      </tr>
+      <tr>
+          <td><code>--not-after time</code></td>
+          <td><code>LEGO_NOT_AFTER</code></td>
+          <td>Set the notAfter field in the certificate (RFC3339 format)</td>
+      </tr>
+      <tr>
+          <td><code>--not-before time</code></td>
+          <td><code>LEGO_NOT_BEFORE</code></td>
+          <td>Set the notBefore field in the certificate (RFC3339 format)</td>
+      </tr>
+      <tr>
+          <td><code>--preferred-chain string</code></td>
+          <td><code>LEGO_PREFERRED_CHAIN</code></td>
+          <td>If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.</td>
+      </tr>
+      <tr>
+          <td><code>--private-key string</code></td>
+          <td><code>LEGO_PRIVATE_KEY</code></td>
+          <td>Path to a private key (in PEM encoding) for the certificate. By default, a private key is generated.</td>
+      </tr>
+      <tr>
+          <td><code>--profile string</code></td>
+          <td><code>LEGO_PROFILE</code></td>
+          <td>If the CA offers multiple certificate profiles (draft-ietf-acme-profiles), choose this one.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-certificate-renewal">Flags related to certificate renewal:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--ari-disable</code></td>
+          <td><code>LEGO_ARI_DISABLE</code></td>
+          <td>(ARI) Do not use the renewalInfo endpoint (RFC9773) to check if a certificate should be renewed.</td>
+      </tr>
+      <tr>
+          <td><code>--ari-wait-to-renew-duration duration</code></td>
+          <td><code>LEGO_ARI_WAIT_TO_RENEW_DURATION</code></td>
+          <td>(ARI) The maximum duration you&rsquo;re willing to sleep for a renewal time returned by the renewalInfo endpoint. <br> (Default: 0s)</td>
+      </tr>
+      <tr>
+          <td><code>--force-cert-domains</code></td>
+          <td><code>LEGO_FORCE_CERT_DOMAINS</code></td>
+          <td>Check and ensure that the cert&rsquo;s domain list matches those passed in the domains argument.</td>
+      </tr>
+      <tr>
+          <td><code>--no-random-sleep</code></td>
+          <td><code>LEGO_NO_RANDOM_SLEEP</code></td>
+          <td>Do not add a random sleep before the renewal. We do not recommend using this flag if you are doing your renewals in an automated way.</td>
+      </tr>
+      <tr>
+          <td><code>--renew-days int</code></td>
+          <td><code>LEGO_RENEW_DAYS</code></td>
+          <td>The number of days left on a certificate to renew it.<br>	By default, compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates). <br> (Default: 0)</td>
+      </tr>
+      <tr>
+          <td><code>--renew-force</code></td>
+          <td><code>LEGO_RENEW_FORCE</code></td>
+          <td>Force the renewal of the certificate even if it is not due for renewal yet.</td>
+      </tr>
+      <tr>
+          <td><code>--reuse-key</code></td>
+          <td><code>LEGO_REUSE_KEY</code></td>
+          <td>Used to indicate you want to reuse the current certificate private key for the new certificate.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-hooks">Flags related to hooks:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--deploy-hook string</code></td>
+          <td><code>LEGO_DEPLOY_HOOK</code></td>
+          <td>Define a hook. The hook runs, after the creation or the renewal, in cases where a certificate is successfully created/renewed.</td>
+      </tr>
+      <tr>
+          <td><code>--deploy-hook-timeout duration</code></td>
+          <td><code>LEGO_DEPLOY_HOOK_TIMEOUT</code></td>
+          <td>Define the timeout for the deploy-hook execution. <br> (Default: 2m0s)</td>
+      </tr>
+      <tr>
+          <td><code>--post-hook string</code></td>
+          <td><code>LEGO_POST_HOOK</code></td>
+          <td>Define a post-hook. This hook runs, after the creation or the renewal, in cases where a certificate is created/renewed, regardless of whether any errors occurred.</td>
+      </tr>
+      <tr>
+          <td><code>--post-hook-timeout duration</code></td>
+          <td><code>LEGO_POST_HOOK_TIMEOUT</code></td>
+          <td>Define the timeout for the post-hook execution. <br> (Default: 2m0s)</td>
+      </tr>
+      <tr>
+          <td><code>--pre-hook string</code></td>
+          <td><code>LEGO_PRE_HOOK</code></td>
+          <td>Define a pre-hook. This hook runs, before the creation or the renewal, in cases where a certificate will be effectively created/renewed.</td>
+      </tr>
+      <tr>
+          <td><code>--pre-hook-timeout duration</code></td>
+          <td><code>LEGO_PRE_HOOK_TIMEOUT</code></td>
+          <td>Define the timeout for the pre-hook execution. <br> (Default: 2m0s)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-acme-client">Flags related to the ACME client:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--http-timeout int</code></td>
+          <td><code>LEGO_HTTP_TIMEOUT</code></td>
+          <td>Set the HTTP timeout value to a specific value in seconds. <br> (Default: 0)</td>
+      </tr>
+      <tr>
+          <td><code>--overall-request-limit int</code></td>
+          <td><code>LEGO_OVERALL_REQUEST_LIMIT</code></td>
+          <td>ACME overall requests limit. <br> (Default: 18)</td>
+      </tr>
+      <tr>
+          <td><code>--tls-skip-verify</code></td>
+          <td><code>LEGO_TLS_SKIP_VERIFY</code></td>
+          <td>Skip the TLS verification of the ACME server.</td>
+      </tr>
+      <tr>
+          <td><code>--user-agent string</code></td>
+          <td><code>LEGO_USER_AGENT</code></td>
+          <td>Add to the user-agent sent to the CA to identify an application embedding lego-cli</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-dns-01-challenge">Flags related to the DNS-01 challenge:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--dns string</code></td>
+          <td><code>LEGO_DNS</code></td>
+          <td>Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run &rsquo;lego dnshelp&rsquo; for help on usage.</td>
+      </tr>
+      <tr>
+          <td><code>--dns.propagation.disable-ans</code></td>
+          <td><code>LEGO_DNS_PROPAGATION_DISABLE_ANS</code></td>
+          <td>By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.</td>
+      </tr>
+      <tr>
+          <td><code>--dns.propagation.disable-rns</code></td>
+          <td><code>LEGO_DNS_PROPAGATION_DISABLE_RNS</code></td>
+          <td>By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).</td>
+      </tr>
+      <tr>
+          <td><code>--dns.propagation.wait duration</code></td>
+          <td><code>LEGO_DNS_PROPAGATION_WAIT</code></td>
+          <td>By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. <br> (Default: 0s)</td>
+      </tr>
+      <tr>
+          <td><code>--dns.resolvers string</code></td>
+          <td><code>LEGO_DNS_RESOLVERS</code></td>
+          <td>Set the nameservers to use for performing (recursive) CNAME resolving, apex domain determination, and propagation checks. Syntax: &lsquo;host:port&rsquo;. For multiple values either repeat the flag or provide a comma-separated list. The default is to use the system nameservers, or Cloudflare&rsquo;s nameservers if the system&rsquo;s cannot be determined.</td>
+      </tr>
+      <tr>
+          <td><code>--dns.timeout int</code></td>
+          <td><code>LEGO_DNS_TIMEOUT</code></td>
+          <td>Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries. <br> (Default: 10)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-dns-persist-01-challenge">Flags related to the DNS-PERSIST-01 challenge:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--dns-persist</code></td>
+          <td><code>LEGO_DNS_PERSIST</code></td>
+          <td>Use the DNS-PERSIST-01 challenge to solve challenges. Manual verification only. Can be mixed with other types of challenges.</td>
+      </tr>
+      <tr>
+          <td><code>--dns-persist.issuer-domain-name string</code></td>
+          <td><code>LEGO_DNS_PERSIST_ISSUER_DOMAIN_NAME</code></td>
+          <td>Override the issuer-domain-name to use for DNS-PERSIST-01 when multiple are offered. Must be offered by the challenge.</td>
+      </tr>
+      <tr>
+          <td><code>--dns-persist.persist-until time</code></td>
+          <td><code>LEGO_DNS_PERSIST_PERSIST_UNTIL</code></td>
+          <td>Set the optional persistUntil for DNS-PERSIST-01 records as an RFC3339 timestamp (for example, 2026-03-01T00:00:00Z).</td>
+      </tr>
+      <tr>
+          <td><code>--dns-persist.propagation.disable-ans</code></td>
+          <td><code>LEGO_DNS_PERSIST_PROPAGATION_DISABLE_ANS</code></td>
+          <td>By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.</td>
+      </tr>
+      <tr>
+          <td><code>--dns-persist.propagation.disable-rns</code></td>
+          <td><code>LEGO_DNS_PERSIST_PROPAGATION_DISABLE_RNS</code></td>
+          <td>By setting this flag to true, disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).</td>
+      </tr>
+      <tr>
+          <td><code>--dns-persist.propagation.wait duration</code></td>
+          <td><code>LEGO_DNS_PERSIST_PROPAGATION_WAIT</code></td>
+          <td>By setting this flag, disables all the propagation checks of the TXT record and uses a wait duration instead. <br> (Default: 0s)</td>
+      </tr>
+      <tr>
+          <td><code>--dns-persist.resolvers string</code></td>
+          <td><code>LEGO_DNS_PERSIST_RESOLVERS</code></td>
+          <td>Set the resolvers to use for DNS-PERSIST-01 TXT lookups. Syntax: &lsquo;host:port&rsquo;. For multiple values either repeat the flag or provide a comma-separated list. The default is to use the system nameservers, or Cloudflare&rsquo;s nameservers if the system&rsquo;s cannot be determined.</td>
+      </tr>
+      <tr>
+          <td><code>--dns-persist.timeout int</code></td>
+          <td><code>LEGO_DNS_PERSIST_TIMEOUT</code></td>
+          <td>Set the DNS timeout value to a specific value in seconds. Used for DNS-PERSIST-01 lookups. <br> (Default: 0)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-http-01-challenge">Flags related to the HTTP-01 challenge:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--http</code></td>
+          <td><code>LEGO_HTTP</code></td>
+          <td>Use the HTTP-01 challenge to solve challenges. Can be mixed with other types of challenges.</td>
+      </tr>
+      <tr>
+          <td><code>--http.address string</code></td>
+          <td><code>LEGO_HTTP_ADDRESS</code></td>
+          <td>Set the address to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port. <br> (Default: &ldquo;:80&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--http.delay duration</code></td>
+          <td><code>LEGO_HTTP_DELAY</code></td>
+          <td>Delay between the starts of the HTTP server (use for HTTP-01 based challenges) and the validation of the challenge. <br> (Default: 0s)</td>
+      </tr>
+      <tr>
+          <td><code>--http.memcached-host string</code></td>
+          <td><code>LEGO_HTTP_MEMCACHED_HOST</code></td>
+          <td>Set the memcached host(s) to use for HTTP-01 based challenges. Challenges will be written to all specified hosts.</td>
+      </tr>
+      <tr>
+          <td><code>--http.proxy-header string</code></td>
+          <td><code>LEGO_HTTP_PROXY_HEADER</code></td>
+          <td>Validate against this HTTP header when solving HTTP-01 based challenges behind a reverse proxy. <br> (Default: &ldquo;Host&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--http.s3-bucket string</code></td>
+          <td><code>LEGO_HTTP_S3_BUCKET</code></td>
+          <td>Set the S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.</td>
+      </tr>
+      <tr>
+          <td><code>--http.webroot string</code></td>
+          <td><code>LEGO_HTTP_WEBROOT</code></td>
+          <td>Set the webroot folder to use for HTTP-01 based challenges to write directly to the .well-known/acme-challenge file. This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-tls-alpn-01-challenge">Flags related to the TLS-ALPN-01 challenge:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--tls</code></td>
+          <td><code>LEGO_TLS</code></td>
+          <td>Use the TLS-ALPN-01 challenge to solve challenges. Can be mixed with other types of challenges.</td>
+      </tr>
+      <tr>
+          <td><code>--tls.address string</code></td>
+          <td><code>LEGO_TLS_ADDRESS</code></td>
+          <td>Set the address to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port. <br> (Default: &ldquo;:443&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--tls.delay duration</code></td>
+          <td><code>LEGO_TLS_DELAY</code></td>
+          <td>Delay between the start of the TLS listener (use for TLSALPN-01 based challenges) and the validation of the challenge. <br> (Default: 0s)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-storage">Flags related to the storage:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--account-id string</code></td>
+          <td><code>LEGO_ACCOUNT_ID</code></td>
+          <td>Account identifier (The email is used if the account ID is undefined).</td>
+      </tr>
+      <tr>
+          <td><code>--cert.name string</code>, <code>-c string</code></td>
+          <td><code>LEGO_CERT_NAME</code></td>
+          <td>The certificate ID/Name, used to store and retrieve a certificate. By default, it uses the first domain name.</td>
+      </tr>
+      <tr>
+          <td><code>--env-file string</code></td>
+          <td><code>LEGO_ENV_FILE</code></td>
+          <td>The path to the dotenv file.</td>
+      </tr>
+      <tr>
+          <td><code>--path string</code></td>
+          <td><code>LEGO_PATH</code></td>
+          <td>Directory to use for storing the data.</td>
+      </tr>
+      <tr>
+          <td><code>--pem</code></td>
+          <td><code>LEGO_PEM</code></td>
+          <td>Generate an additional .pem (base64) file by concatenating the .key and .crt files together.</td>
+      </tr>
+      <tr>
+          <td><code>--pfx</code></td>
+          <td><code>LEGO_PFX</code></td>
+          <td>Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together.</td>
+      </tr>
+      <tr>
+          <td><code>--pfx.format string</code></td>
+          <td><code>LEGO_PFX_FORMAT</code></td>
+          <td>The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: DES, RC2, SHA256, PBMAC1. <br> (Default: &ldquo;RC2&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--pfx.password string</code></td>
+          <td><code>LEGO_PFX_PASSWORD</code></td>
+          <td>The password used to encrypt the .pfx (PCKS#12) file. <br> (Default: &ldquo;changeit&rdquo;)</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="global-options-1">Global Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--log.level string</code></td>
+          <td><code>LEGO_LOG_LEVEL</code></td>
+          <td>Set the logging level. Supported values: &lsquo;debug&rsquo;, &lsquo;info&rsquo;, &lsquo;warn&rsquo;, &rsquo;error&rsquo;. <br> (Default: &ldquo;info&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--log.format string</code></td>
+          <td><code>LEGO_LOG_FORMAT</code></td>
+          <td>Set the logging format. Supported values: &lsquo;colored&rsquo;, &rsquo;text&rsquo;, &lsquo;json&rsquo;. <br> (Default: &ldquo;colored&rdquo;)</td>
+      </tr>
+  </tbody>
+</table>
+<span class="btn cstyle button transparent interactive"><a href="/lego/references/ref-flags/index.html"><i class="fa-fw fas fa-angle-double-up"></i> <span class="title">Back on Top</span></a></span>
+<hr>
+<h2 id="lego-certificates-revoke"><code>lego certificates revoke</code><span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<blockquote>
+<p>Revoke a certificate</p>
+</blockquote>
+<h3 id="usage-2">Usage<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>lego certificates revoke [options]</code></pre></div>
+<h3 id="options-1">Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--cert.name string</code>, <code>-c string</code></td>
+          <td><code>LEGO_CERT_NAME</code></td>
+          <td>The certificate IDs/Names, used to retrieve the certificates. For multiple values either repeat the flag or provide a comma-separated list.</td>
+      </tr>
+      <tr>
+          <td><code>--email string</code>, <code>-m string</code></td>
+          <td><code>LEGO_EMAIL</code></td>
+          <td>Email used for registration and recovery contact.</td>
+      </tr>
+      <tr>
+          <td><code>--help</code>, <code>-h</code></td>
+          <td></td>
+          <td>show help</td>
+      </tr>
+      <tr>
+          <td><code>--keep</code></td>
+          <td><code>LEGO_KEEP</code></td>
+          <td>Keep the certificates after the revocation instead of archiving them.</td>
+      </tr>
+      <tr>
+          <td><code>--key-type string</code>, <code>-k string</code></td>
+          <td><code>LEGO_KEY_TYPE</code></td>
+          <td>Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: &ldquo;EC256&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--reason uint</code></td>
+          <td><code>LEGO_REASON</code></td>
+          <td>Identifies the reason for the certificate revocation. See <a href="https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1" rel="external">https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1</a>.<br>	Valid values are: 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged), 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL), 9 (privilegeWithdrawn), or 10 (aACompromise). <br> (Default: 0)</td>
+      </tr>
+      <tr>
+          <td><code>--server string</code>, <code>-s string</code></td>
+          <td><code>LEGO_SERVER</code></td>
+          <td>CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: &ldquo;<a href="https://acme-v02.api.letsencrypt.org/directory%22" rel="external">https://acme-v02.api.letsencrypt.org/directory"</a>)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-external-account-binding-1">Flags related to External Account Binding:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--eab</code></td>
+          <td><code>LEGO_EAB</code></td>
+          <td>Use External Account Binding for account registration. Requires eab.kid and eab.hmac.</td>
+      </tr>
+      <tr>
+          <td><code>--eab.hmac string</code></td>
+          <td><code>LEGO_EAB_HMAC</code></td>
+          <td>MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format.</td>
+      </tr>
+      <tr>
+          <td><code>--eab.kid string</code></td>
+          <td><code>LEGO_EAB_KID</code></td>
+          <td>Key identifier for External Account Binding.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-advanced-options-1">Flags related to advanced options:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--cert.timeout int</code></td>
+          <td><code>LEGO_CERT_TIMEOUT</code></td>
+          <td>Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. <br> (Default: 30)</td>
+      </tr>
+      <tr>
+          <td><code>--enable-cn</code></td>
+          <td><code>LEGO_ENABLE_CN</code></td>
+          <td>Enable the use of the common name. (Not recommended)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-acme-client-1">Flags related to the ACME client:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--http-timeout int</code></td>
+          <td><code>LEGO_HTTP_TIMEOUT</code></td>
+          <td>Set the HTTP timeout value to a specific value in seconds. <br> (Default: 0)</td>
+      </tr>
+      <tr>
+          <td><code>--overall-request-limit int</code></td>
+          <td><code>LEGO_OVERALL_REQUEST_LIMIT</code></td>
+          <td>ACME overall requests limit. <br> (Default: 18)</td>
+      </tr>
+      <tr>
+          <td><code>--tls-skip-verify</code></td>
+          <td><code>LEGO_TLS_SKIP_VERIFY</code></td>
+          <td>Skip the TLS verification of the ACME server.</td>
+      </tr>
+      <tr>
+          <td><code>--user-agent string</code></td>
+          <td><code>LEGO_USER_AGENT</code></td>
+          <td>Add to the user-agent sent to the CA to identify an application embedding lego-cli</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-configuration-file-1">Flags related to the configuration file:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--config string</code></td>
+          <td><code>LEGO_CONFIG</code></td>
+          <td>Path to the configuration file.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-storage-1">Flags related to the storage:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--account-id string</code></td>
+          <td><code>LEGO_ACCOUNT_ID</code></td>
+          <td>Account identifier (The email is used if the account ID is undefined).</td>
+      </tr>
+      <tr>
+          <td><code>--path string</code></td>
+          <td><code>LEGO_PATH</code></td>
+          <td>Directory to use for storing the data.</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="global-options-2">Global Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--log.level string</code></td>
+          <td><code>LEGO_LOG_LEVEL</code></td>
+          <td>Set the logging level. Supported values: &lsquo;debug&rsquo;, &lsquo;info&rsquo;, &lsquo;warn&rsquo;, &rsquo;error&rsquo;. <br> (Default: &ldquo;info&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--log.format string</code></td>
+          <td><code>LEGO_LOG_FORMAT</code></td>
+          <td>Set the logging format. Supported values: &lsquo;colored&rsquo;, &rsquo;text&rsquo;, &lsquo;json&rsquo;. <br> (Default: &ldquo;colored&rdquo;)</td>
+      </tr>
+  </tbody>
+</table>
+<span class="btn cstyle button transparent interactive"><a href="/lego/references/ref-flags/index.html"><i class="fa-fw fas fa-angle-double-up"></i> <span class="title">Back on Top</span></a></span>
+<hr>
+<h2 id="lego-certificates-list"><code>lego certificates list</code><span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<blockquote>
+<p>Display information about certificates.</p>
+</blockquote>
+<h3 id="usage-3">Usage<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>lego certificates list [options]</code></pre></div>
+<h3 id="options-2">Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--help</code>, <code>-h</code></td>
+          <td></td>
+          <td>show help</td>
+      </tr>
+      <tr>
+          <td><code>--json</code></td>
+          <td></td>
+          <td>Format the output as JSON.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-configuration-file-2">Flags related to the configuration file:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--config string</code></td>
+          <td><code>LEGO_CONFIG</code></td>
+          <td>Path to the configuration file.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-storage-2">Flags related to the storage:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--path string</code></td>
+          <td><code>LEGO_PATH</code></td>
+          <td>Directory to use for storing the data.</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="global-options-3">Global Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--log.level string</code></td>
+          <td><code>LEGO_LOG_LEVEL</code></td>
+          <td>Set the logging level. Supported values: &lsquo;debug&rsquo;, &lsquo;info&rsquo;, &lsquo;warn&rsquo;, &rsquo;error&rsquo;. <br> (Default: &ldquo;info&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--log.format string</code></td>
+          <td><code>LEGO_LOG_FORMAT</code></td>
+          <td>Set the logging format. Supported values: &lsquo;colored&rsquo;, &rsquo;text&rsquo;, &lsquo;json&rsquo;. <br> (Default: &ldquo;colored&rdquo;)</td>
+      </tr>
+  </tbody>
+</table>
+<span class="btn cstyle button transparent interactive"><a href="/lego/references/ref-flags/index.html"><i class="fa-fw fas fa-angle-double-up"></i> <span class="title">Back on Top</span></a></span>
+<hr>
+<h2 id="lego-accounts-register"><code>lego accounts register</code><span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<blockquote>
+<p>Register an account.</p>
+</blockquote>
+<h3 id="usage-4">Usage<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>lego accounts register [options]</code></pre></div>
+<h3 id="options-3">Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--accept-tos</code>, <code>-a</code></td>
+          <td><code>LEGO_ACCEPT_TOS</code></td>
+          <td>By setting this flag to true, you indicate that you accept the current CA terms of service.</td>
+      </tr>
+      <tr>
+          <td><code>--email string</code>, <code>-m string</code></td>
+          <td><code>LEGO_EMAIL</code></td>
+          <td>Email used for registration and recovery contact.</td>
+      </tr>
+      <tr>
+          <td><code>--help</code>, <code>-h</code></td>
+          <td></td>
+          <td>show help</td>
+      </tr>
+      <tr>
+          <td><code>--key-type string</code>, <code>-k string</code></td>
+          <td><code>LEGO_KEY_TYPE</code></td>
+          <td>Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: &ldquo;EC256&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--server string</code>, <code>-s string</code></td>
+          <td><code>LEGO_SERVER</code></td>
+          <td>CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: &ldquo;<a href="https://acme-v02.api.letsencrypt.org/directory%22" rel="external">https://acme-v02.api.letsencrypt.org/directory"</a>)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-external-account-binding-2">Flags related to External Account Binding:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--eab</code></td>
+          <td><code>LEGO_EAB</code></td>
+          <td>Use External Account Binding for account registration. Requires eab.kid and eab.hmac.</td>
+      </tr>
+      <tr>
+          <td><code>--eab.hmac string</code></td>
+          <td><code>LEGO_EAB_HMAC</code></td>
+          <td>MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format.</td>
+      </tr>
+      <tr>
+          <td><code>--eab.kid string</code></td>
+          <td><code>LEGO_EAB_KID</code></td>
+          <td>Key identifier for External Account Binding.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-advanced-options-2">Flags related to advanced options:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--cert.timeout int</code></td>
+          <td><code>LEGO_CERT_TIMEOUT</code></td>
+          <td>Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. <br> (Default: 30)</td>
+      </tr>
+      <tr>
+          <td><code>--enable-cn</code></td>
+          <td><code>LEGO_ENABLE_CN</code></td>
+          <td>Enable the use of the common name. (Not recommended)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-acme-client-2">Flags related to the ACME client:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--http-timeout int</code></td>
+          <td><code>LEGO_HTTP_TIMEOUT</code></td>
+          <td>Set the HTTP timeout value to a specific value in seconds. <br> (Default: 0)</td>
+      </tr>
+      <tr>
+          <td><code>--overall-request-limit int</code></td>
+          <td><code>LEGO_OVERALL_REQUEST_LIMIT</code></td>
+          <td>ACME overall requests limit. <br> (Default: 18)</td>
+      </tr>
+      <tr>
+          <td><code>--tls-skip-verify</code></td>
+          <td><code>LEGO_TLS_SKIP_VERIFY</code></td>
+          <td>Skip the TLS verification of the ACME server.</td>
+      </tr>
+      <tr>
+          <td><code>--user-agent string</code></td>
+          <td><code>LEGO_USER_AGENT</code></td>
+          <td>Add to the user-agent sent to the CA to identify an application embedding lego-cli</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-storage-3">Flags related to the storage:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--account-id string</code></td>
+          <td><code>LEGO_ACCOUNT_ID</code></td>
+          <td>Account identifier (The email is used if the account ID is undefined).</td>
+      </tr>
+      <tr>
+          <td><code>--path string</code></td>
+          <td><code>LEGO_PATH</code></td>
+          <td>Directory to use for storing the data.</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="global-options-4">Global Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--log.level string</code></td>
+          <td><code>LEGO_LOG_LEVEL</code></td>
+          <td>Set the logging level. Supported values: &lsquo;debug&rsquo;, &lsquo;info&rsquo;, &lsquo;warn&rsquo;, &rsquo;error&rsquo;. <br> (Default: &ldquo;info&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--log.format string</code></td>
+          <td><code>LEGO_LOG_FORMAT</code></td>
+          <td>Set the logging format. Supported values: &lsquo;colored&rsquo;, &rsquo;text&rsquo;, &lsquo;json&rsquo;. <br> (Default: &ldquo;colored&rdquo;)</td>
+      </tr>
+  </tbody>
+</table>
+<span class="btn cstyle button transparent interactive"><a href="/lego/references/ref-flags/index.html"><i class="fa-fw fas fa-angle-double-up"></i> <span class="title">Back on Top</span></a></span>
+<hr>
+<h2 id="lego-accounts-recover"><code>lego accounts recover</code><span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<blockquote>
+<p>Recover/import an account from the private key.</p>
+</blockquote>
+<h3 id="usage-5">Usage<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>lego accounts recover [options]</code></pre></div>
+<h3 id="options-4">Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--email string</code>, <code>-m string</code></td>
+          <td><code>LEGO_EMAIL</code></td>
+          <td>Email used for registration and recovery contact.</td>
+      </tr>
+      <tr>
+          <td><code>--help</code>, <code>-h</code></td>
+          <td></td>
+          <td>show help</td>
+      </tr>
+      <tr>
+          <td><code>--key-type string</code>, <code>-k string</code></td>
+          <td><code>LEGO_KEY_TYPE</code></td>
+          <td>Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: &ldquo;EC256&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--private-key string</code></td>
+          <td><code>LEGO_PRIVATE_KEY</code></td>
+          <td>Path to the account private key (PEM encoded).</td>
+      </tr>
+      <tr>
+          <td><code>--server string</code>, <code>-s string</code></td>
+          <td><code>LEGO_SERVER</code></td>
+          <td>CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: &ldquo;<a href="https://acme-v02.api.letsencrypt.org/directory%22" rel="external">https://acme-v02.api.letsencrypt.org/directory"</a>)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-external-account-binding-3">Flags related to External Account Binding:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--eab</code></td>
+          <td><code>LEGO_EAB</code></td>
+          <td>Use External Account Binding for account registration. Requires eab.kid and eab.hmac.</td>
+      </tr>
+      <tr>
+          <td><code>--eab.hmac string</code></td>
+          <td><code>LEGO_EAB_HMAC</code></td>
+          <td>MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format.</td>
+      </tr>
+      <tr>
+          <td><code>--eab.kid string</code></td>
+          <td><code>LEGO_EAB_KID</code></td>
+          <td>Key identifier for External Account Binding.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-advanced-options-3">Flags related to advanced options:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--cert.timeout int</code></td>
+          <td><code>LEGO_CERT_TIMEOUT</code></td>
+          <td>Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. <br> (Default: 30)</td>
+      </tr>
+      <tr>
+          <td><code>--enable-cn</code></td>
+          <td><code>LEGO_ENABLE_CN</code></td>
+          <td>Enable the use of the common name. (Not recommended)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-acme-client-3">Flags related to the ACME client:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--http-timeout int</code></td>
+          <td><code>LEGO_HTTP_TIMEOUT</code></td>
+          <td>Set the HTTP timeout value to a specific value in seconds. <br> (Default: 0)</td>
+      </tr>
+      <tr>
+          <td><code>--overall-request-limit int</code></td>
+          <td><code>LEGO_OVERALL_REQUEST_LIMIT</code></td>
+          <td>ACME overall requests limit. <br> (Default: 18)</td>
+      </tr>
+      <tr>
+          <td><code>--tls-skip-verify</code></td>
+          <td><code>LEGO_TLS_SKIP_VERIFY</code></td>
+          <td>Skip the TLS verification of the ACME server.</td>
+      </tr>
+      <tr>
+          <td><code>--user-agent string</code></td>
+          <td><code>LEGO_USER_AGENT</code></td>
+          <td>Add to the user-agent sent to the CA to identify an application embedding lego-cli</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-storage-4">Flags related to the storage:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--account-id string</code></td>
+          <td><code>LEGO_ACCOUNT_ID</code></td>
+          <td>Account identifier (The email is used if the account ID is undefined).</td>
+      </tr>
+      <tr>
+          <td><code>--path string</code></td>
+          <td><code>LEGO_PATH</code></td>
+          <td>Directory to use for storing the data.</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="global-options-5">Global Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--log.level string</code></td>
+          <td><code>LEGO_LOG_LEVEL</code></td>
+          <td>Set the logging level. Supported values: &lsquo;debug&rsquo;, &lsquo;info&rsquo;, &lsquo;warn&rsquo;, &rsquo;error&rsquo;. <br> (Default: &ldquo;info&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--log.format string</code></td>
+          <td><code>LEGO_LOG_FORMAT</code></td>
+          <td>Set the logging format. Supported values: &lsquo;colored&rsquo;, &rsquo;text&rsquo;, &lsquo;json&rsquo;. <br> (Default: &ldquo;colored&rdquo;)</td>
+      </tr>
+  </tbody>
+</table>
+<span class="btn cstyle button transparent interactive"><a href="/lego/references/ref-flags/index.html"><i class="fa-fw fas fa-angle-double-up"></i> <span class="title">Back on Top</span></a></span>
+<hr>
+<h2 id="lego-accounts-keyrollover"><code>lego accounts keyrollover</code><span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<blockquote>
+<p>Update the account private key.</p>
+</blockquote>
+<h3 id="usage-6">Usage<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>lego accounts keyrollover [options]</code></pre></div>
+<h3 id="options-5">Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--email string</code>, <code>-m string</code></td>
+          <td><code>LEGO_EMAIL</code></td>
+          <td>Email used for registration and recovery contact.</td>
+      </tr>
+      <tr>
+          <td><code>--help</code>, <code>-h</code></td>
+          <td></td>
+          <td>show help</td>
+      </tr>
+      <tr>
+          <td><code>--key-type string</code>, <code>-k string</code></td>
+          <td><code>LEGO_KEY_TYPE</code></td>
+          <td>Key type to use for the new private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: &ldquo;EC256&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--private-key string</code></td>
+          <td><code>LEGO_PRIVATE_KEY</code></td>
+          <td>Path to the new account private key (PEM encoded). If not specified, the private key will be generated.</td>
+      </tr>
+      <tr>
+          <td><code>--server string</code>, <code>-s string</code></td>
+          <td><code>LEGO_SERVER</code></td>
+          <td>CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: &ldquo;<a href="https://acme-v02.api.letsencrypt.org/directory%22" rel="external">https://acme-v02.api.letsencrypt.org/directory"</a>)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-external-account-binding-4">Flags related to External Account Binding:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--eab</code></td>
+          <td><code>LEGO_EAB</code></td>
+          <td>Use External Account Binding for account registration. Requires eab.kid and eab.hmac.</td>
+      </tr>
+      <tr>
+          <td><code>--eab.hmac string</code></td>
+          <td><code>LEGO_EAB_HMAC</code></td>
+          <td>MAC key for External Account Binding. Should be in Base64 URL Encoding without padding format.</td>
+      </tr>
+      <tr>
+          <td><code>--eab.kid string</code></td>
+          <td><code>LEGO_EAB_KID</code></td>
+          <td>Key identifier for External Account Binding.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-advanced-options-4">Flags related to advanced options:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--cert.timeout int</code></td>
+          <td><code>LEGO_CERT_TIMEOUT</code></td>
+          <td>Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. <br> (Default: 30)</td>
+      </tr>
+      <tr>
+          <td><code>--enable-cn</code></td>
+          <td><code>LEGO_ENABLE_CN</code></td>
+          <td>Enable the use of the common name. (Not recommended)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-acme-client-4">Flags related to the ACME client:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--http-timeout int</code></td>
+          <td><code>LEGO_HTTP_TIMEOUT</code></td>
+          <td>Set the HTTP timeout value to a specific value in seconds. <br> (Default: 0)</td>
+      </tr>
+      <tr>
+          <td><code>--overall-request-limit int</code></td>
+          <td><code>LEGO_OVERALL_REQUEST_LIMIT</code></td>
+          <td>ACME overall requests limit. <br> (Default: 18)</td>
+      </tr>
+      <tr>
+          <td><code>--tls-skip-verify</code></td>
+          <td><code>LEGO_TLS_SKIP_VERIFY</code></td>
+          <td>Skip the TLS verification of the ACME server.</td>
+      </tr>
+      <tr>
+          <td><code>--user-agent string</code></td>
+          <td><code>LEGO_USER_AGENT</code></td>
+          <td>Add to the user-agent sent to the CA to identify an application embedding lego-cli</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-storage-5">Flags related to the storage:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--account-id string</code></td>
+          <td><code>LEGO_ACCOUNT_ID</code></td>
+          <td>Account identifier (The email is used if the account ID is undefined).</td>
+      </tr>
+      <tr>
+          <td><code>--path string</code></td>
+          <td><code>LEGO_PATH</code></td>
+          <td>Directory to use for storing the data.</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="global-options-6">Global Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--log.level string</code></td>
+          <td><code>LEGO_LOG_LEVEL</code></td>
+          <td>Set the logging level. Supported values: &lsquo;debug&rsquo;, &lsquo;info&rsquo;, &lsquo;warn&rsquo;, &rsquo;error&rsquo;. <br> (Default: &ldquo;info&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--log.format string</code></td>
+          <td><code>LEGO_LOG_FORMAT</code></td>
+          <td>Set the logging format. Supported values: &lsquo;colored&rsquo;, &rsquo;text&rsquo;, &lsquo;json&rsquo;. <br> (Default: &ldquo;colored&rdquo;)</td>
+      </tr>
+  </tbody>
+</table>
+<span class="btn cstyle button transparent interactive"><a href="/lego/references/ref-flags/index.html"><i class="fa-fw fas fa-angle-double-up"></i> <span class="title">Back on Top</span></a></span>
+<hr>
+<h2 id="lego-accounts-list"><code>lego accounts list</code><span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<blockquote>
+<p>Display information about accounts.</p>
+</blockquote>
+<h3 id="usage-7">Usage<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>lego accounts list [options]</code></pre></div>
+<h3 id="options-6">Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--help</code>, <code>-h</code></td>
+          <td></td>
+          <td>show help</td>
+      </tr>
+      <tr>
+          <td><code>--json</code></td>
+          <td></td>
+          <td>Format the output as JSON.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-configuration-file-3">Flags related to the configuration file:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--config string</code></td>
+          <td><code>LEGO_CONFIG</code></td>
+          <td>Path to the configuration file.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-storage-6">Flags related to the storage:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--path string</code></td>
+          <td><code>LEGO_PATH</code></td>
+          <td>Directory to use for storing the data.</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="global-options-7">Global Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--log.level string</code></td>
+          <td><code>LEGO_LOG_LEVEL</code></td>
+          <td>Set the logging level. Supported values: &lsquo;debug&rsquo;, &lsquo;info&rsquo;, &lsquo;warn&rsquo;, &rsquo;error&rsquo;. <br> (Default: &ldquo;info&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--log.format string</code></td>
+          <td><code>LEGO_LOG_FORMAT</code></td>
+          <td>Set the logging format. Supported values: &lsquo;colored&rsquo;, &rsquo;text&rsquo;, &lsquo;json&rsquo;. <br> (Default: &ldquo;colored&rdquo;)</td>
+      </tr>
+  </tbody>
+</table>
+<span class="btn cstyle button transparent interactive"><a href="/lego/references/ref-flags/index.html"><i class="fa-fw fas fa-angle-double-up"></i> <span class="title">Back on Top</span></a></span>
+<hr>
+<h2 id="lego-archives-restore"><code>lego archives restore</code><span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<blockquote>
+<p>Restore an archive.</p>
+</blockquote>
+<h3 id="usage-8">Usage<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>lego archives restore [options]</code></pre></div>
+<h3 id="options-7">Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--help</code>, <code>-h</code></td>
+          <td></td>
+          <td>show help</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-configuration-file-4">Flags related to the configuration file:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--config string</code></td>
+          <td><code>LEGO_CONFIG</code></td>
+          <td>Path to the configuration file.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-storage-7">Flags related to the storage:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--path string</code></td>
+          <td><code>LEGO_PATH</code></td>
+          <td>Directory to use for storing the data.</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="global-options-8">Global Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--log.level string</code></td>
+          <td><code>LEGO_LOG_LEVEL</code></td>
+          <td>Set the logging level. Supported values: &lsquo;debug&rsquo;, &lsquo;info&rsquo;, &lsquo;warn&rsquo;, &rsquo;error&rsquo;. <br> (Default: &ldquo;info&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--log.format string</code></td>
+          <td><code>LEGO_LOG_FORMAT</code></td>
+          <td>Set the logging format. Supported values: &lsquo;colored&rsquo;, &rsquo;text&rsquo;, &lsquo;json&rsquo;. <br> (Default: &ldquo;colored&rdquo;)</td>
+      </tr>
+  </tbody>
+</table>
+<span class="btn cstyle button transparent interactive"><a href="/lego/references/ref-flags/index.html"><i class="fa-fw fas fa-angle-double-up"></i> <span class="title">Back on Top</span></a></span>
+<hr>
+<h2 id="lego-archives-list"><code>lego archives list</code><span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<blockquote>
+<p>List all archives.</p>
+</blockquote>
+<h3 id="usage-9">Usage<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>lego archives list [options]</code></pre></div>
+<h3 id="options-8">Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--help</code>, <code>-h</code></td>
+          <td></td>
+          <td>show help</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-configuration-file-5">Flags related to the configuration file:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--config string</code></td>
+          <td><code>LEGO_CONFIG</code></td>
+          <td>Path to the configuration file.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-storage-8">Flags related to the storage:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--path string</code></td>
+          <td><code>LEGO_PATH</code></td>
+          <td>Directory to use for storing the data.</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="global-options-9">Global Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--log.level string</code></td>
+          <td><code>LEGO_LOG_LEVEL</code></td>
+          <td>Set the logging level. Supported values: &lsquo;debug&rsquo;, &lsquo;info&rsquo;, &lsquo;warn&rsquo;, &rsquo;error&rsquo;. <br> (Default: &ldquo;info&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--log.format string</code></td>
+          <td><code>LEGO_LOG_FORMAT</code></td>
+          <td>Set the logging format. Supported values: &lsquo;colored&rsquo;, &rsquo;text&rsquo;, &lsquo;json&rsquo;. <br> (Default: &ldquo;colored&rdquo;)</td>
+      </tr>
+  </tbody>
+</table>
+<span class="btn cstyle button transparent interactive"><a href="/lego/references/ref-flags/index.html"><i class="fa-fw fas fa-angle-double-up"></i> <span class="title">Back on Top</span></a></span>
+<hr>
+<h2 id="lego-dnshelp"><code>lego dnshelp</code><span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<blockquote>
+<p>Shows additional help for the &lsquo;&ndash;dns&rsquo; global option</p>
+</blockquote>
+<h3 id="usage-10">Usage<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>lego dnshelp [options]</code></pre></div>
+<h3 id="options-9">Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--code string</code>, <code>-c string</code></td>
+          <td></td>
+          <td>DNS code: abion, acmedns, active24, alidns, aliesa, allinkl, alwaysdata, anexia, artfiles, arvancloud, auroradns, autodns, axelname, azion, azuredns, baiducloud, beget, binarylane, bindman, bluecat, bluecatv2, bookmyname, bunny, checkdomain, civo, clouddns, cloudflare, cloudns, cloudru, com35, connbyte, conoha, conohav3, constellix, corenetworks, cpanel, curanet, czechia, dandomain, ddnss, derak, desec, designate, digitalocean, dinahosting, directadmin, dns51, dnscale, dnsexit, dnshomede, dnsimple, dnsla, dnsmadeeasy, dnsservices, dnsupdate, dode, domeneshop, dreamhost, duckdns, dyn, dynadot, dyndnsfree, dynu, easydns, edgecenter, edgedns, edgeone, efficientip, epik, eurodns, euserv, excedo, exec, exoscale, f5xc, fornex, freemyip, gandi, gandiv5, gcloud, gcore, gehirn, gigahostno, glesys, gname, godaddy, gravity, hetzner, hostingde, hostinger, hostingnl, hosttech, hostup, httpnet, httpreq, huaweicloud, hurricane, hyperone, ibmcloud, iijdpf, infoblox, infomaniak, internetbs, inwx, ionos, ionoscloud, ipv64, ispconfig, ispconfigddns, jdcloud, joker, katapult, keyhelp, leaseweb, liara, lightsail, limacity, linode, liquidweb, loopia, luadns, mailinabox, manageengine, manual, metaname, metaregistrar, mijnhost, mittwald, myaddr, mydnsjp, mythicbeasts, namecheap, namedotcom, namesilo, namesurfer, nearlyfreespeech, nederhost, neodigit, netcup, netlify, netnod, ngenix, nicmanager, nicru, nifcloud, njalla, nodion, ns1, octenium, omglol, onecloudru, onlinenet, opusdns, oraclecloud, otc, ovh, pdns, plesk, pointdns, porkbun, poweradmin, rackspace, rage4, rainyun, rcodezero, regfish, regru, rimuhosting, route53, safedns, sakuracloud, scaleway, scannet, selectel, selectelv2, selfhostde, servercow, shellrent, simply, sonic, spaceship, stackpath, syse, technitium, tele3, tencentcloud, timewebcloud, todaynic, transip, ucloud, ultradns, uniteddomains, variomedia, veesp, vegadns, vercel, versio, vinyldns, virtualname, vkcloud, volcengine, vscale, vultr, wannafind, webnamesca, webnamesru, websupport, wedos, westcn, xinnet, yandex, yandex360, yandexcloud, zilore, zoneedit, zoneee, zonomi</td>
+      </tr>
+      <tr>
+          <td><code>--help</code>, <code>-h</code></td>
+          <td></td>
+          <td>show help</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="global-options-10">Global Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--log.level string</code></td>
+          <td><code>LEGO_LOG_LEVEL</code></td>
+          <td>Set the logging level. Supported values: &lsquo;debug&rsquo;, &lsquo;info&rsquo;, &lsquo;warn&rsquo;, &rsquo;error&rsquo;. <br> (Default: &ldquo;info&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--log.format string</code></td>
+          <td><code>LEGO_LOG_FORMAT</code></td>
+          <td>Set the logging format. Supported values: &lsquo;colored&rsquo;, &rsquo;text&rsquo;, &lsquo;json&rsquo;. <br> (Default: &ldquo;colored&rdquo;)</td>
+      </tr>
+  </tbody>
+</table>
+<span class="btn cstyle button transparent interactive"><a href="/lego/references/ref-flags/index.html"><i class="fa-fw fas fa-angle-double-up"></i> <span class="title">Back on Top</span></a></span>
+<hr>
+<h2 id="lego-migrate"><code>lego migrate</code><span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<blockquote>
+<p>Migrate certificates and accounts.</p>
+</blockquote>
+<h3 id="usage-11">Usage<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>lego migrate [options]</code></pre></div>
+<h3 id="options-10">Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--account-only</code></td>
+          <td><code>LEGO_ACCOUNT_ONLY</code></td>
+          <td>Only migrate accounts.</td>
+      </tr>
+      <tr>
+          <td><code>--help</code>, <code>-h</code></td>
+          <td></td>
+          <td>show help</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="flags-related-to-the-storage-9">Flags related to the storage:<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h4>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--path string</code></td>
+          <td><code>LEGO_PATH</code></td>
+          <td>Directory to use for storing the data.</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="global-options-11">Global Options<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Env Var</th>
+          <th>Usage</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--log.level string</code></td>
+          <td><code>LEGO_LOG_LEVEL</code></td>
+          <td>Set the logging level. Supported values: &lsquo;debug&rsquo;, &lsquo;info&rsquo;, &lsquo;warn&rsquo;, &rsquo;error&rsquo;. <br> (Default: &ldquo;info&rdquo;)</td>
+      </tr>
+      <tr>
+          <td><code>--log.format string</code></td>
+          <td><code>LEGO_LOG_FORMAT</code></td>
+          <td>Set the logging format. Supported values: &lsquo;colored&rsquo;, &rsquo;text&rsquo;, &lsquo;json&rsquo;. <br> (Default: &ldquo;colored&rdquo;)</td>
+      </tr>
+  </tbody>
+</table>
+<span class="btn cstyle button transparent interactive"><a href="/lego/references/ref-flags/index.html"><i class="fa-fw fas fa-angle-double-up"></i> <span class="title">Back on Top</span></a></span>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jun 3, 2026
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1780447626" defer></script>
+    <script src="/lego/js/theme.min.js?1780447626" defer></script>
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  </body>
+</html>

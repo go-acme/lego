@@ -26,7 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - uses: actions/setup-go@v6
@@ -58,7 +57,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - uses: actions/setup-go@v6
@@ -93,13 +91,10 @@ jobs:
       GO_VERSION: stable
       GOLANGCI_LINT_VERSION: v2.12
       CGO_ENABLED: 0
-      LEGO_E2E_TESTS: CI
-      MEMCACHED_HOSTS: localhost:11211
 
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - uses: actions/setup-go@v6

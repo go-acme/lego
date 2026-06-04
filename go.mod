@@ -95,6 +95,7 @@ require (
 	github.com/yandex-cloud/go-sdk/services/dns v0.0.65
 	github.com/yandex-cloud/go-sdk/v2 v2.114.0
 	gitlab.com/greyxor/slogor v1.6.10
+	go.yaml.in/yaml/v3 v3.0.4
 	golang.org/x/crypto v0.52.0
 	golang.org/x/net v0.55.0
 	golang.org/x/oauth2 v0.36.0
@@ -102,8 +103,6 @@ require (
 	golang.org/x/time v0.15.0
 	google.golang.org/api v0.280.0
 	gopkg.in/ns1/ns1-go.v2 v2.17.2
-	gopkg.in/yaml.v2 v2.4.0
-	gopkg.in/yaml.v3 v3.0.1
 	software.sslmate.com/src/go-pkcs12 v0.7.1
 )
 
@@ -227,4 +226,6 @@ require (
 	google.golang.org/grpc v1.81.1 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/ini.v1 v1.67.2 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

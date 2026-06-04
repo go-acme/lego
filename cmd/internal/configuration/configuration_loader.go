@@ -9,7 +9,7 @@ import (
 	"github.com/go-acme/lego/v5/certificate"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 type FileNotFoundError struct{}

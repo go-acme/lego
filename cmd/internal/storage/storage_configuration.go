@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 // ConfigurationStorage is a storage for the configuration.

@@ -15,7 +15,7 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/prompt"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/urfave/cli/v3"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 const callToAction = `#######

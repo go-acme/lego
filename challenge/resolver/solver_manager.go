@@ -84,6 +84,19 @@ func (c *SolverManager) SetDNSPersist01(opts ...dnspersist01.ChallengeOption) er
 	return nil
 }
 
+// SetDNSPersist01Provider specifies a custom provider p that can solve the dns-persist-01 challenge.
+// IMPORTANT: this method is experimental and may change without notice.
+func (c *SolverManager) SetDNSPersist01Provider(p challenge.PersistentProvider, opts ...dnspersist01.ChallengeOption) error {
+	chlg, err := dnspersist01.NewChallenge(c.core, validate, p, opts...)
+	if err != nil {
+		return err
+	}
+
+	c.solvers[challenge.DNSPersist01] = chlg
+
+	return nil
+}
+
 // Remove removes a challenge type from the available solvers.
 func (c *SolverManager) Remove(chlgType challenge.Type) {
 	delete(c.solvers, chlgType)

@@ -19,6 +19,7 @@ import (
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/certificate"
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dnspersist01"
 	"github.com/go-acme/lego/v5/e2e/internal"
 	"github.com/go-acme/lego/v5/e2e/loader"
@@ -354,3 +355,77 @@ func updateDNS(t *testing.T, accountURI, issuerDomainName string) {
 		require.NoError(t, err)
 	})
 }
+
+// TestChallengeDNSPersist_Client_Obtain_CustomProvider mirrors TestChallengeDNSPersist_Client_Obtain
+// but uses SetDNSPersist01Provider with a custom challenge.PersistentProvider instead of the
+// built-in provider registered by SetDNSPersist01.
+func TestChallengeDNSPersist_Client_Obtain_CustomProvider(t *testing.T) {
+	t.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
+
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	require.NoError(t, err, "Could not generate test key")
+
+	user := &internal.FakeUser{PrivateKey: privateKey}
+	config := lego.NewConfig(user)
+	config.CADirURL = caDirectory
+
+	client, err := lego.NewClient(config)
+	require.NoError(t, err)
+
+	reg, err := client.Registration.Register(context.Background(), registration.RegisterOptions{TermsOfServiceAgreed: true})
+	require.NoError(t, err)
+	require.NotEmpty(t, reg.Location)
+
+	user.Registration = reg
+
+	updateDNS(t, reg.Location, testPersistBaseDomain)
+
+	mockDefaultPersist(t)
+
+	// Use a custom provider instead of the built-in one.
+	provider := &challTestSrvProvider{client: internal.NewChallTestSrvClient("8555")}
+
+	err = client.Challenge.SetDNSPersist01Provider(provider,
+		dnspersist01.DisableAuthoritativeNssPropagationRequirement(),
+	)
+	require.NoError(t, err)
+
+	privateKeyCSR, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	request := certificate.ObtainRequest{
+		Domains:    []string{testPersistDomain},
+		KeyType:    certcrypto.RSA2048,
+		Bundle:     true,
+		PrivateKey: privateKeyCSR,
+	}
+	resource, err := client.Certificate.Obtain(context.Background(), request)
+	require.NoError(t, err)
+
+	require.NotNil(t, resource)
+	assert.Equal(t, testPersistDomain, resource.Domains[0])
+	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertURL)
+	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{14,}`, resource.CertStableURL)
+	assert.NotEmpty(t, resource.Certificate)
+	assert.NotEmpty(t, resource.IssuerCertificate)
+	assert.Empty(t, resource.CSR)
+}
+
+// challTestSrvProvider implements challenge.PersistentProvider by writing TXT records
+// via the pebble-challtestsrv HTTP API.
+type challTestSrvProvider struct {
+	client *internal.ChallTestSrvClient
+}
+
+// Persist publishes the dns-persist-01 TXT record via the challenge test server.
+func (p *challTestSrvProvider) Persist(_ context.Context, fqdn, value string) error {
+	return p.client.SetPersistRecord(fqdn, value)
+}
+
+// Timeout returns the propagation timeout and polling interval.
+func (p *challTestSrvProvider) Timeout() (time.Duration, time.Duration) {
+	return 30 * time.Second, 5 * time.Second
+}
+
+// Ensure challTestSrvProvider satisfies the interface at compile time.
+var _ challenge.PersistentProvider = (*challTestSrvProvider)(nil)

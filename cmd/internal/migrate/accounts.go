@@ -27,6 +27,9 @@ const (
 type OldAccount struct {
 	Email        string       `json:"email"`
 	Registration *OldResource `json:"registration"`
+
+	// Extra field to check if the account has been migrated.
+	Origin string `json:"origin,omitempty"`
 }
 
 type OldResource struct {
@@ -47,6 +50,12 @@ func Accounts(root string, cfg *configuration.Configuration) error {
 		oldAccount, err := storage.ReadJSONFile[OldAccount](srcAccountFilePath)
 		if err != nil {
 			return fmt.Errorf("could not read the account file %q: %w", srcAccountFilePath, err)
+		}
+
+		if oldAccount.Origin != "" {
+			log.Warn("Skip migration: the account file is already migrated.", slog.String("filepath", srcAccountFilePath))
+
+			continue
 		}
 
 		accountDir := filepath.Dir(srcAccountFilePath)

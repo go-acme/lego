@@ -27,6 +27,9 @@ type oldResource struct {
 	Domain        string `json:"domain"`
 	CertURL       string `json:"certUrl"`
 	CertStableURL string `json:"certStableUrl"`
+
+	// Extra field to check if the certificate has been migrated.
+	Origin string `json:"origin,omitempty"`
 }
 
 func Certificates(root string, cfg *configuration.Configuration) error {
@@ -36,9 +39,17 @@ func Certificates(root string, cfg *configuration.Configuration) error {
 	}
 
 	for _, certResourceFilePath := range matches {
+		log.Debug("Migrating a certificate.", slog.String("filepath", certResourceFilePath))
+
 		oldCertRes, err := storage.ReadJSONFile[oldResource](certResourceFilePath)
 		if err != nil {
 			return fmt.Errorf("could not read the certificate file %q: %w", certResourceFilePath, err)
+		}
+
+		if oldCertRes.Origin != "" {
+			log.Warn("Skip migration: the certificate file is already migrated.", slog.String("filepath", certResourceFilePath))
+
+			continue
 		}
 
 		if oldCertRes.Domain == "" {
@@ -46,8 +57,6 @@ func Certificates(root string, cfg *configuration.Configuration) error {
 
 			continue
 		}
-
-		log.Debug("Migrating a certificate.", slog.String("filepath", certResourceFilePath))
 
 		certRes := &storage.Certificate{
 			Resource: &certificate.Resource{

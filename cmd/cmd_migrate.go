@@ -71,6 +71,10 @@ func migration(_ context.Context, cmd *cli.Command) error {
 }
 
 func createConfigurationFile(root string, cfg *configuration.Configuration) error {
+	if len(cfg.Accounts) == 0 && len(cfg.Certificates) == 0 {
+		return nil
+	}
+
 	wd, err := os.Getwd()
 	if err == nil {
 		if filepath.Join(wd, ".lego") != root {

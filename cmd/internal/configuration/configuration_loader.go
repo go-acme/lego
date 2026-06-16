@@ -27,9 +27,12 @@ func ReadConfiguration(filename string) (*Configuration, error) {
 
 	defer func() { _ = file.Close() }()
 
+	decoder := yaml.NewDecoder(file)
+	decoder.KnownFields(true)
+
 	cfg := new(Configuration)
 
-	err = yaml.NewDecoder(file).Decode(cfg)
+	err = decoder.Decode(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode the configuration file: %w", err)
 	}

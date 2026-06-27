@@ -129,6 +129,39 @@ func (c *Client) SetRecord(ctx context.Context, request SetRecordRequest) error 
 	return nil
 }
 
+// ChooseOrder selects an order in your customer account.
+// https://support.euserv.com/api-doc/#api-Order-choose_order
+func (c *Client) ChooseOrder(ctx context.Context, orderID string) error {
+	endpoint, err := url.Parse(c.BaseURL)
+	if err != nil {
+		return err
+	}
+
+	query := endpoint.Query()
+	query.Set("subaction", "choose_order")
+	query.Set("ord_no", orderID)
+	endpoint.RawQuery = query.Encode()
+
+	req, err := newHTTPRequest(ctx, endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	var response APIResponse
+
+	err = c.do(req, &response)
+	if err != nil {
+		return err
+	}
+
+	_, err = extractResponse[any](response)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *Client) do(req *http.Request, result any) error {
 	useragent.SetHeader(req.Header)
 

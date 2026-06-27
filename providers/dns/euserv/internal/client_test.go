@@ -126,3 +126,19 @@ func TestClient_GetRecords(t *testing.T) {
 
 	assert.Equal(t, expected, domains)
 }
+
+func TestClient_ChooseOrder(t *testing.T) {
+	client := mockBuilder().
+		Route("GET /",
+			servermock.ResponseFromFixture("choose_order.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("subaction", "choose_order").
+				With("ord_no", "orderA").
+				With("lang_id", "2").
+				With("method", "json"),
+		).
+		Build(t)
+
+	err := client.ChooseOrder(t.Context(), "orderA")
+	require.NoError(t, err)
+}

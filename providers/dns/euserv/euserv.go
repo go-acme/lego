@@ -47,8 +47,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 6*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -133,6 +133,11 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("euserv: %w", err)
 	}
 
+	err = d.client.ChooseOrder(ctx, d.config.OrderID)
+	if err != nil {
+		return fmt.Errorf("euserv: choose order: %w", err)
+	}
+
 	domainID, err := d.findDomainID(ctx, authZone, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("euserv: find domain ID: %w", err)
@@ -166,6 +171,11 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	ctx = internal.WithContext(ctx, sessionID)
 
 	defer func() { _ = d.identifier.Logout(ctx) }()
+
+	err = d.client.ChooseOrder(ctx, d.config.OrderID)
+	if err != nil {
+		return fmt.Errorf("euserv: choose order: %w", err)
+	}
 
 	recordID, err := d.findRecordID(ctx, info)
 	if err != nil {

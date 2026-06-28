@@ -24,6 +24,8 @@ const (
 	EnvPassword = envNamespace + "PASSWORD"
 	EnvSecret   = envNamespace + "SECRET"
 
+	EnvAPIKey = envNamespace + "API_KEY"
+
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -32,11 +34,17 @@ const (
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
+type Identifier interface {
+	Authenticate(ctx context.Context) (*internal.Token, error)
+}
+
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Username string
 	Password string
 	Secret   string
+
+	APIkey string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -60,7 +68,7 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config *Config
 
-	identifier *internal.Identifier
+	identifier Identifier
 	client     *internal.Client
 
 	tokenMu sync.Mutex
@@ -69,15 +77,22 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Gigahost.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUsername, EnvPassword)
-	if err != nil {
-		return nil, fmt.Errorf("gigahostno: %w", err)
-	}
+	apiKey := env.GetOrFile(EnvAPIKey)
 
 	config := NewDefaultConfig()
-	config.Username = values[EnvUsername]
-	config.Password = values[EnvPassword]
-	config.Secret = env.GetOrFile(EnvSecret)
+
+	if apiKey != "" {
+		config.APIkey = apiKey
+	} else {
+		values, err := env.Get(EnvUsername, EnvPassword)
+		if err != nil {
+			return nil, fmt.Errorf("gigahostno: %w", err)
+		}
+
+		config.Username = values[EnvUsername]
+		config.Password = values[EnvPassword]
+		config.Secret = env.GetOrFile(EnvSecret)
+	}
 
 	return NewDNSProviderConfig(config)
 }
@@ -88,16 +103,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("gigahostno: the configuration of the DNS provider is nil")
 	}
 
-	identifier, err := internal.NewIdentifier(config.Username, config.Password, config.Secret)
+	identifier, err := newIdentifier(config)
 	if err != nil {
 		return nil, fmt.Errorf("gigahostno: %w", err)
 	}
-
-	if config.HTTPClient != nil {
-		identifier.HTTPClient = config.HTTPClient
-	}
-
-	identifier.HTTPClient = clientdebug.Wrap(identifier.HTTPClient)
 
 	client := internal.NewClient()
 
@@ -229,4 +238,23 @@ func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (*internal.Zone
 	}
 
 	return nil, fmt.Errorf("zone not found for %q", fqdn)
+}
+
+func newIdentifier(config *Config) (Identifier, error) {
+	if config.APIkey != "" {
+		return internal.NewStaticIdentifier(config.APIkey), nil
+	}
+
+	identifier, err := internal.NewIdentifier(config.Username, config.Password, config.Secret)
+	if err != nil {
+		return nil, err
+	}
+
+	if config.HTTPClient != nil {
+		identifier.HTTPClient = config.HTTPClient
+	}
+
+	identifier.HTTPClient = clientdebug.Wrap(identifier.HTTPClient)
+
+	return identifier, nil
 }

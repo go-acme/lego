@@ -108,6 +108,21 @@ func (c *Identifier) do(req *http.Request, result any) error {
 	return nil
 }
 
+type StaticIdentifier struct {
+	apiKey string
+}
+
+func NewStaticIdentifier(apiKey string) *StaticIdentifier {
+	return &StaticIdentifier{apiKey: apiKey}
+}
+
+func (c *StaticIdentifier) Authenticate(_ context.Context) (*Token, error) {
+	return &Token{
+		Token:       c.apiKey,
+		TokenExpire: time.Date(time.Now().Year()+42, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+	}, nil
+}
+
 func WithContext(ctx context.Context, credential string) context.Context {
 	return context.WithValue(ctx, tokenKey, credential)
 }

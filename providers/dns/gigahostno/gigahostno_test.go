@@ -17,6 +17,7 @@ var envTest = tester.NewEnvTest(
 	EnvUsername,
 	EnvPassword,
 	EnvSecret,
+	EnvAPIKey,
 ).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -31,6 +32,12 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvUsername: "user",
 				EnvPassword: "secret",
 				EnvSecret:   "super-secret",
+			},
+		},
+		{
+			desc: "success (API key)",
+			envVars: map[string]string{
+				EnvAPIKey: "super-secret",
 			},
 		},
 		{
@@ -82,6 +89,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		username string
 		password string
 		secret   string
+		apiKey   string
 		expected string
 	}{
 		{
@@ -89,6 +97,10 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			username: "user",
 			password: "secret",
 			secret:   "super-secret",
+		},
+		{
+			desc:   "success (API key)",
+			apiKey: "super-secret",
 		},
 		{
 			desc:     "missing username",
@@ -112,6 +124,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config.Username = test.username
 			config.Password = test.password
 			config.Secret = test.secret
+			config.APIkey = test.apiKey
 
 			p, err := NewDNSProviderConfig(config)
 
@@ -155,13 +168,18 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
+func mockBuilder(apiKey bool) *servermock.Builder[*DNSProvider] {
 	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
-			config.Username = "user"
-			config.Password = "secret"
-			config.Secret = "JBSWY3DPEHPK3PXP"
+
+			if apiKey {
+				config.APIkey = "secrettoken"
+			} else {
+				config.Username = "user"
+				config.Password = "secret"
+				config.Secret = "JBSWY3DPEHPK3PXP"
+			}
 
 			config.HTTPClient = server.Client()
 
@@ -171,7 +189,11 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 			}
 
 			p.client.BaseURL, _ = url.Parse(server.URL)
-			p.identifier.BaseURL, _ = url.Parse(server.URL)
+
+			identifier, ok := p.identifier.(*internal.Identifier)
+			if ok {
+				identifier.BaseURL, _ = url.Parse(server.URL)
+			}
 
 			return p, nil
 		},
@@ -181,7 +203,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider := mockBuilder().
+	provider := mockBuilder(false).
 		Route("POST /authenticate",
 			servermock.ResponseFromInternal("authenticate.json")).
 		Route("GET /dns/zones",
@@ -199,8 +221,25 @@ func TestDNSProvider_Present(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDNSProvider_Present_apiKey(t *testing.T) {
+	provider := mockBuilder(true).
+		Route("GET /dns/zones",
+			servermock.ResponseFromInternal("zones.json"),
+			servermock.CheckHeader().
+				WithAuthorization("Bearer secrettoken")).
+		Route("POST /dns/zones/123/records",
+			servermock.ResponseFromInternal("create_record.json"),
+			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json"),
+			servermock.CheckHeader().
+				WithAuthorization("Bearer secrettoken")).
+		Build(t)
+
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
 func TestDNSProvider_Present_token_not_expired(t *testing.T) {
-	provider := mockBuilder().
+	provider := mockBuilder(false).
 		Route("GET /dns/zones",
 			servermock.ResponseFromInternal("zones.json"),
 			servermock.CheckHeader().
@@ -223,7 +262,7 @@ func TestDNSProvider_Present_token_not_expired(t *testing.T) {
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	provider := mockBuilder().
+	provider := mockBuilder(false).
 		Route("POST /authenticate",
 			servermock.ResponseFromInternal("authenticate.json")).
 		Route("GET /dns/zones",
@@ -247,8 +286,31 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDNSProvider_CleanUp_apiKey(t *testing.T) {
+	provider := mockBuilder(true).
+		Route("GET /dns/zones",
+			servermock.ResponseFromInternal("zones.json"),
+			servermock.CheckHeader().
+				WithAuthorization("Bearer secrettoken")).
+		Route("GET /dns/zones/123/records",
+			servermock.ResponseFromInternal("zone_records.json"),
+			servermock.CheckHeader().
+				WithAuthorization("Bearer secrettoken")).
+		Route("DELETE /dns/zones/123/records/jkl012",
+			servermock.ResponseFromInternal("delete_record.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "_acme-challenge").
+				With("type", "TXT"),
+			servermock.CheckHeader().
+				WithAuthorization("Bearer secrettoken")).
+		Build(t)
+
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
 func TestDNSProvider_CleanUp_token_not_expired(t *testing.T) {
-	provider := mockBuilder().
+	provider := mockBuilder(false).
 		Route("GET /dns/zones",
 			servermock.ResponseFromInternal("zones.json"),
 			servermock.CheckHeader().

@@ -2011,15 +2011,16 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "GIGAHOSTNO_PASSWORD":	Password`)
-		ew.writeln(`	- "GIGAHOSTNO_USERNAME":	Username`)
+		ew.writeln(`	- "GIGAHOSTNO_API_KEY":	API key (optionnal of GIGAHOSTNO_USERNAME and GIGAHOSTNO_PASSWORD are defined)`)
+		ew.writeln(`	- "GIGAHOSTNO_PASSWORD":	Password (optional if GIGAHOSTNO_API_KEY is defined)`)
+		ew.writeln(`	- "GIGAHOSTNO_USERNAME":	Username (optional if GIGAHOSTNO_API_KEY is defined)`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "GIGAHOSTNO_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "GIGAHOSTNO_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "GIGAHOSTNO_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
-		ew.writeln(`	- "GIGAHOSTNO_SECRET":	TOTP secret`)
+		ew.writeln(`	- "GIGAHOSTNO_SECRET":	TOTP secret (Only usable with username/password)`)
 		ew.writeln(`	- "GIGAHOSTNO_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
 
 		ew.writeln()

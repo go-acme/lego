@@ -5,17 +5,23 @@ Code = "gigahostno"
 Since = "v4.29.0"
 
 Example = '''
-GIGAHOSTNO_USERNAME="xxxxxxxxxxxxxxxxxxxxx" \
-GIGAHOSTNO_PASSWORD="yyyyyyyyyyyyyyyyyyyyy" \
+GIGAHOSTNO_USERNAME="xxx" \
+GIGAHOSTNO_PASSWORD="yyy" \
+lego run --dns gigahostno -d '*.example.com' -d example.com
+
+# or with API key:
+
+GIGAHOSTNO_API_KEY="zzz" \
 lego run --dns gigahostno -d '*.example.com' -d example.com
 '''
 
 [Configuration]
   [Configuration.Credentials]
-    GIGAHOSTNO_USERNAME = "Username"
-    GIGAHOSTNO_PASSWORD = "Password"
+    GIGAHOSTNO_USERNAME = "Username (optional if GIGAHOSTNO_API_KEY is defined)"
+    GIGAHOSTNO_PASSWORD = "Password (optional if GIGAHOSTNO_API_KEY is defined)"
+    GIGAHOSTNO_API_KEY = "API key (optionnal of GIGAHOSTNO_USERNAME and GIGAHOSTNO_PASSWORD are defined)"
   [Configuration.Additional]
-    GIGAHOSTNO_SECRET = "TOTP secret"
+    GIGAHOSTNO_SECRET = "TOTP secret (Only usable with username/password)"
     GIGAHOSTNO_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     GIGAHOSTNO_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
     GIGAHOSTNO_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"

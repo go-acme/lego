@@ -747,8 +747,8 @@ github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.24 h1:yPLVC8Lbsw92e
 github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.24/go.mod h1:H2h39H1AivHYkozUIUYoVJGMUOvdJ4Lv9DLyUSMAjW8=
 github.com/aws/aws-sdk-go-v2/service/lightsail v1.56.2 h1:4ah7T7gTKUBG1Tec/upjL/39BHbB0A3ng1rCC8qY/og=
 github.com/aws/aws-sdk-go-v2/service/lightsail v1.56.2/go.mod h1:428ttHou5n2J4/oQAQS9EmOU6LrBv48F2bGk+Ta7EF4=
-github.com/aws/aws-sdk-go-v2/service/route53 v1.62.8 h1:1QC1xoZg5XSes1CXQ20Y0qTaaeDj12e7bB0/Yw9sQwI=
-github.com/aws/aws-sdk-go-v2/service/route53 v1.62.8/go.mod h1:+GpgmfX7rnzQ8WMbMCMnI+VOjPZCf9yaUlBmRTvQgFE=
+github.com/aws/aws-sdk-go-v2/service/route53 v1.63.4 h1:T/KkSwLAyb6VNY1P35TIpD/ZAkDldbc1mbbZO/VygdE=
+github.com/aws/aws-sdk-go-v2/service/route53 v1.63.4/go.mod h1:JfPmtoq6Zl78Wuf0nIzcwRlFU34xUPIMaX2x3lHRIGI=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.102.1 h1:vttIo8BQwfnhimKRBZBBF3Y38SAIxif72B/M91m9hDk=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.102.1/go.mod h1:2qjInACJr84m/Tm4XXCcVNpejmbKy9kz7TEa6viQHSk=
 github.com/aws/aws-sdk-go-v2/service/signin v1.2.1 h1:BeJmkm5YOZs6lGRGcNoIuLSoTTtGLLCEqlSiRKYodfM=

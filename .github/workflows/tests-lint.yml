@@ -19,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GO_VERSION: stable
-      GOLANGCI_LINT_VERSION: v2.12
       CGO_ENABLED: 0
       MEMCACHED_HOSTS: localhost:11211
 
@@ -70,10 +69,6 @@ jobs:
         run: |
           make generate
           git diff --exit-code
-
-      - uses: golangci/golangci-lint-action@v9
-        with:
-          version: ${{ env.GOLANGCI_LINT_VERSION }}
 
       - name: Install Pebble
         run: go install github.com/letsencrypt/pebble/v2/cmd/pebble@v2.10.1

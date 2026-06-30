@@ -77,7 +77,7 @@ require (
 	github.com/pquerna/otp v1.5.0
 	github.com/regfish/regfish-dnsapi-go v0.1.1
 	github.com/sacloud/api-client-go v0.3.5
-	github.com/sacloud/iaas-api-go v1.29.1
+	github.com/sacloud/iaas-api-go v1.29.2
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.36
 	github.com/selectel/domains-go v1.1.0
 	github.com/selectel/go-selvpcclient/v4 v4.2.0

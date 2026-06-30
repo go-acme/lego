@@ -78,18 +78,19 @@ func registerAccount(ctx context.Context, client *lego.Client, accountConfig *co
 		return nil, errors.New("you did not accept the TOS: unable to proceed")
 	}
 
-	if client.GetServerMetadata().ExternalAccountRequired && accountConfig.ExternalAccountBinding == nil {
-		return nil, errors.New("server requires External Account Binding (EAB)")
-	}
-
-	if accountConfig.ExternalAccountBinding != nil {
+	switch {
+	case accountConfig.ExternalAccountBinding != nil:
 		return client.Registration.RegisterWithExternalAccountBinding(ctx, registration.RegisterEABOptions{
 			TermsOfServiceAgreed: true,
 			Kid:                  accountConfig.ExternalAccountBinding.KID,
 			HmacEncoded:          accountConfig.ExternalAccountBinding.HmacKey,
 		})
-	} else if zerossl.IsZeroSSL(accountConfig.Server) {
+
+	case zerossl.IsZeroSSL(accountConfig.Server):
 		return registration.RegisterWithZeroSSL(ctx, client.Registration, accountConfig.Email)
+
+	case client.GetServerMetadata().ExternalAccountRequired && accountConfig.ExternalAccountBinding == nil:
+		return nil, errors.New("server requires External Account Binding (EAB)")
 	}
 
 	return client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})

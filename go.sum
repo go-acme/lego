@@ -776,8 +776,8 @@ github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+Ce
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
 github.com/bketelsen/crypt v0.0.3-0.20200106085610-5cbc8cc4026c/go.mod h1:MKsuJmJgSg28kpZDP6UIiPt0e0Oz0kqKNGyRaWEPv84=
-github.com/bodgit/gssapi v0.0.3 h1:CtNl14kFo6aQE4tld//yBZ4xgJIPW32YxlOob0TG1y8=
-github.com/bodgit/gssapi v0.0.3/go.mod h1:DXyzvSyncJX6mT8WYYWYGzO/SrT+ijMi1ebfQHsWMNo=
+github.com/bodgit/gssapi v0.0.4 h1:FPou0NHDdn+HM1PpBlocDhtQXj0RVcZ4gc3frfYx1FE=
+github.com/bodgit/gssapi v0.0.4/go.mod h1:UwGfip4+LKhpIn3Y6tNw/12l1IVJkZvVOsJ1efNEEKo=
 github.com/bodgit/tsig v1.3.1 h1:wvyR60AWCH0wdJiloB9dPfg8M3NV42HGW8dce3Z0GDE=
 github.com/bodgit/tsig v1.3.1/go.mod h1:Ez+xu0W5Ew/D28XqthucLOX8k9A0UGVPETvagYxbIHU=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=

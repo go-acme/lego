@@ -1,6 +1,6 @@
 # SelfHost.(de|eu)
 
-SelfHost doesn't provide an official API documentation and there are no endpoints for create a TXT record or delete a TXT record.
+SelfHost doesn't provide official API documentation, and there are no endpoints for creating a TXT record or deleting a TXT record.
 
 ## More
 

@@ -132,9 +132,10 @@ func registerAccount(ctx context.Context, cmd *cli.Command, client *lego.Client)
 
 	case client.GetServerMetadata().ExternalAccountRequired && !cmd.IsSet(flags.FlgEAB):
 		return nil, errors.New("server requires External Account Binding (EAB)")
-	}
 
-	return client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})
+	default:
+		return client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})
+	}
 }
 
 func handleTOS(cmd *cli.Command, client *lego.Client) bool {

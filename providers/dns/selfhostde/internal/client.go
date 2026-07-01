@@ -10,7 +10,7 @@ import (
 	"github.com/go-acme/lego/v5/internal/errutils"
 )
 
-const defaultBaseURL = "https://selfhost.de/cgi-bin/api.pl"
+const defaultBaseURL = "https://account.selfhost.de/cgi-bin/api.pl"
 
 // Client the SelfHost client.
 type Client struct {

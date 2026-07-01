@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html id="R-html" lang="en-us" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="print">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.157.0">
+    <meta name="generator" content="Relearn 9.0.3+bf3dbc8308313d6dd1f7ad32ba2a7983a4e9b3e5">
+    <meta name="description" content="This guide describes the changes between the v4 and v5 versions of the library.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Library Guide :: ACME client and library written in Go.">
+    <meta name="twitter:description" content="This guide describes the changes between the v4 and v5 versions of the library.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/migration/library/index.html">
+    <meta property="og:site_name" content="ACME client and library written in Go.">
+    <meta property="og:title" content="Library Guide :: ACME client and library written in Go.">
+    <meta property="og:description" content="This guide describes the changes between the v4 and v5 versions of the library.">
+    <meta property="og:locale" content="en_us">
+    <meta property="og:type" content="article">
+    <meta property="article:section" content="Migration from v4 to v5">
+    <meta property="article:published_time" content="2019-03-03T16:39:46+01:00">
+    <meta property="article:modified_time" content="2026-07-02T00:53:13+02:00">
+    <meta itemprop="name" content="Library Guide :: ACME client and library written in Go.">
+    <meta itemprop="description" content="This guide describes the changes between the v4 and v5 versions of the library.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2026-07-02T00:53:13+02:00">
+    <meta itemprop="wordCount" content="343">
+    <title>Library Guide :: ACME client and library written in Go.</title>
+    <link href="https://go-acme.github.io/lego/migration/library/index.html" rel="canonical" type="text/html" title="Library Guide :: ACME client and library written in Go.">
+    <link href="/lego/images/favicon.svg?1782946634" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1782946634" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1782946634" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1782946634" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1782946634" defer></script>
+    <script src="/lego/js/search.min.js?1782946634" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1782946634";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1782946634" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1782946634" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1782946634" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1782946634" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/all.min.css?1782946634" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/all.min.css?1782946634" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1782946634" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1782946634" rel="stylesheet">
+    <link href="/lego/css/format-print.min.css?1782946634" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/migration\/library\/index.html';
+      window.relearn.relBasePath='..\/..';
+      window.relearn.relBaseUri='..\/..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // translations
+      window.T_Copy_to_clipboard = `Copy text to clipboard`;
+      window.T_Copied_to_clipboard = `Text copied to clipboard!`;
+      window.T_Link_copied_to_clipboard = `Link copied to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      window.T_Browser_unsupported_feature = `This browser doesn't support this feature`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantprefix = "my-custom-";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant") ?? "";
+        if( !variant ||
+            (!variant.startsWith(window.relearn.customvariantprefix) && !window.relearn.themevariants.includes(variant)) ||
+            (variant.startsWith(window.relearn.customvariantprefix) && !window.localStorage.getItem(window.relearn.absBaseUri + "/variantstylesheet-" + variant)) ){
+          variant = window.relearn.themevariants[0];
+          window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+    <link href="/lego/css/custom.css?1782946634" rel="stylesheet">
+  </head>
+  <body class="mobile-support print" data-origin="/lego/migration/library/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar" class="default-animation">
+        <div class="topbar-wrapper default-animation">
+          <div class="topbar-sidebar-divider default-animation"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar default-animation" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button></span>
+            </div>
+            <div class="topbar-button topbar-button-toc default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-table-list"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+<nav class="TableOfContents">
+  <ul>
+    <li><a href="#context">Context</a></li>
+    <li><a href="#logger">Logger</a></li>
+    <li><a href="#dns-core-client">DNS core client</a></li>
+    <li><a href="#method-and-function-changes">Method and function changes</a></li>
+    <li><a href="#field-changes">Field changes</a></li>
+    <li><a href="#certifieroptions">CertifierOptions</a>
+      <ul>
+        <li><a href="#commonname">CommonName</a></li>
+        <li><a href="#keytype">KeyType</a></li>
+      </ul>
+    </li>
+    <li><a href="#certcryptokeytype">certcrypto.KeyType</a></li>
+    <li><a href="#removed-elements">Removed elements</a></li>
+    <li><a href="#package-changes">Package changes</a></li>
+    <li><a href="#pem-encoding">PEM encoding</a></li>
+    <li><a href="#default-resolvernameserver-fallbacks">Default resolver/nameserver fallbacks</a></li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/migration/index.html"><span itemprop="name">Migration from v4 to v5</span></a><meta itemprop="position" content="2">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">Library Guide</span><meta itemprop="position" content="3"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-print default-animation" data-content-empty="disable" data-width-s="area-more" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/migration/library/index.print.html" title="Print whole chapter (CTRL+ALT+p)"><i class="fa-fw fas fa-print"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-prev default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/migration/cli/index.html" title="CLI Guide (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-next default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle"><span><i class="fa-fw fas fa-chevron-right"></i></span></span>
+            </div>
+            <div class="topbar-button topbar-button-more default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable migration" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="library-guide">Library Guide</h1>
+
+<p>This guide describes the changes between the v4 and v5 versions of the library.</p>
+<h2 id="context">Context<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>Most of the functions and methods are now using a context.</p>
+<p>Example:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Before</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">Certificate</span>.<span style="color:#a6e22e">Obtain</span>(<span style="color:#a6e22e">request</span>)</span></span></code></pre></div>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// After</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">client</span>.<span style="color:#a6e22e">Certificate</span>.<span style="color:#a6e22e">Obtain</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">TODO</span>(), <span style="color:#a6e22e">request</span>)</span></span></code></pre></div>
+<h2 id="logger">Logger<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The logger is now <code>slog</code> and can be set using the <code>log.SetDefault(logger)</code> function.</p>
+<h2 id="dns-core-client">DNS core client<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The function <code>dns01.ParseNameservers()</code> is removed.</p>
+<p>The function <code>dns01.RecursiveNSsPropagationRequirement()</code> is removed and replaced by <code>dns01.DisableAuthoritativeNssPropagationRequirement()</code>.</p>
+<p>The function <code>dns01.AddRecursiveNameservers()</code> is removed and replaced by an option <code>dns01.Options.RecursiveNameservers</code>.</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#a6e22e">opts</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">dns01</span>.<span style="color:#a6e22e">Options</span>{<span style="color:#a6e22e">RecursiveNameservers</span>: []<span style="color:#66d9ef">string</span>{<span style="color:#e6db74">&#34;8.8.8.8&#34;</span>}}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">dns01</span>.<span style="color:#a6e22e">SetDefaultClient</span>(<span style="color:#a6e22e">dns01</span>.<span style="color:#a6e22e">NewClient</span>(<span style="color:#a6e22e">opts</span>))</span></span></code></pre></div>
+<p>The function <code>dns01.AddDNSTimeout()</code> is removed and replaced by an option <code>dns01.Options.DNSTimeout</code>.</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#a6e22e">opts</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">dns01</span>.<span style="color:#a6e22e">Options</span>{<span style="color:#a6e22e">Timeout</span>: <span style="color:#ae81ff">2</span><span style="color:#f92672">*</span><span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">dns01</span>.<span style="color:#a6e22e">SetDefaultClient</span>(<span style="color:#a6e22e">dns01</span>.<span style="color:#a6e22e">NewClient</span>(<span style="color:#a6e22e">opts</span>))</span></span></code></pre></div>
+<h2 id="method-and-function-changes">Method and function changes<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<table>
+  <thead>
+      <tr>
+          <th>v4</th>
+          <th>v5</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>crypto.GenerateCSR</code></td>
+          <td><code>crypto.CreateCSR</code></td>
+      </tr>
+      <tr>
+          <td><code>crypto.GetKeyType</code></td>
+          <td><code>crypto.ToKeyType</code></td>
+      </tr>
+      <tr>
+          <td><code>Certifier.RenewWithOption</code></td>
+          <td><code>Certifier.Renew</code></td>
+      </tr>
+      <tr>
+          <td><code>OrderService.NewWithOptions</code></td>
+          <td><code>OrderService.New</code></td>
+      </tr>
+      <tr>
+          <td><code>acmedns.NewDNSProviderClient</code></td>
+          <td><code>acmedns.NewDNSProviderConfig</code></td>
+      </tr>
+      <tr>
+          <td><code>scaleway.Config.Token</code></td>
+          <td><code>scaleway.Config.SecretKey</code></td>
+      </tr>
+  </tbody>
+</table>
+<p>The functions and methods related to the private key are now using the <code>crypto.Signer</code> interface instead of the <code>crypto.PrivateKey</code> type.</p>
+<p>The following methods now return an <code>*acme.ExtendedAccount</code> instead of an <code>*registration.Resource</code>.</p>
+<ul>
+<li><code>registration.Registrar.Register</code></li>
+<li><code>registration.Registrar.RegisterWithExternalAccountBinding</code></li>
+<li><code>registration.Registrar.QueryRegistration</code></li>
+<li><code>registration.Registrar.UpdateRegistration</code></li>
+<li><code>registration.Registrar.ResolveAccountByKey</code></li>
+</ul>
+<p>The structure <code>registration.Resource</code> has been removed.</p>
+<p>The method <code>http01.ProviderServer.SetProxyHeader()</code> is removed and replaced by an option <code>http01.Options.ProxyHeaderName</code>.</p>
+<p>The function <code>dns01.RecursiveNSsPropagationRequirement()</code> is removed and replaced by <code>dns01.DisableAuthoritativeNssPropagationRequirement()</code>.</p>
+<h2 id="field-changes">Field changes<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The field <code>RetryAfter</code> of <code>acme.RateLimitedError</code> and <code>acme.ExtendedChallenge</code> is now a <code>time.Duration</code> instead of a <code>string</code>.</p>
+<h2 id="certifieroptions">CertifierOptions<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<h3 id="commonname">CommonName<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<p>The support of the common name is disabled by default.</p>
+<p>The field <code>DisableCommonName</code> of <code>certificate.CertifierOptions</code> has been removed.</p>
+<p>The option is now determined by the <code>EnableCommonName</code> field of the <code>certificate.ObtainRequest</code> and <code>certificate.ObtainForCSRRequest</code>.</p>
+<h3 id="keytype">KeyType<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<p>The field <code>KeyType</code> of <code>certificate.CertifierOptions</code> has been removed.</p>
+<p>The key type is now determined by the <code>KeyType</code> field of the <code>certificate.ObtainRequest</code>.</p>
+<h2 id="certcryptokeytype">certcrypto.KeyType<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The string values of the <code>certcrypto.KeyType</code> enum have been changed:</p>
+<table>
+  <thead>
+      <tr>
+          <th>v4</th>
+          <th>v5</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>P256</code></td>
+          <td><code>EC256</code></td>
+      </tr>
+      <tr>
+          <td><code>P384</code></td>
+          <td><code>EC384</code></td>
+      </tr>
+      <tr>
+          <td><code>2048</code></td>
+          <td><code>RSA2048</code></td>
+      </tr>
+      <tr>
+          <td><code>3072</code></td>
+          <td><code>RSA3072</code></td>
+      </tr>
+      <tr>
+          <td><code>4096</code></td>
+          <td><code>RSA4096</code></td>
+      </tr>
+      <tr>
+          <td><code>8192</code></td>
+          <td><code>RSA8192</code></td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="removed-elements">Removed elements<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The following elements have been removed without replacements:</p>
+<ul>
+<li><code>selectel.Config.BaseURL</code></li>
+<li><code>selectel.EnvBaseURL</code></li>
+<li><code>SELECTEL_BASE_URL</code></li>
+<li><code>vscale.Config.BaseURL</code></li>
+<li><code>vscale.EnvBaseURL</code></li>
+<li><code>VSCALE_BASE_URL</code></li>
+<li><code>ipv64.Config.SequenceInterval</code></li>
+<li><code>netcup.Config.TTL</code></li>
+<li><code>netcup.EnvTTL</code></li>
+<li><code>vultr.Config.HTTPTimeout</code></li>
+</ul>
+<h2 id="package-changes">Package changes<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The package <code>platform/config/env</code> has been moved to <code>platform/env</code>.</p>
+<p>The following packages have been removed:</p>
+<ul>
+<li><code>platform/tester</code></li>
+<li><code>platform/wait</code></li>
+</ul>
+<h2 id="pem-encoding">PEM encoding<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>It uses <code>PKCS#8</code> instead of <code>PKCS#1</code> for PEM encoding.</p>
+<h2 id="default-resolvernameserver-fallbacks">Default resolver/nameserver fallbacks<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The default resolver/nameserver fallbacks have been changed.</p>
+<div class="tab-panel" data-tab-group="R-tabs-f4124274a0a0909694eaeb00783a1cb1">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-4300b6ccdd3dcc27066f5683032870e6" aria-expanded="true"
+      data-tab-item="R-tab-5ed3a3ff8e5c29979502b9030e8518e0"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-f4124274a0a0909694eaeb00783a1cb1','R-tab-5ed3a3ff8e5c29979502b9030e8518e0')"
+    >
+      <span class="tab-nav-text">v4</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-ac677f61a74dd560035a3d2f0995ecea" aria-expanded="false"
+      data-tab-item="R-tab-4b6df01946f4919a3f5af8c1f0f9c3c5"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-f4124274a0a0909694eaeb00783a1cb1','R-tab-4b6df01946f4919a3f5af8c1f0f9c3c5')"
+    >
+      <span class="tab-nav-text">v5</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-4300b6ccdd3dcc27066f5683032870e6"
+      data-tab-item="R-tab-5ed3a3ff8e5c29979502b9030e8518e0"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<ul>
+<li><code>google-public-dns-a.google.com:53</code></li>
+<li><code>google-public-dns-b.google.com:53</code></li>
+</ul>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-ac677f61a74dd560035a3d2f0995ecea"
+      data-tab-item="R-tab-4b6df01946f4919a3f5af8c1f0f9c3c5"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<ul>
+<li><code>1.1.1.1:53</code></li>
+<li><code>1.0.0.1:53</code></li>
+<li><code>[2606:4700:4700::1111]:53</code></li>
+<li><code>[2606:4700:4700::1001]:53</code></li>
+</ul>
+      </div>
+    </div>
+  </div>
+</div>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jul 2, 2026
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1782946634" defer></script>
+    <script src="/lego/js/theme.min.js?1782946634" defer></script>
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  </body>
+</html>

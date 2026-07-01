@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html id="R-html" lang="en-us" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="html">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.157.0">
+    <meta name="generator" content="Relearn 9.0.3+bf3dbc8308313d6dd1f7ad32ba2a7983a4e9b3e5">
+    <meta name="description" content="This guide explains how to get and renew a certificate with the DNS-PERSIST-01 challenge.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="DNS-PERSIST-01 Challenge :: ACME client and library written in Go.">
+    <meta name="twitter:description" content="This guide explains how to get and renew a certificate with the DNS-PERSIST-01 challenge.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/obtain/dnspersist01/index.html">
+    <meta property="og:site_name" content="ACME client and library written in Go.">
+    <meta property="og:title" content="DNS-PERSIST-01 Challenge :: ACME client and library written in Go.">
+    <meta property="og:description" content="This guide explains how to get and renew a certificate with the DNS-PERSIST-01 challenge.">
+    <meta property="og:locale" content="en_us">
+    <meta property="og:type" content="article">
+    <meta property="article:section" content="Obtain or renew certificates">
+    <meta property="article:published_time" content="2019-03-03T16:39:46+01:00">
+    <meta property="article:modified_time" content="2026-07-02T00:53:13+02:00">
+    <meta itemprop="name" content="DNS-PERSIST-01 Challenge :: ACME client and library written in Go.">
+    <meta itemprop="description" content="This guide explains how to get and renew a certificate with the DNS-PERSIST-01 challenge.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2026-07-02T00:53:13+02:00">
+    <meta itemprop="wordCount" content="141">
+    <title>DNS-PERSIST-01 Challenge :: ACME client and library written in Go.</title>
+    <link href="/lego/obtain/dnspersist01/index.print.html" rel="alternate" type="text/html" title="DNS-PERSIST-01 Challenge :: ACME client and library written in Go.">
+    <link href="/lego/images/favicon.svg?1782946634" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1782946634" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1782946634" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1782946634" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1782946634" defer></script>
+    <script src="/lego/js/search.min.js?1782946634" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1782946634";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1782946634" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1782946634" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1782946634" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1782946634" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/all.min.css?1782946634" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/all.min.css?1782946634" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1782946634" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1782946634" rel="stylesheet">
+    <link href="/lego/css/format-html.min.css?1782946634" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/obtain\/dnspersist01\/index.html';
+      window.relearn.relBasePath='..\/..';
+      window.relearn.relBaseUri='..\/..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // translations
+      window.T_Copy_to_clipboard = `Copy text to clipboard`;
+      window.T_Copied_to_clipboard = `Text copied to clipboard!`;
+      window.T_Link_copied_to_clipboard = `Link copied to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      window.T_Browser_unsupported_feature = `This browser doesn't support this feature`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantprefix = "my-custom-";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant") ?? "";
+        if( !variant ||
+            (!variant.startsWith(window.relearn.customvariantprefix) && !window.relearn.themevariants.includes(variant)) ||
+            (variant.startsWith(window.relearn.customvariantprefix) && !window.localStorage.getItem(window.relearn.absBaseUri + "/variantstylesheet-" + variant)) ){
+          variant = window.relearn.themevariants[0];
+          window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+    <link href="/lego/css/custom.css?1782946634" rel="stylesheet">
+  </head>
+  <body class="mobile-support html" data-origin="/lego/obtain/dnspersist01/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar" class="default-animation">
+        <div class="topbar-wrapper default-animation">
+          <div class="topbar-sidebar-divider default-animation"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar default-animation" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button></span>
+            </div>
+            <div class="topbar-button topbar-button-toc default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-table-list"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper"> 
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/obtain/index.html"><span itemprop="name">Obtain or renew certificates</span></a><meta itemprop="position" content="2">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">DNS-PERSIST-01 Challenge</span><meta itemprop="position" content="3"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-print default-animation" data-content-empty="disable" data-width-s="area-more" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/obtain/dnspersist01/index.print.html" title="Print whole chapter (CTRL+ALT+p)"><i class="fa-fw fas fa-print"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-prev default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/obtain/tlsalpn01/index.html" title="TLS-ALPN-01 Challenge (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-next default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/dns/index.html" title="DNS Providers (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-more default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable obtain" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="dns-persist-01-challenge">DNS-PERSIST-01 Challenge</h1>
+
+<p>This guide explains how to get and renew a certificate with the DNS-PERSIST-01 challenge.</p>
+
+<details open class="box cstyle notices note">
+  <summary class="box-label" tabindex="-1">
+    <i class="fa-fw fas fa-exclamation-circle"></i> 
+    Note
+  </summary>
+  <div class="box-content">
+<ul>
+<li>The <a href="https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/" rel="external">RFC</a> is still a draft.</li>
+<li>This is currently not available in most CA production.</li>
+</ul>
+  </div>
+</details>
+
+<details open class="box cstyle notices important">
+  <summary class="box-label" tabindex="-1">
+    <i class="fa-fw fas fa-bolt"></i> 
+    Important
+  </summary>
+  <div class="box-content">
+<p>This challenge could be less secure than <a href="https://go-acme.github.io/lego/obtain/dns01/" rel="external">DNS-01</a> due to its requirements.</p>
+<p>This is especially true if your DNS provider does not offer any way to limit the access controls to the specific persistent record required by the DNS-PERSIST-01 challenge.</p>
+<ul>
+<li><a href="https://www.ietf.org/archive/id/draft-ietf-acme-dns-persist-01.html#section-7" rel="external">7. Security Considerations</a></li>
+<li><a href="https://www.ietf.org/archive/id/draft-ietf-acme-dns-persist-01.html#section-9.5" rel="external">9.5. DNS Provider Considerations</a></li>
+</ul>
+<p>The security of this challenge relies primarily on protecting your account&rsquo;s private key.</p>
+  </div>
+</details>
+<div class="tab-panel" data-tab-group="R-tabs-48b2327216a8c8325495e1dbc9ef40b4">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-cbdf0db6314055675549126bd7179ae9" aria-expanded="true"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-37fe9424033504d3b5b97695d72e7997')"
+    >
+      <span class="tab-nav-text">Classic Way</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-f8e7dcc28fb606f94ce5cf16260f268e" aria-expanded="false"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-de92ec79f6a16919fe493e313ff88356')"
+    >
+      <span class="tab-nav-text">With a Configuration File</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-cbdf0db6314055675549126bd7179ae9"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<p>Execute the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego run -d <span style="color:#e6db74">&#39;example.com&#39;</span> --dns-persist</span></span></code></pre></div>
+<p>To know the available options, read the <a href="https://go-acme.github.io/lego/references/ref-flags/#llego-run" rel="external">documentation</a>.</p>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-f8e7dcc28fb606f94ce5cf16260f268e"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Create a <code>.lego.yml</code> file with the following content:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">certificates</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">foo</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">challenge</span>: <span style="color:#ae81ff">dns-persist-01</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">domains</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">example.com</span></span></span></code></pre></div>
+<p>And execute:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego</span></span></code></pre></div>
+<p>To know the available options, read the <a href="https://go-acme.github.io/lego/references/ref-file/#challenges" rel="external">documentation</a>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jul 2, 2026
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <aside id="R-sidebar" class="default-animation">
+      <div id="R-header-topbar" class="default-animation"></div>
+      <div id="R-header-wrapper" class="default-animation"><a id="logo" href="/lego"><img src="/lego/images/lego-logo-white.min.svg" alt="lego logo" width="80%"></a>
+
+        <search><form action="/lego/search/index.html" method="get">
+          <div class="searchbox default-animation">
+            <button class="search-detail" type="submit" title="Search (CTRL+ALT+f)"><i class="fas fa-fw fa-search"></i></button>
+            <label class="a11y-only" for="R-search-by">Search</label>
+            <input data-search-input id="R-search-by" name="search-by" class="search-by" type="search" placeholder="Search...">
+            <button class="search-clear" type="button" data-search-clear="" title="Clear search"><i class="fas fa-fw fa-times" title="Clear search"></i></button>
+          </div>
+        </form></search>
+      </div>
+      <div id="R-homelinks" class="default-animation">
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-homelinks default-animation">
+          <ul class="space collapsible-menu">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-headercontrols default-animation">
+          <ul class="">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+      </div>
+      <div id="R-content-wrapper" class="highlightable">
+        <div class="R-sidebarmenu R-shortcutmenu-main default-animation">
+          <ul class="enlarge morespace collapsible-menu">
+            <li class="" data-nav-id="/lego/install/index.html"><a class="padding" href="/lego/install/index.html"><i class="fa-solid fa-box-archive"></i> Installation<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="parent " data-nav-id="/lego/obtain/index.html"><a class="padding default-animation" href="/lego/obtain/index.html"><i class="fa-solid fa-shield-halved"></i> Obtain or renew certificates<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-13caf4337333ddfe7f5b96479cbd6814" class="collapsible-menu">
+            <li class="" data-nav-id="/lego/obtain/dns01/index.html"><a class="padding" href="/lego/obtain/dns01/index.html">DNS-01 Challenge<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/obtain/http01/index.html"><a class="padding" href="/lego/obtain/http01/index.html">HTTP-01 Challenge<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/obtain/tlsalpn01/index.html"><a class="padding" href="/lego/obtain/tlsalpn01/index.html">TLS-ALPN-01 Challenge<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="active " data-nav-id="/lego/obtain/dnspersist01/index.html"><a class="padding" href="/lego/obtain/dnspersist01/index.html">DNS-PERSIST-01 Challenge<i class="fa-fw fas fa-check read-icon"></i></a></li></ul></li>
+            <li class="" data-nav-id="/lego/dns/index.html"><a class="padding default-animation" href="/lego/dns/index.html"><i class="fa-solid fa-globe"></i> DNS Providers<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-1a5c4aa622b091f451ffa4fea9c3a5f1" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/advanced/index.html"><a class="padding default-animation" href="/lego/advanced/index.html"><i class="fa-solid fa-gears"></i> Advanced usages<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-ab6684576aada2b2c1ce071df63f2853" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/references/index.html"><a class="padding default-animation" href="/lego/references/index.html"><i class="fa-regular fa-bookmark"></i> References<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-26caf0e43dd165bcbddd8eb517876f9e" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/library/index.html"><a class="padding default-animation" href="/lego/library/index.html"><i class="fa-solid fa-code"></i> Library<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-afbce53b44a67cf171cfa6ad78fcc6cf" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/migration/index.html"><a class="padding default-animation" href="/lego/migration/index.html"><i class="fa-solid fa-recycle"></i> Migration from v4 to v5<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-a5eba261a62a08c005636c948c971d1e" class="collapsible-menu"></ul></li>
+          </ul>
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-shortcuts default-animation">
+          <div class="nav-title padding">More</div>
+          <ul class="space collapsible-menu">
+            <li class="" data-nav-id="https://github.com/go-acme/lego"><a class="padding" href="https://github.com/go-acme/lego" rel="external"><i class='fab fa-fw fa-github'></i> GitHub repo<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/issues"><a class="padding" href="https://github.com/go-acme/lego/issues" rel="external"><i class='fas fa-fw fa-bug'></i> Issues<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/discussions"><a class="padding" href="https://github.com/go-acme/lego/discussions" rel="external"><i class='fas fa-fw fa-comments'></i> Discussions<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/sponsors/go-acme"><a class="padding" href="https://github.com/sponsors/go-acme" rel="external"><i class='fas fa-fw fa-heart red cstyle'></i> Donate<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          </ul>
+        </div>
+        <div id="R-footer-margin" class="default-animation"></div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-footercontrols default-animation">
+          <ul class="">
+            <li class="R-historyclearer">
+              <div class="padding menu-control">
+                <i class="fa-fw fas fa-history"></i>
+                <span>&nbsp;</span>
+                <div class="control-style">
+                  <button>Clear History</button>
+                </div>
+                <div class="clear"></div>
+              </div>
+            </li>
+          </ul>
+        </div>
+<div id="R-footer" class="default-animation"><p>Built with <a href="https://github.com/McShelby/hugo-theme-relearn" title="love"><i class="fas fa-heart"></i></a> by <a href="https://gohugo.io/">Hugo</a></p></div>
+      </div>
+    </aside>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1782946634" defer></script>
+    <script src="/lego/js/theme.min.js?1782946634" defer></script>
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  </body>
+</html>

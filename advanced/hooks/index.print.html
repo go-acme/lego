@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html id="R-html" lang="en-us" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="print">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.157.0">
+    <meta name="generator" content="Relearn 9.0.3+bf3dbc8308313d6dd1f7ad32ba2a7983a4e9b3e5">
+    <meta name="description" content="This section describes how to use hooks.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Hooks :: ACME client and library written in Go.">
+    <meta name="twitter:description" content="This section describes how to use hooks.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/advanced/hooks/index.html">
+    <meta property="og:site_name" content="ACME client and library written in Go.">
+    <meta property="og:title" content="Hooks :: ACME client and library written in Go.">
+    <meta property="og:description" content="This section describes how to use hooks.">
+    <meta property="og:locale" content="en_us">
+    <meta property="og:type" content="article">
+    <meta property="article:section" content="Advanced usages">
+    <meta property="article:published_time" content="2019-03-03T16:39:46+01:00">
+    <meta property="article:modified_time" content="2026-07-02T00:53:13+02:00">
+    <meta itemprop="name" content="Hooks :: ACME client and library written in Go.">
+    <meta itemprop="description" content="This section describes how to use hooks.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2026-07-02T00:53:13+02:00">
+    <meta itemprop="wordCount" content="529">
+    <title>Hooks :: ACME client and library written in Go.</title>
+    <link href="https://go-acme.github.io/lego/advanced/hooks/index.html" rel="canonical" type="text/html" title="Hooks :: ACME client and library written in Go.">
+    <link href="/lego/images/favicon.svg?1782946634" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1782946634" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1782946634" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1782946634" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1782946634" defer></script>
+    <script src="/lego/js/search.min.js?1782946634" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1782946634";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1782946634" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1782946634" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1782946634" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1782946634" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/all.min.css?1782946634" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/all.min.css?1782946634" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1782946634" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1782946634" rel="stylesheet">
+    <link href="/lego/css/format-print.min.css?1782946634" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/advanced\/hooks\/index.html';
+      window.relearn.relBasePath='..\/..';
+      window.relearn.relBaseUri='..\/..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // translations
+      window.T_Copy_to_clipboard = `Copy text to clipboard`;
+      window.T_Copied_to_clipboard = `Text copied to clipboard!`;
+      window.T_Link_copied_to_clipboard = `Link copied to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      window.T_Browser_unsupported_feature = `This browser doesn't support this feature`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantprefix = "my-custom-";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant") ?? "";
+        if( !variant ||
+            (!variant.startsWith(window.relearn.customvariantprefix) && !window.relearn.themevariants.includes(variant)) ||
+            (variant.startsWith(window.relearn.customvariantprefix) && !window.localStorage.getItem(window.relearn.absBaseUri + "/variantstylesheet-" + variant)) ){
+          variant = window.relearn.themevariants[0];
+          window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+    <link href="/lego/css/custom.css?1782946634" rel="stylesheet">
+  </head>
+  <body class="mobile-support print" data-origin="/lego/advanced/hooks/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar" class="default-animation">
+        <div class="topbar-wrapper default-animation">
+          <div class="topbar-sidebar-divider default-animation"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar default-animation" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button></span>
+            </div>
+            <div class="topbar-button topbar-button-toc default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-table-list"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+<nav class="TableOfContents">
+  <ul>
+    <li><a href="#pre-hook">Pre-Hook</a></li>
+    <li><a href="#deploy-hook">Deploy-Hook</a></li>
+    <li><a href="#post-hook">Post-Hook</a></li>
+    <li><a href="#environment-variables">Environment Variables</a></li>
+    <li><a href="#use-case">Use Case</a></li>
+    <li><a href="#notes">Notes</a></li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/advanced/index.html"><span itemprop="name">Advanced usages</span></a><meta itemprop="position" content="2">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">Hooks</span><meta itemprop="position" content="3"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-print default-animation" data-content-empty="disable" data-width-s="area-more" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/advanced/hooks/index.print.html" title="Print whole chapter (CTRL+ALT+p)"><i class="fa-fw fas fa-print"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-prev default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/advanced/accounts/index.html" title="Account Operations (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-next default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/advanced/caservers/index.html" title="CA servers (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-more default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable advanced" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="hooks">Hooks</h1>
+
+<p>This section describes how to use hooks.</p>
+<p>There are three hooks available:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Hook</th>
+          <th>When it runs</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><a href="https://go-acme.github.io/lego/advanced/hooks/#pre-hook" rel="external">pre-hook</a></td>
+          <td>Before the certificate is created or renewed (only if a change will actually happen)</td>
+      </tr>
+      <tr>
+          <td><a href="https://go-acme.github.io/lego/advanced/hooks/#deploy-hook" rel="external">deploy-hook</a></td>
+          <td>After the certificate is successfully created or renewed</td>
+      </tr>
+      <tr>
+          <td><a href="https://go-acme.github.io/lego/advanced/hooks/#post-hook" rel="external">post-hook</a></td>
+          <td>After the operation completes, regardless of outcome</td>
+      </tr>
+  </tbody>
+</table>
+<p>Don&rsquo;t hesitate to share your hook scripts with <a href="https://github.com/go-acme/lego/discussions/categories/ideas" rel="external">the community</a>.</p>
+<h2 id="pre-hook">Pre-Hook<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>This hook is executed, before the creation or the renewal, in cases where a certificate will be effectively created/renewed.</p>
+<div class="tab-panel" data-tab-group="R-tabs-48b2327216a8c8325495e1dbc9ef40b4">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-be9eb46486800a09951dbd26581ba809" aria-expanded="true"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-37fe9424033504d3b5b97695d72e7997')"
+    >
+      <span class="tab-nav-text">Classic Way</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-1be9d27b994f6dc4882bba9cb0136b93" aria-expanded="false"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-de92ec79f6a16919fe493e313ff88356')"
+    >
+      <span class="tab-nav-text">With a Configuration File</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-be9eb46486800a09951dbd26581ba809"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<p>Execute the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego run -d <span style="color:#e6db74">&#39;example.com&#39;</span> --pre-hook<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./my-pre-hook.sh&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-1be9d27b994f6dc4882bba9cb0136b93"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Define the following section in your <code>.lego.yaml</code> file:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">hooks</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">pre</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">command</span>: <span style="color:#e6db74">&#39;./my-pre-hook.sh&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="deploy-hook">Deploy-Hook<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>This hook is executed after the successful creation or the renewal of a certificate.</p>
+<div class="tab-panel" data-tab-group="R-tabs-48b2327216a8c8325495e1dbc9ef40b4">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-b4e03764b4dae96144e2f1f2c75c15cd" aria-expanded="true"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-37fe9424033504d3b5b97695d72e7997')"
+    >
+      <span class="tab-nav-text">Classic Way</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-c81501d23fb71340871371b30a97682c" aria-expanded="false"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-de92ec79f6a16919fe493e313ff88356')"
+    >
+      <span class="tab-nav-text">With a Configuration File</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-b4e03764b4dae96144e2f1f2c75c15cd"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<p>Execute the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego run -d <span style="color:#e6db74">&#39;example.com&#39;</span> --deploy-hook<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./my-deploy-hook.sh&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-c81501d23fb71340871371b30a97682c"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Define the following section in your <code>.lego.yaml</code> file:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">hooks</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">deploy</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">command</span>: <span style="color:#e6db74">&#39;./my-deploy-hook.sh&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="post-hook">Post-Hook<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>This hook is executed, after the creation or the renewal, in cases where a certificate is created/renewed, regardless of whether any errors occurred.</p>
+<div class="tab-panel" data-tab-group="R-tabs-48b2327216a8c8325495e1dbc9ef40b4">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-c22ed7bef288f3fb072fb5e02046d243" aria-expanded="true"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-37fe9424033504d3b5b97695d72e7997')"
+    >
+      <span class="tab-nav-text">Classic Way</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-351c717d646475917d1a8e1c0cc946ee" aria-expanded="false"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-48b2327216a8c8325495e1dbc9ef40b4','R-tab-de92ec79f6a16919fe493e313ff88356')"
+    >
+      <span class="tab-nav-text">With a Configuration File</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-c22ed7bef288f3fb072fb5e02046d243"
+      data-tab-item="R-tab-37fe9424033504d3b5b97695d72e7997"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<p>Execute the following command:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>lego run -d <span style="color:#e6db74">&#39;example.com&#39;</span> --post-hook<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./my-post-hook.sh&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-351c717d646475917d1a8e1c0cc946ee"
+      data-tab-item="R-tab-de92ec79f6a16919fe493e313ff88356"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<p>Define the following section in your <code>.lego.yaml</code> file:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">hooks</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">post</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">command</span>: <span style="color:#e6db74">&#39;./my-post-hook.sh&#39;</span></span></span></code></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="environment-variables">Environment Variables<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>Some details are passed through environment variables to help you with your hooks:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Environment Variable</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>LEGO_HOOK_ACCOUNT_ID</code></td>
+          <td>The account ID.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_ACCOUNT_EMAIL</code></td>
+          <td>The account email (if available).</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_ACCOUNT_SERVER</code></td>
+          <td>The server related to the account.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_NAME</code></td>
+          <td>The name/ID of the certificate.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_NAME_SANITIZED</code></td>
+          <td>The sanitized name/ID of the certificate.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_KEY_TYPE</code></td>
+          <td>The type of the certificate key.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_DOMAINS</code></td>
+          <td>The domains of the certificate.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_PATH</code></td>
+          <td>The path of the certificate.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_KEY_PATH</code></td>
+          <td>The path of the certificate key.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_ISSUER_CERT_PATH</code></td>
+          <td>The path of the issuer certificate.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_PEM_PATH</code></td>
+          <td>(only with <code>--pem</code>) The path to the PEM certificate.</td>
+      </tr>
+      <tr>
+          <td><code>LEGO_HOOK_CERT_PFX_PATH</code></td>
+          <td>(only with <code>--pfx</code>) The path to the PFX certificate.</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="use-case">Use Case<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>A typical use case is distributing the certificate for other services and reload them if necessary.
+Since many programs understand PEM-formatted TLS certificates, it is relatively simple to use certificates for more than a web server.</p>
+<p>This example script installs the new certificate for a mail server and reloads it.
+Beware: this is just a starting point, error checking is omitted for brevity.</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e">#!/bin/bash
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># copy certificates to a directory controlled by Postfix</span>
+</span></span><span style="display:flex;"><span>postfix_cert_dir<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/etc/postfix/certificates&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># our Postfix server only handles mail for @example.com domain</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> <span style="color:#e6db74">&#34;</span>$LEGO_HOOK_CERT_NAME<span style="color:#e6db74">&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;example.com&#34;</span> <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>  install -u postfix -g postfix -m <span style="color:#ae81ff">0644</span> <span style="color:#e6db74">&#34;</span>$LEGO_HOOK_CERT_PATH<span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;</span>$postfix_cert_dir<span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>  install -u postfix -g postfix -m <span style="color:#ae81ff">0640</span> <span style="color:#e6db74">&#34;</span>$LEGO_HOOK_CERT_KEY_PATH<span style="color:#e6db74">&#34;</span>  <span style="color:#e6db74">&#34;</span>$postfix_cert_dir<span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  systemctl reload postfix@-service
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">fi</span></span></span></code></pre></div>
+<p>Don&rsquo;t hesitate to share your hook scripts with <a href="https://github.com/go-acme/lego/discussions/categories/ideas" rel="external">the community</a>.</p>
+<h2 id="notes">Notes<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The hooks must be a system-executable: binary or script with a proper shebang (e.g. <code>#!/bin/bash</code> and <code>chmod +x my-hook.sh</code>).</p>
+<p>There is neither subshell nor shell interpretation.
+Arguments are allowed, but there is no shell-escaping support (spaces inside arguments or paths are not supported).</p>
+<p>The hooks run in the same environment as lego, augmented with <code>LEGO_HOOK_*</code> variables.</p>
+<p>Both <code>stdout</code> and <code>stderr</code> used by the hooks are merged into a single pipe.
+The output is read line by line and printed to lego&rsquo;s own <code>stdout</code>.</p>
+<p>If the hook exits with a non-zero code (or times out), lego will surface it as a failure.</p>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jul 2, 2026
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1782946634" defer></script>
+    <script src="/lego/js/theme.min.js?1782946634" defer></script>
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  </body>
+</html>

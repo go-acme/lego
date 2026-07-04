@@ -130,7 +130,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	ctxAuth := internal.WithContext(ctx, credential)
 
-	authZone, err := d.findZone(ctx, info.EffectiveFQDN)
+	authZone, err := d.findZone(ctxAuth, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("allinkl: %w", err)
 	}

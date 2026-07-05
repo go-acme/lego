@@ -1,0 +1,27 @@
+Name = "RackCorp"
+Description = ''''''
+URL = "https://www.rackcorp.com/"
+Code = "rackcorp"
+Since = "v5.0.0"
+
+Example = '''
+RACKCORP_API_UUID="xxx" \
+RACKCORP_API_SECRET="yyy" \
+lego --dns rackcorp -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    RACKCORP_API_UUID = "API UUID"
+    RACKCORP_API_SECRET = "API secret"
+  [Configuration.Additional]
+    RACKCORP_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    RACKCORP_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    RACKCORP_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    RACKCORP_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://wiki.rackcorp.com/books/help-and-support-en/chapter/rackcorp-rest-api"
+  GoClient = "https://github.com/RackCorpCloud/rackcorp-api-go"
+  Swagger = "https://app.swaggerhub.com/apis/RackCorp/Rackcorp-REST-API/2.8"
+  More = "https://github.com/RackCorpCloud/rackcorp-api/wiki/RACKCORP-REST-API"

@@ -3483,10 +3483,10 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "OPENPROVIDER_HTTP_TIMEOUT":	API request timeout`)
-		ew.writeln(`	- "OPENPROVIDER_POLLING_INTERVAL":	Time between DNS propagation check`)
-		ew.writeln(`	- "OPENPROVIDER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "OPENPROVIDER_TTL":	The TTL of the TXT record used for the DNS challenge`)
+		ew.writeln(`	- "OPENPROVIDER_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "OPENPROVIDER_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "OPENPROVIDER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "OPENPROVIDER_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/openprovider`)

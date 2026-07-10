@@ -49,10 +49,10 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `OPENPROVIDER_HTTP_TIMEOUT` | API request timeout |
-| `OPENPROVIDER_POLLING_INTERVAL` | Time between DNS propagation check |
-| `OPENPROVIDER_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `OPENPROVIDER_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `OPENPROVIDER_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `OPENPROVIDER_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
+| `OPENPROVIDER_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
+| `OPENPROVIDER_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 600) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

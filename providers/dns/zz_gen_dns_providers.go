@@ -158,6 +158,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/omglol"
 	"github.com/go-acme/lego/v5/providers/dns/onecloudru"
 	"github.com/go-acme/lego/v5/providers/dns/onlinenet"
+	"github.com/go-acme/lego/v5/providers/dns/openprovider"
 	"github.com/go-acme/lego/v5/providers/dns/opusdns"
 	"github.com/go-acme/lego/v5/providers/dns/oraclecloud"
 	"github.com/go-acme/lego/v5/providers/dns/otc"
@@ -532,6 +533,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return onecloudru.NewDNSProvider()
 	case "onlinenet":
 		return onlinenet.NewDNSProvider()
+	case "openprovider":
+		return openprovider.NewDNSProvider()
 	case "opusdns":
 		return opusdns.NewDNSProvider()
 	case "oraclecloud":

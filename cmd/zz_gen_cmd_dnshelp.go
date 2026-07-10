@@ -164,6 +164,7 @@ func allDNSCodes() string {
 		"omglol",
 		"onecloudru",
 		"onlinenet",
+		"openprovider",
 		"opusdns",
 		"oraclecloud",
 		"otc",
@@ -3468,6 +3469,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/onlinenet`)
+
+	case "openprovider":
+		// generated from: providers/dns/openprovider/openprovider.toml
+		ew.writeln(`Configuration for Openprovider.`)
+		ew.writeln(`Code:	'openprovider'`)
+		ew.writeln(`Since:	'v5.3.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "OPENPROVIDER_PASSWORD":	The user's password`)
+		ew.writeln(`	- "OPENPROVIDER_USERNAME":	The user's name`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "OPENPROVIDER_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "OPENPROVIDER_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "OPENPROVIDER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "OPENPROVIDER_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/openprovider`)
 
 	case "opusdns":
 		// generated from: providers/dns/opusdns/opusdns.toml

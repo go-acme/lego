@@ -72,7 +72,7 @@ func TestClient_UpdateZone(t *testing.T) {
 			Add: []Record{
 				{
 					Name:  "_acme-challenge",
-					TTL:   120,
+					TTL:   600,
 					Type:  "TXT",
 					Value: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 				},

@@ -23,10 +23,10 @@ lego run --dns openprovider -d '*.example.com' -d example.com
     OPENPROVIDER_USERNAME = "The user's name"
     OPENPROVIDER_PASSWORD = "The user's password"
   [Configuration.Additional]
-    OPENPROVIDER_POLLING_INTERVAL = "Time between DNS propagation check"
-    OPENPROVIDER_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
-    OPENPROVIDER_TTL = "The TTL of the TXT record used for the DNS challenge"
-    OPENPROVIDER_HTTP_TIMEOUT = "API request timeout"
+    OPENPROVIDER_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    OPENPROVIDER_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    OPENPROVIDER_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)"
+    OPENPROVIDER_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]
   API = "https://docs.openprovider.com/doc/all"

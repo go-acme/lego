@@ -5,7 +5,7 @@
     "remove": [
       {
         "name": "_acme-challenge",
-        "ttl": 120,
+        "ttl": 600,
         "type": "TXT",
         "value": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
       }

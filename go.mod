@@ -25,7 +25,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/lightsail v1.56.2
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.63.4
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.104.1
-	github.com/aws/aws-sdk-go-v2/service/sts v1.43.4
+	github.com/aws/aws-sdk-go-v2/service/sts v1.44.1
 	github.com/aziontech/azionapi-go-sdk v0.144.0
 	github.com/baidubce/bce-sdk-go v0.9.270
 	github.com/bodgit/tsig v1.3.1
@@ -120,12 +120,12 @@ require (
 	github.com/alibabacloud-go/tea-utils/v2 v2.0.9 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.13 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.29 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.29 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.29 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.30 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.12 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.30 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.30 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.31 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.13 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.22 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.29 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.30 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.30 // indirect
 	github.com/aws/aws-sdk-go-v2/service/signin v1.2.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.31.4 // indirect

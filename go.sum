@@ -764,8 +764,8 @@ github.com/aws/aws-sdk-go-v2/service/sts v1.44.1/go.mod h1:9gdl4RrflIdpDb2TlXshW
 github.com/aws/smithy-go v1.8.0/go.mod h1:SObp3lf9smib00L/v3U2eAKG8FyQ7iLrJnQiAmR5n+E=
 github.com/aws/smithy-go v1.27.3 h1:F3Zb497UhhskkfpJmfkXswyo+t0sh9OTBnIHjogWbVY=
 github.com/aws/smithy-go v1.27.3/go.mod h1:YE2RhdIuDbA5E5bTdciG9KrW3+TiEONeUWCqxX9i1Fc=
-github.com/aziontech/azionapi-go-sdk v0.144.0 h1:T+/w18o+FCiZsk3Z0ACBVVe7c/5EGLG15S3P8JfuPfo=
-github.com/aziontech/azionapi-go-sdk v0.144.0/go.mod h1:OKxP/R0iVXnJJakYwMhh2BGAXnud8Ruy55Ak9ANuWoU=
+github.com/aziontech/azionapi-go-sdk v0.147.0 h1:iaZe+9hH+f1ttdtcGp2YYCi9XNCJ/R6wKuV8Gvu81i8=
+github.com/aziontech/azionapi-go-sdk v0.147.0/go.mod h1:hxmduAKrAvP4V9jlrT00FbuvnQx+h8jc/ivWHmgGzF8=
 github.com/baidubce/bce-sdk-go v0.9.270 h1:WAYDTBdrE2FU+XQVdKReuDuK9QVCjRdekK3lr3ByDvg=
 github.com/baidubce/bce-sdk-go v0.9.270/go.mod h1:zbYJMQwE4IZuyrJiFO8tO8NbtYiKTFTbwh4eIsqjVdg=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=

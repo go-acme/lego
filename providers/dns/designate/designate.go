@@ -55,7 +55,9 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
-	opts               gophercloud.AuthOptions
+
+	opts       gophercloud.AuthOptions
+	regionName string
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -85,14 +87,24 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	val, err := env.Get(EnvCloud)
 	if err == nil {
-		opts, erro := clientconfig.AuthOptions(&clientconfig.ClientOpts{
+		clientOpts := &clientconfig.ClientOpts{
 			Cloud: val[EnvCloud],
-		})
+		}
+
+		opts, erro := clientconfig.AuthOptions(clientOpts)
 		if erro != nil {
 			return nil, fmt.Errorf("designate: %w", erro)
 		}
 
 		config.opts = *opts
+
+		// Reference: https://github.com/gophercloud/utils/blob/4ae35253ac13baca854e4ca21a0eab8c1e247c26/openstack/clientconfig/requests.go#L807-L988
+		cloud, erro := clientconfig.GetCloudFromYAML(clientOpts)
+		if erro != nil {
+			return nil, fmt.Errorf("designate: read cloud file: %w", erro)
+		}
+
+		config.regionName = cloud.RegionName
 	} else {
 		opts, err := openstack.AuthOptionsFromEnv()
 		if err != nil {
@@ -116,8 +128,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("designate: failed to authenticate: %w", err)
 	}
 
+	regionName := config.regionName
+	if regionName == "" {
+		regionName = os.Getenv("OS_REGION_NAME")
+	}
+
 	dnsClient, err := openstack.NewDNSV2(provider, gophercloud.EndpointOpts{
-		Region: os.Getenv("OS_REGION_NAME"),
+		Region: regionName,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("designate: failed to get DNS provider: %w", err)

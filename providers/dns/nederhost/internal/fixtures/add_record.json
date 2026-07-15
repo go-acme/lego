@@ -1,6 +1,11 @@
-[
-  {
-    "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
-    "ttl": 3600
+{
+  "_acme-challenge.example.com": {
+    "TXT": [
+      {
+        "id": 2890175,
+        "ttl": 3600,
+        "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+      }
+    ]
   }
-]
+}

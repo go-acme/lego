@@ -321,7 +321,6 @@ func setupTestProvider(t *testing.T) string {
 		]
 	}
 }`))
-		w.WriteHeader(http.StatusOK)
 	})
 
 	return server.URL

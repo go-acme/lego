@@ -48,8 +48,14 @@ func TestClient_AddRecord(t *testing.T) {
 	records, err := client.AddRecord(t.Context(), request)
 	require.NoError(t, err)
 
-	expected := []Record{
-		{Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY", TTL: 3600},
+	expected := map[string]map[string][]Record{
+		"_acme-challenge.example.com": {
+			"TXT": []Record{{
+				ID:      2890175,
+				Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+				TTL:     3600,
+			}},
+		},
 	}
 
 	assert.Equal(t, expected, records)

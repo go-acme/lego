@@ -40,7 +40,7 @@ func NewClient(apiKey string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) AddRecord(ctx context.Context, request RecordRequest) ([]Record, error) {
+func (c *Client) AddRecord(ctx context.Context, request RecordRequest) (map[string]map[string][]Record, error) {
 	endpoint := c.BaseURL.JoinPath("zones", request.Zone, "records", request.Name, request.Type)
 
 	payload := []Record{{Content: request.Content}}
@@ -50,7 +50,7 @@ func (c *Client) AddRecord(ctx context.Context, request RecordRequest) ([]Record
 		return nil, err
 	}
 
-	var result []Record
+	result := make(map[string]map[string][]Record)
 
 	err = c.do(req, &result)
 	if err != nil {

@@ -70,7 +70,7 @@ lego run [options]
 
 | Flag | Env Var | Usage |
 |------|-------|-------|
-| `--always-deactivate-authorizations string` | `LEGO_ALWAYS_DEACTIVATE_AUTHORIZATIONS` | Force the authorizations to be relinquished even if the certificate request was successful.  |
+| `--always-deactivate-authorizations` | `LEGO_ALWAYS_DEACTIVATE_AUTHORIZATIONS` | Force the authorizations to be relinquished even if the certificate request was successful.  |
 | `--cert.timeout int` | `LEGO_CERT_TIMEOUT` | Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. <br> (Default: 30) |
 | `--csr string` | `LEGO_CSR` | Certificate signing request filename, if an external CSR is to be used.  |
 | `--enable-cn` | `LEGO_ENABLE_CN` | Enable the use of the common name. (Not recommended)  |

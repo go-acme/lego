@@ -158,7 +158,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := client.getZone(ctx, domain)
+	zone, err := client.getZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("selectelv2: get zone: %w", err)
 	}
@@ -203,7 +203,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) er
 
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zone, err := client.getZone(ctx, domain)
+	zone, err := client.getZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("selectelv2: get zone: %w", err)
 	}

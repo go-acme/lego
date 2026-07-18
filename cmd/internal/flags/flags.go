@@ -642,7 +642,7 @@ func createObtainFlags() []cli.Flag {
 			Sources:  cli.EnvVars(toEnvName(FlgProfile)),
 			Usage:    "If the CA offers multiple certificate profiles (draft-ietf-acme-profiles), choose this one.",
 		},
-		&cli.StringFlag{
+		&cli.BoolFlag{
 			Category: categoryAdvanced,
 			Name:     FlgAlwaysDeactivateAuthorizations,
 			Sources:  cli.EnvVars(toEnvName(FlgAlwaysDeactivateAuthorizations)),

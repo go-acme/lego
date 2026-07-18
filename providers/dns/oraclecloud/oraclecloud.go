@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/ptr"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/nrdcg/oci-go-sdk/common/v1065"
@@ -21,7 +22,8 @@ import (
 const (
 	envNamespace = "OCI_"
 
-	EnvAuthType = envNamespace + "AUTH_TYPE"
+	EnvAuthType              = envNamespace + "AUTH_TYPE"
+	EnvExtendedZoneDetection = envNamespace + "EXTENDED_ZONE_DETECTION"
 
 	EnvCompartmentOCID = envNamespace + "COMPARTMENT_OCID"
 	EnvRegion          = envNamespace + "REGION"
@@ -63,8 +65,9 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	CompartmentID     string
-	OCIConfigProvider common.ConfigurationProvider
+	CompartmentID         string
+	OCIConfigProvider     common.ConfigurationProvider
+	ExtendedZoneDetection bool
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -93,6 +96,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for OracleCloud.
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
+	config.ExtendedZoneDetection = env.GetOrDefaultBool(EnvExtendedZoneDetection, false)
 
 	switch env.GetOrFile(EnvAuthType) {
 	case string(common.InstancePrincipal):
@@ -208,14 +212,21 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	zoneNameOrID, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("oraclecloud: could not find zone for domain %q: %w", domain, err)
 	}
 
+	if d.config.ExtendedZoneDetection {
+		authZone, err = d.findZone(ctx, info.EffectiveFQDN, authZone)
+		if err != nil {
+			return fmt.Errorf("oraclecloud: %w", err)
+		}
+	}
+
 	// search to TXT record's hash to delete
 	getRequest := dns.GetDomainRecordsRequest{
-		ZoneNameOrId:  common.String(zoneNameOrID),
+		ZoneNameOrId:  common.String(authZone),
 		Domain:        common.String(dns01.UnFqdn(info.EffectiveFQDN)),
 		CompartmentId: common.String(d.config.CompartmentID),
 		Rtype:         common.String("TXT"),
@@ -249,7 +260,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	}
 
 	patchRequest := dns.PatchDomainRecordsRequest{
-		ZoneNameOrId: common.String(zoneNameOrID),
+		ZoneNameOrId: common.String(authZone),
 		Domain:       common.String(dns01.UnFqdn(info.EffectiveFQDN)),
 		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
 			Items: []dns.RecordOperation{recordOperation},
@@ -269,4 +280,26 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) findZone(ctx context.Context, effectiveFQDN, requestedZone string) (string, error) {
+	zones, err := d.client.ListZones(ctx, dns.ListZonesRequest{
+		CompartmentId: common.String(d.config.CompartmentID),
+		NameContains:  common.String(requestedZone),
+		SortBy:        dns.ListZonesSortByName,
+		Limit:         ptr.Pointer[int64](100),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	for name := range dns01.UnFqdnDomainsSeq(effectiveFQDN) {
+		for _, item := range zones.Items {
+			if ptr.Deref(item.Name) == name {
+				return ptr.Deref(item.Name), nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("zone not found (%q/%q)", effectiveFQDN, requestedZone)
 }

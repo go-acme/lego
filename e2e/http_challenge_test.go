@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -27,6 +28,63 @@ func TestChallengeHTTP_Run(t *testing.T) {
 		"-m", testEmail1,
 		"--accept-tos",
 		"-s", caDirectory,
+		"-d", testDomain1,
+		"--http",
+		"--http.address", ":5002",
+	)
+	require.NoError(t, err)
+}
+
+func TestChallengeHTTP_Run_renew(t *testing.T) {
+	loader.CleanLegoFiles(t.Context())
+
+	err := load.RunLego(t.Context(),
+		"run",
+		"-m", testEmail1,
+		"--accept-tos",
+		"-s", caDirectory,
+		"-d", testDomain1,
+		"--http",
+		"--http.address", ":5002",
+	)
+	require.NoError(t, err)
+
+	err = load.RunLego(
+		context.Background(),
+		"run",
+		"-m", testEmail1,
+		"--accept-tos",
+		"-s", caDirectory,
+		"-d", testDomain1,
+		"--http",
+		"--http.address", ":5002",
+		"--renew-force",
+		"--no-random-sleep",
+	)
+	require.NoError(t, err)
+}
+
+func TestChallengeHTTP_Run_renew_profile_changed(t *testing.T) {
+	loader.CleanLegoFiles(t.Context())
+
+	err := load.RunLego(t.Context(),
+		"run",
+		"-m", testEmail1,
+		"--accept-tos",
+		"-s", caDirectory,
+		"-d", testDomain1,
+		"--http",
+		"--http.address", ":5002",
+	)
+	require.NoError(t, err)
+
+	err = load.RunLego(
+		context.Background(),
+		"run",
+		"-m", testEmail1,
+		"--accept-tos",
+		"-s", caDirectory,
+		"--profile", "shortlived",
 		"-d", testDomain1,
 		"--http",
 		"--http.address", ":5002",

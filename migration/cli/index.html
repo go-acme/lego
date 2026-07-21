@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html id="R-html" lang="en-us" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="html">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.157.0">
+    <meta name="generator" content="Relearn 9.0.3+bf3dbc8308313d6dd1f7ad32ba2a7983a4e9b3e5">
+    <meta name="description" content="This guide describes the changes between the v4 and v5 versions of the command line.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="CLI Guide :: ACME client and library written in Go.">
+    <meta name="twitter:description" content="This guide describes the changes between the v4 and v5 versions of the command line.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/migration/cli/index.html">
+    <meta property="og:site_name" content="ACME client and library written in Go.">
+    <meta property="og:title" content="CLI Guide :: ACME client and library written in Go.">
+    <meta property="og:description" content="This guide describes the changes between the v4 and v5 versions of the command line.">
+    <meta property="og:locale" content="en_us">
+    <meta property="og:type" content="article">
+    <meta property="article:section" content="Migration from v4 to v5">
+    <meta property="article:published_time" content="2019-03-03T16:39:46+01:00">
+    <meta property="article:modified_time" content="2026-07-21T22:03:26+02:00">
+    <meta itemprop="name" content="CLI Guide :: ACME client and library written in Go.">
+    <meta itemprop="description" content="This guide describes the changes between the v4 and v5 versions of the command line.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2026-07-21T22:03:26+02:00">
+    <meta itemprop="wordCount" content="456">
+    <title>CLI Guide :: ACME client and library written in Go.</title>
+    <link href="/lego/migration/cli/index.print.html" rel="alternate" type="text/html" title="CLI Guide :: ACME client and library written in Go.">
+    <link href="/lego/images/favicon.svg?1784664559" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1784664559" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1784664559" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1784664559" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1784664559" defer></script>
+    <script src="/lego/js/search.min.js?1784664559" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1784664559";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1784664559" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1784664559" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1784664559" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1784664559" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/all.min.css?1784664559" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/all.min.css?1784664559" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1784664559" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1784664559" rel="stylesheet">
+    <link href="/lego/css/format-html.min.css?1784664559" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/migration\/cli\/index.html';
+      window.relearn.relBasePath='..\/..';
+      window.relearn.relBaseUri='..\/..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // translations
+      window.T_Copy_to_clipboard = `Copy text to clipboard`;
+      window.T_Copied_to_clipboard = `Text copied to clipboard!`;
+      window.T_Link_copied_to_clipboard = `Link copied to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      window.T_Browser_unsupported_feature = `This browser doesn't support this feature`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantprefix = "my-custom-";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant") ?? "";
+        if( !variant ||
+            (!variant.startsWith(window.relearn.customvariantprefix) && !window.relearn.themevariants.includes(variant)) ||
+            (variant.startsWith(window.relearn.customvariantprefix) && !window.localStorage.getItem(window.relearn.absBaseUri + "/variantstylesheet-" + variant)) ){
+          variant = window.relearn.themevariants[0];
+          window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+    <link href="/lego/css/custom.css?1784664559" rel="stylesheet">
+  </head>
+  <body class="mobile-support html" data-origin="/lego/migration/cli/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar" class="default-animation">
+        <div class="topbar-wrapper default-animation">
+          <div class="topbar-sidebar-divider default-animation"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar default-animation" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button></span>
+            </div>
+            <div class="topbar-button topbar-button-toc default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-table-list"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+<nav class="TableOfContents">
+  <ul>
+    <li><a href="#commands">Commands</a></li>
+    <li><a href="#flags">Flags</a></li>
+    <li><a href="#directory-structure">Directory structure</a></li>
+    <li><a href="#environment-variables">Environment variables</a></li>
+    <li><a href="#commonname">CommonName</a></li>
+    <li><a href="#pem-encoding">PEM encoding</a></li>
+    <li><a href="#default-resolvernameserver-fallbacks">Default resolver/nameserver fallbacks</a></li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/migration/index.html"><span itemprop="name">Migration from v4 to v5</span></a><meta itemprop="position" content="2">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">CLI Guide</span><meta itemprop="position" content="3"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-print default-animation" data-content-empty="disable" data-width-s="area-more" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/migration/cli/index.print.html" title="Print whole chapter (CTRL+ALT+p)"><i class="fa-fw fas fa-print"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-prev default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/migration/index.html" title="Migration from v4 to v5 (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-next default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/migration/library/index.html" title="Library Guide (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-more default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable migration" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="cli-guide">CLI Guide</h1>
+
+<p>This guide describes the changes between the v4 and v5 versions of the command line.</p>
+
+<details open class="box cstyle notices caution">
+  <summary class="box-label" tabindex="-1">
+    <i class="fa-fw fas fa-hand"></i> 
+    Caution
+  </summary>
+  <div class="box-content">
+<p>Please run the new v5 command <code>lego migrate</code> before running any other commands.</p>
+<p>This command will migrate the file structure to the new one.</p>
+<p><strong>This is a requirement.</strong></p>
+<p>This command will not work if you were using the deprecated <code>--filename</code> flag.</p>
+<p>If you need help, please open a <a href="https://github.com/go-acme/lego/discussions/new?category=q-a" rel="external">discussion</a>.</p>
+  </div>
+</details>
+<h2 id="commands">Commands<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The global flags have been moved to flags of the commands.</p>
+<p>Example:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Before</span>
+</span></span><span style="display:flex;"><span>lego --dns foo -d <span style="color:#e6db74">&#39;*.example.com&#39;</span> -d example.com run</span></span></code></pre></div>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># After</span>
+</span></span><span style="display:flex;"><span>lego run --dns foo -d <span style="color:#e6db74">&#39;*.example.com&#39;</span> -d example.com</span></span></code></pre></div>
+<p>The command <code>renew</code> has been removed because the command <code>run</code> is able to renew certificates.</p>
+<p>The command <code>list</code> has been removed and replaced by <code>accounts list</code> and <code>certificates list</code>.</p>
+<p>The command <code>revoke</code> has been removed and replaced by <code>certificates revoke</code>.</p>
+<h2 id="flags">Flags<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>Some flags have been changed, renamed or removed:</p>
+<table>
+  <thead>
+      <tr>
+          <th>v4</th>
+          <th>Change Type</th>
+          <th>v5</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--disable-cn</code></td>
+          <td><i class="fa-fw fas fa-arrow-down-up-across-line" style="color: orange;"></i> removed and replaced</td>
+          <td><code>--enable-cn</code></td>
+      </tr>
+      <tr>
+          <td><code>--dns.disable-cp</code></td>
+          <td><i class="fa-fw fas fa-arrow-down-up-across-line" style="color: orange;"></i> removed and replaced</td>
+          <td><code>--dns.propagation.wait</code></td>
+      </tr>
+      <tr>
+          <td><code>--dns.propagation-wait</code></td>
+          <td><i class="fa-fw fas fa-right-left" style="color: green;"></i> renamed</td>
+          <td><code>--dns.propagation.wait</code></td>
+      </tr>
+      <tr>
+          <td><code>--dns.propagation-disable-ans</code></td>
+          <td><i class="fa-fw fas fa-right-left" style="color: green;"></i> renamed</td>
+          <td><code>--dns.propagation.disable-ans</code></td>
+      </tr>
+      <tr>
+          <td><code>--dns.propagation-rns</code></td>
+          <td><i class="fa-fw fas fa-arrow-down-up-across-line" style="color: orange;"></i> removed and replaced</td>
+          <td><code>--dns.propagation.disable-rns</code></td>
+      </tr>
+      <tr>
+          <td><code>--dns-timeout</code></td>
+          <td><i class="fa-fw fas fa-right-left" style="color: green;"></i> renamed</td>
+          <td><code>--dns.timeout</code></td>
+      </tr>
+      <tr>
+          <td><code>--kid</code></td>
+          <td><i class="fa-fw fas fa-right-left" style="color: green;"></i> renamed</td>
+          <td><code>--eab.kid</code></td>
+      </tr>
+      <tr>
+          <td><code>--hmac</code></td>
+          <td><i class="fa-fw fas fa-right-left" style="color: green;"></i> renamed</td>
+          <td><code>--eab.hmac</code></td>
+      </tr>
+      <tr>
+          <td><code>--days</code></td>
+          <td><i class="fa-fw fas fa-right-left" style="color: green;"></i> renamed</td>
+          <td><code>--renew-days</code><sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></td>
+      </tr>
+      <tr>
+          <td><code>--dynamic</code></td>
+          <td><i class="fa-fw fas fa-xmark" style="color: red;"></i> removed</td>
+          <td>This is the default behavior now.</td>
+      </tr>
+      <tr>
+          <td><code>--run-hook</code></td>
+          <td><i class="fa-fw fas fa-right-left" style="color: green;"></i> renamed</td>
+          <td><code>--deploy-hook</code></td>
+      </tr>
+      <tr>
+          <td><code>--renew-hook</code></td>
+          <td><i class="fa-fw fas fa-right-left" style="color: green;"></i> renamed</td>
+          <td><code>--deploy-hook</code></td>
+      </tr>
+      <tr>
+          <td><code>--tls.port</code></td>
+          <td><i class="fa-fw fas fa-right-left" style="color: green;"></i> renamed</td>
+          <td><code>--tls.address</code></td>
+      </tr>
+      <tr>
+          <td><code>--http.port</code></td>
+          <td><i class="fa-fw fas fa-right-left" style="color: green;"></i> renamed</td>
+          <td><code>--http.address</code></td>
+      </tr>
+      <tr>
+          <td><code>--pfx.pass</code></td>
+          <td><i class="fa-fw fas fa-right-left" style="color: green;"></i> renamed</td>
+          <td><code>--pfx.password</code></td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="directory-structure">Directory structure<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The directory structure has been changed.</p>
+
+<details open class="box cstyle notices caution">
+  <summary class="box-label" tabindex="-1">
+    <i class="fa-fw fas fa-hand"></i> 
+    Caution
+  </summary>
+  <div class="box-content">
+<p>The directory structure has changed but also the content of the JSON files, so don&rsquo;t migrate the files manually.</p>
+<p>To migrate the directory structure and the files, run the command <code>lego migrate</code>.</p>
+<p>If you need to do it manually, please open a <a href="https://github.com/go-acme/lego/discussions/new?category=q-a" rel="external">discussion</a> and we will help you.</p>
+  </div>
+</details>
+<div class="tab-panel" data-tab-group="R-tabs-f4124274a0a0909694eaeb00783a1cb1">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-a12015d823ea79e1289cf510b1c226d9" aria-expanded="true"
+      data-tab-item="R-tab-5ed3a3ff8e5c29979502b9030e8518e0"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-f4124274a0a0909694eaeb00783a1cb1','R-tab-5ed3a3ff8e5c29979502b9030e8518e0')"
+    >
+      <span class="tab-nav-text">v4</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-0fc8e9951d8f9c270b77bd8318d9e19b" aria-expanded="false"
+      data-tab-item="R-tab-4b6df01946f4919a3f5af8c1f0f9c3c5"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-f4124274a0a0909694eaeb00783a1cb1','R-tab-4b6df01946f4919a3f5af8c1f0f9c3c5')"
+    >
+      <span class="tab-nav-text">v5</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-a12015d823ea79e1289cf510b1c226d9"
+      data-tab-item="R-tab-5ed3a3ff8e5c29979502b9030e8518e0"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>.
+├── accounts
+│   └── &lt;server-name-1&gt;
+│       ├── &lt;account-name-1&gt;
+│       │   ├── account.json
+│       │   └── keys
+│       │       └── &lt;account-name-1&gt;.key
+│       └── &lt;account-name-2&gt;
+│           ├── account.json
+│           └── keys
+│               └── &lt;account-name-2&gt;.key
+└── certificates
+    ├── example.com.crt
+    ├── example.com.issuer.crt
+    ├── example.com.json
+    ├── example.com.key
+    ├── example.org.crt
+    ├── example.org.issuer.crt
+    ├── example.org.json
+    └── example.org.key</code></pre></div>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-0fc8e9951d8f9c270b77bd8318d9e19b"
+      data-tab-item="R-tab-4b6df01946f4919a3f5af8c1f0f9c3c5"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0"><code>.
+├── accounts
+│   └── &lt;server-name-1&gt;
+│       ├── &lt;account-name-1&gt;
+│       │   ├── account.json
+│       │   └── &lt;account-name-1&gt;.key
+│       └── &lt;account-name-2&gt;
+│           ├── account.json
+│           └── &lt;account-name-2&gt;.key
+└── certificates
+    ├── example.com.crt
+    ├── example.com.issuer.crt
+    ├── example.com.json
+    ├── example.com.key
+    ├── example.org.crt
+    ├── example.org.issuer.crt
+    ├── example.org.json
+    └── example.org.key</code></pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="environment-variables">Environment variables<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The following environment variables have been removed without replacement:</p>
+<ul>
+<li><code>SELECTEL_BASE_URL</code></li>
+<li><code>VSCALE_BASE_URL</code></li>
+</ul>
+<p>The following environment variables related to the hook have been renamed:</p>
+<table>
+  <thead>
+      <tr>
+          <th>v4</th>
+          <th>v5</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>LEGO_ACCOUNT_EMAIL</code></td>
+          <td><code>LEGO_HOOK_ACCOUNT_EMAIL</code></td>
+      </tr>
+      <tr>
+          <td><code>LEGO_CERT_DOMAIN</code></td>
+          <td><code>LEGO_HOOK_CERT_NAME</code></td>
+      </tr>
+      <tr>
+          <td><code>LEGO_CERT_PATH</code></td>
+          <td><code>LEGO_HOOK_CERT_PATH</code></td>
+      </tr>
+      <tr>
+          <td><code>LEGO_CERT_KEY_PATH</code></td>
+          <td><code>LEGO_HOOK_CERT_KEY_PATH</code></td>
+      </tr>
+      <tr>
+          <td><code>LEGO_CERT_PEM_PATH</code></td>
+          <td><code>LEGO_HOOK_CERT_PEM_PATH</code></td>
+      </tr>
+      <tr>
+          <td><code>LEGO_CERT_PFX_PATH</code></td>
+          <td><code>LEGO_HOOK_CERT_PFX_PATH</code></td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="commonname">CommonName<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The support of the common name is disabled by default.</p>
+<h2 id="pem-encoding">PEM encoding<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>Lego uses <code>PKCS#8</code> instead of <code>PKCS#1</code> for PEM encoding.</p>
+<h2 id="default-resolvernameserver-fallbacks">Default resolver/nameserver fallbacks<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>The default resolver/nameserver fallbacks have been changed.</p>
+<div class="tab-panel" data-tab-group="R-tabs-f4124274a0a0909694eaeb00783a1cb1">
+  <div class="tab-nav">
+    <div class="tab-nav-title">&#8203;</div>
+    <button
+      aria-controls="R-tab-id-3461eccd206135cac3d35289e25c7f99" aria-expanded="true"
+      data-tab-item="R-tab-5ed3a3ff8e5c29979502b9030e8518e0"
+      class="tab-nav-button tab-panel-style cstyle initial active" tabindex="-1"
+      onclick="switchTab('R-tabs-f4124274a0a0909694eaeb00783a1cb1','R-tab-5ed3a3ff8e5c29979502b9030e8518e0')"
+    >
+      <span class="tab-nav-text">v4</span>
+    </button>
+    <button
+      aria-controls="R-tab-id-1abc34dfb66a9859d813154f225f933b" aria-expanded="false"
+      data-tab-item="R-tab-4b6df01946f4919a3f5af8c1f0f9c3c5"
+      class="tab-nav-button tab-panel-style cstyle initial"
+      onclick="switchTab('R-tabs-f4124274a0a0909694eaeb00783a1cb1','R-tab-4b6df01946f4919a3f5af8c1f0f9c3c5')"
+    >
+      <span class="tab-nav-text">v5</span>
+    </button>
+  </div>
+  <div class="tab-content-container">
+    <div
+      id="R-tab-id-3461eccd206135cac3d35289e25c7f99"
+      data-tab-item="R-tab-5ed3a3ff8e5c29979502b9030e8518e0"
+      class="tab-content tab-panel-style cstyle initial active">
+      <div class="tab-content-text">
+<ul>
+<li><code>google-public-dns-a.google.com:53</code></li>
+<li><code>google-public-dns-b.google.com:53</code></li>
+</ul>
+      </div>
+    </div>
+    <div
+      id="R-tab-id-1abc34dfb66a9859d813154f225f933b"
+      data-tab-item="R-tab-4b6df01946f4919a3f5af8c1f0f9c3c5"
+      class="tab-content tab-panel-style cstyle initial">
+      <div class="tab-content-text">
+<ul>
+<li><code>1.1.1.1:53</code></li>
+<li><code>1.0.0.1:53</code></li>
+<li><code>[2606:4700:4700::1111]:53</code></li>
+<li><code>[2606:4700:4700::1001]:53</code></li>
+</ul>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>By default, the renewal time is dynamically computed (the behavior of the previous <code>--dynamic</code> flag).&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jul 21, 2026
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <aside id="R-sidebar" class="default-animation">
+      <div id="R-header-topbar" class="default-animation"></div>
+      <div id="R-header-wrapper" class="default-animation"><a id="logo" href="/lego"><img src="/lego/images/lego-logo-white.min.svg" alt="lego logo" width="80%"></a>
+
+        <search><form action="/lego/search/index.html" method="get">
+          <div class="searchbox default-animation">
+            <button class="search-detail" type="submit" title="Search (CTRL+ALT+f)"><i class="fas fa-fw fa-search"></i></button>
+            <label class="a11y-only" for="R-search-by">Search</label>
+            <input data-search-input id="R-search-by" name="search-by" class="search-by" type="search" placeholder="Search...">
+            <button class="search-clear" type="button" data-search-clear="" title="Clear search"><i class="fas fa-fw fa-times" title="Clear search"></i></button>
+          </div>
+        </form></search>
+      </div>
+      <div id="R-homelinks" class="default-animation">
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-homelinks default-animation">
+          <ul class="space collapsible-menu">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-headercontrols default-animation">
+          <ul class="">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+      </div>
+      <div id="R-content-wrapper" class="highlightable">
+        <div class="R-sidebarmenu R-shortcutmenu-main default-animation">
+          <ul class="enlarge morespace collapsible-menu">
+            <li class="" data-nav-id="/lego/install/index.html"><a class="padding" href="/lego/install/index.html"><i class="fa-solid fa-box-archive"></i> Installation<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/obtain/index.html"><a class="padding default-animation" href="/lego/obtain/index.html"><i class="fa-solid fa-shield-halved"></i> Obtain or renew certificates<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-13caf4337333ddfe7f5b96479cbd6814" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/dns/index.html"><a class="padding default-animation" href="/lego/dns/index.html"><i class="fa-solid fa-globe"></i> DNS Providers<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-1a5c4aa622b091f451ffa4fea9c3a5f1" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/advanced/index.html"><a class="padding default-animation" href="/lego/advanced/index.html"><i class="fa-solid fa-gears"></i> Advanced usages<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-ab6684576aada2b2c1ce071df63f2853" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/references/index.html"><a class="padding default-animation" href="/lego/references/index.html"><i class="fa-regular fa-bookmark"></i> References<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-26caf0e43dd165bcbddd8eb517876f9e" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/library/index.html"><a class="padding default-animation" href="/lego/library/index.html"><i class="fa-solid fa-code"></i> Library<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-afbce53b44a67cf171cfa6ad78fcc6cf" class="collapsible-menu"></ul></li>
+            <li class="parent " data-nav-id="/lego/migration/index.html"><a class="padding default-animation" href="/lego/migration/index.html"><i class="fa-solid fa-recycle"></i> Migration from v4 to v5<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-a5eba261a62a08c005636c948c971d1e" class="collapsible-menu">
+            <li class="active " data-nav-id="/lego/migration/cli/index.html"><a class="padding" href="/lego/migration/cli/index.html"><i class="fa-solid fa-terminal"></i> CLI Guide<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/migration/library/index.html"><a class="padding" href="/lego/migration/library/index.html"><i class="fa-solid fa-code"></i> Library Guide<i class="fa-fw fas fa-check read-icon"></i></a></li></ul></li>
+          </ul>
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-shortcuts default-animation">
+          <div class="nav-title padding">More</div>
+          <ul class="space collapsible-menu">
+            <li class="" data-nav-id="https://github.com/go-acme/lego"><a class="padding" href="https://github.com/go-acme/lego" rel="external"><i class='fab fa-fw fa-github'></i> GitHub repo<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/issues"><a class="padding" href="https://github.com/go-acme/lego/issues" rel="external"><i class='fas fa-fw fa-bug'></i> Issues<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/discussions"><a class="padding" href="https://github.com/go-acme/lego/discussions" rel="external"><i class='fas fa-fw fa-comments'></i> Discussions<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/sponsors/go-acme"><a class="padding" href="https://github.com/sponsors/go-acme" rel="external"><i class='fas fa-fw fa-heart red cstyle'></i> Donate<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          </ul>
+        </div>
+        <div id="R-footer-margin" class="default-animation"></div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-footercontrols default-animation">
+          <ul class="">
+            <li class="R-historyclearer">
+              <div class="padding menu-control">
+                <i class="fa-fw fas fa-history"></i>
+                <span>&nbsp;</span>
+                <div class="control-style">
+                  <button>Clear History</button>
+                </div>
+                <div class="clear"></div>
+              </div>
+            </li>
+          </ul>
+        </div>
+<div id="R-footer" class="default-animation"><p>Built with <a href="https://github.com/McShelby/hugo-theme-relearn" title="love"><i class="fas fa-heart"></i></a> by <a href="https://gohugo.io/">Hugo</a></p></div>
+      </div>
+    </aside>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1784664559" defer></script>
+    <script src="/lego/js/theme.min.js?1784664559" defer></script>
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  </body>
+</html>

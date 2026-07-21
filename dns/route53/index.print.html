@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html id="R-html" lang="en-us" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="print">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.157.0">
+    <meta name="generator" content="Relearn 9.0.3+bf3dbc8308313d6dd1f7ad32ba2a7983a4e9b3e5">
+    <meta name="description" content="Configuration for Amazon Route 53.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Amazon Route 53 :: ACME client and library written in Go.">
+    <meta name="twitter:description" content="Configuration for Amazon Route 53.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/dns/route53/index.html">
+    <meta property="og:site_name" content="ACME client and library written in Go.">
+    <meta property="og:title" content="Amazon Route 53 :: ACME client and library written in Go.">
+    <meta property="og:description" content="Configuration for Amazon Route 53.">
+    <meta property="og:locale" content="en_us">
+    <meta property="og:type" content="article">
+    <meta property="article:section" content="DNS Providers">
+    <meta property="article:published_time" content="2019-03-03T16:39:46+01:00">
+    <meta property="article:modified_time" content="2026-07-21T22:03:26+02:00">
+    <meta itemprop="name" content="Amazon Route 53 :: ACME client and library written in Go.">
+    <meta itemprop="description" content="Configuration for Amazon Route 53.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2026-07-21T22:03:26+02:00">
+    <meta itemprop="wordCount" content="591">
+    <title>Amazon Route 53 :: ACME client and library written in Go.</title>
+    <link href="https://go-acme.github.io/lego/dns/route53/index.html" rel="canonical" type="text/html" title="Amazon Route 53 :: ACME client and library written in Go.">
+    <link href="/lego/images/favicon.svg?1784664559" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1784664559" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1784664559" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1784664559" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1784664559" defer></script>
+    <script src="/lego/js/search.min.js?1784664559" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1784664559";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1784664559" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1784664559" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1784664559" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1784664559" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/all.min.css?1784664559" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/all.min.css?1784664559" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1784664559" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1784664559" rel="stylesheet">
+    <link href="/lego/css/format-print.min.css?1784664559" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/dns\/route53\/index.html';
+      window.relearn.relBasePath='..\/..';
+      window.relearn.relBaseUri='..\/..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // translations
+      window.T_Copy_to_clipboard = `Copy text to clipboard`;
+      window.T_Copied_to_clipboard = `Text copied to clipboard!`;
+      window.T_Link_copied_to_clipboard = `Link copied to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      window.T_Browser_unsupported_feature = `This browser doesn't support this feature`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantprefix = "my-custom-";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant") ?? "";
+        if( !variant ||
+            (!variant.startsWith(window.relearn.customvariantprefix) && !window.relearn.themevariants.includes(variant)) ||
+            (variant.startsWith(window.relearn.customvariantprefix) && !window.localStorage.getItem(window.relearn.absBaseUri + "/variantstylesheet-" + variant)) ){
+          variant = window.relearn.themevariants[0];
+          window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+    <link href="/lego/css/custom.css?1784664559" rel="stylesheet">
+  </head>
+  <body class="mobile-support print" data-origin="/lego/dns/route53/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar" class="default-animation">
+        <div class="topbar-wrapper default-animation">
+          <div class="topbar-sidebar-divider default-animation"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar default-animation" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button></span>
+            </div>
+            <div class="topbar-button topbar-button-toc default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-table-list"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+<nav class="TableOfContents">
+  <ul>
+    <li><a href="#credentials">Credentials</a></li>
+    <li><a href="#additional-configuration">Additional Configuration</a></li>
+    <li><a href="#description">Description</a></li>
+    <li><a href="#iam-policy-examples">IAM Policy Examples</a>
+      <ul>
+        <li><a href="#broad-privileges-for-testing-purposes">Broad privileges for testing purposes</a></li>
+        <li><a href="#least-privilege-policy-for-production-purposes">Least privilege policy for production purposes</a></li>
+      </ul>
+    </li>
+    <li><a href="#more-information">More information</a></li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/dns/index.html"><span itemprop="name">DNS Providers</span></a><meta itemprop="position" content="2">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">Amazon Route 53</span><meta itemprop="position" content="3"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-print default-animation" data-content-empty="disable" data-width-s="area-more" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/dns/route53/index.print.html" title="Print whole chapter (CTRL+ALT+p)"><i class="fa-fw fas fa-print"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-prev default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/dns/lightsail/index.html" title="Amazon Lightsail (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-next default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/dns/anexia/index.html" title="Anexia CloudDNS (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-more default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable dns" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="amazon-route-53">Amazon Route 53</h1>
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/route53/route53.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<p>Configuration for <a href="https://aws.amazon.com/route53/" rel="external">Amazon Route 53</a>.</p>
+<ul>
+<li>Code: <code>route53</code></li>
+<li>Since: v0.3.0</li>
+</ul>
+<p>Here is an example bash command using the Amazon Route 53 provider:</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>AWS_ACCESS_KEY_ID<span style="color:#f92672">=</span>your_key_id <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>AWS_SECRET_ACCESS_KEY<span style="color:#f92672">=</span>your_secret_access_key <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>AWS_REGION<span style="color:#f92672">=</span>aws-region <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>AWS_HOSTED_ZONE_ID<span style="color:#f92672">=</span>your_hosted_zone_id <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>lego run --dns route53 -d <span style="color:#e6db74">&#39;*.example.com&#39;</span> -d example.com</span></span></code></pre></div>
+<h2 id="credentials">Credentials<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<table>
+  <thead>
+      <tr>
+          <th>Environment Variable Name</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>AWS_ACCESS_KEY_ID</code></td>
+          <td>Managed by the AWS client. Access key ID (<code>AWS_ACCESS_KEY_ID_FILE</code> is not supported, use <code>AWS_SHARED_CREDENTIALS_FILE</code> instead)</td>
+      </tr>
+      <tr>
+          <td><code>AWS_ASSUME_ROLE_ARN</code></td>
+          <td>Managed by the AWS Role ARN (<code>AWS_ASSUME_ROLE_ARN_FILE</code> is not supported)</td>
+      </tr>
+      <tr>
+          <td><code>AWS_EXTERNAL_ID</code></td>
+          <td>Managed by STS AssumeRole API operation (<code>AWS_EXTERNAL_ID_FILE</code> is not supported)</td>
+      </tr>
+      <tr>
+          <td><code>AWS_HOSTED_ZONE_ID</code></td>
+          <td>Override the hosted zone ID.</td>
+      </tr>
+      <tr>
+          <td><code>AWS_PROFILE</code></td>
+          <td>Managed by the AWS client (<code>AWS_PROFILE_FILE</code> is not supported)</td>
+      </tr>
+      <tr>
+          <td><code>AWS_REGION</code></td>
+          <td>Managed by the AWS client (<code>AWS_REGION_FILE</code> is not supported)</td>
+      </tr>
+      <tr>
+          <td><code>AWS_SDK_LOAD_CONFIG</code></td>
+          <td>Managed by the AWS client. Retrieve the region from the CLI config file (<code>AWS_SDK_LOAD_CONFIG_FILE</code> is not supported)</td>
+      </tr>
+      <tr>
+          <td><code>AWS_SECRET_ACCESS_KEY</code></td>
+          <td>Managed by the AWS client. Secret access key (<code>AWS_SECRET_ACCESS_KEY_FILE</code> is not supported, use <code>AWS_SHARED_CREDENTIALS_FILE</code> instead)</td>
+      </tr>
+      <tr>
+          <td><code>AWS_WAIT_FOR_RECORD_SETS_CHANGED</code></td>
+          <td>Wait for changes to be INSYNC (it can be unstable)</td>
+      </tr>
+  </tbody>
+</table>
+<p>The environment variable names can be suffixed by <code>_FILE</code> to reference a file instead of a value.
+More information <a href="https://go-acme.github.io/lego/dns/#configuration-and-credentials" rel="external">here</a>.</p>
+<h2 id="additional-configuration">Additional Configuration<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<table>
+  <thead>
+      <tr>
+          <th>Environment Variable Name</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>AWS_MAX_RETRIES</code></td>
+          <td>The number of maximum returns the service will use to make an individual API request</td>
+      </tr>
+      <tr>
+          <td><code>AWS_POLLING_INTERVAL</code></td>
+          <td>Time between DNS propagation check in seconds (Default: 4)</td>
+      </tr>
+      <tr>
+          <td><code>AWS_PRIVATE_ZONE</code></td>
+          <td>Set to true to use private zones only (default: use public zones only)</td>
+      </tr>
+      <tr>
+          <td><code>AWS_PROPAGATION_TIMEOUT</code></td>
+          <td>Maximum waiting time for DNS propagation in seconds (Default: 120)</td>
+      </tr>
+      <tr>
+          <td><code>AWS_SHARED_CREDENTIALS_FILE</code></td>
+          <td>Managed by the AWS client. Shared credentials file.</td>
+      </tr>
+      <tr>
+          <td><code>AWS_TTL</code></td>
+          <td>The TTL of the TXT record used for the DNS challenge in seconds (Default: 10)</td>
+      </tr>
+  </tbody>
+</table>
+<p>The environment variable names can be suffixed by <code>_FILE</code> to reference a file instead of a value.
+More information <a href="https://go-acme.github.io/lego/dns/#configuration-and-credentials" rel="external">here</a>.</p>
+<h2 id="description">Description<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>AWS Credentials are automatically detected in the following locations and prioritized in the following order:</p>
+<ol>
+<li>Environment variables: <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>, [<code>AWS_SESSION_TOKEN</code>]</li>
+<li>Shared credentials file (defaults to <code>~/.aws/credentials</code>, profiles can be specified using <code>AWS_PROFILE</code>)</li>
+<li>Amazon EC2 IAM role</li>
+</ol>
+<p>The AWS Region is automatically detected in the following locations and prioritized in the following order:</p>
+<ol>
+<li>Environment variables: <code>AWS_REGION</code></li>
+<li>Shared configuration file if <code>AWS_SDK_LOAD_CONFIG</code> is set (defaults to <code>~/.aws/config</code>, profiles can be specified using <code>AWS_PROFILE</code>)</li>
+</ol>
+<p>If <code>AWS_HOSTED_ZONE_ID</code> is not set, Lego tries to determine the correct public hosted zone via the FQDN.</p>
+<p>See also:</p>
+<ul>
+<li><a href="https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html" rel="external">sessions</a></li>
+<li><a href="https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials" rel="external">Setting AWS Credentials</a></li>
+<li><a href="https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-the-region" rel="external">Setting AWS Region</a></li>
+</ul>
+<h2 id="iam-policy-examples">IAM Policy Examples<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<h3 id="broad-privileges-for-testing-purposes">Broad privileges for testing purposes<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<p>The following <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html" rel="external">IAM policy</a> document grants access to the required APIs needed by lego to complete the DNS challenge.
+A word of caution:
+These permissions grant write access to any DNS record in any hosted zone,
+so it is recommended to narrow them down as much as possible if you are using this policy in production.</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Version&#34;</span>: <span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Statement&#34;</span>: [
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>: [
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;route53:GetChange&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;route53:ChangeResourceRecordSets&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;route53:ListResourceRecordSets&#34;</span>
+</span></span><span style="display:flex;"><span>      ],
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>: [
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;arn:aws:route53:::hostedzone/*&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;arn:aws:route53:::change/*&#34;</span>
+</span></span><span style="display:flex;"><span>      ]
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>: <span style="color:#e6db74">&#34;route53:ListHostedZonesByName&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  ]
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
+<h3 id="least-privilege-policy-for-production-purposes">Least privilege policy for production purposes<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h3>
+<p>The following AWS IAM policy document describes the least privilege permissions required for lego to complete the DNS challenge.
+Write access is limited to a specified hosted zone&rsquo;s DNS TXT records with a key of <code>_acme-challenge.example.com</code>.
+Replace <code>Z11111112222222333333</code> with your hosted zone ID and <code>example.com</code> with your domain name to use this policy.</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Version&#34;</span>: <span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;Statement&#34;</span>: [
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>: <span style="color:#e6db74">&#34;route53:GetChange&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>: <span style="color:#e6db74">&#34;arn:aws:route53:::change/*&#34;</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>: <span style="color:#e6db74">&#34;route53:ListHostedZonesByName&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>: <span style="color:#e6db74">&#34;*&#34;</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>: [
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;route53:ListResourceRecordSets&#34;</span>
+</span></span><span style="display:flex;"><span>      ],
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>: [
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;arn:aws:route53:::hostedzone/Z11111112222222333333&#34;</span>
+</span></span><span style="display:flex;"><span>      ]
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Effect&#34;</span>: <span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Action&#34;</span>: [
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;route53:ChangeResourceRecordSets&#34;</span>
+</span></span><span style="display:flex;"><span>      ],
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Resource&#34;</span>: [
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;arn:aws:route53:::hostedzone/Z11111112222222333333&#34;</span>
+</span></span><span style="display:flex;"><span>      ],
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;Condition&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;ForAllValues:StringEquals&#34;</span>: {
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">&#34;route53:ChangeResourceRecordSetsNormalizedRecordNames&#34;</span>: [
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;_acme-challenge.example.com&#34;</span>
+</span></span><span style="display:flex;"><span>          ],
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">&#34;route53:ChangeResourceRecordSetsRecordTypes&#34;</span>: [
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;TXT&#34;</span>
+</span></span><span style="display:flex;"><span>          ]
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  ]
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
+<h2 id="more-information">More information<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<ul>
+<li><a href="https://docs.aws.amazon.com/Route53/latest/APIReference/API_Operations_Amazon_Route_53.html" rel="external">API documentation</a></li>
+<li><a href="https://github.com/aws/aws-sdk-go-v2" rel="external">Go client</a></li>
+</ul>
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/route53/route53.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jul 21, 2026
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1784664559" defer></script>
+    <script src="/lego/js/theme.min.js?1784664559" defer></script>
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  </body>
+</html>

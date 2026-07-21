@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html id="R-html" lang="en-us" dir="ltr" itemscope itemtype="http://schema.org/Article" data-r-output-format="html">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta name="generator" content="Hugo 0.157.0">
+    <meta name="generator" content="Relearn 9.0.3+bf3dbc8308313d6dd1f7ad32ba2a7983a4e9b3e5">
+    <meta name="description" content="This describes the configuration file format.">
+    <meta name="author" content="Lego Team">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Configuration file :: ACME client and library written in Go.">
+    <meta name="twitter:description" content="This describes the configuration file format.">
+    <meta property="og:url" content="https://go-acme.github.io/lego/references/ref-file/index.html">
+    <meta property="og:site_name" content="ACME client and library written in Go.">
+    <meta property="og:title" content="Configuration file :: ACME client and library written in Go.">
+    <meta property="og:description" content="This describes the configuration file format.">
+    <meta property="og:locale" content="en_us">
+    <meta property="og:type" content="website">
+    <meta itemprop="name" content="Configuration file :: ACME client and library written in Go.">
+    <meta itemprop="description" content="This describes the configuration file format.">
+    <meta itemprop="datePublished" content="2019-03-03T16:39:46+01:00">
+    <meta itemprop="dateModified" content="2026-07-21T22:03:26+02:00">
+    <meta itemprop="wordCount" content="1715">
+    <title>Configuration file :: ACME client and library written in Go.</title>
+    <link href="/lego/references/ref-file/index.print.html" rel="alternate" type="text/html" title="Configuration file :: ACME client and library written in Go.">
+    <link href="/lego/images/favicon.svg?1784664559" rel="icon" type="image/svg+xml">
+    <link href="/lego/images/favicon.png?1784664559" rel="icon" type="image/png">
+    <link href="/lego/css/auto-complete/auto-complete.min.css?1784664559" rel="stylesheet">
+    <script src="/lego/js/auto-complete/auto-complete.min.js?1784664559" defer></script>
+    <script src="/lego/js/search-lunr.min.js?1784664559" defer></script>
+    <script src="/lego/js/search.min.js?1784664559" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.index_js_url="/lego/searchindex.en.js?1784664559";
+    </script>
+    <script src="/lego/js/lunr/lunr.min.js?1784664559" defer></script>
+    <script src="/lego/js/lunr/lunr.stemmer.support.min.js?1784664559" defer></script>
+    <script src="/lego/js/lunr/lunr.multi.min.js?1784664559" defer></script>
+    <script src="/lego/js/lunr/lunr.en.min.js?1784664559" defer></script>
+    <script>
+      window.relearn = window.relearn || {};
+      window.relearn.contentLangs=['en'];
+    </script>
+    <link href="/lego/fonts/fontawesome/css/all.min.css?1784664559" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"><noscript><link href="/lego/fonts/fontawesome/css/all.min.css?1784664559" rel="stylesheet"></noscript>
+    <link href="/lego/css/perfect-scrollbar/perfect-scrollbar.min.css?1784664559" rel="stylesheet">
+    <link href="/lego/css/theme.min.css?1784664559" rel="stylesheet">
+    <link href="/lego/css/format-html.min.css?1784664559" rel="stylesheet" id="R-format-style">
+    <script>
+      window.relearn = window.relearn || {};
+      // configuration
+      window.relearn.min = `.min`;
+      window.relearn.path='\/references\/ref-file\/index.html';
+      window.relearn.relBasePath='..\/..';
+      window.relearn.relBaseUri='..\/..\/..';
+      window.relearn.absBaseUri='https:\/\/go-acme.github.io\/lego';
+      window.relearn.disableInlineCopyToClipboard=false;
+      window.relearn.enableBlockCodeWrap=true;
+      // translations
+      window.T_Copy_to_clipboard = `Copy text to clipboard`;
+      window.T_Copied_to_clipboard = `Text copied to clipboard!`;
+      window.T_Link_copied_to_clipboard = `Link copied to clipboard!`;
+      window.T_Reset_view = `Reset view`;
+      window.T_View_reset = `View reset!`;
+      window.T_No_results_found = `No results found for "{0}"`;
+      window.T_N_results_found = `{1} results found for "{0}"`;
+      window.T_Browser_unsupported_feature = `This browser doesn't support this feature`;
+      // variant stuff
+      window.relearn.themevariants = [ 'blue' ];
+      window.relearn.customvariantprefix = "my-custom-";
+      window.relearn.changeVariant = function(variant) {
+        var oldVariant = document.documentElement.dataset.rThemeVariant;
+        window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        document.documentElement.dataset.rThemeVariant = variant;
+        if (oldVariant != variant) {
+          document.dispatchEvent( new CustomEvent('themeVariantLoaded', { detail: { variant, oldVariant } }) );
+          window.relearn.markVariant();
+        }
+      }
+      window.relearn.markVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant");
+        document.querySelectorAll(".R-variantswitcher select").forEach((select) => {select.value = variant;});
+      }
+      window.relearn.initVariant = function() {
+        var variant = window.localStorage.getItem(window.relearn.absBaseUri + "/variant") ?? "";
+        if( !variant ||
+            (!variant.startsWith(window.relearn.customvariantprefix) && !window.relearn.themevariants.includes(variant)) ||
+            (variant.startsWith(window.relearn.customvariantprefix) && !window.localStorage.getItem(window.relearn.absBaseUri + "/variantstylesheet-" + variant)) ){
+          variant = window.relearn.themevariants[0];
+          window.localStorage.setItem(window.relearn.absBaseUri + "/variant", variant);
+        }
+        document.documentElement.dataset.rThemeVariant = variant;
+      }
+      window.relearn.initVariant();
+      window.relearn.markVariant();
+    </script>
+    <link href="/lego/css/custom.css?1784664559" rel="stylesheet">
+  </head>
+  <body class="mobile-support html" data-origin="/lego/references/ref-file/index.html">
+    <div id="R-body" class="default-animation">
+      <div id="R-body-overlay"></div>
+      <nav id="R-topbar" class="default-animation">
+        <div class="topbar-wrapper default-animation">
+          <div class="topbar-sidebar-divider default-animation"></div>
+          <div class="topbar-area topbar-area-start" data-area="start">
+            <div class="topbar-button topbar-button-sidebar default-animation" data-content-empty="disable" data-width-s="show" data-width-m="hide" data-width-l="hide">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleNav()" type="button" title="Menu (CTRL&#43;ALT&#43;n)"><i class="fa-fw fas fa-bars"></i></button></span>
+            </div>
+            <div class="topbar-button topbar-button-toc default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="Table of Contents (CTRL&#43;ALT&#43;t)"><i class="fa-fw fas fa-table-list"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+<nav class="TableOfContents">
+  <ul>
+    <li><a href="#global-configuration">Global configuration</a></li>
+    <li><a href="#certificates">Certificates</a></li>
+    <li><a href="#challenges">Challenges</a></li>
+    <li><a href="#accounts">Accounts</a></li>
+    <li><a href="#servers">Servers</a></li>
+    <li><a href="#logging">Logging</a></li>
+    <li><a href="#hooks">Hooks</a></li>
+  </ul>
+</nav>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ol class="topbar-breadcrumbs breadcrumbs highlightable" itemscope itemtype="http://schema.org/BreadcrumbList"><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/index.html"><span itemprop="name">Lego</span></a><meta itemprop="position" content="1">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><a itemprop="item" href="/lego/references/index.html"><span itemprop="name">References</span></a><meta itemprop="position" content="2">&nbsp;>&nbsp;</li><li itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement" class=""><span itemprop="name">Configuration file</span><meta itemprop="position" content="3"></li>
+          </ol>
+          <div class="topbar-area topbar-area-end" data-area="end">
+            <div class="topbar-button topbar-button-print default-animation" data-content-empty="disable" data-width-s="area-more" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/references/ref-file/index.print.html" title="Print whole chapter (CTRL+ALT+p)"><i class="fa-fw fas fa-print"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-prev default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/references/index.html" title="References (🡐)"><i class="fa-fw fas fa-chevron-left"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-next default-animation" data-content-empty="disable" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><a href="/lego/references/ref-flags/index.html" title="Commands & Flags (🡒)"><i class="fa-fw fas fa-chevron-right"></i></a></span>
+            </div>
+            <div class="topbar-button topbar-button-more default-animation" data-content-empty="hide" data-width-s="show" data-width-m="show" data-width-l="show">
+<span class="btn cstyle button link noborder notitle interactive"><button onclick="toggleTopbarFlyout(this)" type="button" title="More"><i class="fa-fw fas fa-ellipsis-v"></i></button></span>
+              <div class="topbar-content">
+                <div class="topbar-content-wrapper">
+                  <div class="topbar-area topbar-area-more" data-area="more">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div id="R-main-overlay"></div>
+      <main id="R-body-inner" class="highlightable references" tabindex="-1">
+        <div class="flex-block-wrapper">
+<article class="default">
+  <header class="headline">
+  </header>
+
+<h1 id="configuration-file">Configuration file</h1>
+
+<p>This describes the configuration file format.</p>
+<p>lego looks for configuration files in the following paths from the current working directory:</p>
+<ul>
+<li><code>.lego.yml</code></li>
+<li><code>.lego.yaml</code></li>
+</ul>
+<p>The configuration file can be validated with the JSON Schema: <a href="https://go-acme.github.io/lego/lego.jsonschema.json" rel="external">lego.jsonschema.json</a></p>
+<h2 id="global-configuration">Global configuration<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># Path to the directory to use for storing the data.</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Default: .lego/</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">storage</span>: <span style="color:#ae81ff">/tmp/lego/</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># The network stack to use.</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># It can be:</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># - ipv6only</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># - ipv4only</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Default: both</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">networkStack</span>: <span style="color:#ae81ff">ipv6only</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># The user agent to use when connecting to the ACME server.</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Default: information related to lego.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">userAgent</span>: <span style="color:#ae81ff">foo</span></span></span></code></pre></div>
+<h2 id="certificates">Certificates<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># When a certificate definition is removed from the configuration file, the corresponding certificate files are archived.</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># The archives are deleted after 30 days.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">certificates</span>:
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># The ID/Name of the certificate.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">myCert</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The challenge type.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># It can be:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># 1. `http-01` (This is a special name to use the default HTTP challenge provider)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># 2. `tls-alpn-01` (This is a special name to use the default TLS-ALPN-01 challenge provider)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># 3. a reference to the ID of a challenge provider defined in the configuration section `challenges`.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">challenge</span>: <span style="color:#ae81ff">one</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The account ID/Name.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># If there is no account defined in the configuration file, the default account is used.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># If there is only one account defined in the configuration file, the account ID can be omitted.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">account</span>: <span style="color:#ae81ff">foo</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The key type used to generate the certificate.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># If not set, use the account key type, or EC256 if no account key type is defined.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">keyType</span>: <span style="color:#ae81ff">RSA2048</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The domains to request a certificate for.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Mutually exclusive with `csr`.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">domains</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">example.com</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#e6db74">&#39;*.example.com&#39;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The path to a Certificate Signing Request (CSR) file.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Mutually exclusive with `domains`.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">csr</span>: <span style="color:#ae81ff">/tmp/foo.csr</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The preferred chain to use.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">preferredChain</span>: <span style="color:#e6db74">&#34;ISRG Root X1&#34;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The ACME server profile</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">profile</span>: <span style="color:#e6db74">&#34;tls&#34;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Enable the use of the Common Name (CN) in the certificate.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># CN is deprecated and should not be used.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">enableCommonName</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The notBefore field in the certificate.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">notBefore</span>: <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The notAfter field in the certificate.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">notAfter</span>: <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Do not create a certificate bundle by adding the issuers certificate to the new certificate.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">noBundle</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Include the OCSP must staple TLS extension in the CSR and generated certificate.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Only works if the CSR is generated by lego.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">mustStaple</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Force the authorizations to be relinquished even if the certificate request was successful.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">alwaysDeactivateAuthorizations</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Options for the certificate renewal.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">renew</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Reuse the private key if it exists.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Default: false</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">reuseKey</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>      
+</span></span><span style="display:flex;"><span>      
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The number of days left on a certificate to renew it.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># </span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># By default, compute dynamically, based on the lifetime of the certificate(s), when to renew:</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">days</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Do not add a random sleep before the renewal.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># We do not recommend using this option if you are doing your renewals in an automated way.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Default: false</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">disableRandomSleep</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>      
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># ARI configuration.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">ari</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Disable the ARI mechanism.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Default: false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">disable</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># The maximum duration you&#39;re willing to sleep for a renewal time returned by the renewalInfo endpoint.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># </span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Default: 0s</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">waitToRenewDuration</span>: <span style="color:#ae81ff">1m</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># </span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">pfx</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The password used to encrypt the .pfx (PCKS#12) file.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">password</span>: <span style="color:#ae81ff">xxx</span>
+</span></span><span style="display:flex;"><span>      
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The encoding format to use when encrypting the .pfx (PCKS#12) file.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Supported:</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># - DES</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># - RC2</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># - SHA256</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># - PBMAC1</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Default: RC2</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">format</span>: <span style="color:#ae81ff">PBMAC1</span></span></span></code></pre></div>
+<h2 id="challenges">Challenges<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yml" data-lang="yml"><span style="display:flex;"><span><span style="color:#75715e"># The challenge configurations.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">challenges</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># The ID/Name of the challenge.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">one</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The HTTP-01 challenge configuration.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">http</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The address to listen on.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Default: &#34;:80&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">address</span>: <span style="color:#e6db74">&#34;:80&#34;</span>
+</span></span><span style="display:flex;"><span>      
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Delay between the starts of the HTTP server (use for HTTP-01 based challenges) and the validation of the challenge.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Default: 0s</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">delay</span>: <span style="color:#ae81ff">6s</span>
+</span></span><span style="display:flex;"><span>      
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Validate against this HTTP header when solving HTTP-01 based challenges behind a reverse proxy.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">proxyHeader</span>: <span style="color:#ae81ff">Host</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The webroot folder to use for HTTP-01 based challenges to write directly to the .well-known/acme-challenge file.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge&#34;.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">webroot</span>: <span style="color:#ae81ff">/tmp/webroot</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The memcached host(s) to use for HTTP-01 based challenges. Challenges will be written to all specified hosts.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">memcachedHosts</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">memcached:11211</span>
+</span></span><span style="display:flex;"><span>      
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">s3Bucket</span>: <span style="color:#e6db74">&#39;s3-bucket&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># The ID/Name of the challenge.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">two</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The TLS-ALPN-01 challenge configuration.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">tls</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The address to listen on.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Default: &#34;:443&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">address</span>: <span style="color:#e6db74">&#34;:443&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Delay between the start of the TLS listener (use for TLSALPN-01 based challenges) and the validation of the challenge.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Default: 0s</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">delay</span>: <span style="color:#ae81ff">6s</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># The ID/Name of the challenge.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">three</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The DNS-01 challenge configuration.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">dns</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The DNS provider.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">provider</span>: <span style="color:#ae81ff">cloudflare</span>
+</span></span><span style="display:flex;"><span>      
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The path to the dotenv file containing the credentials.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">envFile</span>: <span style="color:#ae81ff">/tmp/secrets/.env</span>
+</span></span><span style="display:flex;"><span>      
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The configuration related to propagation check.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">propagation</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># By setting this option to true,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># disables the need to await propagation of the TXT record to all authoritative name servers.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Default: false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">disableAuthoritativeNameservers</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># By setting this option to true,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Default: false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">disableRecursiveNameservers</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Disables all the propagation checks of the TXT record and uses a wait duration instead.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># This option is strongly discouraged.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Default: 0</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">wait</span>: <span style="color:#ae81ff">5s</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Default: 10</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">dnsTimeout</span>: <span style="color:#ae81ff">30</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># For DNS-01 challenge verification, the authoritative DNS server is queried directly.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Supported syntax: host:port.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The default is to use the system resolvers or Cloudflare&#39;s DNS resolvers if the system ones cannot be determined.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">resolvers</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">1.1.1.1</span>:<span style="color:#ae81ff">53</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># The ID/Name of the challenge.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">four</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The DNS-PERSIST-01 challenge configuration.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">dnsPersist</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Override the issuer-domain-name to use for DNS-PERSIST-01 when multiple are offered.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Must be offered by the challenge.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">issuerDomainName</span>: <span style="color:#ae81ff">example.com</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Set the optional `persistUntil` for DNS-PERSIST-01 records as an RFC3339 timestamp.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">persistUntil</span>: <span style="color:#e6db74">2020-01-01T00:00:00Z</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The configuration related to propagation check.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">propagation</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># By setting this option to true,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># disables the need to await propagation of the TXT record to all authoritative name servers.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Default: false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">disableAuthoritativeNameservers</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># By setting this option to true,</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># disables the need to await propagation of the TXT record to all recursive name servers (aka resolvers).</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Default: false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">disableRecursiveNameservers</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Disables all the propagation checks of the TXT record and uses a wait duration instead.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># This option is strongly discouraged.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Default: 0</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">wait</span>: <span style="color:#ae81ff">5s</span></span></span></code></pre></div>
+<h2 id="accounts">Accounts<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<p>Defining an account is optional: lego will create one for you by default on the Let&rsquo;s Encrypt ACME server.</p>
+<p>If you want to use a different ACME server, or if you want to customize the account, you can define it in the configuration file.</p>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># When an account definition is removed from the configuration file, the corresponding account files are archived.</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># The archives are deleted after 30 days.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">accounts</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># The ID/Name of the account.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">myAccount</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The ACME server.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># It can be:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># 1. a URL</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># 2. a short code (see the shortcode section)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># 3. a reference to the ID of a server defined in the servers configuration section</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: https://acme-v02.api.letsencrypt.org/directory</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">server</span>: <span style="color:#ae81ff">https://example.com/dir</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The account email.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">email</span>: <span style="color:#ae81ff">foo@example.com</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The key type used to generate the account private key.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: EC256</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">keyType</span>: <span style="color:#ae81ff">RSA2048</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The acceptance of the terms of service.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">acceptsTermsOfService</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The External Account Binding (EAB) configuration.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">eab</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The External Account Binding (EAB) KID.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">kid</span>: <span style="color:#ae81ff">foo</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># The External Account Binding (EAB) HMAC key.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">hmacKey</span>: <span style="color:#ae81ff">foo</span></span></span></code></pre></div>
+<h2 id="servers">Servers<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">servers</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># The ID/Name of the server.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">myServer</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The ACME server URL.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">url</span>: <span style="color:#ae81ff">https://example.com/dir</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># ACME overall requests limit.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: 18</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">overallRequestLimit</span>: <span style="color:#ae81ff">7</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Skip the TLS verification of the ACME server.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">tlsSkipVerify</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The HTTP timeout value to a specific value in seconds.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: 30</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">httpTimeout</span>: <span style="color:#ae81ff">60</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The certificate timeout value to a specific value in seconds.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Only used when getting certificates.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: 30</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">certTimeout</span>: <span style="color:#ae81ff">60</span></span></span></code></pre></div>
+<h2 id="logging">Logging<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yml" data-lang="yml"><span style="display:flex;"><span><span style="color:#75715e"># Logging configuration.</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">log</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># The logging level.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Default: info</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">level</span>: <span style="color:#ae81ff">debug</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># The logging format.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Supported:</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># - text</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># - json</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># - colored</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Default: colored</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">format</span>: <span style="color:#ae81ff">json</span></span></span></code></pre></div>
+<h2 id="hooks">Hooks<span class="btn cstyle anchor copyanchor scrollanchor link noborder notitle interactive"><button type="button" title="Copy link to clipboard"><i class="fa-fw fas fa-link fa-lg"></i></button></span></h2>
+<div class="highlight actionbar-wrapper wrap-code" dir="auto"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yml" data-lang="yml"><span style="display:flex;"><span><span style="color:#75715e"># Hooks configuration.</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">hooks</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># The pre-hook.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">pre</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The command to execute.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">command</span>: <span style="color:#e6db74">&#34;./my-pre-hook.sh&#34;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The timeout of the command.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: 2 minutes.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">timeout</span>: <span style="color:#ae81ff">3s</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># The deploy-hook.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">deploy</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The command to execute.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">command</span>: <span style="color:#e6db74">&#34;./my-deploy-hook.sh&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The timeout of the command.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: 2 minutes.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">timeout</span>: <span style="color:#ae81ff">3s</span>
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># The post-hook.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Optional.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">post</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The command to execute.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Required.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">command</span>: <span style="color:#e6db74">&#34;./my-post-hook.sh&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The timeout of the command.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># optional.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Default: 2 minutes.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">timeout</span>: <span style="color:#ae81ff">3s</span></span></span></code></pre></div>
+  <footer class="footline">
+              <i class='fa-fw fas fa-calendar'></i> Jul 21, 2026
+  </footer>
+</article>
+        </div>
+      </main>
+    </div>
+    <aside id="R-sidebar" class="default-animation">
+      <div id="R-header-topbar" class="default-animation"></div>
+      <div id="R-header-wrapper" class="default-animation"><a id="logo" href="/lego"><img src="/lego/images/lego-logo-white.min.svg" alt="lego logo" width="80%"></a>
+
+        <search><form action="/lego/search/index.html" method="get">
+          <div class="searchbox default-animation">
+            <button class="search-detail" type="submit" title="Search (CTRL+ALT+f)"><i class="fas fa-fw fa-search"></i></button>
+            <label class="a11y-only" for="R-search-by">Search</label>
+            <input data-search-input id="R-search-by" name="search-by" class="search-by" type="search" placeholder="Search...">
+            <button class="search-clear" type="button" data-search-clear="" title="Clear search"><i class="fas fa-fw fa-times" title="Clear search"></i></button>
+          </div>
+        </form></search>
+      </div>
+      <div id="R-homelinks" class="default-animation">
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-homelinks default-animation">
+          <ul class="space collapsible-menu">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-headercontrols default-animation">
+          <ul class="">
+          </ul>
+        </div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+      </div>
+      <div id="R-content-wrapper" class="highlightable">
+        <div class="R-sidebarmenu R-shortcutmenu-main default-animation">
+          <ul class="enlarge morespace collapsible-menu">
+            <li class="" data-nav-id="/lego/install/index.html"><a class="padding" href="/lego/install/index.html"><i class="fa-solid fa-box-archive"></i> Installation<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/obtain/index.html"><a class="padding default-animation" href="/lego/obtain/index.html"><i class="fa-solid fa-shield-halved"></i> Obtain or renew certificates<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-13caf4337333ddfe7f5b96479cbd6814" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/dns/index.html"><a class="padding default-animation" href="/lego/dns/index.html"><i class="fa-solid fa-globe"></i> DNS Providers<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-1a5c4aa622b091f451ffa4fea9c3a5f1" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/advanced/index.html"><a class="padding default-animation" href="/lego/advanced/index.html"><i class="fa-solid fa-gears"></i> Advanced usages<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-ab6684576aada2b2c1ce071df63f2853" class="collapsible-menu"></ul></li>
+            <li class="parent " data-nav-id="/lego/references/index.html"><a class="padding default-animation" href="/lego/references/index.html"><i class="fa-regular fa-bookmark"></i> References<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-26caf0e43dd165bcbddd8eb517876f9e" class="collapsible-menu">
+            <li class="active " data-nav-id="/lego/references/ref-file/index.html"><a class="padding" href="/lego/references/ref-file/index.html"><i class="fa-regular fa-file"></i> Configuration file<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="/lego/references/ref-flags/index.html"><a class="padding" href="/lego/references/ref-flags/index.html"><i class="fa-solid fa-terminal"></i> Commands &amp; Flags<i class="fa-fw fas fa-check read-icon"></i></a></li></ul></li>
+            <li class="" data-nav-id="/lego/library/index.html"><a class="padding default-animation" href="/lego/library/index.html"><i class="fa-solid fa-code"></i> Library<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-afbce53b44a67cf171cfa6ad78fcc6cf" class="collapsible-menu"></ul></li>
+            <li class="" data-nav-id="/lego/migration/index.html"><a class="padding default-animation" href="/lego/migration/index.html"><i class="fa-solid fa-recycle"></i> Migration from v4 to v5<i class="fa-fw fas fa-check read-icon"></i></a><ul id="R-subsections-a5eba261a62a08c005636c948c971d1e" class="collapsible-menu"></ul></li>
+          </ul>
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-shortcuts default-animation">
+          <div class="nav-title padding">More</div>
+          <ul class="space collapsible-menu">
+            <li class="" data-nav-id="https://github.com/go-acme/lego"><a class="padding" href="https://github.com/go-acme/lego" rel="external"><i class='fab fa-fw fa-github'></i> GitHub repo<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/issues"><a class="padding" href="https://github.com/go-acme/lego/issues" rel="external"><i class='fas fa-fw fa-bug'></i> Issues<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/go-acme/lego/discussions"><a class="padding" href="https://github.com/go-acme/lego/discussions" rel="external"><i class='fas fa-fw fa-comments'></i> Discussions<i class="fa-fw fas fa-check read-icon"></i></a></li>
+            <li class="" data-nav-id="https://github.com/sponsors/go-acme"><a class="padding" href="https://github.com/sponsors/go-acme" rel="external"><i class='fas fa-fw fa-heart red cstyle'></i> Donate<i class="fa-fw fas fa-check read-icon"></i></a></li>
+          </ul>
+        </div>
+        <div id="R-footer-margin" class="default-animation"></div>
+        <div class="R-menu-divider default-animation">
+          <hr class="padding default-animation">
+        </div>
+        <div class="R-sidebarmenu R-shortcutmenu-footercontrols default-animation">
+          <ul class="">
+            <li class="R-historyclearer">
+              <div class="padding menu-control">
+                <i class="fa-fw fas fa-history"></i>
+                <span>&nbsp;</span>
+                <div class="control-style">
+                  <button>Clear History</button>
+                </div>
+                <div class="clear"></div>
+              </div>
+            </li>
+          </ul>
+        </div>
+<div id="R-footer" class="default-animation"><p>Built with <a href="https://github.com/McShelby/hugo-theme-relearn" title="love"><i class="fas fa-heart"></i></a> by <a href="https://gohugo.io/">Hugo</a></p></div>
+      </div>
+    </aside>
+    <script src="/lego/js/perfect-scrollbar/perfect-scrollbar.min.js?1784664559" defer></script>
+    <script src="/lego/js/theme.min.js?1784664559" defer></script>
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  </body>
+</html>

@@ -6,6 +6,33 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v5.3.0
+
+- Release date: 2026-07-21
+- Tag: [v5.3.0](https://github.com/go-acme/lego/releases/tag/v5.3.0)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Openprovider
+- **[dnsprovider]** gigahostno: add option to set the API Key
+
+### Changed
+
+- **[cli,config]** feat(cfg): improve configuration validation
+- **[dnsprovider]** excedo: increase default propagation timeout
+- **[migration]** feat: skip already migrated elements
+
+### Fixed
+
+- **[cli]** fix: always-deactivate-authorizations as bool
+- **[cli]** fix: check EAB requirement after zerossl
+- **[dnsprovider]** selfhostde: update API endpoint
+- **[dnsprovider]** selectelv2: fix zone detection
+- **[dnsprovider]** nederhost: fix add record response parsing
+- **[dnsprovider]** designate: get region name from clouds.yaml
+- **[dnsprovider]** allinkl: fix credentials
+- **[dnsprovider]** euserv: enforce order ID selection
+
 ## v5.2.2
 
 - Release date: 2026-06-02

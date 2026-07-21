@@ -262,7 +262,7 @@ linters:
         linters:
           - gochecknoglobals
       - path: cmd/cmd_run_renew.go
-        text: cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high
+        text: cyclomatic complexity \d+ of func `\(\*renewProcessor\).(renewForDomains|renewForCSR)` is high
         linters:
           - gocyclo
       - path: cmd/cmd_run.go
@@ -270,7 +270,7 @@ linters:
         linters:
           - gocyclo
       - path: cmd/internal/root/process_renew.go
-        text: cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high
+        text: cyclomatic complexity \d+ of func `\(\*renewProcessor\).(renewForDomains|renewForCSR)` is high
         linters:
           - gocyclo
       - path: providers/dns/cpanel/cpanel.go

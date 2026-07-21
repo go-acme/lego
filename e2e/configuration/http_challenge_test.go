@@ -35,6 +35,23 @@ func TestChallengeHTTP_Run_update(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestChallengeHTTP_Run_profile_changed(t *testing.T) {
+	loader.CleanLegoFiles(t.Context())
+
+	err := load.RunLego(t.Context(),
+		"--config", filepath.Join("fixtures", "lego_http-simple.yml"),
+		"--log.level", "debug",
+	)
+	require.NoError(t, err)
+
+	// Changing the profile, a new certificate should be issued without the renewal constraints.
+	err = load.RunLego(t.Context(),
+		"--config", filepath.Join("fixtures", "lego_http-renew_profile.yml"),
+		"--log.level", "debug",
+	)
+	require.NoError(t, err)
+}
+
 func TestChallengeHTTP_Run_file_server(t *testing.T) {
 	loader.CleanLegoFiles(t.Context())
 

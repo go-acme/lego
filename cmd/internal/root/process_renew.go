@@ -25,16 +25,27 @@ import (
 
 type lzSetUp func() (*lego.Client, error)
 
-func renew(ctx context.Context, lazyClient lzSetUp, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
-	if certConfig.CSR != "" {
-		return renewForCSR(ctx, lazyClient, certID, certConfig, certsStorage, hookManager)
-	}
+type renewProcessor struct {
+	certConfig *configuration.Certificate
 
-	return renewForDomains(ctx, lazyClient, certID, certConfig, certsStorage, hookManager)
+	lazyClient lzSetUp
+
+	certsStorage *storage.CertificatesStorage
+	hookManager  *hook.Manager
 }
 
-func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
-	certificates, err := certsStorage.ReadCertificate(certID)
+func (p *renewProcessor) renew(ctx context.Context, certID string, resource *storage.Certificate) error {
+	changed := hasChanged(resource, p.certConfig)
+
+	if p.certConfig.CSR != "" {
+		return p.renewForCSR(ctx, certID, changed)
+	}
+
+	return p.renewForDomains(ctx, certID, changed)
+}
+
+func (p *renewProcessor) renewForDomains(ctx context.Context, certID string, changed bool) error {
+	certificates, err := p.certsStorage.ReadCertificate(certID)
 	if err != nil {
 		return fmt.Errorf("error while reading the certificate for %q: %w", certID, err)
 	}
@@ -47,22 +58,24 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 
 	certDomains := certcrypto.ExtractDomains(cert)
 
-	renewalDomains := slices.Clone(certConfig.Domains)
+	renewalDomains := slices.Clone(p.certConfig.Domains)
 
 	var replacesCertID string
 
 	// If the domains are different, this must create a new certificate, then the renewal constraints must be skipped.
-	if sameDomains(certDomains, renewalDomains) {
+	if !changed && sameDomains(certDomains, renewalDomains) {
 		var ariRenewalTime *time.Time
 
-		ariRenewalTime, replacesCertID, err = getARIInfo(ctx, lazyClient, certID, certConfig.Renew, cert)
+		ariRenewalTime, replacesCertID, err = p.getARIInfo(ctx, certID, cert)
 		if err != nil {
 			return err
 		}
 
-		if ariRenewalTime == nil && !isInRenewalPeriod(cert, certID, certConfig.Renew.Days, time.Now()) {
+		if ariRenewalTime == nil && !isInRenewalPeriod(cert, certID, p.certConfig.Renew.Days, time.Now()) {
 			return nil
 		}
+	} else {
+		log.Info("Changes detected in the certificate configuration.")
 	}
 
 	// This is just meant to be informal for the user.
@@ -71,10 +84,10 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 		log.DurationAttr("time-remaining", cert.NotAfter.Sub(time.Now().UTC())),
 	)
 
-	request := newObtainRequest(certConfig, renewalDomains)
+	request := newObtainRequest(p.certConfig, renewalDomains)
 
-	if certConfig.Renew != nil && certConfig.Renew.ReuseKey {
-		request.PrivateKey, err = certsStorage.ReadPrivateKey(certID)
+	if p.certConfig.Renew != nil && p.certConfig.Renew.ReuseKey {
+		request.PrivateKey, err = p.certsStorage.ReadPrivateKey(certID)
 		if err != nil {
 			return err
 		}
@@ -84,21 +97,21 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 		request.ReplacesCertID = replacesCertID
 	}
 
-	err = hookManager.PreForDomains(ctx, certID, request)
+	err = p.hookManager.PreForDomains(ctx, certID, request)
 	if err != nil {
 		return fmt.Errorf("pre-renew hook: %w", err)
 	}
 
-	defer func() { _ = hookManager.Post(ctx) }()
+	defer func() { _ = p.hookManager.Post(ctx) }()
 
-	client, err := lazyClient()
+	client, err := p.lazyClient()
 	if err != nil {
 		return fmt.Errorf("set up client: %w", err)
 	}
 
 	// If the domains are different, this must create a new certificate, then the renewal constraints must be skipped.
-	if sameDomains(certDomains, renewalDomains) {
-		randomSleep(certConfig)
+	if !changed && sameDomains(certDomains, renewalDomains) {
+		randomSleep(p.certConfig)
 	}
 
 	certRes, err := client.Certificate.Obtain(ctx, request)
@@ -108,9 +121,9 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 
 	certRes.ID = certID
 
-	options := newSaveOptions(certConfig)
+	options := newSaveOptions(p.certConfig)
 
-	err = certsStorage.Save(
+	err = p.certsStorage.Save(
 		&storage.Certificate{
 			Resource: certRes,
 			Origin:   storage.OriginConfiguration,
@@ -121,16 +134,16 @@ func renewForDomains(ctx context.Context, lazyClient lzSetUp, certID string, cer
 		return fmt.Errorf("could not save the resource: %w", err)
 	}
 
-	return hookManager.Deploy(ctx, certRes, options)
+	return p.hookManager.Deploy(ctx, certRes, options)
 }
 
-func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certConfig *configuration.Certificate, certsStorage *storage.CertificatesStorage, hookManager *hook.Manager) error {
-	csr, err := storage.ReadCSRFile(certConfig.CSR)
+func (p *renewProcessor) renewForCSR(ctx context.Context, certID string, changed bool) error {
+	csr, err := storage.ReadCSRFile(p.certConfig.CSR)
 	if err != nil {
-		return fmt.Errorf("CSR: could not read file %q: %w", certConfig.CSR, err)
+		return fmt.Errorf("CSR: could not read file %q: %w", p.certConfig.CSR, err)
 	}
 
-	certificates, err := certsStorage.ReadCertificate(certID)
+	certificates, err := p.certsStorage.ReadCertificate(certID)
 	if err != nil {
 		return fmt.Errorf("CSR: error while reading the certificate for domains %q: %w",
 			strings.Join(certcrypto.ExtractDomainsCSR(csr), ","), err)
@@ -145,17 +158,19 @@ func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certCon
 	var replacesCertID string
 
 	// If the domains are different, this must create a new certificate, then the renewal constraints must be skipped.
-	if sameDomainsCertificate(cert, csr) {
+	if !changed && sameDomainsCertificate(cert, csr) {
 		var ariRenewalTime *time.Time
 
-		ariRenewalTime, replacesCertID, err = getARIInfo(ctx, lazyClient, certID, certConfig.Renew, cert)
+		ariRenewalTime, replacesCertID, err = p.getARIInfo(ctx, certID, cert)
 		if err != nil {
 			return fmt.Errorf("CSR: %w", err)
 		}
 
-		if ariRenewalTime == nil && !isInRenewalPeriod(cert, certID, certConfig.Renew.Days, time.Now()) {
+		if ariRenewalTime == nil && !isInRenewalPeriod(cert, certID, p.certConfig.Renew.Days, time.Now()) {
 			return nil
 		}
+	} else {
+		log.Info("Changes detected in the certificate configuration.")
 	}
 
 	// This is just meant to be informal for the user.
@@ -164,20 +179,20 @@ func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certCon
 		log.DurationAttr("time-remaining", cert.NotAfter.Sub(time.Now().UTC())),
 	)
 
-	request := newObtainForCSRRequest(certConfig, csr)
+	request := newObtainForCSRRequest(p.certConfig, csr)
 
 	if replacesCertID != "" {
 		request.ReplacesCertID = replacesCertID
 	}
 
-	err = hookManager.PreForCSR(ctx, certID, request)
+	err = p.hookManager.PreForCSR(ctx, certID, request)
 	if err != nil {
 		return fmt.Errorf("CSR: pre-renew hook: %w", err)
 	}
 
-	defer func() { _ = hookManager.Post(ctx) }()
+	defer func() { _ = p.hookManager.Post(ctx) }()
 
-	client, err := lazyClient()
+	client, err := p.lazyClient()
 	if err != nil {
 		return fmt.Errorf("CSR: set up client: %w", err)
 	}
@@ -189,9 +204,9 @@ func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certCon
 
 	certRes.ID = certID
 
-	options := newSaveOptions(certConfig)
+	options := newSaveOptions(p.certConfig)
 
-	err = certsStorage.Save(
+	err = p.certsStorage.Save(
 		&storage.Certificate{
 			Resource: certRes,
 			Origin:   storage.OriginConfiguration,
@@ -202,7 +217,42 @@ func renewForCSR(ctx context.Context, lazyClient lzSetUp, certID string, certCon
 		return fmt.Errorf("CSR: could not save the resource: %w", err)
 	}
 
-	return hookManager.Deploy(ctx, certRes, options)
+	return p.hookManager.Deploy(ctx, certRes, options)
+}
+
+func (p *renewProcessor) getARIInfo(ctx context.Context, certID string, cert *x509.Certificate) (*time.Time, string, error) {
+	// renewConfig and renewConfig.ARI cannot be nil: they are always defined in the default.
+	if p.certConfig.Renew == nil || p.certConfig.Renew.ARI == nil || p.certConfig.Renew.ARI.Disable {
+		return nil, "", nil
+	}
+
+	client, err := p.lazyClient()
+	if err != nil {
+		return nil, "", fmt.Errorf("set up client: %w", err)
+	}
+
+	ariRenewalTime := getARIRenewalTime(ctx, p.certConfig.Renew.ARI.WaitToRenewDuration, cert, certID, client)
+	if ariRenewalTime != nil {
+		now := time.Now().UTC()
+
+		// Figure out if we need to sleep before renewing.
+		if ariRenewalTime.After(now) {
+			log.Info("Sleeping until renewal time",
+				log.CertNameAttr(certID),
+				slog.Duration("sleep", ariRenewalTime.Sub(now)),
+				slog.Time("renewalTime", *ariRenewalTime),
+			)
+
+			time.Sleep(ariRenewalTime.Sub(now))
+		}
+	}
+
+	replacesCertID, err := api.MakeARICertID(cert)
+	if err != nil {
+		return nil, "", fmt.Errorf("error while constructing the ARI CertID for domain %q: %w", certID, err)
+	}
+
+	return ariRenewalTime, replacesCertID, nil
 }
 
 func isInRenewalPeriod(cert *x509.Certificate, certID string, days int, now time.Time) bool {
@@ -241,41 +291,6 @@ func getDueDate(x509Cert *x509.Certificate, days int, now time.Time) time.Time {
 	}
 
 	return x509Cert.NotAfter.Add(-1 * time.Duration(days) * 24 * time.Hour)
-}
-
-func getARIInfo(ctx context.Context, lazyClient lzSetUp, certID string, renewConfig *configuration.RenewConfiguration, cert *x509.Certificate) (*time.Time, string, error) {
-	// renewConfig and renewConfig.ARI cannot be nil: they are always defined in the default.
-	if renewConfig == nil || renewConfig.ARI == nil || renewConfig.ARI.Disable {
-		return nil, "", nil
-	}
-
-	client, err := lazyClient()
-	if err != nil {
-		return nil, "", fmt.Errorf("set up client: %w", err)
-	}
-
-	ariRenewalTime := getARIRenewalTime(ctx, renewConfig.ARI.WaitToRenewDuration, cert, certID, client)
-	if ariRenewalTime != nil {
-		now := time.Now().UTC()
-
-		// Figure out if we need to sleep before renewing.
-		if ariRenewalTime.After(now) {
-			log.Info("Sleeping until renewal time",
-				log.CertNameAttr(certID),
-				slog.Duration("sleep", ariRenewalTime.Sub(now)),
-				slog.Time("renewalTime", *ariRenewalTime),
-			)
-
-			time.Sleep(ariRenewalTime.Sub(now))
-		}
-	}
-
-	replacesCertID, err := api.MakeARICertID(cert)
-	if err != nil {
-		return nil, "", fmt.Errorf("error while constructing the ARI CertID for domain %q: %w", certID, err)
-	}
-
-	return ariRenewalTime, replacesCertID, nil
 }
 
 // getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.
@@ -353,4 +368,8 @@ func sameDomains(a, b []string) bool {
 	sort.Strings(bClone)
 
 	return slices.Equal(aClone, bClone)
+}
+
+func hasChanged(resource *storage.Certificate, cfg *configuration.Certificate) bool {
+	return resource.Profile != cfg.Profile
 }

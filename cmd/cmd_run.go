@@ -91,7 +91,14 @@ func run(ctx context.Context, cmd *cli.Command) error {
 	log.Info("Renewing certificate", log.CertNameAttr(certID))
 
 	// RENEW
-	err = renew(ctx, cmd, certID, resource, lazyClient, store.Certificate, hookManager)
+	rp := &renewProcessor{
+		cmd:          cmd,
+		lazyClient:   lazyClient,
+		certsStorage: store.Certificate,
+		hookManager:  hookManager,
+	}
+
+	err = rp.renew(ctx, certID, resource)
 	if err != nil {
 		return fmt.Errorf("renew certificate: %w", err)
 	}

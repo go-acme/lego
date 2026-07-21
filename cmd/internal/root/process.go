@@ -2,7 +2,9 @@ package root
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
 	"net"
 	"net/http"
 	"strings"
@@ -104,9 +106,17 @@ func processChallenges(ctx context.Context, lazyClient lzSetUp, chlgNode *config
 	})
 
 	for _, cert := range chlgNode.Certificates {
-		// Renew
-		if store.Certificate.ExistsFile(cert.ID, storage.ExtResource) {
-			err := renew(ctx, lazySetup, cert.ID, cert, store.Certificate, hookManager)
+		resource, err := store.Certificate.ReadResource(cert.ID)
+		if err != nil {
+			pe := new(fs.PathError)
+			if !errors.As(err, &pe) {
+				return fmt.Errorf("reading certificate resource file for %q: %w", cert.ID, err)
+			}
+		}
+
+		if resource == nil {
+			// Run
+			err = obtain(ctx, lazySetup, cert.ID, cert, store.Certificate, hookManager)
 			if err != nil {
 				return err
 			}
@@ -114,8 +124,15 @@ func processChallenges(ctx context.Context, lazyClient lzSetUp, chlgNode *config
 			continue
 		}
 
-		// Run
-		err := obtain(ctx, lazySetup, cert.ID, cert, store.Certificate, hookManager)
+		// Renew
+		rp := &renewProcessor{
+			certConfig:   cert,
+			lazyClient:   lazySetup,
+			certsStorage: store.Certificate,
+			hookManager:  hookManager,
+		}
+
+		err = rp.renew(ctx, cert.ID, resource)
 		if err != nil {
 			return err
 		}

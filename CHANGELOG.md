@@ -6,6 +6,15 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v5.3.1
+
+- Release date: 2026-07-21
+- Tag: [v5.3.1](https://github.com/go-acme/lego/releases/tag/v5.3.1)
+
+Due to an error related to Snapcraft, some artifacts of the v5.3.0 release have not been published.
+
+This release contains the same things as v5.3.0.
+
 ## v5.3.0
 
 - Release date: 2026-07-21

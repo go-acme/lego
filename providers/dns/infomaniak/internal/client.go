@@ -49,14 +49,17 @@ func (c *Client) CreateDNSRecord(ctx context.Context, domain *DNSDomain, record 
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
-	result := APIResponse[string]{}
+	// Infomaniak returns the newly-created DNS record ID as a JSON number.
+	// Keep the public method signature as string because DeleteDNSRecord uses
+	// the ID as a URL path segment.
+	result := APIResponse[uint64]{}
 
 	err = c.do(req, &result)
 	if err != nil {
 		return "", err
 	}
 
-	return result.Data, err
+	return strconv.FormatUint(result.Data, 10), nil
 }
 
 func (c *Client) DeleteDNSRecord(ctx context.Context, domainID uint64, recordID string) error {

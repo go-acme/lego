@@ -26,7 +26,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_CreateDNSRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /1/domain/666/dns/record",
-			servermock.RawStringResponse(`{"result":"success","data": "123"}`),
+			servermock.RawStringResponse(`{"result":"success","data": 123}`),
 			servermock.CheckRequestJSONBodyFromFixture("create_dns_record-request.json")).
 		Build(t)
 

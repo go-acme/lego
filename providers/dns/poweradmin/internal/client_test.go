@@ -28,10 +28,10 @@ func mockBuilder() *servermock.Builder[*Client] {
 	)
 }
 
-func TestClient_CreateRecord(t *testing.T) {
+func TestClient_CreateRecord_int(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /api/v2/zones/1/records",
-			servermock.ResponseFromFixture("create_record.json").
+			servermock.ResponseFromFixture("create_record_int.json").
 				WithStatusCode(http.StatusCreated),
 			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json"),
 		).
@@ -48,7 +48,38 @@ func TestClient_CreateRecord(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := &Record{
-		ID:      456,
+		ID:      "456",
+		ZoneID:  1,
+		Name:    "_acme-challenge.example.com",
+		Type:    "TXT",
+		Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		TTL:     120,
+	}
+
+	assert.Equal(t, expected, record)
+}
+
+func TestClient_CreateRecord_string(t *testing.T) {
+	client := mockBuilder().
+		Route("POST /api/v2/zones/1/records",
+			servermock.ResponseFromFixture("create_record_string.json").
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json"),
+		).
+		Build(t)
+
+	r := Record{
+		Name:    "_acme-challenge.example.com",
+		Type:    "TXT",
+		Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		TTL:     120,
+	}
+
+	record, err := client.CreateRecord(t.Context(), 1, r)
+	require.NoError(t, err)
+
+	expected := &Record{
+		ID:      "abc",
 		ZoneID:  1,
 		Name:    "_acme-challenge.example.com",
 		Type:    "TXT",
@@ -67,7 +98,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		).
 		Build(t)
 
-	err := client.DeleteRecord(t.Context(), 1, 456)
+	err := client.DeleteRecord(t.Context(), 1, "456")
 	require.NoError(t, err)
 }
 

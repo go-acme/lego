@@ -179,7 +179,7 @@ func TestDNSProvider_Present(t *testing.T) {
 				With("per_page", "100"),
 		).
 		Route("POST /api/v2/zones/1/records",
-			servermock.ResponseFromInternal("create_record.json").
+			servermock.ResponseFromInternal("create_record_int.json").
 				WithStatusCode(http.StatusCreated),
 			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json"),
 		).
@@ -198,7 +198,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		Build(t)
 
 	provider.zoneIDs["abc"] = 1
-	provider.recordIDs["abc"] = 456
+	provider.recordIDs["abc"] = "456"
 
 	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)

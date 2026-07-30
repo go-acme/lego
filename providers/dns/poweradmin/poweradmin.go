@@ -60,7 +60,7 @@ type DNSProvider struct {
 	client *internal.Client
 
 	zoneIDs     map[string]int
-	recordIDs   map[string]int
+	recordIDs   map[string]string
 	recordIDsMu sync.Mutex
 }
 
@@ -99,7 +99,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config:    config,
 		client:    client,
 		zoneIDs:   make(map[string]int),
-		recordIDs: make(map[string]int),
+		recordIDs: make(map[string]string),
 	}, nil
 }
 

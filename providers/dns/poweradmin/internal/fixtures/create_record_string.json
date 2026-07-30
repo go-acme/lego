@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "message": "Record created successfully",
+  "data": {
+    "record": {
+      "id": "abc",
+      "zone_id": 1,
+      "name": "_acme-challenge.example.com",
+      "type": "TXT",
+      "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "ttl": 120,
+      "priority": 0,
+      "disabled": false,
+      "auth": true,
+      "ptr_created": false
+    }
+  }
+}

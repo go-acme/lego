@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/errutils"
 	"github.com/go-acme/lego/v5/internal/useragent"
+	"github.com/go-viper/mapstructure/v2"
 	querystring "github.com/google/go-querystring/query"
 )
 
@@ -66,14 +67,27 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID int, record Record) (*
 		return nil, err
 	}
 
-	return result.Data.Record, nil
+	// Hack because the record ID can be an int or string.
+
+	r := &Record{
+		ID: fmt.Sprintf("%v", result.Data.Record["id"]),
+	}
+
+	delete(result.Data.Record, "id")
+
+	err = mapstructure.Decode(result.Data.Record, r)
+	if err != nil {
+		return nil, err
+	}
+
+	return r, nil
 }
 
 // DeleteRecord deletes a record from a zone.
 // Note: the endpoint returns a 204 (No content) but with a body, this is wrong.
 // https://github.com/poweradmin/poweradmin/blob/c1d0a6f6c144f6b555766e6780c7dce40d072dc7/lib/Application/Controller/Api/V2/ZonesRecordsController.php#L876
-func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID int) error {
-	endpoint := c.baseURL.JoinPath("api", "v2", "zones", strconv.Itoa(zoneID), "records", strconv.Itoa(recordID))
+func (c *Client) DeleteRecord(ctx context.Context, zoneID int, recordID string) error {
+	endpoint := c.baseURL.JoinPath("api", "v2", "zones", strconv.Itoa(zoneID), "records", recordID)
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

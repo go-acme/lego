@@ -407,7 +407,7 @@ func (d *DNSProvider) findTxtRecords(zone, fqdn string) ([]*gdns.ResourceRecordS
 
 func newClientFromCredentials(ctx context.Context, config *Config) (*http.Client, error) {
 	if config.ImpersonateServiceAccount != "" {
-		ts, err := google.DefaultTokenSource(ctx, "https://www.googleapis.com/auth/cloud-platform")
+		ts, err := google.DefaultTokenSource(ctx, gdns.CloudPlatformScope)
 		if err != nil {
 			return nil, fmt.Errorf("unable to get default token source: %w", err)
 		}
@@ -425,7 +425,7 @@ func newClientFromCredentials(ctx context.Context, config *Config) (*http.Client
 
 func newClientFromServiceAccountKey(ctx context.Context, config *Config, saKey []byte) (*http.Client, error) {
 	if config.ImpersonateServiceAccount != "" {
-		conf, err := google.JWTConfigFromJSON(saKey, "https://www.googleapis.com/auth/cloud-platform")
+		conf, err := google.JWTConfigFromJSON(saKey, gdns.CloudPlatformScope)
 		if err != nil {
 			return nil, fmt.Errorf("unable to acquire config: %w", err)
 		}

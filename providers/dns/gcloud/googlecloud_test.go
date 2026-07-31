@@ -32,8 +32,9 @@ var envTest = tester.NewEnvTest(
 	envGoogleApplicationCredentials,
 	envMetadataHost,
 	EnvServiceAccount,
-	EnvImpersonateServiceAccount).
-	WithDomain(envDomain).
+	EnvImpersonateServiceAccount,
+	EnvAccessToken,
+).WithDomain(envDomain).
 	WithLiveTestExtra(func() bool {
 		_, err := google.DefaultClient(context.Background(), dns.NdevClouddnsReadwriteScope)
 		return err == nil
@@ -55,7 +56,7 @@ func TestNewDNSProvider(t *testing.T) {
 				envMetadataHost:                 "http://example.com", // defined here to avoid the client cache.
 			},
 			// the error message varies according to the OS used.
-			expected: "googlecloud: unable to get Google Cloud client: google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: ",
+			expected: "googlecloud: unable to get default token source: google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: ",
 		},
 		{
 			desc: "missing project",
@@ -79,6 +80,14 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvProject:        "",
 				EnvServiceAccount: `{"project_id": "A","type": "service_account","client_email": "foo@bar.com","private_key_id": "pki","private_key": "pk","token_uri": "/token","client_secret": "secret","client_id": "C","refresh_token": "D"}`,
+			},
+		},
+		{
+			desc: "success access token",
+			envVars: map[string]string{
+				EnvProject:      "123",
+				EnvAccessToken:  "secret",
+				envMetadataHost: "http://example.com", // defined here to avoid the client cache.
 			},
 		},
 	}

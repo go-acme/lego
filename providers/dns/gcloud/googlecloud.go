@@ -39,6 +39,7 @@ const (
 	EnvAllowPrivateZone          = envNamespace + "ALLOW_PRIVATE_ZONE"
 	EnvDebug                     = envNamespace + "DEBUG"
 	EnvImpersonateServiceAccount = envNamespace + "IMPERSONATE_SERVICE_ACCOUNT"
+	EnvAccessToken               = envNamespace + "ACCESS_TOKEN"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -56,6 +57,7 @@ type Config struct {
 	ZoneID                    string
 	AllowPrivateZone          bool
 	ImpersonateServiceAccount string
+	AccessToken               string
 	PropagationTimeout        time.Duration
 	PollingInterval           time.Duration
 	TTL                       int
@@ -69,6 +71,7 @@ func NewDefaultConfig() *Config {
 		ZoneID:                    env.GetOrDefaultString(EnvZoneID, ""),
 		AllowPrivateZone:          env.GetOrDefaultBool(EnvAllowPrivateZone, false),
 		ImpersonateServiceAccount: env.GetOrDefaultString(EnvImpersonateServiceAccount, ""),
+		AccessToken:               env.GetOrDefaultString(EnvAccessToken, ""),
 		TTL:                       env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout:        env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
 		PollingInterval:           env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
@@ -125,8 +128,7 @@ func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
 		return nil, errors.New("googlecloud: Service Account is missing")
 	}
 
-	// If GCE_PROJECT is non-empty it overrides the project in the service
-	// account file.
+	// If GCE_PROJECT is non-empty it overrides the project in the service account file.
 	project := env.GetOrDefaultString(EnvProject, "")
 	if project == "" {
 		// read project id from service account file
@@ -406,21 +408,16 @@ func (d *DNSProvider) findTxtRecords(zone, fqdn string) ([]*gdns.ResourceRecordS
 }
 
 func newClientFromCredentials(ctx context.Context, config *Config) (*http.Client, error) {
-	if config.ImpersonateServiceAccount != "" {
-		ts, err := google.DefaultTokenSource(ctx, gdns.CloudPlatformScope)
-		if err != nil {
-			return nil, fmt.Errorf("unable to get default token source: %w", err)
-		}
+	ts, err := getTokenSource(ctx, config)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get default token source: %w", err)
+	}
 
+	if config.ImpersonateServiceAccount != "" {
 		return newImpersonateClient(ctx, config.ImpersonateServiceAccount, ts)
 	}
 
-	client, err := google.DefaultClient(ctx, gdns.NdevClouddnsReadwriteScope)
-	if err != nil {
-		return nil, fmt.Errorf("unable to get Google Cloud client: %w", err)
-	}
-
-	return client, nil
+	return oauth2.NewClient(ctx, ts), nil
 }
 
 func newClientFromServiceAccountKey(ctx context.Context, config *Config, saKey []byte) (*http.Client, error) {
@@ -451,6 +448,19 @@ func newImpersonateClient(ctx context.Context, impersonateServiceAccount string,
 	}
 
 	return oauth2.NewClient(ctx, impersonatedTS), nil
+}
+
+func getTokenSource(ctx context.Context, config *Config) (oauth2.TokenSource, error) {
+	switch {
+	case config.ImpersonateServiceAccount != "":
+		return google.DefaultTokenSource(ctx, gdns.CloudPlatformScope)
+
+	case config.AccessToken != "":
+		return oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.AccessToken}), nil
+
+	default:
+		return google.DefaultTokenSource(ctx, gdns.NdevClouddnsReadwriteScope)
+	}
 }
 
 func mustUnquote(raw string) string {

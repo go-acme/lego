@@ -3,6 +3,7 @@ package nexdns
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
@@ -123,10 +124,16 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.APIToken = "secret"
-			config.BaseURL = server.URL
 			config.HTTPClient = server.Client()
 
-			return NewDNSProviderConfig(config)
+			p, err := NewDNSProviderConfig(config)
+			if err != nil {
+				return nil, err
+			}
+
+			p.client.BaseURL, _ = url.Parse(server.URL)
+
+			return p, nil
 		},
 		servermock.CheckHeader().
 			WithJSONHeaders().

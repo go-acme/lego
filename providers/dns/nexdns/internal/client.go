@@ -15,8 +15,8 @@ import (
 	"github.com/go-acme/lego/v5/internal/useragent"
 )
 
-// DefaultBaseURL the default API endpoint.
-const DefaultBaseURL = "https://api.nexdns.tech/v1"
+// defaultBaseURL the default API endpoint.
+const defaultBaseURL = "https://api.nexdns.tech/v1"
 
 // Client the NexDNS API client.
 type Client struct {
@@ -32,7 +32,7 @@ func NewClient(apiToken string) (*Client, error) {
 		return nil, errors.New("credentials missing")
 	}
 
-	baseURL, _ := url.Parse(DefaultBaseURL)
+	baseURL, _ := url.Parse(defaultBaseURL)
 
 	return &Client{
 		apiToken:   apiToken,

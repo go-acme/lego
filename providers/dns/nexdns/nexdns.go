@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -23,7 +22,6 @@ const (
 	envNamespace = "NEXDNS_"
 
 	EnvAPIToken = envNamespace + "API_TOKEN"
-	EnvAPIURL   = envNamespace + "API_URL"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -36,7 +34,6 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	APIToken string
-	BaseURL  string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -47,7 +44,6 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(EnvAPIURL, internal.DefaultBaseURL),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
@@ -90,13 +86,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client, err := internal.NewClient(config.APIToken)
 	if err != nil {
 		return nil, fmt.Errorf("nexdns: %w", err)
-	}
-
-	if config.BaseURL != "" {
-		client.BaseURL, err = url.Parse(config.BaseURL)
-		if err != nil {
-			return nil, fmt.Errorf("nexdns: %w", err)
-		}
 	}
 
 	if config.HTTPClient != nil {

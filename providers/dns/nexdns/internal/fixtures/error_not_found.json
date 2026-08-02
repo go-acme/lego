@@ -1,0 +1,7 @@
+{
+  "status": "error",
+  "error": {
+    "code": "not_found",
+    "message": "Record not found."
+  }
+}

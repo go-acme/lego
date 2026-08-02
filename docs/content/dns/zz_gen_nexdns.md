@@ -47,7 +47,6 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `NEXDNS_API_URL` | API endpoint. Ex: https://api.nexdns.tech/v1 |
 | `NEXDNS_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
 | `NEXDNS_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
 | `NEXDNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |

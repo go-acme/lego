@@ -3253,7 +3253,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "NEXDNS_API_URL":	API endpoint. Ex: https://api.nexdns.tech/v1`)
 		ew.writeln(`	- "NEXDNS_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "NEXDNS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "NEXDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)

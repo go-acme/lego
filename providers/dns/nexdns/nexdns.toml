@@ -1,0 +1,26 @@
+Name = "NexDNS"
+Description = ''''''
+URL = "https://nexdns.tech/"
+Code = "nexdns"
+Since = "v5.4.0"
+
+Example = '''
+NEXDNS_API_TOKEN="xxx" \
+lego run --dns nexdns -d '*.example.com' -d example.com
+'''
+
+Additional = '''
+The API token requires the `zones.read` and `records.write` scopes.
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    NEXDNS_API_TOKEN = "API token"
+  [Configuration.Additional]
+    NEXDNS_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    NEXDNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    NEXDNS_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    NEXDNS_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://nexdns.tech/docs/api"

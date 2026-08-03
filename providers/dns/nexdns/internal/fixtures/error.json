@@ -1,0 +1,10 @@
+{
+  "status": "error",
+  "error": {
+    "code": "validation_error",
+    "message": "Validation failed.",
+    "details": {
+      "content": ["This value is not valid."]
+    }
+  }
+}

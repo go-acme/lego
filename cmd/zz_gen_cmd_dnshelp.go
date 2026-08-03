@@ -153,6 +153,7 @@ func allDNSCodes() string {
 		"netcup",
 		"netlify",
 		"netnod",
+		"nexdns",
 		"ngenix",
 		"nicmanager",
 		"nicru",
@@ -3239,6 +3240,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/netnod`)
+
+	case "nexdns":
+		// generated from: providers/dns/nexdns/nexdns.toml
+		ew.writeln(`Configuration for NexDNS.`)
+		ew.writeln(`Code:	'nexdns'`)
+		ew.writeln(`Since:	'v5.4.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NEXDNS_API_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NEXDNS_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "NEXDNS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "NEXDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "NEXDNS_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nexdns`)
 
 	case "ngenix":
 		// generated from: providers/dns/ngenix/ngenix.toml

@@ -1,0 +1,29 @@
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "xK9mQ2vR",
+      "name": "example.com",
+      "unicode_name": "example.com",
+      "type": "master",
+      "status": "active",
+      "created_at": "2026-01-15 10:30:00",
+      "updated_at": "2026-01-20 14:00:00"
+    },
+    {
+      "id": "pL4nT7wB",
+      "name": "test.example.com",
+      "unicode_name": "test.example.com",
+      "type": "master",
+      "status": "active",
+      "created_at": "2026-02-03 09:12:00",
+      "updated_at": "2026-02-03 09:12:00"
+    }
+  ],
+  "meta": {
+    "total": 2,
+    "page": 1,
+    "per_page": 100,
+    "last_page": 1
+  }
+}

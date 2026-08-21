@@ -206,6 +206,9 @@ func (p *renewProcessor) renewForCSR(ctx context.Context, certID string, changed
 
 	options := newSaveOptions(p.certConfig)
 
+	// Force to disable PEM with CSR because we don't have the private key.
+	options.PEM = false
+
 	err = p.certsStorage.Save(
 		&storage.Certificate{
 			Resource: certRes,

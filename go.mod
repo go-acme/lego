@@ -48,7 +48,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/hashicorp/go-version v1.9.0
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.212
-	github.com/infobloxopen/infoblox-go-client/v2 v2.11.0
+	github.com/infobloxopen/infoblox-go-client/v2 v2.12.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/ldez/grignotin v0.10.1

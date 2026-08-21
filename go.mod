@@ -84,7 +84,7 @@ require (
 	github.com/softlayer/softlayer-go v1.2.1
 	github.com/stretchr/testify v1.12.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.166
-	github.com/transip/gotransip/v6 v6.27.2
+	github.com/transip/gotransip/v6 v6.28.0
 	github.com/ucloud/ucloud-sdk-go v0.22.90
 	github.com/ultradns/ultradns-go-sdk v1.8.2-20260507133303-3f324c7
 	github.com/urfave/cli/v3 v3.11.0

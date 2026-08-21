@@ -94,7 +94,7 @@ require (
 	github.com/yandex-cloud/go-genproto v0.114.0
 	github.com/yandex-cloud/go-sdk/services/dns v0.0.91
 	github.com/yandex-cloud/go-sdk/v2 v2.163.0
-	gitlab.com/greyxor/slogor v1.6.10
+	gitlab.com/greyxor/slogor v1.7.0
 	golang.org/x/crypto v0.55.0
 	golang.org/x/net v0.58.0
 	golang.org/x/oauth2 v0.36.0

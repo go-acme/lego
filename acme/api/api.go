@@ -132,8 +132,7 @@ func (a *Core) retrievablePost(ctx context.Context, uri string, content []byte, 
 		resp, err := a.signedPost(ctx, uri, content, response)
 		if err != nil {
 			// Retry if the nonce was invalidated
-			var e *acme.NonceError
-			if errors.As(err, &e) {
+			if _, ok := errors.AsType[*acme.NonceError](err); ok {
 				return resp, err
 			}
 

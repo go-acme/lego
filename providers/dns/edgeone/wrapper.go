@@ -18,7 +18,7 @@ func (d *DNSProvider) getHostedZoneID(ctx context.Context, domain string) (*stri
 	if d.config.ZonesMapping != nil {
 		zoneID, ok := d.config.ZonesMapping[authZone]
 		if ok {
-			return ptr.Pointer(zoneID), nil
+			return new(zoneID), nil
 		}
 	}
 
@@ -38,7 +38,7 @@ func (d *DNSProvider) getHostedZoneID(ctx context.Context, domain string) (*stri
 			break
 		}
 
-		request.Offset = ptr.Pointer(int64(len(zones)))
+		request.Offset = new(int64(len(zones)))
 	}
 
 	var hostedZone *teo.Zone

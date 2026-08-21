@@ -159,8 +159,7 @@ func (s *TxtRecordService) Search(ctx context.Context, domainID int64, filter se
 
 	err = s.client.do(req, &records)
 	if err != nil {
-		var nf *NotFound
-		if !errors.As(err, &nf) {
+		if _, ok := errors.AsType[*NotFound](err); !ok {
 			return nil, err
 		}
 	}

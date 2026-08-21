@@ -225,7 +225,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dns01.ChallengeInfo) (string, error) {
 	records, err := d.client.ListRecordSetsByZone(&hwmodel.ListRecordSetsByZoneRequest{
 		ZoneId: zoneID,
-		Name:   ptr.Pointer(info.EffectiveFQDN),
+		Name:   new(info.EffectiveFQDN),
 	})
 	if err != nil {
 		return "", fmt.Errorf("record list: unable to get record %s for zone %s: %w", info.EffectiveFQDN, domain, err)
@@ -246,9 +246,9 @@ func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dns01.C
 			ZoneId: zoneID,
 			Body: &hwmodel.CreateRecordSetRequestBody{
 				Name:        info.EffectiveFQDN,
-				Description: ptr.Pointer("Added TXT record for ACME dns-01 challenge using lego client"),
+				Description: new("Added TXT record for ACME dns-01 challenge using lego client"),
 				Type:        "TXT",
-				Ttl:         ptr.Pointer(d.config.TTL),
+				Ttl:         new(d.config.TTL),
 				Records:     []string{value},
 			},
 		}
@@ -269,7 +269,7 @@ func (d *DNSProvider) getOrCreateRecordSetID(domain, zoneID string, info dns01.C
 			Description: existingRecordSet.Description,
 			Type:        existingRecordSet.Type,
 			Ttl:         existingRecordSet.Ttl,
-			Records:     ptr.Pointer(append(ptr.Deref(existingRecordSet.Records), value)),
+			Records:     new(append(ptr.Deref(existingRecordSet.Records), value)),
 		},
 	}
 

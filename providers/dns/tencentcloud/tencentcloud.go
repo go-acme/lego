@@ -131,11 +131,11 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	request := dnspod.NewCreateRecordRequest()
 	request.Domain = zone.Name
 	request.DomainId = zone.DomainId
-	request.SubDomain = common.StringPtr(recordName)
-	request.RecordType = common.StringPtr("TXT")
-	request.RecordLine = common.StringPtr("默认")
-	request.Value = common.StringPtr(info.Value)
-	request.TTL = common.Uint64Ptr(uint64(d.config.TTL))
+	request.SubDomain = new(recordName)
+	request.RecordType = new("TXT")
+	request.RecordLine = new("默认")
+	request.Value = new(info.Value)
+	request.TTL = new(uint64(d.config.TTL))
 
 	_, err = dnspod.CreateRecordWithContext(ctx, d.client, request)
 	if err != nil {

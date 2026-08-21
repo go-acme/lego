@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	dnspod "github.com/go-acme/tencentclouddnspod/v20210323"
-	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	errorsdk "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	"golang.org/x/net/idna"
 )
@@ -29,7 +28,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (*dnspod
 			break
 		}
 
-		request.Offset = common.Int64Ptr(int64(len(domains)))
+		request.Offset = new(int64(len(domains)))
 	}
 
 	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, domain)
@@ -62,14 +61,13 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, zone *dnspod.DomainLis
 	request := dnspod.NewDescribeRecordListRequest()
 	request.Domain = zone.Name
 	request.DomainId = zone.DomainId
-	request.Subdomain = common.StringPtr(recordName)
-	request.RecordType = common.StringPtr("TXT")
-	request.RecordLine = common.StringPtr("默认")
+	request.Subdomain = new(recordName)
+	request.RecordType = new("TXT")
+	request.RecordLine = new("默认")
 
 	response, err := dnspod.DescribeRecordListWithContext(ctx, d.client, request)
 	if err != nil {
-		var sdkError *errorsdk.TencentCloudSDKError
-		if errors.As(err, &sdkError) {
+		if sdkError, ok := errors.AsType[*errorsdk.TencentCloudSDKError](err); ok {
 			if sdkError.Code == dnspod.RESOURCENOTFOUND_NODATAOFRECORD {
 				return nil, nil
 			}

@@ -3,7 +3,6 @@ package bunny
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v5/internal/ptr"
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/nrdcg/bunny-go"
 	"github.com/stretchr/testify/assert"
@@ -141,54 +140,54 @@ func Test_findZone(t *testing.T) {
 			desc:   "found subdomain",
 			domain: "_acme-challenge.foo.bar.example.com",
 			items: []*bunny.DNSZone{
-				{ID: ptr.Pointer[int64](1), Domain: ptr.Pointer("example.com")},
-				{ID: ptr.Pointer[int64](2), Domain: ptr.Pointer("example.org")},
-				{ID: ptr.Pointer[int64](4), Domain: ptr.Pointer("bar.example.org")},
-				{ID: ptr.Pointer[int64](5), Domain: ptr.Pointer("bar.example.com")},
-				{ID: ptr.Pointer[int64](6), Domain: ptr.Pointer("foo.example.com")},
+				{ID: new(int64(1)), Domain: new("example.com")},
+				{ID: new(int64(2)), Domain: new("example.org")},
+				{ID: new(int64(4)), Domain: new("bar.example.org")},
+				{ID: new(int64(5)), Domain: new("bar.example.com")},
+				{ID: new(int64(6)), Domain: new("foo.example.com")},
 			},
 			expected: &bunny.DNSZone{
-				ID:     ptr.Pointer[int64](5),
-				Domain: ptr.Pointer("bar.example.com"),
+				ID:     new(int64(5)),
+				Domain: new("bar.example.com"),
 			},
 		},
 		{
 			desc:   "found the longest subdomain",
 			domain: "_acme-challenge.foo.bar.example.com",
 			items: []*bunny.DNSZone{
-				{ID: ptr.Pointer[int64](7), Domain: ptr.Pointer("foo.bar.example.com")},
-				{ID: ptr.Pointer[int64](1), Domain: ptr.Pointer("example.com")},
-				{ID: ptr.Pointer[int64](2), Domain: ptr.Pointer("example.org")},
-				{ID: ptr.Pointer[int64](4), Domain: ptr.Pointer("bar.example.org")},
-				{ID: ptr.Pointer[int64](5), Domain: ptr.Pointer("bar.example.com")},
-				{ID: ptr.Pointer[int64](6), Domain: ptr.Pointer("foo.example.com")},
+				{ID: new(int64(7)), Domain: new("foo.bar.example.com")},
+				{ID: new(int64(1)), Domain: new("example.com")},
+				{ID: new(int64(2)), Domain: new("example.org")},
+				{ID: new(int64(4)), Domain: new("bar.example.org")},
+				{ID: new(int64(5)), Domain: new("bar.example.com")},
+				{ID: new(int64(6)), Domain: new("foo.example.com")},
 			},
 			expected: &bunny.DNSZone{
-				ID:     ptr.Pointer[int64](7),
-				Domain: ptr.Pointer("foo.bar.example.com"),
+				ID:     new(int64(7)),
+				Domain: new("foo.bar.example.com"),
 			},
 		},
 		{
 			desc:   "found apex",
 			domain: "_acme-challenge.foo.bar.example.com",
 			items: []*bunny.DNSZone{
-				{ID: ptr.Pointer[int64](1), Domain: ptr.Pointer("example.com")},
-				{ID: ptr.Pointer[int64](2), Domain: ptr.Pointer("example.org")},
-				{ID: ptr.Pointer[int64](4), Domain: ptr.Pointer("bar.example.org")},
-				{ID: ptr.Pointer[int64](6), Domain: ptr.Pointer("foo.example.com")},
+				{ID: new(int64(1)), Domain: new("example.com")},
+				{ID: new(int64(2)), Domain: new("example.org")},
+				{ID: new(int64(4)), Domain: new("bar.example.org")},
+				{ID: new(int64(6)), Domain: new("foo.example.com")},
 			},
 			expected: &bunny.DNSZone{
-				ID:     ptr.Pointer[int64](1),
-				Domain: ptr.Pointer("example.com"),
+				ID:     new(int64(1)),
+				Domain: new("example.com"),
 			},
 		},
 		{
 			desc:   "not found",
 			domain: "_acme-challenge.foo.bar.example.com",
 			items: []*bunny.DNSZone{
-				{ID: ptr.Pointer[int64](2), Domain: ptr.Pointer("example.org")},
-				{ID: ptr.Pointer[int64](4), Domain: ptr.Pointer("bar.example.org")},
-				{ID: ptr.Pointer[int64](6), Domain: ptr.Pointer("foo.example.com")},
+				{ID: new(int64(2)), Domain: new("example.org")},
+				{ID: new(int64(4)), Domain: new("bar.example.org")},
+				{ID: new(int64(6)), Domain: new("foo.example.com")},
 			},
 		},
 	}

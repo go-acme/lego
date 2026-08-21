@@ -7,7 +7,6 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/go-acme/lego/v5/internal/ptr"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -251,9 +250,9 @@ func fakeARecord() Record {
 		Host:     "@",
 		TTL:      600,
 		RData:    "string",
-		Updated:  ptr.Pointer(true),
-		Locked:   ptr.Pointer(true),
-		IsDynDNS: ptr.Pointer(true),
+		Updated:  new(true),
+		Locked:   new(true),
+		IsDynDNS: new(true),
 		Proxy:    "ON",
 	}
 }
@@ -267,7 +266,7 @@ func fakeURLForward() URLForward {
 		Title:       "string",
 		Keywords:    "string",
 		Description: "string",
-		Updated:     ptr.Pointer(true),
+		Updated:     new(true),
 	}
 }
 
@@ -276,7 +275,7 @@ func fakeMailForward() MailForward {
 		ID:          3000,
 		Source:      "string",
 		Destination: "string",
-		Updated:     ptr.Pointer(true),
+		Updated:     new(true),
 	}
 }
 

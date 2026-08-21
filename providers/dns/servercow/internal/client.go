@@ -164,9 +164,7 @@ func unmarshal(raw []byte, v any) error {
 		return nil
 	}
 
-	var utErr *json.UnmarshalTypeError
-
-	if !errors.As(err, &utErr) {
+	if _, ok := errors.AsType[*json.UnmarshalTypeError](err); !ok {
 		return fmt.Errorf("unmarshaling %T error: %w: %s", v, err, string(raw))
 	}
 

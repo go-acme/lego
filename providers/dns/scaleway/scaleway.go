@@ -148,7 +148,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		Name:    info.EffectiveFQDN,
 		TTL:     uint32(d.config.TTL),
 		Type:    scwdomain.RecordTypeTXT,
-		Comment: scw.StringPtr("used by lego"),
+		Comment: new("used by lego"),
 	}}
 
 	req := &scwdomain.UpdateDNSZoneRecordsRequest{
@@ -156,7 +156,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		Changes: []*scwdomain.RecordChange{{
 			Add: &scwdomain.RecordChangeAdd{Records: records},
 		}},
-		ReturnAllRecords:        scw.BoolPtr(false),
+		ReturnAllRecords:        new(false),
 		DisallowNewZoneCreation: true,
 	}
 
@@ -175,7 +175,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	recordIdentifier := &scwdomain.RecordIdentifier{
 		Name: info.EffectiveFQDN,
 		Type: scwdomain.RecordTypeTXT,
-		Data: scw.StringPtr(fmt.Sprintf(`%q`, info.Value)),
+		Data: new(fmt.Sprintf(`%q`, info.Value)),
 	}
 
 	req := &scwdomain.UpdateDNSZoneRecordsRequest{
@@ -183,7 +183,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		Changes: []*scwdomain.RecordChange{{
 			Delete: &scwdomain.RecordChangeDelete{IDFields: recordIdentifier},
 		}},
-		ReturnAllRecords:        scw.BoolPtr(false),
+		ReturnAllRecords:        new(false),
 		DisallowNewZoneCreation: true,
 	}
 

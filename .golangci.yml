@@ -288,7 +288,7 @@ linters:
           - staticcheck
       # There is no explanation about the replacement.
       - path: providers/dns/sakuracloud/sakuracloud.go
-        text: 'SA1019: github.com/sacloud/iaas-api-go.NewClientWithOptions is deprecated: この関数からは指定できない設定項目がある'
+        text: 'SA1019: github.com/sacloud/sacloud-sdk-go/api/iaas.NewClientWithOptions is deprecated: この関数からは指定できない設定項目がある'
         linters:
           - staticcheck
       - path: log/logger.go

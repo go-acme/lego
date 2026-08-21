@@ -5,9 +5,8 @@ import (
 	"sync"
 	"testing"
 
-	client "github.com/sacloud/api-client-go"
-	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/iaas-api-go/helper/api"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas/helper/api"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,7 +20,7 @@ func setupTest(t *testing.T) {
 
 func fakeCaller() iaas.APICaller {
 	return api.NewCallerWithOptions(&api.CallerOptions{
-		Options: &client.Options{
+		Options: &api.ClientOptions{
 			AccessToken:       "dummy",
 			AccessTokenSecret: "dummy",
 		},

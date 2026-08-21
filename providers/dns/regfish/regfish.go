@@ -113,7 +113,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		TTL:  d.config.TTL,
 	}
 
-	newRecord, err := d.client.CreateRecord(record)
+	newRecord, err := d.client.AddRecord(ctx, record)
 	if err != nil {
 		return fmt.Errorf("regfish: create record: %w", err)
 	}
@@ -138,7 +138,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("regfish: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
-	err := d.client.DeleteRecord(recordID)
+	err := d.client.DeleteRecordByRRID(ctx, recordID)
 	if err != nil {
 		return fmt.Errorf("regfish: delete record: %w", err)
 	}

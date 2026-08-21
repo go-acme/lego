@@ -10,7 +10,7 @@ import (
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/gophercloud/utils/openstack/clientconfig"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const (

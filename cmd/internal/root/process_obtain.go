@@ -95,6 +95,9 @@ func obtainForCSR(ctx context.Context, client *lego.Client, certID string, certC
 
 	options := newSaveOptions(certConfig)
 
+	// Force to disable PEM with CSR because we don't have the private key.
+	options.PEM = false
+
 	err = certsStorage.Save(
 		&storage.Certificate{
 			Resource: certRes,

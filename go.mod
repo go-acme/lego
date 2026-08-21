@@ -15,7 +15,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns v1.3.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph v0.10.0
 	github.com/BurntSushi/toml v1.6.0
-	github.com/akamai/AkamaiOPEN-edgegrid-golang/v13 v13.3.0
+	github.com/akamai/AkamaiOPEN-edgegrid-golang/v13 v13.4.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.2.3
 	github.com/alibabacloud-go/tea v1.5.2
 	github.com/aliyun/credentials-go v1.4.7

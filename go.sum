@@ -665,7 +665,6 @@ github.com/alibabacloud-go/darabonba-encode-util v0.0.2 h1:1uJGrbsGEVqWcWxrS9MyC
 github.com/alibabacloud-go/darabonba-encode-util v0.0.2/go.mod h1:JiW9higWHYXm7F4PKuMgEUETNZasrDM6vqVr/Can7H8=
 github.com/alibabacloud-go/darabonba-map v0.0.2 h1:qvPnGB4+dJbJIxOOfawxzF3hzMnIpjmafa0qOTp6udc=
 github.com/alibabacloud-go/darabonba-map v0.0.2/go.mod h1:28AJaX8FOE/ym8OUFWga+MtEzBunJwQGceGQlvaPGPc=
-github.com/alibabacloud-go/darabonba-openapi/v2 v2.2.1/go.mod h1:OCFim1kMbp2m+V8WS5IBnnVrk6nXaJiDwZpg3uqw8Po=
 github.com/alibabacloud-go/darabonba-openapi/v2 v2.2.4 h1:o6veen0IZ/Fe1JawwhwQMZcbw67CVDY1pQwXcNWPyQo=
 github.com/alibabacloud-go/darabonba-openapi/v2 v2.2.4/go.mod h1:eHjVxrT9g8uVYN/nyAwOFQEfkVA154ChiqRc2XnNKYU=
 github.com/alibabacloud-go/darabonba-signature-util v0.0.7 h1:UzCnKvsjPFzApvODDNEYqBHMFt1w98wC7FOo0InLyxg=
@@ -688,7 +687,6 @@ github.com/alibabacloud-go/tea v1.1.11/go.mod h1:/tmnEaQMyb4Ky1/5D+SE1BAsa5zj/Ke
 github.com/alibabacloud-go/tea v1.1.17/go.mod h1:nXxjm6CIFkBhwW4FQkNrolwbfon8Svy6cujmKFUq98A=
 github.com/alibabacloud-go/tea v1.1.20/go.mod h1:nXxjm6CIFkBhwW4FQkNrolwbfon8Svy6cujmKFUq98A=
 github.com/alibabacloud-go/tea v1.2.2/go.mod h1:CF3vOzEMAG+bR4WOql8gc2G9H3EkH3ZLAQdpmpXMgwk=
-github.com/alibabacloud-go/tea v1.5.0/go.mod h1:hgSs82CkOiehSQMoiFN79dL6zsGX7pVGvnn9SIEs8/0=
 github.com/alibabacloud-go/tea v1.5.2/go.mod h1:hgSs82CkOiehSQMoiFN79dL6zsGX7pVGvnn9SIEs8/0=
 github.com/alibabacloud-go/tea v1.5.3 h1:UMJTBcO48w7Zz1nlFe9bmRsHwgB7AjF8DBQzcvHhIp8=
 github.com/alibabacloud-go/tea v1.5.3/go.mod h1:hgSs82CkOiehSQMoiFN79dL6zsGX7pVGvnn9SIEs8/0=
@@ -898,8 +896,8 @@ github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-acme/alidns-20150109/v5 v5.6.0 h1:FEMHnB2KTZBoISHcqVhAjLN6uyPMTjYwsJmKkDMwtFs=
 github.com/go-acme/alidns-20150109/v5 v5.6.0/go.mod h1:zEqeSo/nXn2UX58HLUK/YrsfKLsqArp1awwPBVJqtNM=
-github.com/go-acme/esa-20240910/v3 v3.4.0 h1:t2ih22iRV+BzLkhvRG/i5hkyfkfi4FSPTZ3ves8oQ/0=
-github.com/go-acme/esa-20240910/v3 v3.4.0/go.mod h1:QGkL4IcH2mT4K+VoTMMJnq9tOBPNa0E6QdSmKmn0D2s=
+github.com/go-acme/esa-20240910/v3 v3.13.0 h1:6TMbBOzcBhZslc4u7OqRvbhpHYXQ7A4Ky0GdrPAaWPY=
+github.com/go-acme/esa-20240910/v3 v3.13.0/go.mod h1:F/DUQNpbXj0Y4FPj5PoFtl1rG+q3yq7Zd4IEWcSJQDg=
 github.com/go-acme/jdcloud-sdk-go v1.64.0 h1:AW9j5khk8tRYbpBJPxKmqdwIqgLs2Fz3HUK3hn2YXjs=
 github.com/go-acme/jdcloud-sdk-go v1.64.0/go.mod h1:qc/m8HNX1Zgd7GAv2DSEinup8fwy3Ted3/VVx7LB5bU=
 github.com/go-acme/tencentclouddnspod v1.3.24 h1:uCSiOW1EJttcnOON+MVVyVDJguFL/Q4NIGkq1CrT9p8=

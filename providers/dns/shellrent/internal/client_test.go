@@ -21,7 +21,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			WithAuthorization("user.secret"))
+			WithAuthorization("user.secret"),
+	)
 }
 
 func TestClient_ListServices(t *testing.T) {

@@ -77,7 +77,8 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 			return p, nil
 		},
 		servermock.CheckHeader().
-			WithContentTypeFromURLEncoded())
+			WithContentTypeFromURLEncoded(),
+	)
 }
 
 func TestDNSProvider_Present(t *testing.T) {

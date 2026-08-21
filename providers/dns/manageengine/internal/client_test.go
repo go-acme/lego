@@ -21,7 +21,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().
-			WithAccept("application/json"))
+			WithAccept("application/json"),
+	)
 }
 
 func TestClient_GetAllZones(t *testing.T) {

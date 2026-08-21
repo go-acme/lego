@@ -25,7 +25,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			With("X-TCpanel-Token", "secret"))
+			With("X-TCpanel-Token", "secret"),
+	)
 }
 
 func TestClient_GetZones(t *testing.T) {

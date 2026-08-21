@@ -20,7 +20,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 		},
 		servermock.CheckHeader().
 			WithContentTypeFromURLEncoded().
-			WithBasicAuth("xxx", "secret"))
+			WithBasicAuth("xxx", "secret"),
+	)
 }
 
 func TestClient_AddTXTRecord(t *testing.T) {

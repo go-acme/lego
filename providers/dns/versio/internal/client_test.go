@@ -21,7 +21,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			WithBasicAuth("user", "secret"))
+			WithBasicAuth("user", "secret"),
+	)
 }
 
 func TestClient_GetDomain(t *testing.T) {

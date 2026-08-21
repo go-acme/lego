@@ -22,7 +22,8 @@ func mockBuilder(teamID string) *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			WithAuthorization("Bearer "+apiKey))
+			WithAuthorization("Bearer "+apiKey),
+	)
 }
 
 func TestClient_GetRecords(t *testing.T) {

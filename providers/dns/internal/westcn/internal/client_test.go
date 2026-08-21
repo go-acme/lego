@@ -26,7 +26,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().
-			WithContentTypeFromURLEncoded())
+			WithContentTypeFromURLEncoded(),
+	)
 }
 
 func TestClientAddRecord(t *testing.T) {

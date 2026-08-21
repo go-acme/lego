@@ -21,7 +21,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			WithAuthorization("sso-key key:secret"))
+			WithAuthorization("sso-key key:secret"),
+	)
 }
 
 func TestClient_GetRecords(t *testing.T) {

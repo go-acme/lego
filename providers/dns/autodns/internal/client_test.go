@@ -22,7 +22,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 		},
 		servermock.CheckHeader().
 			WithBasicAuth("user", "secret").
-			WithJSONHeaders())
+			WithJSONHeaders(),
+	)
 }
 
 func TestClient_AddRecords(t *testing.T) {

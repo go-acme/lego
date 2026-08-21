@@ -20,7 +20,8 @@ func mockBuilder(apiKey string) *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			With(authHeader, apiKey))
+			With(authHeader, apiKey),
+	)
 }
 
 func TestClient_GetTxtRecord(t *testing.T) {

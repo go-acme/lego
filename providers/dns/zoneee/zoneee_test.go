@@ -283,7 +283,8 @@ func mockBuilder(username, apiKey string) *servermock.Builder[*DNSProvider] {
 
 			return NewDNSProviderConfig(config)
 		},
-		checkBasicAuth())
+		checkBasicAuth(),
+	)
 }
 
 func mockHandlerCreateRecord() http.HandlerFunc {

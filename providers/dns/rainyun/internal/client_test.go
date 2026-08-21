@@ -24,7 +24,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders())
+		servermock.CheckHeader().WithJSONHeaders(),
+	)
 }
 
 func TestClient_ListDomains(t *testing.T) {

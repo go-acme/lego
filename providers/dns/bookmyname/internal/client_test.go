@@ -22,7 +22,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().
-			WithBasicAuth("user", "secret"))
+			WithBasicAuth("user", "secret"),
+	)
 }
 
 func TestClient_AddRecord(t *testing.T) {

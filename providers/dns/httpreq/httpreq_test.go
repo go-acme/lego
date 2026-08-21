@@ -233,7 +233,8 @@ func mockBuilder(mode string) *servermock.Builder[*DNSProvider] {
 			config.Mode = mode
 
 			return NewDNSProviderConfig(config)
-		})
+		},
+	)
 }
 
 func mockBuilderWithPathPrefix(mode, prefix string) *servermock.Builder[*DNSProvider] {
@@ -245,7 +246,8 @@ func mockBuilderWithPathPrefix(mode, prefix string) *servermock.Builder[*DNSProv
 			config.Mode = mode
 
 			return NewDNSProviderConfig(config)
-		})
+		},
+	)
 }
 
 func mockBuilderWithBasicAuth(username, password string) *servermock.Builder[*DNSProvider] {
@@ -259,7 +261,8 @@ func mockBuilderWithBasicAuth(username, password string) *servermock.Builder[*DN
 
 			return NewDNSProviderConfig(config)
 		},
-		servermock.CheckHeader().WithBasicAuth("user", "secret"))
+		servermock.CheckHeader().WithBasicAuth("user", "secret"),
+	)
 }
 
 func mustParse(rawURL string) *url.URL {

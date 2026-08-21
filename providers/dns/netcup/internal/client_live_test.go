@@ -29,7 +29,8 @@ func TestClient_GetDNSRecords_Live(t *testing.T) {
 	client, err := NewClient(
 		envTest.GetValue("NETCUP_CUSTOMER_NUMBER"),
 		envTest.GetValue("NETCUP_API_KEY"),
-		envTest.GetValue("NETCUP_API_PASSWORD"))
+		envTest.GetValue("NETCUP_API_PASSWORD"),
+	)
 	require.NoError(t, err)
 
 	ctx, err := client.CreateSessionContext(t.Context())
@@ -62,7 +63,8 @@ func TestClient_UpdateDNSRecord_Live(t *testing.T) {
 	client, err := NewClient(
 		envTest.GetValue("NETCUP_CUSTOMER_NUMBER"),
 		envTest.GetValue("NETCUP_API_KEY"),
-		envTest.GetValue("NETCUP_API_PASSWORD"))
+		envTest.GetValue("NETCUP_API_PASSWORD"),
+	)
 	require.NoError(t, err)
 
 	ctx, err := client.CreateSessionContext(t.Context())
@@ -120,7 +122,8 @@ func TestLiveClientAuth(t *testing.T) {
 	client, err := NewClient(
 		envTest.GetValue("NETCUP_CUSTOMER_NUMBER"),
 		envTest.GetValue("NETCUP_API_KEY"),
-		envTest.GetValue("NETCUP_API_PASSWORD"))
+		envTest.GetValue("NETCUP_API_PASSWORD"),
+	)
 	require.NoError(t, err)
 
 	for i := range 4 {

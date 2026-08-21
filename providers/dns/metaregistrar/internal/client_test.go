@@ -25,7 +25,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			With(tokenHeader, "secret"))
+			With(tokenHeader, "secret"),
+	)
 }
 
 func TestClient_UpdateDNSZone(t *testing.T) {

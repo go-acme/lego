@@ -19,7 +19,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().
-			WithContentTypeFromURLEncoded())
+			WithContentTypeFromURLEncoded(),
+	)
 }
 
 func newAPIError(reason string, a ...any) APIError {

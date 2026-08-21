@@ -23,7 +23,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			WithAuthorization("whm user:secret"))
+			WithAuthorization("whm user:secret"),
+	)
 }
 
 func TestClient_FetchZoneInformation(t *testing.T) {

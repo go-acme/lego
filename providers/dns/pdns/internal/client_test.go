@@ -21,7 +21,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders().With(APIKeyHeader, "secret"))
+		servermock.CheckHeader().WithJSONHeaders().With(APIKeyHeader, "secret"),
+	)
 }
 
 func TestClient_joinPath(t *testing.T) {

@@ -30,7 +30,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			With("X-Auth-Token", "secret"))
+			With("X-Auth-Token", "secret"),
+	)
 }
 
 func TestClient_GetDomainID(t *testing.T) {

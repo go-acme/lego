@@ -25,7 +25,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			WithAuthorization("APIToken secret"))
+			WithAuthorization("APIToken secret"),
+	)
 }
 
 func TestClient_CreateRRSet(t *testing.T) {

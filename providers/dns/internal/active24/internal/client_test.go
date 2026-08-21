@@ -29,7 +29,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			WithJSONHeaders().
 			WithRegexp("Authorization", `Basic .+`).
 			WithRegexp("Date", `\d+-\d+-\d+T\d{2}:\d{2}:\d{2}.*`).
-			With("Accept-Language", "en_us"))
+			With("Accept-Language", "en_us"),
+	)
 }
 
 func TestClient_GetServices(t *testing.T) {

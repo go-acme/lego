@@ -22,7 +22,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			WithAuthorization("Bearer secret"))
+			WithAuthorization("Bearer secret"),
+	)
 }
 
 func TestClient_GetZones(t *testing.T) {

@@ -18,7 +18,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().
-			WithContentTypeFromURLEncoded())
+			WithContentTypeFromURLEncoded(),
+	)
 }
 
 func TestClient_Send(t *testing.T) {

@@ -26,7 +26,8 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 		servermock.CheckHeader().
 			WithContentType("application/json").
 			WithRegexp("Authorization", `AuroraDNSv1 .+`).
-			WithRegexp("X-Auroradns-Date", `[0-9TZ]+`))
+			WithRegexp("X-Auroradns-Date", `[0-9TZ]+`),
+	)
 }
 
 func TestNewDNSProvider(t *testing.T) {

@@ -20,7 +20,8 @@ func mockBuilder(apiToken string) *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			WithBasicAuth("me", apiToken))
+			WithBasicAuth("me", apiToken),
+	)
 }
 
 func TestClient_ListZones(t *testing.T) {

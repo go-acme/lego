@@ -23,7 +23,8 @@ func mockBuilder() *servermock.Builder[*HTTPStorage] {
 
 			return storage, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders())
+		servermock.CheckHeader().WithJSONHeaders(),
+	)
 }
 
 func TestHTTPStorage_Fetch(t *testing.T) {

@@ -24,7 +24,8 @@ func mockProvider() *servermock.Builder[*DNSProvider] {
 		},
 		servermock.CheckHeader().
 			WithJSONHeaders().
-			With("Authorization", "Bearer asdf1234"))
+			With("Authorization", "Bearer asdf1234"),
+	)
 }
 
 func TestNewDNSProvider(t *testing.T) {

@@ -33,7 +33,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			WithAuthorization("Bearer"))
+			WithAuthorization("Bearer"),
+	)
 }
 
 func TestClient_FindRecordset(t *testing.T) {

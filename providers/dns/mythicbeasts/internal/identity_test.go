@@ -31,7 +31,8 @@ func mockBuilderIdentity() *servermock.Builder[*Client] {
 		servermock.CheckHeader().
 			WithBasicAuth("user", "secret"),
 		servermock.CheckHeader().
-			WithContentTypeFromURLEncoded())
+			WithContentTypeFromURLEncoded(),
+	)
 }
 
 func TestClient_obtainToken(t *testing.T) {

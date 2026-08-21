@@ -41,7 +41,8 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 			WithJSONHeaders().
 			WithAuthorization("Basic VE9LRU46U0VDUkVU"),
 		servermock.CheckQueryParameter().Strict().
-			With("format", "json"))
+			With("format", "json"),
+	)
 }
 
 func TestNewDNSProvider(t *testing.T) {

@@ -117,7 +117,8 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 		},
 		servermock.CheckHeader().
 			WithJSONHeaders().
-			With("User-Agent", "bindman-dns-webhook-client"))
+			With("User-Agent", "bindman-dns-webhook-client"),
+	)
 }
 
 func TestDNSProvider_Present(t *testing.T) {

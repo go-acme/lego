@@ -29,7 +29,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 		},
 		servermock.CheckHeader().WithJSONHeaders().
 			WithBasicAuth("l.u", "p").
-			WithRegexp(headerTOTPToken, `\d{6}`))
+			WithRegexp(headerTOTPToken, `\d{6}`),
+	)
 }
 
 func TestClient_GetZone(t *testing.T) {

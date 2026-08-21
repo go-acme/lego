@@ -34,7 +34,8 @@ func mockBuilder(auth AuthInfo) *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().
-			WithContentTypeFromURLEncoded())
+			WithContentTypeFromURLEncoded(),
+	)
 }
 
 func TestClient_GetZone(t *testing.T) {

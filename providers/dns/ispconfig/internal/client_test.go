@@ -21,7 +21,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 			client.HTTPClient = server.Client()
 
 			return client, nil
-		})
+		},
+	)
 }
 
 func TestClient_Login(t *testing.T) {

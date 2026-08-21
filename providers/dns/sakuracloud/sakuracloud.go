@@ -14,10 +14,9 @@ import (
 	"github.com/go-acme/lego/v5/internal/useragent"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
-	client "github.com/sacloud/api-client-go"
-	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/iaas-api-go/defaults"
-	"github.com/sacloud/iaas-api-go/helper/api"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas/defaults"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas/helper/api"
 )
 
 // Environment variables names.
@@ -99,7 +98,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	options := &api.CallerOptions{
-		Options: &client.Options{
+		Options: &api.ClientOptions{
 			AccessToken:       config.Token,
 			AccessTokenSecret: config.Secret,
 			HttpClient:        clientdebug.Wrap(config.HTTPClient),

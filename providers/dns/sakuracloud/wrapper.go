@@ -6,8 +6,8 @@ import (
 	"sync"
 
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/iaas-api-go/search"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas/search"
 )
 
 // This mutex is required for concurrent updates.

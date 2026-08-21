@@ -85,7 +85,7 @@ func (d *DNSProviderPrivate) Present(ctx context.Context, domain, _, keyAuth str
 	rec := armprivatedns.RecordSet{
 		Name: &subDomain,
 		Properties: &armprivatedns.RecordSetProperties{
-			TTL:        to.Ptr(int64(d.config.TTL)),
+			TTL:        new(int64(d.config.TTL)),
 			TxtRecords: txtRecords,
 		},
 	}

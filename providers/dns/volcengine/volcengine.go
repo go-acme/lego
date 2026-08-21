@@ -130,10 +130,10 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	}
 
 	crr := &volc.CreateRecordRequest{
-		Host:  ptr.Pointer(subDomain),
-		TTL:   ptr.Pointer(int64(d.config.TTL)),
-		Type:  ptr.Pointer("TXT"),
-		Value: ptr.Pointer(info.Value),
+		Host:  new(subDomain),
+		TTL:   new(int64(d.config.TTL)),
+		Type:  new("TXT"),
+		Value: new(info.Value),
 		ZID:   zone.ZID,
 	}
 
@@ -179,8 +179,8 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 func (d *DNSProvider) getZone(ctx context.Context, fqdn string) (volc.TopZoneResponse, error) {
 	for domain := range dns01.UnFqdnDomainsSeq(fqdn) {
 		lzr := &volc.ListZonesRequest{
-			Key:        ptr.Pointer(domain),
-			SearchMode: ptr.Pointer("exact"),
+			Key:        new(domain),
+			SearchMode: new("exact"),
 		}
 
 		zones, err := d.client.ListZones(ctx, lzr)

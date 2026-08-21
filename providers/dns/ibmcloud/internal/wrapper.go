@@ -7,7 +7,6 @@ import (
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/session"
-	"github.com/softlayer/softlayer-go/sl"
 )
 
 type Wrapper struct {
@@ -28,7 +27,7 @@ func (w Wrapper) AddTXTRecord(fqdn, domain, value string, ttl int) error {
 
 	service.Options.Id = domainID
 
-	if _, err := service.CreateTxtRecord(sl.String(fqdn), sl.String(value), sl.Int(ttl)); err != nil {
+	if _, err := service.CreateTxtRecord(new(fqdn), new(value), new(ttl)); err != nil {
 		return fmt.Errorf("failed to create TXT record: %w", err)
 	}
 
@@ -54,7 +53,7 @@ func (w Wrapper) CleanupTXTRecord(fqdn, domain string) error {
 }
 
 func getDomainID(service services.Dns_Domain, domain string) (*int, error) {
-	res, err := service.GetByDomainName(sl.String(domain))
+	res, err := service.GetByDomainName(new(domain))
 	if err != nil {
 		return nil, err
 	}

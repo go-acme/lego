@@ -127,10 +127,10 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	}
 
 	record := &bunny.AddOrUpdateDNSRecordOptions{
-		Type:  ptr.Pointer(bunny.DNSRecordTypeTXT),
-		Name:  ptr.Pointer(subDomain),
-		Value: ptr.Pointer(info.Value),
-		TTL:   ptr.Pointer(int32(d.config.TTL)),
+		Type:  new(bunny.DNSRecordTypeTXT),
+		Name:  new(subDomain),
+		Value: new(info.Value),
+		TTL:   new(int32(d.config.TTL)),
 	}
 
 	if _, err := d.client.DNSZone.AddDNSRecord(ctx, ptr.Deref(zone.ID), record); err != nil {

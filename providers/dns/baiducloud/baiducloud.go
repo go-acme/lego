@@ -10,7 +10,6 @@ import (
 	baidudns "github.com/baidubce/bce-sdk-go/services/dns"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/internal/ptr"
 	"github.com/go-acme/lego/v5/platform/env"
 )
 
@@ -106,11 +105,11 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	}
 
 	crr := &baidudns.CreateRecordRequest{
-		Description: ptr.Pointer("lego"),
+		Description: new("lego"),
 		Rr:          subDomain,
 		Type:        "TXT",
 		Value:       info.Value,
-		Ttl:         ptr.Pointer(int32(d.config.TTL)),
+		Ttl:         new(int32(d.config.TTL)),
 	}
 
 	err = d.client.CreateRecord(dns01.UnFqdn(authZone), crr, "")

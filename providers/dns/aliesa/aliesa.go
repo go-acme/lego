@@ -146,9 +146,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	// https://github.com/alibabacloud-go/esa-20240910/blame/7660e3aab2045d4820e4b83427a154efe0c79319/client/client.go#L27
 	// The `EndpointRule` is hardcoded with an empty string, so the region is ignored.
 	client.Endpoint = nil
-	client.EndpointRule = ptr.Pointer("regional")
+	client.EndpointRule = new("regional")
 
-	client.Endpoint, err = esa.GetEndpoint(client, dara.String("esa"), client.RegionId, client.EndpointRule, client.Network, client.Suffix, client.EndpointMap, client.Endpoint)
+	client.Endpoint, err = esa.GetEndpoint(client, new("esa"), client.RegionId, client.EndpointRule, client.Network, client.Suffix, client.EndpointMap, client.Endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("aliesa: get endpoint: %w", err)
 	}

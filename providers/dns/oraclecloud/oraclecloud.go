@@ -180,17 +180,17 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	// generate request to dns.PatchDomainRecordsRequest
 	recordOperation := dns.RecordOperation{
-		Domain:      common.String(dns01.UnFqdn(info.EffectiveFQDN)),
-		Rdata:       common.String(info.Value),
-		Rtype:       common.String("TXT"),
-		Ttl:         common.Int(d.config.TTL),
-		IsProtected: common.Bool(false),
+		Domain:      new(dns01.UnFqdn(info.EffectiveFQDN)),
+		Rdata:       new(info.Value),
+		Rtype:       new("TXT"),
+		Ttl:         new(d.config.TTL),
+		IsProtected: new(false),
 	}
 
 	request := dns.PatchDomainRecordsRequest{
-		CompartmentId: common.String(d.config.CompartmentID),
-		ZoneNameOrId:  common.String(zoneNameOrID),
-		Domain:        common.String(dns01.UnFqdn(info.EffectiveFQDN)),
+		CompartmentId: new(d.config.CompartmentID),
+		ZoneNameOrId:  new(zoneNameOrID),
+		Domain:        new(dns01.UnFqdn(info.EffectiveFQDN)),
 		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
 			Items: []dns.RecordOperation{recordOperation},
 		},
@@ -215,10 +215,10 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 
 	// search to TXT record's hash to delete
 	getRequest := dns.GetDomainRecordsRequest{
-		ZoneNameOrId:  common.String(zoneNameOrID),
-		Domain:        common.String(dns01.UnFqdn(info.EffectiveFQDN)),
-		CompartmentId: common.String(d.config.CompartmentID),
-		Rtype:         common.String("TXT"),
+		ZoneNameOrId:  new(zoneNameOrID),
+		Domain:        new(dns01.UnFqdn(info.EffectiveFQDN)),
+		CompartmentId: new(d.config.CompartmentID),
+		Rtype:         new("TXT"),
 	}
 
 	domainRecords, err := d.client.GetDomainRecords(ctx, getRequest)
@@ -249,12 +249,12 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	}
 
 	patchRequest := dns.PatchDomainRecordsRequest{
-		ZoneNameOrId: common.String(zoneNameOrID),
-		Domain:       common.String(dns01.UnFqdn(info.EffectiveFQDN)),
+		ZoneNameOrId: new(zoneNameOrID),
+		Domain:       new(dns01.UnFqdn(info.EffectiveFQDN)),
 		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
 			Items: []dns.RecordOperation{recordOperation},
 		},
-		CompartmentId: common.String(d.config.CompartmentID),
+		CompartmentId: new(d.config.CompartmentID),
 	}
 
 	_, err = d.client.PatchDomainRecords(ctx, patchRequest)

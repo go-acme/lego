@@ -198,9 +198,7 @@ func (s *AccountsStorage) getAccount(server *url.URL, keyType certcrypto.KeyType
 
 	account.key, err = s.readPrivateKey(server, effectiveAccountID)
 	if err != nil {
-		var privateKeyNotFound *PrivateKeyNotFound
-
-		if !errors.As(err, &privateKeyNotFound) {
+		if _, ok := errors.AsType[*PrivateKeyNotFound](err); !ok {
 			return nil, err
 		}
 

@@ -125,8 +125,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	rrSet, err := d.client.Records.Get(ctx, domainName, recordName, "TXT")
 	if err != nil {
-		var nf *desec.NotFoundError
-		if !errors.As(err, &nf) {
+		if _, ok := errors.AsType[*desec.NotFoundError](err); !ok {
 			return fmt.Errorf("desec: failed to get records: domainName=%s, recordName=%s: %w", domainName, recordName, err)
 		}
 

@@ -197,7 +197,7 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, fqdn string) ([]dnsimp
 		return nil, err
 	}
 
-	result, err := d.client.Zones.ListRecords(ctx, accountID, zoneName, &dnsimple.ZoneRecordListOptions{Name: &subDomain, Type: dnsimple.String("TXT"), ListOptions: dnsimple.ListOptions{}})
+	result, err := d.client.Zones.ListRecords(ctx, accountID, zoneName, &dnsimple.ZoneRecordListOptions{Name: &subDomain, Type: new("TXT"), ListOptions: dnsimple.ListOptions{}})
 	if err != nil {
 		return nil, fmt.Errorf("API call has failed: %w", err)
 	}

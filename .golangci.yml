@@ -8,7 +8,10 @@ formatters:
     - goimports
   settings:
     gofumpt:
-      extra-rules: true
+      extra:
+        group-params: true
+        clothe-returns: true
+
     gofmt:
       rewrite-rules:
         - pattern: 'interface{}'
@@ -29,6 +32,7 @@ linters:
     - errname
     - exhaustive # not relevant
     - exhaustruct # not relevant
+    - exhaustruct_v5 # not relevant
     - forbidigo
     - forcetypeassert
     - gosec
@@ -254,7 +258,7 @@ linters:
         linters:
           - thelper
       - path: providers/dns/oraclecloud/oraclecloud_test.go
-        text: 'SA1019: x509.EncryptPEMBlock has been deprecated since Go 1.16'
+        text: 'SA1019: crypto/x509.EncryptPEMBlock has been deprecated since Go 1.16'
         linters:
           - staticcheck
       - path: providers/dns/sakuracloud/wrapper.go
@@ -279,12 +283,12 @@ linters:
           - gocyclo
       # Those elements have been replaced by non-exposed structures.
       - path: providers/dns/linode/linode_test.go
-        text: 'SA1019: linodego\.(DomainsPagedResponse|DomainRecordsPagedResponse) is deprecated'
+        text: 'SA1019: github\.com/linode/linodego\.(DomainsPagedResponse|DomainRecordsPagedResponse) is deprecated:'
         linters:
           - staticcheck
       # There is no explanation about the replacement.
       - path: providers/dns/sakuracloud/sakuracloud.go
-        text: 'SA1019: iaas.NewClientWithOptions is deprecated: この関数からは指定できない設定項目がある'
+        text: 'SA1019: github.com/sacloud/iaas-api-go.NewClientWithOptions is deprecated: この関数からは指定できない設定項目がある'
         linters:
           - staticcheck
       - path: log/logger.go

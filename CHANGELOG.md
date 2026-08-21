@@ -6,6 +6,20 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v5.4.0
+
+- Release date: 2026-08-21
+- Tag: [v5.4.0](https://github.com/go-acme/lego/releases/tag/v5.4.0)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for NexDNS
+
+### Fixed
+
+- **[dnsprovider]** poweradmin: fix record ID type
+- **[cli,config]** fix: invalid PEM default option with CSR
+
 ## v5.3.1
 
 - Release date: 2026-07-21

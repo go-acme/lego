@@ -1,0 +1,20 @@
+{
+  "error": false,
+  "pageSize": 10,
+  "page": 1,
+  "count": 3,
+  "data": [
+    {
+      "id": 1,
+      "name": "example.com"
+    },
+    {
+      "id": 2,
+      "name": "example2.com"
+    },
+    {
+      "id": 3,
+      "name": "example3.com"
+    }
+  ]
+}

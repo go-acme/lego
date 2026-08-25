@@ -1,0 +1,24 @@
+Name = "Myra"
+Description = ''''''
+URL = "https://www.myrasecurity.com/en/"
+Code = "myra"
+Since = "v5.5.0"
+
+Example = '''
+MYRA_API_KEY="xxx" \
+MYRA_API_SECRET="xxx" \
+lego run --dns myra -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    MYRA_API_KEY = "API key"
+    MYRA_API_SECRET = "API secret"
+  [Configuration.Additional]
+    MYRA_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    MYRA_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    MYRA_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+
+[Links]
+  API = "https://docs.myracloud.com/en/api/general/using-the-myra-api/"
+  GoClient = "https://github.com/Myra-Security-GmbH/myrasec-go"

@@ -1,0 +1,23 @@
+{
+  "error": false,
+  "pageSize": 10,
+  "page": 1,
+  "count": 1,
+  "data": [
+    {
+      "id": 2,
+      "name": "_acme-challenge.example.com.",
+      "value": "127.0.0.1",
+      "ttl": 300,
+      "recordType": "A",
+      "upstreamOptions": {
+        "id": 1,
+        "backup": false,
+        "down": false,
+        "failTimeout": "1",
+        "maxFails": 100,
+        "weight": 1
+      }
+    }
+  ]
+}

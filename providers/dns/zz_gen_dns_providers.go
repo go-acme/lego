@@ -136,6 +136,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/mittwald"
 	"github.com/go-acme/lego/v5/providers/dns/myaddr"
 	"github.com/go-acme/lego/v5/providers/dns/mydnsjp"
+	"github.com/go-acme/lego/v5/providers/dns/myra"
 	"github.com/go-acme/lego/v5/providers/dns/mythicbeasts"
 	"github.com/go-acme/lego/v5/providers/dns/namecheap"
 	"github.com/go-acme/lego/v5/providers/dns/namedotcom"
@@ -490,6 +491,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return myaddr.NewDNSProvider()
 	case "mydnsjp":
 		return mydnsjp.NewDNSProvider()
+	case "myra":
+		return myra.NewDNSProvider()
 	case "mythicbeasts":
 		return mythicbeasts.NewDNSProvider()
 	case "namecheap":

@@ -3023,8 +3023,8 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "MYRA_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
-		ew.writeln(`	- "MYRA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "MYRA_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 20)`)
+		ew.writeln(`	- "MYRA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 600)`)
 		ew.writeln(`	- "MYRA_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
 
 		ew.writeln()

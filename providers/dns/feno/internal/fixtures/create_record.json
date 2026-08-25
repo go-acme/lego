@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "data": {
+    "id": 481522,
+    "type": "TXT",
+    "name": "_acme-challenge",
+    "value": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "ttl": 120,
+    "priority": null,
+    "weight": null,
+    "port": null,
+    "flags": null,
+    "tag": null
+  }
+}

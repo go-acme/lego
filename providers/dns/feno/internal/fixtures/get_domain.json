@@ -1,0 +1,8 @@
+{
+  "success": true,
+  "data": {
+    "domain": "example.no",
+    "status": "active",
+    "fenoNameservers": true
+  }
+}

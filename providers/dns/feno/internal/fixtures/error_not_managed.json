@@ -1,0 +1,7 @@
+{
+  "success": false,
+  "error": "Domain not found or not managed by this account",
+  "code": "DOMAIN_NOT_MANAGED",
+  "requestId": "0b0a3d3e-6f7c-4a1e-9a1e-2c7c9e0c1a11",
+  "data": null
+}

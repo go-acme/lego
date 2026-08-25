@@ -1,0 +1,7 @@
+{
+  "success": false,
+  "error": "This key does not hold the required scope",
+  "code": "INSUFFICIENT_SCOPE",
+  "requestId": "0b0a3d3e-6f7c-4a1e-9a1e-2c7c9e0c1a12",
+  "data": null
+}

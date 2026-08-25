@@ -1,0 +1,30 @@
+Name = "FENO"
+Description = ''''''
+URL = "https://feno.no/"
+Code = "feno"
+Since = "v5.5.0"
+
+Example = '''
+FENO_API_KEY="feno_live_xxx" \
+lego run --dns feno -d '*.example.no' -d example.no
+'''
+
+Additional = '''
+FENO only hosts `.no` domains, and the domain must use the FENO nameservers.
+
+Create the API key in the FENO dashboard with the `acme:write` scope only:
+it can write TXT records at `_acme-challenge*` and nothing else.
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    FENO_API_KEY = "API key (`feno_live_…`)"
+  [Configuration.Additional]
+    FENO_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    FENO_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 120)"
+    FENO_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120, minimum: 15)"
+    FENO_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://github.com/mrerikcodes/feno-api/blob/main/docs/ACME.md"
+  GoClient = "https://github.com/mrerikcodes/libdns-feno"

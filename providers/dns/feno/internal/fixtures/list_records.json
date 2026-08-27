@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "data": {
+    "domainName": "example.com",
+    "records": [
+      {
+        "id": 1,
+        "type": "TXT",
+        "name": "_acme-challenge",
+        "value": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+        "ttl": 120
+      },
+      {
+        "id": 2,
+        "type": "TXT",
+        "name": "sub",
+        "value": "xxx",
+        "ttl": 240
+      }
+    ],
+    "filtered": true,
+    "filterReason": "scope"
+  }
+}

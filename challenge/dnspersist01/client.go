@@ -20,6 +20,10 @@ func SetDefaultClient(c *Client) {
 
 type Options = internal.Options
 
+func NewOptions() *Options {
+	return internal.NewOptions()
+}
+
 type Client struct {
 	core *internal.Client
 

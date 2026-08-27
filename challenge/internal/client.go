@@ -19,6 +19,12 @@ type Options struct {
 	NetworkStack         challenge.NetworkStack
 }
 
+func NewOptions() *Options {
+	tcpOnly, _ := strconv.ParseBool(os.Getenv("LEGO_EXPERIMENTAL_DNS_TCP_ONLY"))
+
+	return &Options{TCPOnly: tcpOnly}
+}
+
 type Client struct {
 	recursiveNameservers []string
 
@@ -36,8 +42,7 @@ type Client struct {
 
 func NewClient(opts *Options) *Client {
 	if opts == nil {
-		tcpOnly, _ := strconv.ParseBool(os.Getenv("LEGO_EXPERIMENTAL_DNS_TCP_ONLY"))
-		opts = &Options{TCPOnly: tcpOnly}
+		opts = NewOptions()
 	}
 
 	if len(opts.RecursiveNameservers) == 0 {

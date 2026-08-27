@@ -138,7 +138,8 @@ func setupDNS(client *lego.Client, chlg *configuration.DNSChallenge, networkStac
 		return err
 	}
 
-	opts := &dns01.Options{RecursiveNameservers: chlg.Resolvers}
+	opts := dns01.NewOptions()
+	opts.RecursiveNameservers = chlg.Resolvers
 
 	if chlg.DNSTimeout > 0 {
 		opts.Timeout = time.Duration(chlg.DNSTimeout) * time.Second
@@ -167,7 +168,8 @@ func setupDNS(client *lego.Client, chlg *configuration.DNSChallenge, networkStac
 }
 
 func setupDNSPersist(client *lego.Client, chlg *configuration.DNSPersistChallenge, networkStack challenge.NetworkStack) error {
-	opts := &dns01.Options{RecursiveNameservers: chlg.Resolvers}
+	opts := dnspersist01.NewOptions()
+	opts.RecursiveNameservers = chlg.Resolvers
 
 	if chlg.DNSTimeout > 0 {
 		opts.Timeout = time.Duration(chlg.DNSTimeout) * time.Second

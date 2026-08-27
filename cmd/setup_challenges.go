@@ -139,7 +139,8 @@ func setupDNS(cmd *cli.Command, client *lego.Client) error {
 		return err
 	}
 
-	opts := &dns01.Options{RecursiveNameservers: cmd.StringSlice(flags.FlgDNSResolvers)}
+	opts := dns01.NewOptions()
+	opts.RecursiveNameservers = cmd.StringSlice(flags.FlgDNSResolvers)
 
 	if cmd.IsSet(flags.FlgDNSTimeout) {
 		opts.Timeout = time.Duration(cmd.Int(flags.FlgDNSTimeout)) * time.Second
@@ -167,7 +168,8 @@ func setupDNS(cmd *cli.Command, client *lego.Client) error {
 }
 
 func setupDNSPersist(cmd *cli.Command, client *lego.Client) error {
-	opts := &dnspersist01.Options{RecursiveNameservers: cmd.StringSlice(flags.FlgDNSPersistResolvers)}
+	opts := dnspersist01.NewOptions()
+	opts.RecursiveNameservers = cmd.StringSlice(flags.FlgDNSPersistResolvers)
 
 	if cmd.IsSet(flags.FlgDNSPersistTimeout) {
 		opts.Timeout = time.Duration(cmd.Int(flags.FlgDNSPersistTimeout)) * time.Second

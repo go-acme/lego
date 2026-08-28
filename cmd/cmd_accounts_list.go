@@ -65,6 +65,11 @@ func listAccountsText(basePath string) error {
 		fmt.Println("├── Email:", account.Email)
 		fmt.Println("├── Server:", account.Server)
 		fmt.Println("├── Key Type:", account.KeyType)
+
+		if account.Registration != nil && account.Registration.Location != "" {
+			fmt.Println("├── Account URL:", account.Registration.Location)
+		}
+
 		fmt.Println("└── Path:", account.Path)
 		fmt.Println()
 	}

@@ -902,8 +902,8 @@ github.com/go-acme/jdcloud-sdk-go v1.64.0 h1:AW9j5khk8tRYbpBJPxKmqdwIqgLs2Fz3HUK
 github.com/go-acme/jdcloud-sdk-go v1.64.0/go.mod h1:qc/m8HNX1Zgd7GAv2DSEinup8fwy3Ted3/VVx7LB5bU=
 github.com/go-acme/tencentclouddnspod v1.3.131 h1:0Bd/OKGdf29c8w7CHwmZVmy+n/XEtOOv4AFhLXzm6Fw=
 github.com/go-acme/tencentclouddnspod v1.3.131/go.mod h1:k16hkO9WcDw+4U2oCjdJdTQ7/MpYeA1HrnDmW9lIzdY=
-github.com/go-acme/tencentedgdeone v1.3.38 h1:5YsVl0H4A+cwtiUqR1eZbKFdr4OWfYp2KYJopifzKyQ=
-github.com/go-acme/tencentedgdeone v1.3.38/go.mod h1:yyjTKVmGpMtFv5HqGODqehHnZJ4KWAbG6dAiwWDgCDY=
+github.com/go-acme/tencentedgdeone v1.3.170 h1:gkFJQw/czLvVS6MmAuXzk+SR7uZ5IRCkNQxxl/EtFMI=
+github.com/go-acme/tencentedgdeone v1.3.170/go.mod h1:yUrQysEN/BEXvOyAWUeTNc2k1Ar5zQ/yggCnK/73c6M=
 github.com/go-cmd/cmd v1.0.5/go.mod h1:y8q8qlK5wQibcw63djSl/ntiHUHXHGdCkPk0j4QeW4s=
 github.com/go-errors/errors v1.0.1 h1:LUHzmkK3GUKUrL/1gfBUxAHzcev3apQlezX/+O7ma6w=
 github.com/go-errors/errors v1.0.1/go.mod h1:f4zRHt4oKfwPJE5k8C9vpYG+aDHdBFUsgrm6/TyX73Q=
@@ -1606,7 +1606,6 @@ github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69
 github.com/subosito/gotenv v1.4.2/go.mod h1:ayKnFf/c6rvx/2iiLrJUk1e6plDbT3edrFNGqEflhK0=
 github.com/subosito/gotenv v1.6.0 h1:9NlTDc1FTs4qu0DDq7AEtTPNw6SVm7uBMsUCUjABIf8=
 github.com/subosito/gotenv v1.6.0/go.mod h1:Dk4QP5c2W3ibzajGcXpNraDfq2IrhjMIvMSWPKKo0FU=
-github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.38/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.131/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.170 h1:+1mgEhpm1wUMqF6lpzfYgJv+XlHqEDHODQNruOx00xM=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.170/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=

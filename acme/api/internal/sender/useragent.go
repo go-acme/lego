@@ -9,5 +9,5 @@ const (
 	// ourUserAgentComment is part of the UA comment linked to the version status of this underlying library package.
 	// values: detach|release
 	// NOTE: Update this with each tagged release.
-	ourUserAgentComment = "release"
+	ourUserAgentComment = "detach"
 )

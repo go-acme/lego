@@ -35,7 +35,7 @@ add new behavior or somehow alter code in a non-trivial way should **always** in
 
 Requirements:
 
-- `go` v1.25+
+- `go` v1.26+
 - environment variable: `GO111MODULE=on`
 
 First, you have to install [Go](https://golang.org/doc/install) and [golangci-lint](https://github.com/golangci/golangci-lint#install).

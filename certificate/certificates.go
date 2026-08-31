@@ -534,8 +534,9 @@ type RenewOptions struct {
 	NotBefore time.Time
 	NotAfter  time.Time
 	// If true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
-	Bundle         bool
-	PreferredChain string
+	Bundle           bool
+	PreferredChain   string
+	EnableCommonName bool
 
 	Profile string
 
@@ -618,6 +619,7 @@ func (c *Certifier) Renew(ctx context.Context, certRes Resource, options *RenewO
 		request.NotAfter = options.NotAfter
 		request.Bundle = options.Bundle
 		request.PreferredChain = options.PreferredChain
+		request.EnableCommonName = options.EnableCommonName
 		request.EmailAddresses = options.EmailAddresses
 		request.Profile = options.Profile
 		request.AlwaysDeactivateAuthorizations = options.AlwaysDeactivateAuthorizations

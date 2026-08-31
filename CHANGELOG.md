@@ -6,6 +6,16 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v5.4.1
+
+- Release date: 2026-08-31
+- Tag: [v5.4.1](https://github.com/go-acme/lego/releases/tag/v5.4.1)
+
+### Fixed
+
+- **[cli,challenge/dns-01,challenge/dns-persist-01]** fix: LEGO_EXPERIMENTAL_DNS_TCP_ONLY support
+- **[lib]** fix: add EnableCommonName to RenewOptions
+
 ## v5.4.0
 
 - Release date: 2026-08-21

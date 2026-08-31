@@ -31,7 +31,7 @@ require (
 	github.com/bodgit/tsig v1.3.1
 	github.com/bradfitz/gomemcache v0.0.0-20260422231931-4d751bb6e37c
 	github.com/cenkalti/backoff/v5 v5.0.3
-	github.com/dnsimple/dnsimple-go/v9 v9.1.0
+	github.com/dnsimple/dnsimple-go/v9 v9.1.1
 	github.com/exoscale/egoscale/v3 v3.1.46
 	github.com/go-acme/alidns-20150109/v5 v5.6.0
 	github.com/go-acme/esa-20240910/v3 v3.13.0

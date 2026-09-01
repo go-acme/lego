@@ -142,6 +142,7 @@ func allDNSCodes() string {
 		"mittwald",
 		"myaddr",
 		"mydnsjp",
+		"myra",
 		"mythicbeasts",
 		"namecheap",
 		"namedotcom",
@@ -3008,6 +3009,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/mydnsjp`)
+
+	case "myra":
+		// generated from: providers/dns/myra/myra.toml
+		ew.writeln(`Configuration for Myra.`)
+		ew.writeln(`Code:	'myra'`)
+		ew.writeln(`Since:	'v5.5.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "MYRA_API_KEY":	API key`)
+		ew.writeln(`	- "MYRA_API_SECRET":	API secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "MYRA_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 20)`)
+		ew.writeln(`	- "MYRA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 600)`)
+		ew.writeln(`	- "MYRA_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/myra`)
 
 	case "mythicbeasts":
 		// generated from: providers/dns/mythicbeasts/mythicbeasts.toml

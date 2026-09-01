@@ -634,8 +634,8 @@ github.com/HdrHistogram/hdrhistogram-go v1.1.0/go.mod h1:yDgFjdqOqDEKOvasDdhWNXY
 github.com/HdrHistogram/hdrhistogram-go v1.1.2/go.mod h1:yDgFjdqOqDEKOvasDdhWNXYg9BVp4O+o5f6V/ehm6Oo=
 github.com/JohnCGriffin/overflow v0.0.0-20211019200055-46fa312c352c/go.mod h1:X0CRv0ky0k6m906ixxpzmDRLvX58TFUKS2eePweuyxk=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
-github.com/Myra-Security-GmbH/myrasec-go/v2 v2.54.0 h1:fT+n3tFI4+gOlJvodWH5TrUcHIW5bGV0bACDZX0iAdM=
-github.com/Myra-Security-GmbH/myrasec-go/v2 v2.54.0/go.mod h1:JNnRAqwOMJ3x7VCAhoN9csnqxki2VkeYCXKGDKMN4nE=
+github.com/Myra-Security-GmbH/myrasec-go/v2 v2.56.0 h1:HwyXem0H/y+300Tqk0y07iCl0IrjALjieuuqdCNmHc8=
+github.com/Myra-Security-GmbH/myrasec-go/v2 v2.56.0/go.mod h1:JNnRAqwOMJ3x7VCAhoN9csnqxki2VkeYCXKGDKMN4nE=
 github.com/Myra-Security-GmbH/signature v1.1.0 h1:/Tv8SilN0P8k5fKArvQHkf9iJWU5H34TSvgEyyZ32f4=
 github.com/Myra-Security-GmbH/signature v1.1.0/go.mod h1:kyX4FQ2XWvJQnvxkWmcyUIqG0jAzGL22fQMf2RTvoj0=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=

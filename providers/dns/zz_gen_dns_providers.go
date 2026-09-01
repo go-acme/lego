@@ -81,6 +81,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/exec"
 	"github.com/go-acme/lego/v5/providers/dns/exoscale"
 	"github.com/go-acme/lego/v5/providers/dns/f5xc"
+	"github.com/go-acme/lego/v5/providers/dns/feno"
 	"github.com/go-acme/lego/v5/providers/dns/fornex"
 	"github.com/go-acme/lego/v5/providers/dns/freemyip"
 	"github.com/go-acme/lego/v5/providers/dns/gandi"
@@ -381,6 +382,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return exoscale.NewDNSProvider()
 	case "f5xc":
 		return f5xc.NewDNSProvider()
+	case "feno":
+		return feno.NewDNSProvider()
 	case "fornex":
 		return fornex.NewDNSProvider()
 	case "freemyip":

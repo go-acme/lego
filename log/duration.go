@@ -17,7 +17,7 @@ func (f FormattableDuration) String() string {
 	hours := int(d.Hours()) % 24
 	minutes := int(d.Minutes()) % 60
 	seconds := int(d.Seconds()) % 60
-	ns := int(d.Nanoseconds()) % int(time.Second)
+	ns := d.Nanoseconds() % int64(time.Second)
 
 	s := new(strings.Builder)
 

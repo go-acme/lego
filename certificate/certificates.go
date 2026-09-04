@@ -18,11 +18,11 @@ import (
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/challenge"
+	"github.com/go-acme/lego/v5/internal"
 	"github.com/go-acme/lego/v5/internal/errutils"
 	"github.com/go-acme/lego/v5/internal/wait"
 	"github.com/go-acme/lego/v5/log"
 	"golang.org/x/crypto/ocsp"
-	"golang.org/x/net/idna"
 )
 
 const (
@@ -190,7 +190,7 @@ func (c *Certifier) Obtain(ctx context.Context, request ObtainRequest) (*Resourc
 		return nil, errors.New("no domains to obtain a certificate for")
 	}
 
-	domains := sanitizeDomain(request.Domains)
+	domains := internal.PunycodeDomains(request.Domains)
 
 	if request.Bundle {
 		log.Info("Obtaining bundled SAN certificate.", log.DomainsAttr(domains))
@@ -789,27 +789,4 @@ func getObtainRequestPrivateKey(request ObtainRequest) (crypto.Signer, error) {
 	}
 
 	return certcrypto.GeneratePrivateKey(request.KeyType)
-}
-
-// https://www.rfc-editor.org/rfc/rfc8555.html#section-7.1.4
-// The domain name MUST be encoded in the form in which it would appear in a certificate.
-// That is, it MUST be encoded according to the rules in Section 7 of [RFC5280].
-//
-// https://www.rfc-editor.org/rfc/rfc5280.html#section-7
-func sanitizeDomain(domains []string) []string {
-	var sanitizedDomains []string
-
-	for _, domain := range domains {
-		sanitizedDomain, err := idna.ToASCII(domain)
-		if err != nil {
-			log.Warn("skip domain: unable to sanitize (punnycode).",
-				log.DomainAttr(domain),
-				log.ErrorAttr(err),
-			)
-		} else {
-			sanitizedDomains = append(sanitizedDomains, sanitizedDomain)
-		}
-	}
-
-	return sanitizedDomains
 }

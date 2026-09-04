@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -35,6 +37,11 @@ type Core struct {
 	kid        string
 	mu         sync.RWMutex
 
+	// Experimental option:
+	// Related to "the 404 bug" of Boulder/Let's Encrypt.
+	// https://github.com/letsencrypt/boulder/issues/6549
+	notFoundRetry bool
+
 	common         service // Reuse a single struct instead of allocating one for each service on the heap.
 	Accounts       *AccountService
 	Authorizations *AuthorizationService
@@ -59,6 +66,8 @@ func New(httpClient *http.Client, userAgent, caDirURL, kid string, privateKey cr
 func newCore(httpClient *http.Client, doer *sender.Doer, dir acme.Directory, kid string, privateKey crypto.Signer) (*Core, error) {
 	nonceManager := nonces.NewManager(doer, dir.NewNonceURL)
 
+	notFoundRetry, _ := strconv.ParseBool(os.Getenv("LEGO_EXPERIMENTAL_NOT_FOUND_RETRY"))
+
 	c := &Core{
 		doer:         doer,
 		nonceManager: nonceManager,
@@ -66,6 +75,8 @@ func newCore(httpClient *http.Client, doer *sender.Doer, dir acme.Directory, kid
 
 		privateKey: privateKey,
 		kid:        kid,
+
+		notFoundRetry: notFoundRetry,
 
 		// NOTE(ldez): use the doer instead of the HTTP client? (only related to OCSP)
 		HTTPClient: httpClient,
@@ -133,6 +144,10 @@ func (a *Core) retrievablePost(ctx context.Context, uri string, content []byte, 
 		if err != nil {
 			// Retry if the nonce was invalidated
 			if _, ok := errors.AsType[*acme.NonceError](err); ok {
+				return resp, err
+			}
+
+			if a.notFoundRetry && resp.StatusCode == http.StatusNotFound {
 				return resp, err
 			}
 

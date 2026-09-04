@@ -19,6 +19,7 @@ import (
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
+	"github.com/go-acme/lego/v5/internal"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/mattn/go-isatty"
@@ -65,9 +66,9 @@ func (p *renewProcessor) renewForDomains(ctx context.Context, certID string, dom
 
 	certDomains := certcrypto.ExtractDomains(cert)
 
-	renewalDomains := slices.Clone(domains)
+	renewalDomains := internal.PunycodeDomains(domains)
 	if !p.cmd.Bool(flags.FlgForceCertDomains) {
-		renewalDomains = merge(certDomains, domains)
+		renewalDomains = merge(certDomains, renewalDomains)
 	}
 
 	var replacesCertID string

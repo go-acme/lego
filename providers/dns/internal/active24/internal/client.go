@@ -77,6 +77,8 @@ func (c *Client) GetRecords(ctx context.Context, service string, filter RecordFi
 	query := endpoint.Query()
 	query.Add("filters", string(encodedFilter))
 
+	endpoint.RawQuery = query.Encode()
+
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err

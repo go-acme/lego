@@ -64,7 +64,7 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // NETCUP_CUSTOMER_NUMBER, NETCUP_API_KEY, NETCUP_API_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvCustomerNumber, EnvAPIKey, EnvAPIPassword)
+	values, err := env.Get(EnvCustomerNumber, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("netcup: %w", err)
 	}
@@ -72,7 +72,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Customer = values[EnvCustomerNumber]
 	config.Key = values[EnvAPIKey]
-	config.Password = values[EnvAPIPassword]
+	config.Password = env.GetOrFile(EnvAPIPassword)
 
 	return NewDNSProviderConfig(config)
 }

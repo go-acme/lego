@@ -3230,12 +3230,12 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "NETCUP_API_KEY":	API key`)
-		ew.writeln(`	- "NETCUP_API_PASSWORD":	API password`)
+		ew.writeln(`	- "NETCUP_API_KEY":	API key (CloudDNS or Legacy DNS)`)
 		ew.writeln(`	- "NETCUP_CUSTOMER_NUMBER":	Customer number`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NETCUP_API_PASSWORD":	API password (Legacy DNS)`)
 		ew.writeln(`	- "NETCUP_HTTP_TIMEOUT":	API request timeout in seconds (Default: 10)`)
 		ew.writeln(`	- "NETCUP_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 30)`)
 		ew.writeln(`	- "NETCUP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 900)`)

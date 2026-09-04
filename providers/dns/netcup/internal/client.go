@@ -28,7 +28,7 @@ type Client struct {
 
 // NewClient creates a netcup DNS client.
 func NewClient(customerNumber, apiKey, apiPassword string) (*Client, error) {
-	if customerNumber == "" || apiKey == "" || apiPassword == "" {
+	if customerNumber == "" || apiKey == "" {
 		return nil, errors.New("credentials missing")
 	}
 

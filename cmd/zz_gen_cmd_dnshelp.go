@@ -1976,6 +1976,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "GCE_ACCESS_TOKEN":	The OAuth2 access token used by the client to authenticate against the Google Cloud API.`)
 		ew.writeln(`	- "GCE_ALLOW_PRIVATE_ZONE":	Allows requested domain to be in private DNS zone, works only with a private ACME server (by default: false)`)
 		ew.writeln(`	- "GCE_IMPERSONATE_SERVICE_ACCOUNT":	Service account email to impersonate`)
 		ew.writeln(`	- "GCE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 5)`)

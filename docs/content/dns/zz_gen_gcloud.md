@@ -31,6 +31,11 @@ GCE_PROJECT="gc-project-id" \
 GCE_SERVICE_ACCOUNT_FILE="/path/to/svc/account/file.json" \
 lego run --dns gcloud -d '*.example.com' -d example.com
 
+# Using an access token
+GCE_PROJECT="gc-project-id" \
+GCE_ACCESS_TOKEN="xxx" \
+lego run --dns gcloud -d '*.example.com' -d example.com
+
 # Using default credentials with impersonation
 GCE_PROJECT="gc-project-id" \
 GCE_IMPERSONATE_SERVICE_ACCOUNT="target-sa@gc-project-id.iam.gserviceaccount.com" \
@@ -63,6 +68,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `GCE_ACCESS_TOKEN` | The OAuth2 access token used by the client to authenticate against the Google Cloud API. |
 | `GCE_ALLOW_PRIVATE_ZONE` | Allows requested domain to be in private DNS zone, works only with a private ACME server (by default: false) |
 | `GCE_IMPERSONATE_SERVICE_ACCOUNT` | Service account email to impersonate |
 | `GCE_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 5) |

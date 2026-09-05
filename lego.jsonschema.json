@@ -1,0 +1,376 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["certificates"],
+  "definitions": {
+    "keyType": {
+      "enum": ["EC256", "EC384", "RSA2048", "RSA4096", "RSA8192"]
+    },
+    "pkcs12Formats": {
+      "enum": ["DES", "RC2", "SHA256", "PBMAC1"]
+    },
+    "serversSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url"],
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "overallRequestLimit": {
+          "type": "integer"
+        },
+        "tlsSkipVerify": {
+          "type": "boolean"
+        },
+        "httpTimeout": {
+          "type": "integer"
+        },
+        "certTimeout": {
+          "type": "integer"
+        }
+      }
+    },
+    "accountsSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "server": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "keyType": {
+          "$ref": "#/definitions/keyType"
+        },
+        "acceptsTermsOfService": {
+          "type": "boolean"
+        },
+        "eab": {
+          "$ref": "#/definitions/eabSettings"
+        }
+      }
+    },
+    "eabSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kid", "hmacKey"],
+      "properties": {
+        "kid": {
+          "type": "string"
+        },
+        "hmacKey": {
+          "type": "string"
+        }
+      }
+    },
+    "challengesSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "http": {
+          "$ref": "#/definitions/http01Settings"
+        },
+        "tls": {
+          "$ref": "#/definitions/tlsalpn01Settings"
+        },
+        "dns": {
+          "$ref": "#/definitions/dns01Settings"
+        },
+        "dnsPersist": {
+          "$ref": "#/definitions/dnspersist01Settings"
+        }
+      }
+    },
+    "http01Settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "delay": {
+          "type": "string"
+        },
+        "proxyHeader": {
+          "type": "string"
+        },
+        "webroot": {
+          "type": "string"
+        },
+        "memcachedHosts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "s3Bucket": {
+          "type": "string"
+        }
+      }
+    },
+    "tlsalpn01Settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "delay": {
+          "type": "string"
+        }
+      }
+    },
+    "dns01Settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider"],
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "dnsTimeout": {
+          "type": "integer"
+        },
+        "resolvers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "propagation": {
+          "$ref": "#/definitions/propagationSettings"
+        },
+        "envFile": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    },
+    "dnspersist01Settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "issuerDomainName": {
+          "type": "string"
+        },
+        "persistUntil": {
+          "type": "string"
+        },
+        "propagation": {
+          "$ref": "#/definitions/propagationSettings"
+        }
+      }
+    },
+    "propagationSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "disableAuthoritativeNameservers": {
+          "type": "boolean"
+        },
+        "disableRecursiveNameservers": {
+          "type": "boolean"
+        },
+        "wait": {
+          "type": "string"
+        }
+      }
+    },
+    "certificatesSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "challenge": {
+          "type": "string"
+        },
+        "account": {
+          "type": "string"
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "csr": {
+          "type": "string"
+        },
+        "keyType": {
+          "$ref": "#/definitions/keyType"
+        },
+        "preferredChain": {
+          "type": "string"
+        },
+        "profile": {
+          "type": "string"
+        },
+        "enableCommonName": {
+          "type": "boolean"
+        },
+        "notBefore": {
+          "type": "string"
+        },
+        "notAfter": {
+          "type": "string"
+        },
+        "noBundle": {
+          "type": "boolean"
+        },
+        "mustStaple": {
+          "type": "boolean"
+        },
+        "alwaysDeactivateAuthorizations": {
+          "type": "boolean"
+        },
+        "renew": {
+          "$ref": "#/definitions/renewSettings"
+        },
+        "pfx": {
+          "$ref": "#/definitions/pfxSettings"
+        }
+      }
+    },
+    "renewSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "disableRandomSleep": {
+          "type": "boolean"
+        },
+        "days": {
+          "type": "integer"
+        },
+        "reuseKey": {
+          "type": "boolean"
+        },
+        "ari": {
+          "$ref": "#/definitions/ariSettings"
+        }
+      }
+    },
+    "ariSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "disable": {
+          "type": "boolean"
+        },
+        "waitToRenewDuration": {
+          "type": "string"
+        }
+      }
+    },
+    "pfxSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "$ref": "#/definitions/pkcs12Formats"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "hooksSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pre": {
+          "$ref": "#/definitions/hookSettings"
+        },
+        "deploy": {
+          "$ref": "#/definitions/hookSettings"
+        },
+        "post": {
+          "$ref": "#/definitions/hookSettings"
+        }
+      }
+    },
+    "hookSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "string"
+        }
+      }
+    },
+    "logSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "enum": [ "debug", "info", "warn", "error"],
+          "default": "info"
+        },
+        "format": {
+          "enum": [ "text", "json", "colored"],
+          "default": "colored"
+        }
+      }
+    }
+  },
+  "properties": {
+    "storage": {
+      "type": "string",
+      "default": ".lego"
+    },
+    "networkStack": {
+      "type": "string",
+      "enum": ["ipv6only", "ipv4only", ""],
+      "default": ""
+    },
+    "userAgent": {
+      "type": "string"
+    },
+    "servers": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^.+$": {
+          "$ref": "#/definitions/serversSettings"
+        }
+      }
+    },
+    "accounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^.+$": {
+          "$ref": "#/definitions/accountsSettings"
+        }
+      }
+    },
+    "challenges": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^.+$": {
+          "$ref": "#/definitions/challengesSettings"
+        }
+      }
+    },
+    "certificates": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^.+$": {
+          "$ref": "#/definitions/certificatesSettings"
+        }
+      }
+    },
+    "hooks": {
+      "$ref": "#/definitions/hooksSettings"
+    },
+    "log": {
+      "$ref": "#/definitions/logSettings"
+    }
+  }
+}

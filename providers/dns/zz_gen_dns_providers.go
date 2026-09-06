@@ -59,6 +59,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/dnsimple"
 	"github.com/go-acme/lego/v5/providers/dns/dnsla"
 	"github.com/go-acme/lego/v5/providers/dns/dnsmadeeasy"
+	"github.com/go-acme/lego/v5/providers/dns/dnsmint"
 	"github.com/go-acme/lego/v5/providers/dns/dnsservices"
 	"github.com/go-acme/lego/v5/providers/dns/dnsupdate"
 	"github.com/go-acme/lego/v5/providers/dns/dode"
@@ -338,6 +339,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return dnsla.NewDNSProvider()
 	case "dnsmadeeasy":
 		return dnsmadeeasy.NewDNSProvider()
+	case "dnsmint":
+		return dnsmint.NewDNSProvider()
 	case "dnsservices":
 		return dnsservices.NewDNSProvider()
 	case "dnsupdate", "rfc2136":

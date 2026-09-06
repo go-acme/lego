@@ -65,6 +65,7 @@ func allDNSCodes() string {
 		"dnsimple",
 		"dnsla",
 		"dnsmadeeasy",
+		"dnsmint",
 		"dnsservices",
 		"dnsupdate",
 		"dode",
@@ -1390,6 +1391,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dnsmadeeasy`)
+
+	case "dnsmint":
+		// generated from: providers/dns/dnsmint/dnsmint.toml
+		ew.writeln(`Configuration for DNSMint.`)
+		ew.writeln(`Code:	'dnsmint'`)
+		ew.writeln(`Since:	'v5.5.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DNSMINT_API_KEY":	API key with the dns01:write scope`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DNSMINT_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "DNSMINT_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "DNSMINT_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "DNSMINT_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dnsmint`)
 
 	case "dnsservices":
 		// generated from: providers/dns/dnsservices/dnsservices.toml

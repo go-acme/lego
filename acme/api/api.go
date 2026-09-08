@@ -147,7 +147,7 @@ func (a *Core) retrievablePost(ctx context.Context, uri string, content []byte, 
 				return resp, err
 			}
 
-			if a.notFoundRetry && resp.StatusCode == http.StatusNotFound {
+			if a.notFoundRetry && resp != nil && resp.StatusCode == http.StatusNotFound {
 				return resp, err
 			}
 

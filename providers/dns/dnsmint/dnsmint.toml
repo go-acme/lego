@@ -1,0 +1,22 @@
+Name = "DNSMint"
+Description = ''''''
+URL = "https://dnsmint.com/"
+Code = "dnsmint"
+Since = "v5.5.0"
+
+Example = '''
+DNSMINT_API_KEY="xxx" \
+lego --dns dnsmint -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    DNSMINT_API_KEY = "API key with the dns01:write scope"
+  [Configuration.Additional]
+    DNSMINT_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    DNSMINT_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    DNSMINT_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    DNSMINT_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://dnsmint.com/api-reference"

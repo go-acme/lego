@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/internal/errutils"
+	querystring "github.com/google/go-querystring/query"
 )
 
 const defaultBaseURL = "https://rest.%s"
@@ -66,18 +67,15 @@ func (c *Client) GetServices(ctx context.Context) ([]Service, error) {
 
 // GetRecords lists of DNS records.
 // https://rest.active24.cz/v2/docs#/DNS/rest.v2.dns.record_f94908d4e0e48489468498fce87cb90b
-func (c *Client) GetRecords(ctx context.Context, service string, filter RecordFilter) ([]Record, error) {
+func (c *Client) GetRecords(ctx context.Context, service string, filter *RecordFilter) ([]Record, error) {
 	endpoint := c.BaseURL.JoinPath("v2", "service", service, "dns", "record")
 
-	encodedFilter, err := json.Marshal(filter)
+	values, err := querystring.Values(&Filters{RecordFilter: filter})
 	if err != nil {
 		return nil, fmt.Errorf("marshal records filter: %w", err)
 	}
 
-	query := endpoint.Query()
-	query.Add("filters", string(encodedFilter))
-
-	endpoint.RawQuery = query.Encode()
+	endpoint.RawQuery = values.Encode()
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {

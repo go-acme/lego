@@ -51,15 +51,19 @@ type Service struct {
 	AutoExtend  bool    `json:"autoExtend,omitempty"`
 }
 
+type Filters struct {
+	*RecordFilter `url:"filters"`
+}
+
 type RecordFilter struct {
-	Name     string   `json:"name,omitempty"`
-	Type     []string `json:"type,omitempty"`
-	Content  string   `json:"content,omitempty"`
-	TTL      int      `json:"ttl,omitempty"`
-	Note     string   `json:"note,omitempty"`
-	Priority int      `json:"priority,omitempty"`
-	Port     int      `json:"port,omitempty"`
-	Weight   int      `json:"weight,omitempty"`
-	Flags    int      `json:"flags,omitempty"`
-	Tag      []string `json:"tag,omitempty"`
+	Name     string   `url:"name,omitempty"`
+	Type     []string `url:"type,brackets,omitempty"`
+	Content  string   `url:"content,omitempty"`
+	TTL      int      `url:"ttl,omitempty"`
+	Note     string   `url:"note,omitempty"`
+	Priority int      `url:"priority,omitempty"`
+	Port     int      `url:"port,omitempty"`
+	Weight   int      `url:"weight,omitempty"`
+	Flags    int      `url:"flags,omitempty"`
+	Tag      []string `url:"tag,omitempty"`
 }

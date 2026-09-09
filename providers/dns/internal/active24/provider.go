@@ -105,7 +105,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("find service ID: %w", err)
 	}
 
-	recordID, err := d.findRecordID(ctx, strconv.Itoa(serviceID), info)
+	recordID, err := d.findRecordID(ctx, strconv.Itoa(serviceID), info, authZone)
 	if err != nil {
 		return fmt.Errorf("find record ID: %w", err)
 	}
@@ -145,10 +145,14 @@ func (d *DNSProvider) findServiceID(ctx context.Context, domain string) (int, er
 	return 0, fmt.Errorf("service not found for domain: %s", domain)
 }
 
-func (d *DNSProvider) findRecordID(ctx context.Context, serviceID string, info dns01.ChallengeInfo) (int, error) {
-	// NOTE(ldez): Despite the API documentation, the filter doesn't seem to work.
-	filter := internal.RecordFilter{
-		Name:    dns01.UnFqdn(info.EffectiveFQDN),
+func (d *DNSProvider) findRecordID(ctx context.Context, serviceID string, info dns01.ChallengeInfo, authZone string) (int, error) {
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	if err != nil {
+		return 0, err
+	}
+
+	filter := &internal.RecordFilter{
+		Name:    subDomain,
 		Type:    []string{"TXT"},
 		Content: info.Value,
 	}

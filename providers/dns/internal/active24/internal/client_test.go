@@ -92,13 +92,17 @@ func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /v2/service/aaa/dns/record",
 			servermock.ResponseFromFixture("records.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("filters[content]", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
+				With("filters[name]", "_acme-challenge").
+				With("filters[type][]", "TXT"),
 		).
 		Build(t)
 
-	filter := RecordFilter{
-		Name:    "example.com",
+	filter := &RecordFilter{
+		Name:    "_acme-challenge",
 		Type:    []string{"TXT"},
-		Content: "txt",
+		Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
 	records, err := client.GetRecords(t.Context(), "aaa", filter)
@@ -126,8 +130,8 @@ func TestClient_GetRecords_errors(t *testing.T) {
 		).
 		Build(t)
 
-	filter := RecordFilter{
-		Name:    "example.com",
+	filter := &RecordFilter{
+		Name:    "_acme-challenge",
 		Type:    []string{"TXT"},
 		Content: "txt",
 	}

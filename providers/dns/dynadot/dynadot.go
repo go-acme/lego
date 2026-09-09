@@ -114,7 +114,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		Subs: []internal.SubRecord{{
 			SubHost: subDomain,
 			Record: internal.Record{
-				Type:   "TXT",
+				Type:   "txt",
 				Value1: info.Value,
 			},
 		}},
@@ -148,7 +148,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		Subs: []internal.SubRecord{{
 			SubHost: subDomain,
 			Record: internal.Record{
-				Type:   "TXT",
+				Type:   "txt",
 				Value1: info.Value,
 			},
 		}},

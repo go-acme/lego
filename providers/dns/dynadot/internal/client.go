@@ -55,7 +55,7 @@ func (c *Client) SetDNS(ctx context.Context, domain string, payload *SetDNSReque
 }
 
 // RemoveDNS removes DNS records for the specified domain.
-// Currently not documented.
+// https://www.dynadot.com/domain/api-document?api-version=2.0.0#remove_dns
 func (c *Client) RemoveDNS(ctx context.Context, domain string, payload *RemoveDNSRequest) error {
 	endpoint := c.BaseURL.JoinPath("restful", "v2", "domains", domain, "records")
 

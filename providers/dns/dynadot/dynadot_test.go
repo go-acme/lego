@@ -177,7 +177,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.ResponseFromInternal("success.json"),
 			servermock.CheckRequestJSONBodyFromInternal("set_dns-request.json"),
 			servermock.CheckHeader().
-				With("X-Signature", "StGY3XMuHaR4iZ1vcddPkasNsVuPyoxdG44w29/iYSM="),
+				With("X-Signature", "5ajUPToqQdGz4QrXzXueT/QGWK94YbfX/tG8GRn8JRM="),
 		).
 		Build(t)
 
@@ -191,7 +191,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			servermock.ResponseFromInternal("success.json"),
 			servermock.CheckRequestJSONBodyFromInternal("remove_dns-request.json"),
 			servermock.CheckHeader().
-				With("X-Signature", "dNpJ/HG586+FnDdgeiNQHGRLl2Sdxav6Q0G3IiGBQT0="),
+				With("X-Signature", "ybrN00UL8nWclU1AmvyoIGb7uJURud5UPKFuOkGNtuI="),
 		).
 		Build(t)
 

@@ -36,7 +36,7 @@ func TestClient_SetDNS(t *testing.T) {
 			servermock.ResponseFromFixture("success.json"),
 			servermock.CheckRequestJSONBodyFromFixture("set_dns-request.json"),
 			servermock.CheckHeader().
-				With("X-Signature", "StGY3XMuHaR4iZ1vcddPkasNsVuPyoxdG44w29/iYSM="),
+				With("X-Signature", "5ajUPToqQdGz4QrXzXueT/QGWK94YbfX/tG8GRn8JRM="),
 		).
 		Build(t)
 
@@ -44,7 +44,7 @@ func TestClient_SetDNS(t *testing.T) {
 		Subs: []SubRecord{{
 			SubHost: "_acme-challenge",
 			Record: Record{
-				Type:   "TXT",
+				Type:   "txt",
 				Value1: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 			},
 		}},
@@ -68,7 +68,7 @@ func TestClient_SetDNS_error(t *testing.T) {
 		Subs: []SubRecord{{
 			SubHost: "_acme-challenge",
 			Record: Record{
-				Type:   "TXT",
+				Type:   "txt",
 				Value1: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 			},
 		}},
@@ -86,7 +86,7 @@ func TestClient_RemoveDNS(t *testing.T) {
 			servermock.ResponseFromFixture("success.json"),
 			servermock.CheckRequestJSONBodyFromFixture("remove_dns-request.json"),
 			servermock.CheckHeader().
-				With("X-Signature", "dNpJ/HG586+FnDdgeiNQHGRLl2Sdxav6Q0G3IiGBQT0="),
+				With("X-Signature", "ybrN00UL8nWclU1AmvyoIGb7uJURud5UPKFuOkGNtuI="),
 		).
 		Build(t)
 
@@ -94,7 +94,7 @@ func TestClient_RemoveDNS(t *testing.T) {
 		Subs: []SubRecord{{
 			SubHost: "_acme-challenge",
 			Record: Record{
-				Type:   "TXT",
+				Type:   "txt",
 				Value1: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 			},
 		}},
@@ -116,7 +116,7 @@ func TestClient_RemoveDNS_error(t *testing.T) {
 		Subs: []SubRecord{{
 			SubHost: "_acme-challenge",
 			Record: Record{
-				Type:   "TXT",
+				Type:   "txt",
 				Value1: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 			},
 		}},

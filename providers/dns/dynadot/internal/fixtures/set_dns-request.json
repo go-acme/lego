@@ -1,8 +1,8 @@
 {
-  "sub_list": [
+  "dns_sub_list": [
     {
       "sub_host": "_acme-challenge",
-      "record_type": "TXT",
+      "record_type": "txt",
       "record_value1": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
     }
   ],

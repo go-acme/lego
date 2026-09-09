@@ -36,12 +36,12 @@ type SubRecord struct {
 
 type SetDNSRequest struct {
 	Mains           []Record    `json:"dns_main_list,omitempty"`
-	Subs            []SubRecord `json:"sub_list,omitempty"`
+	Subs            []SubRecord `json:"dns_sub_list,omitempty"`
 	TTL             int         `json:"ttl,omitempty"`
 	AddDNSToCurrent bool        `json:"add_dns_to_current_setting,omitempty"`
 }
 
 type RemoveDNSRequest struct {
 	Mains []Record    `json:"dns_main_list,omitempty"`
-	Subs  []SubRecord `json:"sub_list,omitempty"`
+	Subs  []SubRecord `json:"dns_sub_list,omitempty"`
 }

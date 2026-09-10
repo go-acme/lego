@@ -92,7 +92,7 @@ require (
 	github.com/volcengine/volc-sdk-golang v1.0.256
 	github.com/vultr/govultr/v3 v3.33.0
 	github.com/yandex-cloud/go-genproto v0.120.0
-	github.com/yandex-cloud/go-sdk/services/dns v0.0.94
+	github.com/yandex-cloud/go-sdk/services/dns v0.0.96
 	github.com/yandex-cloud/go-sdk/v2 v2.175.0
 	gitlab.com/greyxor/slogor v1.7.0
 	golang.org/x/crypto v0.57.0

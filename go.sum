@@ -1646,8 +1646,8 @@ github.com/xdg-go/stringprep v1.0.4/go.mod h1:mPGuuIYwz7CmR2bT9j4GbQqutWS1zV24gi
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/yandex-cloud/go-genproto v0.120.0 h1:WDiXtNLaxpUkHOr+jE+V1SCtXf+zTptYM6D5p3hb/GA=
 github.com/yandex-cloud/go-genproto v0.120.0/go.mod h1:0LDD/IZLIUIV4iPH+YcF+jysO3jkSvADFGm4dCAuwQo=
-github.com/yandex-cloud/go-sdk/services/dns v0.0.94 h1:HFEBvYXnje3q0Y0gLrAjt5dSlygtfZ47C7K7Uq3lyII=
-github.com/yandex-cloud/go-sdk/services/dns v0.0.94/go.mod h1:wwmCyY27XG3h0/yDW0ELE0wRBd9HXuPKutMNKsC+afM=
+github.com/yandex-cloud/go-sdk/services/dns v0.0.96 h1:+5HieV3XzDRewMDdKHTscOdgIONH8kuo05xoMjSjzw8=
+github.com/yandex-cloud/go-sdk/services/dns v0.0.96/go.mod h1:QzIZyAp2FB0h15JgoGhttMzOfNEC0qbqvt7expDKdqU=
 github.com/yandex-cloud/go-sdk/v2 v2.175.0 h1:Its1dUKZK6vk+Ooq81tWHGvvUgwOKab9RqTYFF3wz/Q=
 github.com/yandex-cloud/go-sdk/v2 v2.175.0/go.mod h1:vE2u5uMJJGkbL/SkWZDKcSjt2b5vXJM9/JbSH4TqKpQ=
 github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d/go.mod h1:rHwXgn7JulP+udvsHwJoVG1YGAP6VLg4y9I5dyZdqmA=

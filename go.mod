@@ -33,7 +33,7 @@ require (
 	github.com/bradfitz/gomemcache v0.0.0-20260422231931-4d751bb6e37c
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/dnsimple/dnsimple-go/v9 v9.1.1
-	github.com/exoscale/egoscale/v3 v3.1.46
+	github.com/exoscale/egoscale/v3 v3.1.50
 	github.com/go-acme/alidns-20150109/v5 v5.6.1
 	github.com/go-acme/esa-20240910/v3 v3.13.0
 	github.com/go-acme/jdcloud-sdk-go v1.64.0

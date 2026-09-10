@@ -102,7 +102,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("myra: could not find zone for domain %q: %w", domain, err)
 	}
 
-	dom, err := d.client.FetchDomain(dns01.UnFqdn(authZone))
+	dom, err := d.client.FetchDomainContext(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("myra: fetch domain %q: %w", domain, err)
 	}
@@ -125,7 +125,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		TTL:        d.config.TTL,
 	}
 
-	newRecord, err := d.client.CreateDNSRecord(record, dom.ID)
+	newRecord, err := d.client.CreateDNSRecordContext(ctx, record, dom.ID)
 	if err != nil {
 		return fmt.Errorf("myra: create DNS record: %w", err)
 	}
@@ -155,7 +155,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("myra: unknown domain ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	prevRecord, err := d.client.GetDNSRecord(domainID, recordID)
+	prevRecord, err := d.client.GetDNSRecordContext(ctx, domainID, recordID)
 	if err != nil {
 		return fmt.Errorf("myra: get previous record %d: %w", recordID, err)
 	}
@@ -165,7 +165,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		Modified: prevRecord.Modified,
 	}
 
-	_, err = d.client.DeleteDNSRecord(rec, domainID)
+	_, err = d.client.DeleteDNSRecordContext(ctx, rec, domainID)
 	if err != nil {
 		return fmt.Errorf("myra: delete record: %w", err)
 	}

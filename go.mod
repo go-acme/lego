@@ -100,7 +100,7 @@ require (
 	golang.org/x/oauth2 v0.37.0
 	golang.org/x/text v0.42.0
 	golang.org/x/time v0.16.0
-	google.golang.org/api v0.295.0
+	google.golang.org/api v0.297.0
 	gopkg.in/ns1/ns1-go.v2 v2.18.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1

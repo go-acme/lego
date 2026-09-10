@@ -39,7 +39,7 @@ require (
 	github.com/go-acme/jdcloud-sdk-go v1.64.0
 	github.com/go-acme/tencentclouddnspod v1.3.131
 	github.com/go-acme/tencentedgdeone v1.3.170
-	github.com/go-jose/go-jose/v4 v4.1.4
+	github.com/go-jose/go-jose/v4 v4.1.5
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/go-querystring v1.2.0

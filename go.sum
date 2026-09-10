@@ -1515,8 +1515,8 @@ github.com/ruudk/golang-pdf417 v0.0.0-20181029194003-1af4ab5afa58/go.mod h1:6lfF
 github.com/ruudk/golang-pdf417 v0.0.0-20201230142125-a7e3863a1245/go.mod h1:pQAZKsJ8yyVxGRWYNEm9oFB8ieLgKFnamEyDmSA0BRk=
 github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
 github.com/ryanuber/columnize v2.1.0+incompatible/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
-github.com/sacloud/sacloud-sdk-go v0.1.0 h1:bJFSpIu/z+DZPVtJylGKnk4bX1L5PL8h7bbCwGcm200=
-github.com/sacloud/sacloud-sdk-go v0.1.0/go.mod h1:RxnG0/gM/bhx2PRrQJaohnxA6ft3mjeMh11BUG+LoY8=
+github.com/sacloud/sacloud-sdk-go v0.2.0 h1:kL4h1554oMjE+ZnhYos9lbrFC3mhNjWJ9JzAJVsaqSY=
+github.com/sacloud/sacloud-sdk-go v0.2.0/go.mod h1:kW29fUt9FgdTBcsGdA1sFrKnlRPuenUKza3z6jZeX68=
 github.com/sagikazarmark/crypt v0.10.0/go.mod h1:gwTNHQVoOS3xp9Xvz5LLR+1AauC5M6880z5NWzdhOyQ=
 github.com/sagikazarmark/locafero v0.4.0 h1:HApY1R9zGo4DBgr7dqsTH/JJxLTTsOt7u6keLGt6kNQ=
 github.com/sagikazarmark/locafero v0.4.0/go.mod h1:Pe1W6UlPYUk/+wc/6KFhbORCfqzgYEpgQ3O5fPuL3H4=

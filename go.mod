@@ -77,7 +77,7 @@ require (
 	github.com/ovh/go-ovh v1.9.0
 	github.com/pquerna/otp v1.5.0
 	github.com/regfish/regfish-dnsapi-go v0.2.0
-	github.com/sacloud/sacloud-sdk-go v0.1.0
+	github.com/sacloud/sacloud-sdk-go v0.2.0
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.37
 	github.com/selectel/domains-go v1.1.0
 	github.com/selectel/go-selvpcclient/v4 v4.2.0

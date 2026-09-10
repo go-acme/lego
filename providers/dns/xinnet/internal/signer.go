@@ -44,7 +44,7 @@ func (s *Signer) Sign(req *http.Request) error {
 
 	timestamp := s.clock().UTC().Format("20060102T150405Z")
 
-	stringToSign := algorithm + "\n" + timestamp + "\n" + req.Method + "\n" + req.URL.Path + "\n" + string(reqBody)
+	stringToSign := algorithm + "\n" + timestamp + "\n" + req.Method + "\n" + req.URL.Path + `/` + "\n" + string(reqBody)
 
 	h := hmac.New(sha256.New, []byte(s.secret))
 	h.Write([]byte(stringToSign))

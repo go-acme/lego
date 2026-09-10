@@ -47,7 +47,7 @@ func NewClient(signer RequestSigner) (*Client, error) {
 // CreateRecord creates a record.
 // https://apidoc.xin.cn/doc-7283900
 func (c *Client) CreateRecord(ctx context.Context, record Record) (int64, error) {
-	endpoint := c.BaseURL.JoinPath("api", "dns", "create", "/")
+	endpoint := c.BaseURL.JoinPath("api", "dns", "create")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
@@ -67,7 +67,7 @@ func (c *Client) CreateRecord(ctx context.Context, record Record) (int64, error)
 // DeleteRecord deletes a record.
 // https://apidoc.xin.cn/doc-7283901
 func (c *Client) DeleteRecord(ctx context.Context, domain string, recordID int64) error {
-	endpoint := c.BaseURL.JoinPath("api", "dns", "delete", "/")
+	endpoint := c.BaseURL.JoinPath("api", "dns", "delete")
 
 	payload := map[string]any{
 		"domainName": domain,

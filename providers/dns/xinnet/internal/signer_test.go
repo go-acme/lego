@@ -18,7 +18,7 @@ func TestSigner_Sign(t *testing.T) {
 		return time.Date(2024, 6, 5, 8, 55, 45, 0, time.UTC)
 	}
 
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/api/domain/check/", http.NoBody)
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/api/domain/check", http.NoBody)
 
 	err = signer.Sign(req)
 	require.NoError(t, err)

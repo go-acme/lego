@@ -40,7 +40,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /api/dns/create/",
+		Route("POST /api/dns/create",
 			servermock.ResponseFromFixture("create_record.json"),
 			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json"),
 			servermock.CheckHeader().
@@ -66,7 +66,7 @@ func TestClient_CreateRecord(t *testing.T) {
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /api/dns/delete/",
+		Route("POST /api/dns/delete",
 			servermock.ResponseFromFixture("delete_record.json"),
 			servermock.CheckRequestJSONBodyFromFixture("delete_record-request.json"),
 			servermock.CheckHeader().
@@ -81,7 +81,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /api/dns/delete/",
+		Route("POST /api/dns/delete",
 			servermock.ResponseFromFixture("error.json")).
 		Build(t)
 

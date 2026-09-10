@@ -175,6 +175,8 @@ func TestDNSProvider_getHostedZone(t *testing.T) {
 				Route("GET /v2/domains", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 					pageCount++
 
+					rw.Header().Set("Content-Type", "application/json")
+
 					query := req.URL.Query()
 					cursor, _ := strconv.Atoi(query.Get("cursor"))
 					perPage, _ := strconv.Atoi(query.Get("per_page"))

@@ -11,7 +11,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v5/acme"
@@ -527,105 +526,6 @@ func (c *Certifier) RevokeWithReason(ctx context.Context, cert []byte, reason *u
 	}
 
 	return c.core.Certificates.Revoke(ctx, revokeMsg)
-}
-
-// RenewOptions options used by [Certifier.Renew].
-type RenewOptions struct {
-	NotBefore time.Time
-	NotAfter  time.Time
-	// If true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
-	Bundle           bool
-	PreferredChain   string
-	EnableCommonName bool
-
-	Profile string
-
-	AlwaysDeactivateAuthorizations bool
-	// Not supported for CSR request.
-	MustStaple     bool
-	EmailAddresses []string
-}
-
-// Renew takes a Resource and tries to renew the certificate.
-//
-// If the renewal process succeeds, the new certificate will be returned in a new CertResource.
-// Please be aware that this function will return a new certificate in ANY case that is not an error.
-// If the server does not provide us with a new cert on a GET request to the CertURL
-// this function will start a new-cert flow where a new certificate gets generated.
-//
-// If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
-//
-// For private key reuse the PrivateKey property of the passed in Resource should be non-nil.
-func (c *Certifier) Renew(ctx context.Context, certRes Resource, options *RenewOptions) (*Resource, error) {
-	// Input certificate is PEM encoded.
-	// Decode it here as we may need the decoded cert later on in the renewal process.
-	// The input may be a bundle or a single certificate.
-	certificates, err := certcrypto.ParsePEMBundle(certRes.Certificate)
-	if err != nil {
-		return nil, err
-	}
-
-	x509Cert := certificates[0]
-	if x509Cert.IsCA {
-		return nil, fmt.Errorf("certificate bundle starts with a CA certificate (%s)", strings.Join(certRes.Domains, ", "))
-	}
-
-	// This is just meant to be informal for the user.
-	timeLeft := x509Cert.NotAfter.Sub(time.Now().UTC())
-	log.Info("Trying renewal.",
-		log.DomainsAttr(certRes.Domains),
-		slog.Int("hoursRemaining", int(timeLeft.Hours())),
-	)
-
-	// We always need to request a new certificate to renew.
-	// Start by checking to see if the certificate was based off a CSR,
-	// and use that if it's defined.
-	if len(certRes.CSR) > 0 {
-		csr, errP := certcrypto.PemDecodeTox509CSR(certRes.CSR)
-		if errP != nil {
-			return nil, errP
-		}
-
-		request := ObtainForCSRRequest{CSR: csr}
-
-		if options != nil {
-			request.NotBefore = options.NotBefore
-			request.NotAfter = options.NotAfter
-			request.Bundle = options.Bundle
-			request.PreferredChain = options.PreferredChain
-			request.Profile = options.Profile
-			request.AlwaysDeactivateAuthorizations = options.AlwaysDeactivateAuthorizations
-		}
-
-		return c.ObtainForCSR(ctx, request)
-	}
-
-	var privateKey crypto.Signer
-	if certRes.PrivateKey != nil {
-		privateKey, err = certcrypto.ParsePEMPrivateKey(certRes.PrivateKey)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	request := ObtainRequest{
-		Domains:    certcrypto.ExtractDomains(x509Cert),
-		PrivateKey: privateKey,
-	}
-
-	if options != nil {
-		request.MustStaple = options.MustStaple
-		request.NotBefore = options.NotBefore
-		request.NotAfter = options.NotAfter
-		request.Bundle = options.Bundle
-		request.PreferredChain = options.PreferredChain
-		request.EnableCommonName = options.EnableCommonName
-		request.EmailAddresses = options.EmailAddresses
-		request.Profile = options.Profile
-		request.AlwaysDeactivateAuthorizations = options.AlwaysDeactivateAuthorizations
-	}
-
-	return c.Obtain(ctx, request)
 }
 
 // GetOCSP takes a PEM encoded cert or cert bundle returning the raw OCSP response,

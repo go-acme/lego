@@ -6,6 +6,32 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v5.5.0
+
+- Release date: 2026-09-17
+- Tag: [v5.5.0](https://github.com/go-acme/lego/releases/tag/v5.5.0)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for DNSMint
+- **[dnsprovider]** Add DNS provider for FENO
+- **[dnsprovider]** Add DNS provider for Myra
+- **[dnsprovider]** Add DNS provider for Webglobe
+- **[dnsprovider]** gcloud: support access token
+- **[lib,ari]** feat(lib): add UseARICertID to RenewOptions
+
+### Changed
+
+- **[cli]** feat(cli): display account URL in the human-readable accounts list
+
+### Fixed
+
+- **[dnsprovider]** xinnet: remove URL trailing slash
+- **[dnsprovider]** dynadot: fix request bodies
+- **[dnsprovider]** websupport: fix get records filter
+- **[log]** fix: FormattableDuration on 32bits arch
+- **[cli]** fix(cli): Punycode encoding domains for during renewal
+
 ## v5.4.1
 
 - Release date: 2026-08-31

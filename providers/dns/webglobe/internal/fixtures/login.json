@@ -1,0 +1,64 @@
+{
+  "success": true,
+  "data": {
+    "IDcustlogin": 123456,
+    "IDcustomer": 654321,
+    "custlogin_name": "EXAMPLE001",
+    "invoice_name": "Example User",
+    "accounts": [
+      {
+        "IDcustlogin": 123456,
+        "invoice_name": "Example User"
+      }
+    ],
+    "session_id": "abcd1234",
+    "modules": {
+      "customer": [
+        "Billing",
+        "Billing_Commission",
+        "Billing_ContactData",
+        "Billing_Invoices",
+        "Billing_Profiles",
+        "Billing_RecurrentPayments",
+        "Customer_Contacts",
+        "Databases",
+        "Database_Users",
+        "DnsNsSets",
+        "DomainGenerator",
+        "Domains_Space",
+        "Git",
+        "Neworder",
+        "PaidSupportModules",
+        "Reg_Contacts",
+        "Service",
+        "ShoppingBasket",
+        "Upsell",
+        "Users",
+        "Users_Authcode",
+        "Users_CustomerLogins",
+        "Users_CustomerLogins_External",
+        "Users_Dashboard",
+        "Users_Password",
+        "Users_PriceList",
+        "Users_Support"
+      ]
+    },
+    "IDparent": null,
+    "customer_email": "example.user@example.com",
+    "reseller_settings": {
+      "reseller_name": "Webglobe"
+    },
+    "currency": "CZK",
+    "credit_account": false,
+    "credit_account_info": null,
+    "vat_rate": 21,
+    "form_name": "wcz-webpanel",
+    "mojeid": null,
+    "token": "secrettoken",
+    "token_type": "bearer",
+    "expires_in": 7200,
+    "support_level": null,
+    "paid_support_serviceId": null,
+    "paid_support_service_package": null
+  }
+}

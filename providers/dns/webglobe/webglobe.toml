@@ -1,0 +1,24 @@
+Name = "Webglobe"
+Description = ''''''
+URL = "https://www.webglobe.com/"
+Code = "webglobe"
+Since = "v5.5.0"
+
+Example = '''
+WEBGLOBE_LOGIN="xxx" \
+WEBGLOBE_TOKEN="yyy" \
+lego run --dns webglobe -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    WEBGLOBE_LOGIN = "Username"
+    WEBGLOBE_API_KEY = "API token"
+  [Configuration.Additional]
+    WEBGLOBE_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    WEBGLOBE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    WEBGLOBE_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    WEBGLOBE_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://api.webglobe.com/doc"

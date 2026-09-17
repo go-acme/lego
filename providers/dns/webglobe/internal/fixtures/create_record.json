@@ -1,0 +1,13 @@
+{
+  "status": "OK",
+  "success": true,
+  "new_id": 456789,
+  "data": {
+    "id": 456789,
+    "zone": 45,
+    "name": "_acme-challenge",
+    "type": "TXT",
+    "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "ttl": 120
+  }
+}

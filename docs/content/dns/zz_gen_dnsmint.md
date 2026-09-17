@@ -27,7 +27,7 @@ Here is an example bash command using the DNSMint provider:
 
 ```bash
 DNSMINT_API_KEY="xxx" \
-lego --dns dnsmint -d '*.example.com' -d example.com run
+lego run --dns dnsmint -d '*.example.com' -d example.com
 ```
 
 

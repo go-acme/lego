@@ -30,7 +30,7 @@ jobs:
 
       # https://github.com/marketplace/actions/free-disk-space-ubuntu
       - name: Free Disk Space
-        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # main
+        uses: jlumbroso/free-disk-space@3f13feab2962a87273d379ebc36ea159527e6cc9 # v1.3.2
         with:
           # this might remove tools that are actually needed
           tool-cache: false

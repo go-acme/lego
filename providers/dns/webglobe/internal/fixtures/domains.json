@@ -1,0 +1,415 @@
+{
+  "success": true,
+  "status": "OK",
+  "data": {
+    "123456": "example.com"
+  },
+  "all": [
+    {
+      "domain": "example.com",
+      "domain_id": 123456,
+      "package": "RegistrationForward",
+      "service_description": "Registrace domény",
+      "object_type": "DOMAIN",
+      "alt_name": null,
+      "only_hosting": false
+    }
+  ],
+  "domains": {
+    "domains_count": 1,
+    "pinned_domains": {
+      "current_page": 1,
+      "data": [],
+      "first_page_url": "https://api.webglobe.com/domains?page=1",
+      "from": null,
+      "last_page": 1,
+      "last_page_url": "https://api.webglobe.com/domains?page=1",
+      "links": [
+        {
+          "url": null,
+          "label": "&laquo; Previous",
+          "page": null,
+          "active": false
+        },
+        {
+          "url": "https://api.webglobe.com/domains?page=1",
+          "label": "1",
+          "page": 1,
+          "active": true
+        },
+        {
+          "url": null,
+          "label": "Next &raquo;",
+          "page": null,
+          "active": false
+        }
+      ],
+      "next_page_url": null,
+      "path": "https://api.webglobe.com/domains",
+      "per_page": 9999,
+      "prev_page_url": null,
+      "to": null,
+      "total": 0
+    },
+    "multi_domains": {
+      "current_page": 1,
+      "data": [],
+      "first_page_url": "https://api.webglobe.com/domains?page=1",
+      "from": null,
+      "last_page": 1,
+      "last_page_url": "https://api.webglobe.com/domains?page=1",
+      "links": [
+        {
+          "url": null,
+          "label": "&laquo; Previous",
+          "page": null,
+          "active": false
+        },
+        {
+          "url": "https://api.webglobe.com/domains?page=1",
+          "label": "1",
+          "page": 1,
+          "active": true
+        },
+        {
+          "url": null,
+          "label": "Next &raquo;",
+          "page": null,
+          "active": false
+        }
+      ],
+      "next_page_url": null,
+      "path": "https://api.webglobe.com/domains",
+      "per_page": 9999,
+      "prev_page_url": null,
+      "to": null,
+      "total": 0
+    },
+    "reg_domains": {
+      "current_page": 1,
+      "data": [
+        {
+          "domain_id": 123456,
+          "domain": "example.com",
+          "status": "hotovo",
+          "package": "Registrace domény",
+          "dt_till": "2030-12-31",
+          "dom_valid_till": "2030-12-31",
+          "inv_dt_till": "2030-12-30",
+          "IDinvoice": null,
+          "system_package": "RegistrationForward"
+        }
+      ],
+      "first_page_url": "https://api.webglobe.com/domains?page=1",
+      "from": 1,
+      "last_page": 1,
+      "last_page_url": "https://api.webglobe.com/domains?page=1",
+      "links": [
+        {
+          "url": null,
+          "label": "&laquo; Previous",
+          "page": null,
+          "active": false
+        },
+        {
+          "url": "https://api.webglobe.com/domains?page=1",
+          "label": "1",
+          "page": 1,
+          "active": true
+        },
+        {
+          "url": null,
+          "label": "Next &raquo;",
+          "page": null,
+          "active": false
+        }
+      ],
+      "next_page_url": null,
+      "path": "https://api.webglobe.com/domains",
+      "per_page": 9999,
+      "prev_page_url": null,
+      "to": 1,
+      "total": 1
+    },
+    "dns_domains": {
+      "current_page": 1,
+      "data": [],
+      "first_page_url": "https://api.webglobe.com/domains?page=1",
+      "from": null,
+      "last_page": 1,
+      "last_page_url": "https://api.webglobe.com/domains?page=1",
+      "links": [
+        {
+          "url": null,
+          "label": "&laquo; Previous",
+          "page": null,
+          "active": false
+        },
+        {
+          "url": "https://api.webglobe.com/domains?page=1",
+          "label": "1",
+          "page": 1,
+          "active": true
+        },
+        {
+          "url": null,
+          "label": "Next &raquo;",
+          "page": null,
+          "active": false
+        }
+      ],
+      "next_page_url": null,
+      "path": "https://api.webglobe.com/domains",
+      "per_page": 9999,
+      "prev_page_url": null,
+      "to": null,
+      "total": 0
+    },
+    "host_domains": {
+      "current_page": 1,
+      "data": [],
+      "first_page_url": "https://api.webglobe.com/domains?page=1",
+      "from": null,
+      "last_page": 1,
+      "last_page_url": "https://api.webglobe.com/domains?page=1",
+      "links": [
+        {
+          "url": null,
+          "label": "&laquo; Previous",
+          "page": null,
+          "active": false
+        },
+        {
+          "url": "https://api.webglobe.com/domains?page=1",
+          "label": "1",
+          "page": 1,
+          "active": true
+        },
+        {
+          "url": null,
+          "label": "Next &raquo;",
+          "page": null,
+          "active": false
+        }
+      ],
+      "next_page_url": null,
+      "path": "https://api.webglobe.com/domains",
+      "per_page": 9999,
+      "prev_page_url": null,
+      "to": null,
+      "total": 0
+    },
+    "mail_domains": {
+      "current_page": 1,
+      "data": [],
+      "first_page_url": "https://api.webglobe.com/domains?page=1",
+      "from": null,
+      "last_page": 1,
+      "last_page_url": "https://api.webglobe.com/domains?page=1",
+      "links": [
+        {
+          "url": null,
+          "label": "&laquo; Previous",
+          "page": null,
+          "active": false
+        },
+        {
+          "url": "https://api.webglobe.com/domains?page=1",
+          "label": "1",
+          "page": 1,
+          "active": true
+        },
+        {
+          "url": null,
+          "label": "Next &raquo;",
+          "page": null,
+          "active": false
+        }
+      ],
+      "next_page_url": null,
+      "path": "https://api.webglobe.com/domains",
+      "per_page": 9999,
+      "prev_page_url": null,
+      "to": null,
+      "total": 0
+    },
+    "vps_domains": {
+      "current_page": 1,
+      "data": [],
+      "first_page_url": "https://api.webglobe.com/domains?page=1",
+      "from": null,
+      "last_page": 1,
+      "last_page_url": "https://api.webglobe.com/domains?page=1",
+      "links": [
+        {
+          "url": null,
+          "label": "&laquo; Previous",
+          "page": null,
+          "active": false
+        },
+        {
+          "url": "https://api.webglobe.com/domains?page=1",
+          "label": "1",
+          "page": 1,
+          "active": true
+        },
+        {
+          "url": null,
+          "label": "Next &raquo;",
+          "page": null,
+          "active": false
+        }
+      ],
+      "next_page_url": null,
+      "path": "https://api.webglobe.com/domains",
+      "per_page": 9999,
+      "prev_page_url": null,
+      "to": null,
+      "total": 0
+    },
+    "cloud_domains": {
+      "current_page": 1,
+      "data": [],
+      "first_page_url": "https://api.webglobe.com/domains?page=1",
+      "from": null,
+      "last_page": 1,
+      "last_page_url": "https://api.webglobe.com/domains?page=1",
+      "links": [
+        {
+          "url": null,
+          "label": "&laquo; Previous",
+          "page": null,
+          "active": false
+        },
+        {
+          "url": "https://api.webglobe.com/domains?page=1",
+          "label": "1",
+          "page": 1,
+          "active": true
+        },
+        {
+          "url": null,
+          "label": "Next &raquo;",
+          "page": null,
+          "active": false
+        }
+      ],
+      "next_page_url": null,
+      "path": "https://api.webglobe.com/domains",
+      "per_page": 9999,
+      "prev_page_url": null,
+      "to": null,
+      "total": 0
+    },
+    "server_domains": {
+      "current_page": 1,
+      "data": [],
+      "first_page_url": "https://api.webglobe.com/domains?page=1",
+      "from": null,
+      "last_page": 1,
+      "last_page_url": "https://api.webglobe.com/domains?page=1",
+      "links": [
+        {
+          "url": null,
+          "label": "&laquo; Previous",
+          "page": null,
+          "active": false
+        },
+        {
+          "url": "https://api.webglobe.com/domains?page=1",
+          "label": "1",
+          "page": 1,
+          "active": true
+        },
+        {
+          "url": null,
+          "label": "Next &raquo;",
+          "page": null,
+          "active": false
+        }
+      ],
+      "next_page_url": null,
+      "path": "https://api.webglobe.com/domains",
+      "per_page": 9999,
+      "prev_page_url": null,
+      "to": null,
+      "total": 0
+    },
+    "ssl_domains": {
+      "current_page": 1,
+      "data": [],
+      "first_page_url": "https://api.webglobe.com/domains?page=1",
+      "from": null,
+      "last_page": 1,
+      "last_page_url": "https://api.webglobe.com/domains?page=1",
+      "links": [
+        {
+          "url": null,
+          "label": "&laquo; Previous",
+          "page": null,
+          "active": false
+        },
+        {
+          "url": "https://api.webglobe.com/domains?page=1",
+          "label": "1",
+          "page": 1,
+          "active": true
+        },
+        {
+          "url": null,
+          "label": "Next &raquo;",
+          "page": null,
+          "active": false
+        }
+      ],
+      "next_page_url": null,
+      "path": "https://api.webglobe.com/domains",
+      "per_page": 9999,
+      "prev_page_url": null,
+      "to": null,
+      "total": 0
+    },
+    "wsb_domains": {
+      "current_page": 1,
+      "data": [],
+      "first_page_url": "https://api.webglobe.com/domains?page=1",
+      "from": null,
+      "last_page": 1,
+      "last_page_url": "https://api.webglobe.com/domains?page=1",
+      "links": [
+        {
+          "url": null,
+          "label": "&laquo; Previous",
+          "page": null,
+          "active": false
+        },
+        {
+          "url": "https://api.webglobe.com/domains?page=1",
+          "label": "1",
+          "page": 1,
+          "active": true
+        },
+        {
+          "url": null,
+          "label": "Next &raquo;",
+          "page": null,
+          "active": false
+        }
+      ],
+      "next_page_url": null,
+      "path": "https://api.webglobe.com/domains",
+      "per_page": 9999,
+      "prev_page_url": null,
+      "to": null,
+      "total": 0
+    }
+  },
+  "multihosting_domains": [],
+  "hostplus": [],
+  "last_used_domains": [],
+  "byPackage": {
+    "RegistrationForward": {
+      "123456": "example.com"
+    }
+  }
+}

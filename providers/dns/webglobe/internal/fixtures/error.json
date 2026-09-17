@@ -1,0 +1,8 @@
+{
+  "success": false,
+  "error": {
+    "message": "Unknown error - problem has been reported and will be fixed soon.",
+    "code": 1,
+    "data": {}
+  }
+}

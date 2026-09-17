@@ -221,6 +221,7 @@ func allDNSCodes() string {
 		"vscale",
 		"vultr",
 		"wannafind",
+		"webglobe",
 		"webnamesca",
 		"webnamesru",
 		"websupport",
@@ -4711,6 +4712,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/wannafind`)
+
+	case "webglobe":
+		// generated from: providers/dns/webglobe/webglobe.toml
+		ew.writeln(`Configuration for Webglobe.`)
+		ew.writeln(`Code:	'webglobe'`)
+		ew.writeln(`Since:	'v5.5.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "WEBGLOBE_API_KEY":	API token`)
+		ew.writeln(`	- "WEBGLOBE_LOGIN":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "WEBGLOBE_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "WEBGLOBE_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "WEBGLOBE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "WEBGLOBE_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/webglobe`)
 
 	case "webnamesca":
 		// generated from: providers/dns/webnamesca/webnamesca.toml

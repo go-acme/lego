@@ -1,0 +1,17 @@
+{
+  "code": "OK",
+  "data": [
+    {
+      "id": 456,
+      "type": "TXT",
+      "name": "_acme-challenge.example.com",
+      "lookup": "_acme-challenge",
+      "domainid": 123,
+      "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+      "ttl": 120,
+      "status": "ACTIVE",
+      "stdname": "yyy",
+      "serial": "xxx"
+    }
+  ]
+}

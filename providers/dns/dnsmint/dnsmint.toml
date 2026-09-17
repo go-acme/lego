@@ -6,7 +6,7 @@ Since = "v5.5.0"
 
 Example = '''
 DNSMINT_API_KEY="xxx" \
-lego --dns dnsmint -d '*.example.com' -d example.com run
+lego run --dns dnsmint -d '*.example.com' -d example.com
 '''
 
 [Configuration]

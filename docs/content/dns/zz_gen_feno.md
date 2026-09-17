@@ -27,7 +27,7 @@ Here is an example bash command using the FENO provider:
 
 ```bash
 FENO_API_KEY="feno_live_xxx" \
-lego --dns feno -d '*.example.com' -d example.com run
+lego run --dns feno -d '*.example.com' -d example.com
 ```
 
 

@@ -28,7 +28,7 @@ Here is an example bash command using the Poweradmin provider:
 ```bash
 POWERADMIN_BASE_URL="https://example.org" \
 POWERADMIN_API_KEY="xxx" \
-lego --dns poweradmin -d '*.example.com' -d example.com run
+lego run --dns poweradmin -d '*.example.com' -d example.com
 ```
 
 

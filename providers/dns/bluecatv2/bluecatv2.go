@@ -215,6 +215,11 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("bluecat: deploy zone: %w", err)
 	}
 
+	d.recordIDsMu.Lock()
+	delete(d.zoneIDs, token)
+	delete(d.recordIDs, token)
+	d.recordIDsMu.Unlock()
+
 	return nil
 }
 

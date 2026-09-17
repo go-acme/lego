@@ -6,7 +6,7 @@ Since = "v5.5.0"
 
 Example = '''
 FENO_API_KEY="feno_live_xxx" \
-lego --dns feno -d '*.example.com' -d example.com run
+lego run --dns feno -d '*.example.com' -d example.com
 '''
 
 Additional = '''

@@ -59,6 +59,8 @@ func (r *RenewalInfo) ShouldRenewAt(now time.Time, willingToSleep time.Duration)
 
 // RenewOptions options used by [Certifier.Renew].
 type RenewOptions struct {
+	KeyType certcrypto.KeyType
+
 	NotBefore time.Time
 	NotAfter  time.Time
 	// If true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
@@ -71,6 +73,7 @@ type RenewOptions struct {
 	UseARICertID bool
 
 	AlwaysDeactivateAuthorizations bool
+
 	// Not supported for CSR request.
 	MustStaple     bool
 	EmailAddresses []string
@@ -181,7 +184,7 @@ func newRenewRequestForCSR(certRes Resource, x509Cert *x509.Certificate, options
 func newRenewRequest(certRes Resource, x509Cert *x509.Certificate, options *RenewOptions) (ObtainRequest, error) {
 	var privateKey crypto.Signer
 
-	if certRes.PrivateKey != nil {
+	if len(certRes.PrivateKey) > 0 {
 		var err error
 
 		privateKey, err = certcrypto.ParsePEMPrivateKey(certRes.PrivateKey)
@@ -193,10 +196,15 @@ func newRenewRequest(certRes Resource, x509Cert *x509.Certificate, options *Rene
 	request := ObtainRequest{
 		Domains:    certcrypto.ExtractDomains(x509Cert),
 		PrivateKey: privateKey,
+		KeyType:    certRes.KeyType,
 	}
 
 	if options == nil {
 		return request, nil
+	}
+
+	if options.KeyType != "" {
+		request.KeyType = options.KeyType
 	}
 
 	request.MustStaple = options.MustStaple

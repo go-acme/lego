@@ -215,6 +215,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/vscale"
 	"github.com/go-acme/lego/v5/providers/dns/vultr"
 	"github.com/go-acme/lego/v5/providers/dns/wannafind"
+	"github.com/go-acme/lego/v5/providers/dns/webglobe"
 	"github.com/go-acme/lego/v5/providers/dns/webnamesca"
 	"github.com/go-acme/lego/v5/providers/dns/webnamesru"
 	"github.com/go-acme/lego/v5/providers/dns/websupport"
@@ -651,6 +652,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return vultr.NewDNSProvider()
 	case "wannafind":
 		return wannafind.NewDNSProvider()
+	case "webglobe":
+		return webglobe.NewDNSProvider()
 	case "webnamesca":
 		return webnamesca.NewDNSProvider()
 	case "webnamesru", "webnames":

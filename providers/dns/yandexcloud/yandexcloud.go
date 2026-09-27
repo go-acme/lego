@@ -114,21 +114,9 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 		return fmt.Errorf("yandexcloud: could not find zone for domain %q: %w", domain, err)
 	}
 
-	zones, err := d.getZones(ctx)
+	zone, err := d.findZone(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
-	}
-
-	var zoneID string
-
-	for _, zone := range zones {
-		if zone.GetZone() == authZone {
-			zoneID = zone.GetId()
-		}
-	}
-
-	if zoneID == "" {
-		return fmt.Errorf("yandexcloud: cant find dns zone %s in yandex cloud", authZone)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -136,7 +124,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
 
-	err = d.upsertRecordSetData(ctx, zoneID, subDomain, info.Value)
+	err = d.upsertRecordSetData(ctx, zone.GetId(), subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
@@ -153,21 +141,9 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) er
 		return fmt.Errorf("yandexcloud: could not find zone for domain %q: %w", domain, err)
 	}
 
-	zones, err := d.getZones(ctx)
+	zone, err := d.findZone(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
-	}
-
-	var zoneID string
-
-	for _, zone := range zones {
-		if zone.GetZone() == authZone {
-			zoneID = zone.GetId()
-		}
-	}
-
-	if zoneID == "" {
-		return nil
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -175,7 +151,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) er
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
 
-	err = d.removeRecordSetData(ctx, zoneID, subDomain, info.Value)
+	err = d.removeRecordSetData(ctx, zone.GetId(), subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
@@ -189,18 +165,32 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// getZones retrieves available zones from yandex cloud.
-func (d *DNSProvider) getZones(ctx context.Context) ([]*ycdnsproto.DnsZone, error) {
+func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*ycdnsproto.DnsZone, error) {
 	list := &ycdnsproto.ListDnsZonesRequest{
 		FolderId: d.config.FolderID,
+		PageSize: 1000,
 	}
 
-	response, err := d.client.List(ctx, list)
-	if err != nil {
-		return nil, errors.New("unable to fetch dns zones")
+	for {
+		response, err := d.client.List(ctx, list)
+		if err != nil {
+			return nil, fmt.Errorf("list zones: %w", err)
+		}
+
+		for _, zone := range response.GetDnsZones() {
+			if zone.GetZone() == authZone {
+				return zone, nil
+			}
+		}
+
+		if response.GetNextPageToken() == "" {
+			break
+		}
+
+		list.PageToken = response.GetNextPageToken()
 	}
 
-	return response.GetDnsZones(), nil
+	return nil, fmt.Errorf("zone not found for %s", authZone)
 }
 
 func (d *DNSProvider) upsertRecordSetData(ctx context.Context, zoneID, name, value string) error {

@@ -2,9 +2,7 @@ module github.com/go-acme/lego/v5
 
 go 1.26.0
 
-ignore (
-	./docs
-)
+ignore ./docs
 
 require (
 	cloud.google.com/go/compute/metadata v0.9.0

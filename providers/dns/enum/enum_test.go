@@ -1,4 +1,4 @@
-package enumco
+package enum
 
 import (
 	"net/http/httptest"
@@ -39,7 +39,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIToken:    "",
 				EnvCredentials: "",
 			},
-			expected: "enumco: some credentials information are missing: ENUMCO_API_TOKEN or ENUMCO_CREDENTIALS",
+			expected: "enum: some credentials information are missing: ENUM_API_TOKEN or ENUM_CREDENTIALS",
 		},
 	}
 
@@ -79,7 +79,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "enumco: credentials missing",
+			expected: "enum: credentials missing",
 		},
 	}
 

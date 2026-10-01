@@ -1752,7 +1752,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "ENUM_API_TOKEN":	API token.`)
-		ew.writeln(`	- "ENUM_CREDENTIALS":	Overides API token. Mapping of zone name and API token.`)
+		ew.writeln(`	- "ENUM_CREDENTIALS":	Only works if API token is not defined. Mapping of zone name and API token.`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

@@ -43,7 +43,7 @@ lego run --dns enum -d '*.example.com' -d example.com
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `ENUM_API_TOKEN` | API token. |
-| `ENUM_CREDENTIALS` | Overides API token. Mapping of zone name and API token. |
+| `ENUM_CREDENTIALS` | Only works if API token is not defined. Mapping of zone name and API token. |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

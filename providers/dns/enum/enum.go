@@ -1,5 +1,5 @@
-// Package enumco implements a DNS provider for solving the DNS-01 challenge using Enum.
-package enumco
+// Package enum implements a DNS provider for solving the DNS-01 challenge using Enum.
+package enum
 
 import (
 	"context"
@@ -11,13 +11,13 @@ import (
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/env"
-	"github.com/go-acme/lego/v5/providers/dns/enumco/internal"
+	"github.com/go-acme/lego/v5/providers/dns/enum/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 )
 
 // Environment variables names.
 const (
-	envNamespace = "ENUMCO_"
+	envNamespace = "ENUM_"
 
 	EnvAPIToken    = envNamespace + "API_TOKEN"
 	EnvCredentials = envNamespace + "CREDENTIALS"
@@ -66,7 +66,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	credentials, err := getCredentials()
 	if err != nil {
-		return nil, fmt.Errorf("enumco: %w", err)
+		return nil, fmt.Errorf("enum: %w", err)
 	}
 
 	config.Credentials = credentials
@@ -77,16 +77,16 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for Enum.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("enumco: the configuration of the DNS provider is nil")
+		return nil, errors.New("enum: the configuration of the DNS provider is nil")
 	}
 
 	if len(config.Credentials) == 0 {
-		return nil, errors.New("enumco: credentials missing")
+		return nil, errors.New("enum: credentials missing")
 	}
 
 	client, err := internal.NewClient()
 	if err != nil {
-		return nil, fmt.Errorf("enumco: %w", err)
+		return nil, fmt.Errorf("enum: %w", err)
 	}
 
 	if config.HTTPClient != nil {
@@ -107,19 +107,19 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("enumco: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("enum: could not find zone for domain %q: %w", domain, err)
 	}
 
 	tok, err := getToken(d.config, dns01.UnFqdn(authZone))
 	if err != nil {
-		return fmt.Errorf("enumco: %w", err)
+		return fmt.Errorf("enum: %w", err)
 	}
 
 	ctxAuth := internal.WithContext(ctx, tok)
 
 	projectID, err := d.getProjectID(ctxAuth)
 	if err != nil {
-		return fmt.Errorf("enumco: %w", err)
+		return fmt.Errorf("enum: %w", err)
 	}
 
 	in := &internal.GetZoneByNameRequest{
@@ -129,7 +129,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	zone, err := d.client.GetZoneByName(ctxAuth, in)
 	if err != nil {
-		return fmt.Errorf("enumco: get zone: %w", err)
+		return fmt.Errorf("enum: get zone: %w", err)
 	}
 
 	request := &internal.AddRecordSetValueRequest{
@@ -145,7 +145,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	_, err = d.client.AddRecordSetValue(ctxAuth, request)
 	if err != nil {
-		return fmt.Errorf("enumco: add record set value: %w", err)
+		return fmt.Errorf("enum: add record set value: %w", err)
 	}
 
 	return nil
@@ -157,19 +157,19 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 
 	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("enumco: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("enum: could not find zone for domain %q: %w", domain, err)
 	}
 
 	tok, err := getToken(d.config, dns01.UnFqdn(authZone))
 	if err != nil {
-		return fmt.Errorf("enumco: %w", err)
+		return fmt.Errorf("enum: %w", err)
 	}
 
 	ctxAuth := internal.WithContext(ctx, tok)
 
 	projectID, err := d.getProjectID(ctxAuth)
 	if err != nil {
-		return fmt.Errorf("enumco: %w", err)
+		return fmt.Errorf("enum: %w", err)
 	}
 
 	in := &internal.GetZoneByNameRequest{
@@ -179,7 +179,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 
 	zone, err := d.client.GetZoneByName(ctxAuth, in)
 	if err != nil {
-		return fmt.Errorf("enumco: get zone: %w", err)
+		return fmt.Errorf("enum: get zone: %w", err)
 	}
 
 	request := &internal.RemoveRecordSetValueRequest{
@@ -192,7 +192,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 
 	_, err = d.client.RemoveRecordSetValue(ctxAuth, request)
 	if err != nil {
-		return fmt.Errorf("enumco: remove record set value: %w", err)
+		return fmt.Errorf("enum: remove record set value: %w", err)
 	}
 
 	return nil

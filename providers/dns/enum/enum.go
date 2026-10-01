@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
@@ -218,6 +219,10 @@ func (d *DNSProvider) getProjectID(ctx context.Context) (string, error) {
 }
 
 func getCredentials() (map[string]string, error) {
+	if os.Getenv(EnvAPIToken) != "" && os.Getenv(EnvCredentials) != "" {
+		return nil, fmt.Errorf("%s and %s are mutually exclusive", EnvAPIToken, EnvCredentials)
+	}
+
 	values, err := env.Get(EnvAPIToken)
 	if err == nil {
 		return map[string]string{

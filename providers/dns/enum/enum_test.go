@@ -247,8 +247,7 @@ func Test_getCredentials(t *testing.T) {
 		{
 			desc: "API token",
 			envVars: map[string]string{
-				EnvAPIToken:    "secret",
-				EnvCredentials: "example.com:secretA,example.org:secretB",
+				EnvAPIToken: "secret",
 			},
 			expected: map[string]string{
 				TokenZoneWildcard: "secret",
@@ -278,6 +277,49 @@ func Test_getCredentials(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, credentials)
+		})
+	}
+}
+
+func Test_getCredentials_error(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "multiple environment variables",
+			envVars: map[string]string{
+				EnvAPIToken:    "secret",
+				EnvCredentials: "example.com:secretA,example.org:secretB",
+			},
+			expected: "ENUM_API_TOKEN and ENUM_CREDENTIALS are mutually exclusive",
+		},
+		{
+			desc: "mapping credentials",
+			envVars: map[string]string{
+				EnvCredentials: "secret",
+			},
+			expected: "incorrect pair: secret",
+		},
+		{
+			desc:     "no environment variables",
+			envVars:  map[string]string{},
+			expected: "some credentials information are missing: ENUM_API_TOKEN or ENUM_CREDENTIALS",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			_, err := getCredentials()
+
+			require.EqualError(t, err, test.expected)
 		})
 	}
 }

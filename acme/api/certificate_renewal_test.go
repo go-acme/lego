@@ -4,10 +4,12 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/json"
 	"net/http"
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/certcrypto"
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
@@ -131,6 +133,20 @@ func TestCertificateService_GetRenewalInfo_errors(t *testing.T) {
 			handler: func(w http.ResponseWriter, r *http.Request) {
 				// API that responds with error instead of renewal info.
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			},
+		},
+		{
+			desc:    "end before start",
+			request: mustMakeARICertID(t, leaf),
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				info := &acme.RenewalInfo{
+					SuggestedWindow: acme.Window{
+						Start: time.Now(),
+						End:   time.Now().Add(-time.Hour),
+					},
+				}
+
+				_ = json.NewEncoder(w).Encode(info)
 			},
 		},
 	}

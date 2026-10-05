@@ -42,26 +42,48 @@ func TestClient_RetrieveZones(t *testing.T) {
 	zones, err := client.RetrieveZones(t.Context(), "example.com")
 	require.NoError(t, err)
 
-	expected := []Zone{{
-		ID:   "e74d0d15-f567-4b7b-9069-26ee1f93bae3",
-		Type: "zone",
-		Metadata: ZoneMetadata{
-			CreatedDate:          time.Date(2022, time.August, 21, 15, 52, 53, 0, time.UTC),
-			CreatedBy:            "ionos:iam:cloud:31960002:users/87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
-			CreatedByUserID:      "87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
-			LastModifiedDate:     time.Date(2022, time.August, 21, 15, 52, 53, 0, time.UTC),
-			LastModifiedBy:       "ionos:iam:cloud:31960002:users/87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
-			LastModifiedByUserID: "63cef532-26fe-4a64-a4e0-de7c8a506c90",
-			ResourceURN:          "ionos:<product>:<location>:<contract>:<resource-path>",
-			State:                "PROVISIONING",
-			Nameservers:          []string{"ns-ic.ui-dns.com", "ns-ic.ui-dns.de", "ns-ic.ui-dns.org", "ns-ic.ui-dns.biz"},
+	expected := []Zone{
+		{
+			ID:   "e74d0d15-f567-4b7b-9069-26ee1f93bae3",
+			Type: "zone",
+			Metadata: ZoneMetadata{
+				CreatedDate:          time.Date(2022, time.August, 21, 15, 52, 53, 0, time.UTC),
+				CreatedBy:            "ionos:iam:cloud:31960002:users/87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
+				CreatedByUserID:      "87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
+				LastModifiedDate:     time.Date(2022, time.August, 21, 15, 52, 53, 0, time.UTC),
+				LastModifiedBy:       "ionos:iam:cloud:31960002:users/87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
+				LastModifiedByUserID: "63cef532-26fe-4a64-a4e0-de7c8a506c90",
+				ResourceURN:          "ionos:<product>:<location>:<contract>:<resource-path>",
+				State:                "PROVISIONING",
+				Nameservers:          []string{"ns-ic.ui-dns.com", "ns-ic.ui-dns.de", "ns-ic.ui-dns.org", "ns-ic.ui-dns.biz"},
+			},
+			Properties: ZoneProperties{
+				ZoneName:    "example.com",
+				Description: "The hosted zone is used for example.com",
+				Enabled:     true,
+			},
 		},
-		Properties: ZoneProperties{
-			ZoneName:    "example.com",
-			Description: "The hosted zone is used for example.com",
-			Enabled:     true,
+		{
+			ID:   "fdfda49a-93f2-4962-91ca-3cfb5fbf55ce",
+			Type: "zone",
+			Metadata: ZoneMetadata{
+				CreatedDate:          time.Date(2022, time.August, 21, 15, 52, 53, 0, time.UTC),
+				CreatedBy:            "ionos:iam:cloud:31960002:users/87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
+				CreatedByUserID:      "87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
+				LastModifiedDate:     time.Date(2022, time.August, 21, 15, 52, 53, 0, time.UTC),
+				LastModifiedBy:       "ionos:iam:cloud:31960002:users/87f9a82e-b28d-49ed-9d04-fba2c0459cd3",
+				LastModifiedByUserID: "63cef532-26fe-4a64-a4e0-de7c8a506c90",
+				ResourceURN:          "ionos:<product>:<location>:<contract>:<resource-path>",
+				State:                "PROVISIONING",
+				Nameservers:          []string{"ns-ic.ui-dns.com", "ns-ic.ui-dns.de", "ns-ic.ui-dns.org", "ns-ic.ui-dns.biz"},
+			},
+			Properties: ZoneProperties{
+				ZoneName:    "foo.example.com",
+				Description: "The hosted zone is used for foo.example.com",
+				Enabled:     true,
+			},
 		},
-	}}
+	}
 
 	assert.Equal(t, expected, zones)
 }

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -109,21 +110,15 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("ionoscloud: could not find zone for domain %q: %w", domain, err)
 	}
 
-	zones, err := d.client.RetrieveZones(ctx, dns01.UnFqdn(authZone))
+	zone, err := d.findZone(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
-		return fmt.Errorf("ionoscloud: retrieve zones: %w", err)
-	}
-
-	if len(zones) != 1 {
-		return fmt.Errorf("ionoscloud: zone ID not found for domain %q", domain)
+		return fmt.Errorf("ionoscloud: %w", err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("ionoscloud: %w", err)
 	}
-
-	zoneID := zones[0].ID
 
 	request := internal.RecordProperties{
 		Name:    subDomain,
@@ -132,13 +127,13 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		TTL:     d.config.TTL,
 	}
 
-	record, err := d.client.CreateRecord(ctx, zoneID, request)
+	record, err := d.client.CreateRecord(ctx, zone.ID, request)
 	if err != nil {
 		return fmt.Errorf("ionoscloud: create record: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
-	d.zoneIDs[token] = zoneID
+	d.zoneIDs[token] = zone.ID
 	d.recordIDs[token] = record.ID
 	d.recordIDsMu.Unlock()
 
@@ -182,4 +177,19 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) findZone(ctx context.Context, name string) (*internal.Zone, error) {
+	zones, err := d.client.RetrieveZones(ctx, name)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve zones: %w", err)
+	}
+
+	for _, zone := range zones {
+		if strings.EqualFold(zone.Properties.ZoneName, name) {
+			return &zone, nil
+		}
+	}
+
+	return nil, fmt.Errorf("zone not found for %q", name)
 }

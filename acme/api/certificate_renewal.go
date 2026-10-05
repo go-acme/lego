@@ -19,7 +19,7 @@ var ErrNoARI = errors.New("renewalInfo[get/post]: server does not advertise a re
 // This is used to determine if a certificate needs to be renewed.
 //
 // Note: this endpoint is part of a draft specification, not all ACME servers will implement it.
-// This method will return api.ErrNoARI if the server does not advertise a renewal info endpoint.
+// This method will return api.ErrNoARI if the server does not advertise a renewal info endpoint, and when end is equal or before start.
 //
 // https://www.rfc-editor.org/rfc/rfc9773.html
 func (c *CertificateService) GetRenewalInfo(ctx context.Context, certID string) (*acme.ExtendedRenewalInfo, error) {
@@ -36,6 +36,15 @@ func (c *CertificateService) GetRenewalInfo(ctx context.Context, certID string) 
 	resp, err := c.core.doer.Get(ctx, c.core.GetDirectory().RenewalInfo+"/"+certID, info)
 	if err != nil {
 		return nil, err
+	}
+
+	// A RenewalInfo object in which the end timestamp equals or precedes the start timestamp is invalid.
+	// Servers MUST NOT serve such a response,
+	// and clients MUST treat one as though they failed to receive any response from the server
+	// (e.g., retry at an appropriate interval, renew on a fallback schedule, etc.).
+	// https://www.rfc-editor.org/info/rfc9773/#section-4.2
+	if info.SuggestedWindow.End.Equal(info.SuggestedWindow.Start) || info.SuggestedWindow.End.Before(info.SuggestedWindow.Start) {
+		return nil, ErrNoARI
 	}
 
 	info.RetryAfter = sender.GetRetryAfter(resp)

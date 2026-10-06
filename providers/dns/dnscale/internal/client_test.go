@@ -82,15 +82,19 @@ func TestClient_ListZones(t *testing.T) {
 	zones, err := client.ListZones(t.Context(), &Pager{Limit: 100})
 	require.NoError(t, err)
 
-	expected := &PaginatedData[Zone]{
-		Items: []Zone{
+	expected := &PaginatedZones{
+		Zones: []Zone{
 			{ID: "zone_ghi789", Name: "foo.example.com", Type: "primary", Status: "active", RecordCount: 6},
 			{ID: "zone_abc123", Name: "example.com", Type: "primary", Status: "active", RecordCount: 15, DNSSecEnabled: true},
 			{ID: "zone_def456", Name: "example.org", Type: "primary", Status: "active", RecordCount: 8},
 		},
-		Total:  2,
-		Limit:  20,
-		Offset: 0,
+		Pagination: Pagination{
+			Total:   2,
+			Offset:  0,
+			Limit:   20,
+			Count:   2,
+			HasMore: false,
+		},
 	}
 
 	assert.Equal(t, expected, zones)

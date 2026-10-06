@@ -1,7 +1,7 @@
 {
   "status": "success",
   "data": {
-    "items": [
+    "zones": [
       {
         "id": "zone_ghi789",
         "name": "foo.example.com",
@@ -26,8 +26,12 @@
         "dnssec_enabled": false
       }
     ],
-    "total": 2,
-    "limit": 20,
-    "offset": 0
+    "pagination": {
+      "total": 2,
+      "offset": 0,
+      "limit": 20,
+      "count": 2,
+      "has_more": false
+    }
   }
 }

@@ -21,11 +21,17 @@ type APIResponse[T any] struct {
 	Data   T      `json:"data"`
 }
 
-type PaginatedData[T any] struct {
-	Items  []T `json:"items"`
-	Total  int `json:"total"`
-	Limit  int `json:"limit"`
-	Offset int `json:"offset"`
+type PaginatedZones struct {
+	Zones      []Zone     `json:"zones"`
+	Pagination Pagination `json:"pagination"`
+}
+
+type Pagination struct {
+	Total   int  `json:"total"`
+	Offset  int  `json:"offset"`
+	Limit   int  `json:"limit"`
+	Count   int  `json:"count"`
+	HasMore bool `json:"has_more"`
 }
 
 type Pager struct {

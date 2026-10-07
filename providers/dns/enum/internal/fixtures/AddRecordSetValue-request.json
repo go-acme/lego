@@ -1,0 +1,10 @@
+{
+  "projectId": "projectA",
+  "zoneId": "zoneA",
+  "name": "_acme-challenge.example.com",
+  "ttl": 120,
+  "type": "TXT",
+  "value": {
+    "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+  }
+}

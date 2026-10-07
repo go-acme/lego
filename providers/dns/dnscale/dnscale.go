@@ -172,9 +172,9 @@ func (d *DNSProvider) findZoneID(ctx context.Context, fqdn string) (string, erro
 			return "", fmt.Errorf("list zones: %w", err)
 		}
 
-		allZones = append(allZones, zonePage.Items...)
+		allZones = append(allZones, zonePage.Zones...)
 
-		if len(zonePage.Items) < pager.Limit {
+		if !zonePage.Pagination.HasMore {
 			break
 		}
 

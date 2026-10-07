@@ -88,7 +88,7 @@ func (c *Client) DeleteRecordByNameType(ctx context.Context, zoneID, rType, name
 	return c.do(req, nil)
 }
 
-func (c *Client) ListZones(ctx context.Context, pager *Pager) (*PaginatedData[Zone], error) {
+func (c *Client) ListZones(ctx context.Context, pager *Pager) (*PaginatedZones, error) {
 	endpoint := c.BaseURL.JoinPath("v1", "zones")
 
 	if pager != nil {
@@ -105,7 +105,7 @@ func (c *Client) ListZones(ctx context.Context, pager *Pager) (*PaginatedData[Zo
 		return nil, err
 	}
 
-	result := new(APIResponse[*PaginatedData[Zone]])
+	result := new(APIResponse[*PaginatedZones])
 
 	err = c.do(req, result)
 	if err != nil {

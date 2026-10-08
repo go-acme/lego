@@ -193,6 +193,7 @@ func allDNSCodes() string {
 		"selectel",
 		"selectelv2",
 		"selfhostde",
+		"selfhostdev2",
 		"servercow",
 		"shellrent",
 		"simply",
@@ -4098,7 +4099,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "selfhostde":
 		// generated from: providers/dns/selfhostde/selfhostde.toml
-		ew.writeln(`Configuration for SelfHost.(de|eu).`)
+		ew.writeln(`Configuration for SelfHost.(de|eu) DEPRECATED.`)
 		ew.writeln(`Code:	'selfhostde'`)
 		ew.writeln(`Since:	'v4.19.0'`)
 		ew.writeln()
@@ -4117,6 +4118,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/selfhostde`)
+
+	case "selfhostdev2":
+		// generated from: providers/dns/selfhostdev2/selfhostdev2.toml
+		ew.writeln(`Configuration for SelfHost.(de|eu).`)
+		ew.writeln(`Code:	'selfhostdev2'`)
+		ew.writeln(`Since:	'v5.6.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SELFHOSTDEV2_API_KEYS":	API keys mapping with domains (ex: example.com:xx.yy,example.org:ww.zz).`)
+		ew.writeln(`	- "SELFHOSTDEV2_RECORDS_MAPPING":	Record IDs mapping with domains (ex: example.com:123:456,example.org:789,foo.example.com:147).`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SELFHOSTDEV2_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "SELFHOSTDEV2_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 30)`)
+		ew.writeln(`	- "SELFHOSTDEV2_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 240)`)
+		ew.writeln(`	- "SELFHOSTDEV2_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/selfhostdev2`)
 
 	case "servercow":
 		// generated from: providers/dns/servercow/servercow.toml

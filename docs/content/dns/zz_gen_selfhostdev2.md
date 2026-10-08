@@ -1,35 +1,34 @@
 ---
-title: "SelfHost.(de|eu) DEPRECATED"
+title: "SelfHost.(de|eu)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
-slug: selfhostde
+slug: selfhostdev2
 dnsprovider:
-  since:    "v4.19.0"
-  code:     "selfhostde"
+  since:    "v5.6.0"
+  code:     "selfhostdev2"
   url:      "https://www.selfhost.de"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/selfhostde/selfhostde.toml -->
+<!-- providers/dns/selfhostdev2/selfhostdev2.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [SelfHost.(de|eu) DEPRECATED](https://www.selfhost.de).
+Configuration for [SelfHost.(de|eu)](https://www.selfhost.de).
 
 
 <!--more-->
 
-- Code: `selfhostde`
-- Since: v4.19.0
+- Code: `selfhostdev2`
+- Since: v5.6.0
 
 
-Here is an example bash command using the SelfHost.(de|eu) DEPRECATED provider:
+Here is an example bash command using the SelfHost.(de|eu) provider:
 
 ```bash
-SELFHOSTDE_USERNAME=xxx \
-SELFHOSTDE_PASSWORD=yyy \
-SELFHOSTDE_RECORDS_MAPPING=my.example.com:123 \
-lego run --dns selfhostde -d '*.example.com' -d example.com
+SELFHOSTDEV2_API_KEYS="example.com:xx.yy,example.org:ww.zz" \
+SELFHOSTDEV2_RECORDS_MAPPING=my.example.com:123 \
+lego run --dns selfhostdev2 -d '*.example.com' -d example.com
 ```
 
 
@@ -39,9 +38,8 @@ lego run --dns selfhostde -d '*.example.com' -d example.com
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `SELFHOSTDE_PASSWORD` | Password |
-| `SELFHOSTDE_RECORDS_MAPPING` | Record IDs mapping with domains (ex: example.com:123:456,example.org:789,foo.example.com:147) |
-| `SELFHOSTDE_USERNAME` | Username |
+| `SELFHOSTDEV2_API_KEYS` | API keys mapping with domains (ex: example.com:xx.yy,example.org:ww.zz). |
+| `SELFHOSTDEV2_RECORDS_MAPPING` | Record IDs mapping with domains (ex: example.com:123:456,example.org:789,foo.example.com:147). |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
@@ -51,18 +49,17 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `SELFHOSTDE_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
-| `SELFHOSTDE_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 30) |
-| `SELFHOSTDE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 240) |
-| `SELFHOSTDE_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
+| `SELFHOSTDEV2_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
+| `SELFHOSTDEV2_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 30) |
+| `SELFHOSTDEV2_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 240) |
+| `SELFHOSTDEV2_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 120) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
-SelfHost.de doesn't have an API to create or delete TXT records,
-there is only an "unofficial" and undocumented endpoint to update an existing TXT record.
+SelfHost.de has a complex API to create or delete TXT records:
 
-So, before using lego to request a certificate for a given domain or wildcard (such as `my.example.org` or `*.my.example.org`),
+before using lego to request a certificate for a given domain or wildcard (such as `my.example.org` or `*.my.example.org`),
 you must create:
 
 - one TXT record named `_acme-challenge.my.example.org` if you are **not** using wildcard for this domain.
@@ -87,10 +84,20 @@ you would need:
 
 The resulting environment variable would then be: `SELFHOSTDE_RECORDS_MAPPING=my.example.com:123:456,other.example.com:789`
 
+Also, the API keys are per domain.
+
+You must prepare the `SELFHOSTDE_API_KEYS` environment variable with the following format:
+
+```
+<domain_X>:<API_key_1>,<domain_Y>:<API_key_2>,<domain_Z>:<API_key_3>
+```
+
+The API key format is `<key_id>.<secret>`, where `key_id` is numeric (no leading zero), `secret` is lowercase hex characters.
+
 
 
 
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/selfhostde/selfhostde.toml -->
+<!-- providers/dns/selfhostdev2/selfhostdev2.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

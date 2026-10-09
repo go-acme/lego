@@ -86,6 +86,8 @@ func handleRegistration(ctx context.Context, cmd *cli.Command, lazyClient lzSetU
 
 			reg, err := registerAccount(ctx, cmd, client)
 			if err != nil {
+				_ = accountsStorage.Delete(account)
+
 				return fmt.Errorf("could not complete registration: %w", err)
 			}
 
@@ -109,7 +111,7 @@ func handleRegistration(ctx context.Context, cmd *cli.Command, lazyClient lzSetU
 func registerAccount(ctx context.Context, cmd *cli.Command, client *lego.Client) (*acme.ExtendedAccount, error) {
 	accepted := handleTOS(cmd, client)
 	if !accepted {
-		log.Fatal("You did not accept the TOS. Unable to proceed.")
+		return nil, errors.New("you did not accept the TOS: unable to proceed")
 	}
 
 	switch {

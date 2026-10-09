@@ -23,8 +23,8 @@ func setUpLogger(cmd *cli.Command, logCfg *configuration.Log) {
 		cfg.Level = cmd.String(flags.FlgLogLevel)
 		cfg.Format = cmd.String(flags.FlgLogFormat)
 	} else {
-		cfg.Level = cmp.Or(logCfg.Level, cmd.String(flags.FlgLogLevel))
-		cfg.Format = cmp.Or(logCfg.Format, cmd.String(flags.FlgLogFormat))
+		cfg.Level = flagOrConfig(cmd, logCfg.Level, flags.FlgLogLevel)
+		cfg.Format = flagOrConfig(cmd, logCfg.Format, flags.FlgLogFormat)
 	}
 
 	level := getLogLeveler(cfg.Level)
@@ -60,6 +60,14 @@ func setUpLogger(cmd *cli.Command, logCfg *configuration.Log) {
 	}
 
 	log.SetDefault(logger)
+}
+
+func flagOrConfig(cmd *cli.Command, cfgValue, flgName string) string {
+	if cmd.IsSet(flgName) {
+		return cmd.String(flgName)
+	}
+
+	return cmp.Or(cfgValue, cmd.String(flgName))
 }
 
 func getLogLeveler(lvl string) slog.Leveler {

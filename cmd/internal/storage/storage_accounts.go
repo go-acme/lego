@@ -115,6 +115,28 @@ func (s *AccountsStorage) Save(account *Account) error {
 	return os.WriteFile(accountFilePath, jsonBytes, filePerm)
 }
 
+// Delete deletes an account directory.
+// IMPORTANT: This method is not recommended, prefer using the [Archiver] for a safer approach.
+func (s *AccountsStorage) Delete(account *Account) error {
+	if account.ID == "" {
+		account.ID = account.GetID()
+	}
+
+	server, err := url.Parse(account.Server)
+	if err != nil {
+		return fmt.Errorf("invalid server URL %q: %w", account.Server, err)
+	}
+
+	accountFilePath := s.getAccountFilePath(server, account.GetID())
+
+	err = os.RemoveAll(filepath.Dir(accountFilePath))
+	if err != nil {
+		return fmt.Errorf("delete the directory %q for the account: %w", filepath.Dir(accountFilePath), err)
+	}
+
+	return nil
+}
+
 // SavePrivateKey saves the private key to a file defined by the account.
 func (s *AccountsStorage) SavePrivateKey(account *Account) error {
 	effectiveAccountID := account.GetID()

@@ -81,6 +81,34 @@ func TestAccountsStorage_Save(t *testing.T) {
 	assert.JSONEq(t, string(expected), string(file))
 }
 
+func TestAccountsStorage_Delete(t *testing.T) {
+	basePath := t.TempDir()
+	storage := NewAccountsStorage(basePath)
+
+	server := "https://example.com/dir"
+	accountID := "test@example.com"
+	email := "account@example.com"
+	keyType := certcrypto.RSA4096
+
+	srv, err := url.Parse(server)
+	require.NoError(t, err)
+
+	account, err := storage.Get(server, keyType, email, accountID)
+	require.NoError(t, err)
+
+	err = storage.Save(account)
+	require.NoError(t, err)
+
+	accountFilePath := storage.getAccountFilePath(srv, account.GetID())
+
+	require.DirExists(t, filepath.Dir(accountFilePath))
+
+	err = storage.Delete(account)
+	require.NoError(t, err)
+
+	require.NoDirExists(t, filepath.Dir(accountFilePath))
+}
+
 func TestAccountsStorage_Get_newAccount(t *testing.T) {
 	storage := NewAccountsStorage(t.TempDir())
 

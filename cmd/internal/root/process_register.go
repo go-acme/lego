@@ -52,6 +52,8 @@ func handleRegistration(ctx context.Context, lazyClient lzSetUp, accountConfig *
 
 			reg, err := registerAccount(ctx, client, accountConfig)
 			if err != nil {
+				_ = accountsStorage.Delete(account)
+
 				return fmt.Errorf("could not complete registration: %w", err)
 			}
 

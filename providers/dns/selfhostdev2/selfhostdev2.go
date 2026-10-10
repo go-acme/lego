@@ -1,5 +1,5 @@
-// Package selfhostde implements a DNS provider for solving the DNS-01 challenge using SelfHost.(de|eu).
-package selfhostde
+// Package selfhostdev2 implements a DNS provider for solving the DNS-01 challenge using SelfHost.(de|eu).
+package selfhostdev2
 
 import (
 	"context"
@@ -11,18 +11,16 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
-	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
-	"github.com/go-acme/lego/v5/providers/dns/selfhostde/internal"
+	"github.com/go-acme/lego/v5/providers/dns/selfhostdev2/internal"
 )
 
 // Environment variables.
 const (
-	envNamespace = "SELFHOSTDE_"
+	envNamespace = "SELFHOSTDEV2_"
 
-	EnvUsername       = envNamespace + "USERNAME"
-	EnvPassword       = envNamespace + "PASSWORD"
+	EnvTokens         = envNamespace + "API_KEYS"
 	EnvRecordsMapping = envNamespace + "RECORDS_MAPPING"
 
 	EnvTTL                = envNamespace + "TTL"
@@ -35,8 +33,7 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Username string
-	Password string
+	Credentials map[string]string
 
 	RecordsMapping   map[string]*Seq
 	recordsMappingMu sync.Mutex
@@ -59,7 +56,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-func (c *Config) getSeqNext(effectiveDomain, fallback string) (string, error) {
+func (c *Config) getSeqNext(effectiveDomain, fallback string) (int64, error) {
 	c.recordsMappingMu.Lock()
 	defer c.recordsMappingMu.Unlock()
 
@@ -68,11 +65,24 @@ func (c *Config) getSeqNext(effectiveDomain, fallback string) (string, error) {
 		// fallback
 		seq, ok = c.RecordsMapping[fallback]
 		if !ok {
-			return "", fmt.Errorf("record mapping not found for %q", effectiveDomain)
+			return 0, fmt.Errorf("record mapping not found for %q", effectiveDomain)
 		}
 	}
 
 	return seq.Next(), nil
+}
+
+func (c *Config) getAPIKey(domain string) (string, error) {
+	for s := range dns01.UnFqdnDomainsSeq(domain) {
+		v, ok := c.Credentials[s]
+		if !ok {
+			continue
+		}
+
+		return v, nil
+	}
+
+	return "", fmt.Errorf("no API key found for %q", domain)
 }
 
 // DNSProvider implements the challenge.Provider interface.
@@ -80,26 +90,29 @@ type DNSProvider struct {
 	config *Config
 	client *internal.Client
 
-	recordIDs   map[string]string
+	recordIDs   map[string]int64
 	recordIDsMu sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for SelfHost.(de|eu).
 func NewDNSProvider() (*DNSProvider, error) {
-	log.Warn("selfhostde: this implementation is deprecated, please 'selfhostdev2' instead.")
-
-	values, err := env.Get(EnvUsername, EnvPassword, EnvRecordsMapping)
+	values, err := env.Get(EnvTokens, EnvRecordsMapping)
 	if err != nil {
-		return nil, fmt.Errorf("selfhostde: %w", err)
+		return nil, fmt.Errorf("selfhostdev2: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Username = values[EnvUsername]
-	config.Password = values[EnvPassword]
+
+	credentials, err := env.ParsePairs(values[EnvTokens])
+	if err != nil {
+		return nil, fmt.Errorf("selfhostdev2: credentials: %w", err)
+	}
+
+	config.Credentials = credentials
 
 	mapping, err := parseRecordsMapping(values[EnvRecordsMapping])
 	if err != nil {
-		return nil, fmt.Errorf("selfhostde: malformed records mapping: %w", err)
+		return nil, fmt.Errorf("selfhostdev2: malformed records mapping: %w", err)
 	}
 
 	config.RecordsMapping = mapping
@@ -110,24 +123,24 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for SelfHost.(de|eu).
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("selfhostde: supplied configuration is nil")
+		return nil, errors.New("selfhostdev2: supplied configuration is nil")
 	}
 
-	if config.Username == "" || config.Password == "" {
-		return nil, errors.New("selfhostde: credentials missing")
+	if len(config.Credentials) == 0 {
+		return nil, errors.New("selfhostdev2: credentials missing")
 	}
 
 	if len(config.RecordsMapping) == 0 {
-		return nil, errors.New("selfhostde: missing record mapping")
+		return nil, errors.New("selfhostdev2: missing record mapping")
 	}
 
 	for domain, seq := range config.RecordsMapping {
 		if seq == nil || len(seq.ids) == 0 {
-			return nil, fmt.Errorf("selfhostde: missing record ID for %q", domain)
+			return nil, fmt.Errorf("selfhostdev2: missing record ID for %q", domain)
 		}
 	}
 
-	client := internal.NewClient(config.Username, config.Password)
+	client := internal.NewClient()
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
@@ -138,7 +151,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{
 		config:    config,
 		client:    client,
-		recordIDs: make(map[string]string),
+		recordIDs: make(map[string]int64),
 	}, nil
 }
 
@@ -157,12 +170,24 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	recordID, err := d.config.getSeqNext(effectiveDomain, fqdn)
 	if err != nil {
-		return fmt.Errorf("selfhostde: %w", err)
+		return fmt.Errorf("selfhostdev2: %w", err)
 	}
 
-	err = d.client.UpdateTXTRecord(ctx, recordID, info.Value)
+	apiKey, err := d.config.getAPIKey(effectiveDomain)
 	if err != nil {
-		return fmt.Errorf("selfhostde: update DNS TXT record (id=%s): %w", recordID, err)
+		return fmt.Errorf("selfhostdev2: %w", err)
+	}
+
+	payload := internal.Payload{
+		APIKey:   apiKey,
+		Action:   internal.ActionAdd,
+		RecordID: recordID,
+		Content:  info.Value,
+	}
+
+	err = d.client.UpdateTXTRecord(ctx, payload)
+	if err != nil {
+		return fmt.Errorf("selfhostdev2: update DNS TXT record (id=%d): %w", recordID, err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -181,12 +206,26 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	d.recordIDsMu.Unlock()
 
 	if !ok {
-		return fmt.Errorf("selfhostde: unknown record ID for %q", dns01.UnFqdn(info.EffectiveFQDN))
+		return fmt.Errorf("selfhostdev2: unknown record ID for %q", dns01.UnFqdn(info.EffectiveFQDN))
 	}
 
-	err := d.client.UpdateTXTRecord(ctx, recordID, "empty")
+	effectiveDomain := dns01.UnFqdn(info.EffectiveDomain())
+
+	apiKey, err := d.config.getAPIKey(effectiveDomain)
 	if err != nil {
-		return fmt.Errorf("selfhostde: emptied DNS TXT record (id=%s): %w", recordID, err)
+		return fmt.Errorf("selfhostdev2: %w", err)
+	}
+
+	payload := internal.Payload{
+		APIKey:   apiKey,
+		Action:   internal.ActionRemove,
+		RecordID: recordID,
+		Content:  info.Value,
+	}
+
+	err = d.client.UpdateTXTRecord(ctx, payload)
+	if err != nil {
+		return fmt.Errorf("selfhostdev2: emptied DNS TXT record (id=%d): %w", recordID, err)
 	}
 
 	d.recordIDsMu.Lock()

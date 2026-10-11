@@ -326,7 +326,7 @@ func generateDerCert(privateKey *rsa.PrivateKey, expiration time.Time, domain st
 		NotBefore: time.Now(),
 		NotAfter:  expiration,
 
-		KeyUsage:              x509.KeyUsageKeyEncipherment,
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		BasicConstraintsValid: true,
 		ExtraExtensions:       extensions,
 	}

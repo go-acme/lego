@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/selfhostde/internal"
@@ -85,6 +86,8 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for SelfHost.(de|eu).
 func NewDNSProvider() (*DNSProvider, error) {
+	log.Warn("selfhostde: this implementation is deprecated, please 'selfhostdev2' instead.")
+
 	values, err := env.Get(EnvUsername, EnvPassword, EnvRecordsMapping)
 	if err != nil {
 		return nil, fmt.Errorf("selfhostde: %w", err)

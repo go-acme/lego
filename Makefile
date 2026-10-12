@@ -22,10 +22,10 @@ build: clean
 	@echo Version: $(VERSION)
 	go build -trimpath -ldflags '-X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
 
-# Example:  make build_lightdns DNS="lego_acmedns,lego_cloudflare"
-build_lightdns: clean
+# Example:  make build_dnslight DNS="lego_acmedns,lego_cloudflare"
+build_dnslight: clean
 	@echo Version: $(VERSION)
-	go build -v -tags lego_lightdns,${DNS} -trimpath -ldflags '-s -w -X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
+	go build -v -tags lego_dnslight,${DNS} -trimpath -ldflags '-s -w -X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
 
 image:
 	@echo Version: $(VERSION)

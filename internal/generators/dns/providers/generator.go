@@ -71,8 +71,9 @@ func generateMapping(info *descriptors.Providers) error {
 
 	return nil
 }
+
 func generatedRegister(info *descriptors.Providers) error {
-	dir := filepath.Join(root, "internal", "register")
+	dir := filepath.Join(root, "providers", "dnslight")
 
 	err := os.RemoveAll(dir)
 	if err != nil {
@@ -89,7 +90,7 @@ func generatedRegister(info *descriptors.Providers) error {
 		return err
 	}
 
-	_, _ = noop.WriteString("package register\n")
+	_, _ = noop.WriteString("package dnslight\n")
 
 	for _, provider := range info.Providers {
 		err = generateRegisterProvider(dir, provider)

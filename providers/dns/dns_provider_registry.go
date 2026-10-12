@@ -1,4 +1,4 @@
-//go:build lego_lightdns
+//go:build lego_dnslight
 
 package dns
 
@@ -11,9 +11,8 @@ import (
 
 /**
 Experimental DNS provider loading.
-Used to build a "light" CLI.
 
-ex: `go build -tags lego_lightdns,lego_cloudflare -trimpath -ldflags '-s -w -X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}`
+ex: `go build -tags lego_dnslight,lego_cloudflare -trimpath -ldflags '-s -w -X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}`
 */
 
 var providers = sync.Map{}

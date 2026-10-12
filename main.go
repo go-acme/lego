@@ -8,8 +8,8 @@ import (
 	"runtime"
 
 	"github.com/go-acme/lego/v5/cmd"
-	_ "github.com/go-acme/lego/v5/internal/register"
 	"github.com/go-acme/lego/v5/log"
+	_ "github.com/go-acme/lego/v5/providers/dnslight"
 	"github.com/urfave/cli/v3"
 )
 

@@ -9,7 +9,6 @@ import (
 
 	"github.com/go-acme/lego/v5/cmd"
 	"github.com/go-acme/lego/v5/log"
-	_ "github.com/go-acme/lego/v5/providers/dnslight"
 	"github.com/urfave/cli/v3"
 )
 

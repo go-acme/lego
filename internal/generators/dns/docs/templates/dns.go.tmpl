@@ -8,14 +8,12 @@ import (
 	"sort"
 	"strings"
 	"text/tabwriter"
+
+	"github.com/go-acme/lego/v5/providers/dns"
 )
 
 func allDNSCodes() string {
-	providers := []string{
-{{- range $provider := .Providers }}
-		"{{ $provider.Code }}",
-{{- end}}
-	}
+	providers := dns.GetProviderCodes()
 	sort.Strings(providers)
 	return strings.Join(providers, ", ")
 }

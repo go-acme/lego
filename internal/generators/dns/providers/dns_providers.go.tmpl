@@ -24,3 +24,11 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return nil, fmt.Errorf("unrecognized DNS provider: %s", name)
 	}
 }
+
+func GetProviderCodes() []string {
+	return []string{
+{{- range $provider := .Providers }}
+		"{{ $provider.Code }}",
+{{- end}}
+	}
+}

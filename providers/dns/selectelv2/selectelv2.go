@@ -16,7 +16,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/miekg/dns"
 	selectelapi "github.com/selectel/domains-go/pkg/v2"
-	"github.com/selectel/go-selvpcclient/v4/selvpcclient"
+	"github.com/selectel/go-selvpcclient/v5/selvpcclient"
 	"golang.org/x/net/idna"
 )
 

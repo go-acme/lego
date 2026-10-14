@@ -77,7 +77,7 @@ require (
 	github.com/sacloud/sacloud-sdk-go v0.2.0
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.37
 	github.com/selectel/domains-go v1.1.0
-	github.com/selectel/go-selvpcclient/v4 v4.2.0
+	github.com/selectel/go-selvpcclient/v5 v5.0.0
 	github.com/softlayer/softlayer-go v1.2.1
 	github.com/stretchr/testify v1.12.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.177
@@ -157,7 +157,7 @@ require (
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.20 // indirect
 	github.com/googleapis/gax-go/v2 v2.24.0 // indirect
-	github.com/gophercloud/gophercloud v1.10.0 // indirect
+	github.com/gophercloud/gophercloud v1.14.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect

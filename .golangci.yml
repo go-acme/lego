@@ -281,11 +281,6 @@ linters:
         text: cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high
         linters:
           - gocyclo
-      # Those elements have been replaced by non-exposed structures.
-      - path: providers/dns/linode/linode_test.go
-        text: 'SA1019: github\.com/linode/linodego\.(DomainsPagedResponse|DomainRecordsPagedResponse) is deprecated:'
-        linters:
-          - staticcheck
       # There is no explanation about the replacement.
       - path: providers/dns/sakuracloud/sakuracloud.go
         text: 'SA1019: github.com/sacloud/sacloud-sdk-go/api/iaas.NewClientWithOptions is deprecated: この関数からは指定できない設定項目がある'

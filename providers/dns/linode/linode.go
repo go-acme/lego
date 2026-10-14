@@ -14,7 +14,7 @@ import (
 	"github.com/go-acme/lego/v5/internal/useragent"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"golang.org/x/oauth2"
 )
 
@@ -103,7 +103,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		},
 	}
 
-	client := linodego.NewClient(clientdebug.Wrap(oauth2Client))
+	client, err := linodego.NewClient(clientdebug.Wrap(oauth2Client))
+	if err != nil {
+		return nil, fmt.Errorf("linode: new client: %w", err)
+	}
+
 	client.SetUserAgent(useragent.Get())
 
 	return &DNSProvider{config: config, client: &client}, nil

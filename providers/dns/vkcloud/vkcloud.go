@@ -11,7 +11,7 @@ import (
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/vkcloud/internal"
-	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/v2"
 )
 
 // Environment variables names.
@@ -130,7 +130,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 
 	authZone = dns01.UnFqdn(authZone)
 
-	zones, err := d.client.ListZones()
+	zones, err := d.client.ListZones(ctx)
 	if err != nil {
 		return fmt.Errorf("vkcloud: unable to fetch dns zones: %w", err)
 	}
@@ -152,7 +152,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 		return fmt.Errorf("vkcloud: %w", err)
 	}
 
-	err = d.upsertTXTRecord(zoneUUID, subDomain, info.Value)
+	err = d.upsertTXTRecord(ctx, zoneUUID, subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("vkcloud: %w", err)
 	}
@@ -171,7 +171,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) er
 
 	authZone = dns01.UnFqdn(authZone)
 
-	zones, err := d.client.ListZones()
+	zones, err := d.client.ListZones(ctx)
 	if err != nil {
 		return fmt.Errorf("vkcloud: unable to fetch dns zones: %w", err)
 	}
@@ -193,7 +193,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) er
 		return fmt.Errorf("vkcloud: %w", err)
 	}
 
-	err = d.removeTXTRecord(zoneUUID, subDomain, info.Value)
+	err = d.removeTXTRecord(ctx, zoneUUID, subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("vkcloud: %w", err)
 	}
@@ -207,8 +207,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) upsertTXTRecord(zoneUUID, name, value string) error {
-	records, err := d.client.ListTXTRecords(zoneUUID)
+func (d *DNSProvider) upsertTXTRecord(ctx context.Context, zoneUUID, name, value string) error {
+	records, err := d.client.ListTXTRecords(ctx, zoneUUID)
 	if err != nil {
 		return err
 	}
@@ -220,15 +220,15 @@ func (d *DNSProvider) upsertTXTRecord(zoneUUID, name, value string) error {
 		}
 	}
 
-	return d.client.CreateTXTRecord(zoneUUID, &internal.DNSTXTRecord{
+	return d.client.CreateTXTRecord(ctx, zoneUUID, &internal.DNSTXTRecord{
 		Name:    name,
 		Content: value,
 		TTL:     d.config.TTL,
 	})
 }
 
-func (d *DNSProvider) removeTXTRecord(zoneUUID, name, value string) error {
-	records, err := d.client.ListTXTRecords(zoneUUID)
+func (d *DNSProvider) removeTXTRecord(ctx context.Context, zoneUUID, name, value string) error {
+	records, err := d.client.ListTXTRecords(ctx, zoneUUID)
 	if err != nil {
 		return err
 	}
@@ -236,7 +236,7 @@ func (d *DNSProvider) removeTXTRecord(zoneUUID, name, value string) error {
 	name = dns01.UnFqdn(name)
 	for _, record := range records {
 		if record.Name == name && record.Content == value {
-			return d.client.DeleteTXTRecord(zoneUUID, record.UUID)
+			return d.client.DeleteTXTRecord(ctx, zoneUUID, record.UUID)
 		}
 	}
 

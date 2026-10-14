@@ -1,13 +1,14 @@
 package internal
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
 )
 
 // Client VK client.
@@ -42,14 +43,14 @@ func NewClient(endpoint string, authOpts gophercloud.AuthOptions) (*Client, erro
 	}, nil
 }
 
-func (c *Client) ListZones() ([]DNSZone, error) {
+func (c *Client) ListZones(ctx context.Context) ([]DNSZone, error) {
 	endpoint := c.baseURL.JoinPath("/")
 
 	var zones []DNSZone
 
 	opts := &gophercloud.RequestOpts{JSONResponse: &zones}
 
-	err := c.request(http.MethodGet, endpoint, opts)
+	err := c.request(ctx, http.MethodGet, endpoint, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -57,14 +58,14 @@ func (c *Client) ListZones() ([]DNSZone, error) {
 	return zones, nil
 }
 
-func (c *Client) ListTXTRecords(zoneUUID string) ([]DNSTXTRecord, error) {
+func (c *Client) ListTXTRecords(ctx context.Context, zoneUUID string) ([]DNSTXTRecord, error) {
 	endpoint := c.baseURL.JoinPath(zoneUUID, "txt", "/")
 
 	var records []DNSTXTRecord
 
 	opts := &gophercloud.RequestOpts{JSONResponse: &records}
 
-	err := c.request(http.MethodGet, endpoint, opts)
+	err := c.request(ctx, http.MethodGet, endpoint, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +73,7 @@ func (c *Client) ListTXTRecords(zoneUUID string) ([]DNSTXTRecord, error) {
 	return records, nil
 }
 
-func (c *Client) CreateTXTRecord(zoneUUID string, record *DNSTXTRecord) error {
+func (c *Client) CreateTXTRecord(ctx context.Context, zoneUUID string, record *DNSTXTRecord) error {
 	endpoint := c.baseURL.JoinPath(zoneUUID, "txt", "/")
 
 	opts := &gophercloud.RequestOpts{
@@ -80,21 +81,21 @@ func (c *Client) CreateTXTRecord(zoneUUID string, record *DNSTXTRecord) error {
 		JSONResponse: record,
 	}
 
-	return c.request(http.MethodPost, endpoint, opts)
+	return c.request(ctx, http.MethodPost, endpoint, opts)
 }
 
-func (c *Client) DeleteTXTRecord(zoneUUID, recordUUID string) error {
+func (c *Client) DeleteTXTRecord(ctx context.Context, zoneUUID, recordUUID string) error {
 	endpoint := c.baseURL.JoinPath(zoneUUID, "txt", recordUUID)
 
-	return c.request(http.MethodDelete, endpoint, &gophercloud.RequestOpts{})
+	return c.request(ctx, http.MethodDelete, endpoint, &gophercloud.RequestOpts{})
 }
 
-func (c *Client) request(method string, endpoint *url.URL, options *gophercloud.RequestOpts) error {
-	if err := c.lazyAuth(); err != nil {
+func (c *Client) request(ctx context.Context, method string, endpoint *url.URL, options *gophercloud.RequestOpts) error {
+	if err := c.lazyAuth(ctx); err != nil {
 		return fmt.Errorf("auth: %w", err)
 	}
 
-	_, err := c.openstack.Request(method, endpoint.String(), options)
+	_, err := c.openstack.Request(ctx, method, endpoint.String(), options)
 	if err != nil {
 		return fmt.Errorf("request: %w", err)
 	}
@@ -102,12 +103,12 @@ func (c *Client) request(method string, endpoint *url.URL, options *gophercloud.
 	return nil
 }
 
-func (c *Client) lazyAuth() error {
+func (c *Client) lazyAuth(ctx context.Context) error {
 	if c.authenticated {
 		return nil
 	}
 
-	err := openstack.Authenticate(c.openstack, c.authOpts)
+	err := openstack.Authenticate(ctx, c.openstack, c.authOpts)
 	if err != nil {
 		return err
 	}

@@ -15,11 +15,11 @@ import (
 	"github.com/go-acme/lego/v5/challenge/dns01"
 	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/env"
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
-	"github.com/gophercloud/utils/openstack/clientconfig"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/recordsets"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/zones"
+	"github.com/gophercloud/utils/v2/openstack/clientconfig"
 )
 
 // Environment variables names.
@@ -123,7 +123,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("designate: the configuration of the DNS provider is nil")
 	}
 
-	provider, err := openstack.AuthenticatedClient(config.opts)
+	provider, err := openstack.AuthenticatedClient(context.Background(), config.opts)
 	if err != nil {
 		return nil, fmt.Errorf("designate: failed to authenticate: %w", err)
 	}
@@ -158,7 +158,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("designate: %w", err)
 	}
 
-	zoneID, err := d.getZoneID(zone)
+	zoneID, err := d.getZoneID(ctx, zone)
 	if err != nil {
 		return fmt.Errorf("designate: couldn't get zone ID in Present: %w", err)
 	}
@@ -167,7 +167,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	d.dnsEntriesMu.Lock()
 	defer d.dnsEntriesMu.Unlock()
 
-	existingRecord, err := d.getRecord(zoneID, info.EffectiveFQDN)
+	existingRecord, err := d.getRecord(ctx, zoneID, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("designate: %w", err)
 	}
@@ -178,7 +178,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 			return nil
 		}
 
-		err = d.updateRecord(existingRecord, info.Value)
+		err = d.updateRecord(ctx, existingRecord, info.Value)
 		if err != nil {
 			return fmt.Errorf("designate: %w", err)
 		}
@@ -186,7 +186,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return nil
 	}
 
-	err = d.createRecord(zoneID, info.EffectiveFQDN, info.Value)
+	err = d.createRecord(ctx, zoneID, info.EffectiveFQDN, info.Value)
 	if err != nil {
 		return fmt.Errorf("designate: %w", err)
 	}
@@ -203,7 +203,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("designate: %w", err)
 	}
 
-	zoneID, err := d.getZoneID(zone)
+	zoneID, err := d.getZoneID(ctx, zone)
 	if err != nil {
 		return fmt.Errorf("designate: couldn't get zone ID in CleanUp: %w", err)
 	}
@@ -212,7 +212,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	d.dnsEntriesMu.Lock()
 	defer d.dnsEntriesMu.Unlock()
 
-	record, err := d.getRecord(zoneID, info.EffectiveFQDN)
+	record, err := d.getRecord(ctx, zoneID, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("designate: couldn't get Record ID in CleanUp: %w", err)
 	}
@@ -222,7 +222,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return nil
 	}
 
-	err = recordsets.Delete(d.client, zoneID, record.ID).ExtractErr()
+	err = recordsets.Delete(ctx, d.client, zoneID, record.ID).ExtractErr()
 	if err != nil {
 		return fmt.Errorf("designate: error for %s in CleanUp: %w", info.EffectiveFQDN, err)
 	}
@@ -230,7 +230,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	return nil
 }
 
-func (d *DNSProvider) createRecord(zoneID, fqdn, value string) error {
+func (d *DNSProvider) createRecord(ctx context.Context, zoneID, fqdn, value string) error {
 	createOpts := recordsets.CreateOpts{
 		Name:        fqdn,
 		Type:        "TXT",
@@ -239,7 +239,7 @@ func (d *DNSProvider) createRecord(zoneID, fqdn, value string) error {
 		Records:     []string{value},
 	}
 
-	actual, err := recordsets.Create(d.client, zoneID, createOpts).Extract()
+	actual, err := recordsets.Create(ctx, d.client, zoneID, createOpts).Extract()
 	if err != nil {
 		return fmt.Errorf("error for %s in Present while creating record: %w", fqdn, err)
 	}
@@ -251,7 +251,7 @@ func (d *DNSProvider) createRecord(zoneID, fqdn, value string) error {
 	return nil
 }
 
-func (d *DNSProvider) updateRecord(record *recordsets.RecordSet, value string) error {
+func (d *DNSProvider) updateRecord(ctx context.Context, record *recordsets.RecordSet, value string) error {
 	if slices.Contains(record.Records, value) {
 		log.Debug("designate: the record already exists. Skipping.", slog.String("value", value))
 		return nil
@@ -265,17 +265,17 @@ func (d *DNSProvider) updateRecord(record *recordsets.RecordSet, value string) e
 		Records:     values,
 	}
 
-	result := recordsets.Update(d.client, record.ZoneID, record.ID, updateOpts)
+	result := recordsets.Update(ctx, d.client, record.ZoneID, record.ID, updateOpts)
 
 	return result.Err
 }
 
-func (d *DNSProvider) getZoneID(wanted string) (string, error) {
+func (d *DNSProvider) getZoneID(ctx context.Context, wanted string) (string, error) {
 	listOpts := zones.ListOpts{
 		Name: wanted,
 	}
 
-	allPages, err := zones.List(d.client, listOpts).AllPages()
+	allPages, err := zones.List(d.client, listOpts).AllPages(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -294,13 +294,13 @@ func (d *DNSProvider) getZoneID(wanted string) (string, error) {
 	return "", fmt.Errorf("zone id not found for %s", wanted)
 }
 
-func (d *DNSProvider) getRecord(zoneID, wanted string) (*recordsets.RecordSet, error) {
+func (d *DNSProvider) getRecord(ctx context.Context, zoneID, wanted string) (*recordsets.RecordSet, error) {
 	listOpts := recordsets.ListOpts{
 		Name: wanted,
 		Type: "TXT",
 	}
 
-	allPages, err := recordsets.ListByZone(d.client, zoneID, listOpts).AllPages()
+	allPages, err := recordsets.ListByZone(d.client, zoneID, listOpts).AllPages(ctx)
 	if err != nil {
 		return nil, err
 	}

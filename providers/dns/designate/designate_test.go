@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/internal/tester"
-	"github.com/gophercloud/utils/openstack/clientconfig"
+	"github.com/gophercloud/utils/v2/openstack/clientconfig"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
@@ -44,7 +44,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAuthURL:    serverURL + "/v2.0/",
+				EnvAuthURL:    serverURL + "/v2.0/tokens",
 				EnvUsername:   "B",
 				EnvPassword:   "C",
 				EnvRegionName: "D",
@@ -74,7 +74,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				EnvAuthURL:    serverURL + "/v2.0/",
+				EnvAuthURL:    serverURL + "/v2.0/tokens",
 				EnvUsername:   "",
 				EnvPassword:   "C",
 				EnvRegionName: "D",
@@ -84,7 +84,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				EnvAuthURL:    serverURL + "/v2.0/",
+				EnvAuthURL:    serverURL + "/v2.0/tokens",
 				EnvUsername:   "B",
 				EnvPassword:   "",
 				EnvRegionName: "D",
@@ -94,7 +94,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 		{
 			desc: "missing application credential secret",
 			envVars: map[string]string{
-				EnvAuthURL:    serverURL + "/v2.0/",
+				EnvAuthURL:    serverURL + "/v2.0/tokens",
 				EnvRegionName: "D",
 				EnvAppCredID:  "F",
 			},
@@ -137,7 +137,7 @@ func TestNewDNSProvider_fromCloud(t *testing.T) {
 			osCloud: "good_cloud",
 			cloud: clientconfig.Cloud{
 				AuthInfo: &clientconfig.AuthInfo{
-					AuthURL:     serverURL + "/v2.0/",
+					AuthURL:     serverURL + "/v2.0/tokens",
 					Username:    "B",
 					Password:    "C",
 					ProjectName: "E",
@@ -165,7 +165,7 @@ func TestNewDNSProvider_fromCloud(t *testing.T) {
 			osCloud: "missing_username",
 			cloud: clientconfig.Cloud{
 				AuthInfo: &clientconfig.AuthInfo{
-					AuthURL:     serverURL + "/v2.0/",
+					AuthURL:     serverURL + "/v2.0/tokens",
 					Password:    "C",
 					ProjectName: "E",
 					ProjectID:   "F",
@@ -179,14 +179,14 @@ func TestNewDNSProvider_fromCloud(t *testing.T) {
 			osCloud: "missing_auth_url",
 			cloud: clientconfig.Cloud{
 				AuthInfo: &clientconfig.AuthInfo{
-					AuthURL:     serverURL + "/v2.0/",
+					AuthURL:     serverURL + "/v2.0/tokens",
 					Username:    "B",
 					ProjectName: "E",
 					ProjectID:   "F",
 				},
 				RegionName: "D",
 			},
-			expected: "designate: failed to authenticate: Exactly one of PasswordCredentials and TokenCredentials must be provided",
+			expected: "designate: failed to authenticate: Missing input for argument [Password]",
 		},
 	}
 
@@ -230,15 +230,15 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			tenantName: "A",
 			password:   "B",
 			userName:   "C",
-			authURL:    serverURL + "/v2.0/",
+			authURL:    serverURL + "/v2.0/tokens",
 		},
 		{
 			desc:       "wrong auth url",
 			tenantName: "A",
 			password:   "B",
 			userName:   "C",
-			authURL:    serverURL,
-			expected:   "designate: failed to authenticate: No supported version available from endpoint " + serverURL + "/",
+			authURL:    serverURL + "/v3",
+			expected:   "designate: failed to authenticate: You must provide exactly one of DomainID or DomainName in a Scope with ProjectName",
 		},
 	}
 
@@ -291,7 +291,7 @@ func setupTestProvider(t *testing.T) string {
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
+	mux.HandleFunc("/tokens", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`{
 	"access": {
 		"token": {
@@ -307,11 +307,11 @@ func setupTestProvider(t *testing.T) string {
 			{
 				"endpoints": [
 					{
-						"adminURL": "http://23.253.72.207:9696/",
+						"adminURL": "` + server.URL + `",
 						"region": "D",
-						"internalURL": "http://23.253.72.207:9696/",
+						"internalURL": "` + server.URL + `",
 						"id": "97c526db8d7a4c88bbb8d68db1bdcdb8",
-						"publicURL": "http://23.253.72.207:9696/"
+						"publicURL": "` + server.URL + `"
 					}
 				],
 				"endpoints_links": [ ],
@@ -321,6 +321,25 @@ func setupTestProvider(t *testing.T) string {
 		]
 	}
 }`))
+	})
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{
+  "versions": {
+    "values": [
+      {
+        "id": "v2.0",
+        "status": "stable",
+        "links":  [
+          {
+            "href":"` + server.URL + `",
+            "rel": "self"
+          }
+        ]
+      }
+    ]
+  }
+}
+`))
 	})
 
 	return server.URL

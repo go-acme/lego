@@ -256,8 +256,8 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
-github.com/dnsimple/dnsimple-go/v9 v9.1.1 h1:DtfbFvZxqtu6jfz2S3Mptr72KJ7YOr6NZECa79EUWUM=
-github.com/dnsimple/dnsimple-go/v9 v9.1.1/go.mod h1:RRE/lyj5lz5XdkTE04LJ17lP0WSAiDPMjyJANZnNBU4=
+github.com/dnsimple/dnsimple-go/v10 v10.0.0 h1:UBcHO8a2J2CNhJaEagNvJGxMgyb6t2K1fJbO3g2WdtA=
+github.com/dnsimple/dnsimple-go/v10 v10.0.0/go.mod h1:0ahFf8dfmt6ctcTR6VuTOf9Zruzl+dDsOtFBdh4PPk4=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=
 github.com/eapache/go-resiliency v1.2.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=

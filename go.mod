@@ -12,7 +12,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns/v2 v2.0.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph v0.10.0
 	github.com/BurntSushi/toml v1.6.0
-	github.com/Myra-Security-GmbH/myrasec-go/v2 v2.59.0
+	github.com/Myra-Security-GmbH/myrasec-go/v2 v2.62.1
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v14 v14.1.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.2.4
 	github.com/alibabacloud-go/tea v1.5.3

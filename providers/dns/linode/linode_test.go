@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -110,12 +110,10 @@ func TestDNSProvider_Present(t *testing.T) {
 			desc: "Success",
 			builder: mockBuilder().
 				Route("GET /v4/domains",
-					servermock.JSONEncode(linodego.DomainsPagedResponse{
-						PageOptions: &linodego.PageOptions{
-							Pages:   1,
-							Results: 1,
-							Page:    1,
-						},
+					servermock.JSONEncode(linodego.PaginatedResponse[linodego.Domain]{
+						Pages:   1,
+						Results: 1,
+						Page:    1,
 						Data: []linodego.Domain{{
 							Domain: domain,
 							ID:     1234,
@@ -141,12 +139,10 @@ func TestDNSProvider_Present(t *testing.T) {
 			desc: "CreateFailed",
 			builder: mockBuilder().
 				Route("GET /v4/domains",
-					servermock.JSONEncode(&linodego.DomainsPagedResponse{
-						PageOptions: &linodego.PageOptions{
-							Pages:   1,
-							Results: 1,
-							Page:    1,
-						},
+					servermock.JSONEncode(&linodego.PaginatedResponse[linodego.Domain]{
+						Pages:   1,
+						Results: 1,
+						Page:    1,
 						Data: []linodego.Domain{{
 							Domain: "example.com",
 							ID:     1234,
@@ -195,24 +191,20 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			desc: "Success",
 			builder: mockBuilder().
 				Route("GET /v4/domains",
-					servermock.JSONEncode(&linodego.DomainsPagedResponse{
-						PageOptions: &linodego.PageOptions{
-							Pages:   1,
-							Results: 1,
-							Page:    1,
-						},
+					servermock.JSONEncode(&linodego.PaginatedResponse[linodego.Domain]{
+						Pages:   1,
+						Results: 1,
+						Page:    1,
 						Data: []linodego.Domain{{
 							Domain: "foobar.com",
 							ID:     1234,
 						}},
 					})).
 				Route("GET /v4/domains/1234/records",
-					servermock.JSONEncode(&linodego.DomainRecordsPagedResponse{
-						PageOptions: &linodego.PageOptions{
-							Pages:   1,
-							Results: 1,
-							Page:    1,
-						},
+					servermock.JSONEncode(&linodego.PaginatedResponse[linodego.DomainRecord]{
+						Pages:   1,
+						Results: 1,
+						Page:    1,
 						Data: []linodego.DomainRecord{{
 							ID:     1234,
 							Name:   "_acme-challenge",
@@ -247,24 +239,20 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			desc: "DeleteFailed",
 			builder: mockBuilder().
 				Route("GET /v4/domains",
-					servermock.JSONEncode(linodego.DomainsPagedResponse{
-						PageOptions: &linodego.PageOptions{
-							Pages:   1,
-							Results: 1,
-							Page:    1,
-						},
+					servermock.JSONEncode(linodego.PaginatedResponse[linodego.Domain]{
+						Pages:   1,
+						Results: 1,
+						Page:    1,
 						Data: []linodego.Domain{{
 							ID:     1234,
 							Domain: "example.com",
 						}},
 					})).
 				Route("GET /v4/domains/1234/records",
-					servermock.JSONEncode(linodego.DomainRecordsPagedResponse{
-						PageOptions: &linodego.PageOptions{
-							Pages:   1,
-							Results: 1,
-							Page:    1,
-						},
+					servermock.JSONEncode(linodego.PaginatedResponse[linodego.DomainRecord]{
+						Pages:   1,
+						Results: 1,
+						Page:    1,
 						Data: []linodego.DomainRecord{{
 							ID:     1234,
 							Name:   "_acme-challenge",

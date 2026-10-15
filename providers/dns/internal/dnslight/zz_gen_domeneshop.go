@@ -14,8 +14,5 @@ import (
 func init() {
 	registry.Add("domeneshop", func() (challenge.Provider, error) {
 		return domeneshop.NewDNSProvider()
-	})
-	registry.AddAlias("domainnameshop", func() (challenge.Provider, error) {
-		return domeneshop.NewDNSProvider()
-	})
+	}, "domainnameshop")
 }

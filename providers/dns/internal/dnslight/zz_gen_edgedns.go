@@ -14,8 +14,5 @@ import (
 func init() {
 	registry.Add("edgedns", func() (challenge.Provider, error) {
 		return edgedns.NewDNSProvider()
-	})
-	registry.AddAlias("fastdns", func() (challenge.Provider, error) {
-		return edgedns.NewDNSProvider()
-	})
+	}, "fastdns")
 }

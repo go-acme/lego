@@ -14,8 +14,5 @@ import (
 func init() {
 	registry.Add("dnsupdate", func() (challenge.Provider, error) {
 		return dnsupdate.NewDNSProvider()
-	})
-	registry.AddAlias("rfc2136", func() (challenge.Provider, error) {
-		return dnsupdate.NewDNSProvider()
-	})
+	}, "rfc2136")
 }

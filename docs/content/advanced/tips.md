@@ -117,3 +117,35 @@ In these cases, you can instruct Lego to use a different DNS resolver, using the
 You should prefer one on the public internet, otherwise you might be susceptible to the same problem.
 
 [^apex]: The apex domain is the domain you have registered with your domain registrar. For gTLDs (`.com`, `.fyi`) this is the 2nd level domain, but for ccTLDs, this can either be the 2nd level (`.de`) or 3rd level domain (`.co.uk`).
+
+## Conditional DNS Build
+
+lego offers an experimental feature that allow to build with only a subset of DNS providers.
+
+The mechanism is based on build tags:
+- The base build tag is `lego_dnslight`: this tag will change the way the function `dns.NewDNSChallengeProviderByName()` behaves.
+- There is a build tag for each DNS providers (based on the code of providers), ex: `lego_dns_cloudflare`, `lego_dns_pdns`.
+
+This feature can be used to build the binaries, or to build a software that use lego as a lib.
+
+Examples:
+
+```bash
+# only one provider is available.
+make build_dnslight DNS="lego_dns_cloudflare"
+```
+
+```bash
+# Several providers are available.
+make build_dnslight DNS="lego_dns_cloudflare,lego_dns_pdns"
+```
+
+```bash
+# only one provider is available.
+go build -tags lego_dnslight,lego_dns_cloudflare ...
+```
+
+```bash
+# Several providers are available.
+go build -tags lego_dnslight,lego_dns_cloudflare,lego_dns_pdns ...
+```

@@ -12,7 +12,8 @@ func (a *APIError) Error() string {
 }
 
 type APIRequest struct {
-	Domain string `json:"domain"`
+	Domain string `json:"domain,omitempty"`
+	Name   string `json:"name,omitempty"`
 	Value  string `json:"value"`
 }
 

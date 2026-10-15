@@ -95,8 +95,8 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	request := internal.APIRequest{
-		Domain: dns01.UnFqdn(info.Domain()),
-		Value:  info.Value,
+		Name:  dns01.UnFqdn(info.EffectiveFQDN),
+		Value: info.Value,
 	}
 
 	_, err := d.client.AddTXTRecord(ctx, request)
@@ -112,8 +112,8 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	request := internal.APIRequest{
-		Domain: dns01.UnFqdn(info.Domain()),
-		Value:  info.Value,
+		Name:  dns01.UnFqdn(info.EffectiveFQDN),
+		Value: info.Value,
 	}
 
 	err := d.client.RemoveTXTRecord(ctx, request)

@@ -19,26 +19,27 @@ var providerAliases = map[string]Builder{}
 type Builder func() (challenge.Provider, error)
 
 // Add adds a DNS provider builder to the registry.
-func Add(key string, fn Builder) {
+func Add(key string, fn Builder, aliases ...string) {
 	providers[key] = fn
-}
 
-// AddAlias adds an alias to a DNS provider builder to the registry.
-func AddAlias(key string, fn Builder) {
-	providerAliases[key] = fn
+	for _, alias := range aliases {
+		providerAliases[alias] = fn
+	}
 }
 
 // Get gets a DNS provider builder from the registry.
 func Get(key string) (Builder, error) {
 	fn, ok := providers[key]
-	if !ok {
-		fn, ok = providerAliases[key]
-		if !ok {
-			return nil, errors.New("not found")
-		}
+	if ok {
+		return fn, nil
 	}
 
-	return fn, nil
+	fn, ok = providerAliases[key]
+	if ok {
+		return fn, nil
+	}
+
+	return nil, errors.New("not found")
 }
 
 func GetCodes() []string {

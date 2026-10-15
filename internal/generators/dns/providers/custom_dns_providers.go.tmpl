@@ -14,11 +14,5 @@ import (
 func init() {
     registry.Add("{{ .Code }}", func() (challenge.Provider, error) {
         return {{ cleanName .Code }}.NewDNSProvider()
-    })
-
-{{- range $alias := .Aliases }}
-	registry.AddAlias("{{ $alias }}", func() (challenge.Provider, error) {
-		return {{ cleanName $.Code }}.NewDNSProvider()
-	})
-{{- end}}
+    }{{range $alias := .Aliases }}, "{{ $alias }}"{{end}})
 }

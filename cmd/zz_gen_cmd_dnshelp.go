@@ -178,6 +178,7 @@ func allDNSCodes() string {
 		"pointdns",
 		"porkbun",
 		"poweradmin",
+		"primedns",
 		"rackspace",
 		"rage4",
 		"rainyun",
@@ -3791,6 +3792,25 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/poweradmin`)
+
+	case "primedns":
+		// generated from: providers/dns/primedns/primedns.toml
+		ew.writeln(`Configuration for PrimeDNS.`)
+		ew.writeln(`Code:	'primedns'`)
+		ew.writeln(`Since:	'v5.6.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "PRIMEDNS_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "PRIMEDNS_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "PRIMEDNS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "PRIMEDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/primedns`)
 
 	case "rackspace":
 		// generated from: providers/dns/rackspace/rackspace.toml

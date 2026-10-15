@@ -1,0 +1,12 @@
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Validation failed",
+    "details": {
+      "field_name": [
+        "Error message for this field"
+      ]
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "data": {
+    "record_id": 12345,
+    "name": "_acme-challenge.example.com",
+    "value": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "ttl": 60
+  }
+}

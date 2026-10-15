@@ -26,20 +26,27 @@ var templateFS embed.FS
 const (
 	root = "../../../../"
 
-	cliOutput  = root + "cmd/zz_gen_cmd_dnshelp.go"
-	docOutput  = root + "docs/content/dns"
-	readmePath = root + "README.md"
+	cliOutput    = root + "cmd/zz_gen_cmd_dnshelp.go"
+	docOutput    = root + "docs/content/dns"
+	readmePath   = root + "README.md"
+	workflowPath = root + ".github/workflows/tests-dnslight.yml"
 )
 
 const (
-	mdTemplate     = "templates/dns.md.tmpl"
-	cliTemplate    = "templates/dns.go.tmpl"
-	readmeTemplate = "templates/readme.md.tmpl"
+	mdTemplate       = "templates/dns.md.tmpl"
+	cliTemplate      = "templates/dns.go.tmpl"
+	readmeTemplate   = "templates/readme.md.tmpl"
+	workflowTemplate = "templates/tests-dnslight.yml.tmpl"
 )
 
 const (
-	startLine = "<!-- START DNS PROVIDERS LIST -->"
-	endLine   = "<!-- END DNS PROVIDERS LIST -->"
+	readmeStartLine = "<!-- START DNS PROVIDERS LIST -->"
+	readmeEndLine   = "<!-- END DNS PROVIDERS LIST -->"
+)
+
+const (
+	workflowStartLine = "# START DNS PROVIDERS LIST"
+	workflowEndLine   = "# END DNS PROVIDERS LIST"
 )
 
 func main() {
@@ -69,6 +76,12 @@ func main() {
 
 	// generate README.md
 	err = generateReadMe(models)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// generate Workflow
+	err = generateWorkflow(models)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -140,10 +153,18 @@ func generateCLIHelp(models *descriptors.Providers) error {
 }
 
 func generateReadMe(models *descriptors.Providers) error {
-	tpl := html.Must(html.New(filepath.Base(readmeTemplate)).ParseFS(templateFS, readmeTemplate))
+	return generateWithPlaceholder(models, readmeTemplate, readmePath, readmeStartLine, readmeEndLine)
+}
+
+func generateWorkflow(models *descriptors.Providers) error {
+	return generateWithPlaceholder(models, workflowTemplate, workflowPath, workflowStartLine, workflowEndLine)
+}
+
+func generateWithPlaceholder(models *descriptors.Providers, templateName, outputPath, start, end string) error {
+	tpl := html.Must(html.New(filepath.Base(templateName)).ParseFS(templateFS, templateName))
 	providers := orderProviders(models)
 
-	file, err := os.Open(readmePath)
+	file, err := os.Open(outputPath)
 	if err != nil {
 		return err
 	}
@@ -158,7 +179,7 @@ func generateReadMe(models *descriptors.Providers) error {
 	for fileScanner.Scan() {
 		text := fileScanner.Text()
 
-		if text == startLine {
+		if text == start {
 			_, _ = fmt.Fprintln(buffer, text)
 			if err = tpl.Execute(buffer, providers); err != nil {
 				return err
@@ -167,7 +188,7 @@ func generateReadMe(models *descriptors.Providers) error {
 			skip = true
 		}
 
-		if text == endLine {
+		if text == end {
 			skip = false
 		}
 
@@ -186,7 +207,7 @@ func generateReadMe(models *descriptors.Providers) error {
 		return errors.New("missing end tag")
 	}
 
-	return os.WriteFile(readmePath, buffer.Bytes(), 0o666)
+	return os.WriteFile(outputPath, buffer.Bytes(), 0o666)
 }
 
 func orderProviders(models *descriptors.Providers) [][]descriptors.Provider {

@@ -11,30 +11,39 @@ import (
 )
 
 //nolint:gochecknoglobals // Required by the "dnslight" approach.
-var providers = map[string]Builder{}
-
-//nolint:gochecknoglobals // Required by the "dnslight" approach.
-var providerAliases = map[string]Builder{}
+var store = New()
 
 type Builder func() (challenge.Provider, error)
 
+type Store struct {
+	providers       map[string]Builder
+	providerAliases map[string]Builder
+}
+
+func New() *Store {
+	return &Store{
+		providers:       map[string]Builder{},
+		providerAliases: map[string]Builder{},
+	}
+}
+
 // Add adds a DNS provider builder to the registry.
-func Add(key string, fn Builder, aliases ...string) {
-	providers[key] = fn
+func (s *Store) Add(key string, fn Builder, aliases ...string) {
+	s.providers[key] = fn
 
 	for _, alias := range aliases {
-		providerAliases[alias] = fn
+		s.providerAliases[alias] = fn
 	}
 }
 
 // Get gets a DNS provider builder from the registry.
-func Get(key string) (Builder, error) {
-	fn, ok := providers[key]
+func (s *Store) Get(key string) (Builder, error) {
+	fn, ok := s.providers[key]
 	if ok {
 		return fn, nil
 	}
 
-	fn, ok = providerAliases[key]
+	fn, ok = s.providerAliases[key]
 	if ok {
 		return fn, nil
 	}
@@ -42,6 +51,22 @@ func Get(key string) (Builder, error) {
 	return nil, errors.New("not found")
 }
 
+// GetCodes returns all available provider codes (without aliases).
+func (s *Store) GetCodes() []string {
+	return slices.Collect(maps.Keys(s.providers))
+}
+
+// Add adds a DNS provider builder to the registry.
+func Add(key string, fn Builder, aliases ...string) {
+	store.Add(key, fn, aliases...)
+}
+
+// Get gets a DNS provider builder from the registry.
+func Get(key string) (Builder, error) {
+	return store.Get(key)
+}
+
+// GetCodes returns all available provider codes (without aliases).
 func GetCodes() []string {
-	return slices.Collect(maps.Keys(providers))
+	return store.GetCodes()
 }

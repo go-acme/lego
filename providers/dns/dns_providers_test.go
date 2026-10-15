@@ -1,6 +1,8 @@
 package dns
 
 import (
+	"runtime/debug"
+	"strings"
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
@@ -12,6 +14,21 @@ import (
 var envTest = tester.NewEnvTest("EXEC_PATH")
 
 func TestKnownDNSProviderSuccess(t *testing.T) {
+	buildInfo, available := debug.ReadBuildInfo()
+	if !available {
+		t.Skip("no debug build info")
+	}
+
+	for _, setting := range buildInfo.Settings {
+		if setting.Key == "-tags" {
+			if strings.Contains(setting.Value, "lego_dnslight") {
+				t.Skip("lego_dnslight")
+			}
+
+			break
+		}
+	}
+
 	defer envTest.RestoreEnv()
 
 	envTest.Apply(map[string]string{

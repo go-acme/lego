@@ -3,7 +3,7 @@
 package registry
 
 import (
-	"fmt"
+	"errors"
 	"maps"
 	"slices"
 
@@ -24,7 +24,7 @@ func Add(key string, fn Builder) {
 func Get(key string) (Builder, error) {
 	fn, ok := providers[key]
 	if !ok {
-		return nil, fmt.Errorf("%q not found", key)
+		return nil, errors.New("not found")
 	}
 
 	return fn, nil

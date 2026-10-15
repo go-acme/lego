@@ -41,7 +41,675 @@ jobs:
 
 # START DNS PROVIDERS LIST
 
-      - name: Tests (no providers)
-        run: go test --tags 'lego_dnslight' ./providers/dns/
+      - name: Tests onecloudru
+        run: go test --tags 'lego_dnslight,lego_dns_onecloudru' ./providers/dns/
 
+      - name: Tests com35
+        run: go test --tags 'lego_dnslight,lego_dns_com35' ./providers/dns/
+
+      - name: Tests dns51
+        run: go test --tags 'lego_dnslight,lego_dns_dns51' ./providers/dns/
+
+      - name: Tests abion
+        run: go test --tags 'lego_dnslight,lego_dns_abion' ./providers/dns/
+
+      - name: Tests active24
+        run: go test --tags 'lego_dnslight,lego_dns_active24' ./providers/dns/
+
+      - name: Tests edgedns
+        run: go test --tags 'lego_dnslight,lego_dns_edgedns' ./providers/dns/
+
+      - name: Tests alidns
+        run: go test --tags 'lego_dnslight,lego_dns_alidns' ./providers/dns/
+
+      - name: Tests aliesa
+        run: go test --tags 'lego_dnslight,lego_dns_aliesa' ./providers/dns/
+
+      - name: Tests allinkl
+        run: go test --tags 'lego_dnslight,lego_dns_allinkl' ./providers/dns/
+
+      - name: Tests alwaysdata
+        run: go test --tags 'lego_dnslight,lego_dns_alwaysdata' ./providers/dns/
+
+      - name: Tests lightsail
+        run: go test --tags 'lego_dnslight,lego_dns_lightsail' ./providers/dns/
+
+      - name: Tests route53
+        run: go test --tags 'lego_dnslight,lego_dns_route53' ./providers/dns/
+
+      - name: Tests anexia
+        run: go test --tags 'lego_dnslight,lego_dns_anexia' ./providers/dns/
+
+      - name: Tests safedns
+        run: go test --tags 'lego_dnslight,lego_dns_safedns' ./providers/dns/
+
+      - name: Tests artfiles
+        run: go test --tags 'lego_dnslight,lego_dns_artfiles' ./providers/dns/
+
+      - name: Tests arvancloud
+        run: go test --tags 'lego_dnslight,lego_dns_arvancloud' ./providers/dns/
+
+      - name: Tests auroradns
+        run: go test --tags 'lego_dnslight,lego_dns_auroradns' ./providers/dns/
+
+      - name: Tests autodns
+        run: go test --tags 'lego_dnslight,lego_dns_autodns' ./providers/dns/
+
+      - name: Tests axelname
+        run: go test --tags 'lego_dnslight,lego_dns_axelname' ./providers/dns/
+
+      - name: Tests azion
+        run: go test --tags 'lego_dnslight,lego_dns_azion' ./providers/dns/
+
+      - name: Tests azuredns
+        run: go test --tags 'lego_dnslight,lego_dns_azuredns' ./providers/dns/
+
+      - name: Tests baiducloud
+        run: go test --tags 'lego_dnslight,lego_dns_baiducloud' ./providers/dns/
+
+      - name: Tests beget
+        run: go test --tags 'lego_dnslight,lego_dns_beget' ./providers/dns/
+
+      - name: Tests binarylane
+        run: go test --tags 'lego_dnslight,lego_dns_binarylane' ./providers/dns/
+
+      - name: Tests bindman
+        run: go test --tags 'lego_dnslight,lego_dns_bindman' ./providers/dns/
+
+      - name: Tests bluecat
+        run: go test --tags 'lego_dnslight,lego_dns_bluecat' ./providers/dns/
+
+      - name: Tests bluecatv2
+        run: go test --tags 'lego_dnslight,lego_dns_bluecatv2' ./providers/dns/
+
+      - name: Tests bookmyname
+        run: go test --tags 'lego_dnslight,lego_dns_bookmyname' ./providers/dns/
+
+      - name: Tests bunny
+        run: go test --tags 'lego_dnslight,lego_dns_bunny' ./providers/dns/
+
+      - name: Tests checkdomain
+        run: go test --tags 'lego_dnslight,lego_dns_checkdomain' ./providers/dns/
+
+      - name: Tests civo
+        run: go test --tags 'lego_dnslight,lego_dns_civo' ./providers/dns/
+
+      - name: Tests cloudru
+        run: go test --tags 'lego_dnslight,lego_dns_cloudru' ./providers/dns/
+
+      - name: Tests clouddns
+        run: go test --tags 'lego_dnslight,lego_dns_clouddns' ./providers/dns/
+
+      - name: Tests cloudflare
+        run: go test --tags 'lego_dnslight,lego_dns_cloudflare' ./providers/dns/
+
+      - name: Tests cloudns
+        run: go test --tags 'lego_dnslight,lego_dns_cloudns' ./providers/dns/
+
+      - name: Tests connbyte
+        run: go test --tags 'lego_dnslight,lego_dns_connbyte' ./providers/dns/
+
+      - name: Tests conoha
+        run: go test --tags 'lego_dnslight,lego_dns_conoha' ./providers/dns/
+
+      - name: Tests conohav3
+        run: go test --tags 'lego_dnslight,lego_dns_conohav3' ./providers/dns/
+
+      - name: Tests constellix
+        run: go test --tags 'lego_dnslight,lego_dns_constellix' ./providers/dns/
+
+      - name: Tests corenetworks
+        run: go test --tags 'lego_dnslight,lego_dns_corenetworks' ./providers/dns/
+
+      - name: Tests cpanel
+        run: go test --tags 'lego_dnslight,lego_dns_cpanel' ./providers/dns/
+
+      - name: Tests curanet
+        run: go test --tags 'lego_dnslight,lego_dns_curanet' ./providers/dns/
+
+      - name: Tests czechia
+        run: go test --tags 'lego_dnslight,lego_dns_czechia' ./providers/dns/
+
+      - name: Tests dandomain
+        run: go test --tags 'lego_dnslight,lego_dns_dandomain' ./providers/dns/
+
+      - name: Tests ddnss
+        run: go test --tags 'lego_dnslight,lego_dns_ddnss' ./providers/dns/
+
+      - name: Tests derak
+        run: go test --tags 'lego_dnslight,lego_dns_derak' ./providers/dns/
+
+      - name: Tests desec
+        run: go test --tags 'lego_dnslight,lego_dns_desec' ./providers/dns/
+
+      - name: Tests designate
+        run: go test --tags 'lego_dnslight,lego_dns_designate' ./providers/dns/
+
+      - name: Tests digitalocean
+        run: go test --tags 'lego_dnslight,lego_dns_digitalocean' ./providers/dns/
+
+      - name: Tests dinahosting
+        run: go test --tags 'lego_dnslight,lego_dns_dinahosting' ./providers/dns/
+
+      - name: Tests directadmin
+        run: go test --tags 'lego_dnslight,lego_dns_directadmin' ./providers/dns/
+
+      - name: Tests dnsmadeeasy
+        run: go test --tags 'lego_dnslight,lego_dns_dnsmadeeasy' ./providers/dns/
+
+      - name: Tests dnsupdate
+        run: go test --tags 'lego_dnslight,lego_dns_dnsupdate' ./providers/dns/
+
+      - name: Tests dnsla
+        run: go test --tags 'lego_dnslight,lego_dns_dnsla' ./providers/dns/
+
+      - name: Tests dnsservices
+        run: go test --tags 'lego_dnslight,lego_dns_dnsservices' ./providers/dns/
+
+      - name: Tests dnscale
+        run: go test --tags 'lego_dnslight,lego_dns_dnscale' ./providers/dns/
+
+      - name: Tests dnsexit
+        run: go test --tags 'lego_dnslight,lego_dns_dnsexit' ./providers/dns/
+
+      - name: Tests dnshomede
+        run: go test --tags 'lego_dnslight,lego_dns_dnshomede' ./providers/dns/
+
+      - name: Tests dnsimple
+        run: go test --tags 'lego_dnslight,lego_dns_dnsimple' ./providers/dns/
+
+      - name: Tests dnsmint
+        run: go test --tags 'lego_dnslight,lego_dns_dnsmint' ./providers/dns/
+
+      - name: Tests dode
+        run: go test --tags 'lego_dnslight,lego_dns_dode' ./providers/dns/
+
+      - name: Tests domeneshop
+        run: go test --tags 'lego_dnslight,lego_dns_domeneshop' ./providers/dns/
+
+      - name: Tests dreamhost
+        run: go test --tags 'lego_dnslight,lego_dns_dreamhost' ./providers/dns/
+
+      - name: Tests duckdns
+        run: go test --tags 'lego_dnslight,lego_dns_duckdns' ./providers/dns/
+
+      - name: Tests dyn
+        run: go test --tags 'lego_dnslight,lego_dns_dyn' ./providers/dns/
+
+      - name: Tests dynadot
+        run: go test --tags 'lego_dnslight,lego_dns_dynadot' ./providers/dns/
+
+      - name: Tests dyndnsfree
+        run: go test --tags 'lego_dnslight,lego_dns_dyndnsfree' ./providers/dns/
+
+      - name: Tests dynu
+        run: go test --tags 'lego_dnslight,lego_dns_dynu' ./providers/dns/
+
+      - name: Tests easydns
+        run: go test --tags 'lego_dnslight,lego_dns_easydns' ./providers/dns/
+
+      - name: Tests edgecenter
+        run: go test --tags 'lego_dnslight,lego_dns_edgecenter' ./providers/dns/
+
+      - name: Tests efficientip
+        run: go test --tags 'lego_dnslight,lego_dns_efficientip' ./providers/dns/
+
+      - name: Tests epik
+        run: go test --tags 'lego_dnslight,lego_dns_epik' ./providers/dns/
+
+      - name: Tests eurodns
+        run: go test --tags 'lego_dnslight,lego_dns_eurodns' ./providers/dns/
+
+      - name: Tests euserv
+        run: go test --tags 'lego_dnslight,lego_dns_euserv' ./providers/dns/
+
+      - name: Tests excedo
+        run: go test --tags 'lego_dnslight,lego_dns_excedo' ./providers/dns/
+
+      - name: Tests exoscale
+        run: go test --tags 'lego_dnslight,lego_dns_exoscale' ./providers/dns/
+
+      - name: Tests exec
+        run: go test --tags 'lego_dnslight,lego_dns_exec' ./providers/dns/
+
+      - name: Tests f5xc
+        run: go test --tags 'lego_dnslight,lego_dns_f5xc' ./providers/dns/
+
+      - name: Tests feno
+        run: go test --tags 'lego_dnslight,lego_dns_feno' ./providers/dns/
+
+      - name: Tests fornex
+        run: go test --tags 'lego_dnslight,lego_dns_fornex' ./providers/dns/
+
+      - name: Tests freemyip
+        run: go test --tags 'lego_dnslight,lego_dns_freemyip' ./providers/dns/
+
+      - name: Tests namesurfer
+        run: go test --tags 'lego_dnslight,lego_dns_namesurfer' ./providers/dns/
+
+      - name: Tests gcore
+        run: go test --tags 'lego_dnslight,lego_dns_gcore' ./providers/dns/
+
+      - name: Tests gandi
+        run: go test --tags 'lego_dnslight,lego_dns_gandi' ./providers/dns/
+
+      - name: Tests gandiv5
+        run: go test --tags 'lego_dnslight,lego_dns_gandiv5' ./providers/dns/
+
+      - name: Tests gehirn
+        run: go test --tags 'lego_dnslight,lego_dns_gehirn' ./providers/dns/
+
+      - name: Tests gigahostno
+        run: go test --tags 'lego_dnslight,lego_dns_gigahostno' ./providers/dns/
+
+      - name: Tests glesys
+        run: go test --tags 'lego_dnslight,lego_dns_glesys' ./providers/dns/
+
+      - name: Tests gname
+        run: go test --tags 'lego_dnslight,lego_dns_gname' ./providers/dns/
+
+      - name: Tests godaddy
+        run: go test --tags 'lego_dnslight,lego_dns_godaddy' ./providers/dns/
+
+      - name: Tests gcloud
+        run: go test --tags 'lego_dnslight,lego_dns_gcloud' ./providers/dns/
+
+      - name: Tests gravity
+        run: go test --tags 'lego_dnslight,lego_dns_gravity' ./providers/dns/
+
+      - name: Tests hetzner
+        run: go test --tags 'lego_dnslight,lego_dns_hetzner' ./providers/dns/
+
+      - name: Tests hostingde
+        run: go test --tags 'lego_dnslight,lego_dns_hostingde' ./providers/dns/
+
+      - name: Tests hostingnl
+        run: go test --tags 'lego_dnslight,lego_dns_hostingnl' ./providers/dns/
+
+      - name: Tests hostinger
+        run: go test --tags 'lego_dnslight,lego_dns_hostinger' ./providers/dns/
+
+      - name: Tests hosttech
+        run: go test --tags 'lego_dnslight,lego_dns_hosttech' ./providers/dns/
+
+      - name: Tests hostup
+        run: go test --tags 'lego_dnslight,lego_dns_hostup' ./providers/dns/
+
+      - name: Tests httpreq
+        run: go test --tags 'lego_dnslight,lego_dns_httpreq' ./providers/dns/
+
+      - name: Tests httpnet
+        run: go test --tags 'lego_dnslight,lego_dns_httpnet' ./providers/dns/
+
+      - name: Tests huaweicloud
+        run: go test --tags 'lego_dnslight,lego_dns_huaweicloud' ./providers/dns/
+
+      - name: Tests hurricane
+        run: go test --tags 'lego_dnslight,lego_dns_hurricane' ./providers/dns/
+
+      - name: Tests hyperone
+        run: go test --tags 'lego_dnslight,lego_dns_hyperone' ./providers/dns/
+
+      - name: Tests ibmcloud
+        run: go test --tags 'lego_dnslight,lego_dns_ibmcloud' ./providers/dns/
+
+      - name: Tests iijdpf
+        run: go test --tags 'lego_dnslight,lego_dns_iijdpf' ./providers/dns/
+
+      - name: Tests infoblox
+        run: go test --tags 'lego_dnslight,lego_dns_infoblox' ./providers/dns/
+
+      - name: Tests infomaniak
+        run: go test --tags 'lego_dnslight,lego_dns_infomaniak' ./providers/dns/
+
+      - name: Tests internetbs
+        run: go test --tags 'lego_dnslight,lego_dns_internetbs' ./providers/dns/
+
+      - name: Tests inwx
+        run: go test --tags 'lego_dnslight,lego_dns_inwx' ./providers/dns/
+
+      - name: Tests ionos
+        run: go test --tags 'lego_dnslight,lego_dns_ionos' ./providers/dns/
+
+      - name: Tests ionoscloud
+        run: go test --tags 'lego_dnslight,lego_dns_ionoscloud' ./providers/dns/
+
+      - name: Tests ipv64
+        run: go test --tags 'lego_dnslight,lego_dns_ipv64' ./providers/dns/
+
+      - name: Tests ispconfig
+        run: go test --tags 'lego_dnslight,lego_dns_ispconfig' ./providers/dns/
+
+      - name: Tests ispconfigddns
+        run: go test --tags 'lego_dnslight,lego_dns_ispconfigddns' ./providers/dns/
+
+      - name: Tests jdcloud
+        run: go test --tags 'lego_dnslight,lego_dns_jdcloud' ./providers/dns/
+
+      - name: Tests joker
+        run: go test --tags 'lego_dnslight,lego_dns_joker' ./providers/dns/
+
+      - name: Tests acmedns
+        run: go test --tags 'lego_dnslight,lego_dns_acmedns' ./providers/dns/
+
+      - name: Tests katapult
+        run: go test --tags 'lego_dnslight,lego_dns_katapult' ./providers/dns/
+
+      - name: Tests keyhelp
+        run: go test --tags 'lego_dnslight,lego_dns_keyhelp' ./providers/dns/
+
+      - name: Tests leaseweb
+        run: go test --tags 'lego_dnslight,lego_dns_leaseweb' ./providers/dns/
+
+      - name: Tests liara
+        run: go test --tags 'lego_dnslight,lego_dns_liara' ./providers/dns/
+
+      - name: Tests limacity
+        run: go test --tags 'lego_dnslight,lego_dns_limacity' ./providers/dns/
+
+      - name: Tests linode
+        run: go test --tags 'lego_dnslight,lego_dns_linode' ./providers/dns/
+
+      - name: Tests liquidweb
+        run: go test --tags 'lego_dnslight,lego_dns_liquidweb' ./providers/dns/
+
+      - name: Tests loopia
+        run: go test --tags 'lego_dnslight,lego_dns_loopia' ./providers/dns/
+
+      - name: Tests luadns
+        run: go test --tags 'lego_dnslight,lego_dns_luadns' ./providers/dns/
+
+      - name: Tests mailinabox
+        run: go test --tags 'lego_dnslight,lego_dns_mailinabox' ./providers/dns/
+
+      - name: Tests manageengine
+        run: go test --tags 'lego_dnslight,lego_dns_manageengine' ./providers/dns/
+
+      - name: Tests manual
+        run: go test --tags 'lego_dnslight,lego_dns_manual' ./providers/dns/
+
+      - name: Tests metaname
+        run: go test --tags 'lego_dnslight,lego_dns_metaname' ./providers/dns/
+
+      - name: Tests metaregistrar
+        run: go test --tags 'lego_dnslight,lego_dns_metaregistrar' ./providers/dns/
+
+      - name: Tests mijnhost
+        run: go test --tags 'lego_dnslight,lego_dns_mijnhost' ./providers/dns/
+
+      - name: Tests mittwald
+        run: go test --tags 'lego_dnslight,lego_dns_mittwald' ./providers/dns/
+
+      - name: Tests myaddr
+        run: go test --tags 'lego_dnslight,lego_dns_myaddr' ./providers/dns/
+
+      - name: Tests mydnsjp
+        run: go test --tags 'lego_dnslight,lego_dns_mydnsjp' ./providers/dns/
+
+      - name: Tests myra
+        run: go test --tags 'lego_dnslight,lego_dns_myra' ./providers/dns/
+
+      - name: Tests mythicbeasts
+        run: go test --tags 'lego_dnslight,lego_dns_mythicbeasts' ./providers/dns/
+
+      - name: Tests namedotcom
+        run: go test --tags 'lego_dnslight,lego_dns_namedotcom' ./providers/dns/
+
+      - name: Tests namecheap
+        run: go test --tags 'lego_dnslight,lego_dns_namecheap' ./providers/dns/
+
+      - name: Tests namesilo
+        run: go test --tags 'lego_dnslight,lego_dns_namesilo' ./providers/dns/
+
+      - name: Tests nearlyfreespeech
+        run: go test --tags 'lego_dnslight,lego_dns_nearlyfreespeech' ./providers/dns/
+
+      - name: Tests nederhost
+        run: go test --tags 'lego_dnslight,lego_dns_nederhost' ./providers/dns/
+
+      - name: Tests neodigit
+        run: go test --tags 'lego_dnslight,lego_dns_neodigit' ./providers/dns/
+
+      - name: Tests netcup
+        run: go test --tags 'lego_dnslight,lego_dns_netcup' ./providers/dns/
+
+      - name: Tests netlify
+        run: go test --tags 'lego_dnslight,lego_dns_netlify' ./providers/dns/
+
+      - name: Tests netnod
+        run: go test --tags 'lego_dnslight,lego_dns_netnod' ./providers/dns/
+
+      - name: Tests nexdns
+        run: go test --tags 'lego_dnslight,lego_dns_nexdns' ./providers/dns/
+
+      - name: Tests ngenix
+        run: go test --tags 'lego_dnslight,lego_dns_ngenix' ./providers/dns/
+
+      - name: Tests nicmanager
+        run: go test --tags 'lego_dnslight,lego_dns_nicmanager' ./providers/dns/
+
+      - name: Tests nifcloud
+        run: go test --tags 'lego_dnslight,lego_dns_nifcloud' ./providers/dns/
+
+      - name: Tests njalla
+        run: go test --tags 'lego_dnslight,lego_dns_njalla' ./providers/dns/
+
+      - name: Tests nodion
+        run: go test --tags 'lego_dnslight,lego_dns_nodion' ./providers/dns/
+
+      - name: Tests ns1
+        run: go test --tags 'lego_dnslight,lego_dns_ns1' ./providers/dns/
+
+      - name: Tests octenium
+        run: go test --tags 'lego_dnslight,lego_dns_octenium' ./providers/dns/
+
+      - name: Tests omglol
+        run: go test --tags 'lego_dnslight,lego_dns_omglol' ./providers/dns/
+
+      - name: Tests onlinenet
+        run: go test --tags 'lego_dnslight,lego_dns_onlinenet' ./providers/dns/
+
+      - name: Tests otc
+        run: go test --tags 'lego_dnslight,lego_dns_otc' ./providers/dns/
+
+      - name: Tests openprovider
+        run: go test --tags 'lego_dnslight,lego_dns_openprovider' ./providers/dns/
+
+      - name: Tests opusdns
+        run: go test --tags 'lego_dnslight,lego_dns_opusdns' ./providers/dns/
+
+      - name: Tests oraclecloud
+        run: go test --tags 'lego_dnslight,lego_dns_oraclecloud' ./providers/dns/
+
+      - name: Tests ovh
+        run: go test --tags 'lego_dnslight,lego_dns_ovh' ./providers/dns/
+
+      - name: Tests plesk
+        run: go test --tags 'lego_dnslight,lego_dns_plesk' ./providers/dns/
+
+      - name: Tests pointdns
+        run: go test --tags 'lego_dnslight,lego_dns_pointdns' ./providers/dns/
+
+      - name: Tests porkbun
+        run: go test --tags 'lego_dnslight,lego_dns_porkbun' ./providers/dns/
+
+      - name: Tests poweradmin
+        run: go test --tags 'lego_dnslight,lego_dns_poweradmin' ./providers/dns/
+
+      - name: Tests pdns
+        run: go test --tags 'lego_dnslight,lego_dns_pdns' ./providers/dns/
+
+      - name: Tests rackspace
+        run: go test --tags 'lego_dnslight,lego_dns_rackspace' ./providers/dns/
+
+      - name: Tests rage4
+        run: go test --tags 'lego_dnslight,lego_dns_rage4' ./providers/dns/
+
+      - name: Tests rainyun
+        run: go test --tags 'lego_dnslight,lego_dns_rainyun' ./providers/dns/
+
+      - name: Tests rcodezero
+        run: go test --tags 'lego_dnslight,lego_dns_rcodezero' ./providers/dns/
+
+      - name: Tests regru
+        run: go test --tags 'lego_dnslight,lego_dns_regru' ./providers/dns/
+
+      - name: Tests regfish
+        run: go test --tags 'lego_dnslight,lego_dns_regfish' ./providers/dns/
+
+      - name: Tests rimuhosting
+        run: go test --tags 'lego_dnslight,lego_dns_rimuhosting' ./providers/dns/
+
+      - name: Tests nicru
+        run: go test --tags 'lego_dnslight,lego_dns_nicru' ./providers/dns/
+
+      - name: Tests sakuracloud
+        run: go test --tags 'lego_dnslight,lego_dns_sakuracloud' ./providers/dns/
+
+      - name: Tests scaleway
+        run: go test --tags 'lego_dnslight,lego_dns_scaleway' ./providers/dns/
+
+      - name: Tests scannet
+        run: go test --tags 'lego_dnslight,lego_dns_scannet' ./providers/dns/
+
+      - name: Tests selectel
+        run: go test --tags 'lego_dnslight,lego_dns_selectel' ./providers/dns/
+
+      - name: Tests selectelv2
+        run: go test --tags 'lego_dnslight,lego_dns_selectelv2' ./providers/dns/
+
+      - name: Tests selfhostdev2
+        run: go test --tags 'lego_dnslight,lego_dns_selfhostdev2' ./providers/dns/
+
+      - name: Tests selfhostde
+        run: go test --tags 'lego_dnslight,lego_dns_selfhostde' ./providers/dns/
+
+      - name: Tests servercow
+        run: go test --tags 'lego_dnslight,lego_dns_servercow' ./providers/dns/
+
+      - name: Tests shellrent
+        run: go test --tags 'lego_dnslight,lego_dns_shellrent' ./providers/dns/
+
+      - name: Tests simply
+        run: go test --tags 'lego_dnslight,lego_dns_simply' ./providers/dns/
+
+      - name: Tests sonic
+        run: go test --tags 'lego_dnslight,lego_dns_sonic' ./providers/dns/
+
+      - name: Tests spaceship
+        run: go test --tags 'lego_dnslight,lego_dns_spaceship' ./providers/dns/
+
+      - name: Tests stackpath
+        run: go test --tags 'lego_dnslight,lego_dns_stackpath' ./providers/dns/
+
+      - name: Tests syse
+        run: go test --tags 'lego_dnslight,lego_dns_syse' ./providers/dns/
+
+      - name: Tests technitium
+        run: go test --tags 'lego_dnslight,lego_dns_technitium' ./providers/dns/
+
+      - name: Tests tele3
+        run: go test --tags 'lego_dnslight,lego_dns_tele3' ./providers/dns/
+
+      - name: Tests tencentcloud
+        run: go test --tags 'lego_dnslight,lego_dns_tencentcloud' ./providers/dns/
+
+      - name: Tests edgeone
+        run: go test --tags 'lego_dnslight,lego_dns_edgeone' ./providers/dns/
+
+      - name: Tests timewebcloud
+        run: go test --tags 'lego_dnslight,lego_dns_timewebcloud' ./providers/dns/
+
+      - name: Tests todaynic
+        run: go test --tags 'lego_dnslight,lego_dns_todaynic' ./providers/dns/
+
+      - name: Tests transip
+        run: go test --tags 'lego_dnslight,lego_dns_transip' ./providers/dns/
+
+      - name: Tests ucloud
+        run: go test --tags 'lego_dnslight,lego_dns_ucloud' ./providers/dns/
+
+      - name: Tests ultradns
+        run: go test --tags 'lego_dnslight,lego_dns_ultradns' ./providers/dns/
+
+      - name: Tests uniteddomains
+        run: go test --tags 'lego_dnslight,lego_dns_uniteddomains' ./providers/dns/
+
+      - name: Tests variomedia
+        run: go test --tags 'lego_dnslight,lego_dns_variomedia' ./providers/dns/
+
+      - name: Tests veesp
+        run: go test --tags 'lego_dnslight,lego_dns_veesp' ./providers/dns/
+
+      - name: Tests vegadns
+        run: go test --tags 'lego_dnslight,lego_dns_vegadns' ./providers/dns/
+
+      - name: Tests vercel
+        run: go test --tags 'lego_dnslight,lego_dns_vercel' ./providers/dns/
+
+      - name: Tests versio
+        run: go test --tags 'lego_dnslight,lego_dns_versio' ./providers/dns/
+
+      - name: Tests vinyldns
+        run: go test --tags 'lego_dnslight,lego_dns_vinyldns' ./providers/dns/
+
+      - name: Tests virtualname
+        run: go test --tags 'lego_dnslight,lego_dns_virtualname' ./providers/dns/
+
+      - name: Tests vkcloud
+        run: go test --tags 'lego_dnslight,lego_dns_vkcloud' ./providers/dns/
+
+      - name: Tests volcengine
+        run: go test --tags 'lego_dnslight,lego_dns_volcengine' ./providers/dns/
+
+      - name: Tests vscale
+        run: go test --tags 'lego_dnslight,lego_dns_vscale' ./providers/dns/
+
+      - name: Tests vultr
+        run: go test --tags 'lego_dnslight,lego_dns_vultr' ./providers/dns/
+
+      - name: Tests wannafind
+        run: go test --tags 'lego_dnslight,lego_dns_wannafind' ./providers/dns/
+
+      - name: Tests webglobe
+        run: go test --tags 'lego_dnslight,lego_dns_webglobe' ./providers/dns/
+
+      - name: Tests webnamesca
+        run: go test --tags 'lego_dnslight,lego_dns_webnamesca' ./providers/dns/
+
+      - name: Tests webnamesru
+        run: go test --tags 'lego_dnslight,lego_dns_webnamesru' ./providers/dns/
+
+      - name: Tests websupport
+        run: go test --tags 'lego_dnslight,lego_dns_websupport' ./providers/dns/
+
+      - name: Tests wedos
+        run: go test --tags 'lego_dnslight,lego_dns_wedos' ./providers/dns/
+
+      - name: Tests westcn
+        run: go test --tags 'lego_dnslight,lego_dns_westcn' ./providers/dns/
+
+      - name: Tests xinnet
+        run: go test --tags 'lego_dnslight,lego_dns_xinnet' ./providers/dns/
+
+      - name: Tests yandex360
+        run: go test --tags 'lego_dnslight,lego_dns_yandex360' ./providers/dns/
+
+      - name: Tests yandexcloud
+        run: go test --tags 'lego_dnslight,lego_dns_yandexcloud' ./providers/dns/
+
+      - name: Tests yandex
+        run: go test --tags 'lego_dnslight,lego_dns_yandex' ./providers/dns/
+
+      - name: Tests zilore
+        run: go test --tags 'lego_dnslight,lego_dns_zilore' ./providers/dns/
+
+      - name: Tests zoneee
+        run: go test --tags 'lego_dnslight,lego_dns_zoneee' ./providers/dns/
+
+      - name: Tests zoneedit
+        run: go test --tags 'lego_dnslight,lego_dns_zoneedit' ./providers/dns/
+
+      - name: Tests zonomi
+        run: go test --tags 'lego_dnslight,lego_dns_zonomi' ./providers/dns/
 # END DNS PROVIDERS LIST

@@ -690,6 +690,7 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 	}
 }
 
+// GetProviderCodes returns the list of available DNS providers.
 func GetProviderCodes() []string {
 	return []string{
 		"abion",

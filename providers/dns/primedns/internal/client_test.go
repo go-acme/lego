@@ -39,8 +39,8 @@ func TestClient_AddTXTRecord(t *testing.T) {
 		Build(t)
 
 	payload := APIRequest{
-		Domain: "example.com",
-		Value:  "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		Name:  "_acme-challenge.example.com",
+		Value: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
 	result, err := client.AddTXTRecord(t.Context(), payload)
@@ -65,8 +65,8 @@ func TestClient_AddTXTRecord_error(t *testing.T) {
 		Build(t)
 
 	payload := APIRequest{
-		Domain: "example.com",
-		Value:  "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		Name:  "_acme-challenge.example.com",
+		Value: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
 	_, err := client.AddTXTRecord(t.Context(), payload)
@@ -82,8 +82,8 @@ func TestClient_RemoveTXTRecord(t *testing.T) {
 		Build(t)
 
 	payload := APIRequest{
-		Domain: "example.com",
-		Value:  "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		Name:  "_acme-challenge.example.com",
+		Value: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
 	err := client.RemoveTXTRecord(t.Context(), payload)

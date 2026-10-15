@@ -15,7 +15,7 @@ func init() {
 	registry.Add("linode", func() (challenge.Provider, error) {
 		return linode.NewDNSProvider()
 	})
-	registry.Add("linodev4", func() (challenge.Provider, error) {
+	registry.AddAlias("linodev4", func() (challenge.Provider, error) {
 		return linode.NewDNSProvider()
 	})
 }

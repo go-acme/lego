@@ -15,7 +15,7 @@ func init() {
 	registry.Add("acmedns", func() (challenge.Provider, error) {
 		return acmedns.NewDNSProvider()
 	})
-	registry.Add("acme-dns", func() (challenge.Provider, error) {
+	registry.AddAlias("acme-dns", func() (challenge.Provider, error) {
 		return acmedns.NewDNSProvider()
 	})
 }

@@ -15,7 +15,7 @@ func init() {
 	registry.Add("webnamesru", func() (challenge.Provider, error) {
 		return webnamesru.NewDNSProvider()
 	})
-	registry.Add("webnames", func() (challenge.Provider, error) {
+	registry.AddAlias("webnames", func() (challenge.Provider, error) {
 		return webnamesru.NewDNSProvider()
 	})
 }

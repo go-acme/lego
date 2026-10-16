@@ -145,7 +145,7 @@ jobs:
           git diff --exit-code
 
       - name: Tests (no providers)
-        run: go test --tags 'lego_dnslight' ./providers/dns/
+        run: go test -v --tags 'lego_dnslight' ./providers/dns/ ./providers/dns/internal/registry/
 
 # START DNS PROVIDERS LIST
 

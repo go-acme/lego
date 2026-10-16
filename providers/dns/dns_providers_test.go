@@ -2,6 +2,7 @@ package dns
 
 import (
 	"runtime/debug"
+	"slices"
 	"strings"
 	"testing"
 
@@ -11,10 +12,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	buildTagDNSLight  = "lego_dnslight"
+	buildTagDNSPrefix = "lego_dns_"
+	buildTagDNSExec   = "lego_dns_exec"
+)
+
 var envTest = tester.NewEnvTest("EXEC_PATH")
 
 func TestKnownDNSProviderSuccess(t *testing.T) {
-	if !hasExecProvider() {
+	if !isExecProviderAvailable() {
 		t.Skip("the exec provider is not available.")
 	}
 
@@ -32,7 +39,7 @@ func TestKnownDNSProviderSuccess(t *testing.T) {
 }
 
 func TestKnownDNSProviderError(t *testing.T) {
-	if !hasExecProvider() {
+	if !isExecProviderAvailable() {
 		t.Skip("the exec provider is not available.")
 	}
 
@@ -51,21 +58,23 @@ func TestUnknownDNSProvider(t *testing.T) {
 	assert.Nil(t, provider)
 }
 
-func hasExecProvider() bool {
+func isExecProviderAvailable() bool {
+	tags := getBuildTags()
+
+	return !slices.Contains(tags, buildTagDNSLight) || slices.Contains(tags, buildTagDNSExec)
+}
+
+func getBuildTags() []string {
 	buildInfo, available := debug.ReadBuildInfo()
 	if !available {
-		return true
+		return nil
 	}
 
 	for _, setting := range buildInfo.Settings {
 		if setting.Key == "-tags" {
-			if strings.Contains(setting.Value, "lego_dnslight") {
-				return strings.Contains(setting.Value, "lego_dns_exec")
-			}
-
-			return true
+			return strings.Split(setting.Value, ",")
 		}
 	}
 
-	return true
+	return nil
 }

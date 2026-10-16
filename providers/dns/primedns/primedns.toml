@@ -14,7 +14,7 @@ lego run --dns primedns -d '*.example.com' -d example.com
     PRIMEDNS_API_KEY = "API key"
   [Configuration.Additional]
     PRIMEDNS_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
-    PRIMEDNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    PRIMEDNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 180)"
     PRIMEDNS_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]

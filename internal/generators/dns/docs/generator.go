@@ -29,14 +29,14 @@ const (
 	cliOutput    = root + "cmd/zz_gen_cmd_dnshelp.go"
 	docOutput    = root + "docs/content/dns"
 	readmePath   = root + "README.md"
-	workflowPath = root + ".github/workflows/tests-dnslight.yml"
+	workflowPath = root + ".github/workflows/tests-lint.yml"
 )
 
 const (
 	mdTemplate       = "templates/dns.md.tmpl"
 	cliTemplate      = "templates/dns.go.tmpl"
 	readmeTemplate   = "templates/readme.md.tmpl"
-	workflowTemplate = "templates/tests-dnslight.yml.tmpl"
+	workflowTemplate = "templates/tests-lint.yml.tmpl"
 )
 
 const (

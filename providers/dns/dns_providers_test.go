@@ -14,19 +14,8 @@ import (
 var envTest = tester.NewEnvTest("EXEC_PATH")
 
 func TestKnownDNSProviderSuccess(t *testing.T) {
-	buildInfo, available := debug.ReadBuildInfo()
-	if !available {
-		t.Skip("no debug build info")
-	}
-
-	for _, setting := range buildInfo.Settings {
-		if setting.Key == "-tags" {
-			if strings.Contains(setting.Value, "lego_dnslight") {
-				t.Skip("lego_dnslight")
-			}
-
-			break
-		}
+	if !hasExecProvider() {
+		t.Skip("the exec provider is not available.")
 	}
 
 	defer envTest.RestoreEnv()
@@ -43,6 +32,10 @@ func TestKnownDNSProviderSuccess(t *testing.T) {
 }
 
 func TestKnownDNSProviderError(t *testing.T) {
+	if !hasExecProvider() {
+		t.Skip("the exec provider is not available.")
+	}
+
 	defer envTest.RestoreEnv()
 
 	envTest.ClearEnv()
@@ -56,4 +49,23 @@ func TestUnknownDNSProvider(t *testing.T) {
 	provider, err := NewDNSChallengeProviderByName("foobar")
 	require.Error(t, err)
 	assert.Nil(t, provider)
+}
+
+func hasExecProvider() bool {
+	buildInfo, available := debug.ReadBuildInfo()
+	if !available {
+		return true
+	}
+
+	for _, setting := range buildInfo.Settings {
+		if setting.Key == "-tags" {
+			if strings.Contains(setting.Value, "lego_dnslight") {
+				return strings.Contains(setting.Value, "lego_dns_exec")
+			}
+
+			return true
+		}
+	}
+
+	return true
 }

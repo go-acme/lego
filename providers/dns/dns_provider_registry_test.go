@@ -3,6 +3,7 @@
 package dns
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
@@ -26,7 +27,12 @@ func TestGetProviderCodes(t *testing.T) {
 		expected = append(expected, strings.TrimPrefix(tag, buildTagDNSPrefix))
 	}
 
+	slices.Sort(expected)
+
+	t.Attr("tags", strings.Join(tags, ","))
+
 	codes := GetProviderCodes()
+	slices.Sort(codes)
 
 	assert.Equal(t, expected, codes)
 }

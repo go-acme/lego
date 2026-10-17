@@ -1,0 +1,21 @@
+Name = "PrimeDNS"
+Description = ''''''
+URL = "https://primedns.net/"
+Code = "primedns"
+Since = "v5.6.0"
+
+Example = '''
+PRIMEDNS_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+lego run --dns primedns -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    PRIMEDNS_API_KEY = "API key"
+  [Configuration.Additional]
+    PRIMEDNS_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    PRIMEDNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 180)"
+    PRIMEDNS_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://api.primedns.net/v1/docs"

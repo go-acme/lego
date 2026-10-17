@@ -1,0 +1,8 @@
+{{- range . -}}
+{{- range . -}}
+{{if .Code }}
+      - name: Tests {{ .Code }}
+        run: go test -v --tags 'lego_dnslight,lego_dns_{{ .Code }}' ./providers/dns/
+{{- end}}
+{{- end}}
+{{- end}}

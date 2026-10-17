@@ -117,3 +117,53 @@ In these cases, you can instruct Lego to use a different DNS resolver, using the
 You should prefer one on the public internet, otherwise you might be susceptible to the same problem.
 
 [^apex]: The apex domain is the domain you have registered with your domain registrar. For gTLDs (`.com`, `.fyi`) this is the 2nd level domain, but for ccTLDs, this can either be the 2nd level (`.de`) or 3rd level domain (`.co.uk`).
+
+## Conditional DNS Build
+
+This feature is experimental.
+
+By default, lego includes all DNS providers.
+If you only need one or a few of them, you can leave the others out at build time.
+
+This makes the result considerably smaller and cuts the number of dependencies (and with it, the noise from vulnerability scanners).
+
+It is controlled by build tags:
+- `lego_dnslight` enables the feature. Without it, all `lego_dns_*` tags are ignored and all DNS providers are included.
+- `lego_dns_<code>` includes a DNS provider, where `<code>` is the name you pass to `--dns`, e.g. `lego_dns_cloudflare` or `lego_dns_pdns`.
+
+Selecting a DNS provider that was not included fails at runtime, not at compile time.
+
+### Building the lego binary
+
+From a clone of the repository, the `build_dnslight` target adds `lego_dnslight` for you:
+
+```bash
+# Only one provider:
+make build_dnslight DNS="lego_dns_cloudflare"
+
+# Several providers:
+make build_dnslight DNS="lego_dns_cloudflare,lego_dns_pdns"
+```
+
+Without a clone, use `go install`:
+
+```bash
+go install -tags lego_dnslight,lego_dns_cloudflare,lego_dns_pdns github.com/go-acme/lego/v5@latest
+```
+
+`lego dnshelp` lists the DNS providers included in a binary.
+
+### Using lego as a library
+
+The build tags only change `dns.NewDNSChallengeProviderByName()`, i.e. when your application selects the DNS provider by name at runtime.
+
+If you create the provider directly (e.g. `cloudflare.NewDNSProvider()`), 
+Go only compiles in the providers you import, and you don't need any build tags.
+
+Pass the tags when building your application:
+
+```bash
+go build -tags lego_dnslight,lego_dns_cloudflare,lego_dns_pdns ./...
+```
+
+Use the same tags for `go test` and other commands or tools, so they see the same set of providers as your build.

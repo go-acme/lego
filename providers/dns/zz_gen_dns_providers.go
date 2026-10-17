@@ -174,6 +174,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/pointdns"
 	"github.com/go-acme/lego/v5/providers/dns/porkbun"
 	"github.com/go-acme/lego/v5/providers/dns/poweradmin"
+	"github.com/go-acme/lego/v5/providers/dns/primedns"
 	"github.com/go-acme/lego/v5/providers/dns/rackspace"
 	"github.com/go-acme/lego/v5/providers/dns/rage4"
 	"github.com/go-acme/lego/v5/providers/dns/rainyun"
@@ -569,6 +570,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return porkbun.NewDNSProvider()
 	case "poweradmin":
 		return poweradmin.NewDNSProvider()
+	case "primedns":
+		return primedns.NewDNSProvider()
 	case "rackspace":
 		return rackspace.NewDNSProvider()
 	case "rage4":
@@ -859,6 +862,7 @@ func GetProviderCodes() []string {
 		"pointdns",
 		"porkbun",
 		"poweradmin",
+		"primedns",
 		"rackspace",
 		"rage4",
 		"rainyun",

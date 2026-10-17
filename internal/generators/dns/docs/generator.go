@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"go/format"
 	html "html/template"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -26,21 +27,32 @@ var templateFS embed.FS
 const (
 	root = "../../../../"
 
-	cliOutput  = root + "cmd/zz_gen_cmd_dnshelp.go"
-	docOutput  = root + "docs/content/dns"
-	readmePath = root + "README.md"
+	cliOutput    = root + "cmd/zz_gen_cmd_dnshelp.go"
+	docOutput    = root + "docs/content/dns"
+	readmePath   = root + "README.md"
+	workflowPath = root + ".github/workflows/tests-lint.yml"
 )
 
 const (
-	mdTemplate     = "templates/dns.md.tmpl"
-	cliTemplate    = "templates/dns.go.tmpl"
-	readmeTemplate = "templates/readme.md.tmpl"
+	mdTemplate       = "templates/dns.md.tmpl"
+	cliTemplate      = "templates/dns.go.tmpl"
+	readmeTemplate   = "templates/readme.md.tmpl"
+	workflowTemplate = "templates/tests-lint.yml.tmpl"
 )
 
 const (
-	startLine = "<!-- START DNS PROVIDERS LIST -->"
-	endLine   = "<!-- END DNS PROVIDERS LIST -->"
+	readmeStartLine = "<!-- START DNS PROVIDERS LIST -->"
+	readmeEndLine   = "<!-- END DNS PROVIDERS LIST -->"
 )
+
+const (
+	workflowStartLine = "# START GENERATED"
+	workflowEndLine   = "# END GENERATED"
+)
+
+type templateExecutor interface {
+	Execute(wr io.Writer, data any) error
+}
 
 func main() {
 	models, err := descriptors.GetProviderInformation(root)
@@ -69,6 +81,12 @@ func main() {
 
 	// generate README.md
 	err = generateReadMe(models)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// generate Workflow
+	err = generateWorkflow(models)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -141,9 +159,24 @@ func generateCLIHelp(models *descriptors.Providers) error {
 
 func generateReadMe(models *descriptors.Providers) error {
 	tpl := html.Must(html.New(filepath.Base(readmeTemplate)).ParseFS(templateFS, readmeTemplate))
+
 	providers := orderProviders(models)
 
-	file, err := os.Open(readmePath)
+	return generateWithPlaceholder(providers, tpl, readmePath, readmeStartLine, readmeEndLine)
+}
+
+func generateWorkflow(models *descriptors.Providers) error {
+	tpl := template.Must(template.New(filepath.Base(workflowTemplate)).ParseFS(templateFS, workflowTemplate))
+
+	slices.SortFunc(models.Providers, func(a, b descriptors.Provider) int {
+		return strings.Compare(strings.ToLower(a.Code), strings.ToLower(b.Code))
+	})
+
+	return generateWithPlaceholder(models.Providers, tpl, workflowPath, workflowStartLine, workflowEndLine)
+}
+
+func generateWithPlaceholder(data any, tpl templateExecutor, outputPath, start, end string) error {
+	file, err := os.Open(outputPath)
 	if err != nil {
 		return err
 	}
@@ -158,16 +191,16 @@ func generateReadMe(models *descriptors.Providers) error {
 	for fileScanner.Scan() {
 		text := fileScanner.Text()
 
-		if text == startLine {
+		if text == start {
 			_, _ = fmt.Fprintln(buffer, text)
-			if err = tpl.Execute(buffer, providers); err != nil {
+			if err = tpl.Execute(buffer, data); err != nil {
 				return err
 			}
 
 			skip = true
 		}
 
-		if text == endLine {
+		if text == end {
 			skip = false
 		}
 
@@ -186,7 +219,7 @@ func generateReadMe(models *descriptors.Providers) error {
 		return errors.New("missing end tag")
 	}
 
-	return os.WriteFile(readmePath, buffer.Bytes(), 0o666)
+	return os.WriteFile(outputPath, buffer.Bytes(), 0o666)
 }
 
 func orderProviders(models *descriptors.Providers) [][]descriptors.Provider {

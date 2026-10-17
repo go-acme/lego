@@ -1,0 +1,2 @@
+      - name: Tests (all providers)
+        run: go test -v --tags 'lego_dnslight{{range .}},lego_dns_{{ .Code }}{{end}}' ./providers/dns/

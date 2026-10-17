@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"go/format"
 	html "html/template"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -45,9 +46,13 @@ const (
 )
 
 const (
-	workflowStartLine = "# START DNS PROVIDERS LIST"
-	workflowEndLine   = "# END DNS PROVIDERS LIST"
+	workflowStartLine = "# START GENERATED"
+	workflowEndLine   = "# END GENERATED"
 )
+
+type templateExecutor interface {
+	Execute(wr io.Writer, data any) error
+}
 
 func main() {
 	models, err := descriptors.GetProviderInformation(root)
@@ -153,17 +158,24 @@ func generateCLIHelp(models *descriptors.Providers) error {
 }
 
 func generateReadMe(models *descriptors.Providers) error {
-	return generateWithPlaceholder(models, readmeTemplate, readmePath, readmeStartLine, readmeEndLine)
+	tpl := html.Must(html.New(filepath.Base(readmeTemplate)).ParseFS(templateFS, readmeTemplate))
+
+	providers := orderProviders(models)
+
+	return generateWithPlaceholder(providers, tpl, readmePath, readmeStartLine, readmeEndLine)
 }
 
 func generateWorkflow(models *descriptors.Providers) error {
-	return generateWithPlaceholder(models, workflowTemplate, workflowPath, workflowStartLine, workflowEndLine)
+	tpl := template.Must(template.New(filepath.Base(workflowTemplate)).ParseFS(templateFS, workflowTemplate))
+
+	slices.SortFunc(models.Providers, func(a, b descriptors.Provider) int {
+		return strings.Compare(strings.ToLower(a.Code), strings.ToLower(b.Code))
+	})
+
+	return generateWithPlaceholder(models.Providers, tpl, workflowPath, workflowStartLine, workflowEndLine)
 }
 
-func generateWithPlaceholder(models *descriptors.Providers, templateName, outputPath, start, end string) error {
-	tpl := html.Must(html.New(filepath.Base(templateName)).ParseFS(templateFS, templateName))
-	providers := orderProviders(models)
-
+func generateWithPlaceholder(data any, tpl templateExecutor, outputPath, start, end string) error {
 	file, err := os.Open(outputPath)
 	if err != nil {
 		return err
@@ -181,7 +193,7 @@ func generateWithPlaceholder(models *descriptors.Providers, templateName, output
 
 		if text == start {
 			_, _ = fmt.Fprintln(buffer, text)
-			if err = tpl.Execute(buffer, providers); err != nil {
+			if err = tpl.Execute(buffer, data); err != nil {
 				return err
 			}
 

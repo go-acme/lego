@@ -1,0 +1,27 @@
+{
+  "name": "test",
+  "correlationId": "a1b2c3",
+  "message": "This is a test",
+  "informationLink": "unknown",
+  "details": [
+    {
+      "field": "a",
+      "value": "foo",
+      "location": "body",
+      "issue": "123",
+      "description": "abc"
+    }
+  ],
+  "links": [
+    {
+      "href": "http://example.com",
+      "rel": "string",
+      "title": "string",
+      "targetMediaType": "string",
+      "targetSchema": null,
+      "method": "string",
+      "submissionMediaType": "application/json",
+      "submissionSchema": null
+    }
+  ]
+}

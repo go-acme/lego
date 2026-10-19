@@ -1,5 +1,7 @@
-Name = "Go Daddy"
-Description = ''''''
+Name = "Go Daddy (DEPRECATED)"
+Description = """
+Deprecated: use `godaddyv3` instead.
+"""
 URL = "https://godaddy.com"
 Code = "godaddy"
 Since = "v0.5.0"

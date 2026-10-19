@@ -1895,7 +1895,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "godaddy":
 		// generated from: providers/dns/godaddy/godaddy.toml
-		ew.writeln(`Configuration for Go Daddy.`)
+		ew.writeln(`Configuration for Go Daddy (DEPRECATED).`)
 		ew.writeln(`Code:	'godaddy'`)
 		ew.writeln(`Since:	'v0.5.0'`)
 		ew.writeln()
@@ -1913,6 +1913,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/godaddy`)
+
+	case "godaddyv3":
+		// generated from: providers/dns/godaddyv3/godaddyv3.toml
+		ew.writeln(`Configuration for Go Daddy (v3).`)
+		ew.writeln(`Code:	'godaddyv3'`)
+		ew.writeln(`Since:	'v5.6.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "GODADDYV3_PERSONAL_ACCESS_TOKEN":	Personal Access Token (PAT)`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "GODADDYV3_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "GODADDYV3_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "GODADDYV3_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "GODADDYV3_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/godaddyv3`)
 
 	case "gravity":
 		// generated from: providers/dns/gravity/gravity.toml
@@ -3895,7 +3915,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "selfhostde":
 		// generated from: providers/dns/selfhostde/selfhostde.toml
-		ew.writeln(`Configuration for SelfHost.(de|eu) DEPRECATED.`)
+		ew.writeln(`Configuration for SelfHost.(de|eu) (DEPRECATED).`)
 		ew.writeln(`Code:	'selfhostde'`)
 		ew.writeln(`Since:	'v4.19.0'`)
 		ew.writeln()

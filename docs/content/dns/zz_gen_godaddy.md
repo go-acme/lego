@@ -1,5 +1,5 @@
 ---
-title: "Go Daddy"
+title: "Go Daddy (DEPRECATED)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: godaddy
@@ -13,8 +13,8 @@ dnsprovider:
 <!-- providers/dns/godaddy/godaddy.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Deprecated: use `godaddyv3` instead.
 
-Configuration for [Go Daddy](https://godaddy.com).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Configuration for [Go Daddy](https://godaddy.com).
 - Since: v0.5.0
 
 
-Here is an example bash command using the Go Daddy provider:
+Here is an example bash command using the Go Daddy (DEPRECATED) provider:
 
 ```bash
 GODADDY_API_KEY=xxxxxxxx \

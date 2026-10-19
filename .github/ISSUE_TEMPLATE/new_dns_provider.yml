@@ -119,11 +119,11 @@ body:
     attributes:
       label: 🌱 Supporting the Maintainers
       options:
-        - label: "Yes, I find this project useful, and I appreciate the work done by the maintainers."
+        - label: "❤️ Yes, I find this project useful, and I appreciate the work done by the maintainers."
           required: false
-        - label: "Yes, I have [starred](https://github.com/go-acme/lego) this repository to help others find it."
+        - label: "⭐ Yes, I have [starred](https://github.com/go-acme/lego) this repository to help others find it."
           required: false
-        - label: "Yes, I have [sponsored](https://donate.ldez.dev) this project to keep the project stable and maintained."
+        - label: "💖 Yes, I have [sponsored](https://donate.ldez.dev) this project to keep the project stable and maintained."
           required: false
 
   - type: markdown

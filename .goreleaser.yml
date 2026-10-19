@@ -12,7 +12,11 @@ builds:
       - -trimpath
     ldflags:
       - -s -w -X main.version={{.Version}}
-
+    # https://github.com/go-acme/lego/issues/2590#issuecomment-4290624184
+    tags:
+      - urfave_cli_no_template
+      - grpcnotrace
+      - validator_novalidatefn
     goos:
       - linux
       - darwin

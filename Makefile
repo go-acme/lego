@@ -9,7 +9,7 @@ MAIN_DIRECTORY := .
 BIN_OUTPUT := $(if $(filter $(shell go env GOOS), windows), dist/lego.exe, dist/lego)
 
 # https://github.com/go-acme/lego/issues/2590#issuecomment-4290624184
-DCE_BUILD_TAGS := urfave_cli_no_template,grpcnotrace,validator_novalidatefn
+DCE_BUILD_TAGS := urfave_cli_no_template,grpcnotrace,validator_novalidatefn,ozzo_validation_no_template
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse HEAD)

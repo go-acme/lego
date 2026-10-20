@@ -40,7 +40,7 @@ func TestClient_CreateRecord(t *testing.T) {
 	payload := Record{
 		Name: "_acme-challenge",
 		Type: "TXT",
-		TTL:  120,
+		TTL:  600,
 		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 

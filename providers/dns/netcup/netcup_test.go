@@ -32,13 +32,21 @@ func TestNewDNSProvider(t *testing.T) {
 			},
 		},
 		{
+			desc: "success without API password",
+			envVars: map[string]string{
+				EnvCustomerNumber: "A",
+				EnvAPIKey:         "B",
+				EnvAPIPassword:    "",
+			},
+		},
+		{
 			desc: "missing credentials",
 			envVars: map[string]string{
 				EnvCustomerNumber: "",
 				EnvAPIKey:         "",
 				EnvAPIPassword:    "",
 			},
-			expected: "netcup: some credentials information are missing: NETCUP_CUSTOMER_NUMBER,NETCUP_API_KEY,NETCUP_API_PASSWORD",
+			expected: "netcup: some credentials information are missing: NETCUP_CUSTOMER_NUMBER,NETCUP_API_KEY",
 		},
 		{
 			desc: "missing customer number",
@@ -57,15 +65,6 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIPassword:    "C",
 			},
 			expected: "netcup: some credentials information are missing: NETCUP_API_KEY",
-		},
-		{
-			desc: "missing api password",
-			envVars: map[string]string{
-				EnvCustomerNumber: "A",
-				EnvAPIKey:         "B",
-				EnvAPIPassword:    "",
-			},
-			expected: "netcup: some credentials information are missing: NETCUP_API_PASSWORD",
 		},
 	}
 
@@ -106,6 +105,11 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			password: "C",
 		},
 		{
+			desc:     "success without API password",
+			customer: "A",
+			key:      "B",
+		},
+		{
 			desc:     "missing credentials",
 			expected: "netcup: credentials missing",
 		},
@@ -121,13 +125,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			customer: "A",
 			key:      "",
 			password: "C",
-			expected: "netcup: credentials missing",
-		},
-		{
-			desc:     "missing password",
-			customer: "A",
-			key:      "B",
-			password: "",
 			expected: "netcup: credentials missing",
 		},
 	}

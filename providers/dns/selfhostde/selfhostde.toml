@@ -1,5 +1,7 @@
-Name = "SelfHost.(de|eu) DEPRECATED"
-Description = ''''''
+Name = "SelfHost.(de|eu) (DEPRECATED)"
+Description = """
+Deprecated: use `selfhostdev2` instead.
+"""
 URL = "https://www.selfhost.de"
 Code = "selfhostde"
 Since = "v4.19.0"
@@ -10,6 +12,7 @@ SELFHOSTDE_PASSWORD=yyy \
 SELFHOSTDE_RECORDS_MAPPING=my.example.com:123 \
 lego run --dns selfhostde -d '*.example.com' -d example.com
 '''
+
 
 Additional = """
 SelfHost.de doesn't have an API to create or delete TXT records,

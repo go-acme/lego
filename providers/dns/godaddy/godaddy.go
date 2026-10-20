@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/godaddy/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -78,6 +79,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 // NewDNSProviderConfig return a DNSProvider instance configured for godaddy.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	log.Warn("godaddy: this implementation is deprecated, please 'godaddyv3' instead.")
+
 	if config == nil {
 		return nil, errors.New("godaddy: the configuration of the DNS provider is nil")
 	}

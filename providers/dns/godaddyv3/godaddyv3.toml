@@ -1,0 +1,31 @@
+Name = "Go Daddy (v3)"
+Description = ''''''
+URL = "https://godaddy.com"
+Code = "godaddyv3"
+Since = "v5.6.0"
+
+Example = '''
+GODADDYV3_PERSONAL_ACCESS_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
+lego run --dns godaddyv3 -d '*.example.com' -d example.com
+'''
+
+Additional = '''
+GoDaddy has recently (2024-04) updated the account requirements to access parts of their production Domains API:
+
+- Availability API: Limited to accounts with 50 or more domains.
+- Management and DNS APIs: Limited to accounts with 10 or more domains and/or an active Discount Domain Club plan.
+
+https://community.letsencrypt.org/t/getting-unauthorized-url-error-while-trying-to-get-cert-for-subdomains/217329/12
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    GODADDYV3_PERSONAL_ACCESS_TOKEN = "Personal Access Token (PAT)"
+  [Configuration.Additional]
+    GODADDYV3_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    GODADDYV3_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 120)"
+    GODADDYV3_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)"
+    GODADDYV3_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://developer.godaddy.com/en/docs/references/rest/domains/v3"

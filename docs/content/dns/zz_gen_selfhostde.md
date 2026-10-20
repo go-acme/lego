@@ -1,5 +1,5 @@
 ---
-title: "SelfHost.(de|eu) DEPRECATED"
+title: "SelfHost.(de|eu) (DEPRECATED)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: selfhostde
@@ -13,8 +13,8 @@ dnsprovider:
 <!-- providers/dns/selfhostde/selfhostde.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Deprecated: use `selfhostdev2` instead.
 
-Configuration for [SelfHost.(de|eu) DEPRECATED](https://www.selfhost.de).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Configuration for [SelfHost.(de|eu) DEPRECATED](https://www.selfhost.de).
 - Since: v4.19.0
 
 
-Here is an example bash command using the SelfHost.(de|eu) DEPRECATED provider:
+Here is an example bash command using the SelfHost.(de|eu) (DEPRECATED) provider:
 
 ```bash
 SELFHOSTDE_USERNAME=xxx \

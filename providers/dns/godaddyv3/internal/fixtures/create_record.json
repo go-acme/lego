@@ -1,0 +1,14 @@
+{
+  "recordId": "record123",
+  "name": "_acme-challenge",
+  "type": "TXT",
+  "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+  "ttl": 600,
+  "priority": 0,
+  "service": "string",
+  "port": 0,
+  "weight": 0,
+  "protocol": "string",
+  "flag": 0,
+  "tag": "string"
+}

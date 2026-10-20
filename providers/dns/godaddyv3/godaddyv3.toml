@@ -23,8 +23,8 @@ https://community.letsencrypt.org/t/getting-unauthorized-url-error-while-trying-
     GODADDYV3_PERSONAL_ACCESS_TOKEN = "Personal Access Token (PAT)"
   [Configuration.Additional]
     GODADDYV3_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
-    GODADDYV3_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
-    GODADDYV3_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    GODADDYV3_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 120)"
+    GODADDYV3_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)"
     GODADDYV3_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]

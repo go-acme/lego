@@ -28,6 +28,8 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+const minTTL = 600
+
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
@@ -43,8 +45,8 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
@@ -78,6 +80,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("godaddyv3: the configuration of the DNS provider is nil")
+	}
+
+	if config.TTL < minTTL {
+		return nil, fmt.Errorf("godaddyv3: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
 	client, err := internal.NewClient(config.PersonalAccessToken)

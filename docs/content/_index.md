@@ -60,6 +60,8 @@ Special thanks to the organizations sponsoring lego's development.
 
 - [![Canonical](./images/canonical.svg?height=30px&classes=inline&lightbox=false)](https://canonical.com/)
 
+- [![RedirHub](./images/redirhub.svg?height=20px&classes=inline&lightbox=false)](https://www.redirhub.com/)
+
 ---
 
 > [!IMPORTANT] Info

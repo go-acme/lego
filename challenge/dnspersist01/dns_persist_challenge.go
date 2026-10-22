@@ -67,8 +67,17 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		return err
 	}
 
-	if chlng.AccountURI == "" {
-		return errors.New("dnspersist01: missing accounturi in challenge object")
+	accountURI := chlng.AccountURI
+
+	if accountURI == "" {
+		log.Error("dnspersist01: missing accounturi in challenge object, fallback to KID.")
+
+		// This a workaround for Google Trust Service.
+		// This is not a part of the RFC draft 01.
+		accountURI = c.core.GetKID()
+		if accountURI == "" {
+			return errors.New("dnspersist01: ACME account URI cannot be empty")
+		}
 	}
 
 	err = validateIssuerDomainNames(chlng)
@@ -83,19 +92,19 @@ func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 		return fmt.Errorf("dnspersist01: %w", err)
 	}
 
-	issuerDomainName, err := c.selectIssuerDomainName(chlng.IssuerDomainNames, result.Records, chlng.AccountURI, authz.Wildcard)
+	issuerDomainName, err := c.selectIssuerDomainName(chlng.IssuerDomainNames, result.Records, accountURI, authz.Wildcard)
 	if err != nil {
 		return fmt.Errorf("dnspersist01: %w", err)
 	}
 
 	matcher := func(records []TXTRecord) bool {
-		return c.hasMatchingRecord(records, issuerDomainName, chlng.AccountURI, authz.Wildcard)
+		return c.hasMatchingRecord(records, issuerDomainName, accountURI, authz.Wildcard)
 	}
 
 	if !matcher(result.Records) {
 		var info ChallengeInfo
 
-		info, err = GetChallengeInfo(authz, issuerDomainName, chlng.AccountURI, c.persistUntil)
+		info, err = GetChallengeInfo(authz, issuerDomainName, accountURI, c.persistUntil)
 		if err != nil {
 			return err
 		}

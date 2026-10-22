@@ -81,6 +81,21 @@ func newCore(httpClient *http.Client, doer *sender.Doer, dir acme.Directory, kid
 	return c, nil
 }
 
+// GetKeyAuthorization Gets the key authorization.
+func (a *Core) GetKeyAuthorization(token string) (string, error) {
+	return a.signer().GetKeyAuthorization(token)
+}
+
+// GetKID gets Key identifier (account URI).
+func (a *Core) GetKID() string {
+	return a.kid
+}
+
+// GetDirectory gets the ACME server directory.
+func (a *Core) GetDirectory() acme.Directory {
+	return a.directory
+}
+
 func (a *Core) signer() *secure.Signer {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
@@ -165,15 +180,6 @@ func (a *Core) signedPost(ctx context.Context, uri string, content []byte, respo
 	}
 
 	return resp, err
-}
-
-// GetKeyAuthorization Gets the key authorization.
-func (a *Core) GetKeyAuthorization(token string) (string, error) {
-	return a.signer().GetKeyAuthorization(token)
-}
-
-func (a *Core) GetDirectory() acme.Directory {
-	return a.directory
 }
 
 func getDirectory(ctx context.Context, do *sender.Doer, caDirURL string) (acme.Directory, error) {

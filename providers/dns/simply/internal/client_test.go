@@ -14,7 +14,7 @@ import (
 func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client, err := NewClient("accountname", "apikey")
+			client, err := NewClient("secret")
 			if err != nil {
 				return nil, err
 			}
@@ -25,7 +25,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().WithJSONHeaders().
-			WithBasicAuth("accountname", "apikey"),
+			WithAuthorization("Bearer secret"),
 	)
 }
 

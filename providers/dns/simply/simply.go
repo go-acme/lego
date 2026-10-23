@@ -20,8 +20,9 @@ import (
 const (
 	envNamespace = "SIMPLY_"
 
-	EnvAccountName = envNamespace + "ACCOUNT_NAME"
-	EnvAPIKey      = envNamespace + "API_KEY"
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvAccountName = envNamespace + "ACCOUNT_NAME" // Deprecated: unused
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -33,8 +34,8 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	AccountName        string
 	APIKey             string
+	AccountName        string // Deprecated: unused
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -65,13 +66,12 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Simply.com.
 // Credentials must be passed in the environment variable: SIMPLY_ACCOUNT_NAME, SIMPLY_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAccountName, EnvAPIKey)
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("simply: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.AccountName = values[EnvAccountName]
 	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
@@ -83,15 +83,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("simply: the configuration of the DNS provider is nil")
 	}
 
-	if config.AccountName == "" {
-		return nil, errors.New("simply: missing credentials: account name")
-	}
-
 	if config.APIKey == "" {
 		return nil, errors.New("simply: missing credentials: api key")
 	}
 
-	client, err := internal.NewClient(config.AccountName, config.APIKey)
+	client, err := internal.NewClient(config.APIKey)
 	if err != nil {
 		return nil, fmt.Errorf("simply: failed to create client: %w", err)
 	}

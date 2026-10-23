@@ -19,19 +19,14 @@ const defaultBaseURL = "https://api.simply.com/2/"
 
 // Client is a Simply.com API client.
 type Client struct {
-	accountName string
-	apiKey      string
+	apiKey string
 
 	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
-func NewClient(accountName, apiKey string) (*Client, error) {
-	if accountName == "" {
-		return nil, errors.New("credentials missing: accountName")
-	}
-
+func NewClient(apiKey string) (*Client, error) {
 	if apiKey == "" {
 		return nil, errors.New("credentials missing: apiKey")
 	}
@@ -42,10 +37,9 @@ func NewClient(accountName, apiKey string) (*Client, error) {
 	}
 
 	return &Client{
-		accountName: accountName,
-		apiKey:      apiKey,
-		BaseURL:     baseURL,
-		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
+		apiKey:     apiKey,
+		BaseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}, nil
 }
 
@@ -116,7 +110,7 @@ func (c *Client) createEndpoint(zoneName, uri string) *url.URL {
 }
 
 func (c *Client) do(req *http.Request, result any) error {
-	req.SetBasicAuth(c.accountName, c.apiKey)
+	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

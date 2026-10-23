@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v5/internal/errutils"
+	"golang.org/x/net/idna"
 )
 
 const defaultBaseURL = "https://api.simply.com/2/"
@@ -45,7 +46,10 @@ func NewClient(apiKey string) (*Client, error) {
 
 // GetRecords lists all the records in the zone.
 func (c *Client) GetRecords(ctx context.Context, zoneName string) ([]Record, error) {
-	endpoint := c.createEndpoint(zoneName, "/")
+	endpoint, err := c.createEndpoint(zoneName, "/")
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -64,7 +68,10 @@ func (c *Client) GetRecords(ctx context.Context, zoneName string) ([]Record, err
 
 // AddRecord adds a record.
 func (c *Client) AddRecord(ctx context.Context, zoneName string, record Record) (int64, error) {
-	endpoint := c.createEndpoint(zoneName, "/")
+	endpoint, err := c.createEndpoint(zoneName, "/")
+	if err != nil {
+		return 0, err
+	}
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
@@ -83,7 +90,10 @@ func (c *Client) AddRecord(ctx context.Context, zoneName string, record Record) 
 
 // EditRecord updates a record.
 func (c *Client) EditRecord(ctx context.Context, zoneName string, id int64, record Record) error {
-	endpoint := c.createEndpoint(zoneName, strconv.FormatInt(id, 10))
+	endpoint, err := c.createEndpoint(zoneName, strconv.FormatInt(id, 10))
+	if err != nil {
+		return err
+	}
 
 	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, record)
 	if err != nil {
@@ -95,7 +105,10 @@ func (c *Client) EditRecord(ctx context.Context, zoneName string, id int64, reco
 
 // DeleteRecord deletes a record.
 func (c *Client) DeleteRecord(ctx context.Context, zoneName string, id int64) error {
-	endpoint := c.createEndpoint(zoneName, strconv.FormatInt(id, 10))
+	endpoint, err := c.createEndpoint(zoneName, strconv.FormatInt(id, 10))
+	if err != nil {
+		return err
+	}
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
@@ -105,8 +118,13 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneName string, id int64) er
 	return c.do(req, &apiResponse[json.RawMessage, json.RawMessage]{})
 }
 
-func (c *Client) createEndpoint(zoneName, uri string) *url.URL {
-	return c.BaseURL.JoinPath("my", "products", zoneName, "dns", "records", uri, "/")
+func (c *Client) createEndpoint(zoneName, uri string) (*url.URL, error) {
+	zone, err := idna.ToUnicode(zoneName)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.BaseURL.JoinPath("my", "products", zone, "dns", "records", uri, "/"), nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

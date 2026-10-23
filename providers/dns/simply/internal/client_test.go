@@ -197,3 +197,47 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 	err := client.DeleteRecord(t.Context(), "example.com", 123456789)
 	require.EqualError(t, err, "Unknown DNS record")
 }
+
+func TestClient_createEndpoint(t *testing.T) {
+	baseURL, err := url.Parse("https://example.com/")
+	require.NoError(t, err)
+
+	client := Client{BaseURL: baseURL}
+
+	testCases := []struct {
+		desc     string
+		zoneName string
+		uri      string
+		expected string
+	}{
+		{
+			desc:     "simple",
+			zoneName: "example.com",
+			uri:      "/",
+			expected: "https://example.com/my/products/example.com/dns/records/",
+		},
+		{
+			desc:     "ASCII zone name",
+			zoneName: "é.example.com",
+			uri:      "/",
+			expected: "https://example.com/my/products/%C3%A9.example.com/dns/records/",
+		},
+		{
+			desc:     "punny coded zone name",
+			zoneName: "xn--9ca.example.com",
+			uri:      "/",
+			expected: "https://example.com/my/products/%C3%A9.example.com/dns/records/",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			endpoint, err := client.createEndpoint(test.zoneName, test.uri)
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expected, endpoint.String())
+		})
+	}
+}

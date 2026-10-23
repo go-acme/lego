@@ -38,7 +38,6 @@ lego run --dns simply -d '*.example.com' -d example.com
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `SIMPLY_ACCOUNT_NAME` | Account name |
 | `SIMPLY_API_KEY` | API key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

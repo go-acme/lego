@@ -12,7 +12,6 @@ lego run --dns simply -d '*.example.com' -d example.com
 
 [Configuration]
   [Configuration.Credentials]
-    SIMPLY_ACCOUNT_NAME = "Account name"
     SIMPLY_API_KEY = "API key"
   [Configuration.Additional]
     SIMPLY_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 10)"

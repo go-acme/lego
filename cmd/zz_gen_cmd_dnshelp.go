@@ -4006,7 +4006,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "SIMPLY_ACCOUNT_NAME":	Account name`)
 		ew.writeln(`	- "SIMPLY_API_KEY":	API key`)
 		ew.writeln()
 

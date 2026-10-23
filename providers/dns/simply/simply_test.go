@@ -12,7 +12,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvAccountName, EnvAPIKey).WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvAPIKey).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -23,33 +23,22 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAccountName: "S000000",
-				EnvAPIKey:      "secret",
+				EnvAPIKey: "secret",
 			},
-		},
-		{
-			desc: "missing credentials: account name",
-			envVars: map[string]string{
-				EnvAccountName: "",
-				EnvAPIKey:      "secret",
-			},
-			expected: "simply: some credentials information are missing: SIMPLY_ACCOUNT_NAME",
 		},
 		{
 			desc: "missing credentials: api key",
 			envVars: map[string]string{
-				EnvAccountName: "S000000",
-				EnvAPIKey:      "",
+				EnvAPIKey: "",
 			},
 			expected: "simply: some credentials information are missing: SIMPLY_API_KEY",
 		},
 		{
 			desc: "missing credentials: all",
 			envVars: map[string]string{
-				EnvAccountName: "",
-				EnvAPIKey:      "",
+				EnvAPIKey: "",
 			},
-			expected: "simply: some credentials information are missing: SIMPLY_ACCOUNT_NAME,SIMPLY_API_KEY",
+			expected: "simply: some credentials information are missing: SIMPLY_API_KEY",
 		},
 	}
 
@@ -77,32 +66,23 @@ func TestNewDNSProvider(t *testing.T) {
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc        string
-		accountName string
-		apiKey      string
-		expected    string
+		desc     string
+		apiKey   string
+		expected string
 	}{
 		{
-			desc:        "success",
-			accountName: "S000000",
-			apiKey:      "secret",
+			desc:   "success",
+			apiKey: "secret",
 		},
 		{
-			desc:     "missing account name",
-			apiKey:   "secret",
-			expected: "simply: missing credentials: account name",
-		},
-		{
-			desc:        "missing api key",
-			accountName: "S000000",
-			expected:    "simply: missing credentials: api key",
+			desc:     "missing api key",
+			expected: "simply: missing credentials: api key",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.AccountName = test.accountName
 			config.APIKey = test.apiKey
 
 			p, err := NewDNSProviderConfig(config)

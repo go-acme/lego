@@ -148,7 +148,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.CheckQueryParameter().Strict().
 				With("content", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
 				With("name", "_acme-challenge").
-				With("ttl", "120").
+				With("ttl", "3600").
 				With("type", "TXT"),
 		).
 		Build(t)

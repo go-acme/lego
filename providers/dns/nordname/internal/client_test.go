@@ -37,7 +37,7 @@ func TestClient_AddRecord(t *testing.T) {
 			servermock.CheckQueryParameter().Strict().
 				With("content", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
 				With("name", "_acme-challenge").
-				With("ttl", "120").
+				With("ttl", "3600").
 				With("type", "TXT"),
 		).
 		Build(t)
@@ -45,7 +45,7 @@ func TestClient_AddRecord(t *testing.T) {
 	record := Record{
 		Name:    "_acme-challenge",
 		Type:    "TXT",
-		TTL:     120,
+		TTL:     3600,
 		Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
@@ -56,7 +56,7 @@ func TestClient_AddRecord(t *testing.T) {
 		ID:      "abcde12345",
 		Name:    "_acme-challenge",
 		Type:    "TXT",
-		TTL:     120,
+		TTL:     3600,
 		Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
@@ -70,7 +70,7 @@ func TestClient_AddRecord_customerUUID(t *testing.T) {
 			servermock.CheckQueryParameter().Strict().
 				With("content", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
 				With("name", "_acme-challenge").
-				With("ttl", "120").
+				With("ttl", "3600").
 				With("type", "TXT"),
 			servermock.CheckHeader().
 				With(customerUUIDHeader, "customer1234"),
@@ -80,7 +80,7 @@ func TestClient_AddRecord_customerUUID(t *testing.T) {
 	record := Record{
 		Name:    "_acme-challenge",
 		Type:    "TXT",
-		TTL:     120,
+		TTL:     3600,
 		Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
@@ -91,7 +91,7 @@ func TestClient_AddRecord_customerUUID(t *testing.T) {
 		ID:      "abcde12345",
 		Name:    "_acme-challenge",
 		Type:    "TXT",
-		TTL:     120,
+		TTL:     3600,
 		Content: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 

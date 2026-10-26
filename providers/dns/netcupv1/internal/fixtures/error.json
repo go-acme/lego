@@ -1,0 +1,17 @@
+{
+  "success": false,
+  "errors": [
+    {
+      "code": "error",
+      "message": "This is an error message."
+    }
+  ],
+  "messages": [
+    {
+      "code": "string",
+      "message": "string"
+    }
+  ],
+  "meta": null,
+  "result": null
+}

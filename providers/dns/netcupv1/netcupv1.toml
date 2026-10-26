@@ -1,0 +1,23 @@
+Name = "Netcup v1"
+Description = ''''''
+URL = "https://www.netcup.eu/"
+Code = "netcupv1"
+Since = "v5.6.0"
+
+
+Example = '''
+NETCUPV1_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+lego run --dns netcupv1 -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    NETCUPV1_API_KEY = "API key"
+  [Configuration.Additional]
+    NETCUPV1_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    NETCUPV1_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    NETCUPV1_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    NETCUPV1_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://www.netcup.com/en/helpcenter/documentation/netcup-api#/"

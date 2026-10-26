@@ -1,0 +1,34 @@
+{
+  "success": true,
+  "meta": {
+    "sort": {
+      "field": "domainId",
+      "direction": "asc"
+    },
+    "pagination": {
+      "page": 1,
+      "perPage": 100,
+      "totalEntries": 3,
+      "previousPage": 0,
+      "nextPage": 0,
+      "lastPage": 0
+    }
+  },
+  "result": [
+    {
+      "id": 1,
+      "fqdn": "example.org",
+     "isDnsManaged": true
+    },
+    {
+      "id": 2,
+      "fqdn": "example.com",
+      "isDnsManaged": true
+    },
+    {
+      "id": 3,
+      "fqdn": "foo.example.com",
+      "isDnsManaged": true
+    }
+  ]
+}

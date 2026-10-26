@@ -49,8 +49,8 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 |--------------------------------|-------------|
 | `NORDNAME_CUSTOMER_UUID` | UUID of the customer to access. |
 | `NORDNAME_HTTP_TIMEOUT` | API request timeout in seconds (Default: 30) |
-| `NORDNAME_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 2) |
-| `NORDNAME_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 60) |
+| `NORDNAME_POLLING_INTERVAL` | Time between DNS propagation check in seconds (Default: 10) |
+| `NORDNAME_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation in seconds (Default: 300) |
 | `NORDNAME_TTL` | The TTL of the TXT record used for the DNS challenge in seconds (Default: 3600) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

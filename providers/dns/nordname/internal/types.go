@@ -13,11 +13,9 @@ func (a *APIError) Error() string {
 }
 
 type Record struct {
-	ID        string `json:"id,omitempty" url:"id,omitempty"`
-	Name      string `json:"name" url:"name"`
-	Type      string `json:"type" url:"type"`
-	TTL       int    `json:"ttl" url:"ttl"`
-	Content   string `json:"content" url:"content"`
-	Locked    bool   `json:"locked,omitempty" url:"locked,omitempty"`
-	IsDynamic bool   `json:"is_dynamic,omitempty" url:"is_dynamic,omitempty"`
+	ID      string `json:"id,omitempty" url:"id,omitempty"`
+	Name    string `json:"name" url:"name"`
+	Type    string `json:"type" url:"type"`
+	TTL     int    `json:"ttl" url:"ttl"`
+	Content string `json:"content" url:"content"`
 }

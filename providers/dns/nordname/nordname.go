@@ -29,6 +29,11 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+const (
+	minTTL = 3600
+	maxTTL = 604800
+)
+
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
@@ -45,7 +50,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 3600),
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
@@ -81,6 +86,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("nordname: the configuration of the DNS provider is nil")
+	}
+
+	if config.TTL < minTTL || config.TTL > maxTTL {
+		return nil, fmt.Errorf("nordname: invalid TTL (%d): TTL must be between %d and %d", config.TTL, minTTL, maxTTL)
 	}
 
 	client, err := internal.NewClient(config.APIKey, config.CustomerUUID)

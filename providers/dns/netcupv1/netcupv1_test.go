@@ -143,12 +143,12 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
-		Route("GET /domains",
+		Route("GET /domain",
 			servermock.ResponseFromInternal("domain.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("fqdn", "example.com"),
 		).
-		Route("POST /domains/2/acme/challenge",
+		Route("POST /domain/2/acme/challenge",
 			servermock.ResponseFromInternal("create_challenge_record.json"),
 			servermock.CheckRequestJSONBodyFromInternal("create_challenge_record-request.json"),
 		).
@@ -160,12 +160,12 @@ func TestDNSProvider_Present(t *testing.T) {
 
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
-		Route("GET /domains",
+		Route("GET /domain",
 			servermock.ResponseFromInternal("domain.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("fqdn", "example.com"),
 		).
-		Route("DELETE /domains/2/acme/challenge/@/ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		Route("DELETE /domain/2/acme/challenge/@/ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 			servermock.Noop().
 				WithStatusCode(http.StatusNoContent),
 		).

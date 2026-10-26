@@ -32,7 +32,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 func TestClient_AddChallenge(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /domains/123/acme/challenge",
+		Route("POST /domain/123/acme/challenge",
 			servermock.ResponseFromFixture("create_challenge_record.json"),
 			servermock.CheckRequestJSONBodyFromFixture("create_challenge_record-request.json"),
 		).
@@ -53,7 +53,7 @@ func TestClient_AddChallenge(t *testing.T) {
 
 func TestClient_DeleteChallenge(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /domains/123/acme/challenge/@/ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		Route("DELETE /domain/123/acme/challenge/@/ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 			servermock.Noop().
 				WithStatusCode(http.StatusNoContent),
 		).
@@ -65,19 +65,19 @@ func TestClient_DeleteChallenge(t *testing.T) {
 
 func TestClient_DeleteChallenge_error(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /domains/123/acme/challenge/@/ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		Route("DELETE /domain/123/acme/challenge/@/ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest),
 		).
 		Build(t)
 
 	err := client.DeleteChallenge(t.Context(), 123, "@", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")
-	require.EqualError(t, err, "error: This is an error message.")
+	require.EqualError(t, err, "authenticationError: Authentication token is not valid or has expired.")
 }
 
 func TestClient_GetDomains(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /domains",
+		Route("GET /domain",
 			servermock.ResponseFromFixture("domains.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("fqdn", "example.com"),

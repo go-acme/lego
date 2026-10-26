@@ -45,7 +45,7 @@ func NewClient(apiKey string) (*Client, error) {
 // AddChallenge creates a TXT record related to a challenge.
 // https://www.netcup.com/en/helpcenter/documentation/netcup-api#/v1%2Fdomain/NetcupApiV1DomainAcmePost
 func (c *Client) AddChallenge(ctx context.Context, domainID int64, scope, value string) ([]ChallengeData, error) {
-	endpoint := c.BaseURL.JoinPath("domains", strconv.FormatInt(domainID, 10), "acme", "challenge")
+	endpoint := c.BaseURL.JoinPath("domain", strconv.FormatInt(domainID, 10), "acme", "challenge")
 
 	if scope == "" {
 		scope = "@"
@@ -71,7 +71,7 @@ func (c *Client) AddChallenge(ctx context.Context, domainID int64, scope, value 
 // DeleteChallenge deletes a TXT record related to a challenge.
 // https://www.netcup.com/en/helpcenter/documentation/netcup-api#/v1%2Fdomain/NetcupApiV1DomainAcmeDelete
 func (c *Client) DeleteChallenge(ctx context.Context, domainID int64, scope, value string) error {
-	endpoint := c.BaseURL.JoinPath("domains", strconv.FormatInt(domainID, 10), "acme", "challenge", scope, value)
+	endpoint := c.BaseURL.JoinPath("domain", strconv.FormatInt(domainID, 10), "acme", "challenge", scope, value)
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
@@ -89,7 +89,7 @@ func (c *Client) DeleteChallenge(ctx context.Context, domainID int64, scope, val
 // GetDomains gets all domains.
 // https://www.netcup.com/en/helpcenter/documentation/netcup-api#/v1%2Fdomain/NetcupApiV1DomainGetList
 func (c *Client) GetDomains(ctx context.Context, request *DomainsRequest) ([]Domain, error) {
-	endpoint := c.BaseURL.JoinPath("domains")
+	endpoint := c.BaseURL.JoinPath("domain")
 
 	values, err := querystring.Values(request)
 	if err != nil {

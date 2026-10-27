@@ -152,6 +152,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/nederhost"
 	"github.com/go-acme/lego/v5/providers/dns/neodigit"
 	"github.com/go-acme/lego/v5/providers/dns/netcup"
+	"github.com/go-acme/lego/v5/providers/dns/netcupv1"
 	"github.com/go-acme/lego/v5/providers/dns/netlify"
 	"github.com/go-acme/lego/v5/providers/dns/netnod"
 	"github.com/go-acme/lego/v5/providers/dns/nexdns"
@@ -529,6 +530,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return neodigit.NewDNSProvider()
 	case "netcup":
 		return netcup.NewDNSProvider()
+	case "netcupv1":
+		return netcupv1.NewDNSProvider()
 	case "netlify":
 		return netlify.NewDNSProvider()
 	case "netnod":
@@ -849,6 +852,7 @@ func GetProviderCodes() []string {
 		"nederhost",
 		"neodigit",
 		"netcup",
+		"netcupv1",
 		"netlify",
 		"netnod",
 		"nexdns",

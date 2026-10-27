@@ -1,5 +1,5 @@
 ---
-title: "Netcup"
+title: "Netcup (Legacy API)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: netcup
@@ -13,8 +13,8 @@ dnsprovider:
 <!-- providers/dns/netcup/netcup.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+This implementation use the legacy API, please use 'netcupv1' instead for Netcup CloudDNS API.
 
-Configuration for [Netcup](https://www.netcup.eu/).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Configuration for [Netcup](https://www.netcup.eu/).
 - Since: v1.1.0
 
 
-Here is an example bash command using the Netcup provider:
+Here is an example bash command using the Netcup (Legacy API) provider:
 
 ```bash
 NETCUP_CUSTOMER_NUMBER=xxxx \

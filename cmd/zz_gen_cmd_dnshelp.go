@@ -3067,7 +3067,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "netcup":
 		// generated from: providers/dns/netcup/netcup.toml
-		ew.writeln(`Configuration for Netcup.`)
+		ew.writeln(`Configuration for Netcup (Legacy API).`)
 		ew.writeln(`Code:	'netcup'`)
 		ew.writeln(`Since:	'v1.1.0'`)
 		ew.writeln()
@@ -3085,6 +3085,25 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/netcup`)
+
+	case "netcupv1":
+		// generated from: providers/dns/netcupv1/netcupv1.toml
+		ew.writeln(`Configuration for Netcup v1.`)
+		ew.writeln(`Code:	'netcupv1'`)
+		ew.writeln(`Since:	'v5.6.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NETCUPV1_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NETCUPV1_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "NETCUPV1_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 30)`)
+		ew.writeln(`	- "NETCUPV1_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 900)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/netcupv1`)
 
 	case "netlify":
 		// generated from: providers/dns/netlify/netlify.toml

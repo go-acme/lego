@@ -82,7 +82,7 @@ require (
 	github.com/stretchr/testify v1.12.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.200
 	github.com/transip/gotransip/v6 v6.28.0
-	github.com/ucloud/ucloud-sdk-go v0.22.135
+	github.com/ucloud/ucloud-sdk-go v0.22.140
 	github.com/ultradns/ultradns-go-sdk v1.8.6-20261009044533-535b847
 	github.com/urfave/cli/v3 v3.14.0
 	github.com/vinyldns/go-vinyldns v0.9.18

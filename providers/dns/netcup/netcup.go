@@ -79,6 +79,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 // NewDNSProviderConfig return a DNSProvider instance configured for netcup.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	log.Warn("netcup: this implementation use the legacy API, please use 'netcupv1' instead for Netcup CloudDNS API.")
+
 	if config == nil {
 		return nil, errors.New("netcup: the configuration of the DNS provider is nil")
 	}

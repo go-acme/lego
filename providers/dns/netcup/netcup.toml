@@ -1,5 +1,7 @@
-Name = "Netcup"
-Description = ''''''
+Name = "Netcup (Legacy API)"
+Description = """
+This implementation use the legacy API, please use 'netcupv1' instead for Netcup CloudDNS API.
+"""
 URL = "https://www.netcup.eu/"
 Code = "netcup"
 Since = "v1.1.0"

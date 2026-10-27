@@ -25,7 +25,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.114.5
 	github.com/aws/aws-sdk-go-v2/service/sts v1.51.5
 	github.com/aziontech/azionapi-go-sdk v0.148.0
-	github.com/baidubce/bce-sdk-go v0.9.276
+	github.com/baidubce/bce-sdk-go v0.9.277
 	github.com/bodgit/tsig v1.3.1
 	github.com/bradfitz/gomemcache v0.0.0-20260422231931-4d751bb6e37c
 	github.com/cenkalti/backoff/v5 v5.0.3

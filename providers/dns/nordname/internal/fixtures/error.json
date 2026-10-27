@@ -1,0 +1,5 @@
+{
+  "status": 400,
+  "detail": "Reason of failure",
+  "error_code": "no_customer"
+}

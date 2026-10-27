@@ -1,0 +1,23 @@
+Name = "NordName"
+Description = ''''''
+URL = "https://nordname.com/"
+Code = "nordname"
+Since = "v5.6.0"
+
+Example = '''
+NORDNAME_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+lego run --dns nordname -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    NORDNAME_API_KEY = "API key"
+  [Configuration.Additional]
+    NORDNAME_CUSTOMER_UUID = "UUID of the customer to access."
+    NORDNAME_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 10)"
+    NORDNAME_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 300)"
+    NORDNAME_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 3600)"
+    NORDNAME_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://app.nordname.eu/en/api-docs"

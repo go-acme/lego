@@ -1,0 +1,9 @@
+{
+  "id": "abcde12345",
+  "name": "_acme-challenge",
+  "type": "TXT",
+  "ttl": 3600,
+  "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+  "locked": 0,
+  "is_dynamic": 0
+}

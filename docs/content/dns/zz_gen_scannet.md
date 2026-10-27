@@ -26,7 +26,8 @@ Configuration for [ScanNet](https://www.scannet.dk/).
 Here is an example bash command using the ScanNet provider:
 
 ```bash
-SCANNET_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+SCANNET_CLIENT_ID="xxx" \
+SCANNET_CLIENT_SECRET="yyy" \
 lego run --dns scannet -d '*.example.com' -d example.com
 ```
 
@@ -37,7 +38,8 @@ lego run --dns scannet -d '*.example.com' -d example.com
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `SCANNET_API_KEY` | API key |
+| `SCANNET_CLIENT_ID` | Client ID |
+| `SCANNET_CLIENT_SECRET` | Client secret |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

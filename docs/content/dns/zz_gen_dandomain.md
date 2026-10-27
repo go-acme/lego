@@ -26,7 +26,8 @@ Configuration for [DanDomain](https://dandomain.dk/).
 Here is an example bash command using the DanDomain provider:
 
 ```bash
-DANDOMAIN_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+DANDOMAIN_CLIENT_ID="xxx" \
+DANDOMAIN_CLIENT_SECRET="yyy" \
 lego run --dns dandomain -d '*.example.com' -d example.com
 ```
 
@@ -37,7 +38,8 @@ lego run --dns dandomain -d '*.example.com' -d example.com
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `DANDOMAIN_API_KEY` | API key |
+| `DANDOMAIN_CLIENT_ID` | Client ID |
+| `DANDOMAIN_CLIENT_SECRET` | Client secret |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

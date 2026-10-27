@@ -840,7 +840,8 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "CURANET_API_KEY":	API key`)
+		ew.writeln(`	- "CURANET_CLIENT_ID":	Client ID`)
+		ew.writeln(`	- "CURANET_CLIENT_SECRET":	Client secret`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
@@ -880,7 +881,8 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "DANDOMAIN_API_KEY":	API key`)
+		ew.writeln(`	- "DANDOMAIN_CLIENT_ID":	Client ID`)
+		ew.writeln(`	- "DANDOMAIN_CLIENT_SECRET":	Client secret`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
@@ -3916,7 +3918,8 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "SCANNET_API_KEY":	API key`)
+		ew.writeln(`	- "SCANNET_CLIENT_ID":	Client ID`)
+		ew.writeln(`	- "SCANNET_CLIENT_SECRET":	Client secret`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
@@ -4600,7 +4603,8 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "WANNAFIND_API_KEY":	API key`)
+		ew.writeln(`	- "WANNAFIND_CLIENT_ID":	Client ID`)
+		ew.writeln(`	- "WANNAFIND_CLIENT_SECRET":	Client secret`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

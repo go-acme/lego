@@ -1,0 +1,12 @@
+{
+  "success": false,
+  "errors": [
+    {
+      "code": "authenticationError",
+      "message": "Authentication token is not valid or has expired."
+    }
+  ],
+  "messages": [],
+  "meta": null,
+  "result": null
+}

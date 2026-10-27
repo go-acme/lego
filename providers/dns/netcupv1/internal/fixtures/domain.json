@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "meta": {
+    "sort": {
+      "field": "domainId",
+      "direction": "asc"
+    },
+    "pagination": {
+      "page": 1,
+      "perPage": 100,
+      "totalEntries": 1,
+      "previousPage": 0,
+      "nextPage": 0,
+      "lastPage": 0
+    }
+  },
+  "result": [
+    {
+      "id": 2,
+      "fqdn": "example.com",
+      "isDnsManaged": true
+    }
+  ]
+}

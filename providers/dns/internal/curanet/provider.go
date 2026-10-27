@@ -19,12 +19,15 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	APIKey string
+	ClientID     string
+	ClientSecret string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
-	HTTPClient         *http.Client
+
+	APIKey     string       // Deprecated
+	HTTPClient *http.Client // Deprecated
 }
 
 // DNSProvider implements the challenge.Provider interface.
@@ -39,7 +42,7 @@ func NewDNSProviderConfig(config *Config, baseURL string) (*DNSProvider, error) 
 		return nil, errors.New("the configuration of the DNS provider is nil")
 	}
 
-	client, err := internal.NewClient(config.APIKey)
+	client, err := newClient(config)
 	if err != nil {
 		return nil, err
 	}
@@ -50,12 +53,6 @@ func NewDNSProviderConfig(config *Config, baseURL string) (*DNSProvider, error) 
 			return nil, err
 		}
 	}
-
-	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
-	}
-
-	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{
 		config: config,
@@ -138,4 +135,24 @@ func (d *DNSProvider) findRecord(ctx context.Context, zone, subDomain, value str
 	}
 
 	return nil, errors.New("record not found")
+}
+
+func newClient(config *Config) (*internal.Client, error) {
+	if config.APIKey != "" {
+		return internal.NewClient(
+			clientdebug.Wrap(
+				internal.OAuthStaticAccessToken(config.HTTPClient, config.APIKey),
+			),
+		)
+	}
+
+	if config.ClientID == "" || config.ClientSecret == "" {
+		return nil, errors.New("credentials missing")
+	}
+
+	return internal.NewClient(
+		clientdebug.Wrap(
+			internal.CreateOAuthClient(context.Background(), config.ClientID, config.ClientSecret),
+		),
+	)
 }

@@ -18,7 +18,10 @@ import (
 const (
 	envNamespace = "SCANNET_"
 
-	EnvAPIKey = envNamespace + "API_KEY"
+	EnvAPIKey = envNamespace + "API_KEY" // Deprecated
+
+	EnvClientID     = envNamespace + "CLIENT_ID"
+	EnvClientSecret = envNamespace + "CLIENT_SECRET"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -48,13 +51,22 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for ScanNet.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIKey)
+	apiKey := env.GetOrFile(EnvAPIKey)
+	if apiKey != "" {
+		config := NewDefaultConfig()
+		config.APIKey = apiKey
+
+		return NewDNSProviderConfig(config)
+	}
+
+	values, err := env.Get(EnvClientID, EnvClientSecret)
 	if err != nil {
 		return nil, fmt.Errorf("scannet: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values[EnvAPIKey]
+	config.ClientID = values[EnvClientID]
+	config.ClientSecret = values[EnvClientSecret]
 
 	return NewDNSProviderConfig(config)
 }

@@ -5,13 +5,15 @@ Code = "scannet"
 Since = "v5.0.0"
 
 Example = '''
-SCANNET_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+SCANNET_CLIENT_ID="xxx" \
+SCANNET_CLIENT_SECRET="yyy" \
 lego run --dns scannet -d '*.example.com' -d example.com
 '''
 
 [Configuration]
   [Configuration.Credentials]
-    SCANNET_API_KEY = "API key"
+    SCANNET_CLIENT_ID = "Client ID"
+    SCANNET_CLIENT_SECRET = "Client secret"
   [Configuration.Additional]
     SCANNET_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
     SCANNET_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"

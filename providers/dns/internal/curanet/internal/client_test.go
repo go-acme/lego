@@ -14,13 +14,12 @@ import (
 func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client, err := NewClient("secret")
+			client, err := NewClient(OAuthStaticAccessToken(server.Client(), "secret"))
 			if err != nil {
 				return nil, err
 			}
 
 			client.BaseURL, _ = url.Parse(server.URL)
-			client.HTTPClient = server.Client()
 
 			return client, nil
 		},

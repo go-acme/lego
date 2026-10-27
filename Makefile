@@ -8,6 +8,9 @@ MAIN_DIRECTORY := .
 
 BIN_OUTPUT := $(if $(filter $(shell go env GOOS), windows), dist/lego.exe, dist/lego)
 
+# https://github.com/go-acme/lego/issues/2590#issuecomment-4290624184
+DCE_BUILD_TAGS := urfave_cli_no_template,grpcnotrace,validator_novalidatefn,ozzo_validation_no_template
+
 TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse HEAD)
 VERSION := $(if $(TAG_NAME),$(TAG_NAME),$(SHA))
@@ -20,12 +23,12 @@ clean:
 
 build: clean
 	@echo Version: $(VERSION)
-	go build -trimpath -ldflags '-s -w -X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
+	go build -tags='${DCE_BUILD_TAGS}' -trimpath -ldflags '-s -w -X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
 
 # Example: make build_dnslight DNS="lego_dns_acmedns,lego_dns_cloudflare"
 build_dnslight: clean
 	@echo Version: $(VERSION)
-	go build -v -tags lego_dnslight,${DNS} -trimpath -ldflags '-s -w -X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
+	go build -v -tags='${DCE_BUILD_TAGS},lego_dnslight,${DNS}' -trimpath -ldflags '-s -w -X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
 
 image:
 	@echo Version: $(VERSION)

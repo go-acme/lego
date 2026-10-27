@@ -1,0 +1,20 @@
+{
+  "dns_zones": [
+    {
+      "id": "z123",
+      "name": "example.com"
+    },
+    {
+      "id": "z124",
+      "name": "foo.example.com"
+    },
+    {
+      "id": "z456",
+      "name": "example.org"
+    },
+    {
+      "id": "z457",
+      "name": "example.net"
+    }
+  ]
+}

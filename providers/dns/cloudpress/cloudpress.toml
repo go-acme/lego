@@ -1,0 +1,25 @@
+Name = "CloudPress"
+Description = ''''''
+URL = "https://cloudpress.com/"
+Code = "cloudpress"
+Since = "v5.6.0"
+
+Example = '''
+CLOUDPRESS_API_KEY="xxx" \
+CLOUDPRESS_BASE_URL="https://example.org" \
+lego run --dns cloudpress -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    CLOUDPRESS_API_KEY = "API key"
+    CLOUDPRESS_BASE_URL = "API URL"
+  [Configuration.Additional]
+    CLOUDPRESS_PACCOUNT_ID = "Account ID"
+    CLOUDPRESS_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 10)"
+    CLOUDPRESS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 300)"
+    CLOUDPRESS_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    CLOUDPRESS_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://docs.cloudpress.com/api/dns/"

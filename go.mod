@@ -32,7 +32,7 @@ require (
 	github.com/dnsimple/dnsimple-go/v10 v10.0.0
 	github.com/exoscale/egoscale/v3 v3.1.61
 	github.com/go-acme/alidns-20150109/v5 v5.6.1
-	github.com/go-acme/esa-20240910/v3 v3.13.1
+	github.com/go-acme/esa-20240910/v3 v3.14.0
 	github.com/go-acme/jdcloud-sdk-go v1.64.0
 	github.com/go-acme/tencentclouddnspod v1.3.131
 	github.com/go-acme/tencentedgdeone v1.3.186

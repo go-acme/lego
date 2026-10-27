@@ -77,7 +77,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("curanet: the configuration of the DNS provider is nil")
 	}
 
-	provider, err := curanet.NewDNSProviderConfig(config, "")
+	provider, err := curanet.NewDNSProviderConfig(config, "", "curanet")
 	if err != nil {
 		return nil, fmt.Errorf("curanet: %w", err)
 	}

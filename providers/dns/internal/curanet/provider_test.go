@@ -50,7 +50,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config.ClientID = test.clientID
 			config.ClientSecret = test.clientSecret
 
-			p, err := NewDNSProviderConfig(config, "")
+			p, err := NewDNSProviderConfig(config, "", "test")
 
 			if test.expected == "" {
 				require.NoError(t, err)
@@ -73,7 +73,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 				HTTPClient: server.Client(),
 			}
 
-			p, err := NewDNSProviderConfig(config, "")
+			p, err := NewDNSProviderConfig(config, "", "test")
 			if err != nil {
 				return nil, err
 			}

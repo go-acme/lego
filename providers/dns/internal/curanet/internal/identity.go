@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -9,11 +10,11 @@ import (
 	"golang.org/x/oauth2/clientcredentials"
 )
 
-const defaultAuthURL = "https://apiauth.dk.team.blue/realms/curanet/protocol/openid-connect/token"
+const defaultAuthURL = "https://apiauth.dk.team.blue/realms/%s/protocol/openid-connect/token"
 
-func CreateOAuthClient(ctx context.Context, clientID, clientSecret string) *http.Client {
+func CreateOAuthClient(ctx context.Context, oauthSource, clientID, clientSecret string) *http.Client {
 	config := &clientcredentials.Config{
-		TokenURL:     defaultAuthURL,
+		TokenURL:     fmt.Sprintf(defaultAuthURL, oauthSource),
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 	}

@@ -37,12 +37,12 @@ type DNSProvider struct {
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for Curanet.
-func NewDNSProviderConfig(config *Config, baseURL string) (*DNSProvider, error) {
+func NewDNSProviderConfig(config *Config, baseURL, oauthSource string) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("the configuration of the DNS provider is nil")
 	}
 
-	client, err := newClient(config)
+	client, err := newClient(config, oauthSource)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (d *DNSProvider) findRecord(ctx context.Context, zone, subDomain, value str
 	return nil, errors.New("record not found")
 }
 
-func newClient(config *Config) (*internal.Client, error) {
+func newClient(config *Config, oauthSource string) (*internal.Client, error) {
 	if config.APIKey != "" {
 		return internal.NewClient(
 			clientdebug.Wrap(
@@ -152,7 +152,7 @@ func newClient(config *Config) (*internal.Client, error) {
 
 	return internal.NewClient(
 		clientdebug.Wrap(
-			internal.CreateOAuthClient(context.Background(), config.ClientID, config.ClientSecret),
+			internal.CreateOAuthClient(context.Background(), oauthSource, config.ClientID, config.ClientSecret),
 		),
 	)
 }

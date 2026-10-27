@@ -29,6 +29,8 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+const defaultBaseURL = "https://api.dandomain.dk/"
+
 // Config is used to configure the creation of the DNSProvider.
 type Config = curanet.Config
 
@@ -77,7 +79,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("dandomain: the configuration of the DNS provider is nil")
 	}
 
-	provider, err := curanet.NewDNSProviderConfig(config, "")
+	provider, err := curanet.NewDNSProviderConfig(config, defaultBaseURL, "dandomain")
 	if err != nil {
 		return nil, fmt.Errorf("dandomain: %w", err)
 	}

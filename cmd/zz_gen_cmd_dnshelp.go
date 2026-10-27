@@ -634,6 +634,28 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/cloudns`)
 
+	case "cloudpress":
+		// generated from: providers/dns/cloudpress/cloudpress.toml
+		ew.writeln(`Configuration for CloudPress.`)
+		ew.writeln(`Code:	'cloudpress'`)
+		ew.writeln(`Since:	'v5.6.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "CLOUDPRESS_API_KEY":	API key`)
+		ew.writeln(`	- "CLOUDPRESS_BASE_URL":	API URL`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CLOUDPRESS_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "CLOUDPRESS_PACCOUNT_ID":	Account ID`)
+		ew.writeln(`	- "CLOUDPRESS_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 10)`)
+		ew.writeln(`	- "CLOUDPRESS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 300)`)
+		ew.writeln(`	- "CLOUDPRESS_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/cloudpress`)
+
 	case "cloudru":
 		// generated from: providers/dns/cloudru/cloudru.toml
 		ew.writeln(`Configuration for Cloud.ru.`)

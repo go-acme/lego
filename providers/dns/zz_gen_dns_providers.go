@@ -36,6 +36,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/clouddns"
 	"github.com/go-acme/lego/v5/providers/dns/cloudflare"
 	"github.com/go-acme/lego/v5/providers/dns/cloudns"
+	"github.com/go-acme/lego/v5/providers/dns/cloudpress"
 	"github.com/go-acme/lego/v5/providers/dns/cloudru"
 	"github.com/go-acme/lego/v5/providers/dns/com35"
 	"github.com/go-acme/lego/v5/providers/dns/connbyte"
@@ -296,6 +297,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return cloudflare.NewDNSProvider()
 	case "cloudns":
 		return cloudns.NewDNSProvider()
+	case "cloudpress":
+		return cloudpress.NewDNSProvider()
 	case "cloudru":
 		return cloudru.NewDNSProvider()
 	case "com35":
@@ -730,6 +733,7 @@ func GetProviderCodes() []string {
 		"clouddns",
 		"cloudflare",
 		"cloudns",
+		"cloudpress",
 		"cloudru",
 		"com35",
 		"connbyte",

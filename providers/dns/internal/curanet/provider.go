@@ -70,7 +70,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	}
 
 	record := internal.Record{
-		Name: info.EffectiveFQDN,
+		Name: dns01.UnFqdn(info.EffectiveFQDN),
 		Type: "TXT",
 		TTL:  d.config.TTL,
 		Data: info.Value,

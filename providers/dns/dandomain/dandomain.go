@@ -18,13 +18,18 @@ import (
 const (
 	envNamespace = "DANDOMAIN_"
 
-	EnvAPIKey = envNamespace + "API_KEY"
+	EnvAPIKey = envNamespace + "API_KEY" // Deprecated
+
+	EnvClientID     = envNamespace + "CLIENT_ID"
+	EnvClientSecret = envNamespace + "CLIENT_SECRET"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+const defaultBaseURL = "https://api.dandomain.dk/"
 
 // Config is used to configure the creation of the DNSProvider.
 type Config = curanet.Config
@@ -48,13 +53,22 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for DanDomain.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIKey)
+	apiKey := env.GetOrFile(EnvAPIKey)
+	if apiKey != "" {
+		config := NewDefaultConfig()
+		config.APIKey = apiKey
+
+		return NewDNSProviderConfig(config)
+	}
+
+	values, err := env.Get(EnvClientID, EnvClientSecret)
 	if err != nil {
 		return nil, fmt.Errorf("dandomain: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values[EnvAPIKey]
+	config.ClientID = values[EnvClientID]
+	config.ClientSecret = values[EnvClientSecret]
 
 	return NewDNSProviderConfig(config)
 }
@@ -65,7 +79,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("dandomain: the configuration of the DNS provider is nil")
 	}
 
-	provider, err := curanet.NewDNSProviderConfig(config, "")
+	provider, err := curanet.NewDNSProviderConfig(config, defaultBaseURL, "dandomain")
 	if err != nil {
 		return nil, fmt.Errorf("dandomain: %w", err)
 	}

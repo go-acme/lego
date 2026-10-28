@@ -26,7 +26,8 @@ Configuration for [Wannafind](https://www.wannafind.dk/).
 Here is an example bash command using the Wannafind provider:
 
 ```bash
-WANNAFIND_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+WANNAFIND_CLIENT_ID="xxx" \
+WANNAFIND_CLIENT_SECRET="yyy" \
 lego run --dns wannafind -d '*.example.com' -d example.com
 ```
 
@@ -37,7 +38,8 @@ lego run --dns wannafind -d '*.example.com' -d example.com
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `WANNAFIND_API_KEY` | API key |
+| `WANNAFIND_CLIENT_ID` | Client ID |
+| `WANNAFIND_CLIENT_SECRET` | Client secret |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

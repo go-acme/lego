@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
@@ -19,12 +20,15 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	APIKey string
+	ClientID     string
+	ClientSecret string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
-	HTTPClient         *http.Client
+
+	APIKey     string       // Deprecated
+	HTTPClient *http.Client // Deprecated
 }
 
 // DNSProvider implements the challenge.Provider interface.
@@ -34,12 +38,12 @@ type DNSProvider struct {
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for Curanet.
-func NewDNSProviderConfig(config *Config, baseURL string) (*DNSProvider, error) {
+func NewDNSProviderConfig(config *Config, baseURL, oauthSource string) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("the configuration of the DNS provider is nil")
 	}
 
-	client, err := internal.NewClient(config.APIKey)
+	client, err := newClient(config, oauthSource)
 	if err != nil {
 		return nil, err
 	}
@@ -50,12 +54,6 @@ func NewDNSProviderConfig(config *Config, baseURL string) (*DNSProvider, error) 
 			return nil, err
 		}
 	}
-
-	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
-	}
-
-	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{
 		config: config,
@@ -72,13 +70,8 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
-	if err != nil {
-		return err
-	}
-
 	record := internal.Record{
-		Name: subDomain,
+		Name: dns01.UnFqdn(info.EffectiveFQDN),
 		Type: "TXT",
 		TTL:  d.config.TTL,
 		Data: info.Value,
@@ -101,12 +94,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
-	if err != nil {
-		return err
-	}
-
-	record, err := d.findRecord(ctx, dns01.UnFqdn(authZone), subDomain, info.Value)
+	record, err := d.findRecord(ctx, dns01.UnFqdn(authZone), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 	if err != nil {
 		return err
 	}
@@ -125,17 +113,37 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) findRecord(ctx context.Context, zone, subDomain, value string) (*internal.Record, error) {
-	records, err := d.client.GetRecords(ctx, zone, subDomain, "TXT")
+func (d *DNSProvider) findRecord(ctx context.Context, zone, fqdn, value string) (*internal.Record, error) {
+	records, err := d.client.GetRecords(ctx, zone, fqdn, "TXT")
 	if err != nil {
 		return nil, fmt.Errorf("get records: %w", err)
 	}
 
 	for _, record := range records {
-		if record.Name == subDomain && record.Type == "TXT" && record.Data == value {
+		if record.Name == fqdn && record.Type == "TXT" && (record.Data == value || record.Data == strconv.Quote(value)) {
 			return &record, nil
 		}
 	}
 
 	return nil, errors.New("record not found")
+}
+
+func newClient(config *Config, oauthSource string) (*internal.Client, error) {
+	if config.APIKey != "" {
+		return internal.NewClient(
+			clientdebug.Wrap(
+				internal.OAuthStaticAccessToken(config.HTTPClient, config.APIKey),
+			),
+		)
+	}
+
+	if config.ClientID == "" || config.ClientSecret == "" {
+		return nil, errors.New("credentials missing")
+	}
+
+	return internal.NewClient(
+		clientdebug.Wrap(
+			internal.CreateOAuthClient(context.Background(), oauthSource, config.ClientID, config.ClientSecret),
+		),
+	)
 }

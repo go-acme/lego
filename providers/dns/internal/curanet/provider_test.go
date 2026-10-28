@@ -12,13 +12,30 @@ import (
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc     string
-		apiKey   string
-		expected string
+		desc         string
+		apiKey       string
+		clientID     string
+		clientSecret string
+		expected     string
 	}{
 		{
-			desc:   "success",
+			desc:   "success (deprecated)",
 			apiKey: "secret",
+		},
+		{
+			desc:         "success",
+			clientID:     "xxx",
+			clientSecret: "secret",
+		},
+		{
+			desc:     "success",
+			clientID: "xxx",
+			expected: "credentials missing",
+		},
+		{
+			desc:         "success",
+			clientSecret: "secret",
+			expected:     "credentials missing",
 		},
 		{
 			desc:     "missing credentials",
@@ -30,8 +47,10 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			config := &Config{}
 			config.APIKey = test.apiKey
+			config.ClientID = test.clientID
+			config.ClientSecret = test.clientSecret
 
-			p, err := NewDNSProviderConfig(config, "")
+			p, err := NewDNSProviderConfig(config, "", "test")
 
 			if test.expected == "" {
 				require.NoError(t, err)
@@ -54,7 +73,7 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 				HTTPClient: server.Client(),
 			}
 
-			p, err := NewDNSProviderConfig(config, "")
+			p, err := NewDNSProviderConfig(config, "", "test")
 			if err != nil {
 				return nil, err
 			}
@@ -87,10 +106,10 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		Route("GET /dns/v2/Domains/example.com/Records",
 			servermock.ResponseFromInternal("records_get.json"),
 			servermock.CheckQueryParameter().Strict().
-				With("name", "_acme-challenge").
+				With("name", "_acme-challenge.example.com").
 				With("type", "TXT"),
 		).
-		Route("DELETE /dns/v2/Domains/example.com/Records/1234",
+		Route("DELETE /dns/v2/Domains/example.com/Records/2373303",
 			servermock.Noop().
 				WithStatusCode(http.StatusOK),
 		).

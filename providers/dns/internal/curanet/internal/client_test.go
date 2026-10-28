@@ -14,13 +14,12 @@ import (
 func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client, err := NewClient("secret")
+			client, err := NewClient(OAuthStaticAccessToken(server.Client(), "secret"))
 			if err != nil {
 				return nil, err
 			}
 
 			client.BaseURL, _ = url.Parse(server.URL)
-			client.HTTPClient = server.Client()
 
 			return client, nil
 		},
@@ -40,7 +39,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		Build(t)
 
 	record := Record{
-		Name: "_acme-challenge",
+		Name: "_acme-challenge.example.com",
 		Type: "TXT",
 		TTL:  120,
 		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
@@ -71,7 +70,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "example.com", 1234)
-	require.EqualError(t, err, "type: string, title: string, detail: string, instance: string")
+	require.EqualError(t, err, "type: https://httpstatuses.com/400, title: Validation error(s), status: 400, detail: An error occurred during validation, see errors for details")
 }
 
 func TestClient_GetRecords(t *testing.T) {
@@ -87,13 +86,22 @@ func TestClient_GetRecords(t *testing.T) {
 	records, err := client.GetRecords(t.Context(), "example.com", "_acme-challenge", "TXT")
 	require.NoError(t, err)
 
-	expected := []Record{{
-		ID:   1234,
-		Name: "_acme-challenge",
-		Type: "TXT",
-		TTL:  120,
-		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
-	}}
+	expected := []Record{
+		{
+			ID:   2373303,
+			Name: "_acme-challenge.example.com",
+			Type: "TXT",
+			TTL:  120,
+			Data: `"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"`,
+		},
+		{
+			ID:   2373304,
+			Name: "_acme-challenge.example.com",
+			Type: "TXT",
+			TTL:  120,
+			Data: `"abc"`,
+		},
+	}
 
 	assert.Equal(t, expected, records)
 }

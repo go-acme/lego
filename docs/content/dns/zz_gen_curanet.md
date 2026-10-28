@@ -26,7 +26,8 @@ Configuration for [Curanet](https://curanet.dk/).
 Here is an example bash command using the Curanet provider:
 
 ```bash
-CURANET_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+CURANET_CLIENT_ID="xxx" \
+CURANET_CLIENT_SECRET="yyy" \
 lego run --dns curanet -d '*.example.com' -d example.com
 ```
 
@@ -37,7 +38,8 @@ lego run --dns curanet -d '*.example.com' -d example.com
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `CURANET_API_KEY` | API key |
+| `CURANET_CLIENT_ID` | Client ID |
+| `CURANET_CLIENT_SECRET` | Client secret |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).

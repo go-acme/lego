@@ -4,13 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
-	"time"
 
 	"github.com/go-acme/lego/v5/internal/errutils"
 	"github.com/go-acme/lego/v5/internal/useragent"
@@ -20,24 +18,17 @@ const defaultBaseURL = "https://api.curanet.dk/"
 
 // Client the Curanet API client.
 type Client struct {
-	apiKey string
-
 	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
-func NewClient(apiKey string) (*Client, error) {
-	if apiKey == "" {
-		return nil, errors.New("credentials missing")
-	}
-
+func NewClient(hc *http.Client) (*Client, error) {
 	baseURL, _ := url.Parse(defaultBaseURL)
 
 	return &Client{
-		apiKey:     apiKey,
 		BaseURL:    baseURL,
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		HTTPClient: hc,
 	}, nil
 }
 
@@ -95,8 +86,6 @@ func (c *Client) GetRecords(ctx context.Context, domain, name, rType string) ([]
 
 func (c *Client) do(req *http.Request, result any) error {
 	useragent.SetHeader(req.Header)
-
-	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

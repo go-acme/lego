@@ -9,7 +9,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvAPIKey).WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvAPIKey, EnvClientID, EnvClientSecret).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -18,15 +18,38 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
-			desc: "success",
+			desc: "success (deprecated)",
 			envVars: map[string]string{
 				EnvAPIKey: "secret",
 			},
 		},
 		{
+			desc: "success",
+			envVars: map[string]string{
+				EnvClientID:     "xxx",
+				EnvClientSecret: "secret",
+			},
+		},
+		{
+			desc: "missing client ID",
+			envVars: map[string]string{
+				EnvClientID:     "",
+				EnvClientSecret: "secret",
+			},
+			expected: "wannafind: some credentials information are missing: WANNAFIND_CLIENT_ID",
+		},
+		{
+			desc: "missing client secret",
+			envVars: map[string]string{
+				EnvClientID:     "xxx",
+				EnvClientSecret: "",
+			},
+			expected: "wannafind: some credentials information are missing: WANNAFIND_CLIENT_SECRET",
+		},
+		{
 			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "wannafind: some credentials information are missing: WANNAFIND_API_KEY",
+			expected: "wannafind: some credentials information are missing: WANNAFIND_CLIENT_ID,WANNAFIND_CLIENT_SECRET",
 		},
 	}
 
@@ -53,13 +76,30 @@ func TestNewDNSProvider(t *testing.T) {
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc     string
-		apiKey   string
-		expected string
+		desc         string
+		apiKey       string
+		clientID     string
+		clientSecret string
+		expected     string
 	}{
 		{
-			desc:   "success",
+			desc:   "success (deprecated)",
 			apiKey: "secret",
+		},
+		{
+			desc:         "success",
+			clientID:     "xxx",
+			clientSecret: "secret",
+		},
+		{
+			desc:         "missing client ID",
+			clientSecret: "secret",
+			expected:     "wannafind: credentials missing",
+		},
+		{
+			desc:     "missing client secret",
+			clientID: "xxx",
+			expected: "wannafind: credentials missing",
 		},
 		{
 			desc:     "missing credentials",
@@ -71,6 +111,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
 			config.APIKey = test.apiKey
+			config.ClientID = test.clientID
+			config.ClientSecret = test.clientSecret
 
 			p, err := NewDNSProviderConfig(config)
 

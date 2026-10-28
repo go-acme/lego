@@ -18,7 +18,10 @@ import (
 const (
 	envNamespace = "CURANET_"
 
-	EnvAPIKey = envNamespace + "API_KEY"
+	EnvAPIKey = envNamespace + "API_KEY" // Deprecated
+
+	EnvClientID     = envNamespace + "CLIENT_ID"
+	EnvClientSecret = envNamespace + "CLIENT_SECRET"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -48,13 +51,22 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Curanet.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIKey)
+	apiKey := env.GetOrFile(EnvAPIKey)
+	if apiKey != "" {
+		config := NewDefaultConfig()
+		config.APIKey = apiKey
+
+		return NewDNSProviderConfig(config)
+	}
+
+	values, err := env.Get(EnvClientID, EnvClientSecret)
 	if err != nil {
 		return nil, fmt.Errorf("curanet: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values[EnvAPIKey]
+	config.ClientID = values[EnvClientID]
+	config.ClientSecret = values[EnvClientSecret]
 
 	return NewDNSProviderConfig(config)
 }
@@ -65,7 +77,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("curanet: the configuration of the DNS provider is nil")
 	}
 
-	provider, err := curanet.NewDNSProviderConfig(config, "")
+	provider, err := curanet.NewDNSProviderConfig(config, "", "curanet")
 	if err != nil {
 		return nil, fmt.Errorf("curanet: %w", err)
 	}

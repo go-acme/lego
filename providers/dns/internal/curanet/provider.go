@@ -38,18 +38,18 @@ type DNSProvider struct {
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for Curanet.
-func NewDNSProviderConfig(config *Config, baseURL, oauthSource string) (*DNSProvider, error) {
+func NewDNSProviderConfig(config *Config, urlCfg URLConfiguration) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("the configuration of the DNS provider is nil")
 	}
 
-	client, err := newClient(config, oauthSource)
+	client, err := newClient(config, urlCfg.TokenURL)
 	if err != nil {
 		return nil, err
 	}
 
-	if baseURL != "" {
-		client.BaseURL, err = url.Parse(baseURL)
+	if urlCfg.BaseURL != "" {
+		client.BaseURL, err = url.Parse(urlCfg.BaseURL)
 		if err != nil {
 			return nil, err
 		}
@@ -128,7 +128,7 @@ func (d *DNSProvider) findRecord(ctx context.Context, zone, fqdn, value string) 
 	return nil, errors.New("record not found")
 }
 
-func newClient(config *Config, oauthSource string) (*internal.Client, error) {
+func newClient(config *Config, tokenURL string) (*internal.Client, error) {
 	if config.APIKey != "" {
 		return internal.NewClient(
 			clientdebug.Wrap(
@@ -143,7 +143,20 @@ func newClient(config *Config, oauthSource string) (*internal.Client, error) {
 
 	return internal.NewClient(
 		clientdebug.Wrap(
-			internal.CreateOAuthClient(context.Background(), oauthSource, config.ClientID, config.ClientSecret),
+			internal.CreateOAuthConfig(tokenURL, config.ClientID, config.ClientSecret).
+				Client(context.Background()),
 		),
 	)
+}
+
+type URLConfiguration struct {
+	BaseURL  string
+	TokenURL string
+}
+
+func CreateURLConfiguration(code string) URLConfiguration {
+	return URLConfiguration{
+		BaseURL:  fmt.Sprintf(internal.BaseURLTemplate, code),
+		TokenURL: fmt.Sprintf(internal.BaseOAuthURLTemplate, code),
+	}
 }

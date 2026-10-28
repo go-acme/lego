@@ -16,6 +16,8 @@ import (
 
 const defaultBaseURL = "https://api.curanet.dk/"
 
+const BaseURLTemplate = "https://api.%s.dk/"
+
 // Client the Curanet API client.
 type Client struct {
 	BaseURL    *url.URL

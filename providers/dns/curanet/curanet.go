@@ -18,15 +18,15 @@ import (
 const (
 	envNamespace = "CURANET_"
 
-	EnvAPIKey = envNamespace + "API_KEY" // Deprecated
-
 	EnvClientID     = envNamespace + "CLIENT_ID"
 	EnvClientSecret = envNamespace + "CLIENT_SECRET"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+
+	EnvAPIKey      = envNamespace + "API_KEY"      // Deprecated
+	EnvHTTPTimeout = envNamespace + "HTTP_TIMEOUT" // Deprecated
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -77,7 +77,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("curanet: the configuration of the DNS provider is nil")
 	}
 
-	provider, err := curanet.NewDNSProviderConfig(config, "", "curanet")
+	provider, err := curanet.NewDNSProviderConfig(config, curanet.CreateURLConfiguration("curanet"))
 	if err != nil {
 		return nil, fmt.Errorf("curanet: %w", err)
 	}

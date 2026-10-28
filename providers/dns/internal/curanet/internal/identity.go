@@ -18,6 +18,7 @@ func CreateOAuthClient(ctx context.Context, oauthSource, clientID, clientSecret 
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		Scopes:       []string{"dns"},
+		AuthStyle:    oauth2.AuthStyleInParams,
 	}
 
 	return config.Client(ctx)

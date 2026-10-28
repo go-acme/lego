@@ -845,7 +845,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "CURANET_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "CURANET_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "CURANET_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
 		ew.writeln(`	- "CURANET_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
@@ -886,7 +885,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "DANDOMAIN_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "DANDOMAIN_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "DANDOMAIN_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
 		ew.writeln(`	- "DANDOMAIN_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
@@ -3923,7 +3921,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "SCANNET_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "SCANNET_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "SCANNET_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
 		ew.writeln(`	- "SCANNET_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
@@ -4608,7 +4605,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "WANNAFIND_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
 		ew.writeln(`	- "WANNAFIND_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
 		ew.writeln(`	- "WANNAFIND_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
 		ew.writeln(`	- "WANNAFIND_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)

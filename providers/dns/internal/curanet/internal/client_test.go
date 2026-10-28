@@ -70,7 +70,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "example.com", 1234)
-	require.EqualError(t, err, "type: string, title: string, detail: string, instance: string")
+	require.EqualError(t, err, "type: https://httpstatuses.com/400, title: Validation error(s), status: 400, detail: An error occured during validation, see errors for details")
 }
 
 func TestClient_GetRecords(t *testing.T) {

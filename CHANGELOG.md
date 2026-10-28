@@ -6,6 +6,39 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v5.6.0
+
+- Release date: 2026-10-28
+- Tag: [v5.6.0](https://github.com/go-acme/lego/releases/tag/v5.6.0)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Netcup v1
+- **[dnsprovider]** Add DNS provider for CloudPress
+- **[dnsprovider]** Add DNS provider for NordName
+- **[dnsprovider]** Add DNS provider for GoDaddy v3
+- **[dnsprovider]** Add DNS provider for PrimeDNS
+- **[dnsprovider]** Add DNS provider for Selfhost v2
+- **[lib]** feat: experimental conditional DNS builder
+
+### Changed
+
+- **[challenge/dns-persist-01]** feat(dnspersist01): add workaround for Google Trust Services
+- **[cli]** feat(cli): use build tags to improve DCE
+- **[dnsprovider]** simply: authenticate with a Bearer token
+
+### Fixed
+
+- **[ari]** fix: ari return error when end &lt;= start
+- **[challenge/tls-alpn-01]** fix: add digitalSignature to TLSALPN01 temp certificate
+- **[cli,log]** fix(cli): log flag supersede config file
+- **[cli]** fix(cli): clean account when refusing ToS
+- **[dnsprovider]** curanet: use oAuth2
+- **[dnsprovider]** simply: fix zone name encoding
+- **[dnsprovider]** dnscale: fix zone endpoint response
+- **[dnsprovider]** ionoscloud: fix zone detection
+- **[dnsprovider]** yandexcloud: extend zone detection
+
 ## v5.5.2
 
 - Release date: 2026-09-23

@@ -17,6 +17,7 @@ func CreateOAuthClient(ctx context.Context, oauthSource, clientID, clientSecret 
 		TokenURL:     fmt.Sprintf(defaultAuthURL, oauthSource),
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
+		Scopes:       []string{"dns"},
 	}
 
 	return config.Client(ctx)

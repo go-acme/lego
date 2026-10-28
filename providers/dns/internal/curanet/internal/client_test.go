@@ -39,7 +39,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		Build(t)
 
 	record := Record{
-		Name: "_acme-challenge",
+		Name: "_acme-challenge.example.com",
 		Type: "TXT",
 		TTL:  120,
 		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
@@ -88,7 +88,7 @@ func TestClient_GetRecords(t *testing.T) {
 
 	expected := []Record{{
 		ID:   1234,
-		Name: "_acme-challenge",
+		Name: "_acme-challenge.example.com",
 		Type: "TXT",
 		TTL:  120,
 		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",

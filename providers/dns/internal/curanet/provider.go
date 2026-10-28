@@ -93,7 +93,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("could not find zone for domain %q: %w", domain, err)
 	}
 
-	record, err := d.findRecord(ctx, dns01.UnFqdn(authZone), info.EffectiveFQDN, info.Value)
+	record, err := d.findRecord(ctx, dns01.UnFqdn(authZone), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 	if err != nil {
 		return err
 	}

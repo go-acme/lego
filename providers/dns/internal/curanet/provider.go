@@ -69,13 +69,8 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
-	if err != nil {
-		return err
-	}
-
 	record := internal.Record{
-		Name: subDomain,
+		Name: info.EffectiveFQDN,
 		Type: "TXT",
 		TTL:  d.config.TTL,
 		Data: info.Value,

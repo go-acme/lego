@@ -3,10 +3,10 @@ package curanet
 import (
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -50,7 +50,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config.ClientID = test.clientID
 			config.ClientSecret = test.clientSecret
 
-			p, err := NewDNSProviderConfig(config, "", "test")
+			p, err := NewDNSProviderConfig(config, URLConfiguration{})
 
 			if test.expected == "" {
 				require.NoError(t, err)
@@ -64,21 +64,24 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func mockBuilder() *servermock.Builder[*DNSProvider] {
+func mockBuilder(tokenURL string) *servermock.Builder[*DNSProvider] {
 	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := &Config{
-				APIKey:     "secret",
-				TTL:        120,
-				HTTPClient: server.Client(),
+				TTL:          120,
+				ClientID:     "123",
+				ClientSecret: "xxx",
 			}
 
-			p, err := NewDNSProviderConfig(config, "", "test")
+			urlCfg := URLConfiguration{
+				BaseURL:  server.URL,
+				TokenURL: tokenURL,
+			}
+
+			p, err := NewDNSProviderConfig(config, urlCfg)
 			if err != nil {
 				return nil, err
 			}
-
-			p.client.BaseURL, _ = url.Parse(server.URL)
 
 			return p, nil
 		},
@@ -88,8 +91,26 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 	)
 }
 
+func oauthServer(t *testing.T) string {
+	t.Helper()
+
+	return servermock.NewBuilder[string](
+		func(server *httptest.Server) (string, error) {
+			return server.URL, nil
+		}).
+		Route("POST /",
+			servermock.ResponseFromInternal("oauth.json"),
+			servermock.CheckForm().Strict().UsePostForm().
+				With("client_id", "123").
+				With("client_secret", "xxx").
+				With("grant_type", "client_credentials").
+				With("scope", "dns"),
+		).
+		Build(t)
+}
+
 func TestDNSProvider_Present(t *testing.T) {
-	provider := mockBuilder().
+	provider := mockBuilder(oauthServer(t)).
 		Route("POST /dns/v2/Domains/example.com/Records",
 			servermock.Noop().
 				WithStatusCode(http.StatusCreated),
@@ -102,7 +123,7 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	provider := mockBuilder().
+	provider := mockBuilder(oauthServer(t)).
 		Route("GET /dns/v2/Domains/example.com/Records",
 			servermock.ResponseFromInternal("records_get.json"),
 			servermock.CheckQueryParameter().Strict().
@@ -117,4 +138,15 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+}
+
+func TestCreateURLConfiguration(t *testing.T) {
+	cfg := CreateURLConfiguration("foo")
+
+	expected := URLConfiguration{
+		BaseURL:  "https://api.foo.dk/",
+		TokenURL: "https://apiauth.dk.team.blue/realms/foo/protocol/openid-connect/token",
+	}
+
+	assert.Equal(t, expected, cfg)
 }

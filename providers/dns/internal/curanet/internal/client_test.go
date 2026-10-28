@@ -11,10 +11,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
+func mockBuilder(httpClient *http.Client) *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client, err := NewClient(OAuthStaticAccessToken(server.Client(), "secret"))
+			client, err := NewClient(httpClient)
 			if err != nil {
 				return nil, err
 			}
@@ -30,7 +30,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 }
 
 func TestClient_CreateRecord(t *testing.T) {
-	client := mockBuilder().
+	client := mockBuilder(mockOAuthClient(t)).
 		Route("POST /dns/v2/Domains/example.com/Records",
 			servermock.Noop().
 				WithStatusCode(http.StatusCreated),
@@ -50,7 +50,7 @@ func TestClient_CreateRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client := mockBuilder().
+	client := mockBuilder(mockOAuthClient(t)).
 		Route("DELETE /dns/v2/Domains/example.com/Records/1234",
 			servermock.Noop().
 				WithStatusCode(http.StatusOK),
@@ -62,7 +62,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
-	client := mockBuilder().
+	client := mockBuilder(mockOAuthClient(t)).
 		Route("DELETE /dns/v2/Domains/example.com/Records/1234",
 			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest),
@@ -74,7 +74,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	client := mockBuilder().
+	client := mockBuilder(mockOAuthClient(t)).
 		Route("GET /dns/v2/Domains/example.com/Records",
 			servermock.ResponseFromFixture("records_get.json"),
 			servermock.CheckQueryParameter().Strict().

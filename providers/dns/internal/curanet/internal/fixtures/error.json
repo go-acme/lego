@@ -7,7 +7,7 @@
   "type": "https://httpstatuses.com/400",
   "title": "Validation error(s)",
   "status": 400,
-  "detail": "An error occured during validation, see errors for details",
+  "detail": "An error occurred during validation, see errors for details",
   "instance": null,
   "extensions": {}
 }

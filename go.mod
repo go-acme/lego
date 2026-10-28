@@ -50,7 +50,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/ldez/grignotin v0.10.1
-	github.com/linode/linodego/v2 v2.9.0
+	github.com/linode/linodego/v2 v2.10.0
 	github.com/liquidweb/liquidweb-go v1.6.4
 	github.com/mattn/go-isatty v0.0.24
 	github.com/mattn/go-zglob v0.0.8

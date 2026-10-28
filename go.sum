@@ -617,8 +617,8 @@ github.com/ldez/grignotin v0.10.1/go.mod h1:UlDbXFCARrXbWGNGP3S5vsysNXAPhnSuBufp
 github.com/leodido/go-urn v1.2.0/go.mod h1:+8+nEpDfqqsY+g338gtMEUOtuK+4dEMhiQEgxpxOKII=
 github.com/leodido/go-urn v1.5.0 h1:pLqT2kq1zpHW/1D18QMjMpdtX7cekxqtJJjg5ANyWw0=
 github.com/leodido/go-urn v1.5.0/go.mod h1:9BORnCDhdPBJNDEX+w1bJisa8yOKYi116VeO96s4ifE=
-github.com/linode/linodego/v2 v2.9.0 h1:5+MeuBPfgtNmeYeA3Ile1FBd4mWOfqdTO8lEv/zpJ/Q=
-github.com/linode/linodego/v2 v2.9.0/go.mod h1:VzN8px4lhrGSiBBuSsar2GOVJY9S7pN1pF6d1Q8zENM=
+github.com/linode/linodego/v2 v2.10.0 h1:a2Lxabyx4zHRUtnEkgIcj9PVg1B4AzQcSyVBwoiPsp0=
+github.com/linode/linodego/v2 v2.10.0/go.mod h1:v7oZlyuyYnRwVQDbMP0nDs3JkrlXRk4FCo6xNTqcA9c=
 github.com/liquidweb/go-lwApi v0.0.0-20190605172801-52a4864d2738/go.mod h1:0sYF9rMXb0vlG+4SzdiGMXHheCZxjguMq+Zb4S2BfBs=
 github.com/liquidweb/go-lwApi v0.0.5/go.mod h1:0sYF9rMXb0vlG+4SzdiGMXHheCZxjguMq+Zb4S2BfBs=
 github.com/liquidweb/liquidweb-cli v0.6.9/go.mod h1:cE1uvQ+x24NGUL75D0QagOFCG8Wdvmwu8aL9TLmA/eQ=

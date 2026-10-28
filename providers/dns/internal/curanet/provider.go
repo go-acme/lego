@@ -93,12 +93,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("could not find zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
-	if err != nil {
-		return err
-	}
-
-	record, err := d.findRecord(ctx, dns01.UnFqdn(authZone), subDomain, info.Value)
+	record, err := d.findRecord(ctx, dns01.UnFqdn(authZone), info.EffectiveFQDN, info.Value)
 	if err != nil {
 		return err
 	}
@@ -117,14 +112,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) findRecord(ctx context.Context, zone, subDomain, value string) (*internal.Record, error) {
-	records, err := d.client.GetRecords(ctx, zone, subDomain, "TXT")
+func (d *DNSProvider) findRecord(ctx context.Context, zone, fqdn, value string) (*internal.Record, error) {
+	records, err := d.client.GetRecords(ctx, zone, fqdn, "TXT")
 	if err != nil {
 		return nil, fmt.Errorf("get records: %w", err)
 	}
 
 	for _, record := range records {
-		if record.Name == subDomain && record.Type == "TXT" && record.Data == value {
+		if record.Name == fqdn && record.Type == "TXT" && record.Data == value {
 			return &record, nil
 		}
 	}

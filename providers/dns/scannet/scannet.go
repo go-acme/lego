@@ -79,7 +79,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("scannet: the configuration of the DNS provider is nil")
 	}
 
-	provider, err := curanet.NewDNSProviderConfig(config, defaultBaseURL, "curanet")
+	provider, err := curanet.NewDNSProviderConfig(config, defaultBaseURL, "scannet")
 	if err != nil {
 		return nil, fmt.Errorf("scannet: %w", err)
 	}

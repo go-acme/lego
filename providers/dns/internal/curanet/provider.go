@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
@@ -119,7 +120,7 @@ func (d *DNSProvider) findRecord(ctx context.Context, zone, fqdn, value string) 
 	}
 
 	for _, record := range records {
-		if record.Name == fqdn && record.Type == "TXT" && record.Data == value {
+		if record.Name == fqdn && record.Type == "TXT" && (record.Data == value || record.Data == strconv.Quote(value)) {
 			return &record, nil
 		}
 	}

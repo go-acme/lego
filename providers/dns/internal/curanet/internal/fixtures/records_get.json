@@ -1,9 +1,18 @@
 [
   {
-    "id": 1234,
+    "id": 2373303,
     "name": "_acme-challenge.example.com",
     "type": "TXT",
     "ttl": 120,
-    "data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+    "priority": 0,
+    "data": "\"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY\""
+  },
+  {
+    "id": 2373304,
+    "name": "_acme-challenge.example.com",
+    "type": "TXT",
+    "ttl": 120,
+    "priority": 0,
+    "data": "\"abc\""
   }
 ]

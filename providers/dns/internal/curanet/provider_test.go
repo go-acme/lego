@@ -109,7 +109,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 				With("name", "_acme-challenge.example.com").
 				With("type", "TXT"),
 		).
-		Route("DELETE /dns/v2/Domains/example.com/Records/1234",
+		Route("DELETE /dns/v2/Domains/example.com/Records/2373303",
 			servermock.Noop().
 				WithStatusCode(http.StatusOK),
 		).

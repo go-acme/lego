@@ -2,49 +2,42 @@ package internal
 
 import (
 	"fmt"
-	"time"
+	"strings"
 )
 
-type Token struct {
-	// The bearer token for use in API requests
-	Token string `json:"access_token"`
-
-	// The maximum lifetime of the token in seconds
-	Lifetime int `json:"expires_in"`
-
-	// The token type (must be 'bearer')
-	TokenType string `json:"token_type"`
-
-	Deadline time.Time `json:"-"`
+type APIError struct {
+	StatusCode    int      `json:"-"`
+	ErrorMessage  string   `json:"error"`
+	ErrorMessages []string `json:"errors"`
 }
 
-type authResponseError struct {
-	ErrorMsg         string `json:"error"`
-	ErrorDescription string `json:"error_description"`
+func (e *APIError) Error() string {
+	msg := new(strings.Builder)
+
+	_, _ = fmt.Fprintf(msg, "%d: ", e.StatusCode)
+
+	if e.ErrorMessage != "" {
+		_, _ = fmt.Fprintf(msg, "%s", e.ErrorMessage)
+	} else {
+		_, _ = fmt.Fprintf(msg, "%s", strings.Join(e.ErrorMessages, "; "))
+	}
+
+	return msg.String()
 }
 
-func (a authResponseError) Error() string {
-	return fmt.Sprintf("%s: %s", a.ErrorMsg, a.ErrorDescription)
+type createRecordsRequest struct {
+	Records []Record `json:"records"`
 }
 
-type createTXTRequest struct {
-	Records []createTXTRecord `json:"records"`
+type Record struct {
+	Host string `json:"host,omitempty"`
+	TTL  int    `json:"ttl,omitempty"`
+	Type string `json:"type,omitempty"`
+	Data string `json:"data,omitempty"`
 }
 
-type createTXTRecord struct {
-	Host string `json:"host"`
-	TTL  int    `json:"ttl"`
-	Type string `json:"type"`
-	Data string `json:"data"`
-}
-
-type createTXTResponse struct {
+type recordResponse struct {
 	Added   int    `json:"records_added"`
-	Removed int    `json:"records_removed"`
-	Message string `json:"message"`
-}
-
-type deleteTXTResponse struct {
 	Removed int    `json:"records_removed"`
 	Message string `json:"message"`
 }

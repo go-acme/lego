@@ -5,21 +5,21 @@ Code = "mythicbeasts"
 Since = "v0.3.7"
 
 Example = '''
-MYTHICBEASTS_USERNAME=myuser \
-MYTHICBEASTS_PASSWORD=mypass \
+MYTHICBEASTS_CLIENT_ID=xxx \
+MYTHICBEASTS_CLIENT_SECRET=yyy \
 lego run --dns mythicbeasts -d '*.example.com' -d example.com
 '''
 
 Additional = '''
-If you are using specific API keys, then the username is the API ID for your API key, and the password is the API secret.
+If you are using specific API keys, then the client ID is the API ID for your API key, and the client secret is the API secret.
 
 Your API key name is not needed to operate lego.
 '''
 
 [Configuration]
   [Configuration.Credentials]
-    MYTHICBEASTS_USERNAME = "User name"
-    MYTHICBEASTS_PASSWORD = "Password"
+    MYTHICBEASTS_CLIENT_ID = "Client ID/Username"
+    MYTHICBEASTS_CLIENT_SECRET = "Client secret/Password"
   [Configuration.Additional]
     MYTHICBEASTS_API_ENDPOINT = "The endpoint for the API (must implement v2)"
     MYTHICBEASTS_AUTH_API_ENDPOINT = "The endpoint for Mythic Beasts' Authentication"
@@ -30,4 +30,4 @@ Your API key name is not needed to operate lego.
 
 [Links]
   API = "https://www.mythic-beasts.com/support/api/dnsv2"
-  APIAuth = "https://auth.mythic-beasts.com/login"
+  APIAuth = "https://www.mythic-beasts.com/support/api/auth"

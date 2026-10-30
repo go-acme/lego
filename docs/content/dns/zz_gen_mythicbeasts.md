@@ -26,8 +26,8 @@ Configuration for [MythicBeasts](https://www.mythic-beasts.com/).
 Here is an example bash command using the MythicBeasts provider:
 
 ```bash
-MYTHICBEASTS_USERNAME=myuser \
-MYTHICBEASTS_PASSWORD=mypass \
+MYTHICBEASTS_CLIENT_ID=xxx \
+MYTHICBEASTS_CLIENT_SECRET=yyy \
 lego run --dns mythicbeasts -d '*.example.com' -d example.com
 ```
 
@@ -38,8 +38,8 @@ lego run --dns mythicbeasts -d '*.example.com' -d example.com
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `MYTHICBEASTS_PASSWORD` | Password |
-| `MYTHICBEASTS_USERNAME` | User name |
+| `MYTHICBEASTS_CLIENT_ID` | Client ID/Username |
+| `MYTHICBEASTS_CLIENT_SECRET` | Client secret/Password |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
@@ -59,7 +59,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
-If you are using specific API keys, then the username is the API ID for your API key, and the password is the API secret.
+If you are using specific API keys, then the client ID is the API ID for your API key, and the client secret is the API secret.
 
 Your API key name is not needed to operate lego.
 

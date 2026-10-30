@@ -13,8 +13,7 @@ func mockOAuthClient(t *testing.T) *http.Client {
 
 	return servermock.NewBuilder[*http.Client](
 		func(server *httptest.Server) (*http.Client, error) {
-			config := CreateOAuthConfig("", "123", "xxx")
-			config.TokenURL = server.URL
+			config := CreateOAuthConfig(server.URL, "123", "xxx")
 
 			return config.Client(t.Context()), nil
 		}).

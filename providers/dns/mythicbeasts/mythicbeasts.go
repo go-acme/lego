@@ -20,24 +20,34 @@ import (
 const (
 	envNamespace = "MYTHICBEASTS_"
 
-	EnvUserName        = envNamespace + "USERNAME"
-	EnvPassword        = envNamespace + "PASSWORD"
+	EnvClientID     = envNamespace + "CLIENT_ID"
+	EnvClientSecret = envNamespace + "CLIENT_SECRET"
+
+	EnvUserName = envNamespace + "USERNAME" // Deprecated: use EnvClientID instead.
+	EnvPassword = envNamespace + "PASSWORD" // Deprecated: use EnvClientSecret instead.
+
 	EnvAPIEndpoint     = envNamespace + "API_ENDPOINT"
 	EnvAuthAPIEndpoint = envNamespace + "AUTH_API_ENDPOINT"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+
+	EnvHTTPTimeout = envNamespace + "HTTP_TIMEOUT" // Deprecated: it will be removed in v6.
 )
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	UserName           string
-	Password           string
-	HTTPClient         *http.Client
+	UserName string // Deprecated: use ClientID instead.
+	Password string // Deprecated: use ClientSecret instead.
+
+	ClientID     string
+	ClientSecret string
+
+	HTTPClient *http.Client // Deprecated: it will be removed in v6.
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	APIEndpoint        *url.URL
@@ -52,7 +62,7 @@ func NewDefaultConfig() (*Config, error) {
 		return nil, fmt.Errorf("mythicbeasts: Unable to parse API URL: %w", err)
 	}
 
-	authEndpoint, err := url.Parse(env.GetOrDefaultString(EnvAuthAPIEndpoint, internal.AuthBaseURL))
+	authEndpoint, err := url.Parse(env.GetOrDefaultString(EnvAuthAPIEndpoint, internal.DefaultOAuthURL))
 	if err != nil {
 		return nil, fmt.Errorf("mythicbeasts: Unable to parse AUTH API URL: %w", err)
 	}
@@ -69,6 +79,22 @@ func NewDefaultConfig() (*Config, error) {
 	}, nil
 }
 
+func (c *Config) getClientID() string {
+	if c.UserName != "" {
+		return c.UserName
+	}
+
+	return c.ClientID
+}
+
+func (c *Config) getClientSecret() string {
+	if c.Password != "" {
+		return c.Password
+	}
+
+	return c.ClientSecret
+}
+
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
@@ -76,10 +102,8 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for mythicbeasts DNSv2 API.
-// Credentials must be passed in the environment variables:
-// MYTHICBEASTS_USERNAME and MYTHICBEASTS_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUserName, EnvPassword)
+	values, err := env.GetWithFallback([]string{EnvClientID, EnvUserName}, []string{EnvClientSecret, EnvPassword})
 	if err != nil {
 		return nil, fmt.Errorf("mythicbeasts: %w", err)
 	}
@@ -89,8 +113,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("mythicbeasts: %w", err)
 	}
 
-	config.UserName = values[EnvUserName]
-	config.Password = values[EnvPassword]
+	config.ClientID = values[EnvClientID]
+	config.ClientSecret = values[EnvClientSecret]
 
 	return NewDNSProviderConfig(config)
 }
@@ -101,25 +125,26 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("mythicbeasts: the configuration of the DNS provider is nil")
 	}
 
-	if config.UserName == "" || config.Password == "" {
-		return nil, errors.New("mythicbeasts: incomplete credentials, missing username and/or password")
+	if config.getClientID() == "" || config.getClientSecret() == "" {
+		return nil, errors.New("mythicbeasts: incomplete credentials, missing client ID and/or client secret")
 	}
 
-	client := internal.NewClient(config.UserName, config.Password)
-
-	if config.APIEndpoint != nil {
-		client.APIEndpoint = config.APIEndpoint
-	}
+	var authEndpoint string
 
 	if config.AuthAPIEndpoint != nil {
-		client.AuthEndpoint = config.AuthAPIEndpoint
+		authEndpoint = config.AuthAPIEndpoint.String()
 	}
 
-	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
-	}
+	client := internal.NewClient(
+		clientdebug.Wrap(
+			internal.CreateOAuthConfig(authEndpoint, config.getClientID(), config.getClientSecret()).
+				Client(context.Background()),
+		),
+	)
 
-	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
+	if config.APIEndpoint != nil {
+		client.BaseURL = config.APIEndpoint
+	}
 
 	return &DNSProvider{config: config, client: client}, nil
 }
@@ -140,12 +165,14 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	authZone = dns01.UnFqdn(authZone)
 
-	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
-	if err != nil {
-		return fmt.Errorf("mythicbeasts: login: %w", err)
+	record := internal.Record{
+		Host: subDomain,
+		TTL:  d.config.TTL,
+		Type: "TXT",
+		Data: info.Value,
 	}
 
-	err = d.client.CreateTXTRecord(ctxAuth, authZone, subDomain, info.Value, d.config.TTL)
+	err = d.client.CreateRecord(ctx, authZone, record)
 	if err != nil {
 		return fmt.Errorf("mythicbeasts: CreateTXTRecord: %w", err)
 	}
@@ -169,12 +196,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 
 	authZone = dns01.UnFqdn(authZone)
 
-	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
-	if err != nil {
-		return fmt.Errorf("mythicbeasts: login: %w", err)
-	}
-
-	err = d.client.RemoveTXTRecord(ctxAuth, authZone, subDomain, info.Value)
+	err = d.client.RemoveTXTRecord(ctx, authZone, subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("mythicbeasts: RemoveTXTRecord: %w", err)
 	}

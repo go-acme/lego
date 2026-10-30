@@ -2,73 +2,57 @@ package internal
 
 import (
 	"context"
+	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
-const fakeToken = "xxx"
-
-func mockContext(t *testing.T) context.Context {
+func mockOAuthServer[T any](t *testing.T, fn func(server *httptest.Server) (T, error)) T {
 	t.Helper()
 
-	return context.WithValue(t.Context(), tokenKey, &Token{Token: fakeToken})
-}
-
-func mockBuilderIdentity() *servermock.Builder[*Client] {
-	return servermock.NewBuilder[*Client](
-		func(server *httptest.Server) (*Client, error) {
-			client := NewClient("user", "secret")
-			client.HTTPClient = server.Client()
-			client.AuthEndpoint, _ = url.Parse(server.URL)
-
-			return client, nil
-		},
-		servermock.CheckHeader().
-			WithBasicAuth("user", "secret"),
-		servermock.CheckHeader().
-			WithContentTypeFromURLEncoded(),
-	)
-}
-
-func TestClient_obtainToken(t *testing.T) {
-	client := mockBuilderIdentity().
+	return servermock.NewBuilder[T](fn).
 		Route("POST /",
 			servermock.ResponseFromFixture("token.json"),
+			servermock.CheckHeader().
+				WithBasicAuth("user", "secret").
+				WithContentTypeFromURLEncoded(),
 			servermock.CheckForm().Strict().
-				With("grant_type", "client_credentials")).
+				With("grant_type", "client_credentials"),
+		).
 		Build(t)
-
-	assert.Nil(t, client.token)
-
-	tok, err := client.obtainToken(t.Context())
-	require.NoError(t, err)
-
-	assert.NotNil(t, tok)
-	assert.NotZero(t, tok.Deadline)
-	assert.Equal(t, fakeToken, tok.Token)
 }
 
-func TestClient_CreateAuthenticatedContext(t *testing.T) {
-	client := mockBuilderIdentity().
-		Route("POST /",
-			servermock.ResponseFromFixture("token.json"),
-			servermock.CheckForm().Strict().
-				With("grant_type", "client_credentials")).
-		Build(t)
+func buildOAuthClient(server *httptest.Server) (*http.Client, error) {
+	config, err := buildOAuthConfig(server)
+	if err != nil {
+		return nil, err
+	}
 
-	assert.Nil(t, client.token)
+	return config.Client(context.Background()), nil
+}
 
-	ctx, err := client.CreateAuthenticatedContext(t.Context())
+func buildOAuthConfig(server *httptest.Server) (*clientcredentials.Config, error) {
+	config := CreateOAuthConfig(server.URL, "user", "secret")
+
+	return config, nil
+}
+
+func mockOAuthClient(t *testing.T) *http.Client {
+	t.Helper()
+
+	return mockOAuthServer(t, buildOAuthClient)
+}
+
+func Test_Token(t *testing.T) {
+	token, err := mockOAuthServer(t, buildOAuthConfig).Token(t.Context())
 	require.NoError(t, err)
 
-	tok := getToken(ctx)
-
-	assert.NotNil(t, tok)
-	assert.NotZero(t, tok.Deadline)
-	assert.Equal(t, fakeToken, tok.Token)
+	assert.Equal(t, "xxx", token.AccessToken)
+	assert.Equal(t, "bearer", token.TokenType)
+	assert.NotZero(t, token.Expiry)
 }

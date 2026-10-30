@@ -4,47 +4,29 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"sync"
-	"time"
 
 	"github.com/go-acme/lego/v5/internal/errutils"
 )
 
-// Default API endpoints.
-const (
-	APIBaseURL  = "https://api.mythic-beasts.com/dns/v2"
-	AuthBaseURL = "https://auth.mythic-beasts.com/login"
-)
+const APIBaseURL = "https://api.mythic-beasts.com/dns/v2"
 
 // Client the Mythic Beasts API client.
 type Client struct {
-	username string
-	password string
-
-	APIEndpoint  *url.URL
-	AuthEndpoint *url.URL
-	HTTPClient   *http.Client
-
-	token   *Token
-	muToken sync.Mutex
+	APIEndpoint *url.URL
+	HTTPClient  *http.Client
 }
 
 // NewClient Creates a new Client.
-func NewClient(username, password string) *Client {
+func NewClient(hc *http.Client) *Client {
 	apiEndpoint, _ := url.Parse(APIBaseURL)
-	authEndpoint, _ := url.Parse(AuthBaseURL)
 
 	return &Client{
-		username:     username,
-		password:     password,
-		APIEndpoint:  apiEndpoint,
-		AuthEndpoint: authEndpoint,
-		HTTPClient:   &http.Client{Timeout: 5 * time.Second},
+		APIEndpoint: apiEndpoint,
+		HTTPClient:  hc,
 	}
 }
 
@@ -132,13 +114,6 @@ func (c *Client) removeTXTRecord(ctx context.Context, zone, leaf, recordType, va
 }
 
 func (c *Client) do(req *http.Request, result any) error {
-	tok := getToken(req.Context())
-	if tok != nil {
-		req.Header.Set("Authorization", "Bearer "+tok.Token)
-	} else {
-		return errors.New("not logged in")
-	}
-
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)

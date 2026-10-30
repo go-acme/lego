@@ -1,54 +1,50 @@
 package internal
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
-	"time"
 
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
+func mockBuilder(hc *http.Client) *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client := NewClient("user", "secret")
-			client.HTTPClient = server.Client()
+			client := NewClient(hc)
 			client.APIEndpoint, _ = url.Parse(server.URL)
-			client.token = &Token{
-				Token:     "secret",
-				Lifetime:  60,
-				TokenType: "bearer",
-				Deadline:  time.Now().Add(1 * time.Minute),
-			}
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders().
-			WithAuthorization("Bearer "+fakeToken),
+		servermock.CheckHeader().
+			WithJSONHeaders().
+			WithAuthorization("Bearer xxx"),
 	)
 }
 
 func TestClient_CreateTXTRecord(t *testing.T) {
-	client := mockBuilder().
-		Route("POST /zones/example.com/records/foo/TXT",
-			servermock.ResponseFromFixture("post-zoneszonerecords.json"),
-			servermock.CheckRequestJSONBody(`{"records":[{"host":"foo","ttl":120,"type":"TXT","data":"txt"}]}`)).
+	client := mockBuilder(mockOAuthClient(t)).
+		Route("POST /zones/example.com/records/_acme-challenge/TXT",
+			servermock.ResponseFromFixture("post_zoneszonerecords.json"),
+			servermock.CheckRequestJSONBodyFromFixture("post_zoneszonerecords-request.json"),
+		).
 		Build(t)
 
-	err := client.CreateTXTRecord(mockContext(t), "example.com", "foo", "txt", 120)
+	err := client.CreateTXTRecord(t.Context(), "example.com", "_acme-challenge", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY", 120)
 	require.NoError(t, err)
 }
 
 func TestClient_RemoveTXTRecord(t *testing.T) {
-	client := mockBuilder().
-		Route("DELETE /zones/example.com/records/foo/TXT",
-			servermock.ResponseFromFixture("delete-zoneszonerecords.json"),
+	client := mockBuilder(mockOAuthClient(t)).
+		Route("DELETE /zones/example.com/records/_acme-challenge/TXT",
+			servermock.ResponseFromFixture("delete_zoneszonerecords.json"),
 			servermock.CheckQueryParameter().Strict().
-				With("data", "txt")).
+				With("data", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"),
+		).
 		Build(t)
 
-	err := client.RemoveTXTRecord(mockContext(t), "example.com", "foo", "txt")
+	err := client.RemoveTXTRecord(t.Context(), "example.com", "_acme-challenge", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")
 	require.NoError(t, err)
 }

@@ -2902,8 +2902,8 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "MYTHICBEASTS_PASSWORD":	Password`)
-		ew.writeln(`	- "MYTHICBEASTS_USERNAME":	User name`)
+		ew.writeln(`	- "MYTHICBEASTS_CLIENT_ID":	Client ID/Username`)
+		ew.writeln(`	- "MYTHICBEASTS_CLIENT_SECRET":	Client secret/Password`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

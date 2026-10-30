@@ -1,0 +1,12 @@
+{
+  "errors": [
+    "string"
+  ],
+  "status_code": 200,
+  "messages": [
+    "string"
+  ],
+  "data": [
+    "string"
+  ]
+}

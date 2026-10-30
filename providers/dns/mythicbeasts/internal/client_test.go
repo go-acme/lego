@@ -14,7 +14,7 @@ func mockBuilder(hc *http.Client) *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient(hc)
-			client.APIEndpoint, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
@@ -32,8 +32,34 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 		).
 		Build(t)
 
-	err := client.CreateTXTRecord(t.Context(), "example.com", "_acme-challenge", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY", 120)
+	record := Record{
+		Host: "_acme-challenge",
+		TTL:  120,
+		Type: "TXT",
+		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+	}
+
+	err := client.CreateRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
+}
+
+func TestClient_CreateTXTRecord_error(t *testing.T) {
+	client := mockBuilder(mockOAuthClient(t)).
+		Route("POST /zones/example.com/records/_acme-challenge/TXT",
+			servermock.ResponseFromFixture("error_400.json").
+				WithStatusCode(http.StatusBadRequest),
+		).
+		Build(t)
+
+	record := Record{
+		Host: "_acme-challenge",
+		TTL:  120,
+		Type: "TXT",
+		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+	}
+
+	err := client.CreateRecord(t.Context(), "example.com", record)
+	require.EqualError(t, err, "400: Unknown record type 'FOO'; SSHFP fingerprint must be an even number of hexadecimal characters.")
 }
 
 func TestClient_RemoveTXTRecord(t *testing.T) {
@@ -47,4 +73,16 @@ func TestClient_RemoveTXTRecord(t *testing.T) {
 
 	err := client.RemoveTXTRecord(t.Context(), "example.com", "_acme-challenge", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")
 	require.NoError(t, err)
+}
+
+func TestClient_RemoveTXTRecord_error(t *testing.T) {
+	client := mockBuilder(mockOAuthClient(t)).
+		Route("DELETE /zones/example.com/records/_acme-challenge/TXT",
+			servermock.ResponseFromFixture("error_403.json").
+				WithStatusCode(http.StatusForbidden),
+		).
+		Build(t)
+
+	err := client.RemoveTXTRecord(t.Context(), "example.com", "_acme-challenge", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")
+	require.EqualError(t, err, "403: Auth token has no DNS permits")
 }

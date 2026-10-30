@@ -33,7 +33,7 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 
-	EnvHTTPTimeout = envNamespace + "HTTP_TIMEOUT" // Deprecated
+	EnvHTTPTimeout = envNamespace + "HTTP_TIMEOUT" // Deprecated: it will be removed in v6.
 )
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
@@ -46,7 +46,7 @@ type Config struct {
 	ClientID     string
 	ClientSecret string
 
-	HTTPClient *http.Client // Deprecated
+	HTTPClient *http.Client // Deprecated: it will be removed in v6.
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -143,7 +143,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	)
 
 	if config.APIEndpoint != nil {
-		client.APIEndpoint = config.APIEndpoint
+		client.BaseURL = config.APIEndpoint
 	}
 
 	return &DNSProvider{config: config, client: client}, nil
@@ -165,7 +165,14 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	authZone = dns01.UnFqdn(authZone)
 
-	err = d.client.CreateTXTRecord(ctx, authZone, subDomain, info.Value, d.config.TTL)
+	record := internal.Record{
+		Host: subDomain,
+		TTL:  d.config.TTL,
+		Type: "TXT",
+		Data: info.Value,
+	}
+
+	err = d.client.CreateRecord(ctx, authZone, record)
 	if err != nil {
 		return fmt.Errorf("mythicbeasts: CreateTXTRecord: %w", err)
 	}

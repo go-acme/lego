@@ -1,0 +1,6 @@
+{
+  "errors": [
+    "Unknown record type 'FOO'",
+    "SSHFP fingerprint must be an even number of hexadecimal characters."
+  ]
+}

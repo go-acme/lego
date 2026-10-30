@@ -16,24 +16,23 @@ const APIBaseURL = "https://api.mythic-beasts.com/dns/v2"
 
 // Client the Mythic Beasts API client.
 type Client struct {
-	APIEndpoint *url.URL
-	HTTPClient  *http.Client
+	BaseURL    *url.URL
+	httpClient *http.Client
 }
 
 // NewClient Creates a new Client.
 func NewClient(hc *http.Client) *Client {
-	apiEndpoint, _ := url.Parse(APIBaseURL)
+	baseURL, _ := url.Parse(APIBaseURL)
 
 	return &Client{
-		APIEndpoint: apiEndpoint,
-		HTTPClient:  hc,
+		BaseURL:    baseURL,
+		httpClient: hc,
 	}
 }
 
-// CreateTXTRecord creates a TXT record.
-// https://www.mythic-beasts.com/support/api/dnsv2#ep-get-zoneszonerecords
-func (c *Client) CreateTXTRecord(ctx context.Context, zone, leaf, value string, ttl int) error {
-	resp, err := c.createTXTRecord(ctx, zone, leaf, "TXT", value, ttl)
+// CreateRecord creates a TXT record.
+func (c *Client) CreateRecord(ctx context.Context, zone string, record Record) error {
+	resp, err := c.createRecord(ctx, zone, record)
 	if err != nil {
 		return err
 	}
@@ -47,7 +46,6 @@ func (c *Client) CreateTXTRecord(ctx context.Context, zone, leaf, value string, 
 }
 
 // RemoveTXTRecord removes a TXT records.
-// https://www.mythic-beasts.com/support/api/dnsv2#ep-delete-zoneszonerecords
 func (c *Client) RemoveTXTRecord(ctx context.Context, zone, leaf, value string) error {
 	resp, err := c.removeTXTRecord(ctx, zone, leaf, "TXT", value)
 	if err != nil {
@@ -63,24 +61,19 @@ func (c *Client) RemoveTXTRecord(ctx context.Context, zone, leaf, value string) 
 }
 
 // https://www.mythic-beasts.com/support/api/dnsv2#ep-post-zoneszonerecords
-func (c *Client) createTXTRecord(ctx context.Context, zone, leaf, recordType, value string, ttl int) (*createTXTResponse, error) {
-	endpoint := c.APIEndpoint.JoinPath("zones", zone, "records", leaf, recordType)
+func (c *Client) createRecord(ctx context.Context, zone string, record Record) (*recordResponse, error) {
+	endpoint := c.BaseURL.JoinPath("zones", zone, "records", record.Host, record.Type)
 
-	createReq := createTXTRequest{
-		Records: []createTXTRecord{{
-			Host: leaf,
-			TTL:  ttl,
-			Type: "TXT",
-			Data: value,
-		}},
+	payload := createRecordsRequest{
+		Records: []Record{record},
 	}
 
-	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, createReq)
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, payload)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := &createTXTResponse{}
+	resp := new(recordResponse)
 
 	err = c.do(req, resp)
 	if err != nil {
@@ -91,8 +84,8 @@ func (c *Client) createTXTRecord(ctx context.Context, zone, leaf, recordType, va
 }
 
 // https://www.mythic-beasts.com/support/api/dnsv2#ep-delete-zoneszonerecords
-func (c *Client) removeTXTRecord(ctx context.Context, zone, leaf, recordType, value string) (*deleteTXTResponse, error) {
-	endpoint := c.APIEndpoint.JoinPath("zones", zone, "records", leaf, recordType)
+func (c *Client) removeTXTRecord(ctx context.Context, zone, leaf, recordType, value string) (*recordResponse, error) {
+	endpoint := c.BaseURL.JoinPath("zones", zone, "records", leaf, recordType)
 
 	query := endpoint.Query()
 	query.Add("data", value)
@@ -103,7 +96,7 @@ func (c *Client) removeTXTRecord(ctx context.Context, zone, leaf, recordType, va
 		return nil, err
 	}
 
-	resp := &deleteTXTResponse{}
+	resp := new(recordResponse)
 
 	err = c.do(req, resp)
 	if err != nil {
@@ -114,7 +107,7 @@ func (c *Client) removeTXTRecord(ctx context.Context, zone, leaf, recordType, va
 }
 
 func (c *Client) do(req *http.Request, result any) error {
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)
 	}
@@ -122,7 +115,7 @@ func (c *Client) do(req *http.Request, result any) error {
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+		return parseError(req, resp)
 	}
 
 	raw, err := io.ReadAll(resp.Body)
@@ -160,4 +153,17 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 	}
 
 	return req, nil
+}
+
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	errAPI := &APIError{StatusCode: resp.StatusCode}
+
+	err := json.Unmarshal(raw, errAPI)
+	if err != nil {
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
+	}
+
+	return errAPI
 }

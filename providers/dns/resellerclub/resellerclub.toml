@@ -1,0 +1,24 @@
+Name = "ResellerClub"
+Description = ''''''
+URL = "https://www.resellerclub.com/"
+Code = "resellerclub"
+Since = "v5.7.0"
+
+Example = '''
+RESELLERCLUB_API_KEY="xxx" \
+RESELLERCLUB_USER_ID="yyy" \
+lego run --dns resellerclub -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    RESELLERCLUB_API_KEY = "API key"
+    RESELLERCLUB_USER_ID = "User ID"
+  [Configuration.Additional]
+    RESELLERCLUB_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    RESELLERCLUB_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    RESELLERCLUB_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    RESELLERCLUB_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://developer.resellerclub.com/documentation"

@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "errorCode": 0,
+  "errorCodeMsg": "",
+  "action": "service\/dnsdelete",
+  "version": "1.0.27",
+  "messages": [
+    "Operation done correctly."
+  ],
+  "responseData": {}
+}

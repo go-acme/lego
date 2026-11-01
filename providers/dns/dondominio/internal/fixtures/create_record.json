@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "errorCode": 0,
+  "errorCodeMsg": "",
+  "action": "service\/dnscreate",
+  "version": "1.0.27",
+  "messages": [
+    "Operation done correctly."
+  ],
+  "responseData": {
+    "dns": [
+      {
+        "entityID": "SRV0000214277-000396072",
+        "name": "_acme-challenge.example.com",
+        "type": "TXT",
+        "ttl": "-",
+        "value": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "success": false,
+  "errorCode": 102,
+  "errorCodeMsg": "Object action invalid",
+  "action": "tool\/requestinvalid",
+  "version": "1.0.27",
+  "messages": [
+    "invalid object\/action"
+  ],
+  "responseData": []
+}

@@ -2,13 +2,6 @@ package internal
 
 import "encoding/json"
 
-type APIError struct{}
-
-func (a *APIError) Error() string {
-	// TODO implement me
-	panic("implement me")
-}
-
 type APIResponse struct {
 	Code    int             `json:"code,omitempty"`
 	Message string          `json:"message,omitempty"`

@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/nordname/internal"
@@ -88,8 +89,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("nordname: the configuration of the DNS provider is nil")
 	}
 
-	if config.TTL < minTTL || config.TTL > maxTTL {
-		return nil, fmt.Errorf("nordname: invalid TTL (%d): TTL must be between %d and %d", config.TTL, minTTL, maxTTL)
+	if config.TTL < minTTL {
+		log.Warnf(log.LazySprintf("nordname: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL))
+
+		config.TTL = minTTL
+	}
+
+	if config.TTL > maxTTL {
+		log.Warnf(log.LazySprintf("nordname: invalid TTL, TTL (%d) must be lower than %d", config.TTL, maxTTL))
+
+		config.TTL = maxTTL
 	}
 
 	client, err := internal.NewClient(config.APIKey, config.CustomerUUID)

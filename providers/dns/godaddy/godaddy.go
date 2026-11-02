@@ -90,7 +90,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.TTL < minTTL {
-		return nil, fmt.Errorf("godaddy: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
+		log.Warnf(log.LazySprintf("godaddy: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL))
+
+		config.TTL = minTTL
 	}
 
 	client := internal.NewClient(config.APIKey, config.APISecret)

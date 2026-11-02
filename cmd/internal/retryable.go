@@ -43,9 +43,9 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 
 	all, err := io.ReadAll(resp.Body)
 	if err == nil {
-		var errorDetails *acme.ProblemDetails
+		errorDetails := new(acme.ProblemDetails)
 
-		err = json.Unmarshal(all, &errorDetails)
+		err = json.Unmarshal(all, errorDetails)
 		if err != nil {
 			return rt, fmt.Errorf("%s %s: %s", resp.Request.Method, resp.Request.URL.Redacted(), string(all))
 		}

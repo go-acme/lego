@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/openprovider/internal"
@@ -28,6 +29,8 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
+
+const minTTL = 600
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
@@ -84,8 +87,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("openprovider: the configuration of the DNS provider is nil")
 	}
 
-	if config.TTL < 600 {
-		return nil, errors.New("openprovider: TTL must be >= 600")
+	if config.TTL < minTTL {
+		log.Warnf(log.LazySprintf("openprovider: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL))
+
+		config.TTL = minTTL
 	}
 
 	client, err := internal.NewClient(config.Username, config.Password)

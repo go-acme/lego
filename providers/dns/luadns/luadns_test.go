@@ -113,7 +113,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			apiKey:    "123",
 			apiSecret: "456",
 			tll:       30,
-			expected:  "luadns: invalid TTL, TTL (30) must be greater than 300",
 		},
 	}
 

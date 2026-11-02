@@ -60,7 +60,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://fornex.com/api/#tag/Domain:-Entry)
+- [API documentation](https://fornex.com/api/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/fornex/fornex.toml -->

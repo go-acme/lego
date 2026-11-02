@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/nrdcg/namesilo"
@@ -26,8 +27,8 @@ const (
 )
 
 const (
-	defaultTTL = 3600
-	maxTTL     = 2592000
+	minTTL = 3600
+	maxTTL = 2592000
 )
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
@@ -43,7 +44,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
@@ -77,8 +78,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("namesilo: the configuration of the DNS provider is nil")
 	}
 
-	if config.TTL < defaultTTL || config.TTL > maxTTL {
-		return nil, fmt.Errorf("namesilo: TTL should be in [%d, %d]", defaultTTL, maxTTL)
+	if config.TTL < minTTL {
+		log.Warnf(log.LazySprintf("namesilo: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL))
+
+		config.TTL = minTTL
+	}
+
+	if config.TTL > maxTTL {
+		log.Warnf(log.LazySprintf("namesilo: invalid TTL, TTL (%d) must be lower than %d", config.TTL, maxTTL))
+
+		config.TTL = maxTTL
 	}
 
 	if config.APIKey == "" {

@@ -7,11 +7,12 @@ import (
 	"strings"
 )
 
-type APIError struct{}
+type APIError struct {
+	Detail string `json:"detail"`
+}
 
 func (a *APIError) Error() string {
-	// TODO implement me
-	panic("implement me")
+	return a.Detail
 }
 
 type Record struct {

@@ -44,13 +44,6 @@ const (
 	defaultAuthURL    = "https://cloud.api.selcloud.ru/identity/v3/"
 )
 
-const (
-	defaultTTL                = 60
-	defaultPropagationTimeout = 120 * time.Second
-	defaultPollingInterval    = 5 * time.Second
-	defaultHTTPTimeout        = 30 * time.Second
-)
-
 const tokenHeader = "X-Auth-Token"
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
@@ -81,11 +74,11 @@ func NewDefaultConfig() *Config {
 		AuthRegion: env.GetOrDefaultString(EnvAuthRegion, defaultAuthRegion),
 		AuthURL:    env.GetOrDefaultString(EnvAuthURL, defaultAuthURL),
 
-		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, defaultHTTPTimeout),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }

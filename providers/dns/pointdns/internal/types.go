@@ -1,13 +1,14 @@
 package internal
 
+import "fmt"
+
 type APIError struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
 func (a *APIError) Error() string {
-	// TODO implement me
-	panic("implement me")
+	return fmt.Sprintf("%s: %s", a.Status, a.Message)
 }
 
 type Record struct {

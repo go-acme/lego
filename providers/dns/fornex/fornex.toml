@@ -19,4 +19,4 @@ lego run --dns fornex -d '*.example.com' -d example.com
     FORNEX_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]
-  API = "https://fornex.com/api/#tag/Domain:-Entry"
+  API = "https://fornex.com/api/"

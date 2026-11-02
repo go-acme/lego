@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -68,4 +69,16 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 	err := client.DeleteRecord(t.Context(), "example.com", 123)
 	require.NoError(t, err)
+}
+
+func TestClient_DeleteRecord_error(t *testing.T) {
+	client := mockBuilder().
+		Route("DELETE /zones/example.com/records/123",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusBadRequest),
+		).
+		Build(t)
+
+	err := client.DeleteRecord(t.Context(), "example.com", 123)
+	require.EqualError(t, err, "Error: Access denied")
 }

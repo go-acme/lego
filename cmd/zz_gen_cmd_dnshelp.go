@@ -1327,6 +1327,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/domeneshop`)
 
+	case "dondominio":
+		// generated from: providers/dns/dondominio/dondominio.toml
+		ew.writeln(`Configuration for DonDominio/MrDomain.`)
+		ew.writeln(`Code:	'dondominio'`)
+		ew.writeln(`Since:	'v5.7.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DONDOMINIO_API_PASSWORD":	API password`)
+		ew.writeln(`	- "DONDOMINIO_API_USER":	API user`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DONDOMINIO_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "DONDOMINIO_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 10)`)
+		ew.writeln(`	- "DONDOMINIO_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 600)`)
+		ew.writeln(`	- "DONDOMINIO_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dondominio`)
+
 	case "dreamhost":
 		// generated from: providers/dns/dreamhost/dreamhost.toml
 		ew.writeln(`Configuration for DreamHost.`)

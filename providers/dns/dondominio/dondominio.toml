@@ -1,0 +1,24 @@
+Name = "DonDominio/MrDomain"
+Description = ''''''
+URL = "https://dondominio.dev"
+Code = "dondominio"
+Since = "v5.7.0"
+
+Example = '''
+DONDOMINIO_API_USER="xxx" \
+DONDOMINIO_API_PASSWORD="yyy" \
+lego run --dns dondominio -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    DONDOMINIO_API_USER = "API user"
+    DONDOMINIO_API_PASSWORD = "API password"
+  [Configuration.Additional]
+    DONDOMINIO_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 10)"
+    DONDOMINIO_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 600)"
+    DONDOMINIO_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 600)"
+    DONDOMINIO_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://dondominio.dev/en/api/docs/api/"

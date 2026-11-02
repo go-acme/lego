@@ -71,3 +71,15 @@ func TestClient_DeleteRecord(t *testing.T) {
 	err := client.DeleteRecord(t.Context(), "example.com", 123)
 	require.NoError(t, err)
 }
+
+func TestClient_DeleteRecord_error(t *testing.T) {
+	client := mockBuilder().
+		Route("DELETE /dns/domain/example.com/entry_set/123",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusUnauthorized),
+		).
+		Build(t)
+
+	err := client.DeleteRecord(t.Context(), "example.com", 123)
+	require.EqualError(t, err, "Authentication credentials were not provided.")
+}

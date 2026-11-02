@@ -1,7 +1,6 @@
 package liara
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
@@ -75,16 +74,14 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected: "liara: APIKey is missing",
 		},
 		{
-			desc:     "invalid TTL",
-			ttl:      lowerThanMinTTL,
-			apiKey:   "key",
-			expected: fmt.Sprintf("liara: invalid TTL, TTL (%d) must be greater than %d", lowerThanMinTTL, minTTL),
+			desc:   "invalid TTL (min)",
+			ttl:    lowerThanMinTTL,
+			apiKey: "key",
 		},
 		{
-			desc:     "invalid TTL",
-			ttl:      greaterThanMaxTTL,
-			apiKey:   "key",
-			expected: fmt.Sprintf("liara: invalid TTL, TTL (%d) must be lower than %d", greaterThanMaxTTL, maxTTL),
+			desc:   "invalid TTL (max",
+			ttl:    greaterThanMaxTTL,
+			apiKey: "key",
 		},
 	}
 

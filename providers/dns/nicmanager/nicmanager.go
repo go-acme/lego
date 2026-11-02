@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/nicmanager/internal"
@@ -92,10 +93,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.Email = env.GetOrFile(EnvEmail)
 	config.OTPSecret = env.GetOrFile(EnvOTP)
 
-	if config.TTL < minTTL {
-		return nil, fmt.Errorf("TTL must be higher than %d: %d", minTTL, config.TTL)
-	}
-
 	return NewDNSProviderConfig(config)
 }
 
@@ -103,6 +100,12 @@ func NewDNSProvider() (*DNSProvider, error) {
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("nicmanager: the configuration of the DNS provider is nil")
+	}
+
+	if config.TTL < minTTL {
+		log.Warnf(log.LazySprintf("nicmanager: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL))
+
+		config.TTL = minTTL
 	}
 
 	opts := internal.Options{

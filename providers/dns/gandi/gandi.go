@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/gandi/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -100,6 +101,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("gandi: no API Key given")
 	}
 
+	if config.TTL < minTTL {
+		log.Warnf(log.LazySprintf("gandi: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL))
+
+		config.TTL = minTTL // 300 is gandi minimum value for ttl
+	}
+
 	client := internal.NewClient(config.APIKey)
 
 	if config.BaseURL != "" {
@@ -126,10 +133,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // zone. This new zone contains the TXT record.
 func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
-
-	if d.config.TTL < minTTL {
-		d.config.TTL = minTTL // 300 is gandi minimum value for ttl
-	}
 
 	// find authZone and Gandi zone_id for fqdn
 	authZone, err := d.findZoneByFqdn(ctx, info.EffectiveFQDN)

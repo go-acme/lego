@@ -96,11 +96,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.TTL < minTTL {
-		return nil, fmt.Errorf("liara: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
+		log.Warnf(log.LazySprintf("liara: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL))
+
+		config.TTL = minTTL
 	}
 
 	if config.TTL > maxTTL {
-		return nil, fmt.Errorf("liara: invalid TTL, TTL (%d) must be lower than %d", config.TTL, maxTTL)
+		log.Warnf(log.LazySprintf("liara: invalid TTL, TTL (%d) must be lower than %d", config.TTL, maxTTL))
+
+		config.TTL = maxTTL
 	}
 
 	retryClient := retryablehttp.NewClient()

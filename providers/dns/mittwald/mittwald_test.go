@@ -71,10 +71,9 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected: "mittwald: some credentials information are missing",
 		},
 		{
-			desc:     "invalid TTL",
-			token:    "secret",
-			ttl:      10,
-			expected: "mittwald: invalid TTL, TTL (10) must be greater than 300",
+			desc:  "invalid TTL",
+			token: "secret",
+			ttl:   10,
 		},
 	}
 

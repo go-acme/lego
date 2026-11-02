@@ -73,10 +73,9 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected: "hetzner (legacy): credentials missing",
 		},
 		{
-			desc:     "invalid TTL",
-			apiKey:   "123",
-			ttl:      10,
-			expected: "hetzner (legacy): invalid TTL, TTL (10) must be greater than 60",
+			desc:   "invalid TTL",
+			apiKey: "123",
+			ttl:    10,
 		},
 	}
 

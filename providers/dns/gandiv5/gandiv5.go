@@ -104,7 +104,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.TTL < minTTL {
-		return nil, fmt.Errorf("gandiv5: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
+		log.Warnf(log.LazySprintf("gandiv5: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL))
+
+		config.TTL = minTTL
 	}
 
 	client := internal.NewClient(config.APIKey, config.PersonalAccessToken)

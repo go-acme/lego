@@ -77,10 +77,9 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected: "arvancloud: credentials missing",
 		},
 		{
-			desc:     "invalid TTL",
-			apiKey:   "123",
-			ttl:      60,
-			expected: "arvancloud: invalid TTL, TTL (60) must be greater than 600",
+			desc:   "invalid TTL",
+			apiKey: "123",
+			ttl:    60,
 		},
 	}
 

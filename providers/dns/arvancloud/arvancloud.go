@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/arvancloud/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -87,7 +88,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.TTL < minTTL {
-		return nil, fmt.Errorf("arvancloud: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
+		log.Warnf(log.LazySprintf("arvancloud: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL))
+
+		config.TTL = minTTL
 	}
 
 	client := internal.NewClient(config.APIKey)

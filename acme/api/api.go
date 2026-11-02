@@ -159,7 +159,8 @@ func (a *Core) retrievablePost(ctx context.Context, uri string, content []byte, 
 
 	return backoff.Retry(ctx, operation,
 		backoff.WithBackOff(bo),
-		backoff.WithMaxElapsedTime(20*time.Second),
+		backoff.WithMaxElapsedTime(0),
+		backoff.WithMaxTries(6),
 		backoff.WithNotify(wait.SimpleNotify("Retry.")))
 }
 

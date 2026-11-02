@@ -50,6 +50,13 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 			return rt, fmt.Errorf("%s %s: %s", resp.Request.Method, resp.Request.URL.Redacted(), string(all))
 		}
 
+		errorDetails.Method = resp.Request.Method
+		errorDetails.URL = resp.Request.URL.String()
+
+		if errorDetails.HTTPStatus == 0 {
+			errorDetails.HTTPStatus = resp.StatusCode
+		}
+
 		switch errorDetails.Type {
 		case acme.BadNonceErrorType:
 			return false, &acme.NonceError{

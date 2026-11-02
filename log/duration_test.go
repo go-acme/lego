@@ -16,8 +16,8 @@ func TestFormattableDuration(t *testing.T) {
 	}{
 		{
 			desc:     "all",
-			duration: 47*time.Hour + 3*time.Minute + 8*time.Second + 1234567890*time.Nanosecond,
-			expected: "1d23h3m9s234567890ns",
+			duration: 47*time.Hour + 3*time.Minute + 8*time.Second + 234567890*time.Nanosecond,
+			expected: "1d23h3m8s234ms567890ns",
 		},
 		{
 			desc:     "without nanoseconds",
@@ -25,19 +25,24 @@ func TestFormattableDuration(t *testing.T) {
 			expected: "1d23h3m8s",
 		},
 		{
+			desc:     "without milliseconds",
+			duration: 47*time.Hour + 3*time.Minute + 8*time.Second + 567890*time.Nanosecond,
+			expected: "1d23h3m8s567890ns",
+		},
+		{
 			desc:     "without seconds",
-			duration: 47*time.Hour + 3*time.Minute + 2*time.Nanosecond,
-			expected: "1d23h3m2ns",
+			duration: 47*time.Hour + 3*time.Minute + 234*time.Millisecond + 2*time.Nanosecond,
+			expected: "1d23h3m234ms2ns",
 		},
 		{
 			desc:     "without minutes",
-			duration: 47*time.Hour + 8*time.Second + 2*time.Nanosecond,
-			expected: "1d23h8s2ns",
+			duration: 47*time.Hour + 8*time.Second + 234*time.Millisecond + 2*time.Nanosecond,
+			expected: "1d23h8s234ms2ns",
 		},
 		{
 			desc:     "without hours",
-			duration: 3*time.Minute + 8*time.Second + 2*time.Nanosecond,
-			expected: "3m8s2ns",
+			duration: 3*time.Minute + 8*time.Second + 234*time.Millisecond + 2*time.Nanosecond,
+			expected: "3m8s234ms2ns",
 		},
 		{
 			desc:     "only hours",

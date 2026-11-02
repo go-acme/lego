@@ -8,7 +8,7 @@
 [ACME](https://www.rfc-editor.org/rfc/rfc8555.html) client and library for Let's Encrypt and other ACME CAs written in Go.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/go-acme/lego/v5.svg)](https://pkg.go.dev/github.com/go-acme/lego/v5)
-[![Build Status](https://github.com//go-acme/lego/workflows/Main/badge.svg?branch=master)](https://github.com//go-acme/lego/actions)
+[![Build Status](https://github.com/go-acme/lego/actions/workflows/build.yml/badge.svg)](https://github.com//go-acme/lego/actions)
 [![Docker Pulls](https://img.shields.io/docker/pulls/goacme/lego.svg)](https://hub.docker.com/r/goacme/lego/)
 
 lego is an independent, free, and open-source project, if you value it, consider [supporting it](https://donate.ldez.dev)! ❤️

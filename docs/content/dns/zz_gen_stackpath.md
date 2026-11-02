@@ -1,5 +1,5 @@
 ---
-title: "Stackpath (Deprecated)"
+title: "Stackpath (DEPRECATED)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: stackpath
@@ -23,7 +23,7 @@ The Stackpath DNS provider shut down in 2024.
 - Since: v1.1.0
 
 
-Here is an example bash command using the Stackpath (Deprecated) provider:
+Here is an example bash command using the Stackpath (DEPRECATED) provider:
 
 ```bash
 STACKPATH_CLIENT_ID=xxxxx \

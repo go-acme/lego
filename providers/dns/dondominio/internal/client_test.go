@@ -36,7 +36,7 @@ func TestClient_CreateRecord(t *testing.T) {
 			servermock.CheckForm().Strict().
 				With("name", "_acme-challenge.example.com").
 				With("serviceName", "example.com").
-				With("ttl", "300").
+				With("ttl", "600").
 				With("type", "TXT").
 				With("value", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
 				With("apipasswd", "secret").
@@ -49,7 +49,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		Name:        "_acme-challenge.example.com",
 		Type:        "TXT",
 		Value:       "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
-		TTL:         "300",
+		TTL:         "600",
 	}
 
 	records, err := client.CreateRecord(t.Context(), payload)
@@ -59,7 +59,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		EntityID: "SRV0000214277-000396072",
 		Name:     "_acme-challenge.example.com",
 		Type:     "TXT",
-		TTL:      "-",
+		TTL:      "600",
 		Value:    "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}}
 

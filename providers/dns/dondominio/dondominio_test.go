@@ -179,7 +179,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.CheckForm().Strict().
 				With("name", "_acme-challenge.example.com").
 				With("serviceName", "example.com").
-				With("ttl", "300").
+				With("ttl", "600").
 				With("type", "TXT").
 				With("value", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").
 				With("apipasswd", "secret").

@@ -132,9 +132,9 @@ func checkError(req *http.Request, resp *http.Response) error {
 		return fmt.Errorf("%d :: %s :: %s :: %w", resp.StatusCode, req.Method, req.URL, err)
 	}
 
-	var errorDetails *acme.ProblemDetails
+	errorDetails := new(acme.ProblemDetails)
 
-	err = json.Unmarshal(body, &errorDetails)
+	err = json.Unmarshal(body, errorDetails)
 	if err != nil {
 		return fmt.Errorf("%d ::%s :: %s :: %w :: %s", resp.StatusCode, req.Method, req.URL, err, string(body))
 	}

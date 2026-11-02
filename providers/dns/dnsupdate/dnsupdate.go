@@ -30,7 +30,7 @@ const (
 	EnvDNSTimeout = envNamespace + "DNS_TIMEOUT"
 
 	// Old environment variable name from lego v0.
-	// TODO(ldez): remove in the future.
+	// TODO(ldez): remove in v6.
 	envTimeout = envNamespace + "TIMEOUT"
 
 	EnvZones = envNamespace + "ZONES"

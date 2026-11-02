@@ -17,7 +17,8 @@ func (f FormattableDuration) String() string {
 	hours := int(d.Hours()) % 24
 	minutes := int(d.Minutes()) % 60
 	seconds := int(d.Seconds()) % 60
-	ns := d.Nanoseconds() % int64(time.Second)
+	milliseconds := d.Milliseconds() % 1000
+	ns := d.Nanoseconds() % int64(time.Millisecond)
 
 	s := new(strings.Builder)
 
@@ -35,6 +36,10 @@ func (f FormattableDuration) String() string {
 
 	if seconds > 0 {
 		_, _ = fmt.Fprintf(s, "%ds", seconds)
+	}
+
+	if milliseconds > 0 {
+		_, _ = fmt.Fprintf(s, "%dms", milliseconds)
 	}
 
 	if ns > 0 {

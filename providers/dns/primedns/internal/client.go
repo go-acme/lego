@@ -51,9 +51,9 @@ func (c *Client) AddTXTRecord(ctx context.Context, payload APIRequest) (*Record,
 		return nil, err
 	}
 
-	result := new(APIResponse[*Record])
+	var result APIResponse[*Record]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -69,9 +69,9 @@ func (c *Client) RemoveTXTRecord(ctx context.Context, payload APIRequest) error 
 		return err
 	}
 
-	result := new(APIResponse[*DeleteResponse])
+	var result APIResponse[*DeleteResponse]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return err
 	}

@@ -99,14 +99,14 @@ func (c *Client) CreateDNSRecord(ctx context.Context, domainID string, record Re
 		return nil, err
 	}
 
-	var result Record
+	result := new(Record)
 
-	err = c.do(req, &result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 // DeleteDNSRecord remove a DNS record from a domain.

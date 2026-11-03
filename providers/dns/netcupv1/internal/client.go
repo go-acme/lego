@@ -58,9 +58,9 @@ func (c *Client) AddChallenge(ctx context.Context, domainID int64, scope, value 
 		return nil, err
 	}
 
-	result := new(APIResponse[ChallengeData])
+	var result APIResponse[ChallengeData]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -98,9 +98,9 @@ func (c *Client) GetDomains(ctx context.Context, request *DomainsRequest) ([]Dom
 		return nil, err
 	}
 
-	result := new(APIResponse[Domain])
+	var result APIResponse[Domain]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}

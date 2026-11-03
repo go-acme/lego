@@ -59,9 +59,9 @@ func (c *Client) ListZones(ctx context.Context, zr *ZonesRequest) ([]Zone, error
 		return nil, err
 	}
 
-	results := &APIResponse[Results[Zone]]{}
+	var results APIResponse[Results[Zone]]
 
-	err = c.do(req, results)
+	err = c.do(req, &results)
 	if err != nil {
 		return nil, err
 	}
@@ -79,9 +79,9 @@ func (c *Client) UpdateZone(ctx context.Context, domain string, action ZoneActio
 		return err
 	}
 
-	results := &APIResponse[ResponseSuccess]{}
+	var results APIResponse[ResponseSuccess]
 
-	err = c.do(req, results)
+	err = c.do(req, &results)
 	if err != nil {
 		return err
 	}

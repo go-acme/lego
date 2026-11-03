@@ -78,7 +78,7 @@ func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
 		return nil, err
 	}
 
-	zones := Zones{}
+	var zones Zones
 
 	err = c.do(req, &zones)
 	if err != nil {
@@ -98,7 +98,7 @@ func (c *Client) GetRecords(ctx context.Context, serviceID, zoneID string) ([]Re
 		return nil, err
 	}
 
-	records := Records{}
+	var records Records
 
 	err = c.do(req, &records)
 	if err != nil {

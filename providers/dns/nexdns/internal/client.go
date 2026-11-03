@@ -56,9 +56,9 @@ func (c *Client) ListZones(ctx context.Context, search string) ([]Zone, error) {
 		return nil, err
 	}
 
-	result := new(APIResponse[[]Zone])
+	var result APIResponse[[]Zone]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -76,9 +76,9 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID string, record Record)
 		return nil, err
 	}
 
-	result := new(APIResponse[*Record])
+	var result APIResponse[*Record]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}

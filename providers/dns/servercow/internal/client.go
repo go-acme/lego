@@ -65,9 +65,9 @@ func (c *Client) CreateUpdateRecord(ctx context.Context, domain string, data Rec
 		return nil, err
 	}
 
-	var msg Message
+	msg := new(Message)
 
-	err = c.do(req, &msg)
+	err = c.do(req, msg)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (c *Client) CreateUpdateRecord(ctx context.Context, domain string, data Rec
 		return nil, msg
 	}
 
-	return &msg, nil
+	return msg, nil
 }
 
 // DeleteRecord deletes a record.
@@ -88,9 +88,9 @@ func (c *Client) DeleteRecord(ctx context.Context, domain string, data Record) (
 		return nil, err
 	}
 
-	var msg Message
+	msg := new(Message)
 
-	err = c.do(req, &msg)
+	err = c.do(req, msg)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domain string, data Record) (
 		return nil, msg
 	}
 
-	return &msg, nil
+	return msg, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

@@ -51,9 +51,9 @@ func (c *Identifier) APILogin(ctx context.Context, username, password, apiKey st
 		return nil, err
 	}
 
-	info := new(LoginResponse)
+	var info LoginResponse
 
-	err = c.do(req, info)
+	err = c.do(req, &info)
 	if err != nil {
 		return nil, err
 	}

@@ -48,37 +48,6 @@ func NewClient(baseURL, apiKey string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) do(req *http.Request, result any) error {
-	req.Header.Set(APIKeyHeader, c.apiKey)
-
-	resp, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return errutils.NewHTTPDoError(req, err)
-	}
-
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode/100 != 2 {
-		return parseError(req, resp)
-	}
-
-	if result == nil {
-		return nil
-	}
-
-	raw, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return errutils.NewReadResponseError(req, resp.StatusCode, err)
-	}
-
-	err = json.Unmarshal(raw, result)
-	if err != nil {
-		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
-	}
-
-	return nil
-}
-
 func (c *Client) ListDomains(ctx context.Context) ([]Domain, error) {
 	endpoint := c.baseURL.JoinPath("domains")
 
@@ -109,14 +78,14 @@ func (c *Client) ListDomainRecords(ctx context.Context, domainID int) (*DomainRe
 		return nil, err
 	}
 
-	var result DomainRecords
+	result := new(DomainRecords)
 
-	err = c.do(req, &result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 func (c *Client) UpdateDomainRecords(ctx context.Context, domainID int, records DomainRecords) (*DomainID, error) {
@@ -135,6 +104,37 @@ func (c *Client) UpdateDomainRecords(ctx context.Context, domainID int, records 
 	}
 
 	return &result, nil
+}
+
+func (c *Client) do(req *http.Request, result any) error {
+	req.Header.Set(APIKeyHeader, c.apiKey)
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return errutils.NewHTTPDoError(req, err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode/100 != 2 {
+		return parseError(req, resp)
+	}
+
+	if result == nil {
+		return nil
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
+
+	return nil
 }
 
 func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {

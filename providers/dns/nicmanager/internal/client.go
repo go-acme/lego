@@ -82,14 +82,14 @@ func (c *Client) GetZone(ctx context.Context, name string) (*Zone, error) {
 		return nil, err
 	}
 
-	var zone Zone
+	zone := new(Zone)
 
-	err = c.do(req, http.StatusOK, &zone)
+	err = c.do(req, http.StatusOK, zone)
 	if err != nil {
 		return nil, err
 	}
 
-	return &zone, nil
+	return zone, nil
 }
 
 func (c *Client) AddRecord(ctx context.Context, zone string, payload RecordCreateUpdate) error {

@@ -66,14 +66,14 @@ func (c *Client) GetZoneDetails(ctx context.Context, zone string) (*ZoneDetails,
 		return nil, err
 	}
 
-	var details ZoneDetails
+	details := new(ZoneDetails)
 
 	err = c.do(req, &details)
 	if err != nil {
 		return nil, err
 	}
 
-	return &details, nil
+	return details, nil
 }
 
 // ListRecords gets a list of DNS records belonging to the zone.

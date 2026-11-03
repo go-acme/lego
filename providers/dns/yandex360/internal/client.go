@@ -55,14 +55,14 @@ func (c *Client) AddRecord(ctx context.Context, domain string, record Record) (*
 		return nil, err
 	}
 
-	var newRecord Record
+	newRecord := new(Record)
 
-	err = c.do(req, &newRecord)
+	err = c.do(req, newRecord)
 	if err != nil {
 		return nil, err
 	}
 
-	return &newRecord, nil
+	return newRecord, nil
 }
 
 // DeleteRecord Deletes a DNS record.

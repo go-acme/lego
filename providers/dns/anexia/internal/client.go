@@ -48,14 +48,14 @@ func (c *Client) CreateRecord(ctx context.Context, zoneName string, record Recor
 		return nil, err
 	}
 
-	var zone Zone
+	zone := new(Zone)
 
-	err = c.do(req, &zone)
+	err = c.do(req, zone)
 	if err != nil {
 		return nil, err
 	}
 
-	return &zone, nil
+	return zone, nil
 }
 
 func (c *Client) DeleteRecord(ctx context.Context, zoneName, recordID string) error {
@@ -77,14 +77,14 @@ func (c *Client) GetZone(ctx context.Context, zoneName string) (*Zone, error) {
 		return nil, err
 	}
 
-	var zone Zone
+	zone := new(Zone)
 
-	err = c.do(req, &zone)
+	err = c.do(req, zone)
 	if err != nil {
 		return nil, err
 	}
 
-	return &zone, nil
+	return zone, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

@@ -49,9 +49,9 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID string, record Record)
 		return nil, err
 	}
 
-	result := new(APIResponse[RecordData])
+	var result APIResponse[RecordData]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -105,9 +105,9 @@ func (c *Client) ListZones(ctx context.Context, pager *Pager) (*PaginatedZones, 
 		return nil, err
 	}
 
-	result := new(APIResponse[*PaginatedZones])
+	var result APIResponse[*PaginatedZones]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}

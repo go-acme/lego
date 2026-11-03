@@ -81,14 +81,14 @@ func (c *Client) getZones(ctx context.Context, zone string, privateZone bool) (*
 		return nil, err
 	}
 
-	var zones ZonesResponse
+	zones := new(ZonesResponse)
 
-	err = c.do(req, &zones)
+	err = c.do(req, zones)
 	if err != nil {
 		return nil, err
 	}
 
-	return &zones, nil
+	return zones, nil
 }
 
 func (c *Client) GetRecordSetID(ctx context.Context, zoneID, fqdn string) (string, error) {
@@ -128,14 +128,14 @@ func (c *Client) getRecordSet(ctx context.Context, zoneID, fqdn string) (*Record
 		return nil, err
 	}
 
-	var recordSetsRes RecordSetsResponse
+	recordSetsRes := new(RecordSetsResponse)
 
-	err = c.do(req, &recordSetsRes)
+	err = c.do(req, recordSetsRes)
 	if err != nil {
 		return nil, err
 	}
 
-	return &recordSetsRes, nil
+	return recordSetsRes, nil
 }
 
 // CreateRecordSet creates a record.

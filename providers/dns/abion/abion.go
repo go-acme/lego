@@ -114,14 +114,14 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 		return fmt.Errorf("abion: %w", err)
 	}
 
-	zones, err := d.client.GetZone(ctx, dns01.UnFqdn(authZone))
+	zone, err := d.client.GetZone(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("abion: get zone %w", err)
 	}
 
 	var data []internal.Record
 
-	if sub, ok := zones.Data.Attributes.Records[subDomain]; ok {
+	if sub, ok := zone.Attributes.Records[subDomain]; ok {
 		if records, exist := sub["TXT"]; exist {
 			data = append(data, records...)
 		}
@@ -167,14 +167,14 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("abion: %w", err)
 	}
 
-	zones, err := d.client.GetZone(ctx, dns01.UnFqdn(authZone))
+	zone, err := d.client.GetZone(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("abion: get zone %w", err)
 	}
 
 	var data []internal.Record
 
-	if sub, ok := zones.Data.Attributes.Records[subDomain]; ok {
+	if sub, ok := zone.Attributes.Records[subDomain]; ok {
 		if records, exist := sub["TXT"]; exist {
 			for _, record := range records {
 				if record.Data != info.Value {

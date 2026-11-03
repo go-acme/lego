@@ -45,9 +45,9 @@ func (c *Client) RetrieveRecords(ctx context.Context, address string) ([]Record,
 		return nil, err
 	}
 
-	results := &APIResponse[RetrieveResponse]{}
+	var results APIResponse[RetrieveResponse]
 
-	err = c.do(req, results)
+	err = c.do(req, &results)
 	if err != nil {
 		return nil, err
 	}
@@ -63,9 +63,9 @@ func (c *Client) CreateRecord(ctx context.Context, address string, record Record
 		return nil, err
 	}
 
-	results := &APIResponse[CreateResponse]{}
+	var results APIResponse[CreateResponse]
 
-	err = c.do(req, results)
+	err = c.do(req, &results)
 	if err != nil {
 		return nil, err
 	}

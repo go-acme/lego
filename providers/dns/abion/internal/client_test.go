@@ -57,46 +57,41 @@ func TestUpdateZone(t *testing.T) {
 	zone, err := client.UpdateZone(t.Context(), domain, patch)
 	require.NoError(t, err)
 
-	expected := &APIResponse[*Zone]{
-		Meta: &Metadata{
-			InvocationID: "95cdcc21-b9c3-4b21-8bd1-b05c34c56147",
-		},
-		Data: &Zone{
-			Type: "zone",
-			ID:   "dipcon.com",
-			Attributes: Attributes{
-				OrganisationID:          "10154",
-				OrganisationDescription: "My Company AB",
-				DNSTypeDescription:      "Anycast",
-				Slave:                   false,
-				Pending:                 false,
-				Deleted:                 false,
-				Settings: &Settings{
-					MName:   "dns01.dipcon.com.",
-					Refresh: 3600,
-					Expire:  604800,
-					TTL:     600,
-				},
-				Records: map[string]map[string][]Record{
-					"@": {
-						"NS": {
-							{
-								TTL:      3600,
-								Data:     "193.14.90.194",
-								Comments: "this is a comment",
-							},
+	expected := &Zone{
+		Type: "zone",
+		ID:   "dipcon.com",
+		Attributes: Attributes{
+			OrganisationID:          "10154",
+			OrganisationDescription: "My Company AB",
+			DNSTypeDescription:      "Anycast",
+			Slave:                   false,
+			Pending:                 false,
+			Deleted:                 false,
+			Settings: &Settings{
+				MName:   "dns01.dipcon.com.",
+				Refresh: 3600,
+				Expire:  604800,
+				TTL:     600,
+			},
+			Records: map[string]map[string][]Record{
+				"@": {
+					"NS": {
+						{
+							TTL:      3600,
+							Data:     "193.14.90.194",
+							Comments: "this is a comment",
 						},
 					},
 				},
-				Redirects: map[string][]Redirect{
-					"<name>": {
-						{
-							Path:        "/x/y",
-							Destination: "https://abion.com/?ref=dipcon",
-							Status:      301,
-							Slugs:       true,
-							Certificate: true,
-						},
+			},
+			Redirects: map[string][]Redirect{
+				"<name>": {
+					{
+						Path:        "/x/y",
+						Destination: "https://abion.com/?ref=dipcon",
+						Status:      301,
+						Slugs:       true,
+						Certificate: true,
 					},
 				},
 			},
@@ -195,56 +190,51 @@ func TestGetZone(t *testing.T) {
 		).
 		Build(t)
 
-	zones, err := client.GetZone(t.Context(), "example.com")
+	zone, err := client.GetZone(t.Context(), "example.com")
 	require.NoError(t, err)
 
-	expected := &APIResponse[*Zone]{
-		Meta: &Metadata{
-			InvocationID: "95cdcc21-b9c3-4b21-8bd1-b05c34c56147",
-		},
-		Data: &Zone{
-			Type: "zone",
-			ID:   "dipcon.com",
-			Attributes: Attributes{
-				OrganisationID:          "10154",
-				OrganisationDescription: "My Company AB",
-				DNSTypeDescription:      "Anycast",
-				Slave:                   false,
-				Pending:                 false,
-				Deleted:                 false,
-				Settings: &Settings{
-					MName:   "dns01.dipcon.com.",
-					Refresh: 3600,
-					Expire:  604800,
-					TTL:     600,
-				},
-				Records: map[string]map[string][]Record{
-					"@": {
-						"NS": {
-							{
-								TTL:      3600,
-								Data:     "193.14.90.194",
-								Comments: "this is a comment",
-							},
+	expected := &Zone{
+		Type: "zone",
+		ID:   "dipcon.com",
+		Attributes: Attributes{
+			OrganisationID:          "10154",
+			OrganisationDescription: "My Company AB",
+			DNSTypeDescription:      "Anycast",
+			Slave:                   false,
+			Pending:                 false,
+			Deleted:                 false,
+			Settings: &Settings{
+				MName:   "dns01.dipcon.com.",
+				Refresh: 3600,
+				Expire:  604800,
+				TTL:     600,
+			},
+			Records: map[string]map[string][]Record{
+				"@": {
+					"NS": {
+						{
+							TTL:      3600,
+							Data:     "193.14.90.194",
+							Comments: "this is a comment",
 						},
 					},
 				},
-				Redirects: map[string][]Redirect{
-					"<name>": {
-						{
-							Path:        "/x/y",
-							Destination: "https://abion.com/?ref=dipcon",
-							Status:      301,
-							Slugs:       true,
-							Certificate: true,
-						},
+			},
+			Redirects: map[string][]Redirect{
+				"<name>": {
+					{
+						Path:        "/x/y",
+						Destination: "https://abion.com/?ref=dipcon",
+						Status:      301,
+						Slugs:       true,
+						Certificate: true,
 					},
 				},
 			},
 		},
 	}
 
-	assert.Equal(t, expected, zones)
+	assert.Equal(t, expected, zone)
 }
 
 func TestGetZone_error(t *testing.T) {

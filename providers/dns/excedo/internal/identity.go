@@ -26,9 +26,9 @@ func (c *Client) Login(ctx context.Context) (string, error) {
 
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 
-	result := new(LoginResponse)
+	var result LoginResponse
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return "", err
 	}

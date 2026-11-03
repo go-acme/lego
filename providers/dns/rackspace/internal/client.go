@@ -102,14 +102,14 @@ func (c *Client) listDomainsByName(ctx context.Context, domain string) (*ZoneSea
 		return nil, err
 	}
 
-	var zoneSearchResponse ZoneSearchResponse
+	zoneSearchResponse := new(ZoneSearchResponse)
 
-	err = c.do(req, &zoneSearchResponse)
+	err = c.do(req, zoneSearchResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	return &zoneSearchResponse, nil
+	return zoneSearchResponse, nil
 }
 
 // FindTxtRecord searches a DNS zone for a TXT record with a specific name.

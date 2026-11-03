@@ -111,7 +111,7 @@ func (c *Client) GetDNSZones(ctx context.Context, name string) ([]Zone, error) {
 		return nil, err
 	}
 
-	result := Zones{}
+	var result Zones
 
 	err = c.do(req, &result)
 	if err != nil {

@@ -64,9 +64,9 @@ func (c *Client) ListZones(ctx context.Context, name string, limit int, cursor s
 		return nil, err
 	}
 
-	result := new(APIResponse[[]Zone])
+	var result APIResponse[[]Zone]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}

@@ -91,9 +91,9 @@ func (c *Client) GetRecords(ctx context.Context, domain *Domain, recordName, rec
 		return nil, err
 	}
 
-	records := &recordsResponse{}
+	var records recordsResponse
 
-	err = c.do(req, records)
+	err = c.do(req, &records)
 	if err != nil {
 		return nil, err
 	}

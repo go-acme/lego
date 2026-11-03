@@ -128,9 +128,9 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID string) erro
 		return err
 	}
 
-	response := &APIResponse[any]{}
+	var response APIResponse[any]
 
-	err = c.do(req, response)
+	err = c.do(req, &response)
 	if err != nil {
 		return err
 	}
@@ -151,9 +151,9 @@ func (c *Client) GetZones(ctx context.Context) ([]Zone, error) {
 		return nil, err
 	}
 
-	response := &APIResponse[[]Zone]{}
+	var response APIResponse[[]Zone]
 
-	err = c.do(req, response)
+	err = c.do(req, &response)
 	if err != nil {
 		return nil, err
 	}

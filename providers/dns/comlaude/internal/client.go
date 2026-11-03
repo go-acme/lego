@@ -72,9 +72,9 @@ func (c *Client) CreateRecord(ctx context.Context, groupID, zoneID string, recor
 		return "", err
 	}
 
-	result := new(RecordResponse)
+	var result RecordResponse
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return "", err
 	}

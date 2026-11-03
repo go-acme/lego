@@ -56,9 +56,9 @@ func (c *Client) GetRecords(ctx context.Context, zoneName string) ([]Record, err
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	result := &apiResponse[[]Record, json.RawMessage]{}
+	result := apiResponse[[]Record, json.RawMessage]{}
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -78,9 +78,9 @@ func (c *Client) AddRecord(ctx context.Context, zoneName string, record Record) 
 		return 0, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	result := &apiResponse[json.RawMessage, recordHeader]{}
+	result := apiResponse[json.RawMessage, recordHeader]{}
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return 0, err
 	}

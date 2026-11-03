@@ -57,9 +57,9 @@ func (c *Client) ListDomains(ctx context.Context, domain string) (map[string]Dom
 		return nil, err
 	}
 
-	result := &DomainsResponse{}
+	var result DomainsResponse
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -81,9 +81,9 @@ func (c *Client) ListDNSRecords(ctx context.Context, orderID, recordType string)
 		return nil, err
 	}
 
-	result := &ListRecordsResponse{}
+	var result ListRecordsResponse
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -108,9 +108,9 @@ func (c *Client) AddDNSRecord(ctx context.Context, orderID string, record Record
 		return nil, err
 	}
 
-	result := &AddRecordResponse{}
+	var result AddRecordResponse
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -132,9 +132,9 @@ func (c *Client) DeleteDNSRecord(ctx context.Context, orderID string, recordID i
 		return nil, err
 	}
 
-	result := &DeleteRecordResponse{}
+	var result DeleteRecordResponse
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}

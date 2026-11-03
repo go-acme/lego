@@ -64,9 +64,9 @@ func (c *Client) AddRecord(ctx context.Context, record Record) (int, error) {
 		return 0, err
 	}
 
-	results := &APIResponse[RecordID]{}
+	var results APIResponse[RecordID]
 
-	err = c.do(req, results)
+	err = c.do(req, &results)
 	if err != nil {
 		return 0, err
 	}
@@ -90,9 +90,9 @@ func (c *Client) DeleteRecord(ctx context.Context, domain string, recordID int) 
 		return err
 	}
 
-	results := &APIResponse[any]{}
+	var results APIResponse[any]
 
-	err = c.do(req, results)
+	err = c.do(req, &results)
 	if err != nil {
 		return err
 	}

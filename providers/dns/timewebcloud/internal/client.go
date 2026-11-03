@@ -48,9 +48,9 @@ func (c *Client) CreateRecord(ctx context.Context, fqdn string, payload DNSRecor
 		return nil, err
 	}
 
-	respData := &CreateRecordResponse{}
+	var respData CreateRecordResponse
 
-	err = c.do(req, respData)
+	err = c.do(req, &respData)
 	if err != nil {
 		return nil, err
 	}

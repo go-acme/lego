@@ -18,7 +18,7 @@ type APIError struct {
 	DelDomainMessage string `json:"del_domain"`
 }
 
-func (a APIError) Error() string {
+func (a *APIError) Error() string {
 	msg := a.Info
 	switch {
 	case a.AddRecordMessage != "":

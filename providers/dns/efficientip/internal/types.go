@@ -90,7 +90,7 @@ type APIError struct {
 	ParamValue  string `json:"param_value,omitempty"`
 }
 
-func (a APIError) Error() string {
+func (a *APIError) Error() string {
 	msg := fmt.Sprintf("%s: %s %s %s", a.Category, a.Severity, a.ErrorCode, a.ErrMsg)
 
 	if a.Parameters != "" {

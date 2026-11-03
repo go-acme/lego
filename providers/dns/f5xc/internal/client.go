@@ -196,14 +196,14 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	apiErr := APIError{StatusCode: resp.StatusCode}
+	errAPI := &APIError{StatusCode: resp.StatusCode}
 
-	err := json.Unmarshal(raw, &apiErr)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return &apiErr
+	return errAPI
 }
 
 func createBaseURL(tenant, server string) (*url.URL, error) {

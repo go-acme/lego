@@ -59,7 +59,8 @@ func (c *Client) GetZones(ctx context.Context, page *Pagination) (*APIResponse[[
 
 	results := &APIResponse[[]Zone]{}
 
-	if err := c.do(req, results); err != nil {
+	err = c.do(req, results)
+	if err != nil {
 		return nil, fmt.Errorf("could not get zones: %w", err)
 	}
 
@@ -77,8 +78,9 @@ func (c *Client) GetZone(ctx context.Context, name string) (*Zone, error) {
 
 	results := APIResponse[*Zone]{}
 
-	if err := c.do(req, &results); err != nil {
-		return nil, fmt.Errorf("could not get zone %s: %w", name, err)
+	err = c.do(req, &results)
+	if err != nil {
+		return nil, err
 	}
 
 	return results.Data, nil
@@ -95,8 +97,9 @@ func (c *Client) UpdateZone(ctx context.Context, name string, patch ZoneRequest)
 
 	results := APIResponse[*Zone]{}
 
-	if err := c.do(req, &results); err != nil {
-		return nil, fmt.Errorf("could not update zone %s: %w", name, err)
+	err = c.do(req, &results)
+	if err != nil {
+		return nil, err
 	}
 
 	return results.Data, nil
@@ -162,12 +165,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	zResp := &APIResponse[any]{}
+	var response APIResponse[any]
 
-	err := json.Unmarshal(raw, zResp)
+	err := json.Unmarshal(raw, &response)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return zResp.Error
+	return response.Error
 }

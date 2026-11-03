@@ -170,12 +170,12 @@ func makeJSONRequest(ctx context.Context, method string, endpoint *url.URL, payl
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	errClient := &ClientError{StatusCode: resp.StatusCode}
+	errAPI := &ClientError{StatusCode: resp.StatusCode}
 
-	err := json.Unmarshal(raw, &errClient.errors)
+	err := json.Unmarshal(raw, &errAPI.errors)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return errClient
+	return errAPI
 }

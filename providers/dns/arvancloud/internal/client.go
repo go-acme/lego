@@ -89,14 +89,14 @@ func (c *Client) CreateRecord(ctx context.Context, domain string, record DNSReco
 		return nil, err
 	}
 
-	response := apiResponse[*DNSRecord]{}
+	var result apiResponse[*DNSRecord]
 
-	err = c.do(req, http.StatusCreated, &response)
+	err = c.do(req, http.StatusCreated, &result)
 	if err != nil {
 		return nil, fmt.Errorf("could not create record; Domain: %s: %w", domain, err)
 	}
 
-	return response.Data, nil
+	return result.Data, nil
 }
 
 // DeleteRecord deletes a DNS record.

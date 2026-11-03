@@ -25,6 +25,6 @@ type APIError struct {
 	Field       string `json:"field"`
 }
 
-func (a APIError) Error() string {
+func (a *APIError) Error() string {
 	return fmt.Sprintf("API error: %d - %s - %s", a.Code, a.Description, a.Field)
 }

@@ -181,9 +181,9 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	errAPI := APIError{StatusCode: resp.StatusCode}
+	errAPI := &APIError{StatusCode: resp.StatusCode}
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		errAPI.Message = string(raw)
 	}

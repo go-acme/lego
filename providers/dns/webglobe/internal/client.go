@@ -146,12 +146,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var envelope APIResponse[any]
+	var response APIResponse[any]
 
-	err := json.Unmarshal(raw, &envelope)
+	err := json.Unmarshal(raw, &response)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return envelope.Error
+	return response.Error
 }

@@ -36,7 +36,7 @@ type APIError struct {
 	Message string
 }
 
-func (a APIError) Error() string {
+func (a *APIError) Error() string {
 	return fmt.Sprintf("code: %d, message: %s", a.Code, a.Message)
 }
 

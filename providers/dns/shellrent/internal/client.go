@@ -220,14 +220,14 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var response Base
+	errAPI := new(Base)
 
-	err := json.Unmarshal(raw, &response)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return response
+	return errAPI
 }
 
 // TTLRounder rounds the given TTL in seconds to the next accepted value.

@@ -174,14 +174,14 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("%d: %w", resp.StatusCode, &errAPI)
+	return fmt.Errorf("%d: %w", resp.StatusCode, errAPI)
 }
 
 const DefaultTTL = 600

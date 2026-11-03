@@ -60,7 +60,7 @@ type APIError struct {
 	ValidationErrors []ValidationError `json:"validationErrors,omitempty"`
 }
 
-func (a APIError) Error() string {
+func (a *APIError) Error() string {
 	msg := new(strings.Builder)
 
 	_, _ = fmt.Fprintf(msg, "%s: %s", a.Type, a.Message)

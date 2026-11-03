@@ -196,14 +196,14 @@ func (c *Client) convertURLValues(values url.Values) (url.Values, error) {
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	result := &APIResponse[any]{}
+	errAPI := &APIResponse[any]{}
 
-	err := gbkDecoder(raw).Decode(result)
+	err := gbkDecoder(raw).Decode(errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return result
+	return errAPI
 }
 
 func gbkDecoder(raw []byte) *json.Decoder {

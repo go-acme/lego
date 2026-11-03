@@ -23,8 +23,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 	)
 }
 
-func newAPIError(reason string, a ...any) APIError {
-	return APIError{
+func newAPIError(reason string, a ...any) *APIError {
+	return &APIError{
 		Message: "Cannot View Dns Record",
 		Result:  fmt.Sprintf(reason, a...),
 	}

@@ -38,7 +38,7 @@ type apiError struct {
 	ShortMsg string `json:"error"`
 }
 
-func (a apiError) Error() string {
+func (a *apiError) Error() string {
 	return a.ShortMsg
 }
 

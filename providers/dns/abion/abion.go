@@ -116,7 +116,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 
 	zone, err := d.client.GetZone(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
-		return fmt.Errorf("abion: get zone %w", err)
+		return fmt.Errorf("abion: get zone: %w", err)
 	}
 
 	var data []internal.Record
@@ -147,7 +147,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 
 	_, err = d.client.UpdateZone(ctx, dns01.UnFqdn(authZone), patch)
 	if err != nil {
-		return fmt.Errorf("abion: update zone %w", err)
+		return fmt.Errorf("abion: update zone: %w", err)
 	}
 
 	return nil
@@ -169,7 +169,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 
 	zone, err := d.client.GetZone(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
-		return fmt.Errorf("abion: get zone %w", err)
+		return fmt.Errorf("abion: get zone: %w", err)
 	}
 
 	var data []internal.Record
@@ -205,7 +205,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 
 	_, err = d.client.UpdateZone(ctx, dns01.UnFqdn(authZone), patch)
 	if err != nil {
-		return fmt.Errorf("abion: update zone %w", err)
+		return fmt.Errorf("abion: update zone: %w", err)
 	}
 
 	return nil

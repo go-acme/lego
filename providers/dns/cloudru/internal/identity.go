@@ -88,14 +88,14 @@ func parseError(req *http.Request, resp *http.Response) error {
 
 	raw, _ := io.ReadAll(resp.Body)
 
-	errResp := &authResponseError{}
+	errAPI := &authResponseError{}
 
-	err := json.Unmarshal(raw, errResp)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("%d: %w", resp.StatusCode, errResp)
+	return fmt.Errorf("%d: %w", resp.StatusCode, errAPI)
 }
 
 func getToken(ctx context.Context) *Token {

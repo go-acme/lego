@@ -130,7 +130,7 @@ func TestUpdateZone_error(t *testing.T) {
 	}
 
 	_, err := client.UpdateZone(t.Context(), domain, patch)
-	require.EqualError(t, err, "could not update zone example.com: api error: status=401, message=Authentication Error")
+	require.EqualError(t, err, "api error: status=401, message=Authentication Error")
 }
 
 func TestGetZones(t *testing.T) {
@@ -246,5 +246,5 @@ func TestGetZone_error(t *testing.T) {
 		Build(t)
 
 	_, err := client.GetZone(t.Context(), "example.com")
-	require.EqualError(t, err, "could not get zone example.com: api error: status=401, message=Authentication Error")
+	require.EqualError(t, err, "api error: status=401, message=Authentication Error")
 }

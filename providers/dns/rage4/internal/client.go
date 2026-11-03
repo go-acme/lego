@@ -115,10 +115,10 @@ func (c *Client) do(req *http.Request, result any) error {
 	if resp.StatusCode/100 != 2 {
 		switch resp.StatusCode / 100 {
 		case 4:
-			return parseErrorNEW[*APIError](req, resp)
+			return parseError[*APIError](req, resp)
 
 		case 5:
-			return parseErrorNEW[*ServerErrorResponse](req, resp)
+			return parseError[*ServerErrorResponse](req, resp)
 
 		default:
 			raw, _ := io.ReadAll(resp.Body)
@@ -168,7 +168,7 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 	return req, nil
 }
 
-func parseErrorNEW[T error](req *http.Request, resp *http.Response) error {
+func parseError[T error](req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var errAPI T

@@ -173,12 +173,12 @@ func newXMLRequest(ctx context.Context, method string, endpoint *url.URL, payloa
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	errResp := &ErrorResponse{}
+	response := &ErrorResponse{}
 
-	err := xml.Unmarshal(raw, errResp)
+	err := xml.Unmarshal(raw, response)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return errResp.Error
+	return response.Error
 }

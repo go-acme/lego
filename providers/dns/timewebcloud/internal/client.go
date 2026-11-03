@@ -127,14 +127,14 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var response ErrorResponse
+	errAPI := new(ErrorResponse)
 
-	err := json.Unmarshal(raw, &response)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return response
+	return errAPI
 }
 
 func OAuthStaticAccessToken(client *http.Client, accessToken string) *http.Client {

@@ -13,7 +13,7 @@ type APIError struct {
 	Field  []map[string]string `json:"field"`
 }
 
-func (a APIError) Error() string {
+func (a *APIError) Error() string {
 	msg := new(strings.Builder)
 
 	_, _ = fmt.Fprintf(msg, "%d: %s %s (%s %d %s)", a.Status.Code, a.Status.Title, a.Status.Message, a.Status.ID, a.Status.Time, a.Status.Path)

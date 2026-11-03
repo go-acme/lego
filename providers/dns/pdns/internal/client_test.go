@@ -178,7 +178,7 @@ func TestClient_GetHostedZone_error(t *testing.T) {
 	client.apiVersion = 1
 
 	_, err := client.GetHostedZone(t.Context(), "example.org.")
-	require.ErrorAs(t, err, &apiError{})
+	require.EqualError(t, err, "error talking to PDNS API: A human readable error message")
 }
 
 func TestClient_GetHostedZone_v0(t *testing.T) {

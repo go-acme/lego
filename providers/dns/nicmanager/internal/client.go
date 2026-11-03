@@ -100,12 +100,7 @@ func (c *Client) AddRecord(ctx context.Context, zone string, payload RecordCreat
 		return err
 	}
 
-	err = c.do(req, http.StatusAccepted, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, http.StatusAccepted, nil)
 }
 
 func (c *Client) DeleteRecord(ctx context.Context, zone string, record int) error {
@@ -116,12 +111,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zone string, record int) erro
 		return err
 	}
 
-	err = c.do(req, http.StatusAccepted, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, http.StatusAccepted, nil)
 }
 
 func (c *Client) do(req *http.Request, expectedStatusCode int, result any) error {

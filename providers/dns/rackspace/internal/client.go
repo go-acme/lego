@@ -48,12 +48,7 @@ func (c *Client) AddRecord(ctx context.Context, zoneID string, record Record) er
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 // DeleteRecord Deletes a record from the domain.
@@ -70,12 +65,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID string) erro
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 // GetHostedZoneID performs a lookup to get the DNS zone which needs modifying for a given FQDN.

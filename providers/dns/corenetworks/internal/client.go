@@ -110,12 +110,7 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record Record) erro
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 // DeleteRecords deletes all DNS records of a zone that match the DNS record passed.
@@ -132,12 +127,7 @@ func (c *Client) DeleteRecords(ctx context.Context, zone string, record Record) 
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 // CommitRecords sends a commit to the zone.
@@ -150,12 +140,7 @@ func (c *Client) CommitRecords(ctx context.Context, zone string) error {
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 func (c *Client) do(req *http.Request, result any) error {

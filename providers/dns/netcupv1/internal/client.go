@@ -78,12 +78,7 @@ func (c *Client) DeleteChallenge(ctx context.Context, domainID int64, scope, val
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 // GetDomains gets all domains.

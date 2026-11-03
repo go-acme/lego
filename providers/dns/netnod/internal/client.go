@@ -78,12 +78,7 @@ func (c *Client) PartialZoneUpdate(ctx context.Context, zoneID string, rrsets []
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 func (c *Client) do(req *http.Request, result any) error {

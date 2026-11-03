@@ -91,9 +91,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domain, recordID string) erro
 		return err
 	}
 
-	err = c.do(req, nil)
-
-	return err
+	return c.do(req, nil)
 }
 
 func (c *Client) do(req *http.Request, result any) error {

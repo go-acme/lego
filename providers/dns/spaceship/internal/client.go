@@ -81,12 +81,7 @@ func (c *Client) AddRecord(ctx context.Context, domain string, record Record) er
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 func (c *Client) DeleteRecord(ctx context.Context, domain string, record Record) error {
@@ -97,12 +92,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domain string, record Record)
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error) {

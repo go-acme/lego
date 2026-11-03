@@ -96,14 +96,14 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID string, record Record)
 		return nil, err
 	}
 
-	var result Record
+	result := new(Record)
 
-	err = c.do(req, &result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 func (c *Client) DeleteRecord(ctx context.Context, zoneID, name, recordType string) error {

@@ -71,9 +71,9 @@ func (c *Client) ListRecords(ctx context.Context, zone string) ([]Record, error)
 		return nil, err
 	}
 
-	result := new(RecordList)
+	var result RecordList
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}

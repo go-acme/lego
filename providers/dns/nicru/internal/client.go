@@ -57,16 +57,16 @@ func (c *Client) GetServices(ctx context.Context) ([]Service, error) {
 		return nil, err
 	}
 
-	apiResponse, err := c.do(req)
+	result, err := c.do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	if apiResponse.Data == nil {
+	if result.Data == nil {
 		return nil, nil
 	}
 
-	return apiResponse.Data.Service, nil
+	return result.Data.Service, nil
 }
 
 func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
@@ -77,16 +77,16 @@ func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
 		return nil, err
 	}
 
-	apiResponse, err := c.do(req)
+	result, err := c.do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	if apiResponse.Data == nil {
+	if result.Data == nil {
 		return nil, nil
 	}
 
-	return apiResponse.Data.Zone, nil
+	return result.Data.Zone, nil
 }
 
 func (c *Client) GetZonesByService(ctx context.Context, serviceName string) ([]Zone, error) {
@@ -97,16 +97,16 @@ func (c *Client) GetZonesByService(ctx context.Context, serviceName string) ([]Z
 		return nil, err
 	}
 
-	apiResponse, err := c.do(req)
+	result, err := c.do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	if apiResponse.Data == nil {
+	if result.Data == nil {
 		return nil, nil
 	}
 
-	return apiResponse.Data.Zone, nil
+	return result.Data.Zone, nil
 }
 
 func (c *Client) GetRecords(ctx context.Context, serviceName, zoneName string) ([]RR, error) {
@@ -117,17 +117,17 @@ func (c *Client) GetRecords(ctx context.Context, serviceName, zoneName string) (
 		return nil, err
 	}
 
-	apiResponse, err := c.do(req)
+	result, err := c.do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	if apiResponse.Data == nil {
+	if result.Data == nil {
 		return nil, nil
 	}
 
 	var records []RR
-	for _, zone := range apiResponse.Data.Zone {
+	for _, zone := range result.Data.Zone {
 		records = append(records, zone.RR...)
 	}
 
@@ -176,16 +176,16 @@ func (c *Client) AddRecords(ctx context.Context, serviceName, zoneName string, r
 		return nil, err
 	}
 
-	apiResponse, err := c.do(req)
+	result, err := c.do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	if apiResponse.Data == nil {
+	if result.Data == nil {
 		return nil, nil
 	}
 
-	return apiResponse.Data.Zone, nil
+	return result.Data.Zone, nil
 }
 
 func (c *Client) do(req *http.Request) (*Response, error) {
@@ -196,7 +196,7 @@ func (c *Client) do(req *http.Request) (*Response, error) {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	apiResponse := &Response{}
+	result := &Response{}
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -205,16 +205,16 @@ func (c *Client) do(req *http.Request) (*Response, error) {
 
 	decoder := xml.NewTokenDecoder(Trimmer{decoder: xml.NewDecoder(bytes.NewReader(raw))})
 
-	err = decoder.Decode(apiResponse)
+	err = decoder.Decode(result)
 	if err != nil {
 		return nil, fmt.Errorf("[status code=%d] decode XML response: %s", resp.StatusCode, string(raw))
 	}
 
-	if apiResponse.Status != successStatus {
-		return nil, fmt.Errorf("[status code=%d] %s: %w", resp.StatusCode, apiResponse.Status, apiResponse.Errors.Error)
+	if result.Status != successStatus {
+		return nil, fmt.Errorf("[status code=%d] %s: %w", resp.StatusCode, result.Status, result.Errors.Error)
 	}
 
-	return apiResponse, nil
+	return result, nil
 }
 
 func newXMLRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {

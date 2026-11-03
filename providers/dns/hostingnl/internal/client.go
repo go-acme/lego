@@ -65,12 +65,7 @@ func (c Client) DeleteRecord(ctx context.Context, domain, recordID string) error
 
 	var result APIResponse[Record]
 
-	err = c.do(req, &result)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, &result)
 }
 
 func (c Client) do(req *http.Request, result any) error {

@@ -60,14 +60,14 @@ func (c *Client) ListDomains(ctx context.Context) ([]Domain, error) {
 		return nil, err
 	}
 
-	var result []Domain
+	var domains []Domain
 
-	err = c.do(req, &result)
+	err = c.do(req, &domains)
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return domains, nil
 }
 
 func (c *Client) ListDomainRecords(ctx context.Context, domainID int) (*DomainRecords, error) {
@@ -78,14 +78,14 @@ func (c *Client) ListDomainRecords(ctx context.Context, domainID int) (*DomainRe
 		return nil, err
 	}
 
-	result := new(DomainRecords)
+	records := new(DomainRecords)
 
-	err = c.do(req, result)
+	err = c.do(req, records)
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return records, nil
 }
 
 func (c *Client) UpdateDomainRecords(ctx context.Context, domainID int, records DomainRecords) (*DomainID, error) {

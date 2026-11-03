@@ -53,13 +53,13 @@ func (c *Client) AddTXTRecord(ctx context.Context, domain, name, value string, t
 		return 0, err
 	}
 
-	response, err := c.do(req)
+	result, err := c.do(req)
 	if err != nil {
 		return 0, err
 	}
 
-	if response != nil && response.Response.Status.Code == http.StatusOK {
-		return response.Response.Record.RecordID, nil
+	if result != nil && result.Response.Status.Code == http.StatusOK {
+		return result.Response.Record.RecordID, nil
 	}
 
 	return 0, err
@@ -101,14 +101,14 @@ func (c *Client) do(req *http.Request) (*apiResponse, error) {
 		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	var response apiResponse
+	response := new(apiResponse)
 
-	err = json.Unmarshal(raw, &response)
+	err = json.Unmarshal(raw, response)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
-	return &response, nil
+	return response, nil
 }
 
 func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {

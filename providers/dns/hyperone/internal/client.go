@@ -120,14 +120,14 @@ func (c *Client) CreateRecordset(ctx context.Context, zoneID, recordType, name, 
 		return nil, err
 	}
 
-	recordsetResponse := new(Recordset)
+	result := new(Recordset)
 
-	err = c.do(req, recordsetResponse)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create recordset: %w", err)
 	}
 
-	return recordsetResponse, nil
+	return result, nil
 }
 
 // DeleteRecordset deletes a recordset.
@@ -176,14 +176,14 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID, recordsetID, recordCo
 		return nil, err
 	}
 
-	recordResponse := new(Record)
+	result := new(Record)
 
-	err = c.do(req, recordResponse)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to set record: %w", err)
 	}
 
-	return recordResponse, nil
+	return result, nil
 }
 
 // DeleteRecord deletes a record.

@@ -76,7 +76,7 @@ func (c *Client) GetZone(ctx context.Context, name string) (*Zone, error) {
 		return nil, err
 	}
 
-	results := APIResponse[*Zone]{}
+	var results APIResponse[*Zone]
 
 	err = c.do(req, &results)
 	if err != nil {
@@ -95,7 +95,7 @@ func (c *Client) UpdateZone(ctx context.Context, name string, patch ZoneRequest)
 		return nil, err
 	}
 
-	results := APIResponse[*Zone]{}
+	var results APIResponse[*Zone]
 
 	err = c.do(req, &results)
 	if err != nil {

@@ -56,7 +56,7 @@ func (c *Client) GetZone(ctx context.Context, domain string) (*Zone, error) {
 		return nil, err
 	}
 
-	result := &Zone{}
+	result := new(Zone)
 
 	err = c.do(req, result)
 	if err != nil {
@@ -105,7 +105,7 @@ func (c *Client) ValidateZone(ctx context.Context, domain string, zone *Zone) (*
 		return nil, err
 	}
 
-	result := &Zone{}
+	result := new(Zone)
 
 	err = c.do(req, result)
 	if err != nil {

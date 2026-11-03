@@ -126,9 +126,9 @@ func (c *Client) do(req *http.Request) (*APIResponse, error) {
 		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	var response APIResponse
+	response := new(APIResponse)
 
-	err = json.Unmarshal(raw, &response)
+	err = json.Unmarshal(raw, response)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
@@ -146,7 +146,7 @@ func (c *Client) do(req *http.Request) (*APIResponse, error) {
 		return nil, fmt.Errorf("%s: %w", response.Messages, errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw))
 	}
 
-	return &response, nil
+	return response, nil
 }
 
 func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {

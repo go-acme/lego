@@ -83,14 +83,14 @@ func (c *Client) ListRecords(ctx context.Context, domainID int) ([]Record, error
 		return nil, err
 	}
 
-	var recordData APIResponse[Record]
+	var result APIResponse[Record]
 
-	err = c.do(req, &recordData)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return recordData.Data.Records, nil
+	return result.Data.Records, nil
 }
 
 func (c *Client) ListDomains(ctx context.Context) ([]Domain, error) {
@@ -105,14 +105,14 @@ func (c *Client) ListDomains(ctx context.Context) ([]Domain, error) {
 		return nil, err
 	}
 
-	var domainData APIResponse[Domain]
+	var result APIResponse[Domain]
 
-	err = c.do(req, &domainData)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return domainData.Data.Records, nil
+	return result.Data.Records, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

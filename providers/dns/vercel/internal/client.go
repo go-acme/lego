@@ -50,14 +50,14 @@ func (c *Client) CreateRecord(ctx context.Context, zone string, record Record) (
 		return nil, err
 	}
 
-	respData := &CreateRecordResponse{}
+	result := new(CreateRecordResponse)
 
-	err = c.do(req, respData)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return respData, nil
+	return result, nil
 }
 
 // DeleteRecord deletes a DNS record.

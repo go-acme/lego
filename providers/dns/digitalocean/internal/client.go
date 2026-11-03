@@ -44,14 +44,14 @@ func (c *Client) AddTxtRecord(ctx context.Context, zone string, record Record) (
 		return nil, err
 	}
 
-	respData := &TxtRecordResponse{}
+	result := new(TxtRecordResponse)
 
-	err = c.do(req, respData)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return respData, nil
+	return result, nil
 }
 
 func (c *Client) RemoveTxtRecord(ctx context.Context, zone string, recordID int) error {

@@ -71,12 +71,7 @@ func (c *Client) RemoveTXTRecord(ctx context.Context, payload APIRequest) error 
 
 	var result APIResponse[*DeleteResponse]
 
-	err = c.do(req, &result)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, &result)
 }
 
 func (c *Client) do(req *http.Request, result any) error {

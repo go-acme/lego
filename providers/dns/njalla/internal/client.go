@@ -70,12 +70,7 @@ func (c *Client) RemoveRecord(ctx context.Context, id, domain string) error {
 		return err
 	}
 
-	err = c.do(req, &APIResponse[json.RawMessage]{})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, &APIResponse[json.RawMessage]{})
 }
 
 // ListRecords list the records for one domain.

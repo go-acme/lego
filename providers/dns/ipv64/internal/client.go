@@ -46,7 +46,7 @@ func (c *Client) GetDomains(ctx context.Context) (*Domains, error) {
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
-	results := &Domains{}
+	results := new(Domains)
 
 	err = c.do(req, results)
 	if err != nil {

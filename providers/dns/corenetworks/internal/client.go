@@ -68,7 +68,7 @@ func (c *Client) GetZoneDetails(ctx context.Context, zone string) (*ZoneDetails,
 
 	details := new(ZoneDetails)
 
-	err = c.do(req, &details)
+	err = c.do(req, details)
 	if err != nil {
 		return nil, err
 	}

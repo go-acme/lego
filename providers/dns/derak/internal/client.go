@@ -52,14 +52,14 @@ func (c *Client) GetRecords(ctx context.Context, zoneID string, params *GetRecor
 		return nil, err
 	}
 
-	response := &GetRecordsResponse{}
+	result := new(GetRecordsResponse)
 
-	err = c.do(req, response)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return response, nil
+	return result, nil
 }
 
 // GetRecord gets a record by ID.
@@ -71,14 +71,14 @@ func (c *Client) GetRecord(ctx context.Context, zoneID, recordID string) (*Recor
 		return nil, err
 	}
 
-	response := &Record{}
+	result := new(Record)
 
-	err = c.do(req, response)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return response, nil
+	return result, nil
 }
 
 // CreateRecord creates a new record.
@@ -90,14 +90,14 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID string, record Record)
 		return nil, err
 	}
 
-	response := &Record{}
+	result := new(Record)
 
-	err = c.do(req, response)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return response, nil
+	return result, nil
 }
 
 // EditRecord edits an existing record.
@@ -109,14 +109,14 @@ func (c *Client) EditRecord(ctx context.Context, zoneID, recordID string, record
 		return nil, err
 	}
 
-	response := &Record{}
+	result := new(Record)
 
-	err = c.do(req, response)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return response, nil
+	return result, nil
 }
 
 // DeleteRecord deletes an existing record.
@@ -128,15 +128,15 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID string) erro
 		return err
 	}
 
-	var response APIResponse[any]
+	var result APIResponse[any]
 
-	err = c.do(req, &response)
+	err = c.do(req, &result)
 	if err != nil {
 		return err
 	}
 
-	if !response.Success {
-		return fmt.Errorf("API error: %d %s", response.Error, codeText(response.Error))
+	if !result.Success {
+		return fmt.Errorf("API error: %d %s", result.Error, codeText(result.Error))
 	}
 
 	return nil
@@ -151,18 +151,18 @@ func (c *Client) GetZones(ctx context.Context) ([]Zone, error) {
 		return nil, err
 	}
 
-	var response APIResponse[[]Zone]
+	var result APIResponse[[]Zone]
 
-	err = c.do(req, &response)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	if !response.Success {
-		return nil, fmt.Errorf("API error: %d %s", response.Error, codeText(response.Error))
+	if !result.Success {
+		return nil, fmt.Errorf("API error: %d %s", result.Error, codeText(result.Error))
 	}
 
-	return response.Result, nil
+	return result.Result, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

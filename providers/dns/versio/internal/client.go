@@ -47,14 +47,14 @@ func (c *Client) UpdateDomain(ctx context.Context, domain string, msg *DomainInf
 		return nil, err
 	}
 
-	respData := &DomainInfoResponse{}
+	result := new(DomainInfoResponse)
 
-	err = c.do(req, respData)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return respData, nil
+	return result, nil
 }
 
 // GetDomain gets domain information.
@@ -71,14 +71,14 @@ func (c *Client) GetDomain(ctx context.Context, domain string) (*DomainInfoRespo
 		return nil, err
 	}
 
-	respData := &DomainInfoResponse{}
+	result := new(DomainInfoResponse)
 
-	err = c.do(req, respData)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return respData, nil
+	return result, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

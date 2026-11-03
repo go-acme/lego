@@ -53,7 +53,7 @@ func (c *Client) AddRecord(ctx context.Context, domain string, record Record) (*
 		return nil, err
 	}
 
-	result := &Record{}
+	result := new(Record)
 
 	err = c.do(req, result)
 	if err != nil {

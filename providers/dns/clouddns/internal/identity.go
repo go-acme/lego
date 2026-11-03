@@ -19,14 +19,14 @@ func (c *Client) login(ctx context.Context) (*AuthResponse, error) {
 		return nil, err
 	}
 
-	var result AuthResponse
+	result := new(AuthResponse)
 
-	err = c.do(req, &result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 func (c *Client) CreateAuthenticatedContext(ctx context.Context) (context.Context, error) {

@@ -78,14 +78,14 @@ func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
 		return nil, err
 	}
 
-	zones := Zones{}
+	var result Zones
 
-	err = c.do(req, &zones)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return zones.Zones, nil
+	return result.Zones, nil
 }
 
 // GetRecords returns details of the DNS zone.
@@ -98,14 +98,14 @@ func (c *Client) GetRecords(ctx context.Context, serviceID, zoneID string) ([]Re
 		return nil, err
 	}
 
-	records := Records{}
+	var result Records
 
-	err = c.do(req, &records)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return records.Records, nil
+	return result.Records, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

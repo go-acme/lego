@@ -52,9 +52,9 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID, versionID string, rec
 		return nil, err
 	}
 
-	result := &Record{}
+	result := new(Record)
 
-	err = c.do(req, &result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
@@ -72,9 +72,9 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneID, versionID, recordID s
 		return nil, err
 	}
 
-	result := &Record{}
+	result := new(Record)
 
-	err = c.do(req, &result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}

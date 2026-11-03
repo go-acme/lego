@@ -57,7 +57,7 @@ func (c *Client) AddRecord(ctx context.Context, record Record) (*Record, error) 
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 
-	result := &APIResponse[AddRecordResponse]{}
+	result := new(APIResponse[AddRecordResponse])
 
 	err = c.do(req, result)
 	if err != nil {
@@ -81,7 +81,7 @@ func (c *Client) DeleteRecord(ctx context.Context, record Record) error {
 		return fmt.Errorf("create request: %w", err)
 	}
 
-	result := &APIResponse[any]{}
+	result := new(APIResponse[any])
 
 	err = c.do(req, result)
 	if err != nil {

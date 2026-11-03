@@ -59,7 +59,7 @@ func (c *Client) CreateRecord(ctx context.Context, record RecordRequest) (*Recor
 		return nil, err
 	}
 
-	result := &RecordData{}
+	result := new(RecordData)
 
 	err = c.do(req, result)
 	if err != nil {
@@ -100,7 +100,7 @@ func (c *Client) ListDomains(ctx context.Context, request DomainRequest) (*Domai
 		return nil, err
 	}
 
-	result := &DomainData{}
+	result := new(DomainData)
 
 	err = c.do(req, result)
 	if err != nil {

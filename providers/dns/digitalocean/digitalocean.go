@@ -128,13 +128,13 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	record := internal.Record{Type: "TXT", Name: info.EffectiveFQDN, Data: info.Value, TTL: d.config.TTL}
 
-	respData, err := d.client.AddTxtRecord(ctx, authZone, record)
+	result, err := d.client.AddTxtRecord(ctx, authZone, record)
 	if err != nil {
 		return fmt.Errorf("digitalocean: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
-	d.recordIDs[token] = respData.DomainRecord.ID
+	d.recordIDs[token] = result.DomainRecord.ID
 	d.recordIDsMu.Unlock()
 
 	return nil

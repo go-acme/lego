@@ -66,7 +66,7 @@ func (c *Client) GetDNSZone(ctx context.Context, zoneID string) (*DNSZone, error
 		return nil, err
 	}
 
-	result := &DNSZone{}
+	result := new(DNSZone)
 
 	err = c.do(req, result)
 	if err != nil {
@@ -106,7 +106,7 @@ func (c *Client) CreateDNSZone(ctx context.Context, zone CreateDNSZoneRequest) (
 		return nil, err
 	}
 
-	result := &DNSZone{}
+	result := new(DNSZone)
 
 	err = c.do(req, result)
 	if err != nil {

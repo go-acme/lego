@@ -58,7 +58,7 @@ func (c *Client) CreateRRSet(ctx context.Context, dnsZoneName, groupName string,
 		return nil, err
 	}
 
-	result := &APIRRSet{}
+	result := new(APIRRSet)
 
 	err = c.do(req, result)
 	if err != nil {
@@ -78,7 +78,7 @@ func (c *Client) GetRRSet(ctx context.Context, dnsZoneName, groupName, recordNam
 		return nil, err
 	}
 
-	result := &APIRRSet{}
+	result := new(APIRRSet)
 
 	err = c.do(req, result)
 	if err != nil {
@@ -103,7 +103,7 @@ func (c *Client) DeleteRRSet(ctx context.Context, dnsZoneName, groupName, record
 		return nil, err
 	}
 
-	result := &APIRRSet{}
+	result := new(APIRRSet)
 
 	err = c.do(req, result)
 	if err != nil {
@@ -128,7 +128,7 @@ func (c *Client) ReplaceRRSet(ctx context.Context, dnsZoneName, groupName, recor
 		return nil, err
 	}
 
-	result := &APIRRSet{}
+	result := new(APIRRSet)
 
 	err = c.do(req, result)
 	if err != nil {

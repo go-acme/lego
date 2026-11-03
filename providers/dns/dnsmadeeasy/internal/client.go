@@ -67,7 +67,7 @@ func (c *Client) GetDomain(ctx context.Context, authZone string) (*Domain, error
 		return nil, err
 	}
 
-	domain := &Domain{}
+	domain := new(Domain)
 
 	err = c.do(req, domain)
 	if err != nil {
@@ -91,14 +91,14 @@ func (c *Client) GetRecords(ctx context.Context, domain *Domain, recordName, rec
 		return nil, err
 	}
 
-	var records recordsResponse
+	var result recordsResponse
 
-	err = c.do(req, &records)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return records.Records, nil
+	return result.Records, nil
 }
 
 // CreateRecord creates a TXT records.

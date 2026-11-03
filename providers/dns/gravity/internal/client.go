@@ -69,7 +69,7 @@ func (c *Client) Login(ctx context.Context) (*Auth, error) {
 		return nil, err
 	}
 
-	result := &Auth{}
+	result := new(Auth)
 
 	err = c.do(req, result)
 	if err != nil {
@@ -87,7 +87,7 @@ func (c *Client) Me(ctx context.Context) (*UserInfo, error) {
 		return nil, err
 	}
 
-	result := &UserInfo{}
+	result := new(UserInfo)
 
 	err = c.do(req, result)
 	if err != nil {

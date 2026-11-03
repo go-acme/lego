@@ -69,14 +69,14 @@ func (c *Client) getRecords(ctx context.Context, domain, search string) ([]DNSRe
 		return nil, err
 	}
 
-	response := apiResponse[[]DNSRecord]{}
+	var result apiResponse[[]DNSRecord]
 
-	err = c.do(req, http.StatusOK, &response)
+	err = c.do(req, http.StatusOK, &result)
 	if err != nil {
 		return nil, fmt.Errorf("could not get records %s: Domain: %s: %w", search, domain, err)
 	}
 
-	return response.Data, nil
+	return result.Data, nil
 }
 
 // CreateRecord creates a DNS record.
@@ -93,7 +93,7 @@ func (c *Client) CreateRecord(ctx context.Context, domain string, record DNSReco
 
 	err = c.do(req, http.StatusCreated, &result)
 	if err != nil {
-		return nil, fmt.Errorf("could not create record; Domain: %s: %w", domain, err)
+		return nil, err
 	}
 
 	return result.Data, nil
@@ -109,12 +109,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domain, id string) error {
 		return err
 	}
 
-	err = c.do(req, http.StatusOK, nil)
-	if err != nil {
-		return fmt.Errorf("could not delete record %s; Domain: %s: %w", id, domain, err)
-	}
-
-	return nil
+	return c.do(req, http.StatusOK, nil)
 }
 
 func (c *Client) do(req *http.Request, expectedStatus int, result any) error {

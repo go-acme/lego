@@ -53,7 +53,7 @@ func (c *Client) CreateRecord(ctx context.Context, record Record) (*CommonRespon
 		return nil, err
 	}
 
-	result := &CommonResponse{}
+	result := new(CommonResponse)
 
 	err = c.do(req, result)
 	if err != nil {

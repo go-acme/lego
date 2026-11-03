@@ -45,14 +45,14 @@ func (c *Client) GetDNSRecords(ctx context.Context, domain string) ([]Record, er
 		return nil, err
 	}
 
-	var data GetDNSRecordResponse
+	var result GetDNSRecordResponse
 
-	err = c.do(req, &data)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return data.Data.Records, nil
+	return result.Data.Records, nil
 }
 
 // CreateHostRecord creates a record for a domain.
@@ -67,14 +67,14 @@ func (c *Client) CreateHostRecord(ctx context.Context, domain string, record Rec
 		return nil, err
 	}
 
-	var data Data
+	result := new(Data)
 
-	err = c.do(req, &data)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &data, nil
+	return result, nil
 }
 
 // RemoveHostRecord removes a record for a domain.
@@ -90,14 +90,14 @@ func (c *Client) RemoveHostRecord(ctx context.Context, domain, recordID string) 
 		return nil, err
 	}
 
-	var data Data
+	result := new(Data)
 
-	err = c.do(req, &data)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &data, nil
+	return result, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

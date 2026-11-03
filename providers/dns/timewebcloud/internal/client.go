@@ -48,14 +48,14 @@ func (c *Client) CreateRecord(ctx context.Context, fqdn string, payload DNSRecor
 		return nil, err
 	}
 
-	var respData CreateRecordResponse
+	var result CreateRecordResponse
 
-	err = c.do(req, &respData)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return respData.DNSRecord, nil
+	return result.DNSRecord, nil
 }
 
 // DeleteRecord deletes a DNS record.

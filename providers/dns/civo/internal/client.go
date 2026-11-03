@@ -79,14 +79,14 @@ func (c *Client) ListDNSRecords(ctx context.Context, domainID string) ([]Record,
 		return nil, err
 	}
 
-	var result []Record
+	var results []Record
 
-	err = c.do(req, &result)
+	err = c.do(req, &results)
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return results, nil
 }
 
 // CreateDNSRecord creates DNS records for a specific domain.

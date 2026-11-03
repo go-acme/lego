@@ -100,7 +100,7 @@ func (c *Client) listDomains(ctx context.Context) ([]*Domain, error) {
 	currentPage := 1
 	totalPages := maxInt
 
-	var domainList []*Domain
+	var domains []*Domain
 
 	for currentPage <= totalPages {
 		q.Set("page", strconv.Itoa(currentPage))
@@ -111,23 +111,25 @@ func (c *Client) listDomains(ctx context.Context) ([]*Domain, error) {
 			return nil, fmt.Errorf("failed to make request: %w", err)
 		}
 
-		var res DomainListingResponse
-		if err := c.do(req, &res); err != nil {
+		var result DomainListingResponse
+
+		err = c.do(req, &result)
+		if err != nil {
 			return nil, fmt.Errorf("failed to send domain listing request: %w", err)
 		}
 
 		// This is the first response,
 		// so we update totalPages and allocate the slice memory.
 		if totalPages == maxInt {
-			totalPages = res.Pages
-			domainList = make([]*Domain, 0, res.Total)
+			totalPages = result.Pages
+			domains = make([]*Domain, 0, result.Total)
 		}
 
-		domainList = append(domainList, res.Embedded.Domains...)
+		domains = append(domains, result.Embedded.Domains...)
 		currentPage++
 	}
 
-	return domainList, nil
+	return domains, nil
 }
 
 func (c *Client) getNameserverInfo(ctx context.Context, domainID int) (*NameserverResponse, error) {
@@ -138,12 +140,14 @@ func (c *Client) getNameserverInfo(ctx context.Context, domainID int) (*Nameserv
 		return nil, err
 	}
 
-	res := &NameserverResponse{}
-	if err := c.do(req, res); err != nil {
+	result := &NameserverResponse{}
+
+	err = c.do(req, result)
+	if err != nil {
 		return nil, err
 	}
 
-	return res, nil
+	return result, nil
 }
 
 func (c *Client) CheckNameservers(ctx context.Context, domainID int) error {
@@ -231,14 +235,14 @@ func (c *Client) getDomainInfo(ctx context.Context, domainID int) (*DomainRespon
 		return nil, err
 	}
 
-	var res DomainResponse
+	result := new(DomainResponse)
 
-	err = c.do(req, &res)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &res, nil
+	return result, nil
 }
 
 func (c *Client) listRecords(ctx context.Context, domainID int, recordType string) ([]*Record, error) {
@@ -265,18 +269,20 @@ func (c *Client) listRecords(ctx context.Context, domainID int, recordType strin
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
-		var res RecordListingResponse
-		if err := c.do(req, &res); err != nil {
+		var result RecordListingResponse
+
+		err = c.do(req, &result)
+		if err != nil {
 			return nil, fmt.Errorf("failed to send record listing request: %w", err)
 		}
 
 		// This is the first response, so we update totalPages and allocate the slice memory.
 		if totalPages == maxInt {
-			totalPages = res.Pages
-			recordList = make([]*Record, 0, res.Total)
+			totalPages = result.Pages
+			recordList = make([]*Record, 0, result.Total)
 		}
 
-		recordList = append(recordList, res.Embedded.Records...)
+		recordList = append(recordList, result.Embedded.Records...)
 		currentPage++
 	}
 

@@ -50,7 +50,7 @@ func (c *Client) ListServices(ctx context.Context) ([]int, error) {
 		return nil, err
 	}
 
-	result := Response[[]IntOrString]{}
+	var result Response[[]IntOrString]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -80,7 +80,7 @@ func (c *Client) GetServiceDetails(ctx context.Context, serviceID int) (*Service
 		return nil, err
 	}
 
-	result := Response[*ServiceDetails]{}
+	var result Response[*ServiceDetails]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -104,7 +104,7 @@ func (c *Client) GetDomainDetails(ctx context.Context, domainID int) (*DomainDet
 		return nil, err
 	}
 
-	result := Response[*DomainDetails]{}
+	var result Response[*DomainDetails]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -128,7 +128,7 @@ func (c *Client) CreateRecord(ctx context.Context, domainID int, record Record) 
 		return 0, err
 	}
 
-	result := Response[*Record]{}
+	var result Response[*Record]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -152,7 +152,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int) error
 		return err
 	}
 
-	result := Response[any]{}
+	var result Response[any]
 
 	err = c.do(req, &result)
 	if err != nil {

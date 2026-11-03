@@ -67,7 +67,7 @@ func (c *Client) AddRecord(ctx context.Context, domain string, record ZoneRecord
 		return "", err
 	}
 
-	response := apiResponse[*ZoneRecord]{}
+	var response apiResponse[*ZoneRecord]
 
 	err = c.do(req, &response)
 	if err != nil {

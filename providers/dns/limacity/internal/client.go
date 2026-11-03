@@ -32,6 +32,8 @@ func NewClient(apiKey string) *Client {
 	}
 }
 
+// GetDomains retrieves a list of all domains owned by the authenticated user.
+// https://www.lima-city.de/docs#tag/domains/operation/listDomains
 func (c *Client) GetDomains(ctx context.Context) ([]Domain, error) {
 	endpoint := c.baseURL.JoinPath("domains.json")
 
@@ -50,6 +52,8 @@ func (c *Client) GetDomains(ctx context.Context) ([]Domain, error) {
 	return results.Data, nil
 }
 
+// GetRecords retrieves all DNS records configured for a domain.
+// https://www.lima-city.de/docs#tag/dns/operation/listDnsRecords
 func (c *Client) GetRecords(ctx context.Context, domainID int) ([]Record, error) {
 	endpoint := c.baseURL.JoinPath("domains", strconv.Itoa(domainID), "records.json")
 
@@ -68,6 +72,8 @@ func (c *Client) GetRecords(ctx context.Context, domainID int) ([]Record, error)
 	return results.Data, nil
 }
 
+// AddRecord creates a new DNS resource record for the domain.
+// https://www.lima-city.de/docs#tag/dns/operation/createDnsRecord
 func (c *Client) AddRecord(ctx context.Context, domainID int, record Record) error {
 	endpoint := c.baseURL.JoinPath("domains", strconv.Itoa(domainID), "records.json")
 
@@ -78,14 +84,11 @@ func (c *Client) AddRecord(ctx context.Context, domainID int, record Record) err
 
 	var results APIResponse
 
-	err = c.do(req, &results)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, &results)
 }
 
+// UpdateRecord updates an existing DNS resource record.
+// https://www.lima-city.de/docs#tag/dns/operation/updateDnsRecord
 func (c *Client) UpdateRecord(ctx context.Context, domainID, recordID int, record Record) error {
 	endpoint := c.baseURL.JoinPath("domains", strconv.Itoa(domainID), "records", strconv.Itoa(recordID))
 
@@ -96,16 +99,12 @@ func (c *Client) UpdateRecord(ctx context.Context, domainID, recordID int, recor
 
 	var results APIResponse
 
-	err = c.do(req, &results)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, &results)
 }
 
+// DeleteRecord deletes an existing DNS resource record.
+// https://www.lima-city.de/docs#tag/dns/operation/deleteDnsRecord
 func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int) error {
-	// /domains/{domainId}/records/{recordId} DELETE
 	endpoint := c.baseURL.JoinPath("domains", strconv.Itoa(domainID), "records", strconv.Itoa(recordID))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
@@ -115,12 +114,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int) error
 
 	var results APIResponse
 
-	err = c.do(req, &results)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, &results)
 }
 
 func (c *Client) do(req *http.Request, result any) error {

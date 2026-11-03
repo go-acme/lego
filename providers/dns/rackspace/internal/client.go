@@ -75,17 +75,17 @@ func (c *Client) GetHostedZoneID(ctx context.Context, fqdn string) (string, erro
 		return "", fmt.Errorf("could not find zone: %w", err)
 	}
 
-	zoneSearchResponse, err := c.listDomainsByName(ctx, dns01.UnFqdn(authZone))
+	result, err := c.listDomainsByName(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return "", err
 	}
 
 	// If nothing was returned, or for whatever reason more than 1 was returned (the search uses exact match, so should not occur)
-	if zoneSearchResponse.TotalEntries != 1 {
-		return "", fmt.Errorf("found %d zones for %s in Rackspace for domain %s", zoneSearchResponse.TotalEntries, authZone, fqdn)
+	if result.TotalEntries != 1 {
+		return "", fmt.Errorf("found %d zones for %s in Rackspace for domain %s", result.TotalEntries, authZone, fqdn)
 	}
 
-	return zoneSearchResponse.HostedZones[0].ID, nil
+	return result.HostedZones[0].ID, nil
 }
 
 // listDomainsByName Filters domains by domain name.
@@ -102,14 +102,14 @@ func (c *Client) listDomainsByName(ctx context.Context, domain string) (*ZoneSea
 		return nil, err
 	}
 
-	zoneSearchResponse := new(ZoneSearchResponse)
+	result := new(ZoneSearchResponse)
 
-	err = c.do(req, zoneSearchResponse)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return zoneSearchResponse, nil
+	return result, nil
 }
 
 // FindTxtRecord searches a DNS zone for a TXT record with a specific name.
@@ -144,14 +144,14 @@ func (c *Client) searchRecords(ctx context.Context, zoneID, recordName, recordTy
 		return nil, err
 	}
 
-	var records Records
+	records := new(Records)
 
-	err = c.do(req, &records)
+	err = c.do(req, records)
 	if err != nil {
 		return nil, err
 	}
 
-	return &records, nil
+	return records, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

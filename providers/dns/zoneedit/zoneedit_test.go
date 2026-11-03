@@ -4,6 +4,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
@@ -160,6 +161,8 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 			if err != nil {
 				return nil, err
 			}
+
+			p.config.sleep = 100 * time.Millisecond
 
 			p.client.BaseURL, _ = url.Parse(server.URL)
 

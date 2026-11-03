@@ -60,9 +60,9 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID string, record Record)
 		return nil, err
 	}
 
-	result := new(RecordEnvelope)
+	var result RecordEnvelope
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -100,9 +100,9 @@ func (c *Client) ListZones(ctx context.Context, pager *Pager) ([]Zone, error) {
 		return nil, err
 	}
 
-	result := new(ZonesResponse)
+	var result ZonesResponse
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}

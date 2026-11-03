@@ -71,16 +71,16 @@ func (c *Client) GetZone(ctx context.Context, authFQDN string) (*Zone, error) {
 		return nil, err
 	}
 
-	rawMessage, err := c.do(req)
+	rawResult, err := c.do(req)
 	if err != nil {
 		return nil, err
 	}
 
 	var zone Zone
 
-	if len(rawMessage) > 0 {
-		if err = json.Unmarshal(rawMessage, &zone); err != nil {
-			return nil, errutils.NewUnmarshalError(req, http.StatusOK, rawMessage, err)
+	if len(rawResult) > 0 {
+		if err = json.Unmarshal(rawResult, &zone); err != nil {
+			return nil, errutils.NewUnmarshalError(req, http.StatusOK, rawResult, err)
 		}
 	}
 
@@ -111,19 +111,19 @@ func (c *Client) FindTxtRecord(ctx context.Context, zoneName, fqdn string) (*TXT
 		return nil, err
 	}
 
-	rawMessage, err := c.do(req)
+	rawResult, err := c.do(req)
 	if err != nil {
 		return nil, err
 	}
 
 	// the API returns [] when there is no records.
-	if string(rawMessage) == "[]" {
+	if string(rawResult) == "[]" {
 		return nil, nil
 	}
 
 	var records map[string]TXTRecord
-	if err = json.Unmarshal(rawMessage, &records); err != nil {
-		return nil, errutils.NewUnmarshalError(req, http.StatusOK, rawMessage, err)
+	if err = json.Unmarshal(rawResult, &records); err != nil {
+		return nil, errutils.NewUnmarshalError(req, http.StatusOK, rawResult, err)
 	}
 
 	for _, record := range records {
@@ -155,19 +155,19 @@ func (c *Client) ListTxtRecords(ctx context.Context, zoneName, fqdn string) ([]T
 		return nil, err
 	}
 
-	rawMessage, err := c.do(req)
+	rawResult, err := c.do(req)
 	if err != nil {
 		return nil, err
 	}
 
 	// the API returns [] when there is no records.
-	if string(rawMessage) == "[]" {
+	if string(rawResult) == "[]" {
 		return nil, nil
 	}
 
 	var raw map[string]TXTRecord
-	if err = json.Unmarshal(rawMessage, &raw); err != nil {
-		return nil, errutils.NewUnmarshalError(req, http.StatusOK, rawMessage, err)
+	if err = json.Unmarshal(rawResult, &raw); err != nil {
+		return nil, errutils.NewUnmarshalError(req, http.StatusOK, rawResult, err)
 	}
 
 	var records []TXTRecord
@@ -203,18 +203,19 @@ func (c *Client) AddTxtRecord(ctx context.Context, zoneName, fqdn, value string,
 		return err
 	}
 
-	rawMessage, err := c.do(req)
+	rawResult, err := c.do(req)
 	if err != nil {
 		return err
 	}
 
-	resp := apiResponse{}
-	if err = json.Unmarshal(rawMessage, &resp); err != nil {
-		return errutils.NewUnmarshalError(req, http.StatusOK, rawMessage, err)
+	result := apiResponse{}
+
+	if err = json.Unmarshal(rawResult, &result); err != nil {
+		return errutils.NewUnmarshalError(req, http.StatusOK, rawResult, err)
 	}
 
-	if resp.Status != "Success" {
-		return fmt.Errorf("failed to add TXT record: %s %s", resp.Status, resp.StatusDescription)
+	if result.Status != "Success" {
+		return fmt.Errorf("failed to add TXT record: %s %s", result.Status, result.StatusDescription)
 	}
 
 	return nil
@@ -234,14 +235,14 @@ func (c *Client) RemoveTxtRecord(ctx context.Context, recordID int, zoneName str
 		return err
 	}
 
-	rawMessage, err := c.do(req)
+	rawResult, err := c.do(req)
 	if err != nil {
 		return err
 	}
 
 	resp := apiResponse{}
-	if err = json.Unmarshal(rawMessage, &resp); err != nil {
-		return errutils.NewUnmarshalError(req, http.StatusOK, rawMessage, err)
+	if err = json.Unmarshal(rawResult, &resp); err != nil {
+		return errutils.NewUnmarshalError(req, http.StatusOK, rawResult, err)
 	}
 
 	if resp.Status != "Success" {
@@ -264,19 +265,19 @@ func (c *Client) GetUpdateStatus(ctx context.Context, zoneName string) (*SyncPro
 		return nil, err
 	}
 
-	rawMessage, err := c.do(req)
+	rawResult, err := c.do(req)
 	if err != nil {
 		return nil, err
 	}
 
 	// the API returns [] when there is no records.
-	if string(rawMessage) == "[]" {
+	if string(rawResult) == "[]" {
 		return nil, errors.New("no nameservers records returned")
 	}
 
 	var records []UpdateRecord
-	if err = json.Unmarshal(rawMessage, &records); err != nil {
-		return nil, errutils.NewUnmarshalError(req, http.StatusOK, rawMessage, err)
+	if err = json.Unmarshal(rawResult, &records); err != nil {
+		return nil, errutils.NewUnmarshalError(req, http.StatusOK, rawResult, err)
 	}
 
 	updatedCount := 0

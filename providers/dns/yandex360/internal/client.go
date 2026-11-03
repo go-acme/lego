@@ -55,14 +55,14 @@ func (c *Client) AddRecord(ctx context.Context, domain string, record Record) (*
 		return nil, err
 	}
 
-	newRecord := new(Record)
+	result := new(Record)
 
-	err = c.do(req, newRecord)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return newRecord, nil
+	return result, nil
 }
 
 // DeleteRecord Deletes a DNS record.
@@ -137,12 +137,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var apiErr APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &apiErr)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("[status code: %d] %w", resp.StatusCode, apiErr)
+	return fmt.Errorf("[status code: %d] %w", resp.StatusCode, errAPI)
 }

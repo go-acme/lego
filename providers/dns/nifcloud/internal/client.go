@@ -58,14 +58,14 @@ func (c *Client) ChangeResourceRecordSets(ctx context.Context, hostedZoneID stri
 		return nil, err
 	}
 
-	output := &ChangeResourceRecordSetsResponse{}
+	result := new(ChangeResourceRecordSetsResponse)
 
-	err = c.do(req, output)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return output, nil
+	return result, nil
 }
 
 // GetChange Call GetChange API and return response.
@@ -77,14 +77,14 @@ func (c *Client) GetChange(ctx context.Context, statusID string) (*GetChangeResp
 		return nil, err
 	}
 
-	output := &GetChangeResponse{}
+	result := new(GetChangeResponse)
 
-	err = c.do(req, output)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return output, nil
+	return result, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

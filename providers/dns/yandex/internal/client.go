@@ -50,14 +50,14 @@ func (c *Client) AddRecord(ctx context.Context, payload Record) (*Record, error)
 		return nil, err
 	}
 
-	r := AddResponse{}
+	var result AddResponse
 
-	err = c.do(req, &r)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return r.Record, nil
+	return result.Record, nil
 }
 
 func (c *Client) RemoveRecord(ctx context.Context, payload Record) (int, error) {
@@ -68,14 +68,14 @@ func (c *Client) RemoveRecord(ctx context.Context, payload Record) (int, error) 
 		return 0, err
 	}
 
-	r := RemoveResponse{}
+	var result RemoveResponse
 
-	err = c.do(req, &r)
+	err = c.do(req, &result)
 	if err != nil {
 		return 0, err
 	}
 
-	return r.RecordID, nil
+	return result.RecordID, nil
 }
 
 func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error) {
@@ -90,14 +90,14 @@ func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error
 		return nil, err
 	}
 
-	r := ListResponse{}
+	var result ListResponse
 
-	err = c.do(req, &r)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return r.Records, nil
+	return result.Records, nil
 }
 
 func (c *Client) do(req *http.Request, result Response) error {

@@ -47,14 +47,14 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record Record) (*Ad
 		return nil, err
 	}
 
-	respData := &AddRecordResponse{}
+	result := new(AddRecordResponse)
 
-	err = c.do(req, respData)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return respData, nil
+	return result, nil
 }
 
 // RemoveRecord removes a DNS record.
@@ -66,12 +66,7 @@ func (c *Client) RemoveRecord(ctx context.Context, zone string, recordID int) er
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 func (c *Client) do(req *http.Request, result any) error {

@@ -66,12 +66,14 @@ func (c *Client) updateZone(ctx context.Context, domain string, zoneStream *Zone
 		return nil, err
 	}
 
-	var resp *DataZoneResponse
-	if err := c.do(req, &resp); err != nil {
+	var result *DataZoneResponse
+
+	err = c.do(req, &result)
+	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	return result, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {

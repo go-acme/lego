@@ -52,7 +52,7 @@ func (c *Client) UpdateDNSZone(ctx context.Context, domain string, updateRequest
 		return nil, err
 	}
 
-	result := &DNSZoneUpdateResponse{}
+	result := new(DNSZoneUpdateResponse)
 
 	err = c.do(req, result)
 	if err != nil {

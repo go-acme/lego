@@ -57,7 +57,7 @@ func (c *Client) GetZones(ctx context.Context, query string, limit, offset int) 
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 
-	result := apiResponse[[]Zone]{}
+	var result apiResponse[[]Zone]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -77,7 +77,7 @@ func (c *Client) GetZone(ctx context.Context, zoneID string) (*Zone, error) {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 
-	result := apiResponse[*Zone]{}
+	var result apiResponse[*Zone]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -105,7 +105,7 @@ func (c *Client) GetRecords(ctx context.Context, zoneID, recordType string) ([]R
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 
-	result := apiResponse[[]Record]{}
+	var result apiResponse[[]Record]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -125,7 +125,7 @@ func (c *Client) AddRecord(ctx context.Context, zoneID string, record Record) (*
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 
-	result := apiResponse[*Record]{}
+	var result apiResponse[*Record]
 
 	err = c.do(req, &result)
 	if err != nil {

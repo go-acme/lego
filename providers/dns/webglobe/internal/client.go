@@ -43,9 +43,9 @@ func (c *Client) GetDomainDetails(ctx context.Context, domainID string) (*Domain
 		return nil, err
 	}
 
-	result := new(APIResponse[*Domain])
+	var result APIResponse[*Domain]
 
-	err = c.do(ctx, req, result)
+	err = c.do(ctx, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -65,9 +65,9 @@ func (c *Client) CreateRecord(ctx context.Context, domainID int64, record Record
 		return nil, err
 	}
 
-	result := new(RecordResponse)
+	var result RecordResponse
 
-	err = c.do(ctx, req, result)
+	err = c.do(ctx, req, &result)
 	if err != nil {
 		return nil, err
 	}

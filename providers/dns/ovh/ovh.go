@@ -192,9 +192,9 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	reqData := Record{FieldType: "TXT", SubDomain: subDomain, Target: info.Value, TTL: d.config.TTL}
 
 	// Create TXT record
-	var respData Record
+	var result Record
 
-	err = d.client.PostWithContext(ctx, reqURL, reqData, &respData)
+	err = d.client.PostWithContext(ctx, reqURL, reqData, &result)
 	if err != nil {
 		return fmt.Errorf("ovh: error when call api to add record (%s): %w", reqURL, err)
 	}
@@ -208,7 +208,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	}
 
 	d.recordIDsMu.Lock()
-	d.recordIDs[token] = respData.ID
+	d.recordIDs[token] = result.ID
 	d.recordIDsMu.Unlock()
 
 	return nil

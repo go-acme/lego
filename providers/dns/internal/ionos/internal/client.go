@@ -54,7 +54,7 @@ func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
 
 	err = c.do(req, &zones)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call API: %w", err)
+		return nil, err
 	}
 
 	return zones, nil
@@ -94,7 +94,7 @@ func (c *Client) GetRecords(ctx context.Context, zoneID string, filter *RecordsF
 
 	err = c.do(req, &zone)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call API: %w", err)
+		return nil, err
 	}
 
 	return zone.Records, nil

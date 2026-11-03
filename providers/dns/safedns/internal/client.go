@@ -51,7 +51,7 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record Record) (*Ad
 
 	err = c.do(req, respData)
 	if err != nil {
-		return nil, fmt.Errorf("add record: %w", err)
+		return nil, err
 	}
 
 	return respData, nil
@@ -68,7 +68,7 @@ func (c *Client) RemoveRecord(ctx context.Context, zone string, recordID int) er
 
 	err = c.do(req, nil)
 	if err != nil {
-		return fmt.Errorf("remove record: %w", err)
+		return err
 	}
 
 	return nil

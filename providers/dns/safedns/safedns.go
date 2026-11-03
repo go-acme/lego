@@ -124,7 +124,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	resp, err := d.client.AddRecord(ctx, zone, record)
 	if err != nil {
-		return fmt.Errorf("safedns: %w", err)
+		return fmt.Errorf("safedns: add recod: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -153,7 +153,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 
 	err = d.client.RemoveRecord(ctx, authZone, recordID)
 	if err != nil {
-		return fmt.Errorf("safedns: %w", err)
+		return fmt.Errorf("safedns: remove record: %w", err)
 	}
 
 	d.recordIDsMu.Lock()

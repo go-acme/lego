@@ -77,7 +77,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 	}
 
 	_, err := client.AddRecord(t.Context(), "example.com", record)
-	require.EqualError(t, err, "add record: [status code: 401] Unauthenticated")
+	require.EqualError(t, err, "[status code: 401] Unauthenticated")
 }
 
 func TestClient_RemoveRecord(t *testing.T) {
@@ -101,5 +101,5 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 		Build(t)
 
 	err := client.RemoveRecord(t.Context(), "example.com", 1234567)
-	require.EqualError(t, err, "remove record: [status code: 401] Unauthenticated")
+	require.EqualError(t, err, "[status code: 401] Unauthenticated")
 }

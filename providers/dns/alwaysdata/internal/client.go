@@ -112,7 +112,7 @@ func (c *Client) do(req *http.Request, result any) error {
 	user := c.apiKey
 
 	if c.account != "" {
-		user += "account=" + c.account
+		user += " account=" + c.account
 	}
 
 	req.SetBasicAuth(user, "")

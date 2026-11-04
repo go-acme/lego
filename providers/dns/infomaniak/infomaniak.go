@@ -172,6 +172,11 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("infomaniak: delete record: %w", err)
 	}
 
+	d.recordIDsMu.Lock()
+	delete(d.zones, token)
+	delete(d.recordIDs, token)
+	d.recordIDsMu.Unlock()
+
 	return nil
 }
 

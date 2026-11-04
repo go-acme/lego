@@ -291,4 +291,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	err := provider.CleanUp(t.Context(), "example.com", token, "123d==")
 	require.NoError(t, err)
+
+	assert.Empty(t, provider.zoneIDs)
+	assert.Empty(t, provider.recordIDs)
 }

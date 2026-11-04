@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -183,8 +184,10 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.CheckRequestJSONBodyFromInternal("add_record-request.json")).
 		Build(t)
 
-	err := provider.Present(t.Context(), "example.com", "", "123d==")
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Equal(t, map[string]string{"abc": "85371689655342080"}, provider.recordIDs)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
@@ -199,4 +202,6 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Empty(t, provider.recordIDs)
 }

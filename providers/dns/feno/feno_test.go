@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -163,7 +164,9 @@ func TestDNSProvider_Present(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, "example.com", provider.zones[token])
-	require.Equal(t, 6, provider.recordIDs[token])
+
+	assert.Equal(t, map[string]string{token: "example.com"}, provider.zones)
+	assert.Equal(t, map[string]int{token: 6}, provider.recordIDs)
 }
 
 func TestDNSProvider_Present_notFenoNameservers(t *testing.T) {
@@ -180,6 +183,9 @@ func TestDNSProvider_Present_notFenoNameservers(t *testing.T) {
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 
 	require.EqualError(t, err, `feno: could not find zone for domain "example.com": the zone "example.com" does not use FENO nameservers`)
+
+	assert.Empty(t, provider.zones)
+	assert.Empty(t, provider.recordIDs)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
@@ -197,6 +203,6 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	err := provider.CleanUp(t.Context(), "example.com", token, "123d==")
 	require.NoError(t, err)
 
-	require.Empty(t, provider.zones)
-	require.Empty(t, provider.recordIDs)
+	assert.Empty(t, provider.zones)
+	assert.Empty(t, provider.recordIDs)
 }

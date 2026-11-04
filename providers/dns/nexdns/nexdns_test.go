@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -158,6 +159,9 @@ func TestDNSProvider_Present(t *testing.T) {
 
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Equal(t, map[string]string{"abc": "xK9mQ2vR"}, provider.zoneIDs)
+	assert.Equal(t, map[string]string{"abc": "Rk3pW9xd"}, provider.recordIDs)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
@@ -174,6 +178,9 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	err := provider.CleanUp(t.Context(), "example.com", token, "123d==")
 	require.NoError(t, err)
+
+	assert.Empty(t, provider.zoneIDs)
+	assert.Empty(t, provider.recordIDs)
 }
 
 func TestDNSProvider_CleanUp_withoutPresent(t *testing.T) {

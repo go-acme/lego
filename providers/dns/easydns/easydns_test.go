@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -186,13 +187,14 @@ func TestDNSProvider_Present(t *testing.T) {
 				},
 				"status": 201
 			}`),
-			servermock.CheckRequestJSONBody(`{"domain":"example.com","host":"_acme-challenge","ttl":"120","prio":"0","type":"TXT","rdata":"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM"}
+			servermock.CheckRequestJSONBody(`{"domain":"example.com","host":"_acme-challenge","ttl":"120","prio":"0","type":"TXT","rdata":"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"}
 `)).
 		Build(t)
 
-	err := provider.Present(t.Context(), "example.com", "token", "keyAuth")
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
-	require.Contains(t, provider.recordIDs, "_acme-challenge.example.com.|pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM")
+
+	assert.Equal(t, map[string]string{"_acme-challenge.example.com.|ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY": "123456789"}, provider.recordIDs)
 }
 
 func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
@@ -221,8 +223,10 @@ func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
 	`)).
 		Build(t)
 
-	err := provider.CleanUp(t.Context(), "example.com", "token", "keyAuth")
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Empty(t, provider.recordIDs)
 }
 
 func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
@@ -260,10 +264,12 @@ func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 			}`)).
 		Build(t)
 
-	provider.recordIDs["_acme-challenge.example.com.|pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM"] = "123456"
+	provider.recordIDs["_acme-challenge.example.com.|ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"] = "123456"
 
-	err := provider.CleanUp(t.Context(), "example.com", "token", "keyAuth")
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Empty(t, provider.recordIDs)
 }
 
 func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
@@ -302,12 +308,14 @@ func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
 				WithStatusCode(http.StatusNotAcceptable)).
 		Build(t)
 
-	provider.recordIDs["_acme-challenge.example.com.|pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM"] = "123456"
+	provider.recordIDs["_acme-challenge.example.com.|ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"] = "123456"
 
-	err := provider.CleanUp(t.Context(), "example.com", "token", "keyAuth")
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 
 	expectedError := fmt.Sprintf("easydns: unexpected status code: [status code: 406] body: %v", errorMessage)
 	require.EqualError(t, err, expectedError)
+
+	assert.Equal(t, map[string]string{"_acme-challenge.example.com.|ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY": "123456"}, provider.recordIDs)
 }
 
 func TestLivePresent(t *testing.T) {

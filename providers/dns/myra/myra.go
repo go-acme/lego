@@ -170,6 +170,11 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("myra: delete record: %w", err)
 	}
 
+	d.recordIDsMu.Lock()
+	delete(d.recordIDs, token)
+	delete(d.domainIDs, token)
+	d.recordIDsMu.Unlock()
+
 	return nil
 }
 

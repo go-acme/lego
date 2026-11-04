@@ -69,9 +69,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.User = values[EnvUser]
 	config.AuthToken = values[EnvAuthToken]
 
-	// ERROR CODE="702" TEXT="Minimum 10 seconds between requests"
-	config.sleep = 11 * time.Second
-
 	return NewDNSProviderConfig(config)
 }
 
@@ -80,6 +77,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("zoneedit: the configuration of the DNS provider is nil")
 	}
+
+	// ERROR CODE="702" TEXT="Minimum 10 seconds between requests"
+	config.sleep = 11 * time.Second
 
 	client, err := internal.NewClient(config.User, config.AuthToken)
 	if err != nil {

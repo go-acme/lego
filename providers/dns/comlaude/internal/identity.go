@@ -11,39 +11,76 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/errutils"
 	"github.com/go-acme/lego/v5/internal/useragent"
+	"golang.org/x/oauth2"
 )
 
-type token string
-
-const tokenKey token = "token"
-
-type Identifier struct {
+type Config struct {
 	BaseURL    *url.URL
 	HTTPClient *http.Client
+
+	username string
+	password string
+	apiKey   string
 }
 
-func NewIdentifier() *Identifier {
-	baseURL, _ := url.Parse(defaultBaseURL)
-
-	return &Identifier{
-		BaseURL:    baseURL,
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-	}
-}
-
-// APILogin gets a token.
-// https://api.comlaude.com/docs#/Auth/POST.api_login
-func (c *Identifier) APILogin(ctx context.Context, username, password, apiKey string) (*TokenInfo, error) {
+func NewAuthConfig(username, password, apiKey string) (*Config, error) {
 	if username == "" || password == "" || apiKey == "" {
 		return nil, errors.New("credentials missing")
 	}
 
-	endpoint := c.BaseURL.JoinPath("api_login")
+	baseURL, _ := url.Parse(defaultBaseURL)
+
+	return &Config{
+		BaseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		username:   username,
+		password:   password,
+		apiKey:     apiKey,
+	}, nil
+}
+
+func (c *Config) TokenSource(ctx context.Context) *TokenSource {
+	return &TokenSource{
+		ctx:  ctx,
+		conf: c,
+	}
+}
+
+//nolint:containedctx // Because of the interface oauth2.TokenSource.
+type TokenSource struct {
+	ctx  context.Context
+	conf *Config
+}
+
+func (s *TokenSource) Token() (*oauth2.Token, error) {
+	data, err := s.login(s.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	tok := &oauth2.Token{
+		AccessToken:  data.AccessToken,
+		TokenType:    data.TokenType,
+		RefreshToken: data.RefreshToken,
+		ExpiresIn:    data.ExpiresIn,
+	}
+
+	if data.ExpiresIn > 0 {
+		tok.Expiry = time.Now().Add(time.Duration(data.ExpiresIn) * time.Second)
+	}
+
+	return tok, nil
+}
+
+// login gets a TokenInfo.
+// https://api.comlaude.com/docs#/Auth/POST.api_login
+func (s *TokenSource) login(ctx context.Context) (*TokenInfo, error) {
+	endpoint := s.conf.BaseURL.JoinPath("api_login")
 
 	alr := APILoginRequest{
-		Username: username,
-		Password: password,
-		APIKey:   apiKey,
+		Username: s.conf.username,
+		Password: s.conf.password,
+		APIKey:   s.conf.apiKey,
 	}
 
 	req, err := newRequest(ctx, http.MethodPost, endpoint, alr)
@@ -53,7 +90,7 @@ func (c *Identifier) APILogin(ctx context.Context, username, password, apiKey st
 
 	var info LoginResponse
 
-	err = c.do(req, &info)
+	err = s.do(req, &info)
 	if err != nil {
 		return nil, err
 	}
@@ -61,10 +98,10 @@ func (c *Identifier) APILogin(ctx context.Context, username, password, apiKey st
 	return info.Data, nil
 }
 
-func (c *Identifier) do(req *http.Request, result any) error {
+func (s *TokenSource) do(req *http.Request, result any) error {
 	useragent.SetHeader(req.Header)
 
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := s.conf.HTTPClient.Do(req)
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)
 	}
@@ -90,17 +127,4 @@ func (c *Identifier) do(req *http.Request, result any) error {
 	}
 
 	return nil
-}
-
-func WithContext(ctx context.Context, credential string) context.Context {
-	return context.WithValue(ctx, tokenKey, credential)
-}
-
-func getToken(ctx context.Context) string {
-	credential, ok := ctx.Value(tokenKey).(string)
-	if !ok {
-		return ""
-	}
-
-	return credential
 }

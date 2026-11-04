@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -10,20 +11,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilderIdentifier() *servermock.Builder[*Identifier] {
-	return servermock.NewBuilder[*Identifier](
-		func(server *httptest.Server) (*Identifier, error) {
-			client := NewIdentifier()
-			client.BaseURL, _ = url.Parse(server.URL)
-			client.HTTPClient = server.Client()
+func mockTokenSource(ctx context.Context) *servermock.Builder[*TokenSource] {
+	return servermock.NewBuilder[*TokenSource](func(server *httptest.Server) (*TokenSource, error) {
+		cfg, err := NewAuthConfig("user", "secret", "key")
+		if err != nil {
+			return nil, err
+		}
 
-			return client, nil
-		},
-	)
+		cfg.BaseURL, _ = url.Parse(server.URL)
+		cfg.HTTPClient = server.Client()
+
+		return cfg.TokenSource(ctx), nil
+	})
 }
 
-func TestIdentifier_APILogin(t *testing.T) {
-	client := mockBuilderIdentifier().
+func TestTokenSource_Token(t *testing.T) {
+	tokenSource := mockTokenSource(t.Context()).
 		Route("POST /api_login",
 			servermock.ResponseFromFixture("api_login.json"),
 			servermock.CheckHeader().
@@ -35,7 +38,29 @@ func TestIdentifier_APILogin(t *testing.T) {
 		).
 		Build(t)
 
-	tok, err := client.APILogin(t.Context(), "user", "secret", "key")
+	token, err := tokenSource.Token()
+	require.NoError(t, err)
+
+	assert.Equal(t, "xxx", token.AccessToken)
+	assert.Equal(t, "Bearer", token.TokenType)
+	assert.EqualValues(t, 7600, token.ExpiresIn)
+	assert.NotZero(t, token.Expiry)
+}
+
+func TestTokenSource_login(t *testing.T) {
+	tokenSource := mockTokenSource(t.Context()).
+		Route("POST /api_login",
+			servermock.ResponseFromFixture("api_login.json"),
+			servermock.CheckHeader().
+				WithContentTypeFromURLEncoded(),
+			servermock.CheckForm().Strict().
+				With("username", "user").
+				With("password", "secret").
+				With("api_key", "key"),
+		).
+		Build(t)
+
+	token, err := tokenSource.login(t.Context())
 	require.NoError(t, err)
 
 	expected := &TokenInfo{
@@ -45,5 +70,5 @@ func TestIdentifier_APILogin(t *testing.T) {
 		DNSDashboardLink: 1,
 	}
 
-	assert.Equal(t, expected, tok)
+	assert.Equal(t, expected, token)
 }

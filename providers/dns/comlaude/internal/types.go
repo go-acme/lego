@@ -76,7 +76,7 @@ type Message struct {
 
 type TokenInfo struct {
 	TokenType        string `json:"token_type"`
-	ExpiresIn        int    `json:"expires_in"`
+	ExpiresIn        int64  `json:"expires_in"`
 	AccessToken      string `json:"access_token"`
 	RefreshToken     string `json:"refresh_token"`
 	DNSDashboardLink int    `json:"dnsdashboard_link"`

@@ -14,6 +14,7 @@ import (
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/comlaude/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	"golang.org/x/oauth2"
 )
 
 // Environment variables names.
@@ -60,9 +61,8 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config     *Config
-	client     *internal.Client
-	identifier *internal.Identifier
+	config *Config
+	client *internal.Client
 
 	zoneIDs     map[string]string
 	recordIDs   map[string]string
@@ -99,43 +99,38 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("comlaude: group ID missing")
 	}
 
-	identifier := internal.NewIdentifier()
-
-	if config.HTTPClient != nil {
-		identifier.HTTPClient = config.HTTPClient
+	authConfig, err := internal.NewAuthConfig(config.Username, config.Password, config.APIKey)
+	if err != nil {
+		return nil, fmt.Errorf("comlaude: %w", err)
 	}
 
-	identifier.HTTPClient = clientdebug.Wrap(identifier.HTTPClient)
+	return newDNSProviderConfig(config, authConfig)
+}
 
+func newDNSProviderConfig(config *Config, authConfig *internal.Config) (*DNSProvider, error) {
 	client, err := internal.NewClient()
 	if err != nil {
 		return nil, fmt.Errorf("comlaude: %w", err)
 	}
 
+	ctx := context.Background()
+
 	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
+		ctx = context.WithValue(ctx, oauth2.HTTPClient, config.HTTPClient)
 	}
 
-	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
+	client.HTTPClient = clientdebug.Wrap(oauth2.NewClient(ctx, authConfig.TokenSource(ctx)))
 
 	return &DNSProvider{
-		config:     config,
-		client:     client,
-		identifier: identifier,
-		zoneIDs:    make(map[string]string),
-		recordIDs:  make(map[string]string),
+		config:    config,
+		client:    client,
+		zoneIDs:   make(map[string]string),
+		recordIDs: make(map[string]string),
 	}, nil
 }
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
-	tok, err := d.identifier.APILogin(ctx, d.config.Username, d.config.Password, d.config.APIKey)
-	if err != nil {
-		return fmt.Errorf("comlaude: API login: %w", err)
-	}
-
-	ctxAuth := internal.WithContext(ctx, tok.AccessToken)
-
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
@@ -148,7 +143,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("comlaude: %w", err)
 	}
 
-	dom, err := d.findDomain(ctxAuth, dns01.UnFqdn(authZone))
+	dom, err := d.findDomain(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("comlaude: %w", err)
 	}
@@ -164,7 +159,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		Content: info.Value,
 	}
 
-	recordID, err := d.client.CreateRecord(ctxAuth, d.config.GroupID, dom.ActiveZone.ID, record)
+	recordID, err := d.client.CreateRecord(ctx, d.config.GroupID, dom.ActiveZone.ID, record)
 	if err != nil {
 		return fmt.Errorf("comlaude: create record: %w", err)
 	}
@@ -190,14 +185,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("comlaude: unknown record ID or zone ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	tok, err := d.identifier.APILogin(ctx, d.config.Username, d.config.Password, d.config.APIKey)
-	if err != nil {
-		return fmt.Errorf("comlaude: API login: %w", err)
-	}
-
-	ctxAuth := internal.WithContext(ctx, tok.AccessToken)
-
-	err = d.client.DeleteRecord(ctxAuth, d.config.GroupID, zoneID, recordID)
+	err := d.client.DeleteRecord(ctx, d.config.GroupID, zoneID, recordID)
 	if err != nil {
 		return fmt.Errorf("comlaude: delete record: %w", err)
 	}

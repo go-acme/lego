@@ -143,11 +143,6 @@ func newRequest(ctx context.Context, method string, endpoint *url.URL, payload a
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
-	tok := getToken(ctx)
-	if tok != "" {
-		req.Header.Set("Authorization", "Bearer "+tok)
-	}
-
 	req.Header.Set("Accept", "application/json")
 
 	if payload != nil {

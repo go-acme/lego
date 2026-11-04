@@ -67,7 +67,7 @@ The provider is only available for resellers because the Openprovider API is onl
 
 ## More information
 
-- [API documentation](https://docs.openprovider.com/doc/all)
+- [API documentation](https://developer.openprovider.com/rest-api-documentation.html)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/openprovider/openprovider.toml -->

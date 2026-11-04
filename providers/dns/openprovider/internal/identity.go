@@ -12,7 +12,7 @@ type token string
 const tokenKey token = "token"
 
 // Login gets an authentication token.
-// https://docs.openprovider.com/doc/all#operation/Login
+// https://developer.openprovider.com/reference.html?group=Auth#/Auth/Login
 func (c *Client) Login(ctx context.Context) (string, error) {
 	endpoint := c.BaseURL.JoinPath("auth", "login")
 

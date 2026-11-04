@@ -47,14 +47,14 @@ func (c *Client) UpdateDomain(ctx context.Context, domain string, msg *DomainInf
 		return nil, err
 	}
 
-	respData := &DomainInfoResponse{}
+	result := new(DomainInfoResponse)
 
-	err = c.do(req, respData)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return respData, nil
+	return result, nil
 }
 
 // GetDomain gets domain information.
@@ -71,14 +71,14 @@ func (c *Client) GetDomain(ctx context.Context, domain string) (*DomainInfoRespo
 		return nil, err
 	}
 
-	respData := &DomainInfoResponse{}
+	result := new(DomainInfoResponse)
 
-	err = c.do(req, respData)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return respData, nil
+	return result, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {
@@ -142,9 +142,9 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	response := &ErrorResponse{}
+	var response ErrorResponse
 
-	err := json.Unmarshal(raw, response)
+	err := json.Unmarshal(raw, &response)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}

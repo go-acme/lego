@@ -113,25 +113,25 @@ func (c *Client) doRequest(ctx context.Context, data any, fragments ...string) (
 		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	var apiResp APIResponse
+	result := new(APIResponse)
 
-	err = json.Unmarshal(raw, &apiResp)
+	err = json.Unmarshal(raw, result)
 	if err != nil {
 		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
-	return &apiResp, nil
+	return result, nil
 }
 
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var apiResp APIResponse
+	var errAPI APIResponse
 
-	err := json.Unmarshal(raw, &apiResp)
+	err := json.Unmarshal(raw, &errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("[status code %d] %w", resp.StatusCode, apiResp)
+	return fmt.Errorf("[status code %d] %w", resp.StatusCode, errAPI)
 }

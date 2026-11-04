@@ -59,9 +59,9 @@ func (c *Client) ListZones(ctx context.Context, zr *ZonesRequest) ([]Zone, error
 		return nil, err
 	}
 
-	results := &APIResponse[Results[Zone]]{}
+	var results APIResponse[Results[Zone]]
 
-	err = c.do(req, results)
+	err = c.do(req, &results)
 	if err != nil {
 		return nil, err
 	}
@@ -79,9 +79,9 @@ func (c *Client) UpdateZone(ctx context.Context, domain string, action ZoneActio
 		return err
 	}
 
-	results := &APIResponse[ResponseSuccess]{}
+	var results APIResponse[ResponseSuccess]
 
-	err = c.do(req, results)
+	err = c.do(req, &results)
 	if err != nil {
 		return err
 	}
@@ -150,12 +150,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("[status code %d] %w", resp.StatusCode, &errAPI)
+	return fmt.Errorf("[status code %d] %w", resp.StatusCode, errAPI)
 }

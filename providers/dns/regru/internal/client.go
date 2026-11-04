@@ -123,9 +123,9 @@ func (c *Client) doRequest(ctx context.Context, request any, fragments ...string
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIResponse
+	errAPI := new(APIResponse)
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}

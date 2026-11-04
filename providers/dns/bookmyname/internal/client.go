@@ -46,12 +46,7 @@ func (c *Client) AddRecord(ctx context.Context, record Record) error {
 		return err
 	}
 
-	err = c.do(ctx, endpoint)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(ctx, endpoint)
 }
 
 func (c *Client) RemoveRecord(ctx context.Context, record Record) error {
@@ -60,12 +55,7 @@ func (c *Client) RemoveRecord(ctx context.Context, record Record) error {
 		return err
 	}
 
-	err = c.do(ctx, endpoint)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(ctx, endpoint)
 }
 
 func (c *Client) createEndpoint(record Record, action string) (*url.URL, error) {

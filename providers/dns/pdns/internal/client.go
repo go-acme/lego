@@ -195,15 +195,15 @@ func (c *Client) do(req *http.Request) (json.RawMessage, error) {
 
 	// check for PowerDNS error message
 	if len(msg) > 0 && msg[0] == '{' {
-		var errInfo apiError
+		errAPI := new(apiError)
 
-		err = json.Unmarshal(msg, &errInfo)
+		err = json.Unmarshal(msg, errAPI)
 		if err != nil {
 			return nil, errutils.NewUnmarshalError(req, resp.StatusCode, msg, err)
 		}
 
-		if errInfo.ShortMsg != "" {
-			return nil, fmt.Errorf("error talking to PDNS API: %w", errInfo)
+		if errAPI.ShortMsg != "" {
+			return nil, fmt.Errorf("error talking to PDNS API: %w", errAPI)
 		}
 	}
 

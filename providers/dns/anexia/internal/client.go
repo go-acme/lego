@@ -48,14 +48,14 @@ func (c *Client) CreateRecord(ctx context.Context, zoneName string, record Recor
 		return nil, err
 	}
 
-	var zone Zone
+	zone := new(Zone)
 
-	err = c.do(req, &zone)
+	err = c.do(req, zone)
 	if err != nil {
 		return nil, err
 	}
 
-	return &zone, nil
+	return zone, nil
 }
 
 func (c *Client) DeleteRecord(ctx context.Context, zoneName, recordID string) error {
@@ -77,14 +77,14 @@ func (c *Client) GetZone(ctx context.Context, zoneName string) (*Zone, error) {
 		return nil, err
 	}
 
-	var zone Zone
+	zone := new(Zone)
 
-	err = c.do(req, &zone)
+	err = c.do(req, zone)
 	if err != nil {
 		return nil, err
 	}
 
-	return &zone, nil
+	return zone, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {
@@ -147,12 +147,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return &errAPI
+	return errAPI
 }

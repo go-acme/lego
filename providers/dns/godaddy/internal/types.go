@@ -25,7 +25,7 @@ type APIError struct {
 	Message string  `json:"message,omitempty"`
 }
 
-func (a APIError) Error() string {
+func (a *APIError) Error() string {
 	msg := new(strings.Builder)
 
 	_, _ = fmt.Fprintf(msg, "%s: %s", a.Code, a.Message)

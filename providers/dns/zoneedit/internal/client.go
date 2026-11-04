@@ -98,12 +98,12 @@ func (c *Client) do(req *http.Request) error {
 		raw = slices.Concat(raw[:len(raw)-1], []byte("/>"))
 	}
 
-	var apiErr APIError
+	errAPI := new(APIError)
 
-	err = xml.Unmarshal(raw, &apiErr)
+	err = xml.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("[status code: %d] %w", resp.StatusCode, apiErr)
+	return fmt.Errorf("[status code: %d] %w", resp.StatusCode, errAPI)
 }

@@ -55,9 +55,22 @@ func (c *Client) AddTXTRecord(ctx context.Context, domain, name, value string, t
 
 	newRecord := &Record{RRSetTTL: ttl, RRSetValues: values}
 
-	err = c.addTXTRecord(ctx, domain, name, newRecord)
+	return c.addTXTRecord(ctx, domain, name, newRecord)
+}
+
+func (c *Client) DeleteTXTRecord(ctx context.Context, domain, name string) error {
+	endpoint := c.BaseURL.JoinPath("domains", domain, "records", name, "TXT")
+
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
+	}
+
+	var result apiResponse
+
+	err = c.do(req, &result)
+	if err != nil {
+		return fmt.Errorf("unable to delete TXT record for domain %s and name %s: %w", domain, name, err)
 	}
 
 	return nil
@@ -73,14 +86,14 @@ func (c *Client) getTXTRecord(ctx context.Context, domain, name string) (*Record
 		return nil, err
 	}
 
-	txtRecord := &Record{}
+	result := new(Record)
 
-	err = c.do(req, txtRecord)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get TXT records for domain %s and name %s: %w", domain, name, err)
 	}
 
-	return txtRecord, nil
+	return result, nil
 }
 
 func (c *Client) addTXTRecord(ctx context.Context, domain, name string, newRecord *Record) error {
@@ -91,29 +104,11 @@ func (c *Client) addTXTRecord(ctx context.Context, domain, name string, newRecor
 		return err
 	}
 
-	message := apiResponse{}
+	var result apiResponse
 
-	err = c.do(req, &message)
+	err = c.do(req, &result)
 	if err != nil {
 		return fmt.Errorf("unable to create TXT record for domain %s and name %s: %w", domain, name, err)
-	}
-
-	return nil
-}
-
-func (c *Client) DeleteTXTRecord(ctx context.Context, domain, name string) error {
-	endpoint := c.BaseURL.JoinPath("domains", domain, "records", name, "TXT")
-
-	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
-	if err != nil {
-		return err
-	}
-
-	message := apiResponse{}
-
-	err = c.do(req, &message)
-	if err != nil {
-		return fmt.Errorf("unable to delete TXT record for domain %s and name %s: %w", domain, name, err)
 	}
 
 	return nil
@@ -198,7 +193,7 @@ func checkResponse(req *http.Request, resp *http.Response) error {
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	response := apiResponse{}
+	var response apiResponse
 
 	err := json.Unmarshal(raw, &response)
 	if err != nil {

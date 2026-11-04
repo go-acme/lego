@@ -65,9 +65,9 @@ func (c *Client) AddRecord(ctx context.Context, record Record) (int64, error) {
 		return 0, err
 	}
 
-	result := new(AddRecordResponse)
+	var result AddRecordResponse
 
-	err = c.doAuthenticated(ctx, req, result)
+	err = c.doAuthenticated(ctx, req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -111,9 +111,9 @@ func (c *Client) GetRecords(ctx context.Context, zone string) (map[string]Zone, 
 		return nil, err
 	}
 
-	result := new(GetRecordsResponse)
+	var result GetRecordsResponse
 
-	err = c.doAuthenticated(ctx, req, result)
+	err = c.doAuthenticated(ctx, req, &result)
 	if err != nil {
 		return nil, err
 	}

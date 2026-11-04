@@ -20,6 +20,6 @@ type APIError struct {
 	Message    string `json:"error,omitempty"`
 }
 
-func (a APIError) Error() string {
+func (a *APIError) Error() string {
 	return fmt.Sprintf("%d: %s", a.StatusCode, a.Message)
 }

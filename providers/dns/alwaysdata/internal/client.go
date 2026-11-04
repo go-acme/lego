@@ -69,12 +69,7 @@ func (c *Client) AddRecord(ctx context.Context, record RecordRequest) error {
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 func (c *Client) DeleteRecord(ctx context.Context, recordID int64) error {
@@ -117,7 +112,7 @@ func (c *Client) do(req *http.Request, result any) error {
 	user := c.apiKey
 
 	if c.account != "" {
-		user += "account=" + c.account
+		user += " account=" + c.account
 	}
 
 	req.SetBasicAuth(user, "")

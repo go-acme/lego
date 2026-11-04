@@ -20,7 +20,7 @@ lego run --dns alwaysdata -d '*.example.com' -d example.com
     ALWAYSDATA_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]
-  API = "https://help.alwaysdata.com/en/api/resources/"
+  API = "https://help.alwaysdata.com/en/docs/development/api/resources/"
   APIDocDomains = "https://api.alwaysdata.com/v1/domain/doc/"
   APIDocRecords = "https://api.alwaysdata.com/v1/record/doc/"
-  APIExamples = "https://help.alwaysdata.com/en/api/examples/"
+  APIExamples = "https://help.alwaysdata.com/en/docs/development/api/examples/"

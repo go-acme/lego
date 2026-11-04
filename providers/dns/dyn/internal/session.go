@@ -27,16 +27,16 @@ func (c *Client) login(ctx context.Context) (session, error) {
 		return session{}, err
 	}
 
-	dynRes, err := c.do(req)
+	result, err := c.do(req)
 	if err != nil {
 		return session{}, err
 	}
 
 	var s session
 
-	err = json.Unmarshal(dynRes.Data, &s)
+	err = json.Unmarshal(result.Data, &s)
 	if err != nil {
-		return session{}, errutils.NewUnmarshalError(req, http.StatusOK, dynRes.Data, err)
+		return session{}, errutils.NewUnmarshalError(req, http.StatusOK, result.Data, err)
 	}
 
 	return s, nil

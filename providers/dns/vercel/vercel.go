@@ -123,13 +123,13 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		TTL:   d.config.TTL,
 	}
 
-	respData, err := d.client.CreateRecord(ctx, authZone, record)
+	result, err := d.client.CreateRecord(ctx, authZone, record)
 	if err != nil {
 		return fmt.Errorf("vercel: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
-	d.recordIDs[token] = respData.UID
+	d.recordIDs[token] = result.UID
 	d.recordIDsMu.Unlock()
 
 	return nil

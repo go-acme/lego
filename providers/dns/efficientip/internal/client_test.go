@@ -388,5 +388,5 @@ func TestDeleteRecord_error(t *testing.T) {
 		Build(t)
 
 	_, err := client.DeleteRecord(t.Context(), DeleteInputParameters{RRID: "251"})
-	require.ErrorAs(t, err, &APIError{})
+	require.EqualError(t, err, "[status code 400] dns_rr_delete: error 20117 This RR does not exist")
 }

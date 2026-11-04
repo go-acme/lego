@@ -47,7 +47,7 @@ func (c *Client) GetRecords(ctx context.Context, zone string) ([]DNSRow, error) 
 		return nil, err
 	}
 
-	result := APIResponse[Rows]{}
+	var result APIResponse[Rows]
 
 	err = c.do(req, &result)
 	if err != nil {

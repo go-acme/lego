@@ -53,7 +53,7 @@ func (c *Client) CreateRRSet(ctx context.Context, domainName string, rrset RRSet
 		return nil, err
 	}
 
-	result := &RRSet{}
+	result := new(RRSet)
 
 	err = c.do(req, result)
 	if err != nil {
@@ -73,7 +73,7 @@ func (c *Client) GetRRSet(ctx context.Context, domainName, name, rType string) (
 		return nil, err
 	}
 
-	result := &RRSet{}
+	result := new(RRSet)
 
 	err = c.do(req, result)
 	if err != nil {
@@ -98,7 +98,7 @@ func (c *Client) UpdateRRSet(ctx context.Context, domainName string, rrset RRSet
 		return nil, err
 	}
 
-	result := &RRSet{}
+	result := new(RRSet)
 
 	err = c.do(req, result)
 	if err != nil {

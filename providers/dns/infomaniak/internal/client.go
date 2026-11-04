@@ -55,9 +55,9 @@ func (c *Client) CreateRecord(ctx context.Context, zone string, payload RecordRe
 		return nil, err
 	}
 
-	result := new(APIResponse[*Record])
+	var result APIResponse[*Record]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -79,9 +79,9 @@ func (c *Client) DeleteRecord(ctx context.Context, zone string, recordID int) er
 		return err
 	}
 
-	result := new(APIResponse[any])
+	var result APIResponse[any]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return err
 	}
@@ -103,9 +103,9 @@ func (c *Client) ZoneExists(ctx context.Context, zone string) (bool, error) {
 		return false, err
 	}
 
-	result := new(APIResponse[bool])
+	var result APIResponse[bool]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		var apiErr *APIError
 		if errors.As(err, &apiErr) && apiErr.Code == "object_not_found" {
@@ -180,14 +180,14 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	result := new(APIResponse[any])
+	var response APIResponse[any]
 
-	err := json.Unmarshal(raw, result)
+	err := json.Unmarshal(raw, &response)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("%s: %w", result.Result, result.Error)
+	return fmt.Errorf("%s: %w", response.Result, response.Error)
 }
 
 func OAuthStaticAccessToken(client *http.Client, accessToken string) *http.Client {

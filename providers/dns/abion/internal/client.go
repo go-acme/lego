@@ -59,7 +59,8 @@ func (c *Client) GetZones(ctx context.Context, page *Pagination) (*APIResponse[[
 
 	results := &APIResponse[[]Zone]{}
 
-	if err := c.do(req, results); err != nil {
+	err = c.do(req, results)
+	if err != nil {
 		return nil, fmt.Errorf("could not get zones: %w", err)
 	}
 
@@ -67,7 +68,7 @@ func (c *Client) GetZones(ctx context.Context, page *Pagination) (*APIResponse[[
 }
 
 // GetZone Returns the full information on a single zone.
-func (c *Client) GetZone(ctx context.Context, name string) (*APIResponse[*Zone], error) {
+func (c *Client) GetZone(ctx context.Context, name string) (*Zone, error) {
 	endpoint := c.BaseURL.JoinPath("v1", "zones", name)
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, http.NoBody)
@@ -75,17 +76,18 @@ func (c *Client) GetZone(ctx context.Context, name string) (*APIResponse[*Zone],
 		return nil, err
 	}
 
-	results := &APIResponse[*Zone]{}
+	var results APIResponse[*Zone]
 
-	if err := c.do(req, results); err != nil {
-		return nil, fmt.Errorf("could not get zone %s: %w", name, err)
+	err = c.do(req, &results)
+	if err != nil {
+		return nil, err
 	}
 
-	return results, nil
+	return results.Data, nil
 }
 
 // UpdateZone Updates a zone by patching it according to JSON Merge Patch format (RFC 7396).
-func (c *Client) UpdateZone(ctx context.Context, name string, patch ZoneRequest) (*APIResponse[*Zone], error) {
+func (c *Client) UpdateZone(ctx context.Context, name string, patch ZoneRequest) (*Zone, error) {
 	endpoint := c.BaseURL.JoinPath("v1", "zones", name)
 
 	req, err := newJSONRequest(ctx, http.MethodPatch, endpoint, patch)
@@ -93,13 +95,14 @@ func (c *Client) UpdateZone(ctx context.Context, name string, patch ZoneRequest)
 		return nil, err
 	}
 
-	results := &APIResponse[*Zone]{}
+	var results APIResponse[*Zone]
 
-	if err := c.do(req, results); err != nil {
-		return nil, fmt.Errorf("could not update zone %s: %w", name, err)
+	err = c.do(req, &results)
+	if err != nil {
+		return nil, err
 	}
 
-	return results, nil
+	return results.Data, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {
@@ -162,12 +165,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	zResp := &APIResponse[any]{}
+	var response APIResponse[any]
 
-	err := json.Unmarshal(raw, zResp)
+	err := json.Unmarshal(raw, &response)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return zResp.Error
+	return response.Error
 }

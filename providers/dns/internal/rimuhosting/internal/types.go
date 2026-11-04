@@ -33,7 +33,7 @@ type APIError struct {
 	Text    string   `xml:",chardata"`
 }
 
-func (a APIError) Error() string {
+func (a *APIError) Error() string {
 	return a.Text
 }
 

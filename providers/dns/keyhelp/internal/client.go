@@ -48,6 +48,64 @@ func NewClient(baseURL, apiKey string) (*Client, error) {
 	}, nil
 }
 
+func (c *Client) ListDomains(ctx context.Context) ([]Domain, error) {
+	endpoint := c.baseURL.JoinPath("domains")
+
+	query := endpoint.Query()
+	query.Set("sort", "domain_utf8")
+	endpoint.RawQuery = query.Encode()
+
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var domains []Domain
+
+	err = c.do(req, &domains)
+	if err != nil {
+		return nil, err
+	}
+
+	return domains, nil
+}
+
+func (c *Client) ListDomainRecords(ctx context.Context, domainID int) (*DomainRecords, error) {
+	endpoint := c.baseURL.JoinPath("dns", strconv.Itoa(domainID))
+
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	records := new(DomainRecords)
+
+	err = c.do(req, records)
+	if err != nil {
+		return nil, err
+	}
+
+	return records, nil
+}
+
+func (c *Client) UpdateDomainRecords(ctx context.Context, domainID int, records DomainRecords) (*DomainID, error) {
+	endpoint := c.baseURL.JoinPath("dns", strconv.Itoa(domainID))
+
+	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, records)
+	if err != nil {
+		return nil, err
+	}
+
+	var result DomainID
+
+	err = c.do(req, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
 func (c *Client) do(req *http.Request, result any) error {
 	req.Header.Set(APIKeyHeader, c.apiKey)
 
@@ -79,64 +137,6 @@ func (c *Client) do(req *http.Request, result any) error {
 	return nil
 }
 
-func (c *Client) ListDomains(ctx context.Context) ([]Domain, error) {
-	endpoint := c.baseURL.JoinPath("domains")
-
-	query := endpoint.Query()
-	query.Set("sort", "domain_utf8")
-	endpoint.RawQuery = query.Encode()
-
-	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var result []Domain
-
-	err = c.do(req, &result)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func (c *Client) ListDomainRecords(ctx context.Context, domainID int) (*DomainRecords, error) {
-	endpoint := c.baseURL.JoinPath("dns", strconv.Itoa(domainID))
-
-	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var result DomainRecords
-
-	err = c.do(req, &result)
-	if err != nil {
-		return nil, err
-	}
-
-	return &result, nil
-}
-
-func (c *Client) UpdateDomainRecords(ctx context.Context, domainID int, records DomainRecords) (*DomainID, error) {
-	endpoint := c.baseURL.JoinPath("dns", strconv.Itoa(domainID))
-
-	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, records)
-	if err != nil {
-		return nil, err
-	}
-
-	var result DomainID
-
-	err = c.do(req, &result)
-	if err != nil {
-		return nil, err
-	}
-
-	return &result, nil
-}
-
 func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
 	buf := new(bytes.Buffer)
 
@@ -164,12 +164,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return &errAPI
+	return errAPI
 }

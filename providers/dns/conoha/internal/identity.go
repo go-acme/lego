@@ -46,14 +46,14 @@ func (c *Identifier) GetToken(ctx context.Context, auth Auth) (*IdentityResponse
 		return nil, err
 	}
 
-	identity := &IdentityResponse{}
+	result := new(IdentityResponse)
 
-	err = c.do(req, identity)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return identity, nil
+	return result, nil
 }
 
 func (c *Identifier) do(req *http.Request, result any) error {

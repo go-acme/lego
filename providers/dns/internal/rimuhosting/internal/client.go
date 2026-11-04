@@ -66,7 +66,7 @@ func (c *Client) DoActions(ctx context.Context, actions ...ActionParameter) (*DN
 		return nil, errors.New("no action")
 	}
 
-	resp := &DNSAPIResult{}
+	resp := new(DNSAPIResult)
 
 	if len(actions) == 1 {
 		action := actionParameter{
@@ -158,9 +158,9 @@ func (c *Client) do(ctx context.Context, params, result any) error {
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	errAPI := APIError{}
+	errAPI := new(APIError)
 
-	err := xml.Unmarshal(raw, &errAPI)
+	err := xml.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}

@@ -44,14 +44,14 @@ func NewClient(token string) *Client {
 
 // GetZone gets zone information.
 // https://gcore.com/docs/api-reference/dns/zones/list-of-zones
-func (c *Client) GetZone(ctx context.Context, name string) (Zone, error) {
+func (c *Client) GetZone(ctx context.Context, name string) (*Zone, error) {
 	endpoint := c.BaseURL.JoinPath("v2", "zones", name)
 
-	zone := Zone{}
+	zone := new(Zone)
 
 	err := c.doRequest(ctx, http.MethodGet, endpoint, nil, &zone)
 	if err != nil {
-		return Zone{}, fmt.Errorf("get zone %s: %w", name, err)
+		return nil, fmt.Errorf("get zone %s: %w", name, err)
 	}
 
 	return zone, nil
@@ -59,14 +59,14 @@ func (c *Client) GetZone(ctx context.Context, name string) (Zone, error) {
 
 // GetRRSet gets RRSet item.
 // https://gcore.com/docs/api-reference/dns/rrsets/get-rrset
-func (c *Client) GetRRSet(ctx context.Context, zone, name string) (RRSet, error) {
+func (c *Client) GetRRSet(ctx context.Context, zone, name string) (*RRSet, error) {
 	endpoint := c.BaseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
-	var result RRSet
+	result := new(RRSet)
 
 	err := c.doRequest(ctx, http.MethodGet, endpoint, nil, &result)
 	if err != nil {
-		return RRSet{}, fmt.Errorf("get txt records %s -> %s: %w", zone, name, err)
+		return nil, fmt.Errorf("get txt records %s -> %s: %w", zone, name, err)
 	}
 
 	return result, nil
@@ -81,7 +81,7 @@ func (c *Client) DeleteRRSet(ctx context.Context, zone, name string) error {
 	if err != nil {
 		// Support DELETE idempotence https://developer.mozilla.org/en-US/docs/Glossary/Idempotent
 		statusErr := new(APIError)
-		if errors.As(err, statusErr) && statusErr.StatusCode == http.StatusNotFound {
+		if errors.As(err, &statusErr) && statusErr.StatusCode == http.StatusNotFound {
 			return nil
 		}
 
@@ -181,9 +181,9 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	errAPI := APIError{StatusCode: resp.StatusCode}
+	errAPI := &APIError{StatusCode: resp.StatusCode}
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		errAPI.Message = string(raw)
 	}

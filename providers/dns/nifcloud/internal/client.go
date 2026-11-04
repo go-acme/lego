@@ -58,14 +58,14 @@ func (c *Client) ChangeResourceRecordSets(ctx context.Context, hostedZoneID stri
 		return nil, err
 	}
 
-	output := &ChangeResourceRecordSetsResponse{}
+	result := new(ChangeResourceRecordSetsResponse)
 
-	err = c.do(req, output)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return output, nil
+	return result, nil
 }
 
 // GetChange Call GetChange API and return response.
@@ -77,14 +77,14 @@ func (c *Client) GetChange(ctx context.Context, statusID string) (*GetChangeResp
 		return nil, err
 	}
 
-	output := &GetChangeResponse{}
+	result := new(GetChangeResponse)
 
-	err = c.do(req, output)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return output, nil
+	return result, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {
@@ -173,12 +173,12 @@ func newXMLRequest(ctx context.Context, method string, endpoint *url.URL, payloa
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	errResp := &ErrorResponse{}
+	response := &ErrorResponse{}
 
-	err := xml.Unmarshal(raw, errResp)
+	err := xml.Unmarshal(raw, response)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return errResp.Error
+	return response.Error
 }

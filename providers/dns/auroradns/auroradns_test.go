@@ -8,6 +8,7 @@ import (
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/nrdcg/auroradns"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -146,23 +147,30 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /zones",
-			servermock.JSONEncode([]auroradns.Zone{{
-				ID:   "c56a4180-65aa-42ec-a945-5fd21dec0538",
-				Name: "example.com",
-			}}).
-				WithStatusCode(http.StatusCreated)).
+			servermock.JSONEncode(
+				[]auroradns.Zone{{
+					ID:   "c56a4180-65aa-42ec-a945-5fd21dec0538",
+					Name: "example.com",
+				}}).
+				WithStatusCode(http.StatusCreated),
+		).
 		Route("POST /zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records",
-			servermock.JSONEncode(auroradns.Record{
-				ID:         "ec56a4180-65aa-42ec-a945-5fd21dec0538",
-				RecordType: "TXT",
-				Name:       "_acme-challenge",
-				TTL:        300,
-			}).
-				WithStatusCode(http.StatusCreated)).
+			servermock.JSONEncode(
+				auroradns.Record{
+					ID:         "ec56a4180-65aa-42ec-a945-5fd21dec0538",
+					RecordType: "TXT",
+					Name:       "_acme-challenge",
+					TTL:        300,
+				}).
+				WithStatusCode(http.StatusCreated),
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json"),
+		).
 		Build(t)
 
-	err := provider.Present(t.Context(), "example.com", "", "foobar")
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Equal(t, map[string]string{"abc": "ec56a4180-65aa-42ec-a945-5fd21dec0538"}, provider.recordIDs)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
@@ -173,22 +181,15 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 				Name: "example.com",
 			}}).
 				WithStatusCode(http.StatusCreated)).
-		Route("POST /zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records",
-			servermock.JSONEncode(auroradns.Record{
-				ID:         "ec56a4180-65aa-42ec-a945-5fd21dec0538",
-				RecordType: "TXT",
-				Name:       "_acme-challenge",
-				TTL:        300,
-			}).
-				WithStatusCode(http.StatusCreated)).
 		Route("DELETE /zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records/ec56a4180-65aa-42ec-a945-5fd21dec0538",
 			servermock.RawStringResponse("{}").
 				WithStatusCode(http.StatusCreated)).
 		Build(t)
 
-	err := provider.Present(t.Context(), "example.com", "", "foobar")
+	provider.recordIDs["abc"] = "ec56a4180-65aa-42ec-a945-5fd21dec0538"
+
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 
-	err = provider.CleanUp(t.Context(), "example.com", "", "foobar")
-	require.NoError(t, err)
+	assert.Empty(t, provider.recordIDs)
 }

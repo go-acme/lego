@@ -14,6 +14,6 @@ type APIError struct {
 	Debug   string `json:"debug"`
 }
 
-func (a APIError) Error() string {
+func (a *APIError) Error() string {
 	return fmt.Sprintf("%s: %s", a.Message, a.Debug)
 }

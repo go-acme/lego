@@ -60,14 +60,14 @@ func (c *Client) getDomains(ctx context.Context) (*DomainListResponse, error) {
 		return nil, err
 	}
 
-	domainList := &DomainListResponse{}
+	result := new(DomainListResponse)
 
-	err = c.do(req, domainList)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return domainList, nil
+	return result, nil
 }
 
 // GetRecordID returns an ID of specified record.
@@ -95,14 +95,14 @@ func (c *Client) getRecords(ctx context.Context, domainID string) (*RecordListRe
 		return nil, err
 	}
 
-	recordList := &RecordListResponse{}
+	result := new(RecordListResponse)
 
-	err = c.do(req, recordList)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return recordList, nil
+	return result, nil
 }
 
 // CreateRecord adds new record.
@@ -120,14 +120,14 @@ func (c *Client) createRecord(ctx context.Context, domainID string, record Recor
 		return nil, err
 	}
 
-	newRecord := &Record{}
+	result := new(Record)
 
-	err = c.do(req, newRecord)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return newRecord, nil
+	return result, nil
 }
 
 // DeleteRecord removes specified record.

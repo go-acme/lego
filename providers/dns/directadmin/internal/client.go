@@ -93,12 +93,12 @@ func (c *Client) do(ctx context.Context, domain string, data url.Values) error {
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errInfo APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &errInfo)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("[status code %d] %w", resp.StatusCode, errInfo)
+	return fmt.Errorf("[status code %d] %w", resp.StatusCode, errAPI)
 }

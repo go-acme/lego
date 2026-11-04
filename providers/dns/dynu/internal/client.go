@@ -42,7 +42,7 @@ func (c *Client) GetRecords(ctx context.Context, hostname, recordType string) ([
 	query.Set("recordType", recordType)
 	endpoint.RawQuery = query.Encode()
 
-	apiResp := RecordsResponse{}
+	var apiResp RecordsResponse
 
 	err := c.doRetry(ctx, http.MethodGet, endpoint.String(), nil, &apiResp)
 	if err != nil {
@@ -65,7 +65,7 @@ func (c *Client) AddNewRecord(ctx context.Context, domainID int64, record DNSRec
 		return fmt.Errorf("failed to create request JSON body: %w", err)
 	}
 
-	apiResp := RecordResponse{}
+	var apiResp RecordResponse
 
 	err = c.doRetry(ctx, http.MethodPost, endpoint.String(), reqBody, &apiResp)
 	if err != nil {
@@ -83,7 +83,7 @@ func (c *Client) AddNewRecord(ctx context.Context, domainID int64, record DNSRec
 func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int64) error {
 	endpoint := c.baseURL.JoinPath("dns", strconv.FormatInt(domainID, 10), "record", strconv.FormatInt(recordID, 10))
 
-	apiResp := APIException{}
+	var apiResp APIException
 
 	err := c.doRetry(ctx, http.MethodDelete, endpoint.String(), nil, &apiResp)
 	if err != nil {
@@ -101,7 +101,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int64) err
 func (c *Client) GetRootDomain(ctx context.Context, hostname string) (*DNSHostname, error) {
 	endpoint := c.baseURL.JoinPath("dns", "getroot", hostname)
 
-	apiResp := DNSHostname{}
+	var apiResp DNSHostname
 
 	err := c.doRetry(ctx, http.MethodGet, endpoint.String(), nil, &apiResp)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -114,18 +115,20 @@ func TestDNSProvider_Present(t *testing.T) {
 				"id": 1234567,
 				"type": "TXT",
 				"name": "_acme-challenge",
-				"data": "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI",
+				"data": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 				"priority": null,
 				"port": null,
 				"weight": null
 			}
 		}`).
 				WithStatusCode(http.StatusCreated),
-			servermock.CheckRequestJSONBody(`{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`)).
+			servermock.CheckRequestJSONBody(`{"type":"TXT","name":"_acme-challenge.example.com.","data":"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY","ttl":30}`)).
 		Build(t)
 
-	err := provider.Present(t.Context(), "example.com", "", "foobar")
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Equal(t, map[string]int{"abc": 1234567}, provider.recordIDs)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
@@ -136,9 +139,11 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		Build(t)
 
 	provider.recordIDsMu.Lock()
-	provider.recordIDs["token"] = 1234567
+	provider.recordIDs["abc"] = 1234567
 	provider.recordIDsMu.Unlock()
 
-	err := provider.CleanUp(t.Context(), "example.com", "token", "")
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Empty(t, provider.recordIDs)
 }

@@ -45,9 +45,9 @@ func (c *Client) ListZones(ctx context.Context, domain string) ([]ZoneRecord, er
 		return nil, err
 	}
 
-	response := &apiResponse[[]ZoneRecord]{}
+	var response apiResponse[[]ZoneRecord]
 
-	err = c.do(req, response)
+	err = c.do(req, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -67,9 +67,9 @@ func (c *Client) AddRecord(ctx context.Context, domain string, record ZoneRecord
 		return "", err
 	}
 
-	response := &apiResponse[*ZoneRecord]{}
+	var response apiResponse[*ZoneRecord]
 
-	err = c.do(req, response)
+	err = c.do(req, &response)
 	if err != nil {
 		return "", err
 	}
@@ -91,9 +91,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domain, recordID string) erro
 		return err
 	}
 
-	err = c.do(req, nil)
-
-	return err
+	return c.do(req, nil)
 }
 
 func (c *Client) do(req *http.Request, result any) error {

@@ -42,7 +42,7 @@ func TestClient_GetZone(t *testing.T) {
 	zone, err := client.GetZone(t.Context(), "example.com")
 	require.NoError(t, err)
 
-	expected := Zone{Name: "example.com"}
+	expected := &Zone{Name: "example.com"}
 
 	assert.Equal(t, expected, zone)
 }
@@ -69,7 +69,7 @@ func TestClient_GetRRSet(t *testing.T) {
 	rrSet, err := client.GetRRSet(t.Context(), "example.com", "foo.example.com")
 	require.NoError(t, err)
 
-	expected := RRSet{
+	expected := &RRSet{
 		TTL: 10,
 		Records: []Records{
 			{Content: []string{"foo"}},

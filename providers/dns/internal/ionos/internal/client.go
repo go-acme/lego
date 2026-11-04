@@ -54,7 +54,7 @@ func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
 
 	err = c.do(req, &zones)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call API: %w", err)
+		return nil, err
 	}
 
 	return zones, nil
@@ -69,12 +69,7 @@ func (c *Client) ReplaceRecords(ctx context.Context, zoneID string, records []Re
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return fmt.Errorf("failed to call API: %w", err)
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 // GetRecords gets the records of a zones.
@@ -99,7 +94,7 @@ func (c *Client) GetRecords(ctx context.Context, zoneID string, filter *RecordsF
 
 	err = c.do(req, &zone)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call API: %w", err)
+		return nil, err
 	}
 
 	return zone.Records, nil
@@ -114,12 +109,7 @@ func (c *Client) RemoveRecord(ctx context.Context, zoneID, recordID string) erro
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return fmt.Errorf("failed to call API: %w", err)
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 func (c *Client) do(req *http.Request, result any) error {
@@ -180,12 +170,12 @@ func makeJSONRequest(ctx context.Context, method string, endpoint *url.URL, payl
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	errClient := &ClientError{StatusCode: resp.StatusCode}
+	errAPI := &ClientError{StatusCode: resp.StatusCode}
 
-	err := json.Unmarshal(raw, &errClient.errors)
+	err := json.Unmarshal(raw, &errAPI.errors)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return errClient
+	return errAPI
 }

@@ -56,9 +56,9 @@ func (c *Client) GetRecords(ctx context.Context, zoneName string) ([]Record, err
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	result := &apiResponse[[]Record, json.RawMessage]{}
+	var result apiResponse[[]Record, json.RawMessage]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -78,9 +78,9 @@ func (c *Client) AddRecord(ctx context.Context, zoneName string, record Record) 
 		return 0, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	result := &apiResponse[json.RawMessage, recordHeader]{}
+	var result apiResponse[json.RawMessage, recordHeader]
 
-	err = c.do(req, result)
+	err = c.do(req, &result)
 	if err != nil {
 		return 0, err
 	}
@@ -185,12 +185,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	response := new(APIError)
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &response)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return response
+	return errAPI
 }

@@ -148,9 +148,6 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			servermock.ResponseFromInternal("update_rrsets.json"),
 			servermock.CheckRequestJSONBodyFromInternal("update_rrsets_remove-request.json"),
 		).
-		Route("/",
-			servermock.DumpRequest(),
-		).
 		Build(t)
 
 	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")

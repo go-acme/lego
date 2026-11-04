@@ -82,14 +82,14 @@ func (c *Client) GetZone(ctx context.Context, name string) (*Zone, error) {
 		return nil, err
 	}
 
-	var zone Zone
+	zone := new(Zone)
 
-	err = c.do(req, http.StatusOK, &zone)
+	err = c.do(req, http.StatusOK, zone)
 	if err != nil {
 		return nil, err
 	}
 
-	return &zone, nil
+	return zone, nil
 }
 
 func (c *Client) AddRecord(ctx context.Context, zone string, payload RecordCreateUpdate) error {
@@ -100,12 +100,7 @@ func (c *Client) AddRecord(ctx context.Context, zone string, payload RecordCreat
 		return err
 	}
 
-	err = c.do(req, http.StatusAccepted, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, http.StatusAccepted, nil)
 }
 
 func (c *Client) DeleteRecord(ctx context.Context, zone string, record int) error {
@@ -116,12 +111,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zone string, record int) erro
 		return err
 	}
 
-	err = c.do(req, http.StatusAccepted, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, http.StatusAccepted, nil)
 }
 
 func (c *Client) do(req *http.Request, expectedStatusCode int, result any) error {
@@ -191,8 +181,9 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	errAPI := APIError{StatusCode: resp.StatusCode}
-	if err := json.Unmarshal(raw, &errAPI); err != nil {
+	errAPI := &APIError{StatusCode: resp.StatusCode}
+
+	if err := json.Unmarshal(raw, errAPI); err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 

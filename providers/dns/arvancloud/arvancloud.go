@@ -145,7 +145,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	newRecord, err := d.client.CreateRecord(ctx, authZone, record)
 	if err != nil {
-		return fmt.Errorf("arvancloud: failed to add TXT record: fqdn=%s: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("arvancloud: create record: fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -176,7 +176,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	}
 
 	if err := d.client.DeleteRecord(ctx, authZone, recordID); err != nil {
-		return fmt.Errorf("arvancloud: failed to delete TXT record: id=%s: %w", recordID, err)
+		return fmt.Errorf("arvancloud: delete record: id=%s: %w", recordID, err)
 	}
 
 	// deletes record ID from map

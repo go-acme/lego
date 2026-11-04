@@ -66,13 +66,14 @@ func (c *Client) ListDNSZones(ctx context.Context) ([]DNSZoneCollectionView, err
 		return nil, err
 	}
 
-	var collection DNSZoneCollection
+	var results DNSZoneCollection
 
-	if err := c.do(req, &collection); err != nil {
+	err = c.do(req, &results)
+	if err != nil {
 		return nil, err
 	}
 
-	return collection.Elements, nil
+	return results.Elements, nil
 }
 
 // GetDNSZone gets a DNS zone by ID including all its records.
@@ -86,7 +87,8 @@ func (c *Client) GetDNSZone(ctx context.Context, zoneID int64) (*DNSZone, error)
 
 	zone := new(DNSZone)
 
-	if err := c.do(req, zone); err != nil {
+	err = c.do(req, zone)
+	if err != nil {
 		return nil, err
 	}
 
@@ -104,7 +106,8 @@ func (c *Client) UpdateDNSZone(ctx context.Context, zoneID int64, update DNSZone
 
 	zone := new(DNSZone)
 
-	if err := c.do(req, zone); err != nil {
+	err = c.do(req, zone)
+	if err != nil {
 		return nil, err
 	}
 

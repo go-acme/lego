@@ -154,6 +154,32 @@ func (c *Client) do(req *http.Request, result any) error {
 	return nil
 }
 
+// sign creates and sets request signature and date.
+// https://rest.active24.cz/v2/docs/intro
+func (c *Client) sign(req *http.Request, now time.Time) error {
+	if req.URL.Path == "" {
+		req.URL.Path += "/"
+	}
+
+	canonicalRequest := fmt.Sprintf("%s %s %d", req.Method, req.URL.Path, now.Unix())
+
+	mac := hmac.New(sha1.New, []byte(c.secret))
+
+	_, err := mac.Write([]byte(canonicalRequest))
+	if err != nil {
+		return err
+	}
+
+	hashed := mac.Sum(nil)
+	signature := hex.EncodeToString(hashed)
+
+	req.SetBasicAuth(c.apiKey, signature)
+
+	req.Header.Set("Date", now.Format(time.RFC3339))
+
+	return nil
+}
+
 func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
 	buf := new(bytes.Buffer)
 
@@ -181,38 +207,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return &errAPI
-}
-
-// sign creates and sets request signature and date.
-// https://rest.active24.cz/v2/docs/intro
-func (c *Client) sign(req *http.Request, now time.Time) error {
-	if req.URL.Path == "" {
-		req.URL.Path += "/"
-	}
-
-	canonicalRequest := fmt.Sprintf("%s %s %d", req.Method, req.URL.Path, now.Unix())
-
-	mac := hmac.New(sha1.New, []byte(c.secret))
-
-	_, err := mac.Write([]byte(canonicalRequest))
-	if err != nil {
-		return err
-	}
-
-	hashed := mac.Sum(nil)
-	signature := hex.EncodeToString(hashed)
-
-	req.SetBasicAuth(c.apiKey, signature)
-
-	req.Header.Set("Date", now.Format(time.RFC3339))
-
-	return nil
+	return errAPI
 }

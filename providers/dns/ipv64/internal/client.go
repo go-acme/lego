@@ -46,7 +46,7 @@ func (c *Client) GetDomains(ctx context.Context) (*Domains, error) {
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
-	results := &Domains{}
+	results := new(Domains)
 
 	err = c.do(req, results)
 	if err != nil {
@@ -130,7 +130,7 @@ func (c *Client) do(req *http.Request, result any) error {
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	errAPI := &APIError{}
+	errAPI := new(APIError)
 
 	err := json.Unmarshal(raw, errAPI)
 	if err != nil {

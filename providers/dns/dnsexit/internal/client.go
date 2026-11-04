@@ -54,12 +54,7 @@ func (c *Client) AddRecord(ctx context.Context, domain string, record Record) er
 		return err
 	}
 
-	err = c.do(req)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req)
 }
 
 // DeleteRecord deletes a record.
@@ -75,12 +70,7 @@ func (c *Client) DeleteRecord(ctx context.Context, domain string, record Record)
 		return err
 	}
 
-	err = c.do(req)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req)
 }
 
 func (c *Client) do(req *http.Request) error {
@@ -145,12 +135,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIResponse
+	errAPI := new(APIResponse)
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return &errAPI
+	return errAPI
 }

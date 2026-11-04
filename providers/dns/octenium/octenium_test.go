@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -166,11 +167,13 @@ func TestDNSProvider_Present(t *testing.T) {
 				With("name", "_acme-challenge.example.com.").
 				With("ttl", "120").
 				With("type", "TXT").
-				With("value", "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI")).
+				With("value", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")).
 		Build(t)
 
-	err := provider.Present(t.Context(), "example.com", "", "foobar")
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Equal(t, map[string]string{"abc": "2976"}, provider.domainIDs)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
@@ -191,8 +194,10 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 				With("line", "123")).
 		Build(t)
 
-	provider.domainIDs["token"] = "2976"
+	provider.domainIDs["abc"] = "2976"
 
-	err := provider.CleanUp(t.Context(), "example.com", "token", "foobar")
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Empty(t, provider.domainIDs)
 }

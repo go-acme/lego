@@ -13,6 +13,6 @@ type APIError struct {
 	Zone    string   `xml:"ZONE,attr"`
 }
 
-func (a APIError) Error() string {
+func (a *APIError) Error() string {
 	return fmt.Sprintf("%s: %s (%s)", a.Code, a.Message, a.Zone)
 }

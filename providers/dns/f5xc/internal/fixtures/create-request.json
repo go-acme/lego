@@ -1,0 +1,14 @@
+{
+  "dns_zone_name": "example.com",
+  "group_name": "groupA",
+  "rrset": {
+    "description": "lego",
+    "ttl": 60,
+    "txt_record": {
+      "name": "wwww",
+      "values": [
+        "txt"
+      ]
+    }
+  }
+}

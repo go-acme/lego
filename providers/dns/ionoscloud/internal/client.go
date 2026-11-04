@@ -56,9 +56,10 @@ func (c *Client) RetrieveZones(ctx context.Context, zoneName string) ([]Zone, er
 	query.Add("filter.zoneName", zoneName)
 	req.URL.RawQuery = query.Encode()
 
-	result := ZonesResponse{}
+	var result ZonesResponse
 
-	if err := c.do(req, &result); err != nil {
+	err = c.do(req, &result)
+	if err != nil {
 		return nil, err
 	}
 
@@ -79,9 +80,10 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID string, record RecordP
 		return nil, err
 	}
 
-	result := &RecordResponse{}
+	result := new(RecordResponse)
 
-	if err := c.do(req, result); err != nil {
+	err = c.do(req, result)
+	if err != nil {
 		return nil, err
 	}
 
@@ -161,12 +163,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return &errAPI
+	return errAPI
 }

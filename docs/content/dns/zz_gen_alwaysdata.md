@@ -61,7 +61,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://help.alwaysdata.com/en/api/resources/)
+- [API documentation](https://help.alwaysdata.com/en/docs/development/api/resources/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/alwaysdata/alwaysdata.toml -->

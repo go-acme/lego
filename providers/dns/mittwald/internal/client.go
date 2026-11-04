@@ -66,7 +66,7 @@ func (c *Client) GetDNSZone(ctx context.Context, zoneID string) (*DNSZone, error
 		return nil, err
 	}
 
-	result := &DNSZone{}
+	result := new(DNSZone)
 
 	err = c.do(req, result)
 	if err != nil {
@@ -106,7 +106,7 @@ func (c *Client) CreateDNSZone(ctx context.Context, zone CreateDNSZoneRequest) (
 		return nil, err
 	}
 
-	result := &DNSZone{}
+	result := new(DNSZone)
 
 	err = c.do(req, result)
 	if err != nil {
@@ -200,12 +200,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var response APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &response)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("[status code %d] %w", resp.StatusCode, response)
+	return fmt.Errorf("[status code %d] %w", resp.StatusCode, errAPI)
 }

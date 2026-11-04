@@ -9,6 +9,7 @@ import (
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/go-acme/lego/v5/providers/dns/bluecatv2/internal"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -306,6 +307,9 @@ func TestDNSProvider_Present(t *testing.T) {
 
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Equal(t, map[string]int64{"abc": 12345}, provider.zoneIDs)
+	assert.Equal(t, map[string]int64{"abc": 12345}, provider.recordIDs)
 }
 
 func TestDNSProvider_Present_skipDeploy(t *testing.T) {
@@ -358,9 +362,16 @@ func TestDNSProvider_Present_skipDeploy(t *testing.T) {
 
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Equal(t, map[string]int64{"abc": 12345}, provider.zoneIDs)
+	assert.Equal(t, map[string]int64{"abc": 12345}, provider.recordIDs)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
+	defer envTest.RestoreEnv()
+
+	envTest.ClearEnv()
+
 	provider := mockBuilder().
 		Route("POST /api/v2/sessions",
 			servermock.ResponseFromInternal("postSession.json"),
@@ -381,6 +392,9 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Empty(t, provider.zoneIDs)
+	assert.Empty(t, provider.recordIDs)
 }
 
 func TestDNSProvider_CleanUp_skipDeploy(t *testing.T) {
@@ -411,4 +425,7 @@ func TestDNSProvider_CleanUp_skipDeploy(t *testing.T) {
 
 	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Equal(t, map[string]int64{"abc": 456789}, provider.zoneIDs)
+	assert.Equal(t, map[string]int64{"abc": 12345}, provider.recordIDs)
 }

@@ -66,12 +66,14 @@ func (c *Client) updateZone(ctx context.Context, domain string, zoneStream *Zone
 		return nil, err
 	}
 
-	var resp *DataZoneResponse
-	if err := c.do(req, &resp); err != nil {
+	var result *DataZoneResponse
+
+	err = c.do(req, &result)
+	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	return result, nil
 }
 
 func (c *Client) do(req *http.Request, result any) error {
@@ -133,12 +135,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return &errAPI
+	return errAPI
 }

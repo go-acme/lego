@@ -165,6 +165,14 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("onecloudru: delete record: %w", err)
 	}
 
+	d.recordIDsMu.Lock()
+	delete(d.recordIDs, token)
+	d.recordIDsMu.Unlock()
+
+	d.domainIDsMu.Lock()
+	delete(d.domainIDs, token)
+	d.domainIDsMu.Unlock()
+
 	return nil
 }
 

@@ -51,14 +51,14 @@ func (c *Client) CreateDNSRecord(ctx context.Context, record DNSRecord) (*Create
 		return nil, err
 	}
 
-	var result CreateDNSRecordResponse
+	result := new(CreateDNSRecordResponse)
 
-	err = c.do(req, &result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 // DeleteDNSRecord deletes a DNS record.
@@ -71,14 +71,14 @@ func (c *Client) DeleteDNSRecord(ctx context.Context, id string) (*DeleteRecordR
 		return nil, err
 	}
 
-	var result DeleteRecordResponse
+	result := new(DeleteRecordResponse)
 
-	err = c.do(req, &result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 // GetJob returns a single job based on its ID.
@@ -91,14 +91,14 @@ func (c *Client) GetJob(ctx context.Context, id string) (*GetJobResponse, error)
 		return nil, err
 	}
 
-	var result GetJobResponse
+	result := new(GetJobResponse)
 
-	err = c.do(req, &result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 func (c *Client) do(req *http.Request, data any) error {
@@ -155,9 +155,9 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}

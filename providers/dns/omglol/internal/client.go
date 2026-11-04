@@ -45,9 +45,9 @@ func (c *Client) RetrieveRecords(ctx context.Context, address string) ([]Record,
 		return nil, err
 	}
 
-	results := &APIResponse[RetrieveResponse]{}
+	var results APIResponse[RetrieveResponse]
 
-	err = c.do(req, results)
+	err = c.do(req, &results)
 	if err != nil {
 		return nil, err
 	}
@@ -63,9 +63,9 @@ func (c *Client) CreateRecord(ctx context.Context, address string, record Record
 		return nil, err
 	}
 
-	results := &APIResponse[CreateResponse]{}
+	var results APIResponse[CreateResponse]
 
-	err = c.do(req, results)
+	err = c.do(req, &results)
 	if err != nil {
 		return nil, err
 	}
@@ -81,14 +81,7 @@ func (c *Client) DeleteRecord(ctx context.Context, address, recordID string) err
 		return err
 	}
 
-	results := &APIResponse[SimpleResponse]{}
-
-	err = c.do(req, results)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, &APIResponse[SimpleResponse]{})
 }
 
 func (c *Client) do(req *http.Request, result any) error {
@@ -145,14 +138,14 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIResponse[ErrorResponse]
+	var errAPI APIResponse[*ErrorResponse]
 
 	err := json.Unmarshal(raw, &errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return &errAPI.Response
+	return errAPI.Response
 }
 
 func OAuthStaticAccessToken(client *http.Client, accessToken string) *http.Client {

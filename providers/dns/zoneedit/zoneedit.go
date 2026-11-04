@@ -37,6 +37,8 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HTTPClient         *http.Client
+
+	sleep time.Duration
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -76,6 +78,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("zoneedit: the configuration of the DNS provider is nil")
 	}
 
+	// ERROR CODE="702" TEXT="Minimum 10 seconds between requests"
+	config.sleep = 11 * time.Second
+
 	client, err := internal.NewClient(config.User, config.AuthToken)
 	if err != nil {
 		return nil, fmt.Errorf("zoneedit: %w", err)
@@ -102,8 +107,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("zoneedit: create TXT record: %w", err)
 	}
 
-	// ERROR CODE="702" TEXT="Minimum 10 seconds between requests"
-	time.Sleep(11 * time.Second)
+	time.Sleep(d.config.sleep)
 
 	return nil
 }
@@ -117,8 +121,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("zoneedit: delete TXT record: %w", err)
 	}
 
-	// ERROR CODE="702" TEXT="Minimum 10 seconds between requests"
-	time.Sleep(11 * time.Second)
+	time.Sleep(d.config.sleep)
 
 	return nil
 }

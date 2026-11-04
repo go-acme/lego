@@ -64,9 +64,9 @@ func (c *Client) AddRecord(ctx context.Context, record Record) (int, error) {
 		return 0, err
 	}
 
-	results := &APIResponse[RecordID]{}
+	var results APIResponse[RecordID]
 
-	err = c.do(req, results)
+	err = c.do(req, &results)
 	if err != nil {
 		return 0, err
 	}
@@ -90,9 +90,9 @@ func (c *Client) DeleteRecord(ctx context.Context, domain string, recordID int) 
 		return err
 	}
 
-	results := &APIResponse[any]{}
+	var results APIResponse[any]
 
-	err = c.do(req, results)
+	err = c.do(req, &results)
 	if err != nil {
 		return err
 	}
@@ -196,14 +196,14 @@ func (c *Client) convertURLValues(values url.Values) (url.Values, error) {
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	result := &APIResponse[any]{}
+	errAPI := &APIResponse[any]{}
 
-	err := gbkDecoder(raw).Decode(result)
+	err := gbkDecoder(raw).Decode(errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return result
+	return errAPI
 }
 
 func gbkDecoder(raw []byte) *json.Decoder {

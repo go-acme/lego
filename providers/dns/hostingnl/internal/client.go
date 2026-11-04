@@ -65,12 +65,7 @@ func (c Client) DeleteRecord(ctx context.Context, domain, recordID string) error
 
 	var result APIResponse[Record]
 
-	err = c.do(req, &result)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, &result)
 }
 
 func (c Client) do(req *http.Request, result any) error {
@@ -109,14 +104,14 @@ func (c Client) do(req *http.Request, result any) error {
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var apiErr APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &apiErr)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("[status code: %d] %w", resp.StatusCode, apiErr)
+	return fmt.Errorf("[status code: %d] %w", resp.StatusCode, errAPI)
 }
 
 func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {

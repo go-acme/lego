@@ -56,7 +56,7 @@ func (c *Client) GetZone(ctx context.Context, domain string) (*Zone, error) {
 		return nil, err
 	}
 
-	result := &Zone{}
+	result := new(Zone)
 
 	err = c.do(req, result)
 	if err != nil {
@@ -105,7 +105,7 @@ func (c *Client) ValidateZone(ctx context.Context, domain string, zone *Zone) (*
 		return nil, err
 	}
 
-	result := &Zone{}
+	result := new(Zone)
 
 	err = c.do(req, result)
 	if err != nil {
@@ -174,14 +174,14 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("%d: %w", resp.StatusCode, &errAPI)
+	return fmt.Errorf("%d: %w", resp.StatusCode, errAPI)
 }
 
 const DefaultTTL = 600

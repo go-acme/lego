@@ -1,0 +1,19 @@
+{
+  "rrsets": [
+    {
+      "name": "_acme-challenge.example.org.",
+      "type": "TXT",
+      "kind": "",
+      "changetype": "REPLACE",
+      "ttl": 120,
+      "records": [
+        {
+          "content": "xxx",
+          "disabled": false,
+          "name": "_acme-challenge.example.org.",
+          "type": "TXT"
+        }
+      ]
+    }
+  ]
+}

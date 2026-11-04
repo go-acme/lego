@@ -48,7 +48,9 @@ func (c *Client) GetTxtRecords(ctx context.Context, domain string) ([]TXTRecord,
 	}
 
 	var records []TXTRecord
-	if err := c.do(req, &records); err != nil {
+
+	err = c.do(req, &records)
+	if err != nil {
 		return nil, err
 	}
 
@@ -66,7 +68,9 @@ func (c *Client) AddTxtRecord(ctx context.Context, domain string, record TXTReco
 	}
 
 	var records []TXTRecord
-	if err := c.do(req, &records); err != nil {
+
+	err = c.do(req, &records)
+	if err != nil {
 		return nil, err
 	}
 

@@ -66,14 +66,14 @@ func (c *Client) GetZoneDetails(ctx context.Context, zone string) (*ZoneDetails,
 		return nil, err
 	}
 
-	var details ZoneDetails
+	details := new(ZoneDetails)
 
-	err = c.do(req, &details)
+	err = c.do(req, details)
 	if err != nil {
 		return nil, err
 	}
 
-	return &details, nil
+	return details, nil
 }
 
 // ListRecords gets a list of DNS records belonging to the zone.
@@ -110,12 +110,7 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record Record) erro
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 // DeleteRecords deletes all DNS records of a zone that match the DNS record passed.
@@ -132,12 +127,7 @@ func (c *Client) DeleteRecords(ctx context.Context, zone string, record Record) 
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 // CommitRecords sends a commit to the zone.
@@ -150,12 +140,7 @@ func (c *Client) CommitRecords(ctx context.Context, zone string) error {
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 func (c *Client) do(req *http.Request, result any) error {

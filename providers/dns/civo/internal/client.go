@@ -79,14 +79,14 @@ func (c *Client) ListDNSRecords(ctx context.Context, domainID string) ([]Record,
 		return nil, err
 	}
 
-	var result []Record
+	var results []Record
 
-	err = c.do(req, &result)
+	err = c.do(req, &results)
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return results, nil
 }
 
 // CreateDNSRecord creates DNS records for a specific domain.
@@ -99,14 +99,14 @@ func (c *Client) CreateDNSRecord(ctx context.Context, domainID string, record Re
 		return nil, err
 	}
 
-	var result Record
+	result := new(Record)
 
-	err = c.do(req, &result)
+	err = c.do(req, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 // DeleteDNSRecord remove a DNS record from a domain.
@@ -187,14 +187,14 @@ func (c *Client) newJSONRequest(ctx context.Context, method string, endpoint *ur
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return &errAPI
+	return errAPI
 }
 
 // OAuthStaticAccessToken Authorization header.

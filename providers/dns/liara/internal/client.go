@@ -202,14 +202,14 @@ func (c *Client) newJSONRequest(ctx context.Context, method string, endpoint *ur
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIError
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("[status code: %d] %w", resp.StatusCode, &errAPI)
+	return fmt.Errorf("[status code: %d] %w", resp.StatusCode, errAPI)
 }
 
 func OAuthStaticAccessToken(client *http.Client, accessToken string) *http.Client {

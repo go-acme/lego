@@ -39,7 +39,7 @@ type APIError struct {
 	Errors     []string `json:"errors"`
 }
 
-func (a APIError) Error() string {
+func (a *APIError) Error() string {
 	return fmt.Sprintf("%d: %s", a.StatusCode, strings.Join(a.Errors, ": "))
 }
 

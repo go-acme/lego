@@ -24,7 +24,7 @@ type Client struct {
 	username string
 	token    string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -35,7 +35,7 @@ func NewClient(username, token string) *Client {
 	return &Client{
 		token:      token,
 		username:   username,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
@@ -43,14 +43,14 @@ func NewClient(username, token string) *Client {
 // ListServices lists service IDs.
 // https://api.shellrent.com/elenco-dei-servizi-acquistati
 func (c *Client) ListServices(ctx context.Context) ([]int, error) {
-	endpoint := c.baseURL.JoinPath("purchase")
+	endpoint := c.BaseURL.JoinPath("purchase")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	result := Response[[]IntOrString]{}
+	var result Response[[]IntOrString]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -73,14 +73,14 @@ func (c *Client) ListServices(ctx context.Context) ([]int, error) {
 // GetServiceDetails gets service details.
 // https://api.shellrent.com/dettagli-servizio-acquistato
 func (c *Client) GetServiceDetails(ctx context.Context, serviceID int) (*ServiceDetails, error) {
-	endpoint := c.baseURL.JoinPath("purchase", "details", strconv.Itoa(serviceID))
+	endpoint := c.BaseURL.JoinPath("purchase", "details", strconv.Itoa(serviceID))
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	result := Response[*ServiceDetails]{}
+	var result Response[*ServiceDetails]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -97,14 +97,14 @@ func (c *Client) GetServiceDetails(ctx context.Context, serviceID int) (*Service
 // GetDomainDetails gets domain details.
 // https://api.shellrent.com/dettagli-dominio
 func (c *Client) GetDomainDetails(ctx context.Context, domainID int) (*DomainDetails, error) {
-	endpoint := c.baseURL.JoinPath("domain", "details", strconv.Itoa(domainID))
+	endpoint := c.BaseURL.JoinPath("domain", "details", strconv.Itoa(domainID))
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	result := Response[*DomainDetails]{}
+	var result Response[*DomainDetails]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -121,14 +121,14 @@ func (c *Client) GetDomainDetails(ctx context.Context, domainID int) (*DomainDet
 // CreateRecord created a record.
 // https://api.shellrent.com/creazione-record-dns-di-un-dominio
 func (c *Client) CreateRecord(ctx context.Context, domainID int, record Record) (int, error) {
-	endpoint := c.baseURL.JoinPath("dns_record", "store", strconv.Itoa(domainID))
+	endpoint := c.BaseURL.JoinPath("dns_record", "store", strconv.Itoa(domainID))
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
 		return 0, err
 	}
 
-	result := Response[*Record]{}
+	var result Response[*Record]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -145,14 +145,14 @@ func (c *Client) CreateRecord(ctx context.Context, domainID int, record Record) 
 // DeleteRecord deletes a record.
 // https://api.shellrent.com/eliminazione-record-dns-di-un-dominio
 func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int) error {
-	endpoint := c.baseURL.JoinPath("dns_record", "remove", strconv.Itoa(domainID), strconv.Itoa(recordID))
+	endpoint := c.BaseURL.JoinPath("dns_record", "remove", strconv.Itoa(domainID), strconv.Itoa(recordID))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
 
-	result := Response[any]{}
+	var result Response[any]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -220,14 +220,14 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var response Base
+	errAPI := new(Base)
 
-	err := json.Unmarshal(raw, &response)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return response
+	return errAPI
 }
 
 // TTLRounder rounds the given TTL in seconds to the next accepted value.

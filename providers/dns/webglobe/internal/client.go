@@ -43,9 +43,9 @@ func (c *Client) GetDomainDetails(ctx context.Context, domainID string) (*Domain
 		return nil, err
 	}
 
-	result := new(APIResponse[*Domain])
+	var result APIResponse[*Domain]
 
-	err = c.do(ctx, req, result)
+	err = c.do(ctx, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -65,9 +65,9 @@ func (c *Client) CreateRecord(ctx context.Context, domainID int64, record Record
 		return nil, err
 	}
 
-	result := new(RecordResponse)
+	var result RecordResponse
 
-	err = c.do(ctx, req, result)
+	err = c.do(ctx, req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -146,12 +146,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var envelope APIResponse[any]
+	var response APIResponse[any]
 
-	err := json.Unmarshal(raw, &envelope)
+	err := json.Unmarshal(raw, &response)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return envelope.Error
+	return response.Error
 }

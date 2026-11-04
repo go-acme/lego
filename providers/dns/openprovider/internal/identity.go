@@ -27,9 +27,9 @@ func (c *Client) Login(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	results := &APIResponse[Token]{}
+	var results APIResponse[Token]
 
-	err = c.do(req, results)
+	err = c.do(req, &results)
 	if err != nil {
 		return "", err
 	}

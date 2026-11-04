@@ -184,8 +184,8 @@ func TestDNSProvider_Present(t *testing.T) {
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 
-	assert.Len(t, provider.domainIDs, 1)
-	assert.Len(t, provider.recordIDs, 1)
+	assert.Equal(t, map[string]int{"abc": 1}, provider.domainIDs)
+	assert.Equal(t, map[string]int{"abc": 2}, provider.recordIDs)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
@@ -206,4 +206,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	err := provider.CleanUp(t.Context(), "example.com", tok, "123d==")
 	require.NoError(t, err)
+
+	assert.Empty(t, provider.domainIDs)
+	assert.Empty(t, provider.recordIDs)
 }

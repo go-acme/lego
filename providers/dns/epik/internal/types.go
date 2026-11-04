@@ -31,7 +31,7 @@ type APIError struct {
 	Errors []Data `json:"errors"`
 }
 
-func (a APIError) Error() string {
+func (a *APIError) Error() string {
 	var parts []string
 	for _, data := range a.Errors {
 		parts = append(parts, fmt.Sprintf("code: %d, message: %s, description: %s", data.Code, data.Message, data.Description))

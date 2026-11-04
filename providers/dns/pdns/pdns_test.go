@@ -1,10 +1,12 @@
 package pdns
 
 import (
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -159,4 +161,78 @@ func mustParse(rawURL string) *url.URL {
 	}
 
 	return u
+}
+
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.APIKey = "secret"
+			config.Host, _ = url.Parse(server.URL)
+			config.HTTPClient = server.Client()
+
+			p, err := NewDNSProviderConfig(config)
+			if err != nil {
+				return nil, err
+			}
+
+			return p, nil
+		},
+		servermock.CheckHeader().
+			WithJSONHeaders().
+			With("X-Api-Key", "secret"),
+	).Route("GET /api",
+		servermock.JSONEncode([]map[string]any{{"url": "/x", "version": 4}}),
+	)
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /api/v4/servers/localhost/zones/example.org.",
+			servermock.ResponseFromInternal("zone.json"),
+		).
+		Route("PATCH /api/v4/servers/localhost/zones/example.org.",
+			servermock.Noop(),
+			servermock.CheckRequestJSONBodyFromInternal("zone_a.json"),
+		).
+		Route("PUT /api/v4/servers/localhost/zones/example.org./notify",
+			servermock.Noop(),
+		).
+		Build(t)
+
+	err := provider.Present(t.Context(), "example.org", "abc", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_Present_existing_TXT(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /api/v4/servers/localhost/zones/example.org.",
+			servermock.ResponseFromInternal("zones_a.json"),
+		).
+		Route("PATCH /api/v4/servers/localhost/zones/example.org.",
+			servermock.Noop(),
+			servermock.CheckRequestJSONBodyFromInternal("zone_b.json"),
+		).
+		Route("PUT /api/v4/servers/localhost/zones/example.org./notify",
+			servermock.Noop(),
+		).
+		Build(t)
+
+	err := provider.Present(t.Context(), "example.org", "abc", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /api/v4/servers/localhost/zones/example.org.",
+			servermock.ResponseFromInternal("zone_b.json"),
+		).
+		Route("PATCH /api/v4/servers/localhost/zones",
+			servermock.ResponseFromInternal("zone.json"),
+			servermock.CheckRequestJSONBodyFromInternal("zone_update-request.json"),
+		).
+		Build(t)
+
+	err := provider.CleanUp(t.Context(), "example.org", "abc", "123d==")
+	require.NoError(t, err)
 }

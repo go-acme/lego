@@ -21,14 +21,14 @@ func (c *Client) CreateAuthenticationToken(ctx context.Context) (*Token, error) 
 		return nil, err
 	}
 
-	var token Token
+	token := new(Token)
 
-	err = c.do(req, &token)
+	err = c.do(req, token)
 	if err != nil {
 		return nil, err
 	}
 
-	return &token, nil
+	return token, nil
 }
 
 func (c *Client) CreateAuthenticatedContext(ctx context.Context) (context.Context, error) {

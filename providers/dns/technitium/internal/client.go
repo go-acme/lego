@@ -57,7 +57,7 @@ func (c *Client) AddRecord(ctx context.Context, record Record) (*Record, error) 
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 
-	result := &APIResponse[AddRecordResponse]{}
+	result := new(APIResponse[AddRecordResponse])
 
 	err = c.do(req, result)
 	if err != nil {
@@ -81,7 +81,7 @@ func (c *Client) DeleteRecord(ctx context.Context, record Record) error {
 		return fmt.Errorf("create request: %w", err)
 	}
 
-	result := &APIResponse[any]{}
+	result := new(APIResponse[any])
 
 	err = c.do(req, result)
 	if err != nil {
@@ -149,12 +149,12 @@ func (c *Client) newFormRequest(ctx context.Context, endpoint *url.URL, payload 
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errAPI APIResponse[any]
+	errAPI := new(APIResponse[any])
 
-	err := json.Unmarshal(raw, &errAPI)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return &errAPI
+	return errAPI
 }

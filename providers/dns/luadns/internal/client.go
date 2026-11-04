@@ -52,7 +52,7 @@ func (c *Client) ListZones(ctx context.Context) ([]DNSZone, error) {
 
 	err = c.do(req, &zones)
 	if err != nil {
-		return nil, fmt.Errorf("could not list zones: %w", err)
+		return nil, err
 	}
 
 	return zones, nil
@@ -72,7 +72,7 @@ func (c *Client) CreateRecord(ctx context.Context, zone DNSZone, newRecord DNSRe
 
 	err = c.do(req, &record)
 	if err != nil {
-		return nil, fmt.Errorf("could not create record %#v: %w", record, err)
+		return nil, err
 	}
 
 	return record, nil
@@ -88,12 +88,7 @@ func (c *Client) DeleteRecord(ctx context.Context, record *DNSRecord) error {
 		return err
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return fmt.Errorf("could not delete record %#v: %w", record, err)
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 func (c *Client) do(req *http.Request, result any) error {
@@ -154,12 +149,12 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var errResp errorResponse
+	errAPI := new(errorResponse)
 
-	err := json.Unmarshal(raw, &errResp)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("status=%d: %w", resp.StatusCode, errResp)
+	return fmt.Errorf("status=%d: %w", resp.StatusCode, errAPI)
 }

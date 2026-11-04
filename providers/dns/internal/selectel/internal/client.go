@@ -47,7 +47,7 @@ func (c *Client) GetDomainByName(ctx context.Context, domainName string) (*Domai
 		return nil, err
 	}
 
-	domain := &Domain{}
+	domain := new(Domain)
 
 	statusCode, err := c.do(req, domain)
 	if err != nil {
@@ -70,7 +70,7 @@ func (c *Client) AddRecord(ctx context.Context, domainID int, body Record) (*Rec
 		return nil, err
 	}
 
-	record := &Record{}
+	record := new(Record)
 
 	_, err = c.do(req, record)
 	if err != nil {
@@ -169,7 +169,7 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	errAPI := &APIError{}
+	errAPI := new(APIError)
 
 	err := json.Unmarshal(raw, errAPI)
 	if err != nil {

@@ -70,7 +70,7 @@ func (c *Client) ListDomains(ctx context.Context, pager Pager) ([]Domain, error)
 		return nil, err
 	}
 
-	result := BaseResponse[Domains]{}
+	var result BaseResponse[Domains]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -92,7 +92,7 @@ func (c *Client) AddRecord(ctx context.Context, record Record) (string, error) {
 		return "", err
 	}
 
-	result := BaseResponse[RecordID]{}
+	var result BaseResponse[RecordID]
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -118,7 +118,7 @@ func (c *Client) DeleteRecord(ctx context.Context, recordID string) error {
 		return err
 	}
 
-	result := BaseResponse[any]{}
+	var result BaseResponse[any]
 
 	err = c.do(req, &result)
 	if err != nil {

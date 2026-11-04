@@ -124,7 +124,8 @@ func TestClient_joinPath(t *testing.T) {
 func TestClient_GetHostedZone(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/v1/servers/server/zones/example.org.",
-			servermock.ResponseFromFixture("zone.json")).
+			servermock.ResponseFromFixture("zone.json"),
+		).
 		Build(t)
 
 	client.apiVersion = 1
@@ -172,19 +173,21 @@ func TestClient_GetHostedZone_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api/v1/servers/server/zones/example.org.",
 			servermock.ResponseFromFixture("error.json").
-				WithStatusCode(http.StatusUnprocessableEntity)).
+				WithStatusCode(http.StatusUnprocessableEntity),
+		).
 		Build(t)
 
 	client.apiVersion = 1
 
 	_, err := client.GetHostedZone(t.Context(), "example.org.")
-	require.ErrorAs(t, err, &apiError{})
+	require.EqualError(t, err, "error talking to PDNS API: A human readable error message")
 }
 
 func TestClient_GetHostedZone_v0(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /servers/server/zones/example.org.",
-			servermock.ResponseFromFixture("zone.json")).
+			servermock.ResponseFromFixture("zone.json"),
+		).
 		Build(t)
 
 	client.apiVersion = 0
@@ -232,7 +235,8 @@ func TestClient_UpdateRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /api/v1/servers/localhost/zones/example.org.",
 			servermock.ResponseFromFixture("zone.json"),
-			servermock.CheckRequestJSONBodyFromFixture("zone-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("zone-request.json"),
+		).
 		Build(t)
 
 	client.apiVersion = 1
@@ -267,7 +271,8 @@ func TestClient_UpdateRecords_NonRootApi(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /some/path/api/v1/servers/localhost/zones/example.org.",
 			servermock.ResponseFromFixture("zone.json"),
-			servermock.CheckRequestJSONBodyFromFixture("zone-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("zone-request.json"),
+		).
 		Build(t)
 
 	client.Host = client.Host.JoinPath("some", "path")
@@ -303,7 +308,8 @@ func TestClient_UpdateRecords_v0(t *testing.T) {
 	client := mockBuilder().
 		Route("PATCH /servers/localhost/zones/example.org.",
 			servermock.ResponseFromFixture("zone.json"),
-			servermock.CheckRequestJSONBodyFromFixture("zone-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("zone-request.json"),
+		).
 		Build(t)
 
 	client.apiVersion = 0
@@ -394,7 +400,8 @@ func TestClient_Notify_v0(t *testing.T) {
 func TestClient_getAPIVersion(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /api",
-			servermock.ResponseFromFixture("versions.json")).
+			servermock.ResponseFromFixture("versions.json"),
+		).
 		Build(t)
 
 	version, err := client.getAPIVersion(t.Context())

@@ -15,7 +15,7 @@ import (
 	querystring "github.com/google/go-querystring/query"
 )
 
-const defaultBaseURL = "https://api.openprovider.eu/v1beta/"
+const defaultBaseURL = "https://api.openprovider.eu/v1"
 
 // Client the Openprovider API client.
 type Client struct {
@@ -43,7 +43,7 @@ func NewClient(username, password string) (*Client, error) {
 }
 
 // ListZones lists the zones.
-// https://docs.openprovider.com/doc/all#operation/ListZones
+// https://developer.openprovider.com/reference.html?group=DNS#/Zone/ListZones
 func (c *Client) ListZones(ctx context.Context, zr *ZonesRequest) ([]Zone, error) {
 	endpoint := c.BaseURL.JoinPath("dns", "zones")
 
@@ -70,7 +70,7 @@ func (c *Client) ListZones(ctx context.Context, zr *ZonesRequest) ([]Zone, error
 }
 
 // UpdateZone updates a zone.
-// https://docs.openprovider.com/doc/all#operation/UpdateZone
+// https://developer.openprovider.com/reference.html?group=DNS#/Zone/UpdateZone
 func (c *Client) UpdateZone(ctx context.Context, domain string, action ZoneAction) error {
 	endpoint := c.BaseURL.JoinPath("dns", "zones", domain)
 

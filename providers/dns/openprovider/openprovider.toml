@@ -29,4 +29,4 @@ lego run --dns openprovider -d '*.example.com' -d example.com
     OPENPROVIDER_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]
-  API = "https://docs.openprovider.com/doc/all"
+  API = "https://developer.openprovider.com/rest-api-documentation.html"

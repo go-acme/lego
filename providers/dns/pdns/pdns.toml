@@ -34,4 +34,6 @@ PowerDNS Notes:
     PDNS_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]
-  API = "https://doc.powerdns.com/md/httpapi/README/"
+  API = "https://doc.powerdns.com/authoritative/http-api/index.html"
+  Extra = "https://doc.powerdns.com/authoritative/http-api/redoc.html"
+  OpenAPI = "https://github.com/PowerDNS/pdns/blob/master/docs/http-api/openapi/authoritative-api-openapi.yaml"

@@ -30,13 +30,14 @@ func TestClient_obtainToken(t *testing.T) {
 		servermock.CheckHeader().
 			WithContentTypeFromURLEncoded(),
 	).
-		Route("POST /", servermock.JSONEncode(Token{
-			AccessToken: "xxx",
-			TokenID:     "yyy",
-			ExpiresIn:   666,
-			TokenType:   "Bearer",
-			Scope:       "openid profile email roles",
-		}),
+		Route("POST /",
+			servermock.JSONEncode(Token{
+				AccessToken: "xxx",
+				TokenID:     "yyy",
+				ExpiresIn:   666,
+				TokenType:   "Bearer",
+				Scope:       "openid profile email roles",
+			}),
 			servermock.CheckForm().Strict().
 				With("client_id", "user").
 				With("client_secret", "secret").
@@ -59,13 +60,14 @@ func TestClient_CreateAuthenticatedContext(t *testing.T) {
 		servermock.CheckHeader().
 			WithContentTypeFromURLEncoded(),
 	).
-		Route("POST /", servermock.JSONEncode(Token{
-			AccessToken: "xxx",
-			TokenID:     "yyy",
-			ExpiresIn:   666,
-			TokenType:   "Bearer",
-			Scope:       "openid profile email roles",
-		}),
+		Route("POST /",
+			servermock.JSONEncode(Token{
+				AccessToken: "xxx",
+				TokenID:     "yyy",
+				ExpiresIn:   666,
+				TokenType:   "Bearer",
+				Scope:       "openid profile email roles",
+			}),
 			servermock.CheckForm().Strict().
 				With("client_id", "user").
 				With("client_secret", "secret").

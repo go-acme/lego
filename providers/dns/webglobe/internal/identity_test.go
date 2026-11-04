@@ -11,33 +11,46 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupIdentifierClient(server *httptest.Server) (*Identifier, error) {
-	client, err := NewIdentifier("user", "secret")
-	if err != nil {
-		return nil, err
-	}
+func mockTokenSource(ctx context.Context) *servermock.Builder[*TokenSource] {
+	return servermock.NewBuilder[*TokenSource](func(server *httptest.Server) (*TokenSource, error) {
+		cfg, err := NewAuthConfig("user", "secret")
+		if err != nil {
+			return nil, err
+		}
 
-	client.BaseURL, _ = url.Parse(server.URL)
-	client.HTTPClient = server.Client()
+		cfg.BaseURL, _ = url.Parse(server.URL)
+		cfg.HTTPClient = server.Client()
 
-	return client, nil
+		return cfg.TokenSource(ctx), nil
+	})
 }
 
-func mockContext(t *testing.T) context.Context {
-	t.Helper()
-
-	return context.WithValue(t.Context(), tokenKey, "secret")
-}
-
-func TestIdentifier_Authenticate(t *testing.T) {
-	identifier := servermock.NewBuilder[*Identifier](setupIdentifierClient).
+func TestTokenSource_Token(t *testing.T) {
+	tokenSource := mockTokenSource(t.Context()).
 		Route("POST /auth/login",
 			servermock.ResponseFromFixture("login.json"),
 			servermock.CheckRequestJSONBodyFromFixture("login-request.json"),
 		).
 		Build(t)
 
-	token, err := identifier.Login(t.Context())
+	token, err := tokenSource.Token()
+	require.NoError(t, err)
+
+	assert.Equal(t, "secrettoken", token.AccessToken)
+	assert.Equal(t, "bearer", token.TokenType)
+	assert.EqualValues(t, 7200, token.ExpiresIn)
+	assert.NotZero(t, token.Expiry)
+}
+
+func TestTokenSource_login(t *testing.T) {
+	tokenSource := mockTokenSource(t.Context()).
+		Route("POST /auth/login",
+			servermock.ResponseFromFixture("login.json"),
+			servermock.CheckRequestJSONBodyFromFixture("login-request.json"),
+		).
+		Build(t)
+
+	token, err := tokenSource.login(t.Context())
 	require.NoError(t, err)
 
 	expected := &Token{

@@ -25,8 +25,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 			return client, nil
 		},
 		servermock.CheckHeader().
-			WithJSONHeaders().
-			WithAuthorization("Bearer secret"),
+			WithJSONHeaders(),
 	)
 }
 
@@ -37,7 +36,7 @@ func TestClient_GetDomainDetails(t *testing.T) {
 		).
 		Build(t)
 
-	result, err := client.GetDomainDetails(mockContext(t), "example.com")
+	result, err := client.GetDomainDetails(t.Context(), "example.com")
 	require.NoError(t, err)
 
 	expected := &Domain{
@@ -68,7 +67,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		TTL:  120,
 	}
 
-	result, err := client.CreateRecord(mockContext(t), 12345, record)
+	result, err := client.CreateRecord(t.Context(), 12345, record)
 	require.NoError(t, err)
 
 	expected := &Record{
@@ -90,7 +89,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		).
 		Build(t)
 
-	err := client.DeleteRecord(mockContext(t), 12345, 456789)
+	err := client.DeleteRecord(t.Context(), 12345, 456789)
 	require.NoError(t, err)
 }
 
@@ -102,7 +101,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 		).
 		Build(t)
 
-	err := client.DeleteRecord(mockContext(t), 12345, 456789)
+	err := client.DeleteRecord(t.Context(), 12345, 456789)
 
 	require.EqualError(t, err, "1: Unknown error - problem has been reported and will be fixed soon.")
 }

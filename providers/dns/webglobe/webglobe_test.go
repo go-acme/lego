@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/providers/dns/webglobe/internal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -158,13 +159,20 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 			config.Token = "secret"
 			config.HTTPClient = server.Client()
 
-			p, err := NewDNSProviderConfig(config)
+			authConfig, err := internal.NewAuthConfig(config.Login, config.Token)
+			if err != nil {
+				return nil, err
+			}
+
+			authConfig.BaseURL, _ = url.Parse(server.URL)
+			authConfig.HTTPClient = server.Client()
+
+			p, err := newDNSProviderConfig(config, authConfig)
 			if err != nil {
 				return nil, err
 			}
 
 			p.client.BaseURL, _ = url.Parse(server.URL)
-			p.identifier.BaseURL, _ = url.Parse(server.URL)
 
 			return p, nil
 		},

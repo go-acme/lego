@@ -11,39 +11,68 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/errutils"
 	"github.com/go-acme/lego/v5/internal/useragent"
+	"golang.org/x/oauth2"
 )
 
-type token string
-
-const tokenKey token = "token"
-
-type Identifier struct {
-	username string
-	token    string
-
+type Config struct {
 	BaseURL    *url.URL
 	HTTPClient *http.Client
+
+	login string
+	token string
 }
 
-func NewIdentifier(username, token string) (*Identifier, error) {
-	if username == "" || token == "" {
+func NewAuthConfig(login, token string) (*Config, error) {
+	if login == "" || token == "" {
 		return nil, errors.New("credentials missing")
 	}
 
 	baseURL, _ := url.Parse(defaultBaseURL)
 
-	return &Identifier{
-		username:   username,
-		token:      token,
+	return &Config{
 		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		login:      login,
+		token:      token,
 	}, nil
 }
 
-func (c *Identifier) Login(ctx context.Context) (*Token, error) {
-	endpoint := c.BaseURL.JoinPath("auth", "login")
+func (c *Config) TokenSource(ctx context.Context) *TokenSource {
+	return &TokenSource{
+		ctx:  ctx,
+		conf: c,
+	}
+}
 
-	auth := Auth{Login: c.username, Token: c.token}
+//nolint:containedctx // Because of the interface oauth2.TokenSource.
+type TokenSource struct {
+	ctx  context.Context
+	conf *Config
+}
+
+func (s *TokenSource) Token() (*oauth2.Token, error) {
+	data, err := s.login(s.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	tok := &oauth2.Token{
+		AccessToken: data.Token,
+		TokenType:   data.TokenType,
+		ExpiresIn:   data.ExpiresIn,
+	}
+
+	if data.ExpiresIn > 0 {
+		tok.Expiry = time.Now().Add(time.Duration(data.ExpiresIn) * time.Second)
+	}
+
+	return tok, nil
+}
+
+func (s *TokenSource) login(ctx context.Context) (*Token, error) {
+	endpoint := s.conf.BaseURL.JoinPath("auth", "login")
+
+	auth := Auth{Login: s.conf.login, Token: s.conf.token}
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, auth)
 	if err != nil {
@@ -52,7 +81,7 @@ func (c *Identifier) Login(ctx context.Context) (*Token, error) {
 
 	var result APIResponse[*Token]
 
-	err = c.do(req, &result)
+	err = s.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -60,10 +89,10 @@ func (c *Identifier) Login(ctx context.Context) (*Token, error) {
 	return result.Data, nil
 }
 
-func (c *Identifier) do(req *http.Request, result any) error {
+func (s *TokenSource) do(req *http.Request, result any) error {
 	useragent.SetHeader(req.Header)
 
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := s.conf.HTTPClient.Do(req)
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)
 	}
@@ -89,17 +118,4 @@ func (c *Identifier) do(req *http.Request, result any) error {
 	}
 
 	return nil
-}
-
-func WithContext(ctx context.Context, credential string) context.Context {
-	return context.WithValue(ctx, tokenKey, credential)
-}
-
-func getToken(ctx context.Context) string {
-	credential, ok := ctx.Value(tokenKey).(string)
-	if !ok {
-		return ""
-	}
-
-	return credential
 }

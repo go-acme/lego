@@ -16,6 +16,7 @@ import (
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/webglobe/internal"
+	"golang.org/x/oauth2"
 )
 
 // Environment variables names.
@@ -60,8 +61,7 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config *Config
 
-	identifier *internal.Identifier
-	client     *internal.Client
+	client *internal.Client
 
 	zoneIDs     map[string]int64
 	recordIDs   map[string]int64
@@ -88,34 +88,33 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("webglobe: the configuration of the DNS provider is nil")
 	}
 
-	identifier, err := internal.NewIdentifier(config.Login, config.Token)
+	authConfig, err := internal.NewAuthConfig(config.Login, config.Token)
 	if err != nil {
 		return nil, fmt.Errorf("webglobe: %w", err)
 	}
 
-	if config.HTTPClient != nil {
-		identifier.HTTPClient = config.HTTPClient
-	}
+	return newDNSProviderConfig(config, authConfig)
+}
 
-	identifier.HTTPClient = clientdebug.Wrap(identifier.HTTPClient)
-
+func newDNSProviderConfig(config *Config, authConfig *internal.Config) (*DNSProvider, error) {
 	client, err := internal.NewClient()
 	if err != nil {
 		return nil, fmt.Errorf("webglobe: %w", err)
 	}
 
+	ctx := context.Background()
+
 	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
+		ctx = context.WithValue(ctx, oauth2.HTTPClient, config.HTTPClient)
 	}
 
-	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
+	client.HTTPClient = clientdebug.Wrap(oauth2.NewClient(ctx, authConfig.TokenSource(ctx)))
 
 	return &DNSProvider{
-		config:     config,
-		identifier: identifier,
-		client:     client,
-		recordIDs:  make(map[string]int64),
-		zoneIDs:    make(map[string]int64),
+		config:    config,
+		client:    client,
+		recordIDs: make(map[string]int64),
+		zoneIDs:   make(map[string]int64),
 	}, nil
 }
 
@@ -123,14 +122,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	tok, err := d.identifier.Login(ctx)
-	if err != nil {
-		return fmt.Errorf("webglobe: login: %w", err)
-	}
-
-	ctxAuth := internal.WithContext(ctx, tok.Token)
-
-	zone, err := d.findZone(ctxAuth, info.EffectiveFQDN)
+	zone, err := d.findZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("webglobe: %w", err)
 	}
@@ -147,7 +139,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		TTL:  d.config.TTL,
 	}
 
-	newRecord, err := d.client.CreateRecord(ctxAuth, zone.DomainID, record)
+	newRecord, err := d.client.CreateRecord(ctx, zone.DomainID, record)
 	if err != nil {
 		return fmt.Errorf("webglobe: create record: %w", err)
 	}
@@ -177,14 +169,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("webglobe: unknown zone ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	tok, err := d.identifier.Login(ctx)
-	if err != nil {
-		return fmt.Errorf("webglobe: login: %w", err)
-	}
-
-	ctxAuth := internal.WithContext(ctx, tok.Token)
-
-	err = d.client.DeleteRecord(ctxAuth, zoneID, recordID)
+	err := d.client.DeleteRecord(ctx, zoneID, recordID)
 	if err != nil {
 		return fmt.Errorf("webglobe: delete record: %w", err)
 	}

@@ -74,7 +74,7 @@ func getOIDCToken(ctx context.Context, config *Config) (string, error) {
 	}
 
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", config.OIDCRequestToken))
+	req.Header.Set("Authorization", "Bearer "+config.OIDCRequestToken)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := config.HTTPClient.Do(req)

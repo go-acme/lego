@@ -14,44 +14,77 @@ import (
 	"github.com/go-acme/lego/v5/internal/errutils"
 	"github.com/go-acme/lego/v5/internal/useragent"
 	"github.com/pquerna/otp/totp"
+	"golang.org/x/oauth2"
 )
 
-type token string
+type Config struct {
+	BaseURL    *url.URL
+	HTTPClient *http.Client
 
-const tokenKey token = "token"
-
-type Identifier struct {
+	apiKey   string
 	username string
 	password string
 	Secret   string
-
-	BaseURL    *url.URL
-	HTTPClient *http.Client
 }
 
-func NewIdentifier(username, password, secret string) (*Identifier, error) {
+func NewAuthConfig(apiKey, username, password, secret string) (*Config, error) {
+	if apiKey != "" {
+		return &Config{apiKey: apiKey}, nil
+	}
+
 	if username == "" || password == "" {
 		return nil, errors.New("credentials missing")
 	}
 
 	baseURL, _ := url.Parse(defaultBaseURL)
 
-	return &Identifier{
+	return &Config{
+		BaseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		username:   username,
 		password:   password,
 		Secret:     secret,
-		BaseURL:    baseURL,
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
 
-func (c *Identifier) Authenticate(ctx context.Context) (*Token, error) {
-	endpoint := c.BaseURL.JoinPath("authenticate")
+func (c *Config) TokenSource(ctx context.Context) oauth2.TokenSource {
+	if c.apiKey != "" {
+		return oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.apiKey})
+	}
 
-	auth := Auth{Username: c.username, Password: c.password}
+	return &TokenSource{ctx: ctx, conf: c}
+}
 
-	if c.Secret != "" {
-		tan, err := totp.GenerateCode(c.Secret, time.Now())
+//nolint:containedctx // Because of the interface oauth2.TokenSource.
+type TokenSource struct {
+	ctx  context.Context
+	conf *Config
+}
+
+func (s *TokenSource) Token() (*oauth2.Token, error) {
+	data, err := s.authenticate(s.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	tok := &oauth2.Token{
+		AccessToken: data.Token,
+		TokenType:   "Bearer",
+		Expiry:      time.Unix(data.TokenExpire, 0),
+	}
+
+	tok.ExpiresIn = data.TokenExpire - time.Now().Unix()
+
+	return tok, nil
+}
+
+func (s *TokenSource) authenticate(ctx context.Context) (*Token, error) {
+	endpoint := s.conf.BaseURL.JoinPath("authenticate")
+
+	auth := Auth{Username: s.conf.username, Password: s.conf.password}
+
+	if s.conf.Secret != "" {
+		tan, err := totp.GenerateCode(s.conf.Secret, time.Now())
 		if err != nil {
 			return nil, fmt.Errorf("generate TOTP: %w", err)
 		}
@@ -69,7 +102,7 @@ func (c *Identifier) Authenticate(ctx context.Context) (*Token, error) {
 
 	var result APIResponse[*Token]
 
-	err = c.do(req, &result)
+	err = s.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -77,10 +110,10 @@ func (c *Identifier) Authenticate(ctx context.Context) (*Token, error) {
 	return result.Data, nil
 }
 
-func (c *Identifier) do(req *http.Request, result any) error {
+func (s *TokenSource) do(req *http.Request, result any) error {
 	useragent.SetHeader(req.Header)
 
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := s.conf.HTTPClient.Do(req)
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)
 	}
@@ -106,32 +139,4 @@ func (c *Identifier) do(req *http.Request, result any) error {
 	}
 
 	return nil
-}
-
-type StaticIdentifier struct {
-	apiKey string
-}
-
-func NewStaticIdentifier(apiKey string) *StaticIdentifier {
-	return &StaticIdentifier{apiKey: apiKey}
-}
-
-func (c *StaticIdentifier) Authenticate(_ context.Context) (*Token, error) {
-	return &Token{
-		Token:       c.apiKey,
-		TokenExpire: time.Date(time.Now().Year()+42, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
-	}, nil
-}
-
-func WithContext(ctx context.Context, credential string) context.Context {
-	return context.WithValue(ctx, tokenKey, credential)
-}
-
-func getToken(ctx context.Context) string {
-	credential, ok := ctx.Value(tokenKey).(string)
-	if !ok {
-		return ""
-	}
-
-	return credential
 }

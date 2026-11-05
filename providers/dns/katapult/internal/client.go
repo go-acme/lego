@@ -83,7 +83,7 @@ func (c *Client) DeleteRecord(ctx context.Context, recordID string) error {
 func (c *Client) do(req *http.Request, result any) error {
 	useragent.SetHeader(req.Header)
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apiKey))
+	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

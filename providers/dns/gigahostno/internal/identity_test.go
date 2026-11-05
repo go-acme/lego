@@ -5,39 +5,51 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
-	"time"
 
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/oauth2"
 )
 
-func setupIdentifierClient(server *httptest.Server) (*Identifier, error) {
-	client, err := NewIdentifier("user", "secret", "")
-	if err != nil {
-		return nil, err
-	}
+func mockTokenSource(ctx context.Context) *servermock.Builder[oauth2.TokenSource] {
+	return servermock.NewBuilder[oauth2.TokenSource](func(server *httptest.Server) (oauth2.TokenSource, error) {
+		cfg, err := NewAuthConfig("", "user", "secret", "")
+		if err != nil {
+			return nil, err
+		}
 
-	client.BaseURL, _ = url.Parse(server.URL)
-	client.HTTPClient = server.Client()
+		cfg.BaseURL, _ = url.Parse(server.URL)
+		cfg.HTTPClient = server.Client()
 
-	return client, nil
+		return cfg.TokenSource(ctx), nil
+	})
 }
 
-func mockContext(t *testing.T) context.Context {
-	t.Helper()
-
-	return context.WithValue(t.Context(), tokenKey, "secret")
-}
-
-func TestIdentifier_Authenticate(t *testing.T) {
-	identifier := servermock.NewBuilder[*Identifier](setupIdentifierClient).
+func TestTokenSource_Token(t *testing.T) {
+	tokenSource := mockTokenSource(t.Context()).
 		Route("POST /authenticate",
 			servermock.ResponseFromFixture("authenticate.json"),
 			servermock.CheckRequestJSONBodyFromFixture("authenticate-request.json")).
 		Build(t)
 
-	token, err := identifier.Authenticate(t.Context())
+	token, err := tokenSource.Token()
+	require.NoError(t, err)
+
+	assert.Equal(t, "secrettoken", token.AccessToken)
+	assert.Equal(t, "Bearer", token.TokenType)
+	assert.NotZero(t, token.ExpiresIn)
+	assert.NotZero(t, token.Expiry)
+}
+
+func TestTokenSource_authenticate(t *testing.T) {
+	tokenSource := mockTokenSource(t.Context()).
+		Route("POST /authenticate",
+			servermock.ResponseFromFixture("authenticate.json"),
+			servermock.CheckRequestJSONBodyFromFixture("authenticate-request.json")).
+		Build(t)
+
+	token, err := tokenSource.(*TokenSource).authenticate(t.Context())
 	require.NoError(t, err)
 
 	expected := &Token{
@@ -58,51 +70,4 @@ func TestIdentifier_Authenticate(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, token)
-}
-
-func TestToken_IsExpired(t *testing.T) {
-	testCases := []struct {
-		desc   string
-		token  *Token
-		assert assert.BoolAssertionFunc
-	}{
-		{
-			desc:   "nil",
-			assert: assert.True,
-		},
-		{
-			desc:   "empty",
-			token:  &Token{},
-			assert: assert.True,
-		},
-		{
-			desc: "not expired",
-			token: &Token{
-				TokenExpire: 65322892800, // 2040-01-01
-			},
-			assert: assert.False,
-		},
-		{
-			desc: "now",
-			token: &Token{
-				TokenExpire: time.Now().Unix(),
-			},
-			assert: assert.True,
-		},
-		{
-			desc: "now + 2 minutes",
-			token: &Token{
-				TokenExpire: time.Now().Add(2 * time.Minute).Unix(),
-			},
-			assert: assert.False,
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			test.assert(t, test.token.IsExpired())
-		})
-	}
 }

@@ -17,8 +17,6 @@ import (
 
 const defaultBaseURL = "https://api.webglobe.com/"
 
-const authorizationHeader = "Authorization"
-
 // Client the Webglobe API client.
 type Client struct {
 	BaseURL    *url.URL
@@ -45,7 +43,7 @@ func (c *Client) GetDomainDetails(ctx context.Context, domainID string) (*Domain
 
 	var result APIResponse[*Domain]
 
-	err = c.do(ctx, req, &result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +65,7 @@ func (c *Client) CreateRecord(ctx context.Context, domainID int64, record Record
 
 	var result RecordResponse
 
-	err = c.do(ctx, req, &result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -83,13 +81,11 @@ func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int64) err
 		return err
 	}
 
-	return c.do(ctx, req, nil)
+	return c.do(req, nil)
 }
 
-func (c *Client) do(ctx context.Context, req *http.Request, result any) error {
+func (c *Client) do(req *http.Request, result any) error {
 	useragent.SetHeader(req.Header)
-
-	req.Header.Set(authorizationHeader, "Bearer "+getToken(ctx))
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

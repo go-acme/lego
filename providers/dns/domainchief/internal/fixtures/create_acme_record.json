@@ -1,0 +1,10 @@
+{
+  "data": {
+    "id": "r123",
+    "domain": "example.com",
+    "name": "_acme-challenge.example.com",
+    "value": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "ttl": 0,
+    "created_at": "2024-08-25T15:00:00Z"
+  }
+}

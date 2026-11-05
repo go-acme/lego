@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/errutils"
 	"github.com/go-acme/lego/v5/internal/useragent"
+	querystring "github.com/google/go-querystring/query"
 )
 
 const defaultBaseURL = "https://domain.chief.app/api/v1/"
@@ -22,14 +23,14 @@ const chiefTeamHeader = "X-Chief-Team"
 // Client the Domain Chief API client.
 type Client struct {
 	apiToken string
-	teamID   string
+	teamSlug string
 
 	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
-func NewClient(apiToken, teamID string) (*Client, error) {
+func NewClient(apiToken, teamSlug string) (*Client, error) {
 	if apiToken == "" {
 		return nil, errors.New("credentials missing")
 	}
@@ -38,7 +39,7 @@ func NewClient(apiToken, teamID string) (*Client, error) {
 
 	return &Client{
 		apiToken:   apiToken,
-		teamID:     teamID,
+		teamSlug:   teamSlug,
 		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}, nil
@@ -77,6 +78,46 @@ func (c *Client) DeleteRecord(ctx context.Context, domain, recordID string) erro
 	return c.do(req, nil)
 }
 
+// CreateACMERecord publish an ACME DNS-01 challenge value as a TXT record on an _acme-challenge name.
+// https://docs.chief.tools/api/domainchief/acme#publish-acme-challenge
+func (c *Client) CreateACMERecord(ctx context.Context, challenge Challenge) (*ChallengeRecord, error) {
+	endpoint := c.BaseURL.JoinPath("acme", "challenges")
+
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, challenge)
+	if err != nil {
+		return nil, err
+	}
+
+	var result APIEnvelope[*ChallengeRecord]
+
+	err = c.do(req, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Data, nil
+}
+
+// DeleteACMERecord deletes a published ACME DNS-01 challenge value from an _acme-challenge name.
+// https://docs.chief.tools/api/domainchief/acme#delete-acme-challenge
+func (c *Client) DeleteACMERecord(ctx context.Context, challenge Challenge) error {
+	endpoint := c.BaseURL.JoinPath("acme", "challenges")
+
+	values, err := querystring.Values(challenge)
+	if err != nil {
+		return err
+	}
+
+	endpoint.RawQuery = values.Encode()
+
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	return c.do(req, nil)
+}
+
 func (c *Client) do(req *http.Request, result any) error {
 	useragent.SetHeader(req.Header)
 
@@ -84,8 +125,8 @@ func (c *Client) do(req *http.Request, result any) error {
 
 	req.Header.Set("Authorization", "bearer "+c.apiToken)
 
-	if c.teamID != "" {
-		req.Header.Set(chiefTeamHeader, c.teamID)
+	if c.teamSlug != "" {
+		req.Header.Set(chiefTeamHeader, c.teamSlug)
 	}
 
 	resp, err := c.HTTPClient.Do(req)

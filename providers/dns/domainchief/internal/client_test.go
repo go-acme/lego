@@ -1,9 +1,11 @@
 package internal
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
@@ -68,5 +70,63 @@ func TestClient_DeleteRecord(t *testing.T) {
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "example.com", "r123")
+	require.NoError(t, err)
+}
+
+func TestClient_DeleteRecord_error(t *testing.T) {
+	client := mockBuilder().
+		Route("DELETE /domains/example.com/dns/records/r123",
+			servermock.ResponseFromFixture("error.json").
+				WithStatusCode(http.StatusBadRequest),
+		).
+		Build(t)
+
+	err := client.DeleteRecord(t.Context(), "example.com", "r123")
+	require.EqualError(t, err, "This is a message. (domain.tld_unsupported)")
+}
+
+func TestClient_CreateACMERecord(t *testing.T) {
+	client := mockBuilder().
+		Route("POST /acme/challenges",
+			servermock.ResponseFromFixture("create_acme_record.json"),
+			servermock.CheckRequestJSONBodyFromFixture("create_acme_record-request.json"),
+		).
+		Build(t)
+
+	record := Challenge{
+		Name:  "_acme-challenge.example.com",
+		Value: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+	}
+
+	result, err := client.CreateACMERecord(t.Context(), record)
+	require.NoError(t, err)
+
+	expected := &ChallengeRecord{
+		ID:        "r123",
+		Domain:    "example.com",
+		Name:      "_acme-challenge.example.com",
+		Value:     "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		CreatedAt: time.Date(2024, time.August, 25, 15, 0, 0, 0, time.UTC),
+	}
+
+	assert.Equal(t, expected, result)
+}
+
+func TestClient_DeleteACMERecord(t *testing.T) {
+	client := mockBuilder().
+		Route("DELETE /acme/challenges",
+			servermock.Noop(),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "_acme-challenge.example.com").
+				With("value", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"),
+		).
+		Build(t)
+
+	record := Challenge{
+		Name:  "_acme-challenge.example.com",
+		Value: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+	}
+
+	err := client.DeleteACMERecord(t.Context(), record)
 	require.NoError(t, err)
 }

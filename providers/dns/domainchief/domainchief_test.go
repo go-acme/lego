@@ -7,13 +7,12 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvAPIToken, EnvTeamID).WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvAPIToken, EnvTeamSlug).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -31,7 +30,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "success with team ID",
 			envVars: map[string]string{
 				EnvAPIToken: "secret",
-				EnvTeamID:   "t123",
+				EnvTeamSlug: "t123",
 			},
 		},
 		{
@@ -150,29 +149,26 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
-		Route("POST /domains/example.com/dns/records",
-			servermock.ResponseFromInternal("create_record.json"),
-			servermock.CheckRequestJSONBodyFromInternal("create_record-request.json"),
+		Route("POST /acme/challenges",
+			servermock.ResponseFromInternal("create_acme_record.json"),
+			servermock.CheckRequestJSONBodyFromInternal("create_acme_record-request.json"),
 		).
 		Build(t)
 
 	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
-
-	assert.Equal(t, map[string]string{"abc": "r123"}, provider.recordIDs)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
-		Route("DELETE /domains/example.com/dns/records/r123",
+		Route("DELETE /acme/challenges",
 			servermock.Noop(),
+			servermock.CheckQueryParameter().Strict().
+				With("name", "_acme-challenge.example.com").
+				With("value", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"),
 		).
 		Build(t)
 
-	provider.recordIDs["abc"] = "r123"
-
 	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
-
-	assert.Empty(t, provider.recordIDs)
 }

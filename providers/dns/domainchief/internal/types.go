@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 type APIError struct {
@@ -34,4 +35,18 @@ type Record struct {
 
 type APIEnvelope[T any] struct {
 	Data T `json:"data"`
+}
+
+type Challenge struct {
+	Name  string `json:"name" url:"name"`
+	Value string `json:"value" url:"value"`
+}
+
+type ChallengeRecord struct {
+	ID        string    `json:"id"`
+	Domain    string    `json:"domain"`
+	Name      string    `json:"name"`
+	Value     string    `json:"value"`
+	TTL       int       `json:"ttl"`
+	CreatedAt time.Time `json:"created_at"`
 }

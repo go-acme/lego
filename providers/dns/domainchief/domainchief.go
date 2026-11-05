@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
@@ -21,7 +20,7 @@ const (
 	envNamespace = "DOMAINCHIEF_"
 
 	EnvAPIToken = envNamespace + "API_TOKEN"
-	EnvTeamID   = envNamespace + "TEAM_ID"
+	EnvTeamSlug = envNamespace + "_TEAM_SLUG"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -34,7 +33,7 @@ var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	APIToken string
-	TeamID   string
+	TeamSlug string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -58,9 +57,6 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config *Config
 	client *internal.Client
-
-	recordIDs   map[string]string
-	recordIDsMu sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Domain Chief.
@@ -72,7 +68,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config := NewDefaultConfig()
 	config.APIToken = values[EnvAPIToken]
-	config.TeamID = env.GetOrFile(EnvTeamID)
+	config.TeamSlug = env.GetOrFile(EnvTeamSlug)
 
 	return NewDNSProviderConfig(config)
 }
@@ -83,7 +79,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("domainchief: the configuration of the DNS provider is nil")
 	}
 
-	client, err := internal.NewClient(config.APIToken, config.TeamID)
+	client, err := internal.NewClient(config.APIToken, config.TeamSlug)
 	if err != nil {
 		return nil, fmt.Errorf("domainchief: %w", err)
 	}
@@ -95,9 +91,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{
-		config:    config,
-		client:    client,
-		recordIDs: map[string]string{},
+		config: config,
+		client: client,
 	}, nil
 }
 
@@ -105,32 +100,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	payload := internal.Challenge{
+		Name:  dns01.UnFqdn(info.EffectiveFQDN),
+		Value: info.Value,
+	}
+
+	_, err := d.client.CreateACMERecord(ctx, payload)
 	if err != nil {
-		return fmt.Errorf("domainchief: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("domainchief: create ACME record: %w", err)
 	}
-
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
-	if err != nil {
-		return fmt.Errorf("domainchief: %w", err)
-	}
-
-	record := internal.Record{
-		Type:    "TXT",
-		Name:    subDomain,
-		Content: info.Value,
-		TTL:     d.config.TTL,
-		Comment: "Created by go-acme/lego",
-	}
-
-	newRecord, err := d.client.CreateRecord(ctx, dns01.UnFqdn(authZone), record)
-	if err != nil {
-		return fmt.Errorf("domainchief: create record: %w", err)
-	}
-
-	d.recordIDsMu.Lock()
-	d.recordIDs[token] = newRecord.ID
-	d.recordIDsMu.Unlock()
 
 	return nil
 }
@@ -139,27 +117,15 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	d.recordIDsMu.Lock()
-	recordID, recordOK := d.recordIDs[token]
-	d.recordIDsMu.Unlock()
-
-	if !recordOK {
-		return fmt.Errorf("domainchief: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
+	payload := internal.Challenge{
+		Name:  dns01.UnFqdn(info.EffectiveFQDN),
+		Value: info.Value,
 	}
 
-	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	err := d.client.DeleteACMERecord(ctx, payload)
 	if err != nil {
-		return fmt.Errorf("domainchief: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("domainchief: delete ACME record: %w", err)
 	}
-
-	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
-	if err != nil {
-		return fmt.Errorf("domainchief: delete record: %w", err)
-	}
-
-	d.recordIDsMu.Lock()
-	delete(d.recordIDs, token)
-	d.recordIDsMu.Unlock()
 
 	return nil
 }

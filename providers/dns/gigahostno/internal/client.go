@@ -16,8 +16,6 @@ import (
 
 const defaultBaseURL = "https://api.gigahost.no/api/v0"
 
-const authorizationHeader = "Authorization"
-
 // Client the Gigahost.no API client.
 type Client struct {
 	BaseURL    *url.URL
@@ -45,7 +43,7 @@ func (c *Client) GetZones(ctx context.Context) ([]Zone, error) {
 
 	var result APIResponse[[]Zone]
 
-	err = c.do(ctx, req, &result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +62,7 @@ func (c *Client) GetZoneRecords(ctx context.Context, zoneID string) ([]Record, e
 
 	var result APIResponse[[]Record]
 
-	err = c.do(ctx, req, &result)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +79,7 @@ func (c *Client) CreateNewRecord(ctx context.Context, zoneID string, record Reco
 		return err
 	}
 
-	return c.do(ctx, req, nil)
+	return c.do(req, nil)
 }
 
 // DeleteRecord deletes a record.
@@ -98,13 +96,11 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID, name, recor
 		return err
 	}
 
-	return c.do(ctx, req, nil)
+	return c.do(req, nil)
 }
 
-func (c *Client) do(ctx context.Context, req *http.Request, result any) error {
+func (c *Client) do(req *http.Request, result any) error {
 	useragent.SetHeader(req.Header)
-
-	req.Header.Set(authorizationHeader, "Bearer "+getToken(ctx))
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

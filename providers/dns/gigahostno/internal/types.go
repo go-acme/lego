@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"time"
 )
 
 type APIError struct {
@@ -62,12 +61,4 @@ type Token struct {
 	GASecret           string `json:"ga_secret,omitempty"`
 	GAEnabled          string `json:"ga_enabled,omitempty"`
 	VAT                int    `json:"vat,omitempty"`
-}
-
-func (t *Token) IsExpired() bool {
-	if t == nil {
-		return true
-	}
-
-	return time.Now().UTC().Add(1 * time.Minute).After(time.Unix(t.TokenExpire, 0).UTC())
 }

@@ -72,7 +72,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config := NewDefaultConfig()
 	config.APIToken = values[EnvAPIToken]
-	config.TeamID = values[EnvTeamID]
+	config.TeamID = env.GetOrFile(EnvTeamID)
 
 	return NewDNSProviderConfig(config)
 }

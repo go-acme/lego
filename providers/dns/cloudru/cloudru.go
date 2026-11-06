@@ -15,6 +15,8 @@ import (
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/cloudru/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
 // Environment variables names.
@@ -95,13 +97,23 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("cloudru: some credentials information are missing")
 	}
 
-	client := internal.NewClient(config.KeyID, config.Secret)
+	authConfig := internal.CreateOAuthConfig(internal.AuthBaseURL, config.KeyID, config.Secret)
+
+	return newDNSProviderConfig(config, authConfig)
+}
+
+func newDNSProviderConfig(config *Config, authConfig *clientcredentials.Config) (*DNSProvider, error) {
+	ctx := context.Background()
 
 	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
+		ctx = context.WithValue(ctx, oauth2.HTTPClient, config.HTTPClient)
 	}
 
-	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
+	client := internal.NewClient(
+		clientdebug.Wrap(
+			authConfig.Client(ctx),
+		),
+	)
 
 	return &DNSProvider{
 		config:  config,
@@ -121,12 +133,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	authZone = dns01.UnFqdn(authZone)
 
-	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
-	if err != nil {
-		return fmt.Errorf("cloudru: %w", err)
-	}
-
-	zone, err := d.getZoneInformationByName(ctxAuth, d.config.ServiceInstanceID, authZone)
+	zone, err := d.getZoneInformationByName(ctx, d.config.ServiceInstanceID, authZone)
 	if err != nil {
 		return fmt.Errorf("cloudru: could not find zone information (ServiceInstanceID: %s, zone: %s): %w", d.config.ServiceInstanceID, authZone, err)
 	}
@@ -138,7 +145,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		TTL:    strconv.Itoa(d.config.TTL),
 	}
 
-	newRecord, err := d.client.CreateRecord(ctxAuth, zone.ID, record)
+	newRecord, err := d.client.CreateRecord(ctx, zone.ID, record)
 	if err != nil {
 		return fmt.Errorf("cloudru: could not create record: %w", err)
 	}
@@ -162,12 +169,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return fmt.Errorf("cloudru: unknown recordID for %q", info.EffectiveFQDN)
 	}
 
-	ctxAuth, err := d.client.CreateAuthenticatedContext(ctx)
-	if err != nil {
-		return fmt.Errorf("cloudru: %w", err)
-	}
-
-	err = d.client.DeleteRecord(ctxAuth, record.ZoneID, record.Name, "TXT")
+	err := d.client.DeleteRecord(ctx, record.ZoneID, record.Name, "TXT")
 	if err != nil {
 		return fmt.Errorf("cloudru: %w", err)
 	}

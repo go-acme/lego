@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -11,35 +12,34 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func mockBuilder() *servermock.Builder[*Client] {
+func mockBuilder(hc *http.Client) *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
-			client := NewClient("user", "secret")
-			client.HTTPClient = server.Client()
-			client.APIEndpoint, _ = url.Parse(server.URL)
-			client.token = &Token{
-				AccessToken: "secret",
-				ExpiresIn:   60,
-				TokenType:   "Bearer",
-				Deadline:    time.Now().Add(1 * time.Minute),
-			}
+			client := NewClient(hc)
+			client.BaseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders().
-			WithAuthorization("Bearer xxx"),
+		servermock.CheckHeader().
+			WithJSONHeaders().
+			WithAuthorization("Bearer "+
+				"eyJhbGciOiJSUzI1NiIsImtpZCI6ImEyMjM3ZDhhLWQ0ZDQtNDA5Yi04ZTMxLWM3NGJhYTZhM2NjYiIsInR5cCI6IkpXVCJ9."+
+				"eyJhdWQiOlsiaWFtIl0sImF1dGhfdGltZSI6MTY5MDA1Mzg1MiwiYXpwIjoiOWE0M2I0OTM1ZDRhMDc5NmRkYjE0Mjk0NjUxYjk2NzciLCJlbWFpbCI6ImxlZ29AOTlmN2I5NzItZmZlYS00OTkyLTgyN2EtY2M4MDYzOTg1MmNhLmlhbS5zYmVyY2xvdWQucnUiLCJleHAiOjE2OTAwNTc0NTIsImlhdCI6MTY5MDA1Mzg1MiwiaXNzIjoiaHR0cHM6Ly9hdXRoLmlhbS5zYmVyY2xvdWQucnUvYXV0aC9zeXN0ZW0iLCJqdGkiOiJlYzk0ZWJhNC03NzU2LTRjNjQtYmNmMC0zMzYxODIwNWM5ODkiLCJuYmYiOjE2OTAwNTM4NTIsIm5vbmNlIjoiIiwicmVhbG1fYWNjZXNzIjpudWxsLCJyZXNvdXJjZV9hY2Nlc3MiOnt9LCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIHJvbGVzIiwic3ViIjoiZmVhMzRmYTUtZmE5ZS00OTdkLTk5MDAtNjdhYWJjOWNkZWJjIiwic3ViX2lkIjoiZmVhMzRmYTUtZmE5ZS00OTdkLTk5MDAtNjdhYWJjOWNkZWJjIiwic3ViX3R5cGUiOiJzZXJ2aWNlX2FjY291bnQiLCJ0eXAiOiJCZWFyZXIifQ."+
+				"hhPr-Xr_NbyRwrqGoqeepthWfpfmD47RjzHUwo2lVPkeMiL8AMWzDPRxs-8gns9eTSHZCoAH0RjyrBnTaOrztInM72h8_rIIFr0MMPIIqrUkp2id_alya9eoiSWg_69PzNZ2CKWJDylL8o4Vi9_cSBYp-6H1xNcOAvO4a9xkNCoGGiogjHWNFq64qnS_P6fYY-pl9leuprCeq1GAKPODevHwzmc4gkEZIj_15SUh_ofJRJICgyLmkELQ8a0wDGYmZcdNKiGQDpd7rHaGrOvO1k8IJHfgs5aCMyuHXybTg6AMlodpYs8MBdk6K_VFY-cxSRB8ocq_Q7Hgt9qaRADg2Q",
+			),
 	)
 }
 
 func TestClient_GetZones(t *testing.T) {
-	client := mockBuilder().
+	client := mockBuilder(mockOAuthClient(t)).
 		Route("GET /zones",
-			servermock.ResponseFromFixture("zones.json")).
+			servermock.ResponseFromFixture("zones.json"),
+			servermock.CheckQueryParameter().Strict().
+				With("parentId", "xxx"),
+		).
 		Build(t)
 
-	ctx := mockContext(t)
-
-	zones, err := client.GetZones(ctx, "xxx")
+	zones, err := client.GetZones(t.Context(), "xxx")
 	require.NoError(t, err)
 
 	expected := []Zone{
@@ -57,14 +57,13 @@ func TestClient_GetZones(t *testing.T) {
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	client := mockBuilder().
+	client := mockBuilder(mockOAuthClient(t)).
 		Route("GET /zones/zzz/records",
-			servermock.ResponseFromFixture("records.json")).
+			servermock.ResponseFromFixture("records.json"),
+		).
 		Build(t)
 
-	ctx := mockContext(t)
-
-	records, err := client.GetRecords(ctx, "zzz")
+	records, err := client.GetRecords(t.Context(), "zzz")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -104,45 +103,43 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_CreateRecord(t *testing.T) {
-	client := mockBuilder().
+	client := mockBuilder(mockOAuthClient(t)).
 		Route("POST /zones/zzz/records",
 			servermock.ResponseFromFixture("record.json"),
-			servermock.CheckRequestJSONBody(`{"name":"www.example.com.","type":"TXT","values":["text"],"ttl":"3600"}`)).
+			servermock.CheckRequestJSONBodyFromFixture("record-request.json"),
+		).
 		Build(t)
 
-	ctx := mockContext(t)
-
 	recordReq := Record{
-		Name:   "www.example.com.",
+		Name:   "_acme-challenge.example.com.",
 		Type:   "TXT",
-		Values: []string{"text"},
-		TTL:    "3600",
+		Values: []string{"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"},
+		TTL:    "120",
 	}
 
-	record, err := client.CreateRecord(ctx, "zzz", recordReq)
+	record, err := client.CreateRecord(t.Context(), "zzz", recordReq)
 	require.NoError(t, err)
 
 	expected := &Record{
 		ZoneID: "59556fcd-95ff-451f-b49b-9732f21f944a",
-		Name:   "www.example.com.",
+		Name:   "_acme-challenge.example.com.",
 		Type:   "TXT",
 		Values: []string{
-			"txt",
+			"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 		},
-		TTL:     "3600",
+		TTL:     "120",
 		Enables: true,
 	}
 	assert.Equal(t, expected, record)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client := mockBuilder().
+	client := mockBuilder(mockOAuthClient(t)).
 		Route("DELETE /zones/zzz/records/example.com/TXT",
-			servermock.ResponseFromFixture("record.json")).
+			servermock.ResponseFromFixture("record.json"),
+		).
 		Build(t)
 
-	ctx := mockContext(t)
-
-	err := client.DeleteRecord(ctx, "zzz", "example.com", "TXT")
+	err := client.DeleteRecord(t.Context(), "zzz", "example.com", "TXT")
 	require.NoError(t, err)
 }

@@ -1,11 +1,11 @@
 {
   "zone_id": "59556fcd-95ff-451f-b49b-9732f21f944a",
-  "name": "www.example.com.",
+  "name": "_acme-challenge.example.com.",
   "type": "TXT",
   "values": [
-    "txt"
+    "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
   ],
-  "ttl": "3600",
+  "ttl": "120",
   "enables": true,
   "readonly": false
 }

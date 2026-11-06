@@ -1,31 +1,8 @@
 package internal
 
 import (
-	"fmt"
 	"time"
 )
-
-type Token struct {
-	// The bearer token for use in API requests
-	AccessToken string `json:"access_token"`
-	TokenID     string `json:"id_token"`
-	TokenType   string `json:"token_type"`
-	// Number in seconds before the expiration
-	ExpiresIn       int    `json:"expires_in"`
-	NotBeforePolicy int    `json:"not-before-policy"`
-	Scope           string `json:"scope"`
-
-	Deadline time.Time `json:"-"`
-}
-
-type authResponseError struct {
-	ErrorMsg         string `json:"error"`
-	ErrorDescription string `json:"error_description"`
-}
-
-func (a authResponseError) Error() string {
-	return fmt.Sprintf("%s: %s", a.ErrorMsg, a.ErrorDescription)
-}
 
 type APIResponse[T any] struct {
 	Items []T `json:"items"`

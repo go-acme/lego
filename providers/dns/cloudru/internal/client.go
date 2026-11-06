@@ -4,52 +4,34 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"sync"
-	"time"
 
 	"github.com/go-acme/lego/v5/internal/errutils"
 )
 
-// Default API endpoints.
-const (
-	APIBaseURL  = "https://console.cloud.ru/api/clouddns/v1"
-	AuthBaseURL = "https://auth.iam.cloud.ru/auth/system/openid/token"
-)
+const APIBaseURL = "https://console.cloud.ru/api/clouddns/v1"
 
 // Client the Cloud.ru API client.
 type Client struct {
-	keyID  string
-	secret string
-
-	APIEndpoint  *url.URL
-	AuthEndpoint *url.URL
-	HTTPClient   *http.Client
-
-	token   *Token
-	muToken sync.Mutex
+	BaseURL    *url.URL
+	httpClient *http.Client
 }
 
 // NewClient Creates a new Client.
-func NewClient(login, secret string) *Client {
-	apiEndpoint, _ := url.Parse(APIBaseURL)
-	authEndpoint, _ := url.Parse(AuthBaseURL)
+func NewClient(hc *http.Client) *Client {
+	baseURL, _ := url.Parse(APIBaseURL)
 
 	return &Client{
-		keyID:        login,
-		secret:       secret,
-		APIEndpoint:  apiEndpoint,
-		AuthEndpoint: authEndpoint,
-		HTTPClient:   &http.Client{Timeout: 5 * time.Second},
+		BaseURL:    baseURL,
+		httpClient: hc,
 	}
 }
 
 func (c *Client) GetZones(ctx context.Context, parentID string) ([]Zone, error) {
-	endpoint := c.APIEndpoint.JoinPath("zones")
+	endpoint := c.BaseURL.JoinPath("zones")
 
 	query := endpoint.Query()
 	query.Set("parentId", parentID)
@@ -71,7 +53,7 @@ func (c *Client) GetZones(ctx context.Context, parentID string) ([]Zone, error) 
 }
 
 func (c *Client) GetRecords(ctx context.Context, zoneID string) ([]Record, error) {
-	endpoint := c.APIEndpoint.JoinPath("zones", zoneID, "records")
+	endpoint := c.BaseURL.JoinPath("zones", zoneID, "records")
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -89,7 +71,7 @@ func (c *Client) GetRecords(ctx context.Context, zoneID string) ([]Record, error
 }
 
 func (c *Client) CreateRecord(ctx context.Context, zoneID string, record Record) (*Record, error) {
-	endpoint := c.APIEndpoint.JoinPath("zones", zoneID, "records")
+	endpoint := c.BaseURL.JoinPath("zones", zoneID, "records")
 
 	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
@@ -107,7 +89,7 @@ func (c *Client) CreateRecord(ctx context.Context, zoneID string, record Record)
 }
 
 func (c *Client) DeleteRecord(ctx context.Context, zoneID, name, recordType string) error {
-	endpoint := c.APIEndpoint.JoinPath("zones", zoneID, "records", name, recordType)
+	endpoint := c.BaseURL.JoinPath("zones", zoneID, "records", name, recordType)
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
@@ -118,14 +100,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneID, name, recordType stri
 }
 
 func (c *Client) do(req *http.Request, result any) error {
-	tok := getToken(req.Context())
-	if tok != nil {
-		req.Header.Set("Authorization", "Bearer "+tok.AccessToken)
-	} else {
-		return errors.New("not logged in")
-	}
-
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)
 	}

@@ -67,6 +67,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/dnsservices"
 	"github.com/go-acme/lego/v5/providers/dns/dnsupdate"
 	"github.com/go-acme/lego/v5/providers/dns/dode"
+	"github.com/go-acme/lego/v5/providers/dns/domainchief"
 	"github.com/go-acme/lego/v5/providers/dns/domeneshop"
 	"github.com/go-acme/lego/v5/providers/dns/dondominio"
 	"github.com/go-acme/lego/v5/providers/dns/dreamhost"
@@ -362,6 +363,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return dnsupdate.NewDNSProvider()
 	case "dode":
 		return dode.NewDNSProvider()
+	case "domainchief":
+		return domainchief.NewDNSProvider()
 	case "domeneshop", "domainnameshop":
 		return domeneshop.NewDNSProvider()
 	case "dondominio":
@@ -773,6 +776,7 @@ func GetProviderCodes() []string {
 		"dnsservices",
 		"dnsupdate",
 		"dode",
+		"domainchief",
 		"domeneshop",
 		"dondominio",
 		"dreamhost",

@@ -1,0 +1,23 @@
+Name = "Domain Chief"
+Description = ''''''
+URL = "https://domain.chief.app/"
+Code = "domainchief"
+Since = "v5.7.0"
+
+Example = '''
+DOMAINCHIEF_API_TOKEN="xxxxxxxxxxxxxxxxxxxxx" \
+lego run --dns domainchief -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    DOMAINCHIEF_API_TOKEN = "API token"
+  [Configuration.Additional]
+    DOMAINCHIEF_TEAM_SLUG = "Team slug"
+    DOMAINCHIEF_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 10)"
+    DOMAINCHIEF_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 120)"
+    DOMAINCHIEF_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    DOMAINCHIEF_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://docs.chief.tools/api/domainchief"

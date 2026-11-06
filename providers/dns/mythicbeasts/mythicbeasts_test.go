@@ -14,8 +14,8 @@ import (
 const envDomain = envNamespace + "DOMAIN"
 
 var envTest = tester.NewEnvTest(
-	EnvUserName,
-	EnvPassword).
+	EnvClientID,
+	EnvClientSecret).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -27,31 +27,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvUserName: "123",
-				EnvPassword: "456",
+				EnvClientID:     "123",
+				EnvClientSecret: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				EnvUserName: "",
-				EnvPassword: "",
+				EnvClientID:     "",
+				EnvClientSecret: "",
 			},
 			expected: "mythicbeasts: some credentials information are missing: MYTHICBEASTS_CLIENT_ID,MYTHICBEASTS_CLIENT_SECRET",
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				EnvUserName: "",
-				EnvPassword: "api_password",
+				EnvClientID:     "",
+				EnvClientSecret: "api_password",
 			},
 			expected: "mythicbeasts: some credentials information are missing: MYTHICBEASTS_CLIENT_ID",
 		},
 		{
 			desc: "missing secret key",
 			envVars: map[string]string{
-				EnvUserName: "api_username",
-				EnvPassword: "",
+				EnvClientID:     "api_username",
+				EnvClientSecret: "",
 			},
 			expected: "mythicbeasts: some credentials information are missing: MYTHICBEASTS_CLIENT_SECRET",
 		},

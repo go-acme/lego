@@ -70,10 +70,10 @@ func (s *TokenSource) Token() (*oauth2.Token, error) {
 	tok := &oauth2.Token{
 		AccessToken: data.Token,
 		TokenType:   "Bearer",
-		Expiry:      time.Unix(data.TokenExpire, 0),
+		Expiry:      time.Unix(data.TokenExpire, 0).UTC(),
 	}
 
-	tok.ExpiresIn = data.TokenExpire - time.Now().Unix()
+	tok.ExpiresIn = data.TokenExpire - time.Now().UTC().Unix()
 
 	return tok, nil
 }

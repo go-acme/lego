@@ -29,7 +29,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_GetZones(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/zones",
-			servermock.ResponseFromFixture("zones.json")).
+			servermock.ResponseFromFixture("zones.json"),
+		).
 		Build(t)
 
 	zones, err := client.GetZones(t.Context())
@@ -66,7 +67,8 @@ func TestClient_GetZones_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/zones",
 			servermock.ResponseFromFixture("error.json").
-				WithStatusCode(http.StatusUnauthorized)).
+				WithStatusCode(http.StatusUnauthorized),
+		).
 		Build(t)
 
 	_, err := client.GetZones(t.Context())
@@ -76,7 +78,8 @@ func TestClient_GetZones_error(t *testing.T) {
 func TestClient_GetZoneRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /dns/zones/123/records",
-			servermock.ResponseFromFixture("zone_records.json")).
+			servermock.ResponseFromFixture("zone_records.json"),
+		).
 		Build(t)
 
 	zones, err := client.GetZoneRecords(t.Context(), "123")
@@ -120,7 +123,8 @@ func TestClient_CreateNewRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns/zones/example.com/records",
 			servermock.ResponseFromFixture("create_record.json"),
-			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("create_record-request.json"),
+		).
 		Build(t)
 
 	record := Record{
@@ -140,7 +144,8 @@ func TestClient_DeleteRecord(t *testing.T) {
 			servermock.ResponseFromFixture("delete_record.json"),
 			servermock.CheckQueryParameter().Strict().
 				With("name", "_acme-challenge").
-				With("type", "TXT")).
+				With("type", "TXT"),
+		).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "123", "abc123", "_acme-challenge", "TXT")

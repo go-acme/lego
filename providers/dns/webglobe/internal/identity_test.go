@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
@@ -39,7 +40,7 @@ func TestTokenSource_Token(t *testing.T) {
 	assert.Equal(t, "secrettoken", token.AccessToken)
 	assert.Equal(t, "bearer", token.TokenType)
 	assert.EqualValues(t, 7200, token.ExpiresIn)
-	assert.NotZero(t, token.Expiry)
+	assert.WithinDuration(t, time.Now().Add(7200*time.Second), token.Expiry, 2*time.Second)
 }
 
 func TestTokenSource_login(t *testing.T) {

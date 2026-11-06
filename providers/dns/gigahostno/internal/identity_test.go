@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
 	"github.com/stretchr/testify/assert"
@@ -29,8 +30,14 @@ func mockTokenSource(ctx context.Context) *servermock.Builder[oauth2.TokenSource
 func TestTokenSource_Token(t *testing.T) {
 	tokenSource := mockTokenSource(t.Context()).
 		Route("POST /authenticate",
-			servermock.ResponseFromFixture("authenticate.json"),
-			servermock.CheckRequestJSONBodyFromFixture("authenticate-request.json")).
+			servermock.JSONEncode(APIResponse[*Token]{
+				Data: &Token{
+					Token:       "secrettoken",
+					TokenExpire: time.Now().Add(7200 * time.Second).UTC().Unix(),
+				},
+			}),
+			servermock.CheckRequestJSONBodyFromFixture("authenticate-request.json"),
+		).
 		Build(t)
 
 	token, err := tokenSource.Token()
@@ -38,15 +45,16 @@ func TestTokenSource_Token(t *testing.T) {
 
 	assert.Equal(t, "secrettoken", token.AccessToken)
 	assert.Equal(t, "Bearer", token.TokenType)
-	assert.NotZero(t, token.ExpiresIn)
-	assert.NotZero(t, token.Expiry)
+	assert.InDelta(t, 7200, token.ExpiresIn, 2)
+	assert.WithinDuration(t, time.Now().Add(7200*time.Second), token.Expiry, 2*time.Second)
 }
 
 func TestTokenSource_authenticate(t *testing.T) {
 	tokenSource := mockTokenSource(t.Context()).
 		Route("POST /authenticate",
 			servermock.ResponseFromFixture("authenticate.json"),
-			servermock.CheckRequestJSONBodyFromFixture("authenticate-request.json")).
+			servermock.CheckRequestJSONBodyFromFixture("authenticate-request.json"),
+		).
 		Build(t)
 
 	token, err := tokenSource.(*TokenSource).authenticate(t.Context())

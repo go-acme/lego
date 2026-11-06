@@ -62,7 +62,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://developer.rackspace.com/docs/cloud-dns/v1/)
+- [API documentation](https://docs.rackspace.com/reference/cloud-dns-api-reference)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/rackspace/rackspace.toml -->

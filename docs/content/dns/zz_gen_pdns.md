@@ -72,7 +72,7 @@ PowerDNS Notes:
 
 ## More information
 
-- [API documentation](https://doc.powerdns.com/md/httpapi/README/)
+- [API documentation](https://doc.powerdns.com/authoritative/http-api/index.html)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/pdns/pdns.toml -->

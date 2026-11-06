@@ -32,7 +32,7 @@ func NewIdentifier(httpClient *http.Client, baseURL string) *Identifier {
 }
 
 // Login sends an authentication request.
-// https://docs.rackspace.com/docs/cloud-dns/v1/getting-started/authenticate
+// https://docs.rackspace.com/reference/ticketing-authenticate-to-rackspace
 func (a *Identifier) Login(ctx context.Context, apiUser, apiKey string) (*Identity, error) {
 	authData := AuthData{
 		Auth: Auth{

@@ -37,7 +37,7 @@ func NewClient(endpoint, token string) (*Client, error) {
 }
 
 // AddRecord Adds one record to a specified domain.
-// https://docs.rackspace.com/docs/cloud-dns/v1/api-reference/records#add-records
+// https://docs.rackspace.com/reference/cloud-dns-records-operations#add-records
 func (c *Client) AddRecord(ctx context.Context, zoneID string, record Record) error {
 	endpoint := c.baseURL.JoinPath("domains", zoneID, "records")
 
@@ -89,7 +89,7 @@ func (c *Client) GetHostedZoneID(ctx context.Context, fqdn string) (string, erro
 }
 
 // listDomainsByName Filters domains by domain name.
-// https://docs.rackspace.com/docs/cloud-dns/v1/api-reference/domains#list-domains-by-name
+// https://docs.rackspace.com/reference/cloud-dns-domains-operations#list-domains-by-name
 func (c *Client) listDomainsByName(ctx context.Context, domain string) (*ZoneSearchResponse, error) {
 	endpoint := c.baseURL.JoinPath("domains")
 
@@ -130,7 +130,7 @@ func (c *Client) FindTxtRecord(ctx context.Context, fqdn, zoneID string) (*Recor
 	return &records.Records[0], nil
 }
 
-// https://docs.rackspace.com/docs/cloud-dns/v1/api-reference/records#search-records
+// https://docs.rackspace.com/reference/cloud-dns-records-operations#search-records
 func (c *Client) searchRecords(ctx context.Context, zoneID, recordName, recordType string) (*Records, error) {
 	endpoint := c.baseURL.JoinPath("domains", zoneID, "records")
 

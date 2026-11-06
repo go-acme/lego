@@ -257,7 +257,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			servermock.CheckHeader().WithAuthorization("Bearer xxx"),
 			servermock.CheckHeader().
 				WithContentTypeFromURLEncoded(),
-			servermock.CheckForm().
+			servermock.CheckForm().Strict().
 				With("name", "_acme-challenge").
 				With("ttl", "120").
 				With("value", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY").

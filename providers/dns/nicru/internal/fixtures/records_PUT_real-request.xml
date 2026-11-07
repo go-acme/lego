@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<request>
+    <rr-list>
+        <rr>
+            <name>_acme-challenge</name>
+            <idn-name></idn-name>
+            <ttl>30</ttl>
+            <type>TXT</type>
+            <txt>
+                <string>ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY</string>
+            </txt>
+        </rr>
+    </rr-list>
+</request>

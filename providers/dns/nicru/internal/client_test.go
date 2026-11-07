@@ -18,7 +18,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 				return nil, err
 			}
 
-			client.baseURL, _ = url.Parse(server.URL)
+			client.BaseURL, _ = url.Parse(server.URL)
 
 			return client, nil
 		},
@@ -29,7 +29,9 @@ func mockBuilder() *servermock.Builder[*Client] {
 
 func TestClient_GetServices(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /services", servermock.ResponseFromFixture("services_GET.xml")).
+		Route("GET /services",
+			servermock.ResponseFromFixture("services_GET.xml"),
+		).
 		Build(t)
 
 	zones, err := client.GetServices(t.Context())
@@ -65,7 +67,9 @@ func TestClient_GetServices(t *testing.T) {
 
 func TestClient_ListZones(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /zones", servermock.ResponseFromFixture("zones_all_GET.xml")).
+		Route("GET /zones",
+			servermock.ResponseFromFixture("zones_all_GET.xml"),
+		).
 		Build(t)
 
 	zones, err := client.ListZones(t.Context())
@@ -89,8 +93,8 @@ func TestClient_ListZones(t *testing.T) {
 			HasChanges: "false",
 			HasPrimary: "true",
 			ID:         "227642",
-			IDNName:    "example.ru",
-			Name:       "example.ru",
+			IDNName:    "example.com",
+			Name:       "example.com",
 			Payer:      "123/NIC-REG",
 			Service:    "myservice",
 		},
@@ -100,8 +104,8 @@ func TestClient_ListZones(t *testing.T) {
 			HasChanges: "false",
 			HasPrimary: "true",
 			ID:         "227643",
-			IDNName:    "test.su",
-			Name:       "test.su",
+			IDNName:    "example.org",
+			Name:       "example.org",
 			Payer:      "123/NIC-REG",
 			Service:    "myservice",
 		},
@@ -112,7 +116,9 @@ func TestClient_ListZones(t *testing.T) {
 
 func TestClient_ListZones_error(t *testing.T) {
 	client := mockBuilder().
-		Route("GET /zones", servermock.ResponseFromFixture("errors.xml")).
+		Route("GET /zones",
+			servermock.ResponseFromFixture("errors.xml"),
+		).
 		Build(t)
 
 	_, err := client.ListZones(t.Context())
@@ -125,7 +131,8 @@ func TestClient_ListZones_error(t *testing.T) {
 func TestClient_GetZonesByService(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /services/test/zones",
-			servermock.ResponseFromFixture("zones_GET.xml")).
+			servermock.ResponseFromFixture("zones_GET.xml"),
+		).
 		Build(t)
 
 	zones, err := client.GetZonesByService(t.Context(), "test")
@@ -173,7 +180,8 @@ func TestClient_GetZonesByService(t *testing.T) {
 func TestClient_GetZonesByService_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /services/test/zones",
-			servermock.ResponseFromFixture("errors.xml")).
+			servermock.ResponseFromFixture("errors.xml"),
+		).
 		Build(t)
 
 	_, err := client.GetZonesByService(t.Context(), "test")
@@ -186,7 +194,8 @@ func TestClient_GetZonesByService_error(t *testing.T) {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /services/test/zones/example.com./records",
-			servermock.ResponseFromFixture("records_GET.xml")).
+			servermock.ResponseFromFixture("records_GET.xml"),
+		).
 		Build(t)
 
 	records, err := client.GetRecords(t.Context(), "test", "example.com.")
@@ -253,7 +262,8 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_GetRecords_error(t *testing.T) {
 	client := mockBuilder().
 		Route("GET /services/test/zones/example.com./records",
-			servermock.ResponseFromFixture("errors.xml")).
+			servermock.ResponseFromFixture("errors.xml"),
+		).
 		Build(t)
 
 	_, err := client.GetRecords(t.Context(), "test", "example.com.")
@@ -265,10 +275,13 @@ func TestClient_GetRecords_error(t *testing.T) {
 
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("PUT /services/test/zones/example.com./records",
+		Route("PUT /services/myservice/zones/example.com/records",
 			servermock.ResponseFromFixture("records_PUT.xml"),
 			servermock.CheckHeader().
-				WithContentType("text/xml")).
+				WithContentType("text/xml"),
+			servermock.CheckRequestBodyFromFixture("records_PUT-request.xml").
+				IgnoreWhitespace(),
+		).
 		Build(t)
 
 	rrs := []RR{
@@ -284,7 +297,7 @@ func TestClient_AddRecord(t *testing.T) {
 		},
 	}
 
-	response, err := client.AddRecords(t.Context(), "test", "example.com.", rrs)
+	response, err := client.AddRecords(t.Context(), "myservice", "example.com", rrs)
 	require.NoError(t, err)
 
 	expected := []Zone{
@@ -292,9 +305,9 @@ func TestClient_AddRecord(t *testing.T) {
 			Admin:      "123/NIC-REG",
 			HasChanges: "true",
 			ID:         "228095",
-			IDNName:    "test.ru",
-			Name:       "test.ru",
-			Service:    "testservice",
+			IDNName:    "example.com",
+			Name:       "example.com",
+			Service:    "myservice",
 			RR: []RR{
 				{
 					ID:      "210076",
@@ -328,7 +341,8 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Route("PUT /services/test/zones/example.com./records",
 			servermock.ResponseFromFixture("errors.xml"),
 			servermock.CheckHeader().
-				WithContentType("text/xml")).
+				WithContentType("text/xml"),
+		).
 		Build(t)
 
 	rrs := []RR{
@@ -353,18 +367,20 @@ func TestClient_AddRecord_error(t *testing.T) {
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /services/test/zones/example.com./records/123",
-			servermock.ResponseFromFixture("record_DELETE.xml")).
+		Route("DELETE /services/myservice/zones/example.com/records/123456",
+			servermock.ResponseFromFixture("record_DELETE.xml"),
+		).
 		Build(t)
 
-	err := client.DeleteRecord(t.Context(), "test", "example.com.", "123")
+	err := client.DeleteRecord(t.Context(), "myservice", "example.com", "123456")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
 		Route("DELETE /services/test/zones/example.com./records/123",
-			servermock.ResponseFromFixture("errors.xml")).
+			servermock.ResponseFromFixture("errors.xml"),
+		).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "test", "example.com.", "123")
@@ -376,18 +392,20 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 
 func TestClient_CommitZone(t *testing.T) {
 	client := mockBuilder().
-		Route("POST /services/test/zones/example.com./commit",
-			servermock.ResponseFromFixture("commit_POST.xml")).
+		Route("POST /services/myservice/zones/example.com/commit",
+			servermock.ResponseFromFixture("commit_POST.xml"),
+		).
 		Build(t)
 
-	err := client.CommitZone(t.Context(), "test", "example.com.")
+	err := client.CommitZone(t.Context(), "myservice", "example.com")
 	require.NoError(t, err)
 }
 
 func TestClient_CommitZone_error(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /services/test/zones/example.com./commit",
-			servermock.ResponseFromFixture("errors.xml")).
+			servermock.ResponseFromFixture("errors.xml"),
+		).
 		Build(t)
 
 	err := client.CommitZone(t.Context(), "test", "example.com.")

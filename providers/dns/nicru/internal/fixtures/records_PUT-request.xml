@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<request>
+    <rr-list>
+        <rr>
+            <name>@</name>
+            <idn-name></idn-name>
+            <ttl></ttl>
+            <type>NS</type>
+            <ns>
+                <name>ns4-l2.nic.ru.</name>
+            </ns>
+        </rr>
+        <rr>
+            <name>@</name>
+            <idn-name></idn-name>
+            <ttl></ttl>
+            <type>NS</type>
+            <ns>
+                <name>ns8-l2.nic.ru.</name>
+            </ns>
+        </rr>
+    </rr-list>
+</request>

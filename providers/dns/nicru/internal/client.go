@@ -32,7 +32,7 @@ func (tr Trimmer) Token() (xml.Token, error) {
 }
 
 type Client struct {
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	httpClient *http.Client
 }
 
@@ -44,13 +44,13 @@ func NewClient(httpClient *http.Client) (*Client, error) {
 	baseURL, _ := url.Parse(apiBaseURL)
 
 	return &Client{
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		httpClient: httpClient,
 	}, nil
 }
 
 func (c *Client) GetServices(ctx context.Context) ([]Service, error) {
-	endpoint := c.baseURL.JoinPath("services")
+	endpoint := c.BaseURL.JoinPath("services")
 
 	req, err := newXMLRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -70,7 +70,7 @@ func (c *Client) GetServices(ctx context.Context) ([]Service, error) {
 }
 
 func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
-	endpoint := c.baseURL.JoinPath("zones")
+	endpoint := c.BaseURL.JoinPath("zones")
 
 	req, err := newXMLRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -90,7 +90,7 @@ func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
 }
 
 func (c *Client) GetZonesByService(ctx context.Context, serviceName string) ([]Zone, error) {
-	endpoint := c.baseURL.JoinPath("services", serviceName, "zones")
+	endpoint := c.BaseURL.JoinPath("services", serviceName, "zones")
 
 	req, err := newXMLRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -110,7 +110,7 @@ func (c *Client) GetZonesByService(ctx context.Context, serviceName string) ([]Z
 }
 
 func (c *Client) GetRecords(ctx context.Context, serviceName, zoneName string) ([]RR, error) {
-	endpoint := c.baseURL.JoinPath("services", serviceName, "zones", zoneName, "records")
+	endpoint := c.BaseURL.JoinPath("services", serviceName, "zones", zoneName, "records")
 
 	req, err := newXMLRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -135,7 +135,7 @@ func (c *Client) GetRecords(ctx context.Context, serviceName, zoneName string) (
 }
 
 func (c *Client) DeleteRecord(ctx context.Context, serviceName, zoneName, id string) error {
-	endpoint := c.baseURL.JoinPath("services", serviceName, "zones", zoneName, "records", id)
+	endpoint := c.BaseURL.JoinPath("services", serviceName, "zones", zoneName, "records", id)
 
 	req, err := newXMLRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
@@ -151,7 +151,7 @@ func (c *Client) DeleteRecord(ctx context.Context, serviceName, zoneName, id str
 }
 
 func (c *Client) CommitZone(ctx context.Context, serviceName, zoneName string) error {
-	endpoint := c.baseURL.JoinPath("services", serviceName, "zones", zoneName, "commit")
+	endpoint := c.BaseURL.JoinPath("services", serviceName, "zones", zoneName, "commit")
 
 	req, err := newXMLRequest(ctx, http.MethodPost, endpoint, nil)
 	if err != nil {
@@ -167,7 +167,7 @@ func (c *Client) CommitZone(ctx context.Context, serviceName, zoneName string) e
 }
 
 func (c *Client) AddRecords(ctx context.Context, serviceName, zoneName string, rrs []RR) ([]Zone, error) {
-	endpoint := c.baseURL.JoinPath("services", serviceName, "zones", zoneName, "records")
+	endpoint := c.BaseURL.JoinPath("services", serviceName, "zones", zoneName, "records")
 
 	payload := &Request{RRList: &RRList{RR: rrs}}
 

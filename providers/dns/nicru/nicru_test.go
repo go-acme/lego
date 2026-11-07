@@ -1,9 +1,13 @@
 package nicru
 
 import (
+	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/providers/dns/nicru/internal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -189,5 +193,103 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 
 	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func oauthServer(t *testing.T) string {
+	t.Helper()
+
+	return servermock.NewBuilder[string](
+		func(server *httptest.Server) (string, error) {
+			return server.URL, nil
+		}).
+		Route("POST /",
+			// NOTE(ldez): I don't know if the real response is JSON or x-www-form-urlencoded.
+			servermock.ResponseFromInternal("auth.json"),
+			servermock.CheckHeader().
+				WithContentTypeFromURLEncoded(),
+			servermock.CheckForm().Strict().
+				With("client_id", "client123").
+				With("client_secret", "secret123").
+				With("grant_type", "password").
+				With("password", "pwd123").
+				With("scope", ".+:/dns-master/.+").
+				With("username", "user123"),
+		).
+		Build(t)
+}
+
+func mockBuilder(tokenURL string) *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.ServiceID = "client123"
+			config.Secret = "secret123"
+			config.Username = "user123"
+			config.Password = "pwd123"
+
+			authConfig := internal.CreateOAuthConfig(tokenURL, config.ServiceID, config.Secret)
+
+			p, err := newDNSProviderConfig(config, authConfig)
+			if err != nil {
+				return nil, err
+			}
+
+			client, err := p.lazyClient()
+			if err != nil {
+				return nil, err
+			}
+
+			client.BaseURL, _ = url.Parse(server.URL)
+
+			return p, nil
+		},
+		servermock.CheckHeader().
+			WithAuthorization("Bearer at123").
+			WithAccept("text/xml"),
+	)
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider := mockBuilder(oauthServer(t)).
+		Route("GET /zones",
+			servermock.ResponseFromInternal("zones_all_GET.xml"),
+		).
+		Route("GET /services/myservice/zones/example.com/records",
+			servermock.ResponseFromInternal("records_GET.xml"),
+		).
+		Route("PUT /services/myservice/zones/example.com/records",
+			servermock.ResponseFromInternal("records_PUT.xml"),
+			servermock.CheckHeader().
+				WithContentType("text/xml"),
+			servermock.CheckRequestBodyFromInternal("records_PUT_real-request.xml").
+				IgnoreWhitespace(),
+		).
+		Route("POST /services/myservice/zones/example.com/commit",
+			servermock.ResponseFromInternal("commit_POST.xml"),
+		).
+		Build(t)
+
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp(t *testing.T) {
+	provider := mockBuilder(oauthServer(t)).
+		Route("GET /zones",
+			servermock.ResponseFromInternal("zones_all_GET.xml"),
+		).
+		Route("GET /services/myservice/zones/example.com/records",
+			servermock.ResponseFromInternal("records_GET_real.xml"),
+		).
+		Route("DELETE /services/myservice/zones/example.com/records/123456",
+			servermock.ResponseFromInternal("record_DELETE.xml"),
+		).
+		Route("POST /services/myservice/zones/example.com/commit",
+			servermock.ResponseFromInternal("commit_POST.xml"),
+		).
+		Build(t)
+
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
 }

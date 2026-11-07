@@ -14,6 +14,7 @@ import (
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/nicru/internal"
+	"golang.org/x/oauth2"
 )
 
 // Environment variables names.
@@ -86,8 +87,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("nicru: %w", err)
 	}
 
+	authConfig := internal.CreateOAuthConfig("", config.ServiceID, config.Secret)
+
+	return newDNSProviderConfig(config, authConfig)
+}
+
+func newDNSProviderConfig(config *Config, authConfig *oauth2.Config) (*DNSProvider, error) {
 	lazyClient := sync.OnceValues(func() (*internal.Client, error) {
-		oauthClient, err := internal.NewOauthClient(context.Background(), config.ServiceID, config.Secret, config.Username, config.Password)
+		oauthClient, err := internal.NewOAuthClient(context.Background(), authConfig, config.Username, config.Password)
 		if err != nil {
 			return nil, err
 		}

@@ -1,5 +1,161 @@
 {
   "auth": {
-    "accessToken": "at"
+    "accessToken": "at",
+    "author": {
+      "authorId": "string",
+      "authorType": "CLIENT",
+      "cloudDnsRoleCode": "NONE",
+      "fullName": "string"
+    },
+    "expiresAt": "string",
+    "expiresIn": 0,
+    "refreshToken": "string",
+    "tokenType": "Bearer",
+    "userId": "string"
+  },
+  "showHint": "string",
+  "user": {
+    "clientUserList": [
+      {
+        "accessToAllServers": true,
+        "accessToClientZone": true,
+        "authorizedToSendTickets": true,
+        "cdnEnabled": true,
+        "client": {
+          "cardPaymentEnabled": true,
+          "cdnEnabled": true,
+          "cloudDnsEnabled": true,
+          "cloudMailEnabled": true,
+          "companyName": "VSHosting s.r.o.",
+          "companyNumber": "61505455",
+          "connectedServiceList": [
+            {
+              "activationDate": "string",
+              "billingPeriod": {
+                "created": "string",
+                "discount": 0.05,
+                "id": "string",
+                "monthLength": 6,
+                "name": {
+                  "cs": "cesky",
+                  "de": "nemecky",
+                  "en": "anglicky",
+                  "hu": "madarsky"
+                }
+              },
+              "client": {
+                "application": "VSHOSTING",
+                "companyName": "VSHosting s.r.o.",
+                "companyNumber": "61505455",
+                "id": "string",
+                "vatNumber": "CZ61505455"
+              },
+              "clientId": "string",
+              "clientZoneStatus": "TERMINATED",
+              "currency": {
+                "displaySymbolBefore": true,
+                "id": "CZK",
+                "roundDigits": 0,
+                "symbol": "Kč"
+              },
+              "currencyId": "CZK",
+              "id": "string",
+              "monthPriceDiscounted": 971.08,
+              "oneTimePrice": 0,
+              "serviceIdentification": "string",
+              "serviceName": "Standardní služba",
+              "serviceType": "STANDARD",
+              "standardService": {
+                "code": "string",
+                "id": "string",
+                "isActive": true
+              }
+            }
+          ],
+          "contractorId": "string",
+          "creditVat": 0,
+          "currencyId": "CZK",
+          "deliveryAddress": {
+            "city": "Praha 10",
+            "companyName": "VSHosting s.r.o.",
+            "countryId": "CZ",
+            "postcode": "12000",
+            "street": "Sodomkova 5"
+          },
+          "feeVariableSymbol": 1234567890,
+          "hasAccessToServerPark": true,
+          "id": "string",
+          "invoiceAddress": {
+            "city": "Praha 10",
+            "companyName": "VSHosting s.r.o.",
+            "countryId": "CZ",
+            "postcode": "12000",
+            "street": "Sodomkova 5"
+          },
+          "invoiceVariableSymbol": 1234567890,
+          "invoicesTotalDue": 0,
+          "languageId": "cs",
+          "mode": "POST_PAID",
+          "salesman": {
+            "countryCallingCode": 420,
+            "email": "info@vshosting.cz",
+            "fullName": "František Dobrota",
+            "id": "string",
+            "isActive": true,
+            "phoneNumber": 123456
+          },
+          "secureCommunication": true,
+          "status": "ACTIVE",
+          "type": "LEGAL_ENTITY",
+          "vatCountryId": "CZ",
+          "vatMode": "CZ_NOT_VAT_PAYER",
+          "vatNumber": "CZ61505455",
+          "vatRate": 0.21,
+          "webUrl": "https://www.vshosting.cz"
+        },
+        "clientId": "string",
+        "cloudDnsEnabled": true,
+        "cloudMailEnabled": true,
+        "countryCallingCode": 420,
+        "email": "dobrota@vshosting.cz",
+        "firstName": "František",
+        "fullName": "František Dobrota",
+        "id": "string",
+        "language": {
+          "id": "cs",
+          "name": "čeština"
+        },
+        "lastName": "Dobrota",
+        "phoneNumber": 123456,
+        "roleCode": "MANAGER",
+        "serverIdAccessList": [
+          "string"
+        ],
+        "smsNotifications": true,
+        "status": "ACTIVE",
+        "userId": "string"
+      }
+    ],
+    "countryCallingCode": 420,
+    "created": "string",
+    "email": "dobrota@vshosting.cz",
+    "firstName": "František",
+    "fullName": "František Dobrota",
+    "id": "string",
+    "language": {
+      "id": "cs",
+      "name": "čeština"
+    },
+    "lastName": "Dobrota",
+    "lastUpdate": "string",
+    "loginMethods": {
+      "appleId": "string",
+      "googleAccount": "string",
+      "mojeId": "string",
+      "password": true
+    },
+    "phoneNumber": 123456,
+    "smsNotifications": true,
+    "status": "ACTIVE"
   }
 }

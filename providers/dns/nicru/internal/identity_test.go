@@ -2,25 +2,28 @@ package internal
 
 import (
 	"context"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/stretchr/testify/require"
+	"golang.org/x/oauth2"
 )
 
-func mockOAuthClient(ctx context.Context) *servermock.Builder[*http.Client] {
-	return servermock.NewBuilder[*http.Client](
-		func(server *httptest.Server) (*http.Client, error) {
+func mockTokenSource(ctx context.Context) *servermock.Builder[oauth2.TokenSource] {
+	return servermock.NewBuilder[oauth2.TokenSource](
+		func(server *httptest.Server) (oauth2.TokenSource, error) {
 			authConfig := CreateOAuthConfig(server.URL, "client123", "secret123")
 
-			return NewOAuthClient(ctx, authConfig, "user123", "pwd123")
+			ts := NewTokenSource(ctx, authConfig, "user123", "pwd123")
+
+			return oauth2.ReuseTokenSource(nil, ts), nil
 		},
 	)
 }
 
-func TestNewOAuthClient(t *testing.T) {
-	_ = mockOAuthClient(t.Context()).
+func TestTokenSource_Token(t *testing.T) {
+	rt := mockTokenSource(t.Context()).
 		Route("POST /",
 			// NOTE(ldez): I don't know if the real response is JSON or x-www-form-urlencoded.
 			servermock.ResponseFromFixture("auth.json"),
@@ -35,4 +38,15 @@ func TestNewOAuthClient(t *testing.T) {
 				With("username", "user123"),
 		).
 		Build(t)
+
+	token, err := rt.Token()
+	require.NoError(t, err)
+
+	require.Equal(t, "at123", token.AccessToken)
+
+	// caught by ReuseTokenSource: no call to the custom TokenSource.
+	token, err = rt.Token()
+	require.NoError(t, err)
+
+	require.Equal(t, "at123", token.AccessToken)
 }

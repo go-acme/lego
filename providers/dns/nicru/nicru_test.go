@@ -235,12 +235,7 @@ func mockBuilder(tokenURL string) *servermock.Builder[*DNSProvider] {
 				return nil, err
 			}
 
-			client, err := p.lazyClient()
-			if err != nil {
-				return nil, err
-			}
-
-			client.BaseURL, _ = url.Parse(server.URL)
+			p.client.BaseURL, _ = url.Parse(server.URL)
 
 			return p, nil
 		},

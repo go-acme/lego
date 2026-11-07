@@ -2,23 +2,11 @@ package internal
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 
 	"golang.org/x/oauth2"
 )
 
 const authBaseURL = "https://api.nic.ru/oauth/token"
-
-func NewOAuthClient(ctx context.Context, cfg *oauth2.Config, username, password string) (*http.Client, error) {
-	// Note: under the hood, this function is doing a request to the token endpoint.
-	token, err := cfg.PasswordCredentialsToken(ctx, username, password)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create oauth2 token: %w", err)
-	}
-
-	return cfg.Client(ctx, token), nil
-}
 
 func CreateOAuthConfig(tokenURL, clientID, clientSecret string) *oauth2.Config {
 	if tokenURL == "" {
@@ -34,4 +22,22 @@ func CreateOAuthConfig(tokenURL, clientID, clientSecret string) *oauth2.Config {
 		},
 		Scopes: []string{".+:/dns-master/.+"},
 	}
+}
+
+//nolint:containedctx // Because of the interface oauth2.TokenSource.
+type TokenSource struct {
+	ctx context.Context
+
+	cfg *oauth2.Config
+
+	username string
+	password string
+}
+
+func NewTokenSource(ctx context.Context, cfg *oauth2.Config, username, password string) *TokenSource {
+	return &TokenSource{ctx: ctx, cfg: cfg, username: username, password: password}
+}
+
+func (s *TokenSource) Token() (*oauth2.Token, error) {
+	return s.cfg.PasswordCredentialsToken(s.ctx, s.username, s.password)
 }

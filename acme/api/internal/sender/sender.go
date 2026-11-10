@@ -3,6 +3,7 @@ package sender
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -129,14 +130,28 @@ func checkError(req *http.Request, resp *http.Response) error {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("%d :: %s :: %s :: %w", resp.StatusCode, req.Method, req.URL, err)
+		return errors.Join(&acme.ProblemDetails{
+			Type:       "urn:lego:params:acme:error:unreadable",
+			Detail:     "Unable to read response body",
+			HTTPStatus: resp.StatusCode,
+			Method:     req.Method,
+			URL:        req.URL.String(),
+			RetryAfter: GetRetryAfter(resp),
+		}, err)
 	}
 
 	errorDetails := new(acme.ProblemDetails)
 
 	err = json.Unmarshal(body, errorDetails)
 	if err != nil {
-		return fmt.Errorf("%d ::%s :: %s :: %w :: %s", resp.StatusCode, req.Method, req.URL, err, string(body))
+		return errors.Join(&acme.ProblemDetails{
+			Type:       "urn:lego:params:acme:error:unmarshal",
+			Detail:     string(body),
+			HTTPStatus: resp.StatusCode,
+			Method:     req.Method,
+			URL:        req.URL.String(),
+			RetryAfter: GetRetryAfter(resp),
+		}, err)
 	}
 
 	errorDetails.Method = req.Method

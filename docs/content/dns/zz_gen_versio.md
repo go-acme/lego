@@ -13,8 +13,8 @@ dnsprovider:
 <!-- providers/dns/versio/versio.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+The Versio DNS provider shut down in 2021.
 
-Configuration for [Versio.[nl|eu|uk]](https://www.versio.nl/domeinnamen).
 
 
 <!--more-->
@@ -59,13 +59,9 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
-To test with the sandbox environment set ```VERSIO_ENDPOINT=https://www.versio.nl/testapi/v1/```
 
 
 
-## More information
-
-- [API documentation](https://www.versio.nl/RESTapidoc/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/versio/versio.toml -->

@@ -1,5 +1,7 @@
 Name = "Versio.[nl|eu|uk]"
-Description = ''''''
+Description = '''
+The Versio DNS provider shut down in 2021.
+'''
 URL = "https://www.versio.nl/domeinnamen"
 Code = "versio"
 Since = "v2.7.0"
@@ -8,10 +10,6 @@ Example = '''
 VERSIO_USERNAME=<your login> \
 VERSIO_PASSWORD=<your password> \
 lego run --dns versio -d '*.example.com' -d example.com
-'''
-
-Additional = '''
-To test with the sandbox environment set ```VERSIO_ENDPOINT=https://www.versio.nl/testapi/v1/```
 '''
 
 [Configuration]
@@ -25,6 +23,3 @@ To test with the sandbox environment set ```VERSIO_ENDPOINT=https://www.versio.n
     VERSIO_SEQUENCE_INTERVAL = "Time between sequential requests in seconds (Default: 60)"
     VERSIO_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 300)"
     VERSIO_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
-
-[Links]
-  API = "https://www.versio.nl/RESTapidoc/"

@@ -3,6 +3,7 @@ package sender
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -127,37 +128,54 @@ func checkError(req *http.Request, resp *http.Response) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
+	retryAfter := GetRetryAfter(resp)
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("%d :: %s :: %s :: %w", resp.StatusCode, req.Method, req.URL, err)
+		return errors.Join(&acme.ProblemDetails{
+			Type:       "urn:lego:params:acme:error:unreadable",
+			Detail:     "Unable to read response body",
+			HTTPStatus: resp.StatusCode,
+			Method:     req.Method,
+			URL:        req.URL.String(),
+			RetryAfter: retryAfter,
+		}, err)
 	}
 
 	errorDetails := new(acme.ProblemDetails)
 
 	err = json.Unmarshal(body, errorDetails)
 	if err != nil {
-		return fmt.Errorf("%d ::%s :: %s :: %w :: %s", resp.StatusCode, req.Method, req.URL, err, string(body))
+		return errors.Join(&acme.ProblemDetails{
+			Type:       "urn:lego:params:acme:error:unmarshal",
+			Detail:     string(body),
+			HTTPStatus: resp.StatusCode,
+			Method:     req.Method,
+			URL:        req.URL.String(),
+			RetryAfter: retryAfter,
+		}, err)
 	}
 
 	errorDetails.Method = req.Method
 	errorDetails.URL = req.URL.String()
+	errorDetails.RetryAfter = retryAfter
 
 	if errorDetails.HTTPStatus == 0 {
 		errorDetails.HTTPStatus = resp.StatusCode
 	}
 
 	// Check for errors we handle specifically
-	switch {
-	case errorDetails.HTTPStatus == http.StatusBadRequest && errorDetails.Type == acme.BadNonceErrorType:
+	switch errorDetails.Type {
+	case acme.BadNonceErrorType:
 		return &acme.NonceError{ProblemDetails: errorDetails}
 
-	case errorDetails.HTTPStatus == http.StatusConflict && errorDetails.Type == acme.AlreadyReplacedErrorType:
+	case acme.AlreadyReplacedErrorType:
 		return &acme.AlreadyReplacedError{ProblemDetails: errorDetails}
 
-	case errorDetails.HTTPStatus == http.StatusTooManyRequests && errorDetails.Type == acme.RateLimitedErrorType:
+	case acme.RateLimitedErrorType:
 		return &acme.RateLimitedError{
 			ProblemDetails: errorDetails,
-			RetryAfter:     GetRetryAfter(resp),
+			RetryAfter:     retryAfter,
 		}
 
 	default:

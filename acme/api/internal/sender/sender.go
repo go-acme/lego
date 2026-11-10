@@ -128,6 +128,8 @@ func checkError(req *http.Request, resp *http.Response) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
+	retryAfter := GetRetryAfter(resp)
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return errors.Join(&acme.ProblemDetails{
@@ -136,7 +138,7 @@ func checkError(req *http.Request, resp *http.Response) error {
 			HTTPStatus: resp.StatusCode,
 			Method:     req.Method,
 			URL:        req.URL.String(),
-			RetryAfter: GetRetryAfter(resp),
+			RetryAfter: retryAfter,
 		}, err)
 	}
 
@@ -150,13 +152,13 @@ func checkError(req *http.Request, resp *http.Response) error {
 			HTTPStatus: resp.StatusCode,
 			Method:     req.Method,
 			URL:        req.URL.String(),
-			RetryAfter: GetRetryAfter(resp),
+			RetryAfter: retryAfter,
 		}, err)
 	}
 
 	errorDetails.Method = req.Method
 	errorDetails.URL = req.URL.String()
-	errorDetails.RetryAfter = GetRetryAfter(resp)
+	errorDetails.RetryAfter = retryAfter
 
 	if errorDetails.HTTPStatus == 0 {
 		errorDetails.HTTPStatus = resp.StatusCode
@@ -173,7 +175,7 @@ func checkError(req *http.Request, resp *http.Response) error {
 	case acme.RateLimitedErrorType:
 		return &acme.RateLimitedError{
 			ProblemDetails: errorDetails,
-			RetryAfter:     GetRetryAfter(resp),
+			RetryAfter:     retryAfter,
 		}
 
 	default:

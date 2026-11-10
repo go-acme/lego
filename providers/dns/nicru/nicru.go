@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
@@ -14,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/nicru/internal"
+	"golang.org/x/oauth2"
 )
 
 // Environment variables names.
@@ -56,7 +56,7 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config *Config
 
-	lazyClient func() (*internal.Client, error)
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for RU Center.
@@ -86,23 +86,22 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("nicru: %w", err)
 	}
 
-	lazyClient := sync.OnceValues(func() (*internal.Client, error) {
-		oauthClient, err := internal.NewOauthClient(context.Background(), config.ServiceID, config.Secret, config.Username, config.Password)
-		if err != nil {
-			return nil, err
-		}
+	authConfig := internal.CreateOAuthConfig("", config.ServiceID, config.Secret)
 
-		client, err := internal.NewClient(clientdebug.Wrap(oauthClient))
-		if err != nil {
-			return nil, fmt.Errorf("unable to build the API client: %w", err)
-		}
+	return newDNSProviderConfig(config, authConfig)
+}
 
-		return client, nil
-	})
+func newDNSProviderConfig(config *Config, authConfig *oauth2.Config) (*DNSProvider, error) {
+	ts := internal.NewTokenSource(context.Background(), authConfig, config.Username, config.Password)
+
+	client, err := internal.NewClient(clientdebug.Wrap(oauth2.NewClient(context.Background(), ts)))
+	if err != nil {
+		return nil, fmt.Errorf("nicru: %w", err)
+	}
 
 	return &DNSProvider{
-		config:     config,
-		lazyClient: lazyClient,
+		config: config,
+		client: client,
 	}, nil
 }
 
@@ -117,12 +116,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 
 	authZone = dns01.UnFqdn(authZone)
 
-	client, err := d.lazyClient()
-	if err != nil {
-		return fmt.Errorf("nicru: %w", err)
-	}
-
-	zone, err := findZone(ctx, client, authZone)
+	zone, err := findZone(ctx, d.client, authZone)
 	if err != nil {
 		return fmt.Errorf("nicru: find zone: %w", err)
 	}
@@ -132,7 +126,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 		return fmt.Errorf("nicru: %w", err)
 	}
 
-	records, err := client.GetRecords(ctx, zone.Service, authZone)
+	records, err := d.client.GetRecords(ctx, zone.Service, authZone)
 	if err != nil {
 		return fmt.Errorf("nicru: get records: %w", err)
 	}
@@ -154,12 +148,12 @@ func (d *DNSProvider) Present(ctx context.Context, domain, _, keyAuth string) er
 		TXT:  &internal.TXT{String: info.Value},
 	}}
 
-	_, err = client.AddRecords(ctx, zone.Service, authZone, rrs)
+	_, err = d.client.AddRecords(ctx, zone.Service, authZone, rrs)
 	if err != nil {
 		return fmt.Errorf("nicru: add records: %w", err)
 	}
 
-	err = client.CommitZone(ctx, zone.Service, authZone)
+	err = d.client.CommitZone(ctx, zone.Service, authZone)
 	if err != nil {
 		return fmt.Errorf("nicru: commit zone: %w", err)
 	}
@@ -178,12 +172,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) er
 
 	authZone = dns01.UnFqdn(authZone)
 
-	client, err := d.lazyClient()
-	if err != nil {
-		return fmt.Errorf("nicru: %w", err)
-	}
-
-	zone, err := findZone(ctx, client, authZone)
+	zone, err := findZone(ctx, d.client, authZone)
 	if err != nil {
 		return fmt.Errorf("nicru: find zone: %w", err)
 	}
@@ -193,7 +182,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) er
 		return fmt.Errorf("nicru: %w", err)
 	}
 
-	records, err := client.GetRecords(ctx, zone.Service, authZone)
+	records, err := d.client.GetRecords(ctx, zone.Service, authZone)
 	if err != nil {
 		return fmt.Errorf("nicru: get records: %w", err)
 	}
@@ -209,13 +198,13 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, _, keyAuth string) er
 			continue
 		}
 
-		err = client.DeleteRecord(ctx, zone.Service, authZone, record.ID)
+		err = d.client.DeleteRecord(ctx, zone.Service, authZone, record.ID)
 		if err != nil {
 			return fmt.Errorf("nicru: delete record: %w", err)
 		}
 	}
 
-	err = client.CommitZone(ctx, zone.Service, authZone)
+	err = d.client.CommitZone(ctx, zone.Service, authZone)
 	if err != nil {
 		return fmt.Errorf("nicru: commit zone: %w", err)
 	}

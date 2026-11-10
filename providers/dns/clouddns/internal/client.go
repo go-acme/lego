@@ -25,8 +25,7 @@ type Client struct {
 	ttl      int
 
 	apiBaseURL *url.URL
-
-	loginURL *url.URL
+	loginURL   *url.URL
 
 	HTTPClient *http.Client
 }
@@ -84,6 +83,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zone, recordName string) erro
 	return c.publishRecords(ctx, domain.ID)
 }
 
+// https://admin.vshosting.cloud/clouddns/swagger/#/RecordTxt/publicRecordTxtPost
 func (c *Client) addTxtRecord(ctx context.Context, record Record) error {
 	endpoint := c.apiBaseURL.JoinPath("record-txt")
 
@@ -95,6 +95,7 @@ func (c *Client) addTxtRecord(ctx context.Context, record Record) error {
 	return c.do(req, nil)
 }
 
+// https://admin.vshosting.cloud/clouddns/swagger/#/Record/publicRecordIdDelete
 func (c *Client) deleteRecord(ctx context.Context, record Record) error {
 	endpoint := c.apiBaseURL.JoinPath("record", record.ID)
 
@@ -106,6 +107,7 @@ func (c *Client) deleteRecord(ctx context.Context, record Record) error {
 	return c.do(req, nil)
 }
 
+// https://admin.vshosting.cloud/clouddns/swagger/#/Domain/publicDomainSearch
 func (c *Client) getDomain(ctx context.Context, zone string) (Domain, error) {
 	searchQuery := SearchQuery{
 		Search: []Search{
@@ -135,6 +137,7 @@ func (c *Client) getDomain(ctx context.Context, zone string) (Domain, error) {
 	return result.Items[0], nil
 }
 
+// https://admin.vshosting.cloud/clouddns/swagger/#/Domain/publicDomainIdGet
 func (c *Client) getRecord(ctx context.Context, domainID, recordName string) (Record, error) {
 	endpoint := c.apiBaseURL.JoinPath("domain", domainID)
 
@@ -159,6 +162,7 @@ func (c *Client) getRecord(ctx context.Context, domainID, recordName string) (Re
 	return Record{}, fmt.Errorf("record not found: domainID %s, name %s", domainID, recordName)
 }
 
+// https://admin.vshosting.cloud/clouddns/swagger/#/Domain/publicDomainIdPublishPut
 func (c *Client) publishRecords(ctx context.Context, domainID string) error {
 	endpoint := c.apiBaseURL.JoinPath("domain", domainID, "publish")
 

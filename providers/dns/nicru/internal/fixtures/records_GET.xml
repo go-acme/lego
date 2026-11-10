@@ -2,7 +2,7 @@
 <response>
     <status>success</status>
     <data>
-        <zone admin="123/NIC-REG" has-changes="true" id="228095" idn-name="test.ru" name="test.ru" service="myservice">
+        <zone admin="123/NIC-REG" has-changes="true" id="228095" idn-name="example.com" name="example.com" service="myservice">
             <rr id="210074">
                 <name>@</name>
                 <idn-name>@</idn-name>

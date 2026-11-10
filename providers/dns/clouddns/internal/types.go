@@ -26,7 +26,10 @@ type AuthResponse struct {
 
 type Auth struct {
 	AccessToken  string `json:"accessToken,omitempty"`
+	ExpiresAt    string `json:"expiresAt,omitempty"`
+	ExpiresIn    int    `json:"expiresIn,omitempty"`
 	RefreshToken string `json:"refreshToken,omitempty"`
+	TokenType    string `json:"tokenType,omitempty"`
 }
 
 type SearchQuery struct {

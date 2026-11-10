@@ -141,6 +141,7 @@ func checkError(req *http.Request, resp *http.Response) error {
 
 	errorDetails.Method = req.Method
 	errorDetails.URL = req.URL.String()
+	errorDetails.RetryAfter = GetRetryAfter(resp)
 
 	if errorDetails.HTTPStatus == 0 {
 		errorDetails.HTTPStatus = resp.StatusCode

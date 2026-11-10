@@ -127,8 +127,9 @@ type ProblemDetails struct {
 	SubProblems []SubProblem `json:"subproblems,omitempty"`
 
 	// additional values to have a better error message (Not defined by the RFC)
-	Method string `json:"method,omitempty"`
-	URL    string `json:"url,omitempty"`
+	Method     string        `json:"method,omitempty"`
+	URL        string        `json:"url,omitempty"`
+	RetryAfter time.Duration `json:"retryAfter,omitzero"`
 }
 
 func (p *ProblemDetails) Error() string {
@@ -188,6 +189,7 @@ func (e *AlreadyReplacedError) Unwrap() error {
 type RateLimitedError struct {
 	*ProblemDetails
 
+	// TODO(ldez): remove in v6.
 	RetryAfter time.Duration
 }
 

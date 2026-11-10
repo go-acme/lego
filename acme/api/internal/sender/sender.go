@@ -147,14 +147,14 @@ func checkError(req *http.Request, resp *http.Response) error {
 	}
 
 	// Check for errors we handle specifically
-	switch {
-	case errorDetails.HTTPStatus == http.StatusBadRequest && errorDetails.Type == acme.BadNonceErrorType:
+	switch errorDetails.Type {
+	case acme.BadNonceErrorType:
 		return &acme.NonceError{ProblemDetails: errorDetails}
 
-	case errorDetails.HTTPStatus == http.StatusConflict && errorDetails.Type == acme.AlreadyReplacedErrorType:
+	case acme.AlreadyReplacedErrorType:
 		return &acme.AlreadyReplacedError{ProblemDetails: errorDetails}
 
-	case errorDetails.HTTPStatus == http.StatusTooManyRequests && errorDetails.Type == acme.RateLimitedErrorType:
+	case acme.RateLimitedErrorType:
 		return &acme.RateLimitedError{
 			ProblemDetails: errorDetails,
 			RetryAfter:     GetRetryAfter(resp),

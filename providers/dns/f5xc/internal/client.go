@@ -82,8 +82,8 @@ func (c *Client) GetRRSet(ctx context.Context, dnsZoneName, groupName, recordNam
 
 	err = c.do(req, result)
 	if err != nil {
-		usce := &APIError{}
-		if errors.As(err, &usce) && usce.StatusCode == http.StatusNotFound {
+		usce, ok := errors.AsType[*APIError](err)
+		if ok && usce.StatusCode == http.StatusNotFound {
 			return nil, nil
 		}
 

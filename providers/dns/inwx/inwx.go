@@ -133,8 +133,8 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	_, err = d.client.Nameservers.CreateRecord(request)
 	if err != nil {
-		var er *goinwx.ErrorResponse
-		if errors.As(err, &er) && er.Message == "Object exists" {
+		er, ok := errors.AsType[*goinwx.ErrorResponse](err)
+		if ok && er.Message == "Object exists" {
 			return nil
 		}
 

@@ -68,8 +68,8 @@ func (d *DNSProviderPrivate) Present(ctx context.Context, domain, _, keyAuth str
 	// Get existing record set
 	resp, err := client.Get(ctx, subDomain)
 	if err != nil {
-		var respErr *azcore.ResponseError
-		if !errors.As(err, &respErr) || respErr.StatusCode != http.StatusNotFound {
+		respErr, ok := errors.AsType[*azcore.ResponseError](err)
+		if !ok || respErr.StatusCode != http.StatusNotFound {
 			return fmt.Errorf("azuredns: %w", err)
 		}
 	}

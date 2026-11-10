@@ -108,8 +108,8 @@ func processChallenges(ctx context.Context, lazyClient lzSetUp, chlgNode *config
 	for _, cert := range chlgNode.Certificates {
 		resource, err := store.Certificate.ReadResource(cert.ID)
 		if err != nil {
-			pe := new(fs.PathError)
-			if !errors.As(err, &pe) {
+			_, ok := errors.AsType[*fs.PathError](err)
+			if !ok {
 				return fmt.Errorf("reading certificate resource file for %q: %w", cert.ID, err)
 			}
 		}

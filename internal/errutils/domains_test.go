@@ -26,7 +26,7 @@ func TestDomainsError_Unwrap(t *testing.T) {
 	testCases := []struct {
 		desc   string
 		err    *DomainsError
-		assert assert.BoolAssertionFunc
+		assert func(t assert.TestingT, err error, target any, msgAndArgs ...any) bool
 	}{
 		{
 			desc: "one ok",
@@ -38,7 +38,7 @@ func TestDomainsError_Unwrap(t *testing.T) {
 					"c": errors.New("I did it again"),
 				},
 			},
-			assert: assert.True,
+			assert: assert.ErrorAs,
 		},
 		{
 			desc: "all ok",
@@ -50,7 +50,7 @@ func TestDomainsError_Unwrap(t *testing.T) {
 					"c": &acme.ProblemDetails{Type: "002"},
 				},
 			},
-			assert: assert.True,
+			assert: assert.ErrorAs,
 		},
 		{
 			desc: "nope",
@@ -62,7 +62,7 @@ func TestDomainsError_Unwrap(t *testing.T) {
 					"c": errors.New("I did it again"),
 				},
 			},
-			assert: assert.False,
+			assert: assert.NotErrorAs,
 		},
 	}
 
@@ -71,8 +71,7 @@ func TestDomainsError_Unwrap(t *testing.T) {
 			t.Parallel()
 
 			var pd *acme.ProblemDetails
-
-			test.assert(t, errors.As(test.err, &pd))
+			test.assert(t, test.err, &pd)
 		})
 	}
 }
@@ -136,9 +135,7 @@ func TestDomainsError_Join_same_domain(t *testing.T) {
 	assert.EqualError(t, err, "certificates: one or more domains had a problem: [example.com: carrot]")
 
 	to := &TomatoError{}
-	if errors.As(err, &to) {
-		require.Fail(t, "TomatoError should be overridden by CarrotError")
-	}
+	require.NotErrorAs(t, err, &to, "TomatoError should be overridden by CarrotError")
 
 	ca := &CarrotError{}
 	require.ErrorAs(t, err, &ca)

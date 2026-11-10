@@ -189,8 +189,8 @@ func (d *DNSProvider) findZone(ctx context.Context, fqdn string) (string, error)
 
 		zone, err := d.client.GetDomain(ctx, domain)
 		if err != nil {
-			var apiErr *internal.APIError
-			if !errors.As(err, &apiErr) {
+			apiErr, ok := errors.AsType[*internal.APIError](err)
+			if !ok {
 				return "", err
 			}
 

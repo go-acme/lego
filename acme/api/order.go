@@ -56,8 +56,8 @@ func (o *OrderService) New(ctx context.Context, domains []string, opts *OrderOpt
 
 	resp, err := o.core.post(ctx, o.core.GetDirectory().NewOrderURL, orderReq, &order)
 	if err != nil {
-		are := &acme.AlreadyReplacedError{}
-		if !errors.As(err, &are) {
+		_, ok := errors.AsType[*acme.AlreadyReplacedError](err)
+		if !ok {
 			return acme.ExtendedOrder{}, err
 		}
 

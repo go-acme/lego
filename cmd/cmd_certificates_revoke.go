@@ -39,8 +39,8 @@ func revokeFromConfig(ctx context.Context, cmd *cli.Command) error {
 		return root.Revoke(ctx, cmd, cfg)
 	}
 
-	nfErr := &configuration.FileNotFoundError{}
-	if !errors.As(err, &nfErr) {
+	_, ok := errors.AsType[*configuration.FileNotFoundError](err)
+	if !ok {
 		return err
 	}
 

@@ -262,8 +262,8 @@ func (d *DNSProvider) applyChanges(ctx context.Context, zone string, change *gdn
 
 	chg, err := d.client.Changes.Create(d.config.Project, zone, change).Do()
 	if err != nil {
-		var v *googleapi.Error
-		if errors.As(err, &v) && v.Code == http.StatusNotFound {
+		nf, ok := errors.AsType[*googleapi.Error](err)
+		if ok && nf.Code == http.StatusNotFound {
 			return nil
 		}
 

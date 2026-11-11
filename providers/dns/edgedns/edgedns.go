@@ -293,9 +293,9 @@ func isNotFound(err error) bool {
 		return false
 	}
 
-	var e *edgegriddns.Error
+	nf, ok := errors.AsType[*edgegriddns.Error](err)
 
-	return errors.As(err, &e) && e.StatusCode == http.StatusNotFound
+	return ok && nf.StatusCode == http.StatusNotFound
 }
 
 func filterRData(existingRec *edgegriddns.GetRecordResponse, info dns01.ChallengeInfo) []string {

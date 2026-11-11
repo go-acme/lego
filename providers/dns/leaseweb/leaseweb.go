@@ -104,8 +104,8 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	existingRRSet, err := d.client.GetRRSet(ctx, dns01.UnFqdn(authZone), info.EffectiveFQDN, "TXT")
 	if err != nil {
-		notfoundErr := &internal.NotFoundError{}
-		if !errors.As(err, &notfoundErr) {
+		_, ok := errors.AsType[*internal.NotFoundError](err)
+		if !ok {
 			return fmt.Errorf("leaseweb: get RRSet: %w", err)
 		}
 

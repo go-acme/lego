@@ -80,8 +80,8 @@ func (c *Client) DeleteRRSet(ctx context.Context, zone, name string) error {
 	err := c.doRequest(ctx, http.MethodDelete, endpoint, nil, nil)
 	if err != nil {
 		// Support DELETE idempotence https://developer.mozilla.org/en-US/docs/Glossary/Idempotent
-		statusErr := new(APIError)
-		if errors.As(err, &statusErr) && statusErr.StatusCode == http.StatusNotFound {
+		statusErr, ok := errors.AsType[*APIError](err)
+		if ok && statusErr.StatusCode == http.StatusNotFound {
 			return nil
 		}
 

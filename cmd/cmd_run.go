@@ -67,8 +67,8 @@ func run(ctx context.Context, cmd *cli.Command) error {
 
 	resource, err := store.Certificate.ReadResource(certID)
 	if err != nil {
-		pe := new(fs.PathError)
-		if !errors.As(err, &pe) {
+		_, ok := errors.AsType[*fs.PathError](err)
+		if !ok {
 			return fmt.Errorf("reading certificate resource file for %q: %w", certID, err)
 		}
 	}

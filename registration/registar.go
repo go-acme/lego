@@ -59,8 +59,8 @@ func (r *Registrar) Register(ctx context.Context, options RegisterOptions) (*acm
 	account, err := r.core.Accounts.New(ctx, accMsg)
 	if err != nil {
 		// seems impossible
-		errorDetails := &acme.ProblemDetails{}
-		if !errors.As(err, &errorDetails) || errorDetails.HTTPStatus != http.StatusConflict {
+		pdErr, ok := errors.AsType[*acme.ProblemDetails](err)
+		if !ok || pdErr.HTTPStatus != http.StatusConflict {
 			return nil, err
 		}
 	}
@@ -84,8 +84,8 @@ func (r *Registrar) RegisterWithExternalAccountBinding(ctx context.Context, opti
 	account, err := r.core.Accounts.NewEAB(ctx, accMsg, options.Kid, options.HmacEncoded)
 	if err != nil {
 		// seems impossible
-		errorDetails := &acme.ProblemDetails{}
-		if !errors.As(err, &errorDetails) || errorDetails.HTTPStatus != http.StatusConflict {
+		pdErr, ok := errors.AsType[*acme.ProblemDetails](err)
+		if !ok || pdErr.HTTPStatus == http.StatusConflict {
 			return nil, err
 		}
 	}

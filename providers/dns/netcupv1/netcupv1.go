@@ -95,17 +95,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("netcupv1: could not find zone for domain %q: %w", domain, err)
-	}
-
 	zone, err := d.findZone(ctx, info.Domain())
 	if err != nil {
 		return fmt.Errorf("netcupv1: %w", err)
 	}
 
-	subDomain, err := extractSubDomain(authZone, zone)
+	subDomain, err := extractSubDomain(info.Domain(), zone)
 	if err != nil {
 		return fmt.Errorf("netcupv1: %w", err)
 	}
@@ -122,17 +117,12 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("netcupv1: could not find zone for domain %q: %w", domain, err)
-	}
-
 	zone, err := d.findZone(ctx, info.Domain())
 	if err != nil {
 		return fmt.Errorf("netcupv1: %w", err)
 	}
 
-	subDomain, err := extractSubDomain(authZone, zone)
+	subDomain, err := extractSubDomain(info.Domain(), zone)
 	if err != nil {
 		return fmt.Errorf("netcupv1: %w", err)
 	}

@@ -8,6 +8,8 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/providers/dns/netcupv1/internal"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -173,4 +175,37 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
 	require.NoError(t, err)
+}
+
+func Test_extractSubDomain(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		authZone string
+		zone     *internal.Domain
+		expected string
+	}{
+		{
+			desc:     "subdomain",
+			authZone: "foo.example.com",
+			zone:     &internal.Domain{FQDN: "example.com"},
+			expected: "foo",
+		},
+		{
+			desc:     "apex",
+			authZone: "example.com",
+			zone:     &internal.Domain{FQDN: "example.com"},
+			expected: "@",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			subDomain, err := extractSubDomain(test.authZone, test.zone)
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expected, subDomain)
+		})
+	}
 }

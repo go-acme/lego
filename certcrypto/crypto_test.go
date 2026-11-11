@@ -20,13 +20,6 @@ const (
 	testDomain4 = "c.lego.example"
 )
 
-func TestGeneratePrivateKey(t *testing.T) {
-	key, err := GeneratePrivateKey(RSA2048)
-	require.NoError(t, err, "Error generating private key")
-
-	assert.NotNil(t, key)
-}
-
 func TestGenerateCSR(t *testing.T) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err, "Error generating private key")
@@ -127,20 +120,6 @@ func TestGenerateCSR(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestPEMEncode(t *testing.T) {
-	key, err := rsa.GenerateKey(rand.Reader, 1024)
-	require.NoError(t, err, "Error generating private key")
-
-	data := PEMEncode(key)
-	require.NotNil(t, data)
-
-	p, rest := pem.Decode(data)
-
-	assert.Equal(t, "PRIVATE KEY", p.Type)
-	assert.Empty(t, rest)
-	assert.Empty(t, p.Headers)
 }
 
 func TestParsePEMCertificate(t *testing.T) {

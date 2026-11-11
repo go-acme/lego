@@ -71,10 +71,10 @@ jobs:
           git diff --exit-code
 
       - name: Install Pebble
-        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble@v2.10.1
+        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble@v2.10.2
 
       - name: Install challtestsrv
-        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble-challtestsrv@v2.10.1
+        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble-challtestsrv@v2.10.2
 
       - name: Integration Tests
         run: make e2e

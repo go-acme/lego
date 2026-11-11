@@ -315,7 +315,7 @@ func validateNoBody(privateKey *rsa.PrivateKey, r *http.Request) error {
 
 	sigAlgs := []jose.SignatureAlgorithm{jose.RS256}
 
-	jws, err := jose.ParseSigned(string(reqBody), sigAlgs)
+	jws, err := jose.ParseSignedJSON(string(reqBody), sigAlgs)
 	if err != nil {
 		return err
 	}

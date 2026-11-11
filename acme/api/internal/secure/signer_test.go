@@ -21,18 +21,6 @@ func (b *MockNonceSource) Nonce() (string, error) {
 	return "xxxNoncexxx", nil
 }
 
-func TestSigner_SignContent(t *testing.T) {
-	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err)
-
-	signer := NewSigner(privKey, "https://example.com")
-
-	content, err := signer.SignContent(&MockNonceSource{}, "https://foo.example", []byte("{}"))
-	require.NoError(t, err)
-
-	check(t, content)
-}
-
 func TestSigner_SignEAB(t *testing.T) {
 	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err)

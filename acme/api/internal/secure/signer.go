@@ -2,9 +2,6 @@ package secure
 
 import (
 	"crypto"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rsa"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -146,21 +143,4 @@ func sign(content []byte, signKey jose.SigningKey, options *jose.SignerOptions) 
 	}
 
 	return signed, nil
-}
-
-func signatureAlgorithm(privKey crypto.Signer) jose.SignatureAlgorithm {
-	var alg jose.SignatureAlgorithm
-
-	switch k := privKey.Public().(type) {
-	case *rsa.PublicKey:
-		alg = jose.RS256
-	case *ecdsa.PublicKey:
-		if k.Curve == elliptic.P256() {
-			alg = jose.ES256
-		} else if k.Curve == elliptic.P384() {
-			alg = jose.ES384
-		}
-	}
-
-	return alg
 }

@@ -55,7 +55,7 @@ lego run [options]
 | `--domains string`, `-d string` | `LEGO_DOMAINS` | Add a domain. For multiple values either repeat the flag or provide a comma-separated list.  |
 | `--email string`, `-m string` | `LEGO_EMAIL` | Email used for registration and recovery contact.  |
 | `--help`, `-h` |  | show help  |
-| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: "EC256") |
+| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for private keys. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192, MLDSA44, MLDSA65, MLDSA87. <br> (Default: "EC256") |
 | `--server string`, `-s string` | `LEGO_SERVER` | CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: "https://acme-v02.api.letsencrypt.org/directory") |
 
 #### Flags related to External Account Binding:
@@ -202,7 +202,7 @@ lego accounts register [options]
 | `--accept-tos`, `-a` | `LEGO_ACCEPT_TOS` | By setting this flag to true, you indicate that you accept the current CA terms of service.  |
 | `--email string`, `-m string` | `LEGO_EMAIL` | Email used for registration and recovery contact.  |
 | `--help`, `-h` |  | show help  |
-| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: "EC256") |
+| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192, MLDSA44, MLDSA65, MLDSA87. <br> (Default: "EC256") |
 | `--server string`, `-s string` | `LEGO_SERVER` | CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: "https://acme-v02.api.letsencrypt.org/directory") |
 
 #### Flags related to External Account Binding:
@@ -264,7 +264,7 @@ lego accounts recover [options]
 |------|-------|-------|
 | `--email string`, `-m string` | `LEGO_EMAIL` | Email used for registration and recovery contact.  |
 | `--help`, `-h` |  | show help  |
-| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: "EC256") |
+| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192, MLDSA44, MLDSA65, MLDSA87. <br> (Default: "EC256") |
 | `--private-key string` | `LEGO_PRIVATE_KEY` | Path to the account private key (PEM encoded).  |
 | `--server string`, `-s string` | `LEGO_SERVER` | CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: "https://acme-v02.api.letsencrypt.org/directory") |
 
@@ -327,7 +327,7 @@ lego accounts keyrollover [options]
 |------|-------|-------|
 | `--email string`, `-m string` | `LEGO_EMAIL` | Email used for registration and recovery contact.  |
 | `--help`, `-h` |  | show help  |
-| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for the new private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: "EC256") |
+| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for the new private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192, MLDSA44, MLDSA65, MLDSA87. <br> (Default: "EC256") |
 | `--private-key string` | `LEGO_PRIVATE_KEY` | Path to the new account private key (PEM encoded). If not specified, the private key will be generated.  |
 | `--server string`, `-s string` | `LEGO_SERVER` | CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: "https://acme-v02.api.letsencrypt.org/directory") |
 
@@ -433,7 +433,7 @@ lego certificates revoke [options]
 | `--email string`, `-m string` | `LEGO_EMAIL` | Email used for registration and recovery contact.  |
 | `--help`, `-h` |  | show help  |
 | `--keep` | `LEGO_KEEP` | Keep the certificates after the revocation instead of archiving them.  |
-| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192. <br> (Default: "EC256") |
+| `--key-type string`, `-k string` | `LEGO_KEY_TYPE` | Key type to use for the private key of the account. Supported: EC256, EC384, RSA2048, RSA3072, RSA4096, RSA8192, MLDSA44, MLDSA65, MLDSA87. <br> (Default: "EC256") |
 | `--reason uint` | `LEGO_REASON` | Identifies the reason for the certificate revocation. See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1.<br>	Valid values are: 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged), 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL), 9 (privilegeWithdrawn), or 10 (aACompromise). <br> (Default: 0) |
 | `--server string`, `-s string` | `LEGO_SERVER` | CA (ACME server). It can be either a URL or a shortcode.<br>	(available shortcodes: actalis, digicert, freessl, globalsign, googletrust, googletrust-staging, letsencrypt, letsencrypt-staging, litessl, peeringhub, sslcomecc, sslcomrsa, sectigo, sectigoev, sectigoov, zerossl) <br> (Default: "https://acme-v02.api.letsencrypt.org/directory") |
 

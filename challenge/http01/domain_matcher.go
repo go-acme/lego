@@ -136,6 +136,12 @@ func parseForwardedHeader(s string) (elements []map[string]string, err error) {
 			i = skipWS(s, i)
 			pos = i + 1
 
+		case r == '=' && key != "": // '=' inside a value
+			// This is case is ambiguous because this is not a valid value for at least `for`, and `by`.
+			// https://datatracker.ietf.org/doc/html/rfc7239#section-5
+			// https://datatracker.ietf.org/doc/html/rfc7239#section-6
+			continue
+
 		case r == '=': // end of token
 			key = strings.ToLower(strings.TrimFunc(s[pos:i], isWS))
 			i = skipWS(s, i)
@@ -188,7 +194,7 @@ func tchar(r rune) bool {
 }
 
 func skipWS(s string, i int) int {
-	for isWS(rune(s[i+1])) {
+	for i+1 < len(s) && isWS(rune(s[i+1])) {
 		i++
 	}
 

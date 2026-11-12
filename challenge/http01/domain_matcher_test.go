@@ -54,6 +54,41 @@ func Test_parseForwardedHeader(t *testing.T) {
 			},
 		},
 		{
+			name:  "end with semicolon",
+			input: `for=1.2.3.4;host=example.com; by=127.0.0.1;`,
+			want: []map[string]string{
+				{"for": "1.2.3.4", "host": "example.com", "by": "127.0.0.1"},
+			},
+		},
+		{
+			name:  "end with equal symbol",
+			input: `for=1.2.3.4;host=example.com; by=127.0.0.1=`,
+			want: []map[string]string{
+				{"for": "1.2.3.4", "host": "example.com", "by": "127.0.0.1="},
+			},
+		},
+		{
+			name:  "end with equal symbol (quoted)",
+			input: `for=1.2.3.4;host=example.com; by="127.0.0.1="`,
+			want: []map[string]string{
+				{"for": "1.2.3.4", "host": "example.com", "by": "127.0.0.1="},
+			},
+		},
+		{
+			name:  "value with equal symbol",
+			input: `for=1.2.3.4;host=example=com; by=127.0.0.1`,
+			want: []map[string]string{
+				{"for": "1.2.3.4", "host": "example=com", "by": "127.0.0.1"},
+			},
+		},
+		{
+			name:  "ends with colon",
+			input: `for=1.2.3.4;host=example.com; by=127.0.0.1,`,
+			want: []map[string]string{
+				{"for": "1.2.3.4", "host": "example.com", "by": "127.0.0.1"},
+			},
+		},
+		{
 			name:  "unterminated quote",
 			input: `x="y`,
 			err:   "unterminated quoted-string",

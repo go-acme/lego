@@ -1,9 +1,11 @@
 package certcrypto
 
 import (
+	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/rsa"
 	"os"
 	"strings"
 	"testing"
@@ -12,12 +14,70 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetPrivateKeyType_error(t *testing.T) {
-	key, err := ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
-	require.NoError(t, err)
+func TestGetKeyType_unsupported(t *testing.T) {
+	mustGenerateKey := func(c crypto.Signer, err error) crypto.Signer {
+		require.NoError(t, err)
+		return c
+	}
 
-	_, err = GetPrivateKeyType(key)
-	require.EqualError(t, err, "unsupported ECDSA curve: 224")
+	testCases := []struct {
+		keyType  string
+		key      crypto.Signer
+		expected string
+	}{
+		{
+			keyType:  "P224",
+			key:      mustGenerateKey(ecdsa.GenerateKey(elliptic.P224(), rand.Reader)),
+			expected: "unsupported ECDSA curve: 224",
+		},
+		{
+			keyType:  "RSA1024",
+			key:      mustGenerateKey(rsa.GenerateKey(rand.Reader, 1024)),
+			expected: "unsupported RSA key: 1024",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.keyType, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := GetKeyType(test.key)
+			require.EqualError(t, err, test.expected)
+		})
+	}
+}
+
+func TestGetPrivateKeyType_unsupported(t *testing.T) {
+	mustGenerateKey := func(c crypto.Signer, err error) crypto.Signer {
+		require.NoError(t, err)
+		return c
+	}
+
+	testCases := []struct {
+		keyType  string
+		key      crypto.Signer
+		expected string
+	}{
+		{
+			keyType:  "P224",
+			key:      mustGenerateKey(ecdsa.GenerateKey(elliptic.P224(), rand.Reader)),
+			expected: "unsupported ECDSA curve: 224",
+		},
+		{
+			keyType:  "RSA1024",
+			key:      mustGenerateKey(rsa.GenerateKey(rand.Reader, 1024)),
+			expected: "unsupported RSA key: 1024",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.keyType, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := GetPrivateKeyType(test.key)
+			require.EqualError(t, err, test.expected)
+		})
+	}
 }
 
 func TestGetCertificateKeyType(t *testing.T) {

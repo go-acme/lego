@@ -76,6 +76,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/dyndnsfree"
 	"github.com/go-acme/lego/v5/providers/dns/dynu"
 	"github.com/go-acme/lego/v5/providers/dns/easydns"
+	"github.com/go-acme/lego/v5/providers/dns/edgecdnx"
 	"github.com/go-acme/lego/v5/providers/dns/edgecenter"
 	"github.com/go-acme/lego/v5/providers/dns/edgedns"
 	"github.com/go-acme/lego/v5/providers/dns/edgeone"
@@ -381,6 +382,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return dynu.NewDNSProvider()
 	case "easydns":
 		return easydns.NewDNSProvider()
+	case "edgecdnx":
+		return edgecdnx.NewDNSProvider()
 	case "edgecenter":
 		return edgecenter.NewDNSProvider()
 	case "edgedns", "fastdns":
@@ -785,6 +788,7 @@ func GetProviderCodes() []string {
 		"dyndnsfree",
 		"dynu",
 		"easydns",
+		"edgecdnx",
 		"edgecenter",
 		"edgedns",
 		"edgeone",

@@ -1,0 +1,62 @@
+[
+  {
+    "apiVersion": "string",
+    "kind": "string",
+    "metadata": {
+      "annotations": {
+        "additionalProp1": "string",
+        "additionalProp2": "string",
+        "additionalProp3": "string"
+      },
+      "creationTimestamp": "string",
+      "deletionGracePeriodSeconds": 0,
+      "deletionTimestamp": "string",
+      "finalizers": [
+        "string"
+      ],
+      "generateName": "string",
+      "generation": 0,
+      "labels": {
+        "additionalProp1": "string",
+        "additionalProp2": "string",
+        "additionalProp3": "string"
+      },
+      "managedFields": [
+        {
+          "apiVersion": "string",
+          "fieldsType": "string",
+          "fieldsV1": {},
+          "manager": "string",
+          "operation": "Apply",
+          "subresource": "string",
+          "time": "string"
+        }
+      ],
+      "name": "z123",
+      "namespace": "string",
+      "ownerReferences": [
+        {
+          "apiVersion": "string",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "string",
+          "name": "string",
+          "uid": "string"
+        }
+      ],
+      "resourceVersion": "rv001",
+      "selfLink": "string",
+      "uid": "string"
+    },
+    "spec": {
+      "email": "string",
+      "project": {
+        "name": "string"
+      },
+      "zone": "example.com"
+    },
+    "status": {
+      "status": "string"
+    }
+  }
+]

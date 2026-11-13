@@ -1,0 +1,83 @@
+{
+  "apiVersion": "string",
+  "kind": "string",
+  "metadata": {
+    "annotations": {
+      "additionalProp1": "string",
+      "additionalProp2": "string",
+      "additionalProp3": "string"
+    },
+    "creationTimestamp": "string",
+    "deletionGracePeriodSeconds": 0,
+    "deletionTimestamp": "string",
+    "finalizers": [
+      "string"
+    ],
+    "generateName": "string",
+    "generation": 0,
+    "labels": {
+      "additionalProp1": "string",
+      "additionalProp2": "string",
+      "additionalProp3": "string"
+    },
+    "managedFields": [
+      {
+        "apiVersion": "string",
+        "fieldsType": "string",
+        "fieldsV1": {},
+        "manager": "string",
+        "operation": "Apply",
+        "subresource": "string",
+        "time": "string"
+      }
+    ],
+    "name": "string",
+    "namespace": "string",
+    "ownerReferences": [
+      {
+        "apiVersion": "string",
+        "blockOwnerDeletion": true,
+        "controller": true,
+        "kind": "string",
+        "name": "string",
+        "uid": "string"
+      }
+    ],
+    "selfLink": "string",
+    "uid": "string"
+  },
+  "spec": {
+    "dnsName": "string",
+    "project": {
+      "name": "string"
+    },
+    "recordTTL": 0,
+    "recordType": "string",
+    "routeSelector": {
+      "matchExpressions": [
+        {
+          "key": "string",
+          "operator": "In",
+          "values": [
+            "string"
+          ]
+        }
+      ],
+      "matchLabels": {
+        "additionalProp1": "string",
+        "additionalProp2": "string",
+        "additionalProp3": "string"
+      }
+    },
+    "routingPolicy": "string",
+    "targets": [
+      "string"
+    ],
+    "zone": {
+      "name": "string"
+    }
+  },
+  "status": {
+    "status": "string"
+  }
+}

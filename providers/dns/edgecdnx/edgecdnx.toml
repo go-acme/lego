@@ -1,0 +1,25 @@
+Name = "EdgeCDN-X"
+Description = ''''''
+URL = "https://edgecdnx.com/"
+Code = "edgecdnx"
+Since = "v5.7.0"
+
+Example = '''
+EDGECDNX_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+EDGECDNX_PROJECT_ID="project-id" \
+lego run --dns edgecdnx -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    EDGECDNX_API_KEY = "Project-scoped API key with Zone read and update permissions"
+    EDGECDNX_PROJECT_ID = "Project resource ID"
+  [Configuration.Additional]
+    EDGECDNX_API_URL = "API base URL (Default: https://api.edgecdnx.com)"
+    EDGECDNX_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    EDGECDNX_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    EDGECDNX_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    EDGECDNX_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://api.edgecdnx.com/swagger/index.html"

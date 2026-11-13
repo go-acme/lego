@@ -4333,6 +4333,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/todaynic`)
 
+	case "totaluptime":
+		// generated from: providers/dns/totaluptime/totaluptime.toml
+		ew.writeln(`Configuration for Total Uptime.`)
+		ew.writeln(`Code:	'totaluptime'`)
+		ew.writeln(`Since:	'v5.7.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "TOTALUPTIME_PASSWORD":	Password`)
+		ew.writeln(`	- "TOTALUPTIME_USERNAME":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "TOTALUPTIME_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "TOTALUPTIME_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "TOTALUPTIME_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "TOTALUPTIME_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/totaluptime`)
+
 	case "transip":
 		// generated from: providers/dns/transip/transip.toml
 		ew.writeln(`Configuration for TransIP.`)

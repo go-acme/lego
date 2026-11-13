@@ -210,6 +210,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/tencentcloud"
 	"github.com/go-acme/lego/v5/providers/dns/timewebcloud"
 	"github.com/go-acme/lego/v5/providers/dns/todaynic"
+	"github.com/go-acme/lego/v5/providers/dns/totaluptime"
 	"github.com/go-acme/lego/v5/providers/dns/transip"
 	"github.com/go-acme/lego/v5/providers/dns/ucloud"
 	"github.com/go-acme/lego/v5/providers/dns/ultradns"
@@ -649,6 +650,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return timewebcloud.NewDNSProvider()
 	case "todaynic":
 		return todaynic.NewDNSProvider()
+	case "totaluptime":
+		return totaluptime.NewDNSProvider()
 	case "transip":
 		return transip.NewDNSProvider()
 	case "ucloud":
@@ -919,6 +922,7 @@ func GetProviderCodes() []string {
 		"tencentcloud",
 		"timewebcloud",
 		"todaynic",
+		"totaluptime",
 		"transip",
 		"ucloud",
 		"ultradns",

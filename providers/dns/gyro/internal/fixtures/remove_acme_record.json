@@ -1,0 +1,10 @@
+{
+  "data": {
+    "service_id": 123,
+    "zone": "example.com",
+    "name": "_acme-challenge.example.com",
+    "status": "accepted",
+    "values": 0,
+    "changed": true
+  }
+}

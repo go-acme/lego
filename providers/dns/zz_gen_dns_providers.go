@@ -101,6 +101,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/godaddy"
 	"github.com/go-acme/lego/v5/providers/dns/godaddyv3"
 	"github.com/go-acme/lego/v5/providers/dns/gravity"
+	"github.com/go-acme/lego/v5/providers/dns/gyro"
 	"github.com/go-acme/lego/v5/providers/dns/hetzner"
 	"github.com/go-acme/lego/v5/providers/dns/hostingde"
 	"github.com/go-acme/lego/v5/providers/dns/hostinger"
@@ -430,6 +431,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return godaddyv3.NewDNSProvider()
 	case "gravity":
 		return gravity.NewDNSProvider()
+	case "gyro":
+		return gyro.NewDNSProvider()
 	case "hetzner":
 		return hetzner.NewDNSProvider()
 	case "hostingde":
@@ -807,6 +810,7 @@ func GetProviderCodes() []string {
 		"godaddy",
 		"godaddyv3",
 		"gravity",
+		"gyro",
 		"hetzner",
 		"hostingde",
 		"hostinger",

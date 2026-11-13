@@ -148,6 +148,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/mythicbeasts"
 	"github.com/go-acme/lego/v5/providers/dns/namecheap"
 	"github.com/go-acme/lego/v5/providers/dns/namedotcom"
+	"github.com/go-acme/lego/v5/providers/dns/nameocean"
 	"github.com/go-acme/lego/v5/providers/dns/namesilo"
 	"github.com/go-acme/lego/v5/providers/dns/namesurfer"
 	"github.com/go-acme/lego/v5/providers/dns/nearlyfreespeech"
@@ -524,6 +525,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return namecheap.NewDNSProvider()
 	case "namedotcom":
 		return namedotcom.NewDNSProvider()
+	case "nameocean":
+		return nameocean.NewDNSProvider()
 	case "namesilo":
 		return namesilo.NewDNSProvider()
 	case "namesurfer":
@@ -854,6 +857,7 @@ func GetProviderCodes() []string {
 		"mythicbeasts",
 		"namecheap",
 		"namedotcom",
+		"nameocean",
 		"namesilo",
 		"namesurfer",
 		"nearlyfreespeech",

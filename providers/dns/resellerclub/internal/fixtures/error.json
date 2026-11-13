@@ -1,0 +1,5 @@
+{
+  "message": "Please add your user id an api key in the header.",
+  "path": "/customers/33",
+  "status": 401
+}

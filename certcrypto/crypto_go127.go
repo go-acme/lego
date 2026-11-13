@@ -83,17 +83,17 @@ func GeneratePrivateKey(keyType KeyType) (crypto.Signer, error) {
 }
 
 func PEMBlock(data any) *pem.Block {
-	var pemBlock *pem.Block
+	var block *pem.Block
 
 	switch key := data.(type) {
 	case *ecdsa.PrivateKey, *rsa.PrivateKey, *mldsa.PrivateKey:
 		keyBytes, _ := x509.MarshalPKCS8PrivateKey(key)
-		pemBlock = &pem.Block{Type: "PRIVATE KEY", Bytes: keyBytes}
+		block = &pem.Block{Type: "PRIVATE KEY", Bytes: keyBytes}
 	case *x509.CertificateRequest:
-		pemBlock = &pem.Block{Type: "CERTIFICATE REQUEST", Bytes: key.Raw}
+		block = &pem.Block{Type: "CERTIFICATE REQUEST", Bytes: key.Raw}
 	case DERCertificateBytes:
-		pemBlock = &pem.Block{Type: "CERTIFICATE", Bytes: []byte(data.(DERCertificateBytes))}
+		block = &pem.Block{Type: "CERTIFICATE", Bytes: []byte(data.(DERCertificateBytes))}
 	}
 
-	return pemBlock
+	return block
 }

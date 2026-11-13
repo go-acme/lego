@@ -1493,6 +1493,28 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/easydns`)
 
+	case "edgecdnx":
+		// generated from: providers/dns/edgecdnx/edgecdnx.toml
+		ew.writeln(`Configuration for EdgeCDN-X.`)
+		ew.writeln(`Code:	'edgecdnx'`)
+		ew.writeln(`Since:	'v5.7.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "EDGECDNX_API_KEY":	Project-scoped API key with Zone read and update permissions`)
+		ew.writeln(`	- "EDGECDNX_PROJECT_ID":	Project resource ID`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "EDGECDNX_API_URL":	API base URL (Default: https://api.edgecdnx.com)`)
+		ew.writeln(`	- "EDGECDNX_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "EDGECDNX_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "EDGECDNX_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+		ew.writeln(`	- "EDGECDNX_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/edgecdnx`)
+
 	case "edgecenter":
 		// generated from: providers/dns/edgecenter/edgecenter.toml
 		ew.writeln(`Configuration for EdgeCenter.`)

@@ -120,9 +120,11 @@ func (c *Client) UpdateDNSEndpoint(ctx context.Context, zoneID, endpointID strin
 func (c *Client) DeleteDNSEndpoint(ctx context.Context, zoneID, endpointID, resourceVersion string) error {
 	endpoint := c.baseURL.JoinPath("project", c.projectID, "zones", zoneID, "dns-endpoints", endpointID)
 
-	query := endpoint.Query()
-	query.Set("resourceVersion", resourceVersion)
-	endpoint.RawQuery = query.Encode()
+	if resourceVersion != "" {
+		query := endpoint.Query()
+		query.Set("resourceVersion", resourceVersion)
+		endpoint.RawQuery = query.Encode()
+	}
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

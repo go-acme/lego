@@ -111,8 +111,7 @@ func TestClient_UpdateDNSEndpoint(t *testing.T) {
 		Build(t)
 
 	record := RecordSpec{
-		ResourceVersion: "mrv101",
-		Targets:         []string{"foo", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"},
+		Targets: []string{"foo", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"},
 	}
 
 	err := client.UpdateDNSEndpoint(t.Context(), "z123", "e123", record)

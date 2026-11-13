@@ -1,0 +1,7 @@
+{
+  "id": 1234,
+  "type": "TXT",
+  "hostname": "_acme-challenge",
+  "text": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+  "ttl": "5m"
+}

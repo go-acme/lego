@@ -1,0 +1,23 @@
+Name = "NameOcean"
+Description = ''''''
+URL = "https://nameocean.net/"
+Code = "nameocean"
+Since = "v5.7.0"
+
+Example = '''
+NAMEOCEAN_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
+lego run --dns nameocean -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    NAMEOCEAN_API_KEY = "API token"
+  [Configuration.Additional]
+    NAMEOCEAN_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    NAMEOCEAN_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    NAMEOCEAN_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    NAMEOCEAN_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://nameocean.net/developers/api/"
+  OpenAPI = "https://nameocean.net/api/v1/openapi.json"

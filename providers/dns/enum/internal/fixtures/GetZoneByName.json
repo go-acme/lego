@@ -1,0 +1,8 @@
+{
+  "zone": {
+    "id": "zoneA",
+    "projectId": "projectA",
+    "name": "example.com",
+    "status": "RESOURCE_STATUS_READY"
+  }
+}

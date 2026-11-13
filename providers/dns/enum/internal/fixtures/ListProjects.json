@@ -1,0 +1,14 @@
+{
+  "projects": [
+    {
+      "id":  "projectA",
+      "orgId": "orgA",
+      "name":  "foo",
+      "description": "bar"
+    }
+  ],
+  "page": {
+    "nextPageToken": "azerty",
+    "totalCount": 1
+  }
+}

@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/internal/wait"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/domainchief/internal"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
@@ -105,9 +107,28 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		Value: info.Value,
 	}
 
-	_, err := d.client.CreateACMERecord(ctx, payload)
+	err := wait.Retry(ctx,
+		func() error {
+			record, err := d.client.CreateACMERecord(ctx, payload)
+			if err != nil {
+				return backoff.Permanent(fmt.Errorf("create ACME record: %w", err))
+			}
+
+			switch record.Status {
+			case internal.StatusPublished:
+				return nil
+			case internal.StatusFailed:
+				return backoff.Permanent(fmt.Errorf("%s: ACME record publication failure", record.Status))
+			default:
+				return fmt.Errorf("ACME record status: %s", record.Status)
+			}
+		},
+		backoff.WithBackOff(backoff.NewConstantBackOff(d.config.PollingInterval)),
+		backoff.WithMaxElapsedTime(d.config.PropagationTimeout),
+		backoff.WithNotify(wait.SimpleNotify("domainchief: waiting for ACME record publication")),
+	)
 	if err != nil {
-		return fmt.Errorf("domainchief: create ACME record: %w", err)
+		return fmt.Errorf("domainchief: publishing: %w", err)
 	}
 
 	return nil

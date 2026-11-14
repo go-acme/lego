@@ -6,6 +6,15 @@ import (
 	"time"
 )
 
+// Record status.
+// https://docs.chief.tools/api/domainchief/~schemas#acmechallengestatus
+const (
+	StatusPending    = "pending"
+	StatusPublishing = "publishing"
+	StatusPublished  = "published"
+	StatusFailed     = "failed"
+)
+
 type APIError struct {
 	Message string `json:"message"`
 	Code    string `json:"code"`
@@ -42,11 +51,14 @@ type Challenge struct {
 	Value string `json:"value" url:"value"`
 }
 
+// ChallengeRecord represents an ACME record.
+// https://docs.chief.tools/api/domainchief/~schemas#acmechallenge
 type ChallengeRecord struct {
 	ID        string    `json:"id"`
 	Domain    string    `json:"domain"`
 	Name      string    `json:"name"`
 	Value     string    `json:"value"`
 	TTL       int       `json:"ttl"`
+	Status    string    `json:"status"`
 	CreatedAt time.Time `json:"created_at"`
 }

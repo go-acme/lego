@@ -106,6 +106,7 @@ func TestClient_CreateACMERecord(t *testing.T) {
 		Domain:    "example.com",
 		Name:      "_acme-challenge.example.com",
 		Value:     "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+		Status:    StatusPublished,
 		CreatedAt: time.Date(2024, time.August, 25, 15, 0, 0, 0, time.UTC),
 	}
 

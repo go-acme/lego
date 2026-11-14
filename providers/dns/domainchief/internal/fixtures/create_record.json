@@ -1,0 +1,15 @@
+{
+  "data": {
+    "id": "r123",
+    "type": "TXT",
+    "name": "_acme-challenge",
+    "content": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+    "ttl": 120,
+    "comment": "Created by go-acme/lego",
+    "sync_error": "sync_error",
+    "sync_error_at": "sync_error_at",
+    "metadata": {
+      "key": "string"
+    }
+  }
+}

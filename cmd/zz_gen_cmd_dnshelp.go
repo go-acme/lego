@@ -1307,6 +1307,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dode`)
 
+	case "domainchief":
+		// generated from: providers/dns/domainchief/domainchief.toml
+		ew.writeln(`Configuration for Domain Chief.`)
+		ew.writeln(`Code:	'domainchief'`)
+		ew.writeln(`Since:	'v5.7.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DOMAINCHIEF_API_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DOMAINCHIEF_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "DOMAINCHIEF_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 10)`)
+		ew.writeln(`	- "DOMAINCHIEF_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 120)`)
+		ew.writeln(`	- "DOMAINCHIEF_TEAM_SLUG":	Team slug`)
+		ew.writeln(`	- "DOMAINCHIEF_TTL":	The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/domainchief`)
+
 	case "domeneshop":
 		// generated from: providers/dns/domeneshop/domeneshop.toml
 		ew.writeln(`Configuration for Domeneshop.`)

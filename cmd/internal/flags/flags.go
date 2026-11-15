@@ -68,7 +68,7 @@ func CreateRenewFlags() []cli.Flag {
 			Name:     FlgRenewDays,
 			Sources:  cli.EnvVars(toEnvName(FlgRenewDays)),
 			Usage: "The number of days left on a certificate to renew it." +
-				"\n\tBy default, compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates).",
+				"\n\tBy default, compute dynamically, based on the lifetime of the certificate(s), when to renew: use ~1/3rd of the lifetime left, or ~1/2 of the lifetime for short-lived certificates).",
 		},
 		&cli.BoolFlag{
 			Category: categoryRenew,

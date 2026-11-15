@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/cmd/internal/clock"
 	"github.com/go-acme/lego/v5/cmd/internal/flags"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
 	"github.com/go-acme/lego/v5/internal/dotenv"
@@ -96,6 +97,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		lazyClient:   lazyClient,
 		certsStorage: store.Certificate,
 		hookManager:  hookManager,
+		renewClock:   clock.NewRenewClock(noDays),
 	}
 
 	err = rp.renew(ctx, certID, resource)

@@ -92,7 +92,7 @@ lego run [options]
 | `--ari-wait-to-renew-duration duration` | `LEGO_ARI_WAIT_TO_RENEW_DURATION` | (ARI) The maximum duration you're willing to sleep for a renewal time returned by the renewalInfo endpoint. <br> (Default: 0s) |
 | `--force-cert-domains` | `LEGO_FORCE_CERT_DOMAINS` | Check and ensure that the cert's domain list matches those passed in the domains argument.  |
 | `--no-random-sleep` | `LEGO_NO_RANDOM_SLEEP` | Do not add a random sleep before the renewal. We do not recommend using this flag if you are doing your renewals in an automated way.  |
-| `--renew-days int` | `LEGO_RENEW_DAYS` | The number of days left on a certificate to renew it.<br>	By default, compute dynamically, based on the lifetime of the certificate(s), when to renew: use 1/3rd of the lifetime left, or 1/2 of the lifetime for short-lived certificates). <br> (Default: 0) |
+| `--renew-days int` | `LEGO_RENEW_DAYS` | The number of days left on a certificate to renew it.<br>	By default, compute dynamically, based on the lifetime of the certificate(s), when to renew: use ~1/3rd of the lifetime left, or ~1/2 of the lifetime for short-lived certificates). <br> (Default: 0) |
 | `--renew-force` | `LEGO_RENEW_FORCE` | Force the renewal of the certificate even if it is not due for renewal yet.  |
 | `--reuse-key` | `LEGO_REUSE_KEY` | Used to indicate you want to reuse the current certificate private key for the new certificate.  |
 

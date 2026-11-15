@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/cmd/internal"
+	"github.com/go-acme/lego/v5/cmd/internal/clock"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
@@ -130,6 +131,7 @@ func processChallenges(ctx context.Context, lazyClient lzSetUp, chlgNode *config
 			lazyClient:   lazySetup,
 			certsStorage: store.Certificate,
 			hookManager:  hookManager,
+			renewClock:   clock.NewRenewClock(0),
 		}
 
 		err = rp.renew(ctx, cert.ID, resource)

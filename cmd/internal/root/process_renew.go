@@ -15,6 +15,7 @@ import (
 
 	"github.com/go-acme/lego/v5/acme/api"
 	"github.com/go-acme/lego/v5/certcrypto"
+	"github.com/go-acme/lego/v5/cmd/internal/clock"
 	"github.com/go-acme/lego/v5/cmd/internal/configuration"
 	"github.com/go-acme/lego/v5/cmd/internal/hook"
 	"github.com/go-acme/lego/v5/cmd/internal/storage"
@@ -33,6 +34,8 @@ type renewProcessor struct {
 
 	certsStorage *storage.CertificatesStorage
 	hookManager  *hook.Manager
+
+	renewClock *clock.RenewClock
 }
 
 func (p *renewProcessor) renew(ctx context.Context, certID string, resource *storage.Certificate) error {
@@ -72,7 +75,7 @@ func (p *renewProcessor) renewForDomains(ctx context.Context, certID string, cha
 			return err
 		}
 
-		if ariRenewalTime == nil && !isInRenewalPeriod(cert, certID, p.certConfig.Renew.Days, time.Now()) {
+		if ariRenewalTime == nil && !p.renewClock.IsInRenewalPeriod(cert, certID, p.certConfig.Renew.Days) {
 			return nil
 		}
 	} else {
@@ -167,7 +170,7 @@ func (p *renewProcessor) renewForCSR(ctx context.Context, certID string, changed
 			return fmt.Errorf("CSR: %w", err)
 		}
 
-		if ariRenewalTime == nil && !isInRenewalPeriod(cert, certID, p.certConfig.Renew.Days, time.Now()) {
+		if ariRenewalTime == nil && !p.renewClock.IsInRenewalPeriod(cert, certID, p.certConfig.Renew.Days) {
 			return nil
 		}
 	} else {
@@ -257,44 +260,6 @@ func (p *renewProcessor) getARIInfo(ctx context.Context, certID string, cert *x5
 	}
 
 	return ariRenewalTime, replacesCertID, nil
-}
-
-func isInRenewalPeriod(cert *x509.Certificate, certID string, days int, now time.Time) bool {
-	dueDate := getDueDate(cert, days, now)
-
-	if dueDate.Before(now) || dueDate.Equal(now) {
-		return true
-	}
-
-	log.Infof(
-		log.LazySprintf("Skip renewal: The certificate expires at %s, the renewal can be performed in %s.",
-			cert.NotAfter.Format(time.RFC3339),
-			log.FormattableDuration(dueDate.Sub(now)),
-		),
-		log.CertNameAttr(certID),
-	)
-
-	return false
-}
-
-func getDueDate(x509Cert *x509.Certificate, days int, now time.Time) time.Time {
-	if days == 0 {
-		lifetime := x509Cert.NotAfter.Sub(x509Cert.NotBefore)
-
-		var divisor int64 = 3
-		if lifetime.Round(24*time.Hour).Hours()/24.0 <= 10 {
-			divisor = 2
-		}
-
-		return x509Cert.NotAfter.Add(-1 * time.Duration(lifetime.Nanoseconds()/divisor))
-	}
-
-	if days < 0 {
-		// if the number of days is negative: always renew the certificate.
-		return now
-	}
-
-	return x509Cert.NotAfter.Add(-1 * time.Duration(days) * 24 * time.Hour)
 }
 
 // getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.

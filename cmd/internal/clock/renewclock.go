@@ -45,18 +45,18 @@ func (c *RenewClock) IsInRenewalPeriod(cert *x509.Certificate, certID string, da
 	return false
 }
 
-func (c *RenewClock) getDueDate(x509Cert *x509.Certificate, days int, now time.Time) time.Time {
+func (c *RenewClock) getDueDate(cert *x509.Certificate, days int, now time.Time) time.Time {
 	if days == c.noDays {
-		lifetime := x509Cert.NotAfter.Sub(x509Cert.NotBefore)
+		lifetime := cert.NotAfter.Sub(cert.NotBefore)
 
 		var divisor int64 = 3
 		if lifetime.Round(24*time.Hour).Hours()/24.0 <= 10 {
 			divisor = 2
 		}
 
-		variance := time.Duration(c.jitter(x509Cert.SerialNumber) * float64(lifetime))
+		variance := time.Duration(c.jitter(cert.SerialNumber) * float64(lifetime))
 
-		return x509Cert.NotAfter.Add(-1 * (time.Duration(lifetime.Nanoseconds()/divisor) + variance))
+		return cert.NotAfter.Add(-1 * (time.Duration(lifetime.Nanoseconds()/divisor) + variance))
 	}
 
 	if days < 0 {
@@ -64,7 +64,7 @@ func (c *RenewClock) getDueDate(x509Cert *x509.Certificate, days int, now time.T
 		return now
 	}
 
-	return x509Cert.NotAfter.Add(-1 * time.Duration(days) * 24 * time.Hour)
+	return cert.NotAfter.Add(-1 * time.Duration(days) * 24 * time.Hour)
 }
 
 func deterministicJitter(n *big.Int) float64 {
@@ -72,8 +72,8 @@ func deterministicJitter(n *big.Int) float64 {
 
 	r := rand.New(
 		rand.NewPCG(
-			binary.LittleEndian.Uint64(hash[0:16]),
-			binary.LittleEndian.Uint64(hash[16:32]),
+			binary.LittleEndian.Uint64(hash[0:8]),
+			binary.LittleEndian.Uint64(hash[8:16]),
 		),
 	)
 

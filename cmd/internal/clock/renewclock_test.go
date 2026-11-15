@@ -177,14 +177,14 @@ func Test_deterministicJitter(t *testing.T) {
 		expected float64
 	}{
 		{
-			desc:     "zero",
-			n:        big.NewInt(0),
-			expected: -0.04790668695442666,
+			desc:     "network",
+			n:        big.NewInt(23),
+			expected: 0.01836374862784526,
 		},
 		{
 			desc:     "number of the beast",
 			n:        big.NewInt(666),
-			expected: 0.03188230748489171,
+			expected: -0.028234840693323684,
 		},
 	}
 

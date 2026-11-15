@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
-	"math/rand/v2"
-	"os"
 	"slices"
 	"sort"
 	"strings"
@@ -23,7 +21,6 @@ import (
 	"github.com/go-acme/lego/v5/internal"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
-	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v3"
 )
 
@@ -127,8 +124,8 @@ func (p *renewProcessor) renewForDomains(ctx context.Context, certID string, dom
 	}
 
 	// If the domains are different, this must create a new certificate, then the renewal constraints must be skipped.
-	if !changed && sameDomains(certDomains, renewalDomains) {
-		randomSleep(p.cmd)
+	if !p.cmd.Bool(flags.FlgNoRandomSleep) && !changed && sameDomains(certDomains, renewalDomains) {
+		clock.RandomSleep()
 	}
 
 	certRes, err := client.Certificate.Obtain(ctx, request)
@@ -251,18 +248,7 @@ func (p *renewProcessor) getARIInfo(ctx context.Context, certID string, cert *x5
 
 	ariRenewalTime := getARIRenewalTime(ctx, willingToSleep, cert, certID, client)
 	if ariRenewalTime != nil {
-		now := time.Now().UTC()
-
-		// Figure out if we need to sleep before renewing.
-		if ariRenewalTime.After(now) {
-			log.Info("Sleeping until renewal time",
-				log.CertNameAttr(certID),
-				slog.Duration("sleep", ariRenewalTime.Sub(now)),
-				slog.Time("renewalTime", *ariRenewalTime),
-			)
-
-			time.Sleep(ariRenewalTime.Sub(now))
-		}
+		clock.ARISleep(certID, ariRenewalTime)
 	}
 
 	replacesCertID, err := api.MakeARICertID(cert)
@@ -320,20 +306,6 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 	}
 
 	return renewalTime
-}
-
-func randomSleep(cmd *cli.Command) {
-	// https://github.com/go-acme/lego/issues/1656
-	// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L435-L440
-	if !isatty.IsTerminal(os.Stdout.Fd()) && !cmd.Bool(flags.FlgNoRandomSleep) {
-		// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L472
-		const jitter = 8 * time.Minute
-
-		sleepTime := time.Duration(rand.Int64N(int64(jitter)))
-
-		log.Info("renewal: random delay.", slog.Duration("sleep", sleepTime))
-		time.Sleep(sleepTime)
-	}
 }
 
 func merge(prevDomains, nextDomains []string) []string {

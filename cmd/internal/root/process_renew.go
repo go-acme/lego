@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"math/rand/v2"
-	"os"
 	"slices"
 	"sort"
 	"strings"
@@ -22,7 +20,6 @@ import (
 	"github.com/go-acme/lego/v5/internal"
 	"github.com/go-acme/lego/v5/lego"
 	"github.com/go-acme/lego/v5/log"
-	"github.com/mattn/go-isatty"
 )
 
 type lzSetUp func() (*lego.Client, error)
@@ -114,8 +111,8 @@ func (p *renewProcessor) renewForDomains(ctx context.Context, certID string, cha
 	}
 
 	// If the domains are different, this must create a new certificate, then the renewal constraints must be skipped.
-	if !changed && sameDomains(certDomains, renewalDomains) {
-		randomSleep(p.certConfig)
+	if !changed && sameDomains(certDomains, renewalDomains) && (p.certConfig.Renew == nil || !p.certConfig.Renew.DisableRandomSleep) {
+		clock.RandomSleep()
 	}
 
 	certRes, err := client.Certificate.Obtain(ctx, request)
@@ -240,18 +237,7 @@ func (p *renewProcessor) getARIInfo(ctx context.Context, certID string, cert *x5
 
 	ariRenewalTime := getARIRenewalTime(ctx, p.certConfig.Renew.ARI.WaitToRenewDuration, cert, certID, client)
 	if ariRenewalTime != nil {
-		now := time.Now().UTC()
-
-		// Figure out if we need to sleep before renewing.
-		if ariRenewalTime.After(now) {
-			log.Info("Sleeping until renewal time",
-				log.CertNameAttr(certID),
-				slog.Duration("sleep", ariRenewalTime.Sub(now)),
-				slog.Time("renewalTime", *ariRenewalTime),
-			)
-
-			time.Sleep(ariRenewalTime.Sub(now))
-		}
+		clock.ARISleep(certID, ariRenewalTime)
 	}
 
 	replacesCertID, err := api.MakeARICertID(cert)
@@ -301,24 +287,6 @@ func getARIRenewalTime(ctx context.Context, willingToSleep time.Duration, cert *
 	}
 
 	return renewalTime
-}
-
-func randomSleep(certConfig *configuration.Certificate) {
-	if certConfig.Renew != nil && certConfig.Renew.DisableRandomSleep {
-		return
-	}
-
-	// https://github.com/go-acme/lego/issues/1656
-	// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L435-L440
-	if !isatty.IsTerminal(os.Stdout.Fd()) {
-		// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L472
-		const jitter = 8 * time.Minute
-
-		sleepTime := time.Duration(rand.Int64N(int64(jitter)))
-
-		log.Info("renewal: random delay.", slog.Duration("sleep", sleepTime))
-		time.Sleep(sleepTime)
-	}
 }
 
 func sameDomainsCertificate(cert *x509.Certificate, csr *x509.CertificateRequest) bool {

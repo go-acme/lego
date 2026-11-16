@@ -4,11 +4,14 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/binary"
+	"log/slog"
 	"math/big"
 	"math/rand/v2"
+	"os"
 	"time"
 
 	"github.com/go-acme/lego/v5/log"
+	"github.com/mattn/go-isatty"
 )
 
 type RenewClock struct {
@@ -79,4 +82,33 @@ func deterministicJitter(n *big.Int) float64 {
 
 	// between -5% and 5%
 	return r.Float64()*0.1 - 0.05
+}
+
+func RandomSleep() {
+	// https://github.com/go-acme/lego/issues/1656
+	// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L435-L440
+	if !isatty.IsTerminal(os.Stdout.Fd()) {
+		// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L472
+		const jitter = 8 * time.Minute
+
+		sleepTime := time.Duration(rand.Int64N(int64(jitter)))
+
+		log.Info("renewal: random delay.", slog.Duration("sleep", sleepTime))
+		time.Sleep(sleepTime)
+	}
+}
+
+func ARISleep(certID string, ariRenewalTime *time.Time) {
+	now := time.Now().UTC()
+
+	// Figure out if we need to sleep before renewing.
+	if ariRenewalTime.After(now) {
+		log.Info("Sleeping until renewal time",
+			log.CertNameAttr(certID),
+			slog.Duration("sleep", ariRenewalTime.Sub(now)),
+			slog.Time("renewalTime", *ariRenewalTime),
+		)
+
+		time.Sleep(ariRenewalTime.Sub(now))
+	}
 }

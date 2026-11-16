@@ -3,7 +3,7 @@ package internal
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -41,17 +41,21 @@ func checkRetry(ctx context.Context, resp *http.Response, err error) (bool, erro
 		return rt, nil
 	}
 
-	all, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err == nil {
-		errorDetails := new(acme.ProblemDetails)
-
-		err = json.Unmarshal(all, errorDetails)
-		if err != nil {
-			return rt, fmt.Errorf("%s %s: %s", resp.Request.Method, resp.Request.URL.Redacted(), string(all))
+		errorDetails := &acme.ProblemDetails{
+			Method:     resp.Request.Method,
+			URL:        resp.Request.URL.String(),
+			HTTPStatus: resp.StatusCode,
 		}
 
-		errorDetails.Method = resp.Request.Method
-		errorDetails.URL = resp.Request.URL.String()
+		err = json.Unmarshal(body, errorDetails)
+		if err != nil {
+			errorDetails.Type = "urn:lego:params:acme:error:unmarshal"
+			errorDetails.Detail = string(body)
+
+			return rt, errors.Join(errorDetails, err)
+		}
 
 		if errorDetails.HTTPStatus == 0 {
 			errorDetails.HTTPStatus = resp.StatusCode

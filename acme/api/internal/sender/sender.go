@@ -130,35 +130,28 @@ func checkError(req *http.Request, resp *http.Response) error {
 
 	retryAfter := GetRetryAfter(resp)
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return errors.Join(&acme.ProblemDetails{
-			Type:       "urn:lego:params:acme:error:unreadable",
-			Detail:     "Unable to read response body",
-			HTTPStatus: resp.StatusCode,
-			Method:     req.Method,
-			URL:        req.URL.String(),
-			RetryAfter: retryAfter,
-		}, err)
+	errorDetails := &acme.ProblemDetails{
+		Method:     req.Method,
+		URL:        req.URL.String(),
+		RetryAfter: retryAfter,
+		HTTPStatus: resp.StatusCode,
 	}
 
-	errorDetails := new(acme.ProblemDetails)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		errorDetails.Type = "urn:lego:params:acme:error:unreadable"
+		errorDetails.Detail = "Unable to read response body"
+
+		return errors.Join(errorDetails, err)
+	}
 
 	err = json.Unmarshal(body, errorDetails)
 	if err != nil {
-		return errors.Join(&acme.ProblemDetails{
-			Type:       "urn:lego:params:acme:error:unmarshal",
-			Detail:     string(body),
-			HTTPStatus: resp.StatusCode,
-			Method:     req.Method,
-			URL:        req.URL.String(),
-			RetryAfter: retryAfter,
-		}, err)
-	}
+		errorDetails.Type = "urn:lego:params:acme:error:unmarshal"
+		errorDetails.Detail = string(body)
 
-	errorDetails.Method = req.Method
-	errorDetails.URL = req.URL.String()
-	errorDetails.RetryAfter = retryAfter
+		return errors.Join(errorDetails, err)
+	}
 
 	if errorDetails.HTTPStatus == 0 {
 		errorDetails.HTTPStatus = resp.StatusCode

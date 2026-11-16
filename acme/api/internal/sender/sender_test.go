@@ -3,6 +3,7 @@ package sender
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -173,6 +174,28 @@ func Test_checkError(t *testing.T) {
 			},
 		},
 		{
+			desc: "body read error",
+			resp: &http.Response{
+				StatusCode: http.StatusServiceUnavailable,
+				Header: http.Header{
+					"Retry-After": []string{"2"},
+				},
+				Body: io.NopCloser(&errorReader{}),
+			},
+			assertTypes: []func(t *testing.T, err error){
+				errorAs[*acme.ProblemDetails],
+			},
+			expected: &acme.ProblemDetails{
+				Type:       "urn:lego:params:acme:error:unreadable",
+				HTTPStatus: 503,
+				Method:     "POST",
+				URL:        "https://example.com",
+				RetryAfter: 2000000000,
+				Detail:     "Unable to read response body",
+			},
+			assert: errorEqual[*acme.ProblemDetails],
+		},
+		{
 			desc: "service unavailable (unexpected)",
 			resp: &http.Response{
 				StatusCode: http.StatusServiceUnavailable,
@@ -215,6 +238,41 @@ func Test_checkError(t *testing.T) {
 				RetryAfter: 1000000000,
 			},
 		},
+		{
+			desc: "body status code override response status code",
+			resp: &http.Response{
+				// 403 instead of 404 only to validate the unmarshalling
+				StatusCode: http.StatusMethodNotAllowed,
+				Body:       io.NopCloser(bytes.NewBufferString(`{"type":"urn:ietf:params:acme:error:example","detail":"message","status":404}`)),
+			},
+			assertTypes: []func(t *testing.T, err error){
+				errorAs[*acme.ProblemDetails],
+			},
+			expected: &acme.ProblemDetails{
+				Type:       "urn:ietf:params:acme:error:example",
+				Detail:     "message",
+				HTTPStatus: 404,
+				Method:     "POST",
+				URL:        "https://example.com",
+			},
+		},
+		{
+			desc: "response status code override empty body status code",
+			resp: &http.Response{
+				StatusCode: http.StatusNotFound,
+				Body:       io.NopCloser(bytes.NewBufferString(`{"type":"urn:ietf:params:acme:error:example","detail":"message","status":0}`)),
+			},
+			assertTypes: []func(t *testing.T, err error){
+				errorAs[*acme.ProblemDetails],
+			},
+			expected: &acme.ProblemDetails{
+				Type:       "urn:ietf:params:acme:error:example",
+				Detail:     "message",
+				HTTPStatus: 404,
+				Method:     "POST",
+				URL:        "https://example.com",
+			},
+		},
 	}
 
 	for _, test := range testCases {
@@ -252,4 +310,10 @@ func errorEqual[T error](t *testing.T, err, expected error) {
 	var zero T
 	assert.ErrorAs(t, err, &zero)
 	assert.Equal(t, expected, zero)
+}
+
+type errorReader struct{}
+
+func (r *errorReader) Read(p []byte) (int, error) {
+	return 0, errors.New("my custom error")
 }

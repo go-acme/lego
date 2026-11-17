@@ -71,7 +71,7 @@ require (
 	github.com/nrdcg/porkbun v0.4.0
 	github.com/nrdcg/vegadns v0.3.0
 	github.com/nzdjb/go-metaname v1.0.0
-	github.com/ovh/go-ovh v1.9.0
+	github.com/ovh/go-ovh v1.10.0
 	github.com/pquerna/otp v1.5.0
 	github.com/regfish/regfish-dnsapi-go v0.2.0
 	github.com/sacloud/sacloud-sdk-go v0.7.0

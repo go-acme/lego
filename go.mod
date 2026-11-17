@@ -74,7 +74,7 @@ require (
 	github.com/ovh/go-ovh v1.9.0
 	github.com/pquerna/otp v1.5.0
 	github.com/regfish/regfish-dnsapi-go v0.2.0
-	github.com/sacloud/sacloud-sdk-go v0.4.0
+	github.com/sacloud/sacloud-sdk-go v0.7.0
 	github.com/scaleway/scaleway-sdk-go v1.39.0
 	github.com/selectel/domains-go v1.1.0
 	github.com/selectel/go-selvpcclient/v5 v5.0.0
@@ -145,9 +145,9 @@ require (
 	github.com/go-ozzo/ozzo-validation/v4 v4.5.0 // indirect
 	github.com/go-playground/locales v0.14.2 // indirect
 	github.com/go-playground/universal-translator v0.18.2 // indirect
-	github.com/go-playground/validator/v10 v10.30.5 // indirect
+	github.com/go-playground/validator/v10 v10.30.6 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
-	github.com/gofrs/flock v0.13.1 // indirect
+	github.com/gofrs/flock v0.13.2 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/gofrs/uuid/v5 v5.5.1 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect

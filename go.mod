@@ -87,7 +87,7 @@ require (
 	github.com/urfave/cli/v3 v3.14.0
 	github.com/vinyldns/go-vinyldns v0.9.18
 	github.com/volcengine/volc-sdk-golang v1.0.259
-	github.com/vultr/govultr/v3 v3.33.2
+	github.com/vultr/govultr/v3 v3.34.0
 	github.com/yandex-cloud/go-genproto v0.139.0
 	github.com/yandex-cloud/go-sdk/services/dns v0.0.112
 	github.com/yandex-cloud/go-sdk/v2 v2.191.0

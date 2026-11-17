@@ -1,0 +1,9 @@
+{
+  "StatusCode": "1.10",
+  "Type": null,
+  "message": "You have reached the Cloud API Service; please use valid login credentials and https.",
+  "status": "Failed to Authenticate",
+  "data": null,
+  "id": null,
+  "options": null
+}

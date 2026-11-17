@@ -1,0 +1,25 @@
+Name = "Total Uptime"
+Description = ''''''
+URL = "https://totaluptime.com/"
+Code = "totaluptime"
+Since = "v5.7.0"
+
+Example = '''
+TOTALUPTIME_USERNAME="xxx" \
+TOTALUPTIME_PASSWORD="yyy" \
+lego run --dns totaluptime -d '*.example.com' -d example.com
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    TOTALUPTIME_USERNAME = "Username"
+    TOTALUPTIME_PASSWORD = "Password"
+  [Configuration.Additional]
+    TOTALUPTIME_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    TOTALUPTIME_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    TOTALUPTIME_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    TOTALUPTIME_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://totaluptime.com/api/v2/"
+  Swagger = "https://api.totaluptime.com/api-docs/index.html"

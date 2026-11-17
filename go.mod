@@ -15,7 +15,7 @@ require (
 	github.com/Myra-Security-GmbH/myrasec-go/v2 v2.62.1
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v14 v14.1.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.2.4
-	github.com/alibabacloud-go/tea v1.5.3
+	github.com/alibabacloud-go/tea v1.5.4
 	github.com/aliyun/credentials-go v1.4.7
 	github.com/aws/aws-sdk-go-v2 v1.47.5
 	github.com/aws/aws-sdk-go-v2/config v1.33.12

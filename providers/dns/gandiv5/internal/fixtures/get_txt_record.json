@@ -1,8 +1,8 @@
 {
-  "rrset_ttl": 120,
+  "rrset_ttl": 300,
   "rrset_values": [
     "value1"
   ],
-  "rrset_name": "foo",
+  "rrset_name": "_acme-challenge",
   "rrset_type": "TXT"
 }

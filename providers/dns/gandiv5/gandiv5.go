@@ -71,11 +71,6 @@ type DNSProvider struct {
 
 	inProgressFQDNs map[string]inProgressInfo
 	inProgressMu    sync.Mutex
-
-	// findZoneByFqdn determines the DNS zone of a FQDN.
-	// It is overridden during tests.
-	// only for testing purpose.
-	findZoneByFqdn func(ctx context.Context, fqdn string) (string, error)
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Gandi.
@@ -130,7 +125,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config:          config,
 		client:          client,
 		inProgressFQDNs: make(map[string]inProgressInfo),
-		findZoneByFqdn:  dns01.DefaultClient().FindZoneByFqdn,
 	}, nil
 }
 
@@ -139,7 +133,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// find authZone
-	authZone, err := d.findZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("gandiv5: could not find zone for domain %q: %w", domain, err)
 	}

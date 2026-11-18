@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -32,23 +33,27 @@ func mockBuilder(apiKey, pat string) *servermock.Builder[*Client] {
 
 func TestClient_AddTXTRecord(t *testing.T) {
 	client := mockBuilder("secret-apikey", "").
-		Route("GET /domains/example.com/records/foo/TXT",
-			servermock.ResponseFromFixture("add_txt_record_get.json")).
-		Route("PUT /domains/example.com/records/foo/TXT",
+		Route("GET /domains/example.com/records/_acme-challenge/TXT",
+			servermock.ResponseFromFixture("get_txt_record.json"),
+		).
+		Route("PUT /domains/example.com/records/_acme-challenge/TXT",
 			servermock.ResponseFromFixture("api_response.json"),
-			servermock.CheckRequestJSONBody(`{"rrset_ttl":120,"rrset_values":["content","value1"]}`)).
+			servermock.CheckRequestJSONBodyFromFixture("put_txt_record-request.json"),
+		).
 		Build(t)
 
-	err := client.AddTXTRecord(t.Context(), "example.com", "foo", "content", 120)
+	err := client.AddTXTRecord(t.Context(), "example.com", "_acme-challenge", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY", 300)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteTXTRecord(t *testing.T) {
 	client := mockBuilder("", "secret-pat").
-		Route("DELETE /domains/example.com/records/foo/TXT",
-			servermock.ResponseFromFixture("api_response.json")).
+		Route("DELETE /domains/example.com/records/_acme-challenge/TXT",
+			servermock.Noop().
+				WithStatusCode(http.StatusNoContent),
+		).
 		Build(t)
 
-	err := client.DeleteTXTRecord(t.Context(), "example.com", "foo")
+	err := client.DeleteTXTRecord(t.Context(), "example.com", "_acme-challenge")
 	require.NoError(t, err)
 }

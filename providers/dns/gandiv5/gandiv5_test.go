@@ -1,11 +1,13 @@
 package gandiv5
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -110,25 +112,72 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 	)
 }
 
-// TestDNSProvider runs Present and CleanUp against a fake Gandi RPC
-// Server, whose responses are predetermined for particular requests.
-func TestDNSProvider(t *testing.T) {
+func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
 		Route("GET /domains/example.com/records/_acme-challenge.abc.def/TXT",
-			servermock.RawStringResponse(`{"rrset_ttl":300,"rrset_values":[],"rrset_name":"_acme-challenge.abc.def","rrset_type":"TXT"}`),
+			servermock.ResponseFromInternal("api_response.json").
+				WithStatusCode(http.StatusNotFound),
 		).
 		Route("PUT /domains/example.com/records/_acme-challenge.abc.def/TXT",
 			servermock.RawStringResponse(`{"message": "Zone Record Created"}`),
-			servermock.CheckRequestJSONBody(`{"rrset_ttl":300,"rrset_values":["ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"]}`),
+			servermock.CheckRequestJSONBodyFromInternal("put_txt_record_pristine-request.json"),
 		).
-		Route("DELETE /domains/example.com/records/_acme-challenge.abc.def/TXT", nil).
 		Build(t)
 
-	// run Present
 	err := provider.Present(t.Context(), "abc.def.example.com", "abc", "123d==")
 	require.NoError(t, err)
 
-	// run CleanUp
-	err = provider.CleanUp(t.Context(), "abc.def.example.com", "abc", "123d==")
+	expected := map[string]inProgressInfo{
+		"_acme-challenge.abc.def.example.com.": {
+			fieldName: "_acme-challenge.abc.def",
+			authZone:  "example.com.",
+		},
+	}
+
+	assert.Equal(t, expected, provider.inProgressFQDNs)
+}
+
+func TestDNSProvider_CleanUp_delete(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /domains/example.com/records/_acme-challenge.abc.def/TXT",
+			servermock.ResponseFromInternal("api_response.json").
+				WithStatusCode(http.StatusNotFound),
+		).
+		Route("DELETE /domains/example.com/records/_acme-challenge.abc.def/TXT",
+			servermock.Noop().
+				WithStatusCode(http.StatusCreated),
+		).
+		Build(t)
+
+	provider.inProgressFQDNs["_acme-challenge.abc.def.example.com."] = inProgressInfo{
+		fieldName: "_acme-challenge.abc.def",
+		authZone:  "example.com.",
+	}
+
+	err := provider.CleanUp(t.Context(), "abc.def.example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Empty(t, provider.inProgressFQDNs)
+}
+
+func TestDNSProvider_CleanUp_update(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /domains/example.com/records/_acme-challenge.abc.def/TXT",
+			servermock.ResponseFromInternal("get_txt_record_existing.json"),
+		).
+		Route("DELETE /domains/example.com/records/_acme-challenge.abc.def/TXT",
+			servermock.Noop().
+				WithStatusCode(http.StatusCreated),
+		).
+		Build(t)
+
+	provider.inProgressFQDNs["_acme-challenge.abc.def.example.com."] = inProgressInfo{
+		fieldName: "_acme-challenge.abc.def",
+		authZone:  "example.com.",
+	}
+
+	err := provider.CleanUp(t.Context(), "abc.def.example.com", "abc", "123d==")
+	require.NoError(t, err)
+
+	assert.Empty(t, provider.inProgressFQDNs)
 }

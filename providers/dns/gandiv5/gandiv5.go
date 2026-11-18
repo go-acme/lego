@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"sync"
 	"time"
 
@@ -187,10 +188,25 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	authZone := d.inProgressFQDNs[info.EffectiveFQDN].authZone
 	delete(d.inProgressFQDNs, info.EffectiveFQDN)
 
-	// delete TXT record from authZone
-	err := d.client.DeleteTXTRecord(ctx, dns01.UnFqdn(authZone), fieldName)
+	record, err := d.client.GetTXTRecord(ctx, dns01.UnFqdn(authZone), fieldName)
 	if err != nil {
-		return fmt.Errorf("gandiv5: %w", err)
+		return fmt.Errorf("gandiv5: get TXT record (clean): %w", err)
+	}
+
+	newRecord := removeTXTRecordValue(record, info.Value, d.config.TTL)
+
+	if len(newRecord.Values) == 0 {
+		err = d.client.DeleteTXTRecord(ctx, dns01.UnFqdn(authZone), fieldName)
+		if err != nil {
+			return fmt.Errorf("gandiv5: delete TXT record: %w", err)
+		}
+
+		return nil
+	}
+
+	err = d.client.OverwriteTXTRecord(ctx, dns01.UnFqdn(authZone), fieldName, newRecord)
+	if err != nil {
+		return fmt.Errorf("gandiv5: overwrite TXT record (clean): %w", err)
 	}
 
 	return nil
@@ -206,6 +222,20 @@ func appendTXTRecordValue(record *internal.Record, value string, ttl int) *inter
 	values := []string{value}
 	if len(record.Values) > 0 {
 		values = append(values, record.Values...)
+	}
+
+	return &internal.Record{TTL: ttl, Values: values}
+}
+
+func removeTXTRecordValue(record *internal.Record, value string, ttl int) *internal.Record {
+	var values []string
+
+	for _, v := range record.Values {
+		if v != value || v != strconv.Quote(value) {
+			continue
+		}
+
+		values = append(values, v)
 	}
 
 	return &internal.Record{TTL: ttl, Values: values}

@@ -8,7 +8,7 @@ type apiResponse struct {
 
 // Record TXT record representation.
 type Record struct {
-	TTL    int      `json:"rrset_ttl"`
+	TTL    int      `json:"rrset_ttl,omitempty"`
 	Values []string `json:"rrset_values"`
 	Name   string   `json:"rrset_name,omitempty"`
 	Type   string   `json:"rrset_type,omitempty"`

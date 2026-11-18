@@ -32,29 +32,14 @@ func mockBuilder(apiKey, pat string) *servermock.Builder[*Client] {
 	)
 }
 
-func TestClient_AddTXTRecord(t *testing.T) {
-	client := mockBuilder("secret-apikey", "").
-		Route("GET /domains/example.com/records/_acme-challenge/TXT",
-			servermock.ResponseFromFixture("get_txt_record.json"),
-		).
-		Route("PUT /domains/example.com/records/_acme-challenge/TXT",
-			servermock.ResponseFromFixture("api_response.json"),
-			servermock.CheckRequestJSONBodyFromFixture("put_txt_record-request.json"),
-		).
-		Build(t)
-
-	err := client.AddTXTRecord(t.Context(), "example.com", "_acme-challenge", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY", 300)
-	require.NoError(t, err)
-}
-
-func TestClient_getTXTRecord(t *testing.T) {
+func TestClient_GetTXTRecord(t *testing.T) {
 	client := mockBuilder("secret-apikey", "").
 		Route("GET /domains/example.com/records/_acme-challenge/TXT",
 			servermock.ResponseFromFixture("get_txt_record.json"),
 		).
 		Build(t)
 
-	result, err := client.getTXTRecord(t.Context(), "example.com", "_acme-challenge")
+	result, err := client.GetTXTRecord(t.Context(), "example.com", "_acme-challenge")
 	require.NoError(t, err)
 
 	expected := &Record{
@@ -67,7 +52,7 @@ func TestClient_getTXTRecord(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestClient_overwriteTXTRecord(t *testing.T) {
+func TestClient_OverwriteTXTRecord(t *testing.T) {
 	client := mockBuilder("secret-apikey", "").
 		Route("PUT /domains/example.com/records/_acme-challenge/TXT",
 			servermock.ResponseFromFixture("api_response.json"),
@@ -83,7 +68,7 @@ func TestClient_overwriteTXTRecord(t *testing.T) {
 		},
 	}
 
-	err := client.overwriteTXTRecord(t.Context(), "example.com", "_acme-challenge", record)
+	err := client.OverwriteTXTRecord(t.Context(), "example.com", "_acme-challenge", record)
 	require.NoError(t, err)
 }
 

@@ -149,10 +149,16 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
 
-	// add TXT record into authZone
-	err = d.client.AddTXTRecord(ctx, dns01.UnFqdn(authZone), subDomain, info.Value, d.config.TTL)
+	record, err := d.client.GetTXTRecord(ctx, dns01.UnFqdn(authZone), subDomain)
 	if err != nil {
-		return err
+		return fmt.Errorf("gandiv5: get TXT record: %w", err)
+	}
+
+	newRecord := appendTXTRecordValue(record, info.Value, d.config.TTL)
+
+	err = d.client.OverwriteTXTRecord(ctx, dns01.UnFqdn(authZone), subDomain, newRecord)
+	if err != nil {
+		return fmt.Errorf("gandiv5: overwrite TXT record: %w", err)
 	}
 
 	// save data necessary for CleanUp
@@ -194,4 +200,13 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func appendTXTRecordValue(record *internal.Record, value string, ttl int) *internal.Record {
+	values := []string{value}
+	if len(record.Values) > 0 {
+		values = append(values, record.Values...)
+	}
+
+	return &internal.Record{TTL: ttl, Values: values}
 }

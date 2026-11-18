@@ -40,24 +40,6 @@ func NewClient(apiKey, pat string) *Client {
 	}
 }
 
-func (c *Client) AddTXTRecord(ctx context.Context, domain, name, value string, ttl int) error {
-	// Get exiting values for the TXT records
-	// Needed to create challenges for both wildcard and base name domains
-	txtRecord, err := c.getTXTRecord(ctx, domain, name)
-	if err != nil {
-		return err
-	}
-
-	values := []string{value}
-	if len(txtRecord.Values) > 0 {
-		values = append(values, txtRecord.Values...)
-	}
-
-	newRecord := &Record{TTL: ttl, Values: values}
-
-	return c.overwriteTXTRecord(ctx, domain, name, newRecord)
-}
-
 // DeleteTXTRecord deletes a TXT record.
 // https://api.gandi.net/docs/livedns/#delete-v5-livedns-domains-fqdn-records-rrset_name-rrset_type
 func (c *Client) DeleteTXTRecord(ctx context.Context, domain, name string) error {
@@ -78,9 +60,9 @@ func (c *Client) DeleteTXTRecord(ctx context.Context, domain, name string) error
 	return nil
 }
 
-// getTXTRecord gets a record set.
+// GetTXTRecord gets a record set.
 // https://api.gandi.net/docs/livedns/#get-v5-livedns-domains-fqdn-records-rrset_name-rrset_type
-func (c *Client) getTXTRecord(ctx context.Context, domain, name string) (*Record, error) {
+func (c *Client) GetTXTRecord(ctx context.Context, domain, name string) (*Record, error) {
 	endpoint := c.BaseURL.JoinPath("domains", domain, "records", name, "TXT")
 
 	// Get exiting values for the TXT records
@@ -100,9 +82,9 @@ func (c *Client) getTXTRecord(ctx context.Context, domain, name string) (*Record
 	return result, nil
 }
 
-// overwriteTXTRecord overwrites a single record.
+// OverwriteTXTRecord overwrites a single record.
 // https://api.gandi.net/docs/livedns/#put-v5-livedns-domains-fqdn-records-rrset_name-rrset_type
-func (c *Client) overwriteTXTRecord(ctx context.Context, domain, name string, newRecord *Record) error {
+func (c *Client) OverwriteTXTRecord(ctx context.Context, domain, name string, newRecord *Record) error {
 	endpoint := c.BaseURL.JoinPath("domains", domain, "records", name, "TXT")
 
 	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, newRecord)

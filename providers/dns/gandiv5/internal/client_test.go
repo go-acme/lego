@@ -32,6 +32,27 @@ func mockBuilder(apiKey, pat string) *servermock.Builder[*Client] {
 	)
 }
 
+func TestClient_AddVerificationRecord(t *testing.T) {
+	client := mockBuilder("secret-apikey", "").
+		Route("POST /domains/example.com/verification/_acme-challenge/TXT",
+			servermock.ResponseFromFixture("post_txt_verification_record.json"),
+			servermock.CheckRequestJSONBodyFromFixture("post_txt_verification_record-request.json"),
+		).
+		Build(t)
+
+	result, err := client.AddVerificationRecord(t.Context(), "example.com", "_acme-challenge", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY")
+	require.NoError(t, err)
+
+	expected := &Record{
+		TTL:    300,
+		Values: []string{"value1", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"},
+		Name:   "_acme-challenge",
+		Type:   "TXT",
+	}
+
+	assert.Equal(t, expected, result)
+}
+
 func TestClient_GetTXTRecord(t *testing.T) {
 	client := mockBuilder("secret-apikey", "").
 		Route("GET /domains/example.com/records/_acme-challenge/TXT",

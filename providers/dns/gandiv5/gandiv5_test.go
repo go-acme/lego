@@ -114,13 +114,9 @@ func mockBuilder() *servermock.Builder[*DNSProvider] {
 
 func TestDNSProvider_Present(t *testing.T) {
 	provider := mockBuilder().
-		Route("GET /domains/example.com/records/_acme-challenge.abc.def/TXT",
-			servermock.ResponseFromInternal("api_response.json").
-				WithStatusCode(http.StatusNotFound),
-		).
-		Route("PUT /domains/example.com/records/_acme-challenge.abc.def/TXT",
-			servermock.RawStringResponse(`{"message": "Zone Record Created"}`),
-			servermock.CheckRequestJSONBodyFromInternal("put_txt_record_pristine-request.json"),
+		Route("POST /domains/example.com/verification/_acme-challenge.abc.def/TXT",
+			servermock.ResponseFromInternal("post_txt_verification_record.json"),
+			servermock.CheckRequestJSONBodyFromInternal("post_txt_verification_record-request.json"),
 		).
 		Build(t)
 

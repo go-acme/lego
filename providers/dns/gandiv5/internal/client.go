@@ -40,6 +40,28 @@ func NewClient(apiKey, pat string) *Client {
 	}
 }
 
+// AddVerificationRecord adds a verification record.
+// https://api.gandi.net/docs/livedns/#post-v5-livedns-domains-fqdn-verification-rrset_name-rrset_type
+func (c *Client) AddVerificationRecord(ctx context.Context, domain, name, value string) (*Record, error) {
+	endpoint := c.BaseURL.JoinPath("domains", domain, "verification", name, "TXT")
+
+	newRecord := &Record{Values: []string{value}}
+
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, newRecord)
+	if err != nil {
+		return nil, err
+	}
+
+	result := new(Record)
+
+	err = c.do(req, result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // DeleteTXTRecord deletes a TXT record.
 // https://api.gandi.net/docs/livedns/#delete-v5-livedns-domains-fqdn-records-rrset_name-rrset_type
 func (c *Client) DeleteTXTRecord(ctx context.Context, domain, name string) error {

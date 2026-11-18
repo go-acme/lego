@@ -83,3 +83,27 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 	err := client.DeleteTXTRecord(t.Context(), "example.com", "_acme-challenge")
 	require.NoError(t, err)
 }
+
+func TestClient_DeleteTXTRecord_error_400(t *testing.T) {
+	client := mockBuilder("", "secret-pat").
+		Route("DELETE /domains/example.com/records/_acme-challenge/TXT",
+			servermock.ResponseFromFixture("error_400.json").
+				WithStatusCode(http.StatusBadRequest),
+		).
+		Build(t)
+
+	err := client.DeleteTXTRecord(t.Context(), "example.com", "_acme-challenge")
+	require.EqualError(t, err, "(400) The server could not comply with the request since it is either malformed or otherwise incorrect.: Bad Request: HTTPBadRequest")
+}
+
+func TestClient_DeleteTXTRecord_error_401(t *testing.T) {
+	client := mockBuilder("", "secret-pat").
+		Route("DELETE /domains/example.com/records/_acme-challenge/TXT",
+			servermock.ResponseFromFixture("error_401.json").
+				WithStatusCode(http.StatusUnauthorized),
+		).
+		Build(t)
+
+	err := client.DeleteTXTRecord(t.Context(), "example.com", "_acme-challenge")
+	require.EqualError(t, err, "(401) You must provide an access token or an API Key.")
+}

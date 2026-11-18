@@ -54,7 +54,7 @@ func (c *Client) DeleteTXTRecord(ctx context.Context, domain, name string) error
 
 	err = c.do(req, &result)
 	if err != nil {
-		return fmt.Errorf("unable to delete TXT record for domain %s and name %s: %w", domain, name, err)
+		return err
 	}
 
 	return nil
@@ -76,7 +76,7 @@ func (c *Client) GetTXTRecord(ctx context.Context, domain, name string) (*Record
 
 	err = c.do(req, result)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get TXT records for domain %s and name %s: %w", domain, name, err)
+		return nil, err
 	}
 
 	return result, nil
@@ -96,7 +96,7 @@ func (c *Client) OverwriteTXTRecord(ctx context.Context, domain, name string, ne
 
 	err = c.do(req, &result)
 	if err != nil {
-		return fmt.Errorf("unable to create TXT record for domain %s and name %s: %w", domain, name, err)
+		return err
 	}
 
 	return nil
@@ -181,12 +181,16 @@ func checkResponse(req *http.Request, resp *http.Response) error {
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var response apiResponse
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &response)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("%d: request failed: %s", resp.StatusCode, response.Message)
+	if errAPI.Code == 0 {
+		errAPI.Code = resp.StatusCode
+	}
+
+	return errAPI
 }

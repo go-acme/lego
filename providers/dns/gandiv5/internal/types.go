@@ -1,5 +1,33 @@
 package internal
 
+import (
+	"fmt"
+	"strings"
+)
+
+type APIError struct {
+	Code    int    `json:"code"`
+	Cause   string `json:"cause"`
+	Message string `json:"message"`
+	Object  string `json:"object"`
+}
+
+func (a *APIError) Error() string {
+	msg := new(strings.Builder)
+
+	_, _ = fmt.Fprintf(msg, "(%d) %s", a.Code, a.Message)
+
+	if a.Cause != "" {
+		_, _ = fmt.Fprintf(msg, ": %s", a.Cause)
+	}
+
+	if a.Object != "" {
+		_, _ = fmt.Fprintf(msg, ": %s", a.Object)
+	}
+
+	return msg.String()
+}
+
 // types for JSON responses with only a message.
 type apiResponse struct {
 	Message string `json:"message"`

@@ -49,11 +49,11 @@ func (c *Client) AddTXTRecord(ctx context.Context, domain, name, value string, t
 	}
 
 	values := []string{value}
-	if len(txtRecord.RRSetValues) > 0 {
-		values = append(values, txtRecord.RRSetValues...)
+	if len(txtRecord.Values) > 0 {
+		values = append(values, txtRecord.Values...)
 	}
 
-	newRecord := &Record{RRSetTTL: ttl, RRSetValues: values}
+	newRecord := &Record{TTL: ttl, Values: values}
 
 	return c.addTXTRecord(ctx, domain, name, newRecord)
 }

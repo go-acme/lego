@@ -1,12 +1,13 @@
 package gandiv5
 
 import (
-	"context"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -90,50 +91,89 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-// TestDNSProvider runs Present and CleanUp against a fake Gandi RPC
-// Server, whose responses are predetermined for particular requests.
-func TestDNSProvider(t *testing.T) {
-	provider := servermock.NewBuilder(
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
 		func(server *httptest.Server) (*DNSProvider, error) {
 			config := NewDefaultConfig()
 			config.PersonalAccessToken = "123412341234123412341234"
 			config.BaseURL = server.URL
 			config.HTTPClient = server.Client()
 
-			return NewDNSProviderConfig(config)
+			p, err := NewDNSProviderConfig(config)
+			if err != nil {
+				return nil, err
+			}
+
+			return p, nil
 		},
-		servermock.CheckHeader().WithJSONHeaders().
+		servermock.CheckHeader().
+			WithJSONHeaders().
 			WithAuthorization("Bearer 123412341234123412341234"),
-	).
-		Route("GET /domains/example.com/records/_acme-challenge.abc.def/TXT",
-			servermock.RawStringResponse(`{"rrset_ttl":300,"rrset_values":[],"rrset_name":"_acme-challenge.abc.def","rrset_type":"TXT"}`)).
-		Route("PUT /domains/example.com/records/_acme-challenge.abc.def/TXT",
-			servermock.RawStringResponse(`{"message": "Zone Record Created"}`),
-			servermock.CheckRequestJSONBody(`{"rrset_ttl":300,"rrset_values":["ezRpBPY8wH8djMLYjX2uCKPwiKDkFZ1SFMJ6ZXGlHrQ"]}`)).
-		Route("DELETE /domains/example.com/records/_acme-challenge.abc.def/TXT", nil).
+	)
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider := mockBuilder().
+		Route("POST /domains/example.com/verification/_acme-challenge.abc.def/TXT",
+			servermock.ResponseFromInternal("post_txt_verification_record.json"),
+			servermock.CheckRequestJSONBodyFromInternal("post_txt_verification_record-request.json"),
+		).
 		Build(t)
 
-	fakeKeyAuth := "XXXX"
+	err := provider.Present(t.Context(), "abc.def.example.com", "abc", "123d==")
+	require.NoError(t, err)
 
-	// define function to override findZoneByFqdn with
-	fakeFindZoneByFqdn := func(ctx context.Context, fqdn string) (string, error) {
-		return "example.com.", nil
+	expected := map[string]inProgressInfo{
+		"_acme-challenge.abc.def.example.com.": {
+			fieldName: "_acme-challenge.abc.def",
+			authZone:  "example.com.",
+		},
 	}
 
-	// override findZoneByFqdn function
-	savedFindZoneByFqdn := provider.findZoneByFqdn
+	assert.Equal(t, expected, provider.inProgressFQDNs)
+}
 
-	defer func() {
-		provider.findZoneByFqdn = savedFindZoneByFqdn
-	}()
+func TestDNSProvider_CleanUp_delete(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /domains/example.com/records/_acme-challenge.abc.def/TXT",
+			servermock.ResponseFromInternal("api_response.json").
+				WithStatusCode(http.StatusNotFound),
+		).
+		Route("DELETE /domains/example.com/records/_acme-challenge.abc.def/TXT",
+			servermock.Noop().
+				WithStatusCode(http.StatusCreated),
+		).
+		Build(t)
 
-	provider.findZoneByFqdn = fakeFindZoneByFqdn
+	provider.inProgressFQDNs["_acme-challenge.abc.def.example.com."] = inProgressInfo{
+		fieldName: "_acme-challenge.abc.def",
+		authZone:  "example.com.",
+	}
 
-	// run Present
-	err := provider.Present(t.Context(), "abc.def.example.com", "", fakeKeyAuth)
+	err := provider.CleanUp(t.Context(), "abc.def.example.com", "abc", "123d==")
 	require.NoError(t, err)
 
-	// run CleanUp
-	err = provider.CleanUp(t.Context(), "abc.def.example.com", "", fakeKeyAuth)
+	assert.Empty(t, provider.inProgressFQDNs)
+}
+
+func TestDNSProvider_CleanUp_update(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /domains/example.com/records/_acme-challenge.abc.def/TXT",
+			servermock.ResponseFromInternal("get_txt_record_existing.json"),
+		).
+		Route("DELETE /domains/example.com/records/_acme-challenge.abc.def/TXT",
+			servermock.Noop().
+				WithStatusCode(http.StatusCreated),
+		).
+		Build(t)
+
+	provider.inProgressFQDNs["_acme-challenge.abc.def.example.com."] = inProgressInfo{
+		fieldName: "_acme-challenge.abc.def",
+		authZone:  "example.com.",
+	}
+
+	err := provider.CleanUp(t.Context(), "abc.def.example.com", "abc", "123d==")
 	require.NoError(t, err)
+
+	assert.Empty(t, provider.inProgressFQDNs)
 }

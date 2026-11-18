@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"sync"
 	"time"
 
@@ -71,11 +72,6 @@ type DNSProvider struct {
 
 	inProgressFQDNs map[string]inProgressInfo
 	inProgressMu    sync.Mutex
-
-	// findZoneByFqdn determines the DNS zone of a FQDN.
-	// It is overridden during tests.
-	// only for testing purpose.
-	findZoneByFqdn func(ctx context.Context, fqdn string) (string, error)
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Gandi.
@@ -130,7 +126,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config:          config,
 		client:          client,
 		inProgressFQDNs: make(map[string]inProgressInfo),
-		findZoneByFqdn:  dns01.DefaultClient().FindZoneByFqdn,
 	}, nil
 }
 
@@ -139,7 +134,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
 	// find authZone
-	authZone, err := d.findZoneByFqdn(ctx, info.EffectiveFQDN)
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("gandiv5: could not find zone for domain %q: %w", domain, err)
 	}
@@ -155,10 +150,9 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
 
-	// add TXT record into authZone
-	err = d.client.AddTXTRecord(ctx, dns01.UnFqdn(authZone), subDomain, info.Value, d.config.TTL)
+	_, err = d.client.AddVerificationRecord(ctx, dns01.UnFqdn(authZone), subDomain, info.Value)
 	if err != nil {
-		return err
+		return fmt.Errorf("gandiv5: add verification record: %w", err)
 	}
 
 	// save data necessary for CleanUp
@@ -187,10 +181,25 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	authZone := d.inProgressFQDNs[info.EffectiveFQDN].authZone
 	delete(d.inProgressFQDNs, info.EffectiveFQDN)
 
-	// delete TXT record from authZone
-	err := d.client.DeleteTXTRecord(ctx, dns01.UnFqdn(authZone), fieldName)
+	record, err := d.client.GetTXTRecord(ctx, dns01.UnFqdn(authZone), fieldName)
 	if err != nil {
-		return fmt.Errorf("gandiv5: %w", err)
+		return fmt.Errorf("gandiv5: get TXT record (clean): %w", err)
+	}
+
+	newRecord := removeTXTRecordValue(record, info.Value, d.config.TTL)
+
+	if len(newRecord.Values) == 0 {
+		err = d.client.DeleteTXTRecord(ctx, dns01.UnFqdn(authZone), fieldName)
+		if err != nil {
+			return fmt.Errorf("gandiv5: delete TXT record: %w", err)
+		}
+
+		return nil
+	}
+
+	err = d.client.OverwriteTXTRecord(ctx, dns01.UnFqdn(authZone), fieldName, newRecord)
+	if err != nil {
+		return fmt.Errorf("gandiv5: overwrite TXT record (clean): %w", err)
 	}
 
 	return nil
@@ -200,4 +209,18 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func removeTXTRecordValue(record *internal.Record, value string, ttl int) *internal.Record {
+	var values []string
+
+	for _, v := range record.Values {
+		if v != value || v != strconv.Quote(value) {
+			continue
+		}
+
+		values = append(values, v)
+	}
+
+	return &internal.Record{TTL: ttl, Values: values}
 }

@@ -1,0 +1,6 @@
+{
+  "object": "HTTPBadRequest",
+  "cause": "Bad Request",
+  "code": 400,
+  "message": "The server could not comply with the request since it is either malformed or otherwise incorrect."
+}

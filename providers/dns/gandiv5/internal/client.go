@@ -40,24 +40,30 @@ func NewClient(apiKey, pat string) *Client {
 	}
 }
 
-func (c *Client) AddTXTRecord(ctx context.Context, domain, name, value string, ttl int) error {
-	// Get exiting values for the TXT records
-	// Needed to create challenges for both wildcard and base name domains
-	txtRecord, err := c.getTXTRecord(ctx, domain, name)
+// AddVerificationRecord adds a verification record.
+// https://api.gandi.net/docs/livedns/#post-v5-livedns-domains-fqdn-verification-rrset_name-rrset_type
+func (c *Client) AddVerificationRecord(ctx context.Context, domain, name, value string) (*Record, error) {
+	endpoint := c.BaseURL.JoinPath("domains", domain, "verification", name, "TXT")
+
+	newRecord := &Record{Values: []string{value}}
+
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, newRecord)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	values := []string{value}
-	if len(txtRecord.RRSetValues) > 0 {
-		values = append(values, txtRecord.RRSetValues...)
+	result := new(Record)
+
+	err = c.do(req, result)
+	if err != nil {
+		return nil, err
 	}
 
-	newRecord := &Record{RRSetTTL: ttl, RRSetValues: values}
-
-	return c.addTXTRecord(ctx, domain, name, newRecord)
+	return result, nil
 }
 
+// DeleteTXTRecord deletes a TXT record.
+// https://api.gandi.net/docs/livedns/#delete-v5-livedns-domains-fqdn-records-rrset_name-rrset_type
 func (c *Client) DeleteTXTRecord(ctx context.Context, domain, name string) error {
 	endpoint := c.BaseURL.JoinPath("domains", domain, "records", name, "TXT")
 
@@ -70,13 +76,15 @@ func (c *Client) DeleteTXTRecord(ctx context.Context, domain, name string) error
 
 	err = c.do(req, &result)
 	if err != nil {
-		return fmt.Errorf("unable to delete TXT record for domain %s and name %s: %w", domain, name, err)
+		return err
 	}
 
 	return nil
 }
 
-func (c *Client) getTXTRecord(ctx context.Context, domain, name string) (*Record, error) {
+// GetTXTRecord gets a record set.
+// https://api.gandi.net/docs/livedns/#get-v5-livedns-domains-fqdn-records-rrset_name-rrset_type
+func (c *Client) GetTXTRecord(ctx context.Context, domain, name string) (*Record, error) {
 	endpoint := c.BaseURL.JoinPath("domains", domain, "records", name, "TXT")
 
 	// Get exiting values for the TXT records
@@ -90,13 +98,15 @@ func (c *Client) getTXTRecord(ctx context.Context, domain, name string) (*Record
 
 	err = c.do(req, result)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get TXT records for domain %s and name %s: %w", domain, name, err)
+		return nil, err
 	}
 
 	return result, nil
 }
 
-func (c *Client) addTXTRecord(ctx context.Context, domain, name string, newRecord *Record) error {
+// OverwriteTXTRecord overwrites a single record.
+// https://api.gandi.net/docs/livedns/#put-v5-livedns-domains-fqdn-records-rrset_name-rrset_type
+func (c *Client) OverwriteTXTRecord(ctx context.Context, domain, name string, newRecord *Record) error {
 	endpoint := c.BaseURL.JoinPath("domains", domain, "records", name, "TXT")
 
 	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, newRecord)
@@ -108,7 +118,7 @@ func (c *Client) addTXTRecord(ctx context.Context, domain, name string, newRecor
 
 	err = c.do(req, &result)
 	if err != nil {
-		return fmt.Errorf("unable to create TXT record for domain %s and name %s: %w", domain, name, err)
+		return err
 	}
 
 	return nil
@@ -193,12 +203,16 @@ func checkResponse(req *http.Request, resp *http.Response) error {
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
-	var response apiResponse
+	errAPI := new(APIError)
 
-	err := json.Unmarshal(raw, &response)
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
 		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return fmt.Errorf("%d: request failed: %s", resp.StatusCode, response.Message)
+	if errAPI.Code == 0 {
+		errAPI.Code = resp.StatusCode
+	}
+
+	return errAPI
 }

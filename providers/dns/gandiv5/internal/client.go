@@ -58,6 +58,8 @@ func (c *Client) AddTXTRecord(ctx context.Context, domain, name, value string, t
 	return c.addTXTRecord(ctx, domain, name, newRecord)
 }
 
+// DeleteTXTRecord deletes a TXT record.
+// https://api.gandi.net/docs/livedns/#delete-v5-livedns-domains-fqdn-records-rrset_name-rrset_type
 func (c *Client) DeleteTXTRecord(ctx context.Context, domain, name string) error {
 	endpoint := c.BaseURL.JoinPath("domains", domain, "records", name, "TXT")
 
@@ -76,6 +78,8 @@ func (c *Client) DeleteTXTRecord(ctx context.Context, domain, name string) error
 	return nil
 }
 
+// getTXTRecord gets a record set.
+// https://api.gandi.net/docs/livedns/#get-v5-livedns-domains-fqdn-records-rrset_name-rrset_type
 func (c *Client) getTXTRecord(ctx context.Context, domain, name string) (*Record, error) {
 	endpoint := c.BaseURL.JoinPath("domains", domain, "records", name, "TXT")
 
@@ -96,6 +100,8 @@ func (c *Client) getTXTRecord(ctx context.Context, domain, name string) (*Record
 	return result, nil
 }
 
+// addTXTRecord overwrites a single record.
+// https://api.gandi.net/docs/livedns/#put-v5-livedns-domains-fqdn-records-rrset_name-rrset_type
 func (c *Client) addTXTRecord(ctx context.Context, domain, name string, newRecord *Record) error {
 	endpoint := c.BaseURL.JoinPath("domains", domain, "records", name, "TXT")
 

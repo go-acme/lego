@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -43,6 +44,46 @@ func TestClient_AddTXTRecord(t *testing.T) {
 		Build(t)
 
 	err := client.AddTXTRecord(t.Context(), "example.com", "_acme-challenge", "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY", 300)
+	require.NoError(t, err)
+}
+
+func TestClient_getTXTRecord(t *testing.T) {
+	client := mockBuilder("secret-apikey", "").
+		Route("GET /domains/example.com/records/_acme-challenge/TXT",
+			servermock.ResponseFromFixture("get_txt_record.json"),
+		).
+		Build(t)
+
+	result, err := client.getTXTRecord(t.Context(), "example.com", "_acme-challenge")
+	require.NoError(t, err)
+
+	expected := &Record{
+		TTL:    300,
+		Values: []string{"value1"},
+		Name:   "_acme-challenge",
+		Type:   "TXT",
+	}
+
+	assert.Equal(t, expected, result)
+}
+
+func TestClient_overwriteTXTRecord(t *testing.T) {
+	client := mockBuilder("secret-apikey", "").
+		Route("PUT /domains/example.com/records/_acme-challenge/TXT",
+			servermock.ResponseFromFixture("api_response.json"),
+			servermock.CheckRequestJSONBodyFromFixture("put_txt_record-request.json"),
+		).
+		Build(t)
+
+	record := &Record{
+		TTL: 300,
+		Values: []string{
+			"ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
+			"value1",
+		},
+	}
+
+	err := client.overwriteTXTRecord(t.Context(), "example.com", "_acme-challenge", record)
 	require.NoError(t, err)
 }
 

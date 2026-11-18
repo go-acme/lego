@@ -55,7 +55,7 @@ func (c *Client) AddTXTRecord(ctx context.Context, domain, name, value string, t
 
 	newRecord := &Record{TTL: ttl, Values: values}
 
-	return c.addTXTRecord(ctx, domain, name, newRecord)
+	return c.overwriteTXTRecord(ctx, domain, name, newRecord)
 }
 
 // DeleteTXTRecord deletes a TXT record.
@@ -100,9 +100,9 @@ func (c *Client) getTXTRecord(ctx context.Context, domain, name string) (*Record
 	return result, nil
 }
 
-// addTXTRecord overwrites a single record.
+// overwriteTXTRecord overwrites a single record.
 // https://api.gandi.net/docs/livedns/#put-v5-livedns-domains-fqdn-records-rrset_name-rrset_type
-func (c *Client) addTXTRecord(ctx context.Context, domain, name string, newRecord *Record) error {
+func (c *Client) overwriteTXTRecord(ctx context.Context, domain, name string, newRecord *Record) error {
 	endpoint := c.BaseURL.JoinPath("domains", domain, "records", name, "TXT")
 
 	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, newRecord)

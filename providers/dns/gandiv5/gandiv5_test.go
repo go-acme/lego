@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-acme/lego/v5/internal/tester"
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -48,7 +47,6 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
-				require.NotNil(t, p.inProgressFQDNs)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -83,7 +81,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
-				require.NotNil(t, p.inProgressFQDNs)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -122,15 +119,6 @@ func TestDNSProvider_Present(t *testing.T) {
 
 	err := provider.Present(t.Context(), "abc.def.example.com", "abc", "123d==")
 	require.NoError(t, err)
-
-	expected := map[string]inProgressInfo{
-		"_acme-challenge.abc.def.example.com.": {
-			fieldName: "_acme-challenge.abc.def",
-			authZone:  "example.com.",
-		},
-	}
-
-	assert.Equal(t, expected, provider.inProgressFQDNs)
 }
 
 func TestDNSProvider_CleanUp_delete(t *testing.T) {
@@ -145,15 +133,8 @@ func TestDNSProvider_CleanUp_delete(t *testing.T) {
 		).
 		Build(t)
 
-	provider.inProgressFQDNs["_acme-challenge.abc.def.example.com."] = inProgressInfo{
-		fieldName: "_acme-challenge.abc.def",
-		authZone:  "example.com.",
-	}
-
 	err := provider.CleanUp(t.Context(), "abc.def.example.com", "abc", "123d==")
 	require.NoError(t, err)
-
-	assert.Empty(t, provider.inProgressFQDNs)
 }
 
 func TestDNSProvider_CleanUp_update(t *testing.T) {
@@ -167,13 +148,6 @@ func TestDNSProvider_CleanUp_update(t *testing.T) {
 		).
 		Build(t)
 
-	provider.inProgressFQDNs["_acme-challenge.abc.def.example.com."] = inProgressInfo{
-		fieldName: "_acme-challenge.abc.def",
-		authZone:  "example.com.",
-	}
-
 	err := provider.CleanUp(t.Context(), "abc.def.example.com", "abc", "123d==")
 	require.NoError(t, err)
-
-	assert.Empty(t, provider.inProgressFQDNs)
 }

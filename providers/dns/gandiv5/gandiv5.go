@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v5/challenge"
@@ -35,12 +34,6 @@ const (
 const minTTL = 300
 
 var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
-
-// inProgressInfo contains information about an in-progress challenge.
-type inProgressInfo struct {
-	fieldName string
-	authZone  string
-}
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
@@ -69,9 +62,6 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config *Config
 	client *internal.Client
-
-	inProgressFQDNs map[string]inProgressInfo
-	inProgressMu    sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Gandi.
@@ -123,9 +113,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client.HTTPClient = clientdebug.Wrap(client.HTTPClient)
 
 	return &DNSProvider{
-		config:          config,
-		client:          client,
-		inProgressFQDNs: make(map[string]inProgressInfo),
+		config: config,
+		client: client,
 	}, nil
 }
 
@@ -133,32 +122,19 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	// find authZone
 	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("gandiv5: could not find zone for domain %q: %w", domain, err)
 	}
 
-	// determine name of TXT record
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("gandiv5: %w", err)
 	}
 
-	// acquire lock and check there is not a challenge already in
-	// progress for this value of authZone
-	d.inProgressMu.Lock()
-	defer d.inProgressMu.Unlock()
-
 	_, err = d.client.AddVerificationRecord(ctx, dns01.UnFqdn(authZone), subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("gandiv5: add verification record: %w", err)
-	}
-
-	// save data necessary for CleanUp
-	d.inProgressFQDNs[info.EffectiveFQDN] = inProgressInfo{
-		authZone:  authZone,
-		fieldName: subDomain,
 	}
 
 	return nil
@@ -168,20 +144,17 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(ctx, domain, keyAuth)
 
-	// acquire lock and retrieve authZone
-	d.inProgressMu.Lock()
-	defer d.inProgressMu.Unlock()
-
-	if _, ok := d.inProgressFQDNs[info.EffectiveFQDN]; !ok {
-		// if there is no cleanup information then just return
-		return nil
+	authZone, err := dns01.DefaultClient().FindZoneByFqdn(ctx, info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("gandiv5: could not find zone for domain %q: %w", domain, err)
 	}
 
-	fieldName := d.inProgressFQDNs[info.EffectiveFQDN].fieldName
-	authZone := d.inProgressFQDNs[info.EffectiveFQDN].authZone
-	delete(d.inProgressFQDNs, info.EffectiveFQDN)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	if err != nil {
+		return fmt.Errorf("gandiv5: %w", err)
+	}
 
-	record, err := d.client.GetTXTRecord(ctx, dns01.UnFqdn(authZone), fieldName)
+	record, err := d.client.GetTXTRecord(ctx, dns01.UnFqdn(authZone), subDomain)
 	if err != nil {
 		return fmt.Errorf("gandiv5: get TXT record (clean): %w", err)
 	}
@@ -189,7 +162,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	newRecord := removeTXTRecordValue(record, info.Value, d.config.TTL)
 
 	if len(newRecord.Values) == 0 {
-		err = d.client.DeleteTXTRecord(ctx, dns01.UnFqdn(authZone), fieldName)
+		err = d.client.DeleteTXTRecord(ctx, dns01.UnFqdn(authZone), subDomain)
 		if err != nil {
 			return fmt.Errorf("gandiv5: delete TXT record: %w", err)
 		}
@@ -197,7 +170,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 		return nil
 	}
 
-	err = d.client.OverwriteTXTRecord(ctx, dns01.UnFqdn(authZone), fieldName, newRecord)
+	err = d.client.OverwriteTXTRecord(ctx, dns01.UnFqdn(authZone), subDomain, newRecord)
 	if err != nil {
 		return fmt.Errorf("gandiv5: overwrite TXT record (clean): %w", err)
 	}

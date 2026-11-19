@@ -148,7 +148,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	records, err := d.client.GetHosts(ctx, pr.sld, pr.tld)
 	if err != nil {
-		return fmt.Errorf("namecheap: %w", err)
+		return fmt.Errorf("namecheap: get hosts: %w", err)
 	}
 
 	record := internal.Record{
@@ -167,7 +167,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	err = d.client.SetHosts(ctx, pr.sld, pr.tld, records)
 	if err != nil {
-		return fmt.Errorf("namecheap: %w", err)
+		return fmt.Errorf("namecheap: set hosts: %w", err)
 	}
 
 	return nil
@@ -183,7 +183,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 
 	records, err := d.client.GetHosts(ctx, pr.sld, pr.tld)
 	if err != nil {
-		return fmt.Errorf("namecheap: %w", err)
+		return fmt.Errorf("namecheap: get hosts: %w", err)
 	}
 
 	// Find the challenge TXT record and remove it if found.
@@ -193,7 +193,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 	)
 
 	for _, h := range records {
-		if h.Name == pr.key && h.Type == "TXT" {
+		if h.Name == pr.key && h.Type == "TXT" && h.Address == pr.keyValue {
 			found = true
 		} else {
 			newRecords = append(newRecords, h)
@@ -206,7 +206,7 @@ func (d *DNSProvider) CleanUp(ctx context.Context, domain, token, keyAuth string
 
 	err = d.client.SetHosts(ctx, pr.sld, pr.tld, newRecords)
 	if err != nil {
-		return fmt.Errorf("namecheap: %w", err)
+		return fmt.Errorf("namecheap: set hosts: %w", err)
 	}
 
 	return nil

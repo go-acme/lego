@@ -39,7 +39,7 @@ var testCases = []testCase{
 	{
 		name:             "Test:Error:BadApiKey:1",
 		domain:           "test.example.com",
-		errString:        "API Key is invalid or API access has not been enabled [1011102]",
+		errString:        "namecheap: get hosts: API Key is invalid or API access has not been enabled [1011102]",
 		getHostsResponse: "getHosts_errorBadAPIKey1.xml",
 	},
 }
@@ -76,7 +76,7 @@ func TestDNSProvider_Present(t *testing.T) {
 
 			err := provider.Present(t.Context(), test.domain, "", "dummyKey")
 			if test.errString != "" {
-				assert.EqualError(t, err, "namecheap: "+test.errString)
+				assert.EqualError(t, err, test.errString)
 			} else {
 				assert.NoError(t, err)
 			}
@@ -116,7 +116,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 			err := provider.CleanUp(t.Context(), test.domain, "", "dummyKey")
 			if test.errString != "" {
-				assert.EqualError(t, err, "namecheap: "+test.errString)
+				assert.EqualError(t, err, test.errString)
 			} else {
 				assert.NoError(t, err)
 			}

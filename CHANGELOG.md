@@ -6,6 +6,39 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v5.7.0
+
+- Release date: 2026-11-21
+- Tag: [v5.7.0](https://github.com/go-acme/lego/releases/tag/v5.7.0)
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Com Laude
+- **[dnsprovider]** Add DNS provider for Domain Chief
+- **[dnsprovider]** Add DNS provider for DonDominio/MrDomain
+- **[dnsprovider]** Add DNS provider for EdgeCDN-X
+- **[dnsprovider]** Add DNS provider for Gyro
+- **[dnsprovider]** Add DNS provider for NameOcean
+- **[dnsprovider]** Add DNS provider for TotalUptime
+- **[lib]** feat: support ML-DSA
+
+### Changed
+
+- **[cli]** feat(cli): randomize the dynamic renewal period
+- **[dnsprovider]** gandiv5: use verification record endpoint
+- **[dnsprovider]** mythicbeasts: rewrite token management
+- **[dnsprovider]** namecheap: improve clean up value
+- **[dnsprovider]** openprovider: migrate from v1beta to v1
+- **[lib]** feat: improve ACME server errors management
+
+### Fixed
+
+- **[dnsprovider]** katapult: fix cleanup
+- **[dnsprovider]** netcupv1: fix subdomain parsing
+- **[dnsprovider]** versio: provider deprecation
+- **[httpprovider]** fix: malformed Forwarded header
+- **[lib]** fix: retries nonce based on number of calls
+
 ## v5.6.0
 
 - Release date: 2026-10-28

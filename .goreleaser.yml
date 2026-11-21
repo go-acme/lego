@@ -57,6 +57,9 @@ changelog:
   filters:
     exclude:
       - '(?i)^chore:'
+      - '(?i)^chore\([^:]+\):'
+      - '(?i)^refactor:'
+      - '(?i)^refactor\([^:]+\):'
       - '(?i)^Detach v[\d|.]+'
       - '(?i)^Prepare release v[\d|.]+'
 

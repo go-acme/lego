@@ -1,5 +1,9 @@
 {
-  "code": "missing_api_token",
-  "description": "string",
-  "detail": {}
+  "error": {
+    "code": "invalid_api_token",
+    "description": "The API token provided was not valid (it may not exist or have expired)",
+    "detail": {
+      "details": "Invalid API token secret"
+    }
+  }
 }

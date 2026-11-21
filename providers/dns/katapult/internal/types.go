@@ -3,19 +3,28 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 type APIError struct {
+	Data ErrorData `json:"error"`
+}
+
+func (a *APIError) Error() string {
+	return a.Data.String()
+}
+
+type ErrorData struct {
 	Code        string          `json:"code"`
 	Description string          `json:"description"`
 	Detail      json.RawMessage `json:"detail"`
 }
 
-func (a *APIError) Error() string {
+func (a *ErrorData) String() string {
 	msg := fmt.Sprintf("%s: %s", a.Code, a.Description)
 
 	if len(a.Detail) > 0 {
-		msg += ": " + string(a.Detail)
+		msg += ": " + strings.NewReplacer("\n", "", "\r", "").Replace(string(a.Detail))
 	}
 
 	return msg

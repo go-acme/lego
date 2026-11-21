@@ -1,5 +1,3 @@
 {
-  "dns_record": {
-    "id": "abc123"
-  }
+  "deleted": true
 }

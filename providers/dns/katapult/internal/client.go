@@ -40,7 +40,9 @@ func NewClient(apiKey string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) CreateTXTRecord(ctx context.Context, zone string, record RecordProperties) (*DNSRecordResponse, error) {
+// CreateRecord creates a record.
+// https://docs.katapult.io/docs/api/core/post-dns-zone-records
+func (c *Client) CreateRecord(ctx context.Context, zone string, record RecordProperties) (*DNSRecordResponse, error) {
 	endpoint := c.BaseURL.JoinPath("dns_zones", "dns_zone", "records")
 
 	crr := CreateRecordRequest{
@@ -63,8 +65,10 @@ func (c *Client) CreateTXTRecord(ctx context.Context, zone string, record Record
 	return result.DNSRecord, nil
 }
 
+// DeleteRecord deletes a record.
+// https://docs.katapult.io/docs/api/core/delete-dns-record
 func (c *Client) DeleteRecord(ctx context.Context, recordID string) error {
-	endpoint := c.BaseURL.JoinPath("dns_zones", "dns_record")
+	endpoint := c.BaseURL.JoinPath("dns_records", "dns_record")
 
 	payload := map[string]any{
 		"dns_record": map[string]any{

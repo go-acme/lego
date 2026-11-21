@@ -30,7 +30,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 	)
 }
 
-func TestClient_CreateTXTRecord(t *testing.T) {
+func TestClient_CreateRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /dns_zones/dns_zone/records",
 			servermock.ResponseFromFixture("create_record.json"),
@@ -49,7 +49,7 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 		},
 	}
 
-	response, err := client.CreateTXTRecord(t.Context(), "example.com", record)
+	response, err := client.CreateRecord(t.Context(), "example.com", record)
 	require.NoError(t, err)
 
 	expected := &DNSRecordResponse{
@@ -69,7 +69,7 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /dns_zones/dns_record",
+		Route("DELETE /dns_records/dns_record",
 			servermock.ResponseFromFixture("delete_record.json"),
 			servermock.CheckRequestJSONBodyFromFixture("delete_record-request.json"),
 		).
@@ -81,12 +81,12 @@ func TestClient_DeleteRecord(t *testing.T) {
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := mockBuilder().
-		Route("DELETE /dns_zones/dns_record",
+		Route("DELETE /dns_records/dns_record",
 			servermock.ResponseFromFixture("error.json").
 				WithStatusCode(http.StatusBadRequest),
 		).
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "abc123")
-	require.EqualError(t, err, "missing_api_token: string: {}")
+	require.EqualError(t, err, `invalid_api_token: The API token provided was not valid (it may not exist or have expired): {      "details": "Invalid API token secret"    }`)
 }

@@ -157,7 +157,7 @@ func TestDNSProvider_Present(t *testing.T) {
 
 func TestDNSProvider_CleanUp(t *testing.T) {
 	provider := mockBuilder().
-		Route("DELETE /dns_zones/dns_record",
+		Route("DELETE /dns_records/dns_record",
 			servermock.ResponseFromInternal("delete_record.json"),
 			servermock.CheckRequestJSONBodyFromInternal("delete_record-request.json"),
 		).

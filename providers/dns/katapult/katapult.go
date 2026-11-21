@@ -121,7 +121,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 		},
 	}
 
-	response, err := d.client.CreateTXTRecord(ctx, dns01.UnFqdn(authZone), record)
+	response, err := d.client.CreateRecord(ctx, dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("katapult: create record: %w", err)
 	}

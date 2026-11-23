@@ -134,6 +134,14 @@ type ExtendedOrder struct {
 
 	// The order URL, contains the value of the response header `Location`
 	Location string `json:"-"`
+
+	// Contains the value of the response header `Retry-After`.
+	//
+	// "processing": The certificate is being issued.  Send a POST-as-GET
+	// request after the time given in the Retry-After header field of
+	// the response, if any.
+	// https://www.rfc-editor.org/rfc/rfc8555.html#section-7.4.0
+	RetryAfter time.Duration `json:"-"`
 }
 
 // Order the ACME order Object.

@@ -93,8 +93,9 @@ func (o *OrderService) New(ctx context.Context, domains []string, opts *OrderOpt
 	}
 
 	return acme.ExtendedOrder{
-		Order:    order,
-		Location: sender.GetLocation(resp),
+		Order:      order,
+		Location:   sender.GetLocation(resp),
+		RetryAfter: sender.GetRetryAfter(resp),
 	}, nil
 }
 
@@ -106,12 +107,15 @@ func (o *OrderService) Get(ctx context.Context, orderURL string) (acme.ExtendedO
 
 	var order acme.Order
 
-	_, err := o.core.postAsGet(ctx, orderURL, &order)
+	resp, err := o.core.postAsGet(ctx, orderURL, &order)
 	if err != nil {
 		return acme.ExtendedOrder{}, err
 	}
 
-	return acme.ExtendedOrder{Order: order}, nil
+	return acme.ExtendedOrder{
+		Order:      order,
+		RetryAfter: sender.GetRetryAfter(resp),
+	}, nil
 }
 
 // UpdateForCSR Updates an order for a CSR.
@@ -122,7 +126,7 @@ func (o *OrderService) UpdateForCSR(ctx context.Context, orderURL string, csr []
 
 	var order acme.Order
 
-	_, err := o.core.post(ctx, orderURL, csrMsg, &order)
+	resp, err := o.core.post(ctx, orderURL, csrMsg, &order)
 	if err != nil {
 		return acme.ExtendedOrder{}, err
 	}
@@ -131,5 +135,8 @@ func (o *OrderService) UpdateForCSR(ctx context.Context, orderURL string, csr []
 		return acme.ExtendedOrder{}, fmt.Errorf("invalid order: %w", order.Err())
 	}
 
-	return acme.ExtendedOrder{Order: order}, nil
+	return acme.ExtendedOrder{
+		Order:      order,
+		RetryAfter: sender.GetRetryAfter(resp),
+	}, nil
 }

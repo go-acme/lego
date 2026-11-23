@@ -87,3 +87,21 @@ func TestFor_stop_with_error(t *testing.T) {
 		require.EqualValues(t, 1, io.Load())
 	})
 }
+
+func TestForNext(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		now := time.Now()
+
+		var io atomic.Int64
+
+		err := ForNext(3*time.Second, 1*time.Second, func() (bool, time.Duration, error) {
+			io.Add(1)
+
+			return false, 500 * time.Millisecond, nil
+		})
+
+		assert.Equal(t, 3*time.Second, time.Since(now))
+		require.EqualValues(t, 6, io.Load())
+		require.EqualError(t, err, "time limit exceeded")
+	})
+}

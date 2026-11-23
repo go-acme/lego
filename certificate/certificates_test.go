@@ -6,7 +6,9 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"net/http"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v5/acme"
 	"github.com/go-acme/lego/v5/acme/api"
@@ -174,7 +176,7 @@ Ob8VZRzI9neWagqNdwvYkQsEjgfbKbYK7p2CNTUQ
 -----END CERTIFICATE-----
 `
 
-func Test_checkResponse(t *testing.T) {
+func TestCertifier_checkResponse(t *testing.T) {
 	server := tester.MockACMEServer().
 		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
 		BuildHTTPS(t)
@@ -210,7 +212,7 @@ func Test_checkResponse(t *testing.T) {
 	assert.Equal(t, issuerMock, string(certRes.IssuerCertificate), "IssuerCertificate")
 }
 
-func Test_checkResponse_issuerRelUp(t *testing.T) {
+func TestCertifier_checkResponse_issuerRelUp(t *testing.T) {
 	server := tester.MockACMEServer().
 		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
 		BuildHTTPS(t)
@@ -246,7 +248,7 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 	assert.Equal(t, issuerMock, string(certRes.IssuerCertificate), "IssuerCertificate")
 }
 
-func Test_checkResponse_no_bundle(t *testing.T) {
+func TestCertifier_checkResponse_no_bundle(t *testing.T) {
 	server := tester.MockACMEServer().
 		Route("POST /certificate", servermock.RawStringResponse(certResponseMock)).
 		BuildHTTPS(t)
@@ -282,7 +284,7 @@ func Test_checkResponse_no_bundle(t *testing.T) {
 	assert.Equal(t, issuerMock, string(certRes.IssuerCertificate), "IssuerCertificate")
 }
 
-func Test_checkResponse_alternate(t *testing.T) {
+func TestCertifier_checkResponse_alternate(t *testing.T) {
 	server := tester.MockACMEServer().
 		Route("POST /certificate",
 			http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -329,7 +331,7 @@ func Test_checkResponse_alternate(t *testing.T) {
 	assert.Equal(t, issuerMock2, string(certRes.IssuerCertificate), "IssuerCertificate")
 }
 
-func Test_Get(t *testing.T) {
+func TestCertifier_Get(t *testing.T) {
 	server := tester.MockACMEServer().
 		Route("POST /acme/cert/test-cert", servermock.RawStringResponse(certResponseMock)).
 		BuildHTTPS(t)
@@ -399,6 +401,68 @@ func Test_checkOrderStatus(t *testing.T) {
 			assert.Equal(t, test.expected, status)
 		})
 	}
+}
+
+func TestCertifier_getForCSR_orderProcessingRetryAfter(t *testing.T) {
+	start := time.Now()
+
+	var counter atomic.Int32
+
+	server := tester.MockACMEServer().
+		Route("POST /finalize",
+			http.HandlerFunc(
+				func(rw http.ResponseWriter, req *http.Request) {
+					counter.Add(1)
+
+					rw.Header().Set("Retry-After", "1")
+
+					servermock.JSONEncode(acme.Order{Status: acme.StatusProcessing}).ServeHTTP(rw, req)
+				}),
+		).
+		Route("POST /order", http.HandlerFunc(
+			func(rw http.ResponseWriter, req *http.Request) {
+				counter.Add(1)
+
+				var order acme.Order
+
+				if counter.Load() < 3 {
+					order.Status = acme.StatusProcessing
+
+					rw.Header().Set("Retry-After", "1")
+				} else {
+					order.Status = acme.StatusValid
+					order.Certificate = fmt.Sprintf("https://%s/certificate", req.Host)
+				}
+
+				servermock.JSONEncode(order).ServeHTTP(rw, req)
+			}),
+		).
+		Route("POST /certificate",
+			servermock.RawStringResponse(certResponseMock),
+		).
+		BuildHTTPS(t)
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+
+	core, err := api.New(server.Client(), "lego-test", server.URL+"/dir", "", key)
+	require.NoError(t, err)
+
+	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{Timeout: 30 * time.Second})
+
+	order := acme.ExtendedOrder{
+		Order: acme.Order{
+			Finalize: server.URL + "/finalize",
+		},
+		Location: server.URL + "/order",
+	}
+
+	_, err = certifier.getForCSR(t.Context(), &Resource{}, order, []byte("test-csr"), false, "")
+	require.NoError(t, err)
+
+	assert.Equal(t, 3, int(counter.Load()))
+
+	assert.GreaterOrEqual(t, time.Since(start), 2*time.Second)
 }
 
 type resolverMock struct {

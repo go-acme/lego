@@ -424,18 +424,22 @@ func (c *Certifier) getForCSR(ctx context.Context, certRes *Resource, order acme
 		log.DomainsAttr(certRes.Domains),
 	)
 
-	err = wait.For(timeout, interval, func() (bool, error) {
+	if respOrder.RetryAfter > 0 {
+		time.Sleep(respOrder.RetryAfter)
+	}
+
+	err = wait.ForNext(timeout, interval, func() (bool, time.Duration, error) {
 		ord, errW := c.core.Orders.Get(ctx, order.Location)
 		if errW != nil {
-			return false, errW
+			return false, 0, errW
 		}
 
 		done, errW := c.checkResponse(ctx, certRes, ord, bundle, preferredChain)
 		if errW != nil {
-			return false, errW
+			return false, ord.RetryAfter, errW
 		}
 
-		return done, nil
+		return done, ord.RetryAfter, nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("acme: %w", err)

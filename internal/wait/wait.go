@@ -1,6 +1,7 @@
 package wait
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -39,6 +40,39 @@ func For(timeout, interval time.Duration, f func() (bool, error)) error {
 		}
 
 		time.Sleep(interval)
+	}
+}
+
+// ForNext polls the given function 'f', once every 'interval', up to 'timeout'.
+// The internal is modified with the duration returned by 'f'.
+func ForNext(timeout, interval time.Duration, f func() (bool, time.Duration, error)) error {
+	var lastErr error
+
+	timeUp := time.After(timeout)
+
+	for {
+		select {
+		case <-timeUp:
+			if lastErr == nil {
+				return errors.New("time limit exceeded")
+			}
+
+			return fmt.Errorf("time limit exceeded: last error: %w", lastErr)
+		default:
+		}
+
+		stop, next, err := f()
+		if stop {
+			return err
+		}
+
+		if err != nil {
+			log.Debug("Waiting for condition failed.", log.ErrorAttr(err))
+
+			lastErr = err
+		}
+
+		time.Sleep(cmp.Or(next, interval))
 	}
 }
 

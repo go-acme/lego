@@ -47,7 +47,7 @@ func TestAccountsStorage_Save(t *testing.T) {
 		Registration: &acme.ExtendedAccount{
 			Account: acme.Account{
 				Status:                 "valid",
-				Contact:                []string{"contact@example.com"},
+				Contact:                []string{"mailto:contact@example.com"},
 				TermsOfServiceAgreed:   true,
 				Orders:                 "https://ame.example.com/orders/123456",
 				OnlyReturnExisting:     true,

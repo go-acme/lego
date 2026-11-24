@@ -85,7 +85,7 @@ func (r *Registrar) RegisterWithExternalAccountBinding(ctx context.Context, opti
 	if err != nil {
 		// seems impossible
 		pdErr, ok := errors.AsType[*acme.ProblemDetails](err)
-		if !ok || pdErr.HTTPStatus == http.StatusConflict {
+		if !ok || pdErr.HTTPStatus != http.StatusConflict {
 			return nil, err
 		}
 	}

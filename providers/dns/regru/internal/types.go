@@ -14,12 +14,12 @@ type APIResponse struct {
 	ErrorText string `json:"error_text,omitempty"`
 }
 
-func (a APIResponse) Error() string {
+func (a *APIResponse) Error() string {
 	return fmt.Sprintf("API %s: %s: %s", a.Result, a.ErrorCode, a.ErrorText)
 }
 
 // HasError returns an error is the response contains an error.
-func (a APIResponse) HasError() error {
+func (a *APIResponse) HasError() error {
 	if a.Result != successResult {
 		return a
 	}

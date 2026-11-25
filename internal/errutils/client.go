@@ -22,7 +22,7 @@ func NewHTTPDoError(req *http.Request, err error) *HTTPDoError {
 	return &HTTPDoError{req: req, err: err}
 }
 
-func (h HTTPDoError) Error() string {
+func (h *HTTPDoError) Error() string {
 	msg := "unable to communicate with the API server:"
 
 	if ok, _ := strconv.ParseBool(os.Getenv(legoDebugClientVerboseError)); ok {
@@ -36,7 +36,7 @@ func (h HTTPDoError) Error() string {
 	return msg + fmt.Sprintf(" error: %v", h.err)
 }
 
-func (h HTTPDoError) Unwrap() error {
+func (h *HTTPDoError) Unwrap() error {
 	return h.err
 }
 
@@ -122,7 +122,7 @@ func NewUnexpectedResponseStatusCodeError(req *http.Request, resp *http.Response
 	return &UnexpectedStatusCodeError{req: req, StatusCode: resp.StatusCode, Body: bytes.TrimSpace(raw)}
 }
 
-func (u UnexpectedStatusCodeError) Error() string {
+func (u *UnexpectedStatusCodeError) Error() string {
 	msg := "unexpected status code:"
 
 	if ok, _ := strconv.ParseBool(os.Getenv(legoDebugClientVerboseError)); ok {

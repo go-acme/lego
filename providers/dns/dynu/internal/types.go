@@ -9,7 +9,7 @@ type APIException struct {
 	Type       string `json:"type,omitempty"`
 }
 
-func (a APIException) Error() string {
+func (a *APIException) Error() string {
 	return fmt.Sprintf("%d: %s: %s", a.StatusCode, a.Type, a.Message)
 }
 

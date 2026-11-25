@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -21,13 +22,20 @@ type ErrorData struct {
 }
 
 func (a *ErrorData) String() string {
-	msg := fmt.Sprintf("%s: %s", a.Code, a.Description)
+	msg := new(bytes.Buffer)
+
+	_, _ = fmt.Fprintf(msg, "%s: %s", a.Code, a.Description)
 
 	if len(a.Detail) > 0 {
-		msg += ": " + strings.NewReplacer("\n", "", "\r", "").Replace(string(a.Detail))
+		msg.WriteString(": ")
+
+		err := json.Compact(msg, a.Detail)
+		if err != nil {
+			msg.WriteString(strings.NewReplacer("\n", "", "\r", "").Replace(string(a.Detail)))
+		}
 	}
 
-	return msg
+	return msg.String()
 }
 
 type CreateRecordRequest struct {

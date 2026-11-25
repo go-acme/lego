@@ -83,9 +83,9 @@ func (c *Client) AddNewRecord(ctx context.Context, domainID int64, record DNSRec
 func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int64) error {
 	endpoint := c.baseURL.JoinPath("dns", strconv.FormatInt(domainID, 10), "record", strconv.FormatInt(recordID, 10))
 
-	var apiResp APIException
+	apiResp := new(APIException)
 
-	err := c.doRetry(ctx, http.MethodDelete, endpoint.String(), nil, &apiResp)
+	err := c.doRetry(ctx, http.MethodDelete, endpoint.String(), nil, apiResp)
 	if err != nil {
 		return err
 	}

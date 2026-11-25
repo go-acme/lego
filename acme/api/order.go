@@ -19,7 +19,7 @@ type OrderOptions struct {
 
 	// A string uniquely identifying the profile
 	// which will be used to affect issuance of the certificate requested by this Order.
-	// - https://www.ietf.org/archive/id/draft-ietf-acme-profiles-01.html#name-extensions-to-the-order-res
+	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-profiles-03#name-extensions-to-the-order-res
 	Profile string
 
 	// A string uniquely identifying a previously-issued certificate which this

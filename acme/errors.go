@@ -12,7 +12,7 @@ const (
 	errNS = "urn:ietf:params:acme:error:"
 
 	// InvalidProfileErrorType The request specified a profile.
-	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-profiles-01#name-acme-error-types
+	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-profiles-03#name-extensions-to-the-directory
 	InvalidProfileErrorType = errNS + "invalidProfile"
 
 	// AlreadyReplacedErrorType The request specified a predecessor certificate that has already been marked as replaced

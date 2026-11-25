@@ -32,8 +32,8 @@ func (a APIResponse[T]) GetError() error {
 
 // APIError is an API error.
 type APIError struct {
-	Code    int
-	Message string
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
 func (a *APIError) Error() string {

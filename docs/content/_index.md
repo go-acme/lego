@@ -49,7 +49,7 @@ Supported by default.
 | [RFC 8737](https://www.rfc-editor.org/rfc/rfc8737.html)                                         | TLS Application‑Layer Protocol Negotiation (ALPN) Challenge Extension.    |
 | [RFC 8738](https://www.rfc-editor.org/rfc/rfc8738.html)                                         | IP Identifier Validation Extension. Issues certificates for IP addresses. |
 | [RFC 9773](https://www.rfc-editor.org/rfc/rfc9773.html)                                         | Renewal Information (ARI) Extension.                                      |
-| [draft-ietf-acme-profiles-01](https://datatracker.ietf.org/doc/draft-ietf-acme-profiles/)       | Profiles Extension.                                                       |
+| [draft-ietf-acme-profiles-03](https://datatracker.ietf.org/doc/draft-ietf-acme-profiles/)       | Profiles Extension.                                                       |
 | [draft-ietf-acme-dns-persist-01](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/) | Challenge for Persistent DNS TXT Record Validation.                       |
 
 ## Supporting lego

@@ -20,6 +20,6 @@ type APIResponse struct {
 	Message string `json:"message"`
 }
 
-func (a APIResponse) Error() string {
+func (a *APIResponse) Error() string {
 	return fmt.Sprintf("%s: %s", a.Status, a.Message)
 }

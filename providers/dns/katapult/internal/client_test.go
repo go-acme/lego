@@ -88,5 +88,5 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 		Build(t)
 
 	err := client.DeleteRecord(t.Context(), "abc123")
-	require.EqualError(t, err, `invalid_api_token: The API token provided was not valid (it may not exist or have expired): {      "details": "Invalid API token secret"    }`)
+	require.EqualError(t, err, `invalid_api_token: The API token provided was not valid (it may not exist or have expired): {"details":"Invalid API token secret"}`)
 }

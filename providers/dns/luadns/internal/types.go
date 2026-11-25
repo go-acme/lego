@@ -8,7 +8,7 @@ type errorResponse struct {
 	Message   string `json:"message"`
 }
 
-func (e errorResponse) Error() string {
+func (e *errorResponse) Error() string {
 	return fmt.Sprintf("status=%s, message=%s", e.Status, e.Message)
 }
 

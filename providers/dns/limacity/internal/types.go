@@ -22,7 +22,7 @@ type APIResponse struct {
 	Details map[string][]string `json:"errors,omitempty"`
 }
 
-func (a APIResponse) Error() string {
+func (a *APIResponse) Error() string {
 	var details []string
 	for k, v := range a.Details {
 		details = append(details, fmt.Sprintf("%s: %s", k, v))

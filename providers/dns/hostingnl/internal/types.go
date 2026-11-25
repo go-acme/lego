@@ -19,7 +19,7 @@ type APIError struct {
 	Errors   Error  `json:"errors"`
 }
 
-func (e APIError) Error() string {
+func (e *APIError) Error() string {
 	if e.ErrorMsg != "" {
 		return e.ErrorMsg
 	}

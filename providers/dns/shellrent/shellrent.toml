@@ -1,5 +1,7 @@
-Name = "Shellrent"
-Description = ''''''
+Name = "Shellrent (DEPRECATED)"
+Description = """
+Deprecated: use `shellrentv3` instead.
+"""
 URL = "https://www.shellrent.com/"
 Code = "shellrent"
 Since = "v4.16.0"

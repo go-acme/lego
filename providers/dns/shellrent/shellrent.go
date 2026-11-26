@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/challenge/dns01"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/go-acme/lego/v5/platform/env"
 	"github.com/go-acme/lego/v5/providers/dns/internal/clientdebug"
 	"github.com/go-acme/lego/v5/providers/dns/shellrent/internal"
@@ -84,6 +85,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 // NewDNSProviderConfig return a DNSProvider instance configured for Shellrent.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	log.Warn("shellrent: this implementation is deprecated, please 'shellrentv3' instead.")
+
 	if config == nil {
 		return nil, errors.New("shellrent: the configuration of the DNS provider is nil")
 	}

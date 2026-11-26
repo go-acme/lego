@@ -1,0 +1,28 @@
+Name = "Shellrent v3"
+Description = ''''''
+URL = "https://www.shellrent.com/"
+Code = "shellrentv3"
+Since = "v5.8.0"
+
+Example = '''
+SHELLRENTV3_CLIENT_ID="xxxxxxxxxxxxxxxxxxxxx" \
+SHELLRENTV3_CLIENT_SECRET="yyyyyyyyyyyyyyyyyyyyy" \
+lego run --dns shellrentv3 -d '*.example.com' -d example.com
+'''
+
+Additional = '''
+The OAuth2 client requires the scopes: `purchases:read`, `domains:read` and `domains:write`.
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    SHELLRENTV3_CLIENT_ID = "OAuth2 client ID"
+    SHELLRENTV3_CLIENT_SECRET = "OAuth2 client secret"
+  [Configuration.Additional]
+    SHELLRENTV3_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    SHELLRENTV3_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    SHELLRENTV3_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://guide.shellrent.com/api"
+  APIAuth = "https://guide.shellrent.com/api/oauth-client"

@@ -1,0 +1,11 @@
+{
+  "error": 0,
+  "message": null,
+  "data": {
+    "record_id": "abc789",
+    "type": "TXT",
+    "host": "_acme-challenge",
+    "destination": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+  },
+  "meta": null
+}

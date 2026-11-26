@@ -1,0 +1,22 @@
+{
+  "error": 0,
+  "message": null,
+  "data": [
+    {
+      "purchase_id": 123,
+      "domain_id": 456,
+      "purchase_name": {
+        "name": "my-service",
+        "full_name": "my service example.com",
+        "object_name": "example.com"
+      }
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "count": 1,
+    "pages": 1,
+    "page": 1,
+    "per_page": 50
+  }
+}

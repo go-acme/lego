@@ -203,6 +203,7 @@ import (
 	"github.com/go-acme/lego/v5/providers/dns/selfhostdev2"
 	"github.com/go-acme/lego/v5/providers/dns/servercow"
 	"github.com/go-acme/lego/v5/providers/dns/shellrent"
+	"github.com/go-acme/lego/v5/providers/dns/shellrentv3"
 	"github.com/go-acme/lego/v5/providers/dns/simply"
 	"github.com/go-acme/lego/v5/providers/dns/sonic"
 	"github.com/go-acme/lego/v5/providers/dns/spaceship"
@@ -639,6 +640,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return servercow.NewDNSProvider()
 	case "shellrent":
 		return shellrent.NewDNSProvider()
+	case "shellrentv3":
+		return shellrentv3.NewDNSProvider()
 	case "simply":
 		return simply.NewDNSProvider()
 	case "sonic":
@@ -924,6 +927,7 @@ func GetProviderCodes() []string {
 		"selfhostdev2",
 		"servercow",
 		"shellrent",
+		"shellrentv3",
 		"simply",
 		"sonic",
 		"spaceship",

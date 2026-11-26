@@ -1,0 +1,11 @@
+{
+  "error": 1000,
+  "message": "Invalid request data: domain_prefix: is required; configuration.ram: must be <= 64",
+  "data": null,
+  "meta": {
+    "errors": {
+      "domain_prefix": ["is required"],
+      "configuration.ram": ["must be <= 64"]
+    }
+  }
+}

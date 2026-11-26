@@ -4168,7 +4168,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "shellrent":
 		// generated from: providers/dns/shellrent/shellrent.toml
-		ew.writeln(`Configuration for Shellrent.`)
+		ew.writeln(`Configuration for Shellrent (DEPRECATED).`)
 		ew.writeln(`Code:	'shellrent'`)
 		ew.writeln(`Since:	'v4.16.0'`)
 		ew.writeln()
@@ -4186,6 +4186,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/shellrent`)
+
+	case "shellrentv3":
+		// generated from: providers/dns/shellrentv3/shellrentv3.toml
+		ew.writeln(`Configuration for Shellrent v3.`)
+		ew.writeln(`Code:	'shellrentv3'`)
+		ew.writeln(`Since:	'v5.8.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SHELLRENTV3_CLIENT_ID":	OAuth2 client ID`)
+		ew.writeln(`	- "SHELLRENTV3_CLIENT_SECRET":	OAuth2 client secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SHELLRENTV3_HTTP_TIMEOUT":	API request timeout in seconds (Default: 30)`)
+		ew.writeln(`	- "SHELLRENTV3_POLLING_INTERVAL":	Time between DNS propagation check in seconds (Default: 2)`)
+		ew.writeln(`	- "SHELLRENTV3_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation in seconds (Default: 60)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/shellrentv3`)
 
 	case "simply":
 		// generated from: providers/dns/simply/simply.toml

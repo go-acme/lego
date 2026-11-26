@@ -1,5 +1,5 @@
 ---
-title: "Shellrent"
+title: "Shellrent (DEPRECATED)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: shellrent
@@ -13,8 +13,8 @@ dnsprovider:
 <!-- providers/dns/shellrent/shellrent.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Deprecated: use `shellrentv3` instead.
 
-Configuration for [Shellrent](https://www.shellrent.com/).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Configuration for [Shellrent](https://www.shellrent.com/).
 - Since: v4.16.0
 
 
-Here is an example bash command using the Shellrent provider:
+Here is an example bash command using the Shellrent (DEPRECATED) provider:
 
 ```bash
 SHELLRENT_USERNAME=xxxx \

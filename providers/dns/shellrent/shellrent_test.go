@@ -1,10 +1,14 @@
 package shellrent
 
 import (
+	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v5/internal/tester"
+	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -140,4 +144,64 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(t.Context(), envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+}
+
+func mockBuilder() *servermock.Builder[*DNSProvider] {
+	return servermock.NewBuilder(
+		func(server *httptest.Server) (*DNSProvider, error) {
+			config := NewDefaultConfig()
+			config.Username = "user"
+			config.Token = "secret"
+			config.HTTPClient = server.Client()
+
+			p, err := NewDNSProviderConfig(config)
+			if err != nil {
+				return nil, err
+			}
+
+			p.client.BaseURL, _ = url.Parse(server.URL)
+
+			return p, nil
+		},
+		servermock.CheckHeader().
+			WithJSONHeaders().
+			WithAuthorization("user.secret"),
+	)
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider := mockBuilder().
+		Route("GET /purchase",
+			servermock.ResponseFromInternal("purchase.json"),
+		).
+		Route("GET /purchase/details/2018",
+			servermock.ResponseFromInternal("purchase-details.json"),
+		).
+		Route("GET /domain/details/456",
+			servermock.ResponseFromInternal("domain-details.json"),
+		).
+		Route("POST /dns_record/store/123",
+			servermock.ResponseFromInternal("dns_record-store.json"),
+		).
+		Build(t)
+
+	err := provider.Present(t.Context(), "example.com", "abc", "123d==")
+	require.NoError(t, err)
+
+	assert.Equal(t, map[string]reqKey{"abc": {domainID: 123, recordID: 2255674}}, provider.recordIDs)
+}
+
+func TestDNSProvider_CleanUp(t *testing.T) {
+	provider := mockBuilder().
+		Route("DELETE /dns_record/remove/123/2255674",
+			servermock.ResponseFromInternal("dns_record-remove.json"),
+		).
+		Build(t)
+
+	provider.recordIDs["abc"] = reqKey{domainID: 123, recordID: 2255674}
+
+	err := provider.CleanUp(t.Context(), "example.com", "abc", "123d==")
+	require.NoError(t, err)
+
+	assert.Empty(t, provider.recordIDs)
 }

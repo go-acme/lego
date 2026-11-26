@@ -6,7 +6,7 @@ type AddRecordResponse struct {
 	} `json:"data"`
 	Meta struct {
 		Location string `json:"location"`
-	}
+	} `json:"meta"`
 }
 
 type Record struct {

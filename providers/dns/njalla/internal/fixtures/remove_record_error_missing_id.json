@@ -1,6 +1,6 @@
 {
   "jsonrpc": "2.0",
-  "Error": {
+  "error": {
     "code": 400,
     "message": "missing ID"
   }

@@ -3,7 +3,7 @@
     "id": 10,
     "type": "TXT",
     "name": "lego",
-    "Text": "content",
+    "text": "content",
     "ttl": 3600,
     "comment": "example"
   }

@@ -32,7 +32,7 @@ type Domain struct {
 	ID            string `json:"id"`
 	CreatedAt     int    `json:"createdAt"`
 	UpdatedAt     int    `json:"updatedAt"`
-	UserID        string `json:"userID"`
+	UserID        string `json:"userId"`
 	UserAccount   string `json:"userAccount"`
 	AssetID       string `json:"assetId"`
 	GroupID       string `json:"groupId"`

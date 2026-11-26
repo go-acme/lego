@@ -14,7 +14,7 @@ func (a *APIError) Error() string {
 type APIResponse[T any] struct {
 	Code int    `json:"code,omitempty"`
 	Desc string `json:"desc,omitempty"`
-	Data T
+	Data T      `json:"data,omitempty"`
 }
 
 type Login struct {

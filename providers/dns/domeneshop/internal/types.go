@@ -10,7 +10,7 @@ type Domain struct {
 	Registrant     string   `json:"registrant"`
 	Renew          bool     `json:"renew"`
 	Services       Service  `json:"services"`
-	Status         string
+	Status         string   `json:"status"`
 }
 
 type Service struct {

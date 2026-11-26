@@ -1,5 +1,5 @@
 {
-  "recordID": 789465,
+  "recordId": 789465,
   "name": "foo",
   "text": "_acme-challenge",
   "ttl": 60,

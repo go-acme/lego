@@ -76,17 +76,6 @@ func TestClient_GetRecords(t *testing.T) {
 	assert.Equal(t, expected, records)
 }
 
-func TestClient_GetRecords_error(t *testing.T) {
-	client := mockBuilder().
-		Route("POST /",
-			servermock.ResponseFromFixture("error.json"),
-		).
-		Build(t)
-
-	_, err := client.GetRecords(t.Context(), "example.com.")
-	require.EqualError(t, err, "(dns-rows-list) 2050: Authentication failure")
-}
-
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
@@ -148,6 +137,29 @@ func TestClient_Commit(t *testing.T) {
 
 	err := client.Commit(t.Context(), "example.com.")
 	require.NoError(t, err)
+}
+
+func TestClient_Ping(t *testing.T) {
+	client := mockBuilder().
+		Route("POST /",
+			servermock.ResponseFromFixture(CommandPing+".json"),
+			checkFormRequest(CommandPing+"_request.json"),
+		).
+		Build(t)
+
+	err := client.Ping(t.Context())
+	require.NoError(t, err)
+}
+
+func TestClient_Ping_error(t *testing.T) {
+	client := mockBuilder().
+		Route("POST /",
+			servermock.ResponseFromFixture("error.json"),
+		).
+		Build(t)
+
+	err := client.Ping(t.Context())
+	require.EqualError(t, err, "(dns-rows-list) 2050: Authentication failure")
 }
 
 func checkFormRequest(filename string) servermock.LinkFunc {

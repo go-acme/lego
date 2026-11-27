@@ -1,0 +1,7 @@
+{
+  "request": {
+    "user": "user",
+    "auth": "xxx",
+    "command": "ping"
+  }
+}

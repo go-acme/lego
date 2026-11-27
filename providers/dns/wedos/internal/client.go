@@ -120,6 +120,8 @@ func (c *Client) Commit(ctx context.Context, zone string) error {
 	return c.do(req, &ResponseEnvelope[json.RawMessage]{})
 }
 
+// Ping basic test request.
+// https://kb.wedos.global/wapi-manual/#ping
 func (c *Client) Ping(ctx context.Context) error {
 	req, err := c.newRequest(ctx, CommandPing, nil)
 	if err != nil {

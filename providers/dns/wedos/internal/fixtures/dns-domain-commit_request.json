@@ -1,0 +1,10 @@
+{
+  "request": {
+    "user": "user",
+    "auth": "xxx",
+    "command": "dns-domain-commit",
+    "data": {
+      "name": "example.com"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "request": {
+    "user": "user",
+    "auth": "xxx",
+    "command": "dns-row-add",
+    "data": {
+      "domain": "example.com",
+      "name": "foo",
+      "ttl": 1800,
+      "type": "TXT",
+      "rdata": "foobar"
+    }
+  }
+}

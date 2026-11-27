@@ -1,9 +1,13 @@
 package internal
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"regexp"
 	"testing"
 
@@ -30,7 +34,7 @@ func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
 			servermock.ResponseFromFixture(commandDNSRowsList+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-rows-list","data":{"domain":"example.com"}}}`),
+			checkFormRequest(commandDNSRowsList+"_request.json"),
 		).
 		Build(t)
 
@@ -74,7 +78,7 @@ func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
 			servermock.ResponseFromFixture(commandDNSRowAdd+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-add","data":{"domain":"example.com","name":"foo","ttl":1800,"type":"TXT","rdata":"foobar"}}}`),
+			checkFormRequest(commandDNSRowAdd+"_request.json"),
 		).
 		Build(t)
 
@@ -94,7 +98,7 @@ func TestClient_AddRecord_update(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
 			servermock.ResponseFromFixture(commandDNSRowUpdate+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-update","data":{"row_id":"1","domain":"example.com","ttl":1800,"type":"TXT","rdata":"foobar"}}}`),
+			checkFormRequest(commandDNSRowUpdate+"_request.json"),
 		).
 		Build(t)
 
@@ -114,7 +118,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
 			servermock.ResponseFromFixture(commandDNSRowDelete+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-delete","data":{"row_id":"1","domain":"example.com","rdata":""}}}`),
+			checkFormRequest(commandDNSRowDelete+"_request.json"),
 		).
 		Build(t)
 
@@ -126,7 +130,7 @@ func TestClient_Commit(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
 			servermock.ResponseFromFixture(commandDNSDomainCommit+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-domain-commit","data":{"name":"example.com"}}}`),
+			checkFormRequest(commandDNSDomainCommit+"_request.json"),
 		).
 		Build(t)
 
@@ -134,10 +138,24 @@ func TestClient_Commit(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func checkFormRequest(data string) servermock.LinkFunc {
+func checkFormRequest(filename string) servermock.LinkFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-			err := req.ParseForm()
+			file, err := os.ReadFile(filepath.Join("fixtures", filename))
+			if err != nil {
+				http.Error(rw, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			var expected bytes.Buffer
+
+			err = json.Compact(&expected, file)
+			if err != nil {
+				http.Error(rw, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			err = req.ParseForm()
 			if err != nil {
 				http.Error(rw, err.Error(), http.StatusBadRequest)
 				return
@@ -146,7 +164,7 @@ func checkFormRequest(data string) servermock.LinkFunc {
 			form := regexp.MustCompile(`"auth":"\w+",`).
 				ReplaceAllString(req.PostForm.Get("request"), `"auth":"xxx",`)
 
-			if form != data {
+			if form != expected.String() {
 				http.Error(rw, fmt.Sprintf("invalid form data: %s", req.PostForm.Get("request")), http.StatusBadRequest)
 				return
 			}

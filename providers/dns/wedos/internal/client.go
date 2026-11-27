@@ -21,7 +21,7 @@ type Client struct {
 	username string
 	password string
 
-	baseURL    string
+	BaseURL    string
 	HTTPClient *http.Client
 }
 
@@ -30,14 +30,14 @@ func NewClient(username, password string) *Client {
 	return &Client{
 		username:   username,
 		password:   password,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
 // GetRecords lists all the records in the zone.
 // https://kb.wedos.global/wapi-wdns/#dns-domains-list
-func (c *Client) GetRecords(ctx context.Context, zone string) ([]DNSRow, error) {
+func (c *Client) GetRecords(ctx context.Context, zone string) ([]Record, error) {
 	payload := map[string]any{
 		"domain": dns01.UnFqdn(zone),
 	}
@@ -47,21 +47,21 @@ func (c *Client) GetRecords(ctx context.Context, zone string) ([]DNSRow, error) 
 		return nil, err
 	}
 
-	var result APIResponse[Rows]
+	var result ResponseEnvelope[Rows]
 
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return result.Response.Data.Rows, err
+	return result.Response.Data.Records, err
 }
 
 // AddRecord adds a record in the zone, either by updating existing records or creating new ones.
 // https://kb.wedos.global/wapi-wdns/#dns-domain-add
 // https://kb.wedos.global/wapi-wdns/#dns-domain-update
-func (c *Client) AddRecord(ctx context.Context, zone string, record DNSRow) error {
-	payload := DNSRowRequest{
+func (c *Client) AddRecord(ctx context.Context, zone string, record Record) error {
+	payload := RecordRequest{
 		Domain: dns01.UnFqdn(zone),
 		TTL:    record.TTL,
 		Type:   record.Type,
@@ -82,14 +82,14 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record DNSRow) erro
 		return err
 	}
 
-	return c.do(req, &APIResponse[json.RawMessage]{})
+	return c.do(req, &ResponseEnvelope[json.RawMessage]{})
 }
 
 // DeleteRecord deletes a record from the zone.
 // If a record does not have an ID, it will be looked up.
 // https://kb.wedos.global/wapi-wdns/#dns-row-delete
 func (c *Client) DeleteRecord(ctx context.Context, zone, recordID string) error {
-	payload := DNSRowRequest{
+	payload := RecordRequest{
 		Domain: dns01.UnFqdn(zone),
 		ID:     recordID,
 	}
@@ -99,7 +99,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zone, recordID string) error 
 		return err
 	}
 
-	return c.do(req, &APIResponse[json.RawMessage]{})
+	return c.do(req, &ResponseEnvelope[json.RawMessage]{})
 }
 
 // Commit not really required, all changes will be auto-committed after 5 minutes.
@@ -114,7 +114,7 @@ func (c *Client) Commit(ctx context.Context, zone string) error {
 		return err
 	}
 
-	return c.do(req, &APIResponse[json.RawMessage]{})
+	return c.do(req, &ResponseEnvelope[json.RawMessage]{})
 }
 
 func (c *Client) Ping(ctx context.Context) error {
@@ -123,7 +123,7 @@ func (c *Client) Ping(ctx context.Context) error {
 		return err
 	}
 
-	return c.do(req, &APIResponse[json.RawMessage]{})
+	return c.do(req, &ResponseEnvelope[json.RawMessage]{})
 }
 
 func (c *Client) do(req *http.Request, result Response) error {
@@ -156,8 +156,8 @@ func (c *Client) do(req *http.Request, result Response) error {
 }
 
 func (c *Client) newRequest(ctx context.Context, command string, payload any) (*http.Request, error) {
-	requestObject := map[string]any{
-		"request": APIRequest{
+	requestObject := RequestEnvelope[any]{
+		Request: RequestPayload[any]{
 			User:    c.username,
 			Auth:    authToken(c.username, c.password),
 			Command: command,
@@ -173,7 +173,7 @@ func (c *Client) newRequest(ctx context.Context, command string, payload any) (*
 	form := url.Values{}
 	form.Add("request", string(object))
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL, strings.NewReader(form.Encode()))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.BaseURL, strings.NewReader(form.Encode()))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}

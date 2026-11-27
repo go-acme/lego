@@ -20,7 +20,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
-			client.baseURL = server.URL
+			client.BaseURL = server.URL
 			client.HTTPClient = server.Client()
 
 			return client, nil
@@ -43,7 +43,7 @@ func TestClient_GetRecords(t *testing.T) {
 
 	assert.Len(t, records, 4)
 
-	expected := []DNSRow{
+	expected := []Record{
 		{
 			ID:   "911",
 			TTL:  "1800",
@@ -82,7 +82,7 @@ func TestClient_AddRecord(t *testing.T) {
 		).
 		Build(t)
 
-	record := DNSRow{
+	record := Record{
 		ID:   "",
 		Name: "foo",
 		TTL:  "1800",
@@ -102,7 +102,7 @@ func TestClient_AddRecord_update(t *testing.T) {
 		).
 		Build(t)
 
-	record := DNSRow{
+	record := Record{
 		ID:   "1",
 		Name: "foo",
 		TTL:  "1800",

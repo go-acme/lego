@@ -62,7 +62,7 @@ More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## More information
 
-- [API documentation](https://kb.wedos.com/en/kategorie/wapi-api-interface/wdns-en/)
+- [API documentation](https://kb.wedos.global/wapi-wdns/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/wedos/wedos.toml -->

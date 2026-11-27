@@ -36,7 +36,7 @@ func NewClient(username, password string) *Client {
 }
 
 // GetRecords lists all the records in the zone.
-// https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-rows-list/
+// https://kb.wedos.global/wapi-wdns/#dns-domains-list
 func (c *Client) GetRecords(ctx context.Context, zone string) ([]DNSRow, error) {
 	payload := map[string]any{
 		"domain": dns01.UnFqdn(zone),
@@ -58,8 +58,8 @@ func (c *Client) GetRecords(ctx context.Context, zone string) ([]DNSRow, error) 
 }
 
 // AddRecord adds a record in the zone, either by updating existing records or creating new ones.
-// https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-add-row/
-// https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-row-update/
+// https://kb.wedos.global/wapi-wdns/#dns-domain-add
+// https://kb.wedos.global/wapi-wdns/#dns-domain-update
 func (c *Client) AddRecord(ctx context.Context, zone string, record DNSRow) error {
 	payload := DNSRowRequest{
 		Domain: dns01.UnFqdn(zone),
@@ -87,7 +87,7 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record DNSRow) erro
 
 // DeleteRecord deletes a record from the zone.
 // If a record does not have an ID, it will be looked up.
-// https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-row-delete/
+// https://kb.wedos.global/wapi-wdns/#dns-row-delete
 func (c *Client) DeleteRecord(ctx context.Context, zone, recordID string) error {
 	payload := DNSRowRequest{
 		Domain: dns01.UnFqdn(zone),
@@ -103,7 +103,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zone, recordID string) error 
 }
 
 // Commit not really required, all changes will be auto-committed after 5 minutes.
-// https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-domain-commit/
+// https://kb.wedos.global/wapi-wdns/#dns-domain-commit
 func (c *Client) Commit(ctx context.Context, zone string) error {
 	payload := map[string]any{
 		"name": dns01.UnFqdn(zone),
@@ -131,6 +131,8 @@ func (c *Client) do(req *http.Request, result Response) error {
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)
 	}
+
+	defer func() { _ = resp.Body.Close() }()
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {

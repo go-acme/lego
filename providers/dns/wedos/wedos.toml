@@ -21,4 +21,4 @@ lego run --dns wedos -d '*.example.com' -d example.com
     WEDOS_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]
-  API = "https://kb.wedos.com/en/kategorie/wapi-api-interface/wdns-en/"
+  API = "https://kb.wedos.global/wapi-wdns/"

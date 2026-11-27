@@ -76,6 +76,17 @@ func TestClient_GetRecords(t *testing.T) {
 	assert.Equal(t, expected, records)
 }
 
+func TestClient_GetRecords_error(t *testing.T) {
+	client := mockBuilder().
+		Route("POST /",
+			servermock.ResponseFromFixture("error.json"),
+		).
+		Build(t)
+
+	_, err := client.GetRecords(t.Context(), "example.com.")
+	require.EqualError(t, err, "(dns-rows-list) 2050: Authentication failure")
+}
+
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",

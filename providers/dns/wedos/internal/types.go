@@ -14,6 +14,7 @@ const (
 type Response interface {
 	GetCode() int
 	GetResult() string
+	GetCommand() string
 }
 
 type ResponseEnvelope[D any] struct {
@@ -26,6 +27,10 @@ func (a ResponseEnvelope[D]) GetCode() int {
 
 func (a ResponseEnvelope[D]) GetResult() string {
 	return a.Response.Result
+}
+
+func (a ResponseEnvelope[D]) GetCommand() string {
+	return a.Response.Command
 }
 
 type ResponsePayload[D any] struct {

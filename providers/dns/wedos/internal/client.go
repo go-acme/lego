@@ -152,7 +152,7 @@ func (c *Client) do(req *http.Request, result Response) error {
 	}
 
 	if result.GetCode() != codeOk {
-		return fmt.Errorf("error %d: %s", result.GetCode(), result.GetResult())
+		return fmt.Errorf("(%s) %d: %s", result.GetCommand(), result.GetCode(), result.GetResult())
 	}
 
 	return err

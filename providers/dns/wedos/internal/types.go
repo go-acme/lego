@@ -5,12 +5,12 @@ import "encoding/json"
 const codeOk = 1000
 
 const (
-	commandPing            = "ping"
-	commandDNSDomainCommit = "dns-domain-commit"
-	commandDNSRowsList     = "dns-rows-list"
-	commandDNSRowDelete    = "dns-row-delete"
-	commandDNSRowAdd       = "dns-row-add"
-	commandDNSRowUpdate    = "dns-row-update"
+	CommandPing            = "ping"
+	CommandDNSDomainCommit = "dns-domain-commit"
+	CommandDNSRowsList     = "dns-rows-list"
+	CommandDNSRowDelete    = "dns-row-delete"
+	CommandDNSRowAdd       = "dns-row-add"
+	CommandDNSRowUpdate    = "dns-row-update"
 )
 
 type Response interface {

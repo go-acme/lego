@@ -33,8 +33,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock.ResponseFromFixture(commandDNSRowsList+".json"),
-			checkFormRequest(commandDNSRowsList+"_request.json"),
+			servermock.ResponseFromFixture(CommandDNSRowsList+".json"),
+			checkFormRequest(CommandDNSRowsList+"_request.json"),
 		).
 		Build(t)
 
@@ -77,8 +77,8 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock.ResponseFromFixture(commandDNSRowAdd+".json"),
-			checkFormRequest(commandDNSRowAdd+"_request.json"),
+			servermock.ResponseFromFixture(CommandDNSRowAdd+".json"),
+			checkFormRequest(CommandDNSRowAdd+"_request.json"),
 		).
 		Build(t)
 
@@ -97,8 +97,8 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_update(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock.ResponseFromFixture(commandDNSRowUpdate+".json"),
-			checkFormRequest(commandDNSRowUpdate+"_request.json"),
+			servermock.ResponseFromFixture(CommandDNSRowUpdate+".json"),
+			checkFormRequest(CommandDNSRowUpdate+"_request.json"),
 		).
 		Build(t)
 
@@ -117,8 +117,8 @@ func TestClient_AddRecord_update(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock.ResponseFromFixture(commandDNSRowDelete+".json"),
-			checkFormRequest(commandDNSRowDelete+"_request.json"),
+			servermock.ResponseFromFixture(CommandDNSRowDelete+".json"),
+			checkFormRequest(CommandDNSRowDelete+"_request.json"),
 		).
 		Build(t)
 
@@ -129,8 +129,8 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_Commit(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock.ResponseFromFixture(commandDNSDomainCommit+".json"),
-			checkFormRequest(commandDNSDomainCommit+"_request.json"),
+			servermock.ResponseFromFixture(CommandDNSDomainCommit+".json"),
+			checkFormRequest(CommandDNSDomainCommit+"_request.json"),
 		).
 		Build(t)
 

@@ -42,7 +42,7 @@ func (c *Client) GetRecords(ctx context.Context, zone string) ([]Record, error) 
 		"domain": dns01.UnFqdn(zone),
 	}
 
-	req, err := c.newRequest(ctx, commandDNSRowsList, payload)
+	req, err := c.newRequest(ctx, CommandDNSRowsList, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -68,12 +68,12 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record Record) erro
 		Data:   record.Data,
 	}
 
-	cmd := commandDNSRowAdd
+	cmd := CommandDNSRowAdd
 
 	if record.ID == "" {
 		payload.Name = record.Name
 	} else {
-		cmd = commandDNSRowUpdate
+		cmd = CommandDNSRowUpdate
 		payload.ID = record.ID
 	}
 
@@ -94,7 +94,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zone, recordID string) error 
 		ID:     recordID,
 	}
 
-	req, err := c.newRequest(ctx, commandDNSRowDelete, payload)
+	req, err := c.newRequest(ctx, CommandDNSRowDelete, payload)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func (c *Client) Commit(ctx context.Context, zone string) error {
 		"name": dns01.UnFqdn(zone),
 	}
 
-	req, err := c.newRequest(ctx, commandDNSDomainCommit, payload)
+	req, err := c.newRequest(ctx, CommandDNSDomainCommit, payload)
 	if err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func (c *Client) Commit(ctx context.Context, zone string) error {
 }
 
 func (c *Client) Ping(ctx context.Context) error {
-	req, err := c.newRequest(ctx, commandPing, nil)
+	req, err := c.newRequest(ctx, CommandPing, nil)
 	if err != nil {
 		return err
 	}

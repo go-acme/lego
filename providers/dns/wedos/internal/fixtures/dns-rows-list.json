@@ -10,7 +10,7 @@
         {
           "ID": "911",
           "name": "",
-          "ttl": "1800",
+          "ttl": "300",
           "rdtype": "A",
           "rdata": "1.2.3.4",
           "changed_date": "2010-12-01 09:54:41",
@@ -19,7 +19,7 @@
         {
           "ID": "913",
           "name": "",
-          "ttl": "1800",
+          "ttl": "300",
           "rdtype": "MX",
           "rdata": "1 mail1.wedos.net",
           "changed_date": "2010-12-01 09:54:54",
@@ -28,7 +28,7 @@
         {
           "ID": "914",
           "name": "",
-          "ttl": "1800",
+          "ttl": "300",
           "rdtype": "MX",
           "rdata": "10 mailbackup.wedos.net",
           "changed_date": "2010-12-01 09:55:07",
@@ -37,7 +37,7 @@
         {
           "ID": "912",
           "name": "*",
-          "ttl": "1800",
+          "ttl": "300",
           "rdtype": "A",
           "rdata": "1.2.3.4",
           "changed_date": "2010-12-01 09:54:46",

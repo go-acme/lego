@@ -5,10 +5,10 @@
     "command": "dns-row-add",
     "data": {
       "domain": "example.com",
-      "name": "foo",
-      "ttl": 1800,
+      "name": "_acme-challenge",
+      "ttl": 300,
       "type": "TXT",
-      "rdata": "foobar"
+      "rdata": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
     }
   }
 }

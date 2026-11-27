@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -46,26 +48,26 @@ func TestClient_GetRecords(t *testing.T) {
 	expected := []Record{
 		{
 			ID:   "911",
-			TTL:  "1800",
+			TTL:  "300",
 			Type: "A",
 			Data: "1.2.3.4",
 		},
 		{
 			ID:   "913",
-			TTL:  "1800",
+			TTL:  "300",
 			Type: "MX",
 			Data: "1 mail1.wedos.net",
 		},
 		{
 			ID:   "914",
-			TTL:  "1800",
+			TTL:  "300",
 			Type: "MX",
 			Data: "10 mailbackup.wedos.net",
 		},
 		{
 			ID:   "912",
 			Name: "*",
-			TTL:  "1800",
+			TTL:  "300",
 			Type: "A",
 			Data: "1.2.3.4",
 		},
@@ -83,11 +85,10 @@ func TestClient_AddRecord(t *testing.T) {
 		Build(t)
 
 	record := Record{
-		ID:   "",
-		Name: "foo",
-		TTL:  "1800",
+		Name: "_acme-challenge",
+		TTL:  "300",
 		Type: "TXT",
-		Data: "foobar",
+		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
 	err := client.AddRecord(t.Context(), "example.com.", record)
@@ -105,9 +106,9 @@ func TestClient_AddRecord_update(t *testing.T) {
 	record := Record{
 		ID:   "1",
 		Name: "foo",
-		TTL:  "1800",
+		TTL:  "300",
 		Type: "TXT",
-		Data: "foobar",
+		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
 	err := client.AddRecord(t.Context(), "example.com.", record)
@@ -165,7 +166,9 @@ func checkFormRequest(filename string) servermock.LinkFunc {
 				ReplaceAllString(req.PostForm.Get("request"), `"auth":"xxx",`)
 
 			if form != expected.String() {
+				log.Error("invalid form data", slog.String("form", form), slog.String("expected", expected.String()))
 				http.Error(rw, fmt.Sprintf("invalid form data: %s", req.PostForm.Get("request")), http.StatusBadRequest)
+
 				return
 			}
 

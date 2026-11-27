@@ -29,11 +29,11 @@ func (a ResponseEnvelope[D]) GetResult() string {
 }
 
 type ResponsePayload[D any] struct {
-	Code            int    `json:"code,omitempty"`
-	Result          string `json:"result,omitempty"`
-	Timestamp       int    `json:"timestamp,omitempty"`
-	ServerRequestID string `json:"svTRID,omitempty"`
-	Command         string `json:"command,omitempty"`
+	Code            int    `json:"code"`
+	Result          string `json:"result"`
+	Timestamp       int    `json:"timestamp"`
+	ServerRequestID string `json:"svTRID"`
+	Command         string `json:"command"`
 	Data            D      `json:"data"`
 }
 
@@ -42,10 +42,10 @@ type Rows struct {
 }
 
 type Record struct {
-	ID   string `json:"ID,omitempty"`
-	Name string `json:"name,omitempty"`
-	TTL  string `json:"ttl,omitempty"`
-	Type string `json:"rdtype,omitempty"`
+	ID   string `json:"ID"`
+	Name string `json:"name"`
+	TTL  string `json:"ttl"`
+	Type string `json:"rdtype"`
 	Data string `json:"rdata"`
 }
 

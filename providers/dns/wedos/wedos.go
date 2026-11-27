@@ -2,7 +2,6 @@ package wedos
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -125,7 +124,7 @@ func (d *DNSProvider) Present(ctx context.Context, domain, token, keyAuth string
 
 	record := internal.Record{
 		Name: subDomain,
-		TTL:  json.Number(strconv.Itoa(d.config.TTL)),
+		TTL:  strconv.Itoa(d.config.TTL),
 		Type: "TXT",
 		Data: info.Value,
 	}

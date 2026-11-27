@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -61,9 +62,11 @@ func (c *Client) GetRecords(ctx context.Context, zone string) ([]Record, error) 
 // https://kb.wedos.global/wapi-wdns/#dns-domain-add
 // https://kb.wedos.global/wapi-wdns/#dns-domain-update
 func (c *Client) AddRecord(ctx context.Context, zone string, record Record) error {
+	ttl, _ := strconv.Atoi(record.TTL)
+
 	payload := RecordRequest{
 		Domain: dns01.UnFqdn(zone),
-		TTL:    record.TTL,
+		TTL:    ttl,
 		Type:   record.Type,
 		Data:   record.Data,
 	}

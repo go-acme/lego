@@ -1,7 +1,5 @@
 package internal
 
-import "encoding/json"
-
 const codeOk = 1000
 
 const (
@@ -44,11 +42,11 @@ type Rows struct {
 }
 
 type Record struct {
-	ID   string      `json:"ID,omitempty"`
-	Name string      `json:"name,omitempty"`
-	TTL  json.Number `json:"ttl,omitempty"`
-	Type string      `json:"rdtype,omitempty"`
-	Data string      `json:"rdata"`
+	ID   string `json:"ID,omitempty"`
+	Name string `json:"name,omitempty"`
+	TTL  string `json:"ttl,omitempty"`
+	Type string `json:"rdtype,omitempty"`
+	Data string `json:"rdata"`
 }
 
 type RequestEnvelope[D any] struct {
@@ -63,10 +61,10 @@ type RequestPayload[D any] struct {
 }
 
 type RecordRequest struct {
-	ID     string      `json:"row_id,omitempty"`
-	Domain string      `json:"domain,omitempty"`
-	Name   string      `json:"name,omitempty"`
-	TTL    json.Number `json:"ttl,omitempty"`
-	Type   string      `json:"type,omitempty"`
-	Data   string      `json:"rdata"`
+	ID     string `json:"row_id,omitempty"`
+	Domain string `json:"domain,omitempty"`
+	Name   string `json:"name,omitempty"`
+	TTL    int    `json:"ttl,omitempty"`
+	Type   string `json:"type,omitempty"`
+	Data   string `json:"rdata"`
 }

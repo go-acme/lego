@@ -1,0 +1,9 @@
+{
+  "response": {
+    "code": 2050,
+    "result": "Authentication failure",
+    "timestamp": 1795814412,
+    "svTRID": "1795814412.8624.17134.1",
+    "command": "dns-rows-list"
+  }
+}

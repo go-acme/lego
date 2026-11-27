@@ -1,0 +1,14 @@
+{
+  "request": {
+    "user": "user",
+    "auth": "xxx",
+    "command": "dns-row-update",
+    "data": {
+      "row_id": "1",
+      "domain": "example.com",
+      "ttl": 300,
+      "type": "TXT",
+      "rdata": "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY"
+    }
+  }
+}

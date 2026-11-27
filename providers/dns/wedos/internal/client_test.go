@@ -1,13 +1,19 @@
 package internal
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"regexp"
 	"testing"
 
 	"github.com/go-acme/lego/v5/internal/tester/servermock"
+	"github.com/go-acme/lego/v5/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,7 +22,7 @@ func mockBuilder() *servermock.Builder[*Client] {
 	return servermock.NewBuilder[*Client](
 		func(server *httptest.Server) (*Client, error) {
 			client := NewClient("user", "secret")
-			client.baseURL = server.URL
+			client.BaseURL = server.URL
 			client.HTTPClient = server.Client()
 
 			return client, nil
@@ -29,8 +35,8 @@ func mockBuilder() *servermock.Builder[*Client] {
 func TestClient_GetRecords(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock.ResponseFromFixture(commandDNSRowsList+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-rows-list","data":{"domain":"example.com"}}}`),
+			servermock.ResponseFromFixture(CommandDNSRowsList+".json"),
+			checkFormRequest(CommandDNSRowsList+"_request.json"),
 		).
 		Build(t)
 
@@ -39,29 +45,29 @@ func TestClient_GetRecords(t *testing.T) {
 
 	assert.Len(t, records, 4)
 
-	expected := []DNSRow{
+	expected := []Record{
 		{
 			ID:   "911",
-			TTL:  "1800",
+			TTL:  "300",
 			Type: "A",
 			Data: "1.2.3.4",
 		},
 		{
 			ID:   "913",
-			TTL:  "1800",
+			TTL:  "300",
 			Type: "MX",
 			Data: "1 mail1.wedos.net",
 		},
 		{
 			ID:   "914",
-			TTL:  "1800",
+			TTL:  "300",
 			Type: "MX",
 			Data: "10 mailbackup.wedos.net",
 		},
 		{
 			ID:   "912",
 			Name: "*",
-			TTL:  "1800",
+			TTL:  "300",
 			Type: "A",
 			Data: "1.2.3.4",
 		},
@@ -73,17 +79,16 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock.ResponseFromFixture(commandDNSRowAdd+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-add","data":{"domain":"example.com","name":"foo","ttl":1800,"type":"TXT","rdata":"foobar"}}}`),
+			servermock.ResponseFromFixture(CommandDNSRowAdd+".json"),
+			checkFormRequest(CommandDNSRowAdd+"_request.json"),
 		).
 		Build(t)
 
-	record := DNSRow{
-		ID:   "",
-		Name: "foo",
-		TTL:  "1800",
+	record := Record{
+		Name: "_acme-challenge",
+		TTL:  "300",
 		Type: "TXT",
-		Data: "foobar",
+		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
 	err := client.AddRecord(t.Context(), "example.com.", record)
@@ -93,17 +98,17 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_update(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock.ResponseFromFixture(commandDNSRowUpdate+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-update","data":{"row_id":"1","domain":"example.com","ttl":1800,"type":"TXT","rdata":"foobar"}}}`),
+			servermock.ResponseFromFixture(CommandDNSRowUpdate+".json"),
+			checkFormRequest(CommandDNSRowUpdate+"_request.json"),
 		).
 		Build(t)
 
-	record := DNSRow{
+	record := Record{
 		ID:   "1",
 		Name: "foo",
-		TTL:  "1800",
+		TTL:  "300",
 		Type: "TXT",
-		Data: "foobar",
+		Data: "ADw2sEd82DUgXcQ9hNBZThJs7zVJkR5v9JeSbAb9mZY",
 	}
 
 	err := client.AddRecord(t.Context(), "example.com.", record)
@@ -113,8 +118,8 @@ func TestClient_AddRecord_update(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock.ResponseFromFixture(commandDNSRowDelete+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-row-delete","data":{"row_id":"1","domain":"example.com","rdata":""}}}`),
+			servermock.ResponseFromFixture(CommandDNSRowDelete+".json"),
+			checkFormRequest(CommandDNSRowDelete+"_request.json"),
 		).
 		Build(t)
 
@@ -125,8 +130,8 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_Commit(t *testing.T) {
 	client := mockBuilder().
 		Route("POST /",
-			servermock.ResponseFromFixture(commandDNSDomainCommit+".json"),
-			checkFormRequest(`{"request":{"user":"user","auth":"xxx","command":"dns-domain-commit","data":{"name":"example.com"}}}`),
+			servermock.ResponseFromFixture(CommandDNSDomainCommit+".json"),
+			checkFormRequest(CommandDNSDomainCommit+"_request.json"),
 		).
 		Build(t)
 
@@ -134,10 +139,47 @@ func TestClient_Commit(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func checkFormRequest(data string) servermock.LinkFunc {
+func TestClient_Ping(t *testing.T) {
+	client := mockBuilder().
+		Route("POST /",
+			servermock.ResponseFromFixture(CommandPing+".json"),
+			checkFormRequest(CommandPing+"_request.json"),
+		).
+		Build(t)
+
+	err := client.Ping(t.Context())
+	require.NoError(t, err)
+}
+
+func TestClient_Ping_error(t *testing.T) {
+	client := mockBuilder().
+		Route("POST /",
+			servermock.ResponseFromFixture("error.json"),
+		).
+		Build(t)
+
+	err := client.Ping(t.Context())
+	require.EqualError(t, err, "(dns-rows-list) 2050: Authentication failure")
+}
+
+func checkFormRequest(filename string) servermock.LinkFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-			err := req.ParseForm()
+			file, err := os.ReadFile(filepath.Join("fixtures", filename))
+			if err != nil {
+				http.Error(rw, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			var expected bytes.Buffer
+
+			err = json.Compact(&expected, file)
+			if err != nil {
+				http.Error(rw, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			err = req.ParseForm()
 			if err != nil {
 				http.Error(rw, err.Error(), http.StatusBadRequest)
 				return
@@ -146,8 +188,10 @@ func checkFormRequest(data string) servermock.LinkFunc {
 			form := regexp.MustCompile(`"auth":"\w+",`).
 				ReplaceAllString(req.PostForm.Get("request"), `"auth":"xxx",`)
 
-			if form != data {
+			if form != expected.String() {
+				log.Error("invalid form data", slog.String("form", form), slog.String("expected", expected.String()))
 				http.Error(rw, fmt.Sprintf("invalid form data: %s", req.PostForm.Get("request")), http.StatusBadRequest)
+
 				return
 			}
 

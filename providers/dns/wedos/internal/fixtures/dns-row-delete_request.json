@@ -1,0 +1,12 @@
+{
+  "request": {
+    "user": "user",
+    "auth": "xxx",
+    "command": "dns-row-delete",
+    "data": {
+      "row_id": "1",
+      "domain": "example.com",
+      "rdata": ""
+    }
+  }
+}

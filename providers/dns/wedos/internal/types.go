@@ -1,68 +1,75 @@
 package internal
 
-import "encoding/json"
-
 const codeOk = 1000
 
 const (
-	commandPing            = "ping"
-	commandDNSDomainCommit = "dns-domain-commit"
-	commandDNSRowsList     = "dns-rows-list"
-	commandDNSRowDelete    = "dns-row-delete"
-	commandDNSRowAdd       = "dns-row-add"
-	commandDNSRowUpdate    = "dns-row-update"
+	CommandPing            = "ping"
+	CommandDNSDomainCommit = "dns-domain-commit"
+	CommandDNSRowsList     = "dns-rows-list"
+	CommandDNSRowDelete    = "dns-row-delete"
+	CommandDNSRowAdd       = "dns-row-add"
+	CommandDNSRowUpdate    = "dns-row-update"
 )
 
 type Response interface {
 	GetCode() int
 	GetResult() string
+	GetCommand() string
 }
 
-type APIResponse[D any] struct {
+type ResponseEnvelope[D any] struct {
 	Response ResponsePayload[D] `json:"response"`
 }
 
-func (a APIResponse[D]) GetCode() int {
+func (a ResponseEnvelope[D]) GetCode() int {
 	return a.Response.Code
 }
 
-func (a APIResponse[D]) GetResult() string {
+func (a ResponseEnvelope[D]) GetResult() string {
 	return a.Response.Result
 }
 
+func (a ResponseEnvelope[D]) GetCommand() string {
+	return a.Response.Command
+}
+
 type ResponsePayload[D any] struct {
-	Code      int    `json:"code,omitempty"`
-	Result    string `json:"result,omitempty"`
-	Timestamp int    `json:"timestamp,omitempty"`
-	SvTRID    string `json:"svTRID,omitempty"`
-	Command   string `json:"command,omitempty"`
-	Data      D      `json:"data"`
+	Code            int    `json:"code"`
+	Result          string `json:"result"`
+	Timestamp       int    `json:"timestamp"`
+	ServerRequestID string `json:"svTRID"`
+	Command         string `json:"command"`
+	Data            D      `json:"data"`
 }
 
 type Rows struct {
-	Rows []DNSRow `json:"row"`
+	Records []Record `json:"row"`
 }
 
-type DNSRow struct {
-	ID   string      `json:"ID,omitempty"`
-	Name string      `json:"name,omitempty"`
-	TTL  json.Number `json:"ttl,omitempty"`
-	Type string      `json:"rdtype,omitempty"`
-	Data string      `json:"rdata"`
+type Record struct {
+	ID   string `json:"ID"`
+	Name string `json:"name"`
+	TTL  string `json:"ttl"`
+	Type string `json:"rdtype"`
+	Data string `json:"rdata"`
 }
 
-type DNSRowRequest struct {
-	ID     string      `json:"row_id,omitempty"`
-	Domain string      `json:"domain,omitempty"`
-	Name   string      `json:"name,omitempty"`
-	TTL    json.Number `json:"ttl,omitempty"`
-	Type   string      `json:"type,omitempty"`
-	Data   string      `json:"rdata"`
+type RequestEnvelope[D any] struct {
+	Request RequestPayload[D] `json:"request"`
 }
 
-type APIRequest struct {
+type RequestPayload[D any] struct {
 	User    string `json:"user,omitempty"`
 	Auth    string `json:"auth,omitempty"`
 	Command string `json:"command,omitempty"`
-	Data    any    `json:"data,omitempty"`
+	Data    D      `json:"data,omitempty"`
+}
+
+type RecordRequest struct {
+	ID     string `json:"row_id,omitempty"`
+	Domain string `json:"domain,omitempty"`
+	Name   string `json:"name,omitempty"`
+	TTL    int    `json:"ttl,omitempty"`
+	Type   string `json:"type,omitempty"`
+	Data   string `json:"rdata"`
 }

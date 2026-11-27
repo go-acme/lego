@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,7 +22,7 @@ type Client struct {
 	username string
 	password string
 
-	baseURL    string
+	BaseURL    string
 	HTTPClient *http.Client
 }
 
@@ -30,50 +31,52 @@ func NewClient(username, password string) *Client {
 	return &Client{
 		username:   username,
 		password:   password,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
 // GetRecords lists all the records in the zone.
-// https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-rows-list/
-func (c *Client) GetRecords(ctx context.Context, zone string) ([]DNSRow, error) {
+// https://kb.wedos.global/wapi-wdns/#dns-domains-list
+func (c *Client) GetRecords(ctx context.Context, zone string) ([]Record, error) {
 	payload := map[string]any{
 		"domain": dns01.UnFqdn(zone),
 	}
 
-	req, err := c.newRequest(ctx, commandDNSRowsList, payload)
+	req, err := c.newRequest(ctx, CommandDNSRowsList, payload)
 	if err != nil {
 		return nil, err
 	}
 
-	var result APIResponse[Rows]
+	var result ResponseEnvelope[Rows]
 
 	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return result.Response.Data.Rows, err
+	return result.Response.Data.Records, err
 }
 
 // AddRecord adds a record in the zone, either by updating existing records or creating new ones.
-// https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-add-row/
-// https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-row-update/
-func (c *Client) AddRecord(ctx context.Context, zone string, record DNSRow) error {
-	payload := DNSRowRequest{
+// https://kb.wedos.global/wapi-wdns/#dns-domain-add
+// https://kb.wedos.global/wapi-wdns/#dns-domain-update
+func (c *Client) AddRecord(ctx context.Context, zone string, record Record) error {
+	ttl, _ := strconv.Atoi(record.TTL)
+
+	payload := RecordRequest{
 		Domain: dns01.UnFqdn(zone),
-		TTL:    record.TTL,
+		TTL:    ttl,
 		Type:   record.Type,
 		Data:   record.Data,
 	}
 
-	cmd := commandDNSRowAdd
+	cmd := CommandDNSRowAdd
 
 	if record.ID == "" {
 		payload.Name = record.Name
 	} else {
-		cmd = commandDNSRowUpdate
+		cmd = CommandDNSRowUpdate
 		payload.ID = record.ID
 	}
 
@@ -82,48 +85,50 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record DNSRow) erro
 		return err
 	}
 
-	return c.do(req, &APIResponse[json.RawMessage]{})
+	return c.do(req, &ResponseEnvelope[json.RawMessage]{})
 }
 
 // DeleteRecord deletes a record from the zone.
 // If a record does not have an ID, it will be looked up.
-// https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-row-delete/
+// https://kb.wedos.global/wapi-wdns/#dns-row-delete
 func (c *Client) DeleteRecord(ctx context.Context, zone, recordID string) error {
-	payload := DNSRowRequest{
+	payload := RecordRequest{
 		Domain: dns01.UnFqdn(zone),
 		ID:     recordID,
 	}
 
-	req, err := c.newRequest(ctx, commandDNSRowDelete, payload)
+	req, err := c.newRequest(ctx, CommandDNSRowDelete, payload)
 	if err != nil {
 		return err
 	}
 
-	return c.do(req, &APIResponse[json.RawMessage]{})
+	return c.do(req, &ResponseEnvelope[json.RawMessage]{})
 }
 
 // Commit not really required, all changes will be auto-committed after 5 minutes.
-// https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-domain-commit/
+// https://kb.wedos.global/wapi-wdns/#dns-domain-commit
 func (c *Client) Commit(ctx context.Context, zone string) error {
 	payload := map[string]any{
 		"name": dns01.UnFqdn(zone),
 	}
 
-	req, err := c.newRequest(ctx, commandDNSDomainCommit, payload)
+	req, err := c.newRequest(ctx, CommandDNSDomainCommit, payload)
 	if err != nil {
 		return err
 	}
 
-	return c.do(req, &APIResponse[json.RawMessage]{})
+	return c.do(req, &ResponseEnvelope[json.RawMessage]{})
 }
 
+// Ping basic test request.
+// https://kb.wedos.global/wapi-manual/#ping
 func (c *Client) Ping(ctx context.Context) error {
-	req, err := c.newRequest(ctx, commandPing, nil)
+	req, err := c.newRequest(ctx, CommandPing, nil)
 	if err != nil {
 		return err
 	}
 
-	return c.do(req, &APIResponse[json.RawMessage]{})
+	return c.do(req, &ResponseEnvelope[json.RawMessage]{})
 }
 
 func (c *Client) do(req *http.Request, result Response) error {
@@ -131,6 +136,8 @@ func (c *Client) do(req *http.Request, result Response) error {
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)
 	}
+
+	defer func() { _ = resp.Body.Close() }()
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -147,15 +154,15 @@ func (c *Client) do(req *http.Request, result Response) error {
 	}
 
 	if result.GetCode() != codeOk {
-		return fmt.Errorf("error %d: %s", result.GetCode(), result.GetResult())
+		return fmt.Errorf("(%s) %d: %s", result.GetCommand(), result.GetCode(), result.GetResult())
 	}
 
 	return err
 }
 
 func (c *Client) newRequest(ctx context.Context, command string, payload any) (*http.Request, error) {
-	requestObject := map[string]any{
-		"request": APIRequest{
+	requestObject := RequestEnvelope[any]{
+		Request: RequestPayload[any]{
 			User:    c.username,
 			Auth:    authToken(c.username, c.password),
 			Command: command,
@@ -171,7 +178,7 @@ func (c *Client) newRequest(ctx context.Context, command string, payload any) (*
 	form := url.Values{}
 	form.Add("request", string(object))
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL, strings.NewReader(form.Encode()))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.BaseURL, strings.NewReader(form.Encode()))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}

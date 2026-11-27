@@ -35,10 +35,10 @@ func czechHour() int {
 
 	// hopefully this will never be used
 	// this is fallback for containers without tzdata installed
-	return utcToCet(time.Now().UTC()).Hour()
+	return utcToCET(time.Now().UTC()).Hour()
 }
 
-func utcToCet(utc time.Time) time.Time {
+func utcToCET(utc time.Time) time.Time {
 	// https://en.wikipedia.org/wiki/Central_European_Time
 	// As of 2011, all member states of the European Union observe Summer Time (daylight saving time),
 	// from the last Sunday in March to the last Sunday in October.

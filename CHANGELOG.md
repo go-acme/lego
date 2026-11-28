@@ -6,6 +6,15 @@ Everybody thinks that the others will donate, but in the end, nobody does.
 
 So if you think that lego is worth it, please consider [donating](https://donate.ldez.dev).
 
+## v5.8.1
+
+- Release date: 2026-11-28
+- Tag: [v5.8.1](https://github.com/go-acme/lego/releases/tag/v5.8.1)
+
+### Fixed
+
+- **[dnsprovider]** fix(gandiv5): clean up when existing TXT records
+
 ## v5.8.0
 
 - Release date: 2026-11-27

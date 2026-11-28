@@ -188,7 +188,7 @@ func removeTXTRecordValue(record *internal.Record, value string, ttl int) *inter
 	var values []string
 
 	for _, v := range record.Values {
-		if v != value || v != strconv.Quote(value) {
+		if v == value || v == strconv.Quote(value) {
 			continue
 		}
 

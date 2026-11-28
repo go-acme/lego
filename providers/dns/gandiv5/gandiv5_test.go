@@ -142,9 +142,8 @@ func TestDNSProvider_CleanUp_update(t *testing.T) {
 		Route("GET /domains/example.com/records/_acme-challenge.abc.def/TXT",
 			servermock.ResponseFromInternal("get_txt_record_existing.json"),
 		).
-		Route("DELETE /domains/example.com/records/_acme-challenge.abc.def/TXT",
-			servermock.Noop().
-				WithStatusCode(http.StatusCreated),
+		Route("PUT /domains/example.com/records/_acme-challenge.abc.def/TXT",
+			servermock.ResponseFromInternal("put_txt_record_pristine-request.json"),
 		).
 		Build(t)
 
